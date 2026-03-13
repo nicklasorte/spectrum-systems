@@ -1,0 +1,34 @@
+{
+  "record_id": "PRV-XXXX-000",
+  "record_type": "artifact_class_here",
+  "title": "Short human-readable name",
+  "description": "One line description of the artifact",
+  "source_document": "Source name or identifier",
+  "source_document_id": "DOC-000-000",
+  "source_location": "Section, page, or timecode",
+  "source_url_or_path": "s3://bucket/path/or/local/path",
+  "source_revision": "v1.0",
+  "timestamp_created": "2025-01-01T00:00:00Z",
+  "timestamp_modified": "2025-01-02T00:00:00Z",
+  "created_by": "agent-id-or-name",
+  "modified_by": "agent-id-or-name",
+  "generated_by_system": "workflow-or-model-name",
+  "workflow_name": "workflow-identifier",
+  "workflow_step": "step-name-or-number",
+  "derived_from": [
+    "PARENT-001",
+    "PARENT-002"
+  ],
+  "related_entities": [
+    "RELATED-REFERENCE-01"
+  ],
+  "version_id": "PRV-XXXX-000-v1.0",
+  "version_number": "1.0",
+  "review_status": "pending_review",
+  "reviewed_by": "Reviewer Name",
+  "review_date": "2025-01-03T00:00:00Z",
+  "confidence_score": "medium",
+  "quality_status": "generated",
+  "usage_constraints": "Any limits, caveats, or handling rules",
+  "notes": "Additional context needed for reuse"
+}

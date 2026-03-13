@@ -1,4 +1,6 @@
 {
+  "record_id": "PRV-DOC-2025-022",
+  "record_type": "source_document",
   "source_document_id": "DOC-2025-022",
   "title": "Draft Spectrum Sharing Report",
   "source_type": "Draft Report",
@@ -11,5 +13,19 @@
     "Protection threshold"
   ],
   "machine_readable_status": "Converted to text with OCR",
-  "trust_level": "High"
+  "trust_level": "High",
+  "source_document": "DOC-2025-022",
+  "source_location": "Repository path /reports/draft-spectrum-sharing/v1.1.docx",
+  "timestamp_created": "2025-02-01T08:00:00Z",
+  "generated_by_system": "document-intake-service",
+  "workflow_name": "source-document-registration",
+  "derived_from": [
+    "DOC-2025-022"
+  ],
+  "version_number": "1.1",
+  "review_status": "reviewed",
+  "reviewed_by": "Records Manager",
+  "review_date": "2025-02-02T11:00:00Z",
+  "confidence_score": "high",
+  "quality_status": "normalized"
 }

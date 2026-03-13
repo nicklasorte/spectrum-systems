@@ -1,4 +1,6 @@
 {
+  "record_id": "PRV-ART-2025-031",
+  "record_type": "study_artifact_metadata",
   "artifact_id": "ART-2025-031",
   "study": "Urban 3.5 GHz Coexistence",
   "artifact_type": "Table",
@@ -17,5 +19,22 @@
     "v1.0 drafted",
     "v1.1 updated after clutter sensitivity"
   ],
-  "reviewer": "Reviewer Two"
+  "reviewer": "Reviewer Two",
+  "source_document": "RUN-2025-118-output",
+  "source_document_id": "RUN-2025-118",
+  "source_location": "s3://study-outputs/urban-35ghz/run-118/table-protection-threshold.csv",
+  "timestamp_created": "2025-02-20T17:45:00Z",
+  "generated_by_system": "study-artifact-generator v0.3",
+  "workflow_name": "artifact-rendering",
+  "derived_from": [
+    "RUN-2025-118",
+    "ASM-2025-007",
+    "ASM-2025-003"
+  ],
+  "version_number": "1.1",
+  "review_status": "reviewed",
+  "reviewed_by": "Reviewer Two",
+  "review_date": "2025-02-21T09:15:00Z",
+  "confidence_score": "high",
+  "quality_status": "generated"
 }

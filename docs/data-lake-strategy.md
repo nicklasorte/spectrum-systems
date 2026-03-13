@@ -250,6 +250,9 @@ The first five data classes to collect should be:
 
 These provide the strongest support for the first three planned systems: Comment Resolution Engine, Transcript-to-Issue Engine, and Study Artifact Generator.
 
+## Provenance Requirements Across the Data Lake
+Every Tier 1 through Tier 4 data class should eventually support the provenance standard. Provenance is not an optional metadata extra; it is the trust layer that makes the data lake reusable for automation and AI-assisted workflows.
+
 ## Data Lake Logical Architecture
 The lake consists of four linked layers:
 
