@@ -1,0 +1,7 @@
+{
+  "study_id": "string",
+  "band": "string",
+  "analysis_type": "string",
+  "summary": "string",
+  "outputs": []
+}

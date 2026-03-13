@@ -1,0 +1,6 @@
+{
+  "assumption_id": "string",
+  "description": "string",
+  "source": "string",
+  "impact_level": "low | medium | high"
+}

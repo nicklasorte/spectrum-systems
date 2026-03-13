@@ -1,0 +1,7 @@
+{
+  "issue_id": "string",
+  "source": "string",
+  "description": "string",
+  "category": "technical | policy | procedural",
+  "status": "open | closed"
+}
