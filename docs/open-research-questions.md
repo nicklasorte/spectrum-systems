@@ -6,3 +6,12 @@
 - How should AI-generated engineering text be validated for technical accuracy and policy compliance?
 - What confidence and calibration methods best signal when human review is mandatory?
 - How can provenance be preserved end-to-end without hindering analyst velocity?
+
+## Data Lake Research Questions
+
+- What is the minimum viable schema set for the first data lake iteration?
+- How should source provenance be represented across all data classes?
+- How should report revisions be linked to comments and inserted text?
+- How should simulation outputs be normalized across studies?
+- What metadata is required for trustworthy AI-assisted retrieval?
+- How should confidence scores be assigned and reviewed?

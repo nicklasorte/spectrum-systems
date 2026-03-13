@@ -1,0 +1,12 @@
+{
+  "comment_id": "CMT-2025-014",
+  "agency": "Agency A",
+  "comment_text": "Clarify protection assumptions for incumbent systems in Section 3.2.",
+  "source_document": "draft-report-v1.docx",
+  "cited_section": "Section 3.2",
+  "proposed_response": "Add protection threshold rationale and cite incumbent emission limits.",
+  "final_disposition": "Accepted with edits",
+  "final_inserted_text": "Added paragraph describing -114 dBm/10 MHz threshold and coordination steps.",
+  "revision_number": "v1.2",
+  "reviewer": "Reviewer One"
+}
