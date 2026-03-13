@@ -7,7 +7,8 @@ Systematically ingest, structure, and resolve agency comments with traceable dis
 Comment cycles stall reports because feedback arrives in heterogeneous formats, duplicates accumulate, and disposition text is crafted manually without consistent traceability to sources or sections.
 
 ## Inputs
-- Comment spreadsheets and narrative submissions
+- Comment spreadsheets and narrative submissions (with `Revision` column when multiple working paper revisions exist)
+- Working paper PDFs (at least one required) mapped to rev1, rev2, rev3 in the order provided
 - Report sections with anchors for mapping
 - Workflow rules (priority, required response types, routing)
 - Prior dispositions and related issues for context
@@ -18,9 +19,9 @@ Comment cycles stall reports because feedback arrives in heterogeneous formats, 
 - Section mapping schema (anchors to report structure) for provenance
 
 ## Processing Pipeline
-1. Ingest and normalize comments to `comment-schema` with source locations.
+1. Ingest and normalize comments to `comment-schema` with source locations and declared revision.
 2. Cluster and de-duplicate by topic, section, and authority.
-3. Map each comment to report sections and related issues.
+3. Map each comment to report sections and related issues, verifying a matching working paper revision exists; fail fast if any referenced revision is missing.
 4. Generate draft dispositions and response text using prompt-standard templates.
 5. Apply validation against schemas and workflow rules.
 6. Route to human review for high-impact or low-confidence items.
