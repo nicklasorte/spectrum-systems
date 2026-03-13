@@ -33,6 +33,7 @@ Enable reproducible spectrum studies, structured knowledge retrieval, and automa
 
 ## Design Extensions
 - [Agent Selection Guide](docs/agent-selection-guide.md) — explains when to use Copilot, Claude, or Codex in this repository.
+- [AI Agent Guidance Standard](docs/agent-guidance-standard.md) — defines how repositories should include CLAUDE.md and CODEX.md to guide AI agent behavior.
 - Data Lake Strategy — defines the structured data foundation needed to support future spectrum automation systems.
 - [Data Provenance Standard](docs/data-provenance-standard.md) — defines the trust, traceability, and review metadata required across all data classes and AI-assisted artifacts.
 

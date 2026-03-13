@@ -1,0 +1,123 @@
+# CODEX.md
+
+Codex Agent Guide for Spectrum Systems
+
+---------------------------------------------------------------------
+
+# Purpose
+
+This document provides instructions for Codex-style agents interacting with repositories derived from the Spectrum Systems architecture.
+
+Codex agents should treat this repository and its descendants as **structured engineering systems**, not generic software projects.
+
+The goal is to maintain consistent repository structure, reproducibility, and traceability.
+
+---------------------------------------------------------------------
+
+# Codex Responsibilities
+
+Codex should primarily be used for repository-level tasks such as:
+
+- creating directories
+- generating documentation
+- generating schemas
+- updating multiple files
+- restructuring repository layout
+- applying structured instructions
+- expanding planning artifacts
+- scaffolding workflows
+
+Codex acts as a **repository execution engine**.
+
+---------------------------------------------------------------------
+
+# Tasks Codex Should Perform
+
+Codex should be used for tasks such as:
+
+Repository creation  
+Directory restructuring  
+Bulk documentation generation  
+Schema creation  
+Applying structured change instructions  
+Updating multiple documents  
+Creating workflow templates  
+Updating registry files  
+
+Codex is the preferred agent when changes involve **multiple files or repository structure**.
+
+---------------------------------------------------------------------
+
+# Tasks Codex Should Avoid
+
+Codex should NOT:
+
+- design architecture from scratch
+- invent new conceptual frameworks
+- perform large reasoning tasks
+- implement complex code logic
+
+Those tasks should be handled by reasoning agents such as Claude.
+
+---------------------------------------------------------------------
+
+# Interaction With Other Agents
+
+Development should follow this workflow:
+
+Claude → reasoning and design  
+Codex → repository updates  
+Copilot → code implementation
+
+Codex should assume design decisions already exist before making structural changes.
+
+---------------------------------------------------------------------
+
+# Repository Modification Principles
+
+When modifying repositories derived from this architecture, Codex should follow these principles:
+
+1. Maintain documentation-first structure.
+2. Avoid introducing production code into design repositories.
+3. Preserve conceptual links between documents.
+4. Maintain schema consistency.
+5. Preserve provenance metadata fields.
+
+---------------------------------------------------------------------
+
+# Schema Creation Guidance
+
+When generating schemas, Codex should:
+
+- include provenance metadata fields
+- follow the data provenance standard
+- keep schemas human-readable
+- avoid unnecessary complexity
+
+Reference:
+
+docs/data-provenance-standard.md
+
+---------------------------------------------------------------------
+
+# Multi-File Update Guidance
+
+When performing large updates, Codex should:
+
+- maintain existing directory structure
+- update references between documents
+- verify links remain valid
+- avoid duplicating concepts across files
+
+---------------------------------------------------------------------
+
+# Derived Repository Expectations
+
+All implementation repositories derived from this lab notebook should include:
+
+CLAUDE.md  
+CODEX.md  
+
+These files help AI agents understand how to interact with the repository.
+
+---------------------------------------------------------------------
