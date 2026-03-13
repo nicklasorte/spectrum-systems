@@ -1,0 +1,21 @@
+{
+  "artifact_id": "ART-2025-031",
+  "study": "Urban 3.5 GHz Coexistence",
+  "artifact_type": "Table",
+  "title": "Protection Threshold by Incumbent Type",
+  "input_datasets_used": [
+    "INCUMBENT_DB_V3",
+    "TERRAIN_TILESET_10M"
+  ],
+  "code_version": "git:abc1234",
+  "assumptions_used": [
+    "ASM-2025-007",
+    "ASM-2025-003"
+  ],
+  "report_section": "Section 5.2 Results",
+  "revision_history": [
+    "v1.0 drafted",
+    "v1.1 updated after clutter sensitivity"
+  ],
+  "reviewer": "Reviewer Two"
+}

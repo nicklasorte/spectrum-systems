@@ -1,0 +1,11 @@
+{
+  "assumption_id": "ASM-2025-007",
+  "study_name": "Urban 3.5 GHz Coexistence",
+  "assumption_text": "Indoor femtocell users limited to 20 dBm EIRP.",
+  "source": "R&O 2025-12",
+  "rationale": "Matches regulatory EIRP cap and aligns with previous waiver precedent.",
+  "sensitivity_or_impact_level": "High",
+  "approved_by": "Chief Engineer",
+  "date_approved": "2025-02-15",
+  "later_changes": "Pending review after clutter sensitivity reruns."
+}

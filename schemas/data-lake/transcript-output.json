@@ -1,0 +1,13 @@
+{
+  "transcript_id": "MTG-2025-041",
+  "meeting_date": "2025-03-04",
+  "meeting_type": "TIG",
+  "speaker": "Engineer B",
+  "agency": "Agency B",
+  "extracted_question": "What margin was assumed for clutter variability at 3.5 GHz?",
+  "concern_or_constraint": "Wants justification for 8 dB clutter allowance",
+  "topic_or_band": "3.5 GHz",
+  "disposition_status": "Open",
+  "required_follow_up_analysis": "Provide sensitivity run with 4 dB and 10 dB clutter values",
+  "linked_report_section": "Section 4.1 Propagation Assumptions"
+}
