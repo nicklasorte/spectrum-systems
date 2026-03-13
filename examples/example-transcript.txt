@@ -1,0 +1,8 @@
+Meeting Title: Spectrum Coordination Sync
+Participants: Engineering, Policy, Operations
+
+Key Discussion:
+- Engineering notes interference modeling assumptions need validation for coastal sites.
+- Policy requests clearer protection criteria for aviation corridors.
+- Operations flags missing handover procedures for new bands.
+- Agreement to document open issues and owners before next review.

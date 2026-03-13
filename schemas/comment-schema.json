@@ -1,0 +1,8 @@
+{
+  "comment_id": "string",
+  "agency": "string",
+  "comment_text": "string",
+  "document_section": "string",
+  "status": "open | resolved | partial",
+  "proposed_response": "string"
+}
