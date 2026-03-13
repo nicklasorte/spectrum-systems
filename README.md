@@ -3,6 +3,9 @@
 ## Purpose
 Design and planning lab notebook for automation systems that transform spectrum engineering workflows from document-driven processes into computation-driven systems. Actual implementation code will live in separate repositories once designs are validated.
 
+## Architecture Overview
+- [SYSTEMS.md](SYSTEMS.md) — central index of all proposed automation systems in the Spectrum Systems architecture.
+
 ## Repository Philosophy
 - Capture system bottlenecks before proposing automation
 - Record workflow designs and decision pathways

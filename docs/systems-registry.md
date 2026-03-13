@@ -1,5 +1,7 @@
 # Systems Registry
 
+A high-level index of all systems can be found in SYSTEMS.md at the repository root.
+
 | System Name | Purpose | Inputs | Outputs | Schemas | Workflow Spec | Artifact Chain Stage | Dependencies | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Comment Resolution Engine | Automate collection, structuring, and disposition drafting for agency comments. | Structured comments, source documents, mapping rules, report section references. | Response mappings, disposition text, traceable comment statuses. | comment-schema, issue-schema | workflows/comment-resolution-engine.md | Report Sections | schemas, artifact-chain, prompt-standard, eval/comment-resolution | Design Specification | Requires deterministic prompts and review gates for high-impact comments; needs strong source-document, revision, and review provenance for every disposition. |
