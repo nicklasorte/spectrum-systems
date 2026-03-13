@@ -31,6 +31,9 @@ Enable reproducible spectrum studies, structured knowledge retrieval, and automa
 - `examples/` includes starter sample data for prototyping pipelines and prompts.
 - `src/` is reserved for future pipeline, parser, generator, and utility implementations.
 
+## Design Extensions
+- Data Lake Strategy — defines the structured data foundation needed to support future spectrum automation systems.
+
 ## Initial Target Systems
 - Comment Resolution Engine
 - Transcript-to-Issue Engine
