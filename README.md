@@ -1,7 +1,16 @@
 # spectrum-systems
 
 ## Purpose
-This repository designs automation systems that transform spectrum engineering workflows from document-driven processes into computation-driven systems.
+Design and planning lab notebook for automation systems that transform spectrum engineering workflows from document-driven processes into computation-driven systems. Actual implementation code will live in separate repositories once designs are validated.
+
+## Repository Philosophy
+- Capture system bottlenecks before proposing automation
+- Record workflow designs and decision pathways
+- Treat schemas as authoritative contracts
+- Standardize AI prompt structures for reproducible outputs
+- Map artifact chains that connect inputs to report-ready deliverables
+- Define evaluation harnesses before any implementation
+- Document system specifications as the source of truth for future build-out
 
 ## Vision
 Enable reproducible spectrum studies, structured knowledge retrieval, and automated engineering analysis pipelines.

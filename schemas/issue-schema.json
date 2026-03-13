@@ -3,5 +3,10 @@
   "source": "string",
   "description": "string",
   "category": "technical | policy | procedural",
-  "status": "open | closed"
+  "status": "open | closed",
+  "source_document": "string",
+  "source_location": "string",
+  "timestamp": "ISO 8601 string",
+  "confidence_score": "0-1 float",
+  "generated_by_system": "string"
 }
