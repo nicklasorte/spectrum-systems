@@ -1,12 +1,116 @@
 {
-  "issue_id": "string",
-  "source": "string",
-  "description": "string",
-  "category": "technical | policy | procedural",
-  "status": "open | closed",
-  "source_document": "string",
-  "source_location": "string",
-  "timestamp": "ISO 8601 string",
-  "confidence_score": "0-1 float",
-  "generated_by_system": "string"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/issue-schema.json",
+  "title": "Issue Record",
+  "description": "Authoritative schema for issues extracted from transcripts or linked to comments.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "issue_id",
+    "description",
+    "category",
+    "status",
+    "source_document",
+    "source_location",
+    "timestamp",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0",
+      "description": "Version of the issue schema used to validate this record."
+    },
+    "issue_id": {
+      "type": "string",
+      "pattern": "^ISS-[A-Z0-9._-]+$",
+      "description": "Stable identifier for the issue."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short title for quick scanning."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the issue or action item."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "analysis_requirement",
+        "policy",
+        "procedural",
+        "risk",
+        "assumption",
+        "other"
+      ],
+      "description": "Classification used for routing and reporting."
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Priority for follow-up."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "blocked",
+        "closed"
+      ],
+      "description": "Lifecycle state."
+    },
+    "owner": {
+      "type": "string",
+      "description": "Responsible team or person."
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Related issue IDs that must be resolved first."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Source transcript or document name/ID."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Timecode or section where the issue was observed."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the issue was recorded."
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in the extraction or mapping."
+    },
+    "related_assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Assumption IDs related to this issue."
+    },
+    "review_required": {
+      "type": "boolean",
+      "description": "Whether human review is needed before acting."
+    },
+    "provenance": {
+      "$ref": "provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

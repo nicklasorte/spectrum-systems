@@ -1,40 +1,143 @@
 {
-  "record_id": "PRV-ART-2025-031",
-  "record_type": "study_artifact_metadata",
-  "artifact_id": "ART-2025-031",
-  "study": "Urban 3.5 GHz Coexistence",
-  "artifact_type": "Table",
-  "title": "Protection Threshold by Incumbent Type",
-  "input_datasets_used": [
-    "INCUMBENT_DB_V3",
-    "TERRAIN_TILESET_10M"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/data-lake/study-artifact-metadata.json",
+  "title": "Study Artifact Metadata Record",
+  "description": "Schema for metadata persisted for study artifacts in the data lake.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "artifact_id",
+    "artifact_type",
+    "title",
+    "source_document",
+    "timestamp_created",
+    "provenance"
   ],
-  "code_version": "git:abc1234",
-  "assumptions_used": [
-    "ASM-2025-007",
-    "ASM-2025-003"
-  ],
-  "report_section": "Section 5.2 Results",
-  "revision_history": [
-    "v1.0 drafted",
-    "v1.1 updated after clutter sensitivity"
-  ],
-  "reviewer": "Reviewer Two",
-  "source_document": "RUN-2025-118-output",
-  "source_document_id": "RUN-2025-118",
-  "source_location": "s3://study-outputs/urban-35ghz/run-118/table-protection-threshold.csv",
-  "timestamp_created": "2025-02-20T17:45:00Z",
-  "generated_by_system": "study-artifact-generator v0.3",
-  "workflow_name": "artifact-rendering",
-  "derived_from": [
-    "RUN-2025-118",
-    "ASM-2025-007",
-    "ASM-2025-003"
-  ],
-  "version_number": "1.1",
-  "review_status": "reviewed",
-  "reviewed_by": "Reviewer Two",
-  "review_date": "2025-02-21T09:15:00Z",
-  "confidence_score": "high",
-  "quality_status": "generated"
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this metadata schema."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-ART-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier."
+    },
+    "record_type": {
+      "type": "string",
+      "const": "study_artifact_metadata",
+      "description": "Type of record."
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Artifact identifier."
+    },
+    "study": {
+      "type": "string",
+      "description": "Study name."
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Artifact type (table, figure, narrative, dataset)."
+    },
+    "title": {
+      "type": "string",
+      "description": "Artifact title."
+    },
+    "input_datasets_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Datasets used to create the artifact."
+    },
+    "code_version": {
+      "type": "string",
+      "description": "Code or model version used to generate the artifact."
+    },
+    "assumptions_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Assumption IDs linked to this artifact."
+    },
+    "report_section": {
+      "type": "string",
+      "description": "Report section anchor."
+    },
+    "revision_history": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "History of changes to the artifact."
+    },
+    "reviewer": {
+      "type": "string",
+      "description": "Reviewer of the artifact."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Source document or run output name."
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "Canonical ID for the source document or run."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Path or URI where the artifact is stored."
+    },
+    "timestamp_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Parent identifiers (runs, assumptions, datasets)."
+    },
+    "version_number": {
+      "type": "string",
+      "description": "Version within this artifact's lineage."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "reviewed",
+        "approved"
+      ],
+      "description": "Review status."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Reviewer identifier."
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review completion timestamp."
+    },
+    "confidence_score": {
+      "type": "string",
+      "description": "Confidence rating."
+    },
+    "quality_status": {
+      "type": "string",
+      "description": "Data quality state."
+    },
+    "provenance": {
+      "$ref": "../provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

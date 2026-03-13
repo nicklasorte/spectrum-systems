@@ -11,6 +11,8 @@ The standard exists to support:
 - confidence assessment
 - trustworthy reuse
 
+For how to rerun workflows identically, see `docs/reproducibility-standard.md`; provenance focuses on lineage and accountability, while reproducibility focuses on repeatable execution.
+
 Provenance must answer these questions for every important artifact:
 - What is this?
 - Where did it come from?

@@ -1,28 +1,133 @@
 {
-  "record_id": "PRV-ASM-2025-007",
-  "record_type": "assumption",
-  "assumption_id": "ASM-2025-007",
-  "study_name": "Urban 3.5 GHz Coexistence",
-  "assumption_text": "Indoor femtocell users limited to 20 dBm EIRP.",
-  "source": "R&O 2025-12",
-  "rationale": "Matches regulatory EIRP cap and aligns with previous waiver precedent.",
-  "sensitivity_or_impact_level": "High",
-  "approved_by": "Chief Engineer",
-  "date_approved": "2025-02-15",
-  "later_changes": "Pending review after clutter sensitivity reruns.",
-  "source_document": "R&O 2025-12",
-  "source_document_id": "RO-2025-12",
-  "source_location": "Page 18, Section 2",
-  "timestamp_created": "2025-02-10T12:00:00Z",
-  "generated_by_system": "assumption-registry-uploader",
-  "workflow_name": "assumption-capture",
-  "derived_from": [
-    "RO-2025-12"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/data-lake/assumption-registry.json",
+  "title": "Assumption Registry Record",
+  "description": "Schema for assumptions persisted in the data lake with review and provenance metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "assumption_id",
+    "assumption_text",
+    "source",
+    "impact_level",
+    "timestamp_created",
+    "provenance"
   ],
-  "version_number": "1.0",
-  "review_status": "approved",
-  "reviewed_by": "Chief Engineer",
-  "review_date": "2025-02-15T09:00:00Z",
-  "confidence_score": "high",
-  "quality_status": "validated"
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this registry schema."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-ASM-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier for the record."
+    },
+    "record_type": {
+      "type": "string",
+      "const": "assumption",
+      "description": "Type of record."
+    },
+    "assumption_id": {
+      "type": "string",
+      "pattern": "^ASM-[A-Z0-9._-]+$",
+      "description": "Stable assumption identifier."
+    },
+    "study_name": {
+      "type": "string",
+      "description": "Study this assumption supports."
+    },
+    "assumption_text": {
+      "type": "string",
+      "description": "Statement of the assumption."
+    },
+    "source": {
+      "type": "string",
+      "description": "Originating document or decision."
+    },
+    "impact_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Impact classification on downstream results."
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Reviewer or approver."
+    },
+    "date_approved": {
+      "type": "string",
+      "format": "date",
+      "description": "Approval date."
+    },
+    "later_changes": {
+      "type": "string",
+      "description": "Notes on subsequent changes or reviews."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Source document name or identifier."
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "Canonical source document ID."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Section, page, or paragraph of the source."
+    },
+    "timestamp_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Parent entities this record derives from."
+    },
+    "version_number": {
+      "type": "string",
+      "description": "Record version number within its lineage."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "approved",
+        "rejected"
+      ],
+      "description": "Human review state."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Reviewer identifier."
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When review occurred."
+    },
+    "confidence_score": {
+      "type": "string",
+      "description": "Confidence assessment (structured string for compatibility)."
+    },
+    "quality_status": {
+      "type": "string",
+      "description": "Data quality state (e.g., raw, validated)."
+    },
+    "provenance": {
+      "$ref": "../provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

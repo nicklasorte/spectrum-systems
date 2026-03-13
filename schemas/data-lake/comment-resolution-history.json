@@ -1,28 +1,137 @@
 {
-  "record_id": "PRV-CMT-2025-014",
-  "record_type": "comment_resolution_history",
-  "comment_id": "CMT-2025-014",
-  "agency": "Agency A",
-  "comment_text": "Clarify protection assumptions for incumbent systems in Section 3.2.",
-  "source_document": "draft-report-v1.docx",
-  "source_document_id": "DOC-2025-022",
-  "source_location": "Section 3.2",
-  "cited_section": "Section 3.2",
-  "proposed_response": "Add protection threshold rationale and cite incumbent emission limits.",
-  "final_disposition": "Accepted with edits",
-  "final_inserted_text": "Added paragraph describing -114 dBm/10 MHz threshold and coordination steps.",
-  "revision_number": "v1.2",
-  "timestamp_created": "2025-02-17T15:30:00Z",
-  "generated_by_system": "comment-resolution-engine v0.1",
-  "workflow_name": "comment-resolution-drafting",
-  "derived_from": [
-    "CMT-2025-014",
-    "DOC-2025-022#sec3.2"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/data-lake/comment-resolution-history.json",
+  "title": "Comment Resolution History Record",
+  "description": "Schema for historical comment dispositions stored in the data lake.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "comment_id",
+    "comment_text",
+    "source_document",
+    "revision_number",
+    "timestamp_created",
+    "workflow_name",
+    "version_number",
+    "review_status",
+    "provenance"
   ],
-  "version_number": "1.2",
-  "review_status": "approved",
-  "reviewed_by": "Reviewer One",
-  "review_date": "2025-02-18T10:00:00Z",
-  "confidence_score": "high",
-  "quality_status": "validated"
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this history schema."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-CMT-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier."
+    },
+    "record_type": {
+      "type": "string",
+      "const": "comment_resolution_history",
+      "description": "Type of record."
+    },
+    "comment_id": {
+      "type": "string",
+      "description": "Original comment identifier."
+    },
+    "agency": {
+      "type": "string",
+      "description": "Submitting agency."
+    },
+    "comment_text": {
+      "type": "string",
+      "description": "Full comment text."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Name or identifier of the source document."
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "Canonical ID for the source document."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Section, page, or anchor for the source."
+    },
+    "cited_section": {
+      "type": "string",
+      "description": "Section in the working paper being addressed."
+    },
+    "proposed_response": {
+      "type": "string",
+      "description": "Draft disposition text."
+    },
+    "final_disposition": {
+      "type": "string",
+      "description": "Approved disposition result."
+    },
+    "final_inserted_text": {
+      "type": "string",
+      "description": "Text inserted into the report, if applicable."
+    },
+    "revision_number": {
+      "type": "string",
+      "description": "Revision label (e.g., v1.2)."
+    },
+    "timestamp_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this history record was created."
+    },
+    "generated_by_system": {
+      "type": "string",
+      "description": "System producing the record."
+    },
+    "workflow_name": {
+      "type": "string",
+      "description": "Workflow name within which the record was generated."
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Parent identifiers used to generate this record."
+    },
+    "version_number": {
+      "type": "string",
+      "description": "Version within this record's lineage."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "approved",
+        "rejected"
+      ],
+      "description": "Review status."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Reviewer identifier."
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review completion timestamp."
+    },
+    "confidence_score": {
+      "type": "string",
+      "description": "Confidence rating."
+    },
+    "quality_status": {
+      "type": "string",
+      "description": "Data quality state."
+    },
+    "provenance": {
+      "$ref": "../provenance-schema.json",
+      "description": "Provenance record for this history entry."
+    }
+  }
 }

@@ -1,17 +1,13 @@
 # Prompt Catalog
 
-This catalog tracks prompts used across automation systems so that inputs, outputs, and expected schemas remain explicit and reviewable.
+Prompts are versioned, schema-aligned instructions for AI steps in each system. Every prompt must declare purpose, inputs, outputs, constraints, grounding rules, and version notes.
 
-## Prompt Categories
+## Registry
 
-- **Extraction Prompts**: Convert documents, transcripts, or spreadsheets into structured records (e.g., comment and issue extraction).
-- **Transformation Prompts**: Convert technical outputs into structured artifacts or report-ready language.
-- **Analysis Prompts**: Identify issues, assumptions, or risks within engineering and policy materials.
+| Prompt | System | Purpose | Inputs | Outputs | Schemas | Constraints / Grounding | Version |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| prompts/comment-resolution.md | SYS-001 Comment Resolution Engine | Draft deterministic dispositions with revision lineage | Comment records, working paper context, section anchors | Dispositions with status, section mapping, provenance | comment-schema.json, issue-schema.json, provenance-schema.json | Cite revisions and sections; use rule packs; flag missing anchors | v1.0 |
+| prompts/transcript-to-issue.md | SYS-002 Transcript-to-Issue Engine | Extract issues/actions/questions from transcripts | Transcript segments with speaker/timestamp, meeting context | Issue records with category/priority/owner and provenance | issue-schema.json, provenance-schema.json | Preserve speaker intent; cite timecodes; flag ambiguity; deterministic params | v1.0 |
+| prompts/report-drafting.md | SYS-003 Study Artifact Generator / SYS-004 Spectrum Study Compiler | Render tables/figures/narratives from normalized outputs | Simulation outputs, assumptions, templates, report anchors | Artifacts and narratives with provenance and manifest references | study-output-schema.json, assumption-schema.json, provenance-schema.json | No speculative values; cite assumptions; follow templates; deterministic formatting | v1.0 |
 
-## Prompt Registry
-
-| Prompt Name | System | Input Type | Output Schema | Version | Notes |
-| --- | --- | --- | --- | --- | --- |
-| prompts/comment-resolution.md | SYS-001 Comment Resolution Engine | Comment spreadsheets and report excerpts | comment-schema.json, issue-schema.json | v1.0 | Clusters comments, aligns to sections, drafts dispositions with provenance |
-| prompts/transcript-extraction.md | SYS-002 Transcript-to-Issue Engine | Meeting transcripts with speaker metadata | issue-schema.json | v1.0 | Extracts issues, actions, and uncertainties for backlog intake |
-| prompts/report-drafting.md | SYS-003 Study Artifact Generator | Simulation outputs and study templates | study-output-schema.json, provenance-schema.json | v1.0 | Generates tables and narrative with embedded provenance fields |
+See per-system prompt notes under `systems/<system>/prompts.md`. Update this table whenever prompt files, schemas, or versions change.

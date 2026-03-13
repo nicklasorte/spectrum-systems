@@ -1,31 +1,130 @@
 {
-  "record_id": "PRV-DOC-2025-022",
-  "record_type": "source_document",
-  "source_document_id": "DOC-2025-022",
-  "title": "Draft Spectrum Sharing Report",
-  "source_type": "Draft Report",
-  "author_or_owner": "Spectrum Team",
-  "date": "2025-02-01",
-  "revision": "v1.1",
-  "extracted_entities": [
-    "Agency A",
-    "3.5 GHz",
-    "Protection threshold"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/data-lake/source-document-registry.json",
+  "title": "Source Document Registry Record",
+  "description": "Schema for registered source documents with revisions and trust metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "source_document_id",
+    "title",
+    "source_type",
+    "revision",
+    "timestamp_created",
+    "provenance"
   ],
-  "machine_readable_status": "Converted to text with OCR",
-  "trust_level": "High",
-  "source_document": "DOC-2025-022",
-  "source_location": "Repository path /reports/draft-spectrum-sharing/v1.1.docx",
-  "timestamp_created": "2025-02-01T08:00:00Z",
-  "generated_by_system": "document-intake-service",
-  "workflow_name": "source-document-registration",
-  "derived_from": [
-    "DOC-2025-022"
-  ],
-  "version_number": "1.1",
-  "review_status": "reviewed",
-  "reviewed_by": "Records Manager",
-  "review_date": "2025-02-02T11:00:00Z",
-  "confidence_score": "high",
-  "quality_status": "normalized"
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this registry schema."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-DOC-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier."
+    },
+    "record_type": {
+      "type": "string",
+      "const": "source_document",
+      "description": "Type of record."
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "Canonical source document ID."
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title."
+    },
+    "source_type": {
+      "type": "string",
+      "description": "Type of source (e.g., Draft Report, Transcript)."
+    },
+    "author_or_owner": {
+      "type": "string",
+      "description": "Document owner or author."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Document date."
+    },
+    "revision": {
+      "type": "string",
+      "description": "Document revision label (e.g., v1.1)."
+    },
+    "extracted_entities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Named entities or key terms extracted for indexing."
+    },
+    "machine_readable_status": {
+      "type": "string",
+      "description": "Accessibility/ingest status (e.g., OCR complete)."
+    },
+    "trust_level": {
+      "type": "string",
+      "description": "Trust rating for the source."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "File name or path."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Storage path or repository location."
+    },
+    "timestamp_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Parent entities used to register this document."
+    },
+    "version_number": {
+      "type": "string",
+      "description": "Record version number."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "reviewed",
+        "approved"
+      ],
+      "description": "Review state."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Reviewer identifier."
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review completion timestamp."
+    },
+    "confidence_score": {
+      "type": "string",
+      "description": "Confidence rating."
+    },
+    "quality_status": {
+      "type": "string",
+      "description": "Data quality state."
+    },
+    "provenance": {
+      "$ref": "../provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

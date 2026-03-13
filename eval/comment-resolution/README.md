@@ -12,6 +12,7 @@ Validate the Comment Resolution Engine's ability to structure comments, propose 
 - Structured comment records aligned to `comment-schema`
 - Proposed responses with status and traceability fields populated
 - Links to source_document and source_location for every disposition
+- Run manifest reference confirming prompt/rule/model versions
 
 ## Evaluation Criteria
 - Accuracy of comment parsing and section mapping
