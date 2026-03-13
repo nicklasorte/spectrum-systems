@@ -3,5 +3,10 @@
   "band": "string",
   "analysis_type": "string",
   "summary": "string",
-  "outputs": []
+  "outputs": [],
+  "source_document": "string",
+  "source_location": "string",
+  "timestamp": "ISO 8601 string",
+  "confidence_score": "0-1 float",
+  "generated_by_system": "string"
 }

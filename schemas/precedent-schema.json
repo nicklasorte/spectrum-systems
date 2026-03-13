@@ -2,5 +2,10 @@
   "case_id": "string",
   "description": "string",
   "decision": "string",
-  "year": 0
+  "year": 0,
+  "source_document": "string",
+  "source_location": "string",
+  "timestamp": "ISO 8601 string",
+  "confidence_score": "0-1 float",
+  "generated_by_system": "string"
 }

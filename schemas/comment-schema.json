@@ -4,5 +4,10 @@
   "comment_text": "string",
   "document_section": "string",
   "status": "open | resolved | partial",
-  "proposed_response": "string"
+  "proposed_response": "string",
+  "source_document": "string",
+  "source_location": "string",
+  "timestamp": "ISO 8601 string",
+  "confidence_score": "0-1 float",
+  "generated_by_system": "string"
 }

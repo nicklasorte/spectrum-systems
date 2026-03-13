@@ -2,5 +2,10 @@
   "assumption_id": "string",
   "description": "string",
   "source": "string",
-  "impact_level": "low | medium | high"
+  "impact_level": "low | medium | high",
+  "source_document": "string",
+  "source_location": "string",
+  "timestamp": "ISO 8601 string",
+  "confidence_score": "0-1 float",
+  "generated_by_system": "string"
 }
