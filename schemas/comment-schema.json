@@ -1,13 +1,111 @@
 {
-  "comment_id": "string",
-  "agency": "string",
-  "comment_text": "string",
-  "document_section": "string",
-  "status": "open | resolved | partial",
-  "proposed_response": "string",
-  "source_document": "string",
-  "source_location": "string",
-  "timestamp": "ISO 8601 string",
-  "confidence_score": "0-1 float",
-  "generated_by_system": "string"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/comment-schema.json",
+  "title": "Comment Record",
+  "description": "Authoritative schema for structured agency comments resolved by SYS-001.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "comment_id",
+    "agency",
+    "revision",
+    "comment_text",
+    "source_document",
+    "source_revision",
+    "resolved_against_revision",
+    "disposition",
+    "validation_status",
+    "provenance"
+  ],
+  "properties": {
+    "comment_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "Stable identifier from the source spreadsheet."
+    },
+    "agency": {
+      "type": "string",
+      "description": "Submitting agency or commenter name."
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision label from the input spreadsheet. Blank inputs in single-PDF runs map to rev1."
+    },
+    "comment_text": {
+      "type": "string",
+      "description": "Full comment text."
+    },
+    "suggested_text": {
+      "type": "string",
+      "description": "Commenter-proposed redline or replacement language, if provided."
+    },
+    "line_number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Line number within the working paper if available."
+    },
+    "section_reference": {
+      "type": "string",
+      "description": "Section identifier or anchor within the working paper."
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "open",
+        "pending",
+        "resolved",
+        "partially_resolved",
+        "deferred",
+        "out_of_scope"
+      ],
+      "description": "Lifecycle state after processing."
+    },
+    "resolution": {
+      "type": "string",
+      "description": "Draft or final resolution text."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Name of the uploaded working paper PDF that contains the comment."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Page, paragraph, or anchor describing the source location."
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision of the working paper that originally contained the comment."
+    },
+    "resolved_against_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision of the working paper the resolution is drafted against."
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": [
+        "unvalidated",
+        "valid",
+        "invalid",
+        "needs_review"
+      ],
+      "description": "Schema and workflow validation outcome."
+    },
+    "validation_notes": {
+      "type": "string",
+      "description": "Freeform notes from validation or review."
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Model- or rules-derived confidence for the disposition."
+    },
+    "provenance": {
+      "$ref": "provenance-schema.json",
+      "description": "Provenance record capturing lineage and workflow context."
+    }
+  }
 }

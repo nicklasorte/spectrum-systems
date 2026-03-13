@@ -33,3 +33,9 @@ This document is the traceability map for the architecture. It links bottlenecks
 | SYS-001 Comment Resolution Engine | eval/comment-resolution | Deterministic prompt harness with disposition accuracy checks |
 | SYS-002 Transcript-to-Issue Engine | eval/transcript-to-issue | Extraction accuracy and coverage tests against tagged transcripts |
 | SYS-003 Study Artifact Generator | eval/study-artifacts | Artifact rendering checks with schema and provenance validation |
+
+## System Reference Index (Specs, Assets, Implementations)
+
+| System ID | Spec | Schemas | Prompts | Eval Assets | Rule Pack | Implementation Repo |
+| --- | --- | --- | --- | --- | --- | --- |
+| SYS-001 | docs/system-spec-comment-resolution-engine.md | schemas/comment-schema.json, schemas/issue-schema.json, schemas/provenance-schema.json | prompts/comment-resolution.md | eval/comment-resolution (fixtures cover single- and multi-revision PDFs) | rules/comment-resolution/ | comment-resolution-engine |

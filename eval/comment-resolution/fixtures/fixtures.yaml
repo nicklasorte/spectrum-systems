@@ -1,0 +1,72 @@
+fixtures:
+  - id: cr-fixture-single-rev
+    description: "Single working paper PDF (rev1) with valid comments spreadsheet."
+    inputs:
+      comments_spreadsheet: "comments_single_rev.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+    expected:
+      outcome: "valid"
+      notes: "Blank Revision values map to rev1; dispositions carry resolved_against_revision=rev1."
+  - id: cr-fixture-malformed-sheet
+    description: "Malformed comments spreadsheet with missing required columns."
+    inputs:
+      comments_spreadsheet: "comments_malformed.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+    expected:
+      outcome: "schema_error"
+      error_code: "SCHEMA_ERROR"
+      notes: "Schema validation should fail fast with column guidance."
+  - id: cr-fixture-multi-revision
+    description: "Multiple working paper revisions with deterministic rev ordering."
+    inputs:
+      comments_spreadsheet: "comments_multi_rev.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+        - revision: "rev2"
+          file: "working_paper_rev2.pdf"
+        - revision: "rev3"
+          file: "working_paper_rev3.pdf"
+    expected:
+      outcome: "valid"
+      notes: "Revision column required; rev order follows upload sequence."
+  - id: cr-fixture-revision-mismatch
+    description: "Comments reference revision that differs from uploaded ordering."
+    inputs:
+      comments_spreadsheet: "comments_revision_mismatch.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+        - revision: "rev3"
+          file: "working_paper_rev3.pdf"
+    expected:
+      outcome: "validation_error"
+      error_code: "VALIDATION_ERROR"
+      notes: "Should fail with missing rev2 mapping even if rev3 exists."
+  - id: cr-fixture-missing-revision
+    description: "Comment references revN with no uploaded PDF."
+    inputs:
+      comments_spreadsheet: "comments_missing_revision.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+    expected:
+      outcome: "validation_error"
+      error_code: "VALIDATION_ERROR"
+      notes: "Emit clear error naming the missing revision."
+  - id: cr-fixture-addressed-in-later-revision
+    description: "Comment duplicated but already addressed in a later revision."
+    inputs:
+      comments_spreadsheet: "comments_addressed_later.csv"
+      working_papers:
+        - revision: "rev1"
+          file: "working_paper_rev1.pdf"
+        - revision: "rev2"
+          file: "working_paper_rev2.pdf"
+    expected:
+      outcome: "valid"
+      notes: "Disposition should reference resolved_against_revision=rev2 with duplicate classification."

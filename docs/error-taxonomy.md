@@ -1,34 +1,23 @@
 # Error Taxonomy
 
-This taxonomy defines common error categories across automation systems so evaluation harnesses can classify failures consistently.
+This taxonomy defines machine-usable error categories across automation systems so evaluation harnesses, rule packs, and implementation repositories can classify failures consistently.
 
-## Extraction Errors
+## Contract
+- Every surfaced failure MUST map to one of the codes below.
+- User-facing errors SHOULD follow the provided message patterns for determinism.
+- Implementations SHOULD emit structured error objects with `code`, `category`, `message`, `context`, and `recommended_action`.
 
-- Missing entity
-- Incorrect mapping
-- Partial extraction
+## Categories and Codes
 
-## Schema Errors
+| Code | Category | Meaning | Expected Message Pattern | Recommended Handling |
+| --- | --- | --- | --- | --- |
+| EXTRACTION_ERROR | Data Capture | Input could not be parsed or mapped (missing entity, incorrect mapping, partial extraction). | `[EXTRACTION_ERROR] <short description>; context=<input id>` | Halt pipeline; prompt for corrected input or apply fallback extraction rule. |
+| SCHEMA_ERROR | Contract Validation | Required field missing, type mismatch, or enum violation against authoritative schemas. | `[SCHEMA_ERROR] <field> invalid: <reason>` | Fail fast; return schema guidance; block downstream generation. |
+| GENERATION_ERROR | Content Synthesis | Model- or rule-generated text incomplete, low-confidence, or contradicts constraints. | `[GENERATION_ERROR] <artifact> generation failed: <reason>` | Mark artifact invalid; route to human review; retry with constrained prompt or rule set. |
+| PROVENANCE_ERROR | Traceability | Provenance fields missing, inconsistent lineage, or unresolved derivation chain. | `[PROVENANCE_ERROR] <artifact> missing <field>` | Require provenance completion before publication; request source/revision mapping. |
+| VALIDATION_ERROR | Quality Gates | Post-generation validation failed (tests, cross-checks, revision mismatch). | `[VALIDATION_ERROR] <check> failed for <artifact>` | Stop release; surface failed checks; request remediation or new inputs. |
 
-- Missing required field
-- Type mismatch
-- Invalid enum value
-
-## Generation Errors
-
-- Low-confidence output
-- Hallucinated reference
-- Incomplete artifact
-
-## Provenance Errors
-
-- Missing source
-- Missing lineage
-- Missing review metadata
-
-## Validation Errors
-
-- Failed test case
-- Incorrect derived artifact
-
-Evaluation frameworks should tag failures with these categories to focus remediation on the right stage of the pipeline.
+## Usage Guidance
+- Align implementation repository error classes or enums directly to these codes.
+- Propagate the taxonomy into CLI and API responses so downstream evaluators and rule packs can reason about failure stages.
+- Include revision identifiers in messages for SYS-001 to keep PDF lineage visible during debugging.

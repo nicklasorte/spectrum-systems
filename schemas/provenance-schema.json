@@ -1,34 +1,125 @@
 {
-  "record_id": "PRV-XXXX-000",
-  "record_type": "artifact_class_here",
-  "title": "Short human-readable name",
-  "description": "One line description of the artifact",
-  "source_document": "Source name or identifier",
-  "source_document_id": "DOC-000-000",
-  "source_location": "Section, page, or timecode",
-  "source_url_or_path": "s3://bucket/path/or/local/path",
-  "source_revision": "v1.0",
-  "timestamp_created": "2025-01-01T00:00:00Z",
-  "timestamp_modified": "2025-01-02T00:00:00Z",
-  "created_by": "agent-id-or-name",
-  "modified_by": "agent-id-or-name",
-  "generated_by_system": "workflow-or-model-name",
-  "workflow_name": "workflow-identifier",
-  "workflow_step": "step-name-or-number",
-  "derived_from": [
-    "PARENT-001",
-    "PARENT-002"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/provenance-schema.json",
+  "title": "Provenance Record",
+  "description": "Reusable provenance schema for all Spectrum Systems artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "record_type",
+    "source_document",
+    "source_revision",
+    "workflow_name",
+    "workflow_step",
+    "generated_by_system",
+    "generated_by_repo",
+    "generated_by_version",
+    "schema_version",
+    "created_at",
+    "updated_at"
   ],
-  "related_entities": [
-    "RELATED-REFERENCE-01"
-  ],
-  "version_id": "PRV-XXXX-000-v1.0",
-  "version_number": "1.0",
-  "review_status": "pending_review",
-  "reviewed_by": "Reviewer Name",
-  "review_date": "2025-01-03T00:00:00Z",
-  "confidence_score": "medium",
-  "quality_status": "generated",
-  "usage_constraints": "Any limits, caveats, or handling rules",
-  "notes": "Additional context needed for reuse"
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier."
+    },
+    "record_type": {
+      "type": "string",
+      "enum": [
+        "comment",
+        "issue",
+        "disposition",
+        "artifact",
+        "prompt",
+        "validation",
+        "provenance"
+      ],
+      "description": "Artifact type the provenance is attached to."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Source document name or identifier."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Section, page, paragraph, or timecode of the source content."
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision identifier of the source document."
+    },
+    "resolved_against_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision the artifact was validated or resolved against."
+    },
+    "workflow_name": {
+      "type": "string",
+      "description": "Workflow identifier producing the artifact."
+    },
+    "workflow_step": {
+      "type": "string",
+      "description": "Step name or number within the workflow."
+    },
+    "generated_by_system": {
+      "type": "string",
+      "description": "Name of the automation system (e.g., SYS-001 Comment Resolution Engine)."
+    },
+    "generated_by_repo": {
+      "type": "string",
+      "description": "Repository that produced the artifact (implementation repo slug)."
+    },
+    "generated_by_version": {
+      "type": "string",
+      "description": "Version tag or commit of the implementation repository."
+    },
+    "prompt_version": {
+      "type": "string",
+      "description": "Version of the prompt template used, when applicable."
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the schema enforced when producing this artifact."
+    },
+    "derived_from": {
+      "type": "array",
+      "description": "Parent artifact or dataset identifiers used to generate this record.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "in_review",
+        "approved",
+        "rejected"
+      ],
+      "description": "Human review state of this artifact."
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Comments from reviewers."
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence assigned to the artifact or step."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp (UTC)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last modification timestamp (UTC)."
+    }
+  }
 }

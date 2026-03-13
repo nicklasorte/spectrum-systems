@@ -1,0 +1,28 @@
+rules:
+  - rule_id: CR-VAL-001
+    rule_type: validation
+    priority: 90
+    enabled: true
+    match:
+      revision_declared: true
+      referenced_revision_uploaded: false
+    action:
+      error_code: "VALIDATION_ERROR"
+      message_template: "[VALIDATION_ERROR] referenced revision {revision} missing uploaded PDF"
+    rationale_template: "Stop execution when a comment references a revision without a provided working paper PDF."
+    patch_template: "Request upload of the missing revision or remove the reference."
+    source: "spectrum-systems/rules/comment-resolution/validation_rules.yaml"
+    version: "0.1.0"
+  - rule_id: CR-VAL-002
+    rule_type: validation
+    priority: 85
+    enabled: true
+    match:
+      pdf_count: 0
+    action:
+      error_code: "VALIDATION_ERROR"
+      message_template: "[VALIDATION_ERROR] at least one working paper PDF (rev1) is required"
+    rationale_template: "SYS-001 cannot run without a baseline working paper PDF."
+    patch_template: "Upload the rev1 working paper before rerun."
+    source: "spectrum-systems/rules/comment-resolution/validation_rules.yaml"
+    version: "0.1.0"

@@ -1,0 +1,28 @@
+rules:
+  - rule_id: CR-DISP-001
+    rule_type: disposition
+    priority: 70
+    enabled: true
+    match:
+      revision_present: true
+      referenced_revision_uploaded: true
+    action:
+      disposition: "resolved"
+      notes_template: "Revision mapping verified; proceeding against declared revision."
+    rationale_template: "Use uploaded revision mapping to anchor disposition."
+    patch_template: "Set resolved_against_revision to matched revN."
+    source: "spectrum-systems/rules/comment-resolution/disposition_rules.yaml"
+    version: "0.1.0"
+  - rule_id: CR-DISP-002
+    rule_type: disposition
+    priority: 80
+    enabled: true
+    match:
+      referenced_revision_uploaded: false
+    action:
+      disposition: "open"
+      notes_template: "Cannot resolve without uploaded working paper revision."
+    rationale_template: "Block resolution when required working paper PDF is absent."
+    patch_template: "Emit VALIDATION_ERROR and keep comment open."
+    source: "spectrum-systems/rules/comment-resolution/disposition_rules.yaml"
+    version: "0.1.0"

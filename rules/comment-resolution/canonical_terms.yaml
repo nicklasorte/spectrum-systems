@@ -1,0 +1,27 @@
+rules:
+  - rule_id: CR-TERM-001
+    rule_type: canonical_term
+    priority: 50
+    enabled: true
+    match:
+      term: "rev"
+      context: "revision_label"
+    action:
+      normalize_to: "revision"
+    rationale_template: "Normalize shorthand {term} to {normalize_to} to keep revision lineage deterministic."
+    patch_template: "Use '{normalize_to}' when emitting revision labels."
+    source: "spectrum-systems/rules/comment-resolution/canonical_terms.yaml"
+    version: "0.1.0"
+  - rule_id: CR-TERM-002
+    rule_type: canonical_term
+    priority: 40
+    enabled: true
+    match:
+      term: "working paper"
+      context: "source_document"
+    action:
+      normalize_to: "working_paper_pdf"
+    rationale_template: "Standardize source document naming for provenance consistency."
+    patch_template: "Tag source_document as '{normalize_to}'."
+    source: "spectrum-systems/rules/comment-resolution/canonical_terms.yaml"
+    version: "0.1.0"

@@ -1,0 +1,26 @@
+rules:
+  - rule_id: CR-DRAFT-001
+    rule_type: drafting
+    priority: 40
+    enabled: true
+    match:
+      disposition: "resolved"
+    action:
+      tone: "neutral-technical"
+      include_revision_lineage: true
+    rationale_template: "Ensure dispositions cite the revision they resolve against."
+    patch_template: "Include: 'Resolved against {resolved_against_revision} with source {source_revision}'."
+    source: "spectrum-systems/rules/comment-resolution/drafting_rules.yaml"
+    version: "0.1.0"
+  - rule_id: CR-DRAFT-002
+    rule_type: drafting
+    priority: 30
+    enabled: true
+    match:
+      validation_status: "needs_review"
+    action:
+      add_review_callout: true
+    rationale_template: "Surface review requirements when validation flagged the record."
+    patch_template: "Append 'Requires human review: {validation_notes}'."
+    source: "spectrum-systems/rules/comment-resolution/drafting_rules.yaml"
+    version: "0.1.0"

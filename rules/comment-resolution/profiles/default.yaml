@@ -1,0 +1,18 @@
+profile_id: default
+version: "0.1.0"
+description: "Starter profile for SYS-001 Comment Resolution Engine."
+precedence:
+  - profile_override
+  - section_specific
+  - issue_pattern
+  - canonical_term
+  - local_fallback
+includes:
+  - canonical_terms.yaml
+  - issue_patterns.yaml
+  - disposition_rules.yaml
+  - drafting_rules.yaml
+  - validation_rules.yaml
+notes:
+  - "Profiles override rule files when conflicts occur."
+  - "Local fallbacks remain in implementation repos until shared rule execution is wired in."
