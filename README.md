@@ -32,6 +32,7 @@ Enable reproducible spectrum studies, structured knowledge retrieval, and automa
 - `src/` is reserved for future pipeline, parser, generator, and utility implementations.
 
 ## Design Extensions
+- [Agent Selection Guide](docs/agent-selection-guide.md) — explains when to use Copilot, Claude, or Codex in this repository.
 - Data Lake Strategy — defines the structured data foundation needed to support future spectrum automation systems.
 
 ## Initial Target Systems
