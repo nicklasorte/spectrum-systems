@@ -1,4 +1,6 @@
 {
+  "record_id": "PRV-ASM-2025-007",
+  "record_type": "assumption",
   "assumption_id": "ASM-2025-007",
   "study_name": "Urban 3.5 GHz Coexistence",
   "assumption_text": "Indoor femtocell users limited to 20 dBm EIRP.",
@@ -7,5 +9,20 @@
   "sensitivity_or_impact_level": "High",
   "approved_by": "Chief Engineer",
   "date_approved": "2025-02-15",
-  "later_changes": "Pending review after clutter sensitivity reruns."
+  "later_changes": "Pending review after clutter sensitivity reruns.",
+  "source_document": "R&O 2025-12",
+  "source_document_id": "RO-2025-12",
+  "source_location": "Page 18, Section 2",
+  "timestamp_created": "2025-02-10T12:00:00Z",
+  "generated_by_system": "assumption-registry-uploader",
+  "workflow_name": "assumption-capture",
+  "derived_from": [
+    "RO-2025-12"
+  ],
+  "version_number": "1.0",
+  "review_status": "approved",
+  "reviewed_by": "Chief Engineer",
+  "review_date": "2025-02-15T09:00:00Z",
+  "confidence_score": "high",
+  "quality_status": "validated"
 }

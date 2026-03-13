@@ -1,4 +1,6 @@
 {
+  "record_id": "PRV-TRN-2025-041-01",
+  "record_type": "transcript_issue",
   "transcript_id": "MTG-2025-041",
   "meeting_date": "2025-03-04",
   "meeting_type": "TIG",
@@ -9,5 +11,20 @@
   "topic_or_band": "3.5 GHz",
   "disposition_status": "Open",
   "required_follow_up_analysis": "Provide sensitivity run with 4 dB and 10 dB clutter values",
-  "linked_report_section": "Section 4.1 Propagation Assumptions"
+  "linked_report_section": "Section 4.1 Propagation Assumptions",
+  "source_document": "MTG-2025-041-transcript.txt",
+  "source_document_id": "TRN-2025-041",
+  "source_location": "00:12:15-00:13:05",
+  "timestamp_created": "2025-03-04T19:25:00Z",
+  "generated_by_system": "transcript-to-issue-engine v0.2",
+  "workflow_name": "transcript-extraction",
+  "derived_from": [
+    "TRN-2025-041"
+  ],
+  "version_number": "1.0",
+  "review_status": "pending_review",
+  "reviewed_by": "Reviewer Two",
+  "review_date": "2025-03-05T14:00:00Z",
+  "confidence_score": "medium",
+  "quality_status": "extracted"
 }

@@ -11,3 +11,7 @@
 | 7 | Data Lake | Define provenance rules across data classes. | data-lake-strategy, data-class-registry | New |
 | 8 | Data Lake | Link system designs to required data classes. | systems-registry, data-class-registry | New |
 | 9 | Data Lake | Create first sample data assets for Tier 1 data classes. | schemas/data-lake, data-lake-strategy | New |
+| 10 | Provenance | Finalize provenance standard across lab notebook artifacts. | data-provenance-standard, provenance-implementation-guidance | New |
+| 11 | Provenance | Map provenance fields into all Tier 1 schemas. | data-class-registry, schemas/data-lake | New |
+| 12 | Provenance | Define review workflow for AI-generated artifacts. | workflows, prompt-standard, data-provenance-standard | New |
+| 13 | Provenance | Define version lineage approach across working paper revisions. | data-class-registry, data-provenance-standard | New |

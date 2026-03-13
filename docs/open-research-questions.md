@@ -15,3 +15,11 @@
 - How should simulation outputs be normalized across studies?
 - What metadata is required for trustworthy AI-assisted retrieval?
 - How should confidence scores be assigned and reviewed?
+
+## Provenance Research Questions
+
+- What is the minimum viable provenance set for early prototypes?
+- Which provenance fields must be mandatory for AI-generated engineering text?
+- How should multi-source derivation be represented in a simple but usable way?
+- How should confidence scoring be calibrated across workflows?
+- How should provenance be preserved when artifacts are exported into reports, slides, or spreadsheets?
