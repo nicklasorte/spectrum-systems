@@ -1,0 +1,29 @@
+rules:
+  - rule_id: CR-ISSUE-001
+    rule_type: issue_pattern
+    priority: 60
+    enabled: true
+    match:
+      pattern: "already addressed in later revision"
+      revision_dependent: true
+    action:
+      classification: "duplicate_in_later_revision"
+      disposition_hint: "resolved_against_later_revision"
+    rationale_template: "Flag comments already closed in later working paper revisions."
+    patch_template: "Mark disposition as resolved if revN >= referenced revision contains the fix."
+    source: "spectrum-systems/rules/comment-resolution/issue_patterns.yaml"
+    version: "0.1.0"
+  - rule_id: CR-ISSUE-002
+    rule_type: issue_pattern
+    priority: 55
+    enabled: true
+    match:
+      pattern: "missing referenced revision"
+      revision_dependent: true
+    action:
+      classification: "revision_missing"
+      disposition_hint: "block_until_upload"
+    rationale_template: "Stop processing when a comment references a revision with no uploaded PDF."
+    patch_template: "Emit VALIDATION_ERROR with missing revision identifier."
+    source: "spectrum-systems/rules/comment-resolution/issue_patterns.yaml"
+    version: "0.1.0"

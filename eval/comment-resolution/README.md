@@ -18,9 +18,14 @@ Validate the Comment Resolution Engine's ability to structure comments, propose 
 - Completeness of required fields and traceability metadata
 - Consistency of proposed responses with workflow rules and schemas
 - Deterministic behavior given identical inputs
+- Enforcement of revision lineage rules (required PDFs, Revision column, resolved_against_revision)
 
 ## Failure Modes
 - Misaligned or missing section references
 - Incomplete population of traceability fields
 - Dispositions that violate schema or workflow constraints
 - Non-deterministic responses across repeated runs
+
+## Fixtures
+- Fixture definitions live in `eval/comment-resolution/fixtures/fixtures.yaml` with descriptions in `eval/comment-resolution/fixtures/README.md`.
+- Required scenarios cover single-PDF fallback, malformed spreadsheets, multi-revision ordering, missing/mismatched revisions, and already-addressed-in-later-revision cases.
