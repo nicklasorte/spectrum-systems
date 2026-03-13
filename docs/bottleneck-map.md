@@ -1,5 +1,28 @@
 # Bottleneck Map: Spectrum / Engineering / Policy System
 
+## Top Strategic Bottlenecks
+
+### Comment Resolution Workflow
+- **Description**: Turning multi-agency comment spreadsheets and narrative feedback into structured dispositions with traceability back to source sections.
+- **Why it slows decision-making**: Decision memos wait on manual reconciliation of duplicate threads, unclear owners, and missing links to report text, delaying approvals.
+- **Why it consumes expert time**: Senior engineers re-read source sections, restate requirements, and craft disposition language by hand for each comment cycle.
+- **Why it is suitable for automation**: Comment ingestion, clustering, mapping to sections, and draft disposition generation can be schema-driven with human review checkpoints.
+- **What system would solve it**: Comment Resolution Engine that enforces `comment-schema`, aligns comments to report sections, drafts dispositions, and routes for review.
+
+### Transcript to Issue Extraction
+- **Description**: Converting raw meeting transcripts into structured, prioritized issues with categories, owners, and dependencies.
+- **Why it slows decision-making**: Action items linger because open questions and blockers are not captured into the backlog immediately after discussions.
+- **Why it consumes expert time**: Experts skim transcripts, manually extract issues, and coordinate ownership instead of advancing analyses.
+- **Why it is suitable for automation**: Modern extraction models can map utterances to `issue-schema`, enrich with context, and surface uncertainties for review.
+- **What system would solve it**: Transcript-to-Issue Engine that applies `issue-schema`, tags categories, links to prior artifacts, and posts to the backlog.
+
+### Simulation Output to Report Artifact Generation
+- **Description**: Translating simulation outputs into tables, figures, and narrative that align with report sections and provenance requirements.
+- **Why it slows decision-making**: Reports stall while engineers translate raw outputs into stakeholder-ready language and visuals.
+- **Why it consumes expert time**: Experts format tables, craft narrative, and check consistency instead of iterating on models.
+- **Why it is suitable for automation**: Output parsing, templated rendering, and schema validation can reliably produce artifacts with embedded provenance for review.
+- **What system would solve it**: Study Artifact Generator that converts simulation outputs using `study-output-schema`, applies templates, and prepares report-ready sections with traceability.
+
 | Bottleneck | Category | Description | Impact | Frequency | Expert Time Cost | Automation Potential | Priority |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Fragmented source systems | Data | Allocation, licensing, assignment, satellite, terrain, clutter, population, and coordination records live in separate systems with different schemas. | High | Frequent | High | Medium | High |
