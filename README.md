@@ -34,6 +34,16 @@ Enable reproducible spectrum studies, structured knowledge retrieval, and automa
 - `examples/` includes starter sample data for prototyping pipelines and prompts.
 - `src/` is reserved for future pipeline, parser, generator, and utility implementations.
 
+## Repository Governance
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [GLOSSARY.md](GLOSSARY.md)
+- [VALIDATION.md](VALIDATION.md)
+- [DATA_SOURCES.md](DATA_SOURCES.md)
+- [REPO_MAP.md](REPO_MAP.md)
+- [SYSTEM_TEMPLATE.md](SYSTEM_TEMPLATE.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [DECISIONS.md](DECISIONS.md)
+
 ## Design Extensions
 - [Agent Selection Guide](docs/agent-selection-guide.md) — explains when to use Copilot, Claude, or Codex in this repository.
 - [AI Agent Guidance Standard](docs/agent-guidance-standard.md) — defines how repositories should include CLAUDE.md and CODEX.md to guide AI agent behavior.
