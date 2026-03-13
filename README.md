@@ -31,6 +31,9 @@ Enable reproducible spectrum studies, structured knowledge retrieval, and automa
 - `examples/` includes starter sample data for prototyping pipelines and prompts.
 - `src/` is reserved for future pipeline, parser, generator, and utility implementations.
 
+## Design Extensions
+- [Agent Selection Guide](docs/agent-selection-guide.md) — explains when to use Copilot, Claude, or Codex in this repository.
+
 ## Initial Target Systems
 - Comment Resolution Engine
 - Transcript-to-Issue Engine
