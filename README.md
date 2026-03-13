@@ -3,6 +3,17 @@
 ## Purpose
 Design and planning lab notebook for automation systems that transform spectrum engineering workflows from document-driven processes into computation-driven systems. Actual implementation code will live in separate repositories once designs are validated.
 
+## Start Here
+Recommended reading order to understand the architecture from problem → system → data:
+1. docs/vision.md
+2. docs/bottleneck-map.md
+3. SYSTEMS.md
+4. docs/systems-registry.md
+5. docs/artifact-chain.md
+6. docs/data-lake-strategy.md
+7. docs/data-provenance-standard.md
+8. docs/cross-reference.md
+
 ## Architecture Overview
 - [SYSTEMS.md](SYSTEMS.md) — central index of all proposed automation systems in the Spectrum Systems architecture.
 

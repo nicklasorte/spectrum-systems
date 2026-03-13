@@ -87,11 +87,15 @@ Examples:
 
 The following systems are currently defined.
 
-### Comment Resolution Engine
+### SYS-001 Comment Resolution Engine
 
 Purpose
 
 Automate the process of analyzing agency comments and generating structured responses.
+
+Addresses Bottlenecks
+
+BN-001 Comment Resolution Workflow
 
 Inputs
 
@@ -109,11 +113,15 @@ Dependencies
 Comment resolution history data class  
 Source document registry  
 
-### Transcript-to-Issue Engine
+### SYS-002 Transcript-to-Issue Engine
 
 Purpose
 
 Convert meeting transcripts into structured issue records and action items.
+
+Addresses Bottlenecks
+
+BN-002 Transcript to Issue Extraction
 
 Inputs
 
@@ -131,11 +139,15 @@ Dependencies
 Transcript output data class  
 Issue registry  
 
-### Study Artifact Generator
+### SYS-003 Study Artifact Generator
 
 Purpose
 
 Convert technical study outputs into report-ready artifacts.
+
+Addresses Bottlenecks
+
+BN-003 Simulation Output to Report Artifact Generation
 
 Inputs
 
@@ -154,11 +166,72 @@ Dependencies
 Assumption registry  
 Artifact metadata schemas  
 
-### Assumption Registry System
+### SYS-004 Spectrum Decision Engine
+
+Purpose
+
+Aggregate analyses and precedents to support spectrum policy decisions.
+
+Addresses Bottlenecks
+
+BN-003 Simulation Output to Report Artifact Generation
+
+Inputs
+
+Study artifacts  
+Precedents  
+Risk criteria  
+Stakeholder inputs  
+
+Outputs
+
+Decision briefs  
+Tradeoff matrices  
+Recommended dispositions  
+
+Dependencies
+
+Precedent search  
+Study artifact generator  
+Governance inputs  
+
+### SYS-005 Institutional Knowledge Engine
+
+Purpose
+
+Capture, retrieve, and contextualize institutional memory across studies and decisions.
+
+Addresses Bottlenecks
+
+BN-002 Transcript to Issue Extraction
+
+Inputs
+
+Historical studies  
+Precedents  
+Comments  
+Transcripts  
+
+Outputs
+
+Searchable knowledge objects  
+Linked provenance and lineage records  
+
+Dependencies
+
+Precedent search  
+Issue registry  
+Provenance schema  
+
+### SYS-006 Assumption Registry System
 
 Purpose
 
 Track analytical assumptions used in studies and simulations.
+
+Addresses Bottlenecks
+
+BN-003 Simulation Output to Report Artifact Generation
 
 Inputs
 
@@ -172,11 +245,15 @@ Structured assumption records
 Impact classifications  
 Traceable assumption history  
 
-### Precedent Search System
+### SYS-007 Precedent Search System
 
 Purpose
 
 Enable engineers to search historical studies, waivers, and policy decisions.
+
+Addresses Bottlenecks
+
+BN-003 Simulation Output to Report Artifact Generation
 
 Inputs
 
