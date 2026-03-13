@@ -4,7 +4,7 @@
 Clarify ownership between this architecture repository (spectrum-systems) and executable implementation repositories so system contracts remain stable while implementations evolve.
 
 ## Architecture Repository (spectrum-systems) Owns
-- System specifications and architecture decisions (e.g., `docs/system-spec-comment-resolution-engine.md`).
+- System specifications and architecture decisions (e.g., `systems/comment-resolution/interface.md`).
 - Authoritative schemas and provenance guidance (`schemas/*.json`, `docs/provenance-implementation-guidance.md`).
 - Error taxonomy and message patterns (`docs/error-taxonomy.md`).
 - Prompt standards and evaluation definitions (`prompts/`, `eval/`).
@@ -24,7 +24,7 @@ Implementation repositories MUST explicitly declare:
 ## Current Mapping for SYS-001
 - Architecture source: `spectrum-systems` (this repo)
 - Implementation repo: `comment-resolution-engine`
-- Spec: `docs/system-spec-comment-resolution-engine.md`
+- Spec: `systems/comment-resolution/interface.md`
 - Schemas: `schemas/comment-schema.json`, `schemas/issue-schema.json`, `schemas/provenance-schema.json`
 - Provenance guidance: `docs/provenance-implementation-guidance.md`
 - Error taxonomy: `docs/error-taxonomy.md`

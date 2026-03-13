@@ -1,69 +1,41 @@
 # spectrum-systems
 
-## Purpose
-Design and planning lab notebook for automation systems that transform spectrum engineering workflows from document-driven processes into computation-driven systems. Actual implementation code will live in separate repositories once designs are validated.
+Design and planning lab notebook for spectrum automation systems. Implementation code lives in separate repositories; this repo holds architecture, schemas, prompts, workflows, and evaluation plans.
 
-## Start Here
-Recommended reading order to understand the architecture from problem → system → data:
-1. docs/vision.md
-2. docs/bottleneck-map.md
-3. SYSTEMS.md
-4. docs/systems-registry.md
-5. docs/artifact-chain.md
-6. docs/data-lake-strategy.md
-7. docs/data-provenance-standard.md
-8. docs/cross-reference.md
+## Start Here (fast path)
+1. `docs/vision.md` — the why.
+2. `docs/bottleneck-map.md` — the problems worth solving.
+3. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
+4. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
+5. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
+6. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
+7. `schemas/` and `prompts/` — authoritative contracts and prompt registry.
 
-## Architecture Overview
-- [SYSTEMS.md](SYSTEMS.md) — central index of all proposed automation systems in the Spectrum Systems architecture.
+## Navigation
+- `systems/` — per-system overview/interface/design/evaluation/prompts (see `systems/README.md`).
+- `schemas/` — authoritative data contracts; see `schemas/README.md` for inventory.
+- `prompts/` — prompt registry aligned to schemas and systems.
+- `eval/` — evaluation harness scaffolds and `eval/test-matrix.md`.
+- `docs/` — architecture standards, lifecycle, governance, and bottleneck analysis.
+- `workflows/` — stepwise automation blueprints.
+- `examples/` — illustrative artifacts.
+- `issues/` — backlog and research questions.
 
 ## Repository Philosophy
-- Capture system bottlenecks before proposing automation
-- Record workflow designs and decision pathways
-- Treat schemas as authoritative contracts
-- Standardize AI prompt structures for reproducible outputs
-- Map artifact chains that connect inputs to report-ready deliverables
-- Define evaluation harnesses before any implementation
-- Document system specifications as the source of truth for future build-out
+- Schema-led, deterministic systems with explicit human review gates.
+- Prompts and rules are versioned; evaluation must precede implementation changes.
+- Provenance and reproducibility metadata are mandatory for material artifacts.
+- Implementation code belongs in downstream repos; this repo stays documentation-first.
 
-## Vision
-Enable reproducible spectrum studies, structured knowledge retrieval, and automated engineering analysis pipelines.
+## Current Systems
+- SYS-001 Comment Resolution Engine — `systems/comment-resolution/`
+- SYS-002 Transcript-to-Issue Engine — `systems/transcript-to-issue/`
+- SYS-003 Study Artifact Generator — `systems/study-artifact-generator/`
+- SYS-004 Spectrum Study Compiler — `systems/spectrum-study-compiler/`
+See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 
-## Core Goals
-- automate repetitive engineering analysis
-- standardize study pipelines
-- preserve institutional knowledge
-- support AI-assisted report generation
-- create reusable analysis infrastructure
-
-## Repository Layout
-- `docs/` holds vision, architecture, bottleneck mapping, and roadmaps for planned systems.
-- `schemas/` contains authoritative data contracts for comments, issues, assumptions, study outputs, and precedents.
-- `workflows/` captures stepwise automation blueprints that must exist before implementation code.
-- `prompts/` provides structured prompt templates for AI-assisted tasks aligned to workflows.
-- `eval/` houses evaluation harness scaffolds for each system to ensure deterministic behavior.
-- `examples/` includes starter sample data for prototyping pipelines and prompts.
-- `src/` is reserved for future pipeline, parser, generator, and utility implementations.
-
-## Repository Governance
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [GLOSSARY.md](GLOSSARY.md)
-- [VALIDATION.md](VALIDATION.md)
-- [DATA_SOURCES.md](DATA_SOURCES.md)
-- [REPO_MAP.md](REPO_MAP.md)
-- [SYSTEM_TEMPLATE.md](SYSTEM_TEMPLATE.md)
-- [CHANGELOG.md](CHANGELOG.md)
-- [DECISIONS.md](DECISIONS.md)
-
-## Design Extensions
-- [Agent Selection Guide](docs/agent-selection-guide.md) — explains when to use Copilot, Claude, or Codex in this repository.
-- [AI Agent Guidance Standard](docs/agent-guidance-standard.md) — defines how repositories should include CLAUDE.md and CODEX.md to guide AI agent behavior.
-- Data Lake Strategy — defines the structured data foundation needed to support future spectrum automation systems.
-- [Data Provenance Standard](docs/data-provenance-standard.md) — defines the trust, traceability, and review metadata required across all data classes and AI-assisted artifacts.
-
-## Initial Target Systems
-- Comment Resolution Engine
-- Transcript-to-Issue Engine
-- Study Artifact Generator
-- Spectrum Decision Engine
-- Institutional Knowledge Engine
+## Governance & Standards
+- Contribution and decision history: `CONTRIBUTING.md`, `CHANGELOG.md`, `DECISIONS.md`.
+- Terminology: `GLOSSARY.md`, `docs/terminology.md`.
+- Validation expectations: `VALIDATION.md`, `docs/system-failure-modes.md`.
+- Maintenance: `docs/repo-maintenance-checklist.md`, `docs/doc-governance.md`.

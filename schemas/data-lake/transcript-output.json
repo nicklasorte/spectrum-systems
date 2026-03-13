@@ -1,30 +1,140 @@
 {
-  "record_id": "PRV-TRN-2025-041-01",
-  "record_type": "transcript_issue",
-  "transcript_id": "MTG-2025-041",
-  "meeting_date": "2025-03-04",
-  "meeting_type": "TIG",
-  "speaker": "Engineer B",
-  "agency": "Agency B",
-  "extracted_question": "What margin was assumed for clutter variability at 3.5 GHz?",
-  "concern_or_constraint": "Wants justification for 8 dB clutter allowance",
-  "topic_or_band": "3.5 GHz",
-  "disposition_status": "Open",
-  "required_follow_up_analysis": "Provide sensitivity run with 4 dB and 10 dB clutter values",
-  "linked_report_section": "Section 4.1 Propagation Assumptions",
-  "source_document": "MTG-2025-041-transcript.txt",
-  "source_document_id": "TRN-2025-041",
-  "source_location": "00:12:15-00:13:05",
-  "timestamp_created": "2025-03-04T19:25:00Z",
-  "generated_by_system": "transcript-to-issue-engine v0.2",
-  "workflow_name": "transcript-extraction",
-  "derived_from": [
-    "TRN-2025-041"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/data-lake/transcript-output.json",
+  "title": "Transcript Issue Record",
+  "description": "Schema for issues extracted from transcripts and persisted in the data lake.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "transcript_id",
+    "speaker",
+    "extracted_question",
+    "source_document",
+    "source_location",
+    "timestamp_created",
+    "provenance"
   ],
-  "version_number": "1.0",
-  "review_status": "pending_review",
-  "reviewed_by": "Reviewer Two",
-  "review_date": "2025-03-05T14:00:00Z",
-  "confidence_score": "medium",
-  "quality_status": "extracted"
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this transcript output schema."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^PRV-TRN-[A-Z0-9._-]+$",
+      "description": "Stable provenance identifier."
+    },
+    "record_type": {
+      "type": "string",
+      "const": "transcript_issue",
+      "description": "Type of record."
+    },
+    "transcript_id": {
+      "type": "string",
+      "description": "Transcript identifier."
+    },
+    "meeting_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Meeting date."
+    },
+    "meeting_type": {
+      "type": "string",
+      "description": "Meeting type or forum."
+    },
+    "speaker": {
+      "type": "string",
+      "description": "Speaker name or role."
+    },
+    "agency": {
+      "type": "string",
+      "description": "Speaker agency (if applicable)."
+    },
+    "extracted_question": {
+      "type": "string",
+      "description": "Question or issue extracted from the transcript."
+    },
+    "concern_or_constraint": {
+      "type": "string",
+      "description": "Concern, constraint, or risk expressed."
+    },
+    "topic_or_band": {
+      "type": "string",
+      "description": "Topic or frequency band discussed."
+    },
+    "disposition_status": {
+      "type": "string",
+      "description": "Status of the item (e.g., open, pending_review, resolved)."
+    },
+    "required_follow_up_analysis": {
+      "type": "string",
+      "description": "Requested follow-up analysis."
+    },
+    "linked_report_section": {
+      "type": "string",
+      "description": "Report section anchor for this issue."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Source transcript file."
+    },
+    "source_document_id": {
+      "type": "string",
+      "description": "Canonical transcript ID."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Timecode or segment where the issue appears."
+    },
+    "timestamp_created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Parent identifiers used to generate this record."
+    },
+    "version_number": {
+      "type": "string",
+      "description": "Version within this record's lineage."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "reviewed",
+        "approved"
+      ],
+      "description": "Review status."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Reviewer identifier."
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review completion timestamp."
+    },
+    "confidence_score": {
+      "type": "string",
+      "description": "Confidence rating."
+    },
+    "quality_status": {
+      "type": "string",
+      "description": "Data quality state."
+    },
+    "provenance": {
+      "$ref": "../provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

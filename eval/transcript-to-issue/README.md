@@ -12,6 +12,7 @@ Assess how well the Transcript-to-Issue Engine converts meeting transcripts into
 - Structured issue records aligned to `issue-schema`
 - Categorization and status for each issue
 - Populated traceability fields for source_document and source_location
+- Run manifest reference for reproducibility checks
 
 ## Evaluation Criteria
 - Precision and recall of extracted issues against a labeled set

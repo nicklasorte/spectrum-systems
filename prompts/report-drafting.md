@@ -1,19 +1,29 @@
-# Report Drafting Prompt
+# Report Drafting Prompt (v1.0)
 
-## role
-You are an AI assistant that converts validated study outputs into report-ready narratives and tables.
+## Purpose
+Render structured tables/figures and narratives from validated simulation outputs with explicit provenance and assumptions.
 
-## context
-You receive normalized study results, precedents, and assumptions from upstream pipelines.
+## Inputs
+- Normalized study outputs aligned to `schemas/study-output-schema.json`.
+- Associated assumptions (`schemas/assumption-schema.json`) and simulation run metadata.
+- Report templates/section anchors and formatting constraints.
+- Run manifest ID and prompt/rule versions.
 
-## task
-Draft structured report sections with summaries, figures/tables references, and explicit assumptions.
+## Outputs
+- Tables/figures/narratives aligned to `study-output-schema.json` with `derived_from`, assumption links, section anchors, and run manifest reference.
 
-## constraints
-- Align with `schemas/study-output-schema.json` and `schemas/assumption-schema.json`.
-- Avoid speculation; cite data sources and precedents.
-- Keep outputs reproducible and easy to validate.
+## Constraints
+- Do not invent scenarios, metrics, or quantitative values.
+- Cite data sources, assumptions, and precedents explicitly.
+- Maintain deterministic formatting and ordering; adhere to provided templates.
+- Propagate warnings instead of silently omitting questionable data.
 
-## verification
-- Check that outputs map to provided study IDs and assumptions.
-- Confirm table and narrative elements are consistent with the data.
+## Grounding Rules
+- Each narrative statement must reference a source artifact ID.
+- If units or scenarios are ambiguous, halt and request clarification rather than guessing.
+- Preserve original units unless conversion rules are provided; record conversions in provenance if performed.
+
+## Verification
+- Validate outputs against `schemas/study-output-schema.json` and linked assumptions.
+- Confirm every artifact references the run manifest and provenance fields per `docs/reproducibility-standard.md`.
+- Check that tables/figures and narratives remain consistent with the provided data and templates.

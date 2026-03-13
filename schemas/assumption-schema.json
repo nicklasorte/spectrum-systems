@@ -1,11 +1,85 @@
 {
-  "assumption_id": "string",
-  "description": "string",
-  "source": "string",
-  "impact_level": "low | medium | high",
-  "source_document": "string",
-  "source_location": "string",
-  "timestamp": "ISO 8601 string",
-  "confidence_score": "0-1 float",
-  "generated_by_system": "string"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/assumption-schema.json",
+  "title": "Assumption Record",
+  "description": "Authoritative schema for assumptions referenced by study artifacts and decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assumption_id",
+    "description",
+    "source",
+    "impact_level",
+    "timestamp",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0",
+      "description": "Version of the assumption schema used to validate this record."
+    },
+    "assumption_id": {
+      "type": "string",
+      "pattern": "^ASM-[A-Z0-9._-]+$",
+      "description": "Stable identifier for the assumption."
+    },
+    "description": {
+      "type": "string",
+      "description": "Concise statement of the assumption."
+    },
+    "source": {
+      "type": "string",
+      "description": "Originating document or dataset describing the assumption."
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Name or ID of the source document (if different from source)."
+    },
+    "source_location": {
+      "type": "string",
+      "description": "Section, page, or timecode in the source."
+    },
+    "impact_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Impact classification on downstream results."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "validated",
+        "retired"
+      ],
+      "description": "Lifecycle state of the assumption."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the assumption was recorded or last updated."
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in the assumption statement."
+    },
+    "related_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Artifact IDs that rely on this assumption."
+    },
+    "provenance": {
+      "$ref": "provenance-schema.json",
+      "description": "Provenance record capturing lineage and validation details."
+    }
+  }
 }

@@ -12,6 +12,7 @@ Evaluate how the Study Artifact Generator transforms simulation outputs into str
 - Structured study artifacts aligned to `study-output-schema`
 - Report-ready sections with provenance links to source outputs
 - Traceability fields populated for every artifact element
+- Run manifest reference for prompts/templates/models to support reproducibility checks
 
 ## Evaluation Criteria
 - Fidelity of artifacts to source simulations and assumptions

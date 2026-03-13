@@ -36,8 +36,8 @@ In `workflows/`, a workflow is a system processing pipeline (ingest → normaliz
 
 ## 2. Structural Improvements
 
-**SI-1: Merge overlapping system design documents.**
-Each Phase 1 system has two nearly redundant documents: a `system-design-*.md` and (for Comment Resolution) a `system-spec-*.md`. These cover the same ground at slightly different levels of detail. Merge each pair into a single canonical spec using `SYSTEM_TEMPLATE.md` as the structure. This should be applied consistently across all three systems.
+**SI-1: Canonicalize system design documents.**
+System docs now live under `systems/<system>/` with a single set of `overview`, `interface`, `design`, `evaluation`, and `prompts` files. Keep these as the canonical locations and avoid parallel specs elsewhere.
 
 **SI-2: Clarify the relationship between root-level schemas and data-lake schemas.**
 `schemas/` contains 6 minimal schemas (10–13 fields). `schemas/data-lake/` contains 5 far more complete schemas with full provenance coverage and worked examples. A new engineer reads the root schemas first, forms expectations, then discovers the data-lake schemas are a completely different level of maturity. Either consolidate into one location or add a `schemas/README.md` that explicitly explains: which are canonical, which are derivative, and the intended evolution path.
@@ -101,16 +101,16 @@ The provenance standard mandates immutability (Rule 10: no deletion), but there 
 ## 5. Suggested Repository Improvements
 
 **SRI-1: Add a prescribed reading order to `README.md`.**
-New engineers need a sequenced onboarding path, not a flat list of links. Add an explicit reading sequence:
+New engineers need a sequenced onboarding path, not a flat list of links. Include an explicit reading sequence (why → bottlenecks → systems → interfaces → schemas → prompts/eval):
 
 ```
-1. docs/vision.md                       (5 min — why this exists)
-2. docs/bottleneck-map.md               (15 min — what problems we solve)
-3. docs/systems-registry.md             (10 min — what systems we're building)
-4. docs/artifact-chain.md               (5 min — how artifacts flow)
-5. docs/data-lake-strategy.md           (10 min — the data foundation)
-6. docs/data-provenance-standard.md     (10 min — traceability requirements)
-7. docs/agent-selection-guide.md        (5 min — who does what)
+1. docs/vision.md
+2. docs/bottleneck-map.md
+3. SYSTEMS.md and docs/system-map.md
+4. docs/system-philosophy.md and docs/system-interface-spec.md
+5. docs/system-lifecycle.md and docs/system-status-registry.md
+6. docs/data-provenance-standard.md and docs/reproducibility-standard.md
+7. schemas/ and prompts/ (aligned with system folders)
 ```
 
 **SRI-2: Implement bidirectional bottleneck-to-system links.**
@@ -126,7 +126,7 @@ Each `eval/*/README.md` defines evaluation criteria but contains no test data. M
 The four current decisions cover repository philosophy, separation of concerns, provenance, and structured outputs. Missing is a formal decision on schema versioning and change governance. This decision will be needed the first time a schema field is added or renamed.
 
 **SRI-6: Add a cross-reference index.**
-Add `docs/cross-reference.md` mapping each system to its design doc, workflow, schema(s), prompt(s), and eval harness. This removes the navigation burden from new engineers and makes the architecture legible as a connected whole.
+Add `docs/system-map.md` mapping each system to its design doc, workflow, schema(s), prompt(s), and eval harness. This removes the navigation burden from new engineers and makes the architecture legible as a connected whole.
 
 **SRI-7: Subdivide `docs/` as Phase 2 and 3 designs are added.**
 Currently `docs/` is a flat directory mixing architectural frameworks, system designs, standards, and analysis documents. The flat structure works at current scale but will become disorienting as designs are added. Consider subdirectories: `docs/architecture/`, `docs/systems/`, `docs/standards/`, `docs/analysis/`.
