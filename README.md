@@ -15,6 +15,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - `.github/ISSUE_TEMPLATE/` — deterministic issue intake aligned to SSOS contracts.
 - `.github/workflows/` — GitHub Project automation for SSOS boards.
 - `scripts/setup-labels.sh` — reusable label bootstrapper for SSOS repos.
+- `docs/project-automation-setup.md` — script-driven setup for SSOS project automation variables and secret.
 - `docs/github-operations.md` — governance guide and manual UI setup requirements.
 
 ## Navigation
