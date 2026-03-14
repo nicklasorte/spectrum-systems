@@ -17,5 +17,8 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - working_paper_input — structured intake for working paper revisions.
 - reviewer_comment_set — normalized comment batches ready for resolution.
 - comment_resolution_matrix — canonical mapping from comments to dispositions/actions.
+- comment_resolution_matrix_spreadsheet_contract — official human-facing spreadsheet interface (exact headers/order, normalized mapping, input vs. adjudication guidance).
 - standards_manifest — registry of published contract versions and status.
 - provenance_record — reusable provenance record for contract artifacts and runs.
+
+The comment resolution matrix spreadsheet contract is now part of the standards layer for user-visible artifacts. Downstream repos must preserve the exact headers and order defined in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` when importing/exporting spreadsheets. Metadata fields (provenance ids, validation flags, run ids) must not be added to the visible sheet by default; place them in sidecars or hidden worksheets unless a formal contract update is published.

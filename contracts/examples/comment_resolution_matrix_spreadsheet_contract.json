@@ -1,0 +1,196 @@
+{
+  "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+  "artifact_id": "CRM-SPREADSHEET-CONTRACT-2026-03",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-CRM-SPCON-2026-03",
+  "run_id": "run-20260314T105100Z",
+  "created_at": "2026-03-14T10:51:00Z",
+  "created_by": {
+    "name": "Czar Standards Team",
+    "role": "interface-definition",
+    "agent_type": "human",
+    "organization": "Spectrum Systems Lab",
+    "contact": "czar@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "artifact_purpose": "Defines the canonical human-facing spreadsheet interface for the comment resolution matrix, including exact headers, order, and adjudication semantics.",
+  "ordered_headers": [
+    "Comment Number",
+    "Reviewer Initials",
+    "Agency",
+    "Report Version",
+    "Section",
+    "Page",
+    "Line",
+    "Comment Type: Editorial/Grammar, Clarification, Technical",
+    "Agency Notes",
+    "Agency Suggested Text Change",
+    "NTIA Comments",
+    "Comment Disposition",
+    "Resolution"
+  ],
+  "headers": [
+    {
+      "header": "Comment Number",
+      "normalized_key": "comment_number",
+      "description": "Sequential identifier from the agency submission; used to map dispositions back to the original row without renumbering.",
+      "required_for_input": true,
+      "populated_by": "agency_input",
+      "notes": "Preserve agency-provided numbering to avoid misalignment during adjudication."
+    },
+    {
+      "header": "Reviewer Initials",
+      "normalized_key": "reviewer_initials",
+      "description": "Initials of the reviewer submitting the comment; keeps attribution while keeping sheets concise.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Agency",
+      "normalized_key": "agency",
+      "description": "Submitting agency name or abbreviation.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Report Version",
+      "normalized_key": "report_version",
+      "description": "Spreadsheet revision anchor linking this comment to the working paper revision under review (e.g., rev1, rev2).",
+      "required_for_input": true,
+      "populated_by": "agency_input",
+      "notes": "Required to map adjudication back to the correct working paper revision; blank cells in single-revision runs map to rev1."
+    },
+    {
+      "header": "Section",
+      "normalized_key": "section",
+      "description": "Section number or title reference from the working paper.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Page",
+      "normalized_key": "page",
+      "description": "Page number from the working paper referenced by the comment.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Line",
+      "normalized_key": "line",
+      "description": "Line number or range within the referenced page.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Comment Type: Editorial/Grammar, Clarification, Technical",
+      "normalized_key": "comment_type",
+      "description": "Classification of the comment for routing and prioritization.",
+      "required_for_input": true,
+      "populated_by": "agency_input",
+      "allowed_values": [
+        "Editorial/Grammar",
+        "Clarification",
+        "Technical"
+      ]
+    },
+    {
+      "header": "Agency Notes",
+      "normalized_key": "agency_notes",
+      "description": "Context, rationale, or references supplied by the agency.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "Agency Suggested Text Change",
+      "normalized_key": "agency_suggested_text_change",
+      "description": "Verbatim text the agency proposes to replace or add.",
+      "required_for_input": true,
+      "populated_by": "agency_input"
+    },
+    {
+      "header": "NTIA Comments",
+      "normalized_key": "ntia_comments",
+      "description": "Adjudication output capturing NTIA reviewer notes or rationale.",
+      "required_for_input": false,
+      "populated_by": "adjudication_output"
+    },
+    {
+      "header": "Comment Disposition",
+      "normalized_key": "comment_disposition",
+      "description": "Adjudication output describing the resolution decision (e.g., Accepted, Partially Accepted, Out of Scope).",
+      "required_for_input": false,
+      "populated_by": "adjudication_output"
+    },
+    {
+      "header": "Resolution",
+      "normalized_key": "resolution",
+      "description": "Final resolution text or action to be taken for the comment.",
+      "required_for_input": false,
+      "populated_by": "adjudication_output"
+    }
+  ],
+  "normalized_key_map": {
+    "Comment Number": "comment_number",
+    "Reviewer Initials": "reviewer_initials",
+    "Agency": "agency",
+    "Report Version": "report_version",
+    "Section": "section",
+    "Page": "page",
+    "Line": "line",
+    "Comment Type: Editorial/Grammar, Clarification, Technical": "comment_type",
+    "Agency Notes": "agency_notes",
+    "Agency Suggested Text Change": "agency_suggested_text_change",
+    "NTIA Comments": "ntia_comments",
+    "Comment Disposition": "comment_disposition",
+    "Resolution": "resolution"
+  },
+  "input_columns": [
+    "Comment Number",
+    "Reviewer Initials",
+    "Agency",
+    "Report Version",
+    "Section",
+    "Page",
+    "Line",
+    "Comment Type: Editorial/Grammar, Clarification, Technical",
+    "Agency Notes",
+    "Agency Suggested Text Change"
+  ],
+  "adjudication_columns": [
+    "NTIA Comments",
+    "Comment Disposition",
+    "Resolution"
+  ],
+  "comment_type_values": [
+    "Editorial/Grammar",
+    "Clarification",
+    "Technical"
+  ],
+  "metadata_handling": {
+    "allow_extra_columns": false,
+    "visible_metadata_policy": "Do not add visible metadata columns (e.g., provenance ids, validation flags) to the primary sheet unless formally added to the contract.",
+    "sidecar_policy": "Store machine metadata such as provenance ids, validation states, run ids, and review states in sidecar JSON/YAML files that travel with the spreadsheet when needed.",
+    "hidden_sheet_policy": "If spreadsheet tools require embedded metadata, place it in a hidden worksheet; never interleave metadata columns into the canonical header row."
+  },
+  "compatibility": {
+    "primary_consumers": [
+      "comment-resolution-engine",
+      "spectrum-pipeline-engine",
+      "future matrix-aware tooling"
+    ],
+    "notes": "Downstream repos must import/export with these exact headers and this exact order; no silent renames in user-facing artifacts.",
+    "preserve_headers": true,
+    "export_guidance": "Internal models may use normalized keys but exports must preserve the official headers and ordering."
+  },
+  "validation_rules": {
+    "require_exact_headers": true,
+    "preserve_order_on_export": true,
+    "allow_blank_adjudication_on_input": true,
+    "revision_mapping_rule": "Report Version is the revision anchor tying each row to the working paper revision under adjudication; blank inputs in single-revision runs map to rev1.",
+    "normalized_keys_must_exist": true,
+    "fail_on_missing_required_columns": true
+  }
+}

@@ -69,6 +69,20 @@
       "notes": "Deterministic mapping from comments to dispositions and actions."
     },
     {
+      "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/comment_resolution_matrix_spreadsheet_contract.json",
+      "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping."
+    },
+    {
       "artifact_type": "standards_manifest",
       "schema_version": "1.0.0",
       "status": "stable",
