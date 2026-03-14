@@ -46,6 +46,15 @@ All contracts carry:
 - Output: preserve the source DOCX and emit a new commented DOCX plus the required audit report.
 - Reference: `contracts/docs/pdf-anchored-docx-comment-injection.md` for a concise narrative specification.
 
+### meeting_agenda_contract
+- Purpose: canonical agenda-generation interface that turns prior minutes, comment resolution matrices, submitted comments, and optional context notes into the next meeting agenda.
+- Required inputs: `prior_minutes`, `resolution_matrix`; optional `submitted_comments`, `prior_agenda`, `policy_context`.
+- Required outputs: `meeting_title`, `meeting_objective`, `source_artifacts`, ordered `agenda_items`, `carry_forward_items`, `decisions_needed`, `risks_blockers`, `pre_reads`, `suggested_attendees`.
+- Agenda item fields: `agenda_id`, `section`, `title`, `description`, `source_refs`, `status_basis`, `recommended_outcome`, `proposed_owner`, `proposed_speakers`, `estimated_minutes`, `priority`, `pre_read_required`, `pre_read_refs`.
+- Traceability: `source_refs` must point to minutes topics/action items, resolution matrix comment IDs, submitted comment IDs, or supporting documents.
+- Output formats: JSON (machine-readable), Markdown, DOCX (human-readable).
+- References: schema at `contracts/schemas/meeting_agenda_contract.schema.json`; examples at `contracts/examples/meeting_agenda_contract.json` and `contracts/examples/meeting_agenda_contract.md`.
+
 ### standards_manifest
 - Purpose: machine-readable registry of contract versions and stability state.
 - Required: `artifact_type`, `artifact_id`, `artifact_version`, `schema_version`, `standards_version`, `created_at`, `created_by`, `source_repo`, `source_repo_version`, `contracts`.

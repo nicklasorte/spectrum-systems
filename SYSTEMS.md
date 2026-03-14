@@ -33,6 +33,7 @@
 - Contract versions and stability are tracked in `contracts/standards-manifest.json`; downstream consumers should pin to manifest versions.
 - Changes follow the rules in `CONTRACT_VERSIONING.md` and must include provenance-ready metadata to align with `docs/data-provenance-standard.md`.
 - The comment resolution matrix spreadsheet contract lives at `docs/comment-resolution-matrix-spreadsheet-contract.md` + `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`; `working-paper-review-engine` must emit it and `comment-resolution-engine` must consume/export it without renaming or reordering headers.
+- The meeting agenda contract (`contracts/docs/meeting-agenda-contract.md`, schema in `contracts/schemas/meeting_agenda_contract.schema.json`) governs next-meeting agendas derived from prior minutes + resolution matrices; `spectrum-pipeline-engine` may orchestrate agenda generation across `meeting-minutes-engine` and `comment-resolution-engine`, emitting JSON/Markdown/DOCX outputs that preserve source references.
 - Meeting minutes artifacts must follow the canonical structure in `contracts/meeting_minutes_contract.yaml`; any operational engine that produces minutes needs to emit this exact shape.
 
 ## Implementation Guidance

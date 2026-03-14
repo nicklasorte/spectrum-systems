@@ -15,6 +15,7 @@ CONTRACTS = [
     "working_paper_input",
     "reviewer_comment_set",
     "comment_resolution_matrix",
+    "meeting_agenda_contract",
     "comment_resolution_matrix_spreadsheet_contract",
     "pdf_anchored_docx_comment_injection_contract",
     "standards_manifest",

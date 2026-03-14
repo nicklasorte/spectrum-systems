@@ -19,6 +19,7 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - comment_resolution_matrix — canonical mapping from comments to dispositions/actions.
 - comment_resolution_matrix_spreadsheet_contract — official human-facing spreadsheet interface (exact headers/order, normalized mapping, input vs. adjudication guidance).
 - pdf_anchored_docx_comment_injection_contract — authoritative PDF line-anchored insertion contract for turning resolution matrices + PDF anchors into commented DOCX outputs with mandatory audit reports and fixed canonical column order.
+- meeting_agenda_contract — canonical agenda-generation interface that turns prior minutes + comment resolution matrices (plus optional submitted comments, prior agendas, and policy context) into the next agenda with traceable sections, carry-forward items, decisions, risks, pre-reads, and attendees.
 - meeting_minutes — canonical YAML structure for structured minutes derived from meeting transcripts (`contracts/meeting_minutes_contract.yaml`).
 - standards_manifest — registry of published contract versions and status.
 - provenance_record — reusable provenance record for contract artifacts and runs.

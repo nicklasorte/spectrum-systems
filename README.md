@@ -23,6 +23,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - `issues/` — backlog and research questions.
 - Comment resolution matrix spreadsheet contract (authoritative headers/order for the czar org): `docs/comment-resolution-matrix-spreadsheet-contract.md` with schema in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`.
 - PDF-anchored DOCX comment injection contract (authoritative PDF line-anchor insertion rules and audit requirements): schema in `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` with fixtures in `contracts/examples/`.
+- Meeting agenda contract (canonical next-meeting agenda generator from minutes + resolution matrix + optional comments/context): `contracts/docs/meeting-agenda-contract.md` with schema in `contracts/schemas/meeting_agenda_contract.schema.json` and examples in `contracts/examples/`.
 
 ## Repository Philosophy
 - Schema-led, deterministic systems with explicit human review gates.

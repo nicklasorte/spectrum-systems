@@ -1,0 +1,303 @@
+{
+  "artifact_type": "meeting_agenda_contract",
+  "artifact_id": "MAG-2026-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-MAG-2026-001",
+  "run_id": "run-20260314T155500Z",
+  "created_at": "2026-03-14T15:55:00Z",
+  "created_by": {
+    "name": "Agenda Generator",
+    "role": "agenda-drafting",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab",
+    "contact": "agendas@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "meeting_title": "Spectrum TAC — April Working Session",
+  "meeting_objective": "Finalize open Part 90 comment dispositions, surface schedule risks, and lock pre-read distribution.",
+  "meeting_datetime": "2026-04-02T15:00:00Z",
+  "meeting_location": "Hybrid — DC Ops / Zoom",
+  "meeting_series": "Spectrum TAC 2026",
+  "source_artifacts": [
+    {
+      "artifact_id": "MIN-2026-003",
+      "artifact_type": "meeting_minutes",
+      "artifact_version": "1.0.0",
+      "role": "prior_minutes",
+      "source_repo": "nicklasorte/meeting-minutes-engine",
+      "source_repo_version": "v0.5.0"
+    },
+    {
+      "artifact_id": "CRM-2026-015",
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_version": "1.0.0",
+      "role": "resolution_matrix",
+      "source_repo": "nicklasorte/comment-resolution-engine",
+      "source_repo_version": "v0.8.1"
+    },
+    {
+      "artifact_id": "CSET-2026-015",
+      "artifact_type": "submitted_comments",
+      "artifact_version": "1.0.0",
+      "role": "submitted_comments",
+      "source_repo": "nicklasorte/working-paper-review-engine",
+      "source_repo_version": "v0.12.0"
+    },
+    {
+      "artifact_id": "AG-2026-002",
+      "artifact_type": "prior_agenda",
+      "artifact_version": "1.0.0",
+      "role": "prior_agenda",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    },
+    {
+      "artifact_id": "CTX-2026-004",
+      "artifact_type": "context_notes",
+      "artifact_version": "1.0.0",
+      "role": "policy_context",
+      "source_repo": "nicklasorte/policy-ops-notebook",
+      "source_repo_version": "v0.2.1"
+    }
+  ],
+  "agenda_items": [
+    {
+      "agenda_id": "AG-01",
+      "section": "Decision",
+      "title": "Close open Part 90 comment IDs from CRM-2026-015",
+      "description": "Walk the remaining unresolved comment IDs (CMT-204, CMT-208, CMT-215) and lock dispositions.",
+      "source_refs": [
+        {
+          "ref_type": "resolution_matrix_comment",
+          "ref_id": "CMT-204",
+          "description": "Pending disposition",
+          "location": "Row 28",
+          "link": "s3://crm/CRM-2026-015.json"
+        },
+        {
+          "ref_type": "submitted_comment",
+          "ref_id": "CMT-208",
+          "description": "Clarification on guard band rationale",
+          "link": "s3://comments/CSET-2026-015.json"
+        }
+      ],
+      "status_basis": "unresolved_comment",
+      "recommended_outcome": "Approve dispositions for CMT-204/208/215 and record decision owners.",
+      "proposed_owner": "Comment Resolution Lead",
+      "proposed_speakers": [
+        {
+          "name": "Dr. Linh Nguyen",
+          "role": "Policy Lead"
+        },
+        {
+          "name": "Evan Brooks",
+          "role": "Technical Reviewer"
+        }
+      ],
+      "estimated_minutes": 25,
+      "priority": "high",
+      "pre_read_required": true,
+      "pre_read_refs": [
+        {
+          "ref_type": "supporting_document",
+          "ref_id": "PR-RES-PAK-R2",
+          "description": "Resolution packet rev2",
+          "link": "s3://pre-reads/resolution-pack-rev2.pdf"
+        }
+      ]
+    },
+    {
+      "agenda_id": "AG-02",
+      "section": "Risk",
+      "title": "Spectrum study dependency check",
+      "description": "Review timeline risk stemming from pending FCC coordination notes.",
+      "source_refs": [
+        {
+          "ref_type": "minutes_action_item",
+          "ref_id": "AI-112",
+          "description": "FCC coordination follow-up",
+          "location": "00:42:10"
+        },
+        {
+          "ref_type": "supporting_document",
+          "ref_id": "DOC-FCC-COORD",
+          "description": "Coordination status note",
+          "link": "s3://context/fcc-coordination-note.pdf"
+        }
+      ],
+      "status_basis": "risk_escalation",
+      "recommended_outcome": "Agree mitigation owner and go/no-go checkpoint for FCC dependency.",
+      "proposed_owner": "Program Manager",
+      "proposed_speakers": [
+        {
+          "name": "Priya Shah",
+          "role": "Chair"
+        }
+      ],
+      "estimated_minutes": 15,
+      "priority": "medium",
+      "pre_read_required": false,
+      "pre_read_refs": []
+    },
+    {
+      "agenda_id": "AG-03",
+      "section": "Review",
+      "title": "Carry-forward: Simulation data publication plan",
+      "description": "Finalize publication plan for simulation artifacts deferred last session.",
+      "source_refs": [
+        {
+          "ref_type": "minutes_topic",
+          "ref_id": "TOP-09",
+          "description": "Deferred publication plan",
+          "location": "01:15:40"
+        }
+      ],
+      "status_basis": "carry_forward",
+      "recommended_outcome": "Confirm publication timeline and assign owner.",
+      "proposed_owner": "Study Compiler Lead",
+      "proposed_speakers": [
+        {
+          "name": "Morgan Lee",
+          "role": "Study Compiler Lead"
+        }
+      ],
+      "estimated_minutes": 10,
+      "priority": "medium",
+      "pre_read_required": false,
+      "pre_read_refs": []
+    }
+  ],
+  "carry_forward_items": [
+    {
+      "carry_forward_id": "CF-001",
+      "from_agenda_id": "AG-05",
+      "reason": "Timeboxed; decision not reached",
+      "status_basis": "partial",
+      "source_refs": [
+        {
+          "ref_type": "minutes_topic",
+          "ref_id": "TOP-09",
+          "description": "Deferred publication plan",
+          "location": "01:15:40"
+        }
+      ],
+      "proposed_slot_minutes": 10,
+      "owner": "Study Compiler Lead"
+    }
+  ],
+  "decisions_needed": [
+    {
+      "decision_id": "DEC-001",
+      "description": "Approve final dispositions for remaining Part 90 comments.",
+      "required_by": "2026-04-05T00:00:00Z",
+      "related_items": [
+        "AG-01"
+      ],
+      "source_refs": [
+        {
+          "ref_type": "resolution_matrix_comment",
+          "ref_id": "CMT-204"
+        }
+      ]
+    },
+    {
+      "decision_id": "DEC-002",
+      "description": "Set FCC coordination go/no-go checkpoint.",
+      "required_by": "2026-04-03T00:00:00Z",
+      "related_items": [
+        "AG-02"
+      ],
+      "source_refs": [
+        {
+          "ref_type": "minutes_action_item",
+          "ref_id": "AI-112"
+        }
+      ]
+    }
+  ],
+  "risks_blockers": [
+    {
+      "risk_id": "RB-001",
+      "description": "Pending FCC coordination note could delay study publication.",
+      "impact": "schedule",
+      "owner": "Program Manager",
+      "status": "open",
+      "related_items": [
+        "AG-02"
+      ],
+      "source_refs": [
+        {
+          "ref_type": "supporting_document",
+          "ref_id": "DOC-FCC-COORD"
+        }
+      ],
+      "mitigation": "Schedule checkpoint with legal and FCC POC before 2026-04-03.",
+      "target_resolution": "2026-04-03T00:00:00Z"
+    }
+  ],
+  "pre_reads": [
+    {
+      "pre_read_id": "PR-001",
+      "title": "Resolution packet rev2",
+      "link": "s3://pre-reads/resolution-pack-rev2.pdf",
+      "required_for": [
+        "AG-01"
+      ],
+      "due_by": "2026-03-31T23:59:00Z",
+      "source_refs": [
+        {
+          "ref_type": "supporting_document",
+          "ref_id": "PR-RES-PAK-R2"
+        }
+      ],
+      "mandatory": true
+    },
+    {
+      "pre_read_id": "PR-002",
+      "title": "FCC coordination note",
+      "link": "s3://context/fcc-coordination-note.pdf",
+      "required_for": [
+        "AG-02"
+      ],
+      "due_by": "2026-04-01T12:00:00Z",
+      "source_refs": [
+        {
+          "ref_type": "supporting_document",
+          "ref_id": "DOC-FCC-COORD"
+        }
+      ],
+      "mandatory": false
+    }
+  ],
+  "suggested_attendees": [
+    {
+      "name": "Priya Shah",
+      "role": "Chair",
+      "organization": "NTIA",
+      "contact": "priya.shah@spectrum-systems.test",
+      "required": true,
+      "rationale": "Chairs meeting and holds decision authority for CRM dispositions."
+    },
+    {
+      "name": "Dr. Linh Nguyen",
+      "role": "Policy Lead",
+      "organization": "Spectrum Systems Lab",
+      "required": true,
+      "rationale": "Owns Part 90 policy decisions."
+    },
+    {
+      "name": "Evan Brooks",
+      "role": "Technical Reviewer",
+      "required": false,
+      "rationale": "Provides context on propagation modeling."
+    }
+  ],
+  "output_targets": [
+    "json",
+    "markdown",
+    "docx"
+  ]
+}
