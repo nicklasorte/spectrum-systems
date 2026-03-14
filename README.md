@@ -1,6 +1,6 @@
 # spectrum-systems
 
-Design and planning lab notebook for spectrum automation systems. Implementation code lives in separate repositories; this repo holds architecture, schemas, prompts, workflows, and evaluation plans.
+Design and planning lab notebook for spectrum automation systems. Implementation code lives in separate repositories; this repo holds architecture, schemas, prompts, workflows, and evaluation plans. This is the governance/control-plane repo for SSOS GitHub operations across the czar organization.
 
 ## Start Here (fast path)
 1. `docs/vision.md` — the why.
@@ -10,6 +10,12 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 5. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
 6. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
 7. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
+
+## GitHub Operating Layer
+- `.github/ISSUE_TEMPLATE/` — deterministic issue intake aligned to SSOS contracts.
+- `.github/workflows/` — GitHub Project automation for SSOS boards.
+- `scripts/setup-labels.sh` — reusable label bootstrapper for SSOS repos.
+- `docs/github-operations.md` — governance guide and manual UI setup requirements.
 
 ## Navigation
 - `systems/` — per-system overview/interface/design/evaluation/prompts (see `systems/README.md`).
