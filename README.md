@@ -70,6 +70,7 @@ See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relati
 - `contracts/` — canonical artifact contracts, examples, and standards manifest (`CONTRACTS.md` for guidance).
 - `prompts/` — prompt registry aligned to schemas and systems.
 - `eval/` — evaluation harness scaffolds and `eval/test-matrix.md`.
+- `evals/` — shared evaluation datasets (fixtures + rubrics) for text-producing engines with run guidance in `evals/evals-framework.md`.
 - `docs/` — architecture standards, lifecycle, governance, and bottleneck analysis.
 - `workflows/` — stepwise automation blueprints.
 - `examples/` — illustrative artifacts.
