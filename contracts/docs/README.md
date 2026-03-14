@@ -29,6 +29,12 @@ All contracts carry:
 - Optional: `evidence_links`, `validation_notes`, `input_artifacts`.
 - Downstream usage: exported to working-paper-review-engine and reporting pipelines; used to verify closure of every comment against a fixed revision.
 
+### comment_resolution_matrix_spreadsheet_contract
+- Purpose: canonical human-facing spreadsheet interface for the comment resolution matrix with fixed headers and ordering.
+- Required: metadata fields plus `ordered_headers`, `headers` (definitions with normalized keys and roles), `normalized_key_map`, `input_columns`, `adjudication_columns`, `comment_type_values`, `metadata_handling`, `compatibility`, `validation_rules`.
+- Header order: `Comment Number`, `Reviewer Initials`, `Agency`, `Report Version`, `Section`, `Page`, `Line`, `Comment Type: Editorial/Grammar, Clarification, Technical`, `Agency Notes`, `Agency Suggested Text Change`, `NTIA Comments`, `Comment Disposition`, `Resolution`.
+- Downstream usage: comment-resolution-engine and spectrum-pipeline-engine import/export spreadsheets using these exact headers; normalized keys may be used internally but exports must preserve official headers. No additional visible metadata columns; place metadata in sidecars or hidden worksheets.
+
 ### standards_manifest
 - Purpose: machine-readable registry of contract versions and stability state.
 - Required: `artifact_type`, `artifact_id`, `artifact_version`, `schema_version`, `standards_version`, `created_at`, `created_by`, `source_repo`, `source_repo_version`, `contracts`.

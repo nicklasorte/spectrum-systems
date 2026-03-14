@@ -1,0 +1,3 @@
+"Comment Number","Reviewer Initials","Agency","Report Version","Section","Page","Line","Comment Type: Editorial/Grammar, Clarification, Technical","Agency Notes","Agency Suggested Text Change","NTIA Comments","Comment Disposition","Resolution"
+"1","AB","NOAA","rev1","2.3","14","120-130","Technical","Request propagation model parameters and datasets used.","Add explanation of the clutter loss model and cite the data source.","","Pending",""
+"2","CD","FAA","rev1","3.1","22","45","Clarification","Clarify how the guard band for Scenario A was selected.","Add a sentence describing the guard band rationale and pointer to supporting study.","NTIA agrees additional context needed.","Accepted","Guard band rationale inserted in Section 3.1 with citation to guard band study."

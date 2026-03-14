@@ -1,0 +1,621 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/comment_resolution_matrix_spreadsheet_contract.schema.json",
+  "title": "Comment Resolution Matrix Spreadsheet Contract",
+  "description": "Canonical human-facing spreadsheet interface for comment resolution matrices, including exact headers, order, and semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "artifact_purpose",
+    "ordered_headers",
+    "headers",
+    "normalized_key_map",
+    "input_columns",
+    "adjudication_columns",
+    "comment_type_values",
+    "metadata_handling",
+    "compatibility",
+    "validation_rules"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "comment_resolution_matrix_spreadsheet_contract",
+      "description": "Canonical artifact type identifier for the spreadsheet interface."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for this contract artifact."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the comment_resolution_matrix_spreadsheet_contract schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this contract was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced this contract."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "artifact_purpose": {
+      "type": "string",
+      "description": "Summary of what this spreadsheet interface represents and how it is used."
+    },
+    "ordered_headers": {
+      "type": "array",
+      "description": "Exact header order that MUST be preserved for user-facing spreadsheet import/export.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Comment Number",
+          "Reviewer Initials",
+          "Agency",
+          "Report Version",
+          "Section",
+          "Page",
+          "Line",
+          "Comment Type: Editorial/Grammar, Clarification, Technical",
+          "Agency Notes",
+          "Agency Suggested Text Change",
+          "NTIA Comments",
+          "Comment Disposition",
+          "Resolution"
+        ]
+      },
+      "minItems": 13,
+      "maxItems": 13,
+      "const": [
+        "Comment Number",
+        "Reviewer Initials",
+        "Agency",
+        "Report Version",
+        "Section",
+        "Page",
+        "Line",
+        "Comment Type: Editorial/Grammar, Clarification, Technical",
+        "Agency Notes",
+        "Agency Suggested Text Change",
+        "NTIA Comments",
+        "Comment Disposition",
+        "Resolution"
+      ],
+      "uniqueItems": true
+    },
+    "headers": {
+      "type": "array",
+      "description": "Column definitions with normalized keys and input/adjudication roles.",
+      "items": {
+        "$ref": "#/$defs/header"
+      },
+      "minItems": 13,
+      "uniqueItems": true,
+      "allOf": [
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Comment Number"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Reviewer Initials"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Agency"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Report Version"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Section"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Page"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Line"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Comment Type: Editorial/Grammar, Clarification, Technical"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Agency Notes"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Agency Suggested Text Change"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "NTIA Comments"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Comment Disposition"
+              }
+            }
+          }
+        },
+        {
+          "contains": {
+            "required": [
+              "header"
+            ],
+            "properties": {
+              "header": {
+                "const": "Resolution"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "normalized_key_map": {
+      "type": "object",
+      "description": "Mapping from spreadsheet headers to normalized snake_case keys for internal systems.",
+      "additionalProperties": false,
+      "required": [
+        "Comment Number",
+        "Reviewer Initials",
+        "Agency",
+        "Report Version",
+        "Section",
+        "Page",
+        "Line",
+        "Comment Type: Editorial/Grammar, Clarification, Technical",
+        "Agency Notes",
+        "Agency Suggested Text Change",
+        "NTIA Comments",
+        "Comment Disposition",
+        "Resolution"
+      ],
+      "properties": {
+        "Comment Number": {
+          "type": "string",
+          "const": "comment_number"
+        },
+        "Reviewer Initials": {
+          "type": "string",
+          "const": "reviewer_initials"
+        },
+        "Agency": {
+          "type": "string",
+          "const": "agency"
+        },
+        "Report Version": {
+          "type": "string",
+          "const": "report_version"
+        },
+        "Section": {
+          "type": "string",
+          "const": "section"
+        },
+        "Page": {
+          "type": "string",
+          "const": "page"
+        },
+        "Line": {
+          "type": "string",
+          "const": "line"
+        },
+        "Comment Type: Editorial/Grammar, Clarification, Technical": {
+          "type": "string",
+          "const": "comment_type"
+        },
+        "Agency Notes": {
+          "type": "string",
+          "const": "agency_notes"
+        },
+        "Agency Suggested Text Change": {
+          "type": "string",
+          "const": "agency_suggested_text_change"
+        },
+        "NTIA Comments": {
+          "type": "string",
+          "const": "ntia_comments"
+        },
+        "Comment Disposition": {
+          "type": "string",
+          "const": "comment_disposition"
+        },
+        "Resolution": {
+          "type": "string",
+          "const": "resolution"
+        }
+      }
+    },
+    "input_columns": {
+      "type": "array",
+      "description": "Columns that MUST be present when ingesting a matrix, even if adjudication fields are blank.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Comment Number",
+          "Reviewer Initials",
+          "Agency",
+          "Report Version",
+          "Section",
+          "Page",
+          "Line",
+          "Comment Type: Editorial/Grammar, Clarification, Technical",
+          "Agency Notes",
+          "Agency Suggested Text Change"
+        ]
+      },
+      "minItems": 10,
+      "maxItems": 10,
+      "const": [
+        "Comment Number",
+        "Reviewer Initials",
+        "Agency",
+        "Report Version",
+        "Section",
+        "Page",
+        "Line",
+        "Comment Type: Editorial/Grammar, Clarification, Technical",
+        "Agency Notes",
+        "Agency Suggested Text Change"
+      ],
+      "uniqueItems": true
+    },
+    "adjudication_columns": {
+      "type": "array",
+      "description": "Columns populated during adjudication; allowed to be blank on initial intake.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "NTIA Comments",
+          "Comment Disposition",
+          "Resolution"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 3,
+      "const": [
+        "NTIA Comments",
+        "Comment Disposition",
+        "Resolution"
+      ],
+      "uniqueItems": true
+    },
+    "comment_type_values": {
+      "type": "array",
+      "description": "Allowed values for Comment Type column.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Editorial/Grammar",
+          "Clarification",
+          "Technical"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 3,
+      "const": [
+        "Editorial/Grammar",
+        "Clarification",
+        "Technical"
+      ],
+      "uniqueItems": true
+    },
+    "metadata_handling": {
+      "type": "object",
+      "description": "Guidance on how to handle additional metadata without polluting the visible spreadsheet.",
+      "additionalProperties": false,
+      "required": [
+        "allow_extra_columns",
+        "visible_metadata_policy",
+        "sidecar_policy",
+        "hidden_sheet_policy"
+      ],
+      "properties": {
+        "allow_extra_columns": {
+          "type": "boolean"
+        },
+        "visible_metadata_policy": {
+          "type": "string"
+        },
+        "sidecar_policy": {
+          "type": "string"
+        },
+        "hidden_sheet_policy": {
+          "type": "string"
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "description": "Downstream interoperability expectations.",
+      "additionalProperties": false,
+      "required": [
+        "primary_consumers",
+        "notes",
+        "preserve_headers"
+      ],
+      "properties": {
+        "primary_consumers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "notes": {
+          "type": "string"
+        },
+        "preserve_headers": {
+          "type": "boolean"
+        },
+        "export_guidance": {
+          "type": "string"
+        }
+      }
+    },
+    "validation_rules": {
+      "type": "object",
+      "description": "Validation expectations for any importer/exporter of this spreadsheet.",
+      "additionalProperties": false,
+      "required": [
+        "require_exact_headers",
+        "preserve_order_on_export",
+        "allow_blank_adjudication_on_input",
+        "revision_mapping_rule",
+        "normalized_keys_must_exist",
+        "fail_on_missing_required_columns"
+      ],
+      "properties": {
+        "require_exact_headers": {
+          "type": "boolean"
+        },
+        "preserve_order_on_export": {
+          "type": "boolean"
+        },
+        "allow_blank_adjudication_on_input": {
+          "type": "boolean"
+        },
+        "revision_mapping_rule": {
+          "type": "string"
+        },
+        "normalized_keys_must_exist": {
+          "type": "boolean"
+        },
+        "fail_on_missing_required_columns": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "ai_model",
+            "workflow",
+            "script"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "header",
+        "normalized_key",
+        "description",
+        "required_for_input",
+        "populated_by"
+      ],
+      "properties": {
+        "header": {
+          "type": "string",
+          "enum": [
+            "Comment Number",
+            "Reviewer Initials",
+            "Agency",
+            "Report Version",
+            "Section",
+            "Page",
+            "Line",
+            "Comment Type: Editorial/Grammar, Clarification, Technical",
+            "Agency Notes",
+            "Agency Suggested Text Change",
+            "NTIA Comments",
+            "Comment Disposition",
+            "Resolution"
+          ]
+        },
+        "normalized_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required_for_input": {
+          "type": "boolean"
+        },
+        "populated_by": {
+          "type": "string",
+          "enum": [
+            "agency_input",
+            "adjudication_output",
+            "system_generated"
+          ]
+        },
+        "allowed_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

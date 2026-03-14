@@ -1,3 +1,5 @@
+import csv
+from pathlib import Path
 import unittest
 
 from jsonschema.exceptions import ValidationError
@@ -13,8 +15,41 @@ CONTRACTS = [
     "working_paper_input",
     "reviewer_comment_set",
     "comment_resolution_matrix",
+    "comment_resolution_matrix_spreadsheet_contract",
     "standards_manifest",
     "provenance_record",
+]
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+CRM_SPREADSHEET_HEADERS = [
+    "Comment Number",
+    "Reviewer Initials",
+    "Agency",
+    "Report Version",
+    "Section",
+    "Page",
+    "Line",
+    "Comment Type: Editorial/Grammar, Clarification, Technical",
+    "Agency Notes",
+    "Agency Suggested Text Change",
+    "NTIA Comments",
+    "Comment Disposition",
+    "Resolution",
+]
+CRM_SPREADSHEET_KEYS = [
+    "comment_number",
+    "reviewer_initials",
+    "agency",
+    "report_version",
+    "section",
+    "page",
+    "line",
+    "comment_type",
+    "agency_notes",
+    "agency_suggested_text_change",
+    "ntia_comments",
+    "comment_disposition",
+    "resolution",
 ]
 
 
@@ -40,6 +75,25 @@ class ContractSchemaTests(unittest.TestCase):
         discovered = list_supported_contracts()
         for name in CONTRACTS:
             self.assertIn(name, discovered)
+
+    def test_spreadsheet_contract_has_canonical_headers_and_mapping(self) -> None:
+        instance = load_example("comment_resolution_matrix_spreadsheet_contract")
+        self.assertEqual(instance["ordered_headers"], CRM_SPREADSHEET_HEADERS)
+        self.assertEqual(list(instance["normalized_key_map"].keys()), CRM_SPREADSHEET_HEADERS)
+        self.assertEqual(list(instance["normalized_key_map"].values()), CRM_SPREADSHEET_KEYS)
+
+        headers = instance["headers"]
+        self.assertEqual([entry["header"] for entry in headers], CRM_SPREADSHEET_HEADERS)
+        for entry in headers:
+            header = entry["header"]
+            self.assertEqual(instance["normalized_key_map"][header], entry["normalized_key"])
+
+    def test_spreadsheet_example_csv_preserves_header_order(self) -> None:
+        csv_path = BASE_DIR / "examples" / "comment-resolution-matrix-spreadsheet.csv"
+        with csv_path.open(newline="") as handle:
+            reader = csv.reader(handle)
+            header_row = next(reader)
+        self.assertEqual(header_row, CRM_SPREADSHEET_HEADERS)
 
 
 if __name__ == "__main__":
