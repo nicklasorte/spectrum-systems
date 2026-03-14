@@ -39,5 +39,8 @@
 - Keep schemas authoritative; update prompts and evaluations in lockstep with interface changes.
 - Use `docs/repo-maintenance-checklist.md` to avoid drift and broken links.
 
-## Meeting Minutes Artifact
-Meeting transcripts are converted into structured minutes through operational engines. Those engines must emit meeting minutes that adhere to `contracts/meeting_minutes_contract.yaml` so downstream systems receive a deterministic structure for meeting metadata, participants, agenda, discussions, decisions, action items, risks, and context.
+## Meeting Minutes Artifact Contract
+Operational engines that generate meeting minutes must emit outputs that conform exactly to `contracts/meeting_minutes_contract.yaml`. Transcripts are treated as input artifacts, and engines must transform them into structured minutes that match the contract without altering field names or nesting.
+
+### Transcript Traceability
+Meeting minutes artifacts should preserve traceability back to transcript timestamps and speakers whenever available so downstream consumers can verify source context.
