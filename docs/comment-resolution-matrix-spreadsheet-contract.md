@@ -43,7 +43,8 @@ The example at `examples/comment-resolution-matrix-spreadsheet.csv` preserves th
 
 ## Required vs. adjudication fields
 - **Input columns required on ingest (must exist, may be blank only where noted)**: Comment Number; Reviewer Initials; Agency; Report Version; Section; Page; Line; Comment Type: Editorial/Grammar, Clarification, Technical; Agency Notes; Agency Suggested Text Change.
-- **Adjudication output columns (may be blank on ingest, populated downstream)**: NTIA Comments; Comment Disposition; Resolution.
+- **Optional input columns**: none. Importers must reject visible columns beyond the canonical list.
+- **Generated output columns (populated by adjudication systems)**: NTIA Comments; Comment Disposition; Resolution.
 - MVP flow: `input matrix + working paper revision(s) -> adjudicated matrix` (outputs fill NTIA Comments, Comment Disposition, Resolution).
 
 ## Normalized keys
@@ -64,6 +65,17 @@ Normalized internal keys allow systems to work in snake_case while preserving th
 
 Internal models may use normalized keys, but user-facing spreadsheets must keep the official headers and ordering.
 
+## Header normalization rules
+- Preserve the exact human headers (casing, punctuation, and spacing) on every visible sheet.
+- Trim leading/trailing whitespace on ingest, then map headers to snake_case via the normalized key map above (no aliases).
+- Normalization is one-way: internal models may use snake_case, but exports must rehydrate the canonical headers in the fixed order.
+
+## Completion semantics
+- **Open rows**: `Comment Disposition` blank or `Pending`.
+- **Completed rows**: `Comment Disposition` in {Accepted, Partially Accepted, Rejected, Out of Scope} **and** `Resolution` populated (non-blank).
+- `NTIA Comments` is recommended for completed rows but not required to mark completion.
+- Engines must not mark a row complete unless both disposition and resolution satisfy the rules above.
+
 ## Compatibility guidance for downstream repos
 - `comment-resolution-engine` must treat this spreadsheet as the primary import/export contract; no silent header renames.
 - `spectrum-pipeline-engine` orchestration should accept and emit this exact shape instead of redefining a matrix layout.
@@ -74,6 +86,19 @@ Internal models may use normalized keys, but user-facing spreadsheets must keep 
 - Do **not** add default visible metadata columns (provenance ids, validation flags, run ids) to the canonical sheet.
 - Place machine metadata in sidecar JSON/YAML files that travel with the spreadsheet, or in hidden worksheets when spreadsheet software requires embedded metadata.
 - Only add new visible columns through a formal contract update.
+
+## Output workbook expectations
+- Preferred formats: CSV or XLSX.
+- Primary sheet name: `Comment Resolution Matrix`.
+- Primary sheet headers: exactly the canonical header list above, in order; no additional visible columns.
+- Hidden worksheets may carry metadata; visible sheets must only expose the canonical columns.
+
+## Example layout
+```
+Comment Number,Reviewer Initials,Agency,Report Version,Section,Page,Line,Comment Type: Editorial/Grammar, Clarification, Technical,Agency Notes,Agency Suggested Text Change,NTIA Comments,Comment Disposition,Resolution
+1,AB,NOAA,rev1,2.3,14,120-130,Technical,"Request propagation model parameters and datasets used.","Add explanation of the clutter loss model and cite the data source.",,Pending,
+2,CD,FAA,rev1,3.1,22,45,Clarification,"Clarify how the guard band for Scenario A was selected.","Add a sentence describing the guard band rationale and pointer to supporting study.","NTIA agrees additional context needed.",Accepted,"Guard band rationale inserted in Section 3.1 with citation to guard band study."
+```
 
 ## Validation guidance
 - Fail fast if any required header is missing or renamed.
