@@ -41,11 +41,12 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 1. `docs/vision.md` — the why.
 2. `docs/bottleneck-map.md` — the problems worth solving.
 3. `docs/ecosystem-map.md` — authoritative czar repo map and flows.
-4. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
-5. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
-6. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
-7. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
-8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
+4. `docs/ecosystem-architecture.md` — layered view from system-factory through advisory outputs.
+5. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
+6. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
+7. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
+8. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
+9. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
 
 ## Ecosystem Map
 See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relationships, and artifact flow across the organization.
