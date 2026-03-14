@@ -13,5 +13,6 @@ Defines how systems designed in this repository should be evaluated before being
 - **Traceability**: Can the artifact be traced to its sources?
 - **Reproducibility**: Can the same workflow produce the same output?
 - **Clarity**: Is the artifact understandable by engineers?
+- **Contract Compliance**: Do user-facing artifacts (e.g., the comment resolution matrix spreadsheet) match the exact headers, order, and required/optional fields defined in their governing contract, with no extra visible columns?
 
 All systems should define validation methods before implementation.

@@ -9,6 +9,7 @@ Deterministically ingest and resolve agency comments with explicit revision line
 - Section references/anchors for each revision.
 - Workflow configuration for disposition styles, routing, and approval gates.
 - Prompt and rule versions (see `prompts/comment-resolution.md` and `rules/comment-resolution/`).
+- Comment matrices must match the canonical spreadsheet contract (`docs/comment-resolution-matrix-spreadsheet-contract.md` + `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`); `working-paper-review-engine` is the upstream producer and must emit these exact headers/order for this system to ingest.
 
 ## Schemas Used
 - `schemas/comment-schema.json`
@@ -23,6 +24,7 @@ Deterministically ingest and resolve agency comments with explicit revision line
 
 ## Revision and Validation Rules
 - The system MUST fail validation if no working paper PDF is provided.
+- Spreadsheet inputs MUST validate against `comment_resolution_matrix_spreadsheet_contract` (exact headers and order; no extra visible columns; required vs. adjudication columns enforced).
 - When multiple working paper PDFs are supplied, the comments spreadsheet MUST include a `Revision` column; blank revisions in a single-PDF run map to `rev1`.
 - Each uploaded PDF is assigned deterministically to `rev1`, `rev2`, `rev3`, ... in the order provided.
 - If any comment references a revision without a matching uploaded PDF, the run MUST fail with a clear validation error.

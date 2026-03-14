@@ -2,6 +2,12 @@
 
 This document canonizes the human-facing spreadsheet interface for the comment resolution matrix used across the czar repo org. It locks the exact headers, order, and semantics that downstream systems must honor when importing or exporting user-visible matrices.
 
+## Authority and scope
+- `spectrum-systems` is the governing source for this matrix contract; no sibling or downstream repo may redefine the headers, order, or semantics.
+- `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` is the machine-readable source of truth; this document is the human-readable companion.
+- `working-paper-review-engine` (producer) must emit this exact shape; `comment-resolution-engine` (consumer) must ingest/export this exact shape; other repos (e.g., `spectrum-pipeline-engine`) must treat this contract as non-negotiable.
+- Visible columns must match the canonical headers below—no freelancing, renaming, or reordering. Metadata belongs in sidecars or hidden sheets per the policy below.
+
 ## Canonical headers and order
 The headers **must** appear exactly as written and in this exact order:
 1. Comment Number
@@ -72,6 +78,7 @@ Internal models may use normalized keys, but user-facing spreadsheets must keep 
 ## Validation guidance
 - Fail fast if any required header is missing or renamed.
 - Preserve the exact header order on export.
+- Reject matrices that introduce extra visible columns; exports must emit only the canonical headers.
 - Accept blank adjudication columns on input; populate them during adjudication.
 - Ensure Comment Type values are one of {Editorial/Grammar, Clarification, Technical}.
 - Map `Report Version` to the working paper revision; reject mismatches or ambiguous revisions.
