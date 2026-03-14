@@ -24,121 +24,96 @@ Implementation repositories MUST explicitly declare:
 
 ## System Mappings
 
-### SYS-001 Comment Resolution Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `comment-resolution-engine`
-- Interface spec: `systems/comment-resolution/interface.md`
-- Canonical schemas consumed: `schemas/comment-schema.json`, `schemas/issue-schema.json`, `schemas/provenance-schema.json`, `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`
-- Rule packs consumed: `rules/comment-resolution/`
-- Evaluation assets: `eval/comment-resolution/`
-- Required repo declarations for conformance:
-  - `system_id: SYS-001`
-  - Contract/schema version pins (comment schema, issue schema, provenance schema, matrix contract)
-  - Rule pack + prompt version hash; provenance guidance version
-  - Evaluation manifest with fixtures + results; external storage policy for matrices and manifests
+Each mapping uses the same template so implementation engineers can import the right specs, schemas, and evaluation harnesses consistently.
 
-### SYS-002 Transcript-to-Issue Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `transcript-to-issue-engine`
-- Interface spec: `systems/transcript-to-issue/interface.md`
-- Canonical schemas consumed: `schemas/issue-schema.json`, `schemas/provenance-schema.json`
-- Rule packs consumed: none published; implementation must document local rules
-- Evaluation assets: `eval/transcript-to-issue/`
-- Required repo declarations for conformance:
+### SYS-001 Comment Resolution Engine
+- **System ID**: `SYS-001`
+- **Implementation repository**: `comment-resolution-engine`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/comment-resolution/interface.md`
+- **Canonical schemas consumed**: `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`; `schemas/comment-schema.json`; `schemas/issue-schema.json`; `schemas/assumption-schema.json`; `schemas/provenance-schema.json`
+- **Canonical schemas produced**: `schemas/comment-schema.json`; `schemas/issue-schema.json`; `schemas/assumption-schema.json` (when referenced); `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` (normalized exports); `schemas/provenance-schema.json` (run manifests)
+- **Rule packs consumed**: `rules/comment-resolution/`
+- **Evaluation harness location**: `eval/comment-resolution/`
+- **Required conformance declarations for implementation repos**:
+  - `system_id: SYS-001`
+  - Version pins for interface spec, spreadsheet contract, comment/issue/assumption/provenance schemas
+  - Prompt and rule version hash plus provenance guidance version
+  - Evaluation manifest covering fixture set, results, and external storage policy for matrices/manifests
+
+### SYS-002 Transcript to Issue Extractor
+- **System ID**: `SYS-002`
+- **Implementation repository**: `transcript-to-issue-engine`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/transcript-to-issue/interface.md`
+- **Canonical schemas consumed**: `schemas/issue-schema.json`; `schemas/provenance-schema.json`; optional `schemas/assumption-schema.json` for linked assumptions
+- **Canonical schemas produced**: `schemas/issue-schema.json`; `schemas/provenance-schema.json` (with transcript references)
+- **Rule packs consumed**: none published; pin prompt set in `prompts/transcript-to-issue.md`
+- **Evaluation harness location**: `eval/transcript-to-issue/`
+- **Required conformance declarations for implementation repos**:
   - `system_id: SYS-002`
-  - Schema version pins (issue, provenance) and prompt set hash
-  - Transcript ingestion policy and redaction controls
-  - Evaluation manifest with fixtures + results; external storage policy for transcripts
+  - Version pins for issue/provenance (and assumption, when used) schemas
+  - Prompt set hash, transcript ingestion policy, and redaction controls
+  - Evaluation manifest with fixtures/results and storage policy for transcripts and manifests
 
 ### SYS-003 Study Artifact Generator
-- Architecture source: `spectrum-systems`
-- Implementation repo: `study-artifact-generator`
-- Interface spec: `systems/study-artifact-generator/interface.md`
-- Canonical schemas consumed: `schemas/study-output-schema.json`, `schemas/assumption-schema.json`, `schemas/provenance-schema.json`
-- Rule packs consumed: none published; implementation must document local rendering rules
-- Evaluation assets: `eval/study-artifacts/`
-- Required repo declarations for conformance:
+- **System ID**: `SYS-003`
+- **Implementation repository**: `study-artifact-generator`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/study-artifact-generator/interface.md`
+- **Canonical schemas consumed**: `schemas/study-output-schema.json`; `schemas/assumption-schema.json`; `schemas/provenance-schema.json`
+- **Canonical schemas produced**: `schemas/study-output-schema.json`; `schemas/provenance-schema.json`; assumption references aligned to `schemas/assumption-schema.json`
+- **Rule packs consumed**: none published; pin templates/rules in `prompts/report-drafting.md`
+- **Evaluation harness location**: `eval/study-artifacts/`
+- **Required conformance declarations for implementation repos**:
   - `system_id: SYS-003`
-  - Schema version pins (study-output, assumption, provenance) and prompt set hash
-  - Template/rendering rule versions
-  - Evaluation manifest with fixtures + results; external storage policy for simulation inputs/outputs
+  - Version pins for study-output, assumption, and provenance schemas
+  - Template/prompt/rule version identifiers and deterministic formatting policy
+  - Evaluation manifest with fixtures/results and storage policy for simulation inputs/outputs
 
-### SYS-004 Spectrum Study Compiler
-- Architecture source: `spectrum-systems`
-- Implementation repo: `spectrum-study-compiler`
-- Interface spec: `systems/spectrum-study-compiler/interface.md`
-- Canonical schemas consumed: `schemas/compiler-manifest.schema.json`, `schemas/artifact-bundle.schema.json`, `schemas/diagnostics.schema.json`, `schemas/study-output-schema.json`, `schemas/provenance-schema.json`
-- Rule packs consumed: none published; compiler-specific validation rules must be declared locally
-- Evaluation assets: `eval/spectrum-study-compiler/`
-- Required repo declarations for conformance:
+### SYS-004 Comment Adjudication Engine (assets under `systems/spectrum-study-compiler/`)
+- **System ID**: `SYS-004`
+- **Implementation repository**: `spectrum-study-compiler`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/spectrum-study-compiler/interface.md`
+- **Canonical schemas consumed**: `schemas/compiler-manifest.schema.json`; `schemas/artifact-bundle.schema.json`; `schemas/diagnostics.schema.json`; `schemas/study-output-schema.json`; `schemas/provenance-schema.json`
+- **Canonical schemas produced**: `schemas/artifact-bundle.schema.json`; `schemas/compiler-manifest.schema.json`; `schemas/diagnostics.schema.json`; `schemas/provenance-schema.json`
+- **Rule packs consumed**: compiler pass/validation rule definitions versioned with the manifest (no published rule pack)
+- **Evaluation harness location**: `eval/spectrum-study-compiler/`
+- **Required conformance declarations for implementation repos**:
   - `system_id: SYS-004`
-  - Schema version pins (compiler manifest, artifact bundle, diagnostics, study-output, provenance)
-  - Prompt/rendering rule set hash; deterministic ordering policy
-  - Evaluation manifest with fixtures + results; external storage policy for packaged artifacts
+  - Version pins for compiler-manifest, artifact-bundle, diagnostics, study-output, and provenance schemas
+  - Declared compiler pass set/order and rule set hash with deterministic ordering policy
+  - Evaluation manifest with fixtures/results and external storage policy for packaged artifacts and manifests
 
 ### SYS-005 Spectrum Program Advisor
-- Architecture source: `spectrum-systems`
-- Implementation repo: `spectrum-program-advisor`
-- Interface spec: `systems/spectrum-program-advisor/interface.md`
-- Canonical schemas consumed: `contracts/schemas/program_brief.schema.json`, `contracts/schemas/study_readiness_assessment.schema.json`, `contracts/schemas/next_best_action_memo.schema.json`, `contracts/schemas/decision_log.schema.json`, `contracts/schemas/risk_register.schema.json`, `contracts/schemas/assumption_register.schema.json`, `contracts/schemas/milestone_plan.schema.json`
-- Rule packs consumed: none published; readiness scoring rules must be declared locally
-- Evaluation assets: `eval/spectrum-program-advisor/`
-- Required repo declarations for conformance:
+- **System ID**: `SYS-005`
+- **Implementation repository**: `spectrum-program-advisor`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/spectrum-program-advisor/interface.md`
+- **Canonical schemas consumed**: `contracts/schemas/working_paper_input.schema.json`; `contracts/schemas/comment_resolution_matrix.schema.json`; `contracts/meeting_minutes_contract.yaml`; `contracts/schemas/provenance_record.schema.json`; readiness input artifacts (`contracts/schemas/program_brief.schema.json`, `contracts/schemas/study_readiness_assessment.schema.json`, `contracts/schemas/next_best_action_memo.schema.json`, `contracts/schemas/decision_log.schema.json`, `contracts/schemas/risk_register.schema.json`, `contracts/schemas/assumption_register.schema.json`, `contracts/schemas/milestone_plan.schema.json`)
+- **Canonical schemas produced**: `contracts/schemas/program_brief.schema.json`; `contracts/schemas/study_readiness_assessment.schema.json`; `contracts/schemas/next_best_action_memo.schema.json`; `contracts/schemas/decision_log.schema.json`; `contracts/schemas/risk_register.schema.json`; `contracts/schemas/assumption_register.schema.json`; `contracts/schemas/milestone_plan.schema.json`; `contracts/schemas/provenance_record.schema.json`
+- **Rule packs consumed**: none published; readiness scoring/normalization rules and prompts in `systems/spectrum-program-advisor/prompts.md`
+- **Evaluation harness location**: `systems/spectrum-program-advisor/evaluation.md`
+- **Required conformance declarations for implementation repos**:
   - `system_id: SYS-005`
-  - Schema version pins for all readiness artifacts + prompt/rule hash
-  - Provenance coverage and external storage policy for readiness bundles
-  - Evaluation manifest with fixtures + results; dependency on pipeline run manifests
+  - Version pins for all consumed inputs and produced readiness artifacts plus prompt/rule hash
+  - Provenance coverage expectations and external storage policy for readiness bundles
+  - Evaluation manifest with fixtures/results and dependency on pipeline run manifests
 
 ### SYS-006 Meeting Minutes Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `meeting-minutes-engine`
-- Interface spec: `systems/meeting-minutes-engine/interface.md`
-- Canonical schemas consumed: `contracts/meeting_minutes_contract.yaml`
-- Rule packs consumed: none published; template/anchor rules must be declared locally
-- Evaluation assets: `systems/meeting-minutes-engine/evaluation.md`
-- Required repo declarations for conformance:
+- **System ID**: `SYS-006`
+- **Implementation repository**: `meeting-minutes-engine`
+- **Architecture source**: `spectrum-systems`
+- **Interface spec location**: `systems/meeting-minutes-engine/interface.md`
+- **Canonical schemas consumed**: `contracts/meeting_minutes_contract.yaml`; `contracts/schemas/provenance_record.schema.json` for manifest references
+- **Canonical schemas produced**: `contracts/meeting_minutes_contract.yaml`; `contracts/schemas/provenance_record.schema.json` (run manifests/validation reports)
+- **Rule packs consumed**: none published; template and prompt set pinned in `systems/meeting-minutes-engine/prompts.md`
+- **Evaluation harness location**: `systems/meeting-minutes-engine/evaluation.md`
+- **Required conformance declarations for implementation repos**:
   - `system_id: SYS-006`
-  - Contract version pin for meeting minutes + prompt/template hash
-  - Transcript handling and redaction policy; provenance guidance version
-  - Evaluation manifest with fixtures + results; external storage policy for transcripts/minutes artifacts
-
-### SYS-007 Working Paper Review Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `working-paper-review-engine`
-- Interface spec: `systems/working-paper-review-engine/interface.md`
-- Canonical schemas consumed: `contracts/examples/reviewer_comment_set.json`, `contracts/examples/comment_resolution_matrix_spreadsheet_contract.json`, `contracts/examples/working_paper_input.json`
-- Rule packs consumed: none published; reviewer assignment and normalization rules must be declared locally
-- Evaluation assets: `systems/working-paper-review-engine/evaluation.md`
-- Required repo declarations for conformance:
-  - `system_id: SYS-007`
-  - Contract version pins for reviewer comment set, matrix, and working paper input
-  - Prompt/rule hash for normalization; anchor extraction policy
-  - Evaluation manifest with fixtures + results; external storage policy for PDFs and matrices
-
-### SYS-008 DOCX Comment Injection Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `docx-comment-injection-engine`
-- Interface spec: `systems/docx-comment-injection-engine/interface.md`
-- Canonical schemas consumed: `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json`, `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`
-- Rule packs consumed: none published; anchoring/injection rules must be declared locally
-- Evaluation assets: `systems/docx-comment-injection-engine/evaluation.md`
-- Required repo declarations for conformance:
-  - `system_id: SYS-008`
-  - Contract version pins for anchored DOCX injection + matrix contract
-  - Prompt/rule hash for anchor validation; manifest recording of line/page references
-  - Evaluation manifest with fixtures + results; external storage policy for DOCX/PDF artifacts
-
-### SYS-009 Spectrum Pipeline Engine
-- Architecture source: `spectrum-systems`
-- Implementation repo: `spectrum-pipeline-engine`
-- Interface spec: `systems/spectrum-pipeline-engine/interface.md`
-- Canonical schemas consumed: `contracts/meeting_minutes_contract.yaml`, `contracts/schemas/meeting_agenda_contract.schema.json`, `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`, `contracts/schemas/program_brief.schema.json`, `contracts/schemas/study_readiness_assessment.schema.json`, `contracts/schemas/next_best_action_memo.schema.json`, `contracts/schemas/decision_log.schema.json`, `contracts/schemas/risk_register.schema.json`, `contracts/schemas/assumption_register.schema.json`, `contracts/schemas/milestone_plan.schema.json`, `contracts/schemas/external_artifact_manifest.schema.json` (from `contracts/standards-manifest.json`)
-- Rule packs consumed: none published; orchestration/agenda/readiness rules must be declared locally but may not redefine contracts
-- Evaluation assets: `systems/spectrum-pipeline-engine/evaluation.md`
-- Required repo declarations for conformance:
-  - `system_id: SYS-009`
-  - Pinned contract versions for all consumed artifacts + meeting agenda contract; prompt/rule hash for orchestration
-  - Provenance policy for manifests and external artifact references; deterministic replay policy
-  - Evaluation manifest with fixtures + results; external storage policy for bundles and manifests
+  - Contract version pin for meeting minutes, template identifier, and prompt/rule hash
+  - Transcript handling and redaction policy plus provenance guidance version
+  - Evaluation manifest with fixtures/results and storage policy for transcripts and minutes artifacts
 
 Implementation repositories SHOULD keep these declarations in code or metadata to preserve traceability across releases.
