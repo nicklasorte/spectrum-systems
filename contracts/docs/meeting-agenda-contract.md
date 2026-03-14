@@ -25,6 +25,9 @@ This contract governs how the czar repo org generates the next meeting agenda fr
 - `pre_reads`
 - `suggested_attendees`
 
+### Source artifact entries
+Each `source_artifacts` entry includes `artifact_id`, `artifact_type`, `artifact_version`, `role`, `source_repo`, and `source_repo_version`; optional `location` and `notes` can capture URIs or handling instructions for traceability.
+
 ## Agenda item schema (canonical fields)
 Each agenda item **must** carry these fields (see `contracts/schemas/meeting_agenda_contract.schema.json`):
 - `agenda_id` — stable identifier.
