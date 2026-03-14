@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/repository-metadata.schema.json",
+  "title": "Repository Metadata",
+  "description": "Standardized metadata contract for repositories in the spectrum-systems ecosystem.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repo_name",
+    "repo_type",
+    "description",
+    "governed_by",
+    "maintainer",
+    "contracts_used",
+    "last_architecture_review",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the repository metadata schema."
+    },
+    "repo_name": {
+      "type": "string",
+      "description": "Repository name (GitHub repo slug)."
+    },
+    "repo_type": {
+      "type": "string",
+      "enum": [
+        "constitution",
+        "engine",
+        "orchestrator",
+        "advisor",
+        "utility"
+      ],
+      "description": "Role of the repository within the ecosystem."
+    },
+    "description": {
+      "type": "string",
+      "description": "Concise statement of the repository's purpose."
+    },
+    "governed_by": {
+      "type": "string",
+      "description": "Upstream governance authority for this repository (e.g., constitution repo or standards manifest owner)."
+    },
+    "maintainer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "contact"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Primary maintainer or team name."
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact channel for the maintainer (email or Slack handle)."
+        }
+      },
+      "description": "Primary maintainer responsible for repository stewardship."
+    },
+    "contracts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "List of contract or schema identifiers this repository implements or depends on."
+    },
+    "last_architecture_review": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the most recent architecture/design review (YYYY-MM-DD)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "experimental",
+        "deprecated"
+      ],
+      "description": "Lifecycle status for the repository."
+    }
+  }
+}
