@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/external_artifact_manifest.schema.json",
+  "title": "External Artifact Manifest",
+  "description": "Manifest capturing storage, lineage, and checksum details for artifacts kept outside GitHub.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "study_id",
+    "source_engine",
+    "revision",
+    "logical_role",
+    "storage_kind",
+    "local_path",
+    "sha256",
+    "parent_artifact_id",
+    "status",
+    "tags"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "external_artifact_manifest",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for this manifest entry."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this manifest record."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the external_artifact_manifest schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this manifest."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this manifest was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced this manifest."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "study_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Study or program identifier the artifact belongs to."
+    },
+    "source_engine": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "Engine or workflow that produced or registered the artifact."
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^v?[0-9]+(\\.[0-9]+)*$",
+      "description": "Revision number or tag for the artifact content."
+    },
+    "logical_role": {
+      "type": "string",
+      "enum": [
+        "input",
+        "intermediate",
+        "output",
+        "report",
+        "evidence",
+        "supporting"
+      ],
+      "description": "Role of the artifact in the workflow."
+    },
+    "storage_kind": {
+      "type": "string",
+      "enum": [
+        "local",
+        "nfs",
+        "smb",
+        "afp",
+        "posix-mount",
+        "other-network"
+      ],
+      "description": "Storage class for the artifact. GitHub or Git-based storage is not allowed."
+    },
+    "local_path": {
+      "type": "string",
+      "pattern": "^(\\\\/|[A-Za-z]:\\\\).+",
+      "description": "Absolute path to the artifact on local or mounted storage; must not be a GitHub URL."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 checksum of the artifact contents."
+    },
+    "parent_artifact_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Identifier for the upstream artifact or manifest this derives from."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "superseded",
+        "quarantined"
+      ],
+      "description": "Lifecycle state of the artifact."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "description": "Labels for grouping or search."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human or system name creating the manifest."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the actor (e.g., system, analyst, reviewer)."
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "system"
+          ],
+          "description": "Type of actor creating the manifest."
+        },
+        "organization": {
+          "type": "string",
+          "description": "Organization responsible for the actor."
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact email or URL for follow-up."
+        }
+      }
+    }
+  }
+}

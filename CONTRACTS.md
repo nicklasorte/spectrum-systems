@@ -30,6 +30,7 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - risk_register — required risk categories (technical, data, schedule, stakeholder, process/legal, coordination, narrative) with decision-readiness effects.
 - assumption_register — validated assumptions with evidence, dependencies, and mitigation plans.
 - milestone_plan — dependency-aware milestone tracking with decision gates and readiness assessments.
+- external_artifact_manifest — canonical manifest for artifacts stored on local or network storage outside GitHub, including storage_kind, local_path, checksum, and lineage links.
 
 The comment resolution matrix spreadsheet contract is now part of the standards layer for user-visible artifacts. Downstream repos must preserve the exact headers and order defined in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` when importing/exporting spreadsheets. Metadata fields (provenance ids, validation flags, run ids) must not be added to the visible sheet by default; place them in sidecars or hidden worksheets unless a formal contract update is published.
 

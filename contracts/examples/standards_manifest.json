@@ -123,6 +123,20 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/provenance_record.json",
       "notes": "Reusable provenance structure aligned to data-provenance-standard."
+    },
+    {
+      "artifact_type": "external_artifact_manifest",
+      "schema_version": "1.0.0",
+      "status": "draft",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "study-artifact-generator",
+        "comment-resolution-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/external_artifact_manifest.local.json",
+      "notes": "Manifest for artifacts stored on local or network storage; GitHub is never a storage_kind."
     }
   ]
 }

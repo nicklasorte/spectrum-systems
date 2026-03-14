@@ -1,0 +1,32 @@
+{
+  "artifact_type": "external_artifact_manifest",
+  "artifact_id": "XAM-STUDY-105-INPUT-003",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-XAM-105-INPUT-003",
+  "run_id": "run-20260314T2051Z",
+  "created_at": "2026-03-14T20:51:00Z",
+  "created_by": {
+    "name": "study-artifact-generator",
+    "role": "system",
+    "agent_type": "system",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "study_id": "STUDY-105",
+  "source_engine": "study-artifact-generator",
+  "revision": "v0.4",
+  "logical_role": "input",
+  "storage_kind": "nfs",
+  "local_path": "/srv/spectrum-data/studies/STUDY-105/inputs/antenna_measurements.csv",
+  "sha256": "9e9d7c1df1e09f9019c2a86c4b0e212a0cbb0b7f749c6b9c18fb1711aa4dd71c",
+  "parent_artifact_id": null,
+  "status": "active",
+  "tags": [
+    "input",
+    "antenna",
+    "csv"
+  ]
+}

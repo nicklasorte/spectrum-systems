@@ -1,0 +1,32 @@
+{
+  "artifact_type": "external_artifact_manifest",
+  "artifact_id": "XAM-STUDY-042-OUTPUT-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-XAM-042-OUTPUT-001",
+  "run_id": "run-20260314T2050Z",
+  "created_at": "2026-03-14T20:50:00Z",
+  "created_by": {
+    "name": "spectrum-study-compiler",
+    "role": "system",
+    "agent_type": "system",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "study_id": "STUDY-042",
+  "source_engine": "spectrum-study-compiler",
+  "revision": "v1.2",
+  "logical_role": "output",
+  "storage_kind": "local",
+  "local_path": "/mnt/spectrum/studies/STUDY-042/outputs/report_v1.2.docx",
+  "sha256": "4f9d3b9b6bce4d5ef33f0d24a6b3d6fbe23bf8c64818153de3d897cdb7d7b0ce",
+  "parent_artifact_id": "XAM-STUDY-042-OUTPUT-000",
+  "status": "active",
+  "tags": [
+    "report",
+    "draft",
+    "docx"
+  ]
+}
