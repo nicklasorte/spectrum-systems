@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/repository-metadata.schema.json",
+  "schema_version": "1.0.0",
+  "repo_name": "your-repo-name",
+  "repo_type": "engine",
+  "description": "Short description of what this repository does and which systems it serves.",
+  "governed_by": "spectrum-systems",
+  "maintainer": {
+    "name": "Owner or team name",
+    "contact": "maintainer@example.gov"
+  },
+  "contracts_used": [
+    "contracts/schemas/<contract>.schema.json"
+  ],
+  "last_architecture_review": "2026-03-01",
+  "status": "experimental"
+}

@@ -20,6 +20,7 @@ Instead of managing spectrum studies through documents alone, the system treats 
 structured artifacts → governed contracts → automated pipelines
 ```
 Working papers, comment matrices, meeting minutes, and adjudications become machine-readable artifacts with defined interfaces, not just files passed around in email.
+`spectrum-systems` is the canonical source for those artifact contracts; operational engines must import the schemas in `contracts/` (see `contracts/artifact-contracts.md`) and pin to the published standards manifest instead of redefining local copies.
 
 The result is something unusual:
 
@@ -47,6 +48,11 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 7. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
 8. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
 9. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
+4. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
+5. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
+6. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
+7. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
+8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards (see `contracts/artifact-contracts.md` for how engines should reference contracts).
 
 ## Ecosystem Map
 See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relationships, and artifact flow across the organization.
@@ -71,10 +77,12 @@ See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relati
 - `contracts/` — canonical artifact contracts, examples, and standards manifest (`CONTRACTS.md` for guidance).
 - `prompts/` — prompt registry aligned to schemas and systems.
 - `eval/` — evaluation harness scaffolds and `eval/test-matrix.md`.
+- `evals/` — shared evaluation datasets (fixtures + rubrics) for text-producing engines with run guidance in `evals/evals-framework.md`.
 - `docs/` — architecture standards, lifecycle, governance, and bottleneck analysis.
 - `workflows/` — stepwise automation blueprints.
 - `examples/` — illustrative artifacts.
 - `issues/` — backlog and research questions.
+- `architecture-decisions/` — ADR system for immutable architecture choices (see `architecture-decisions/README.md`).
 - Comment resolution matrix spreadsheet contract (authoritative headers/order for the czar org): `docs/comment-resolution-matrix-spreadsheet-contract.md` with schema in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`.
 - PDF-anchored DOCX comment injection contract (authoritative PDF line-anchor insertion rules and audit requirements): schema in `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` with fixtures in `contracts/examples/`.
 - Meeting agenda contract (canonical next-meeting agenda generator from minutes + resolution matrix + optional comments/context): `contracts/docs/meeting-agenda-contract.md` with schema in `contracts/schemas/meeting_agenda_contract.schema.json` and examples in `contracts/examples/`.
@@ -107,6 +115,8 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Conformance readiness: `docs/governance-conformance-checklist.md`.
 - Comment resolution matrix authority: this repo governs the spreadsheet contract consumed by `working-paper-review-engine` and `comment-resolution-engine`; column names and order live in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` and must not be redefined elsewhere.
 - PDF-anchored DOCX comment injection authority: PDF page + line anchors with excerpt verification are required for Word comment insertion; engines must follow `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` and emit the required audit report when generating commented DOCX outputs.
+- Prompt governance: see `prompts/prompt-governance.md`, `prompts/prompt-versioning.md`, and the drafting scaffold in `prompts/prompt-template.md`.
+- Repository metadata contract: `schemas/repository-metadata.schema.json` with guidance in `docs/repository-metadata.md`; operational repos must ship a root-level `repository-metadata.json` that conforms to the schema (template in `docs/repository-metadata-template.json`).
 
 ## Design Review Framework
 - Canonical format: `docs/design-review-standard.md`
@@ -115,6 +125,7 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Action trackers and template: `docs/review-actions/` and `docs/review-actions/action-tracker-template.md`
 - Registry of reviews: `docs/review-registry.md`
 - Culture and rationale: `docs/design-review-culture.md`
+- Architecture decisions derived from reviews are captured as ADRs in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
 
 <!-- SSOS_MENTAL_MAP_START -->
 ## Mental Map System View

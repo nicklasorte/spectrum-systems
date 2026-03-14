@@ -13,6 +13,10 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - Load schemas programmatically via `spectrum_systems.contracts.load_schema` and validate instances with `validate_artifact`.
 - Track the standards release in `contracts/standards-manifest.json`; do not fork schema definitions in downstream repos.
 
+## Versioning and compatibility
+- Changes to contracts follow the semantic rules in `CONTRACT_VERSIONING.md` and the compatibility policy in `docs/contract-versioning.md` (required version fields plus compatible/minor/breaking change definitions).
+- Breaking changes require architecture review approval before publishing a new major and must include migration guidance for operational engines.
+
 ## Contract inventory
 - working_paper_input — structured intake for working paper revisions.
 - reviewer_comment_set — normalized comment batches ready for resolution.
