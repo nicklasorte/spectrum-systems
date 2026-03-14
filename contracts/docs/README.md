@@ -35,6 +35,15 @@ All contracts carry:
 - Header order: `Comment Number`, `Reviewer Initials`, `Agency`, `Report Version`, `Section`, `Page`, `Line`, `Comment Type: Editorial/Grammar, Clarification, Technical`, `Agency Notes`, `Agency Suggested Text Change`, `NTIA Comments`, `Comment Disposition`, `Resolution`.
 - Downstream usage: comment-resolution-engine and spectrum-pipeline-engine import/export spreadsheets using these exact headers; normalized keys may be used internally but exports must preserve official headers. No additional visible metadata columns; place metadata in sidecars or hidden worksheets.
 
+### pdf_anchored_docx_comment_injection_contract
+- Purpose: authoritative PDF line-anchored insertion contract that turns resolution matrices into commented DOCX outputs.
+- Required: metadata fields plus `contract_id`, `target_revision`, `inputs` (resolution matrix, source PDF, source DOCX, optional insertion policy config), `injection_candidates`, `status_policy`, `insertion_behavior`, `audit_requirements`, `validation_rules`, `output`.
+- Rules: PDF page + line anchors with `target_excerpt` verification are mandatory; engines must fail loudly if anchors cannot be verified or mapped into DOCX, and must not guess when mappings are ambiguous.
+- Status policy: only rows with eligible statuses inject; complete/no action/not applicable rows are skipped; normalization maps spreadsheet variants into canonical statuses.
+- Audit: every engine emits a report with fields `comment_id`, `pdf_page`, `pdf_line_number`, `target_excerpt`, `result`, `reason`, `matched_pdf_text`, `matched_docx_text`, `matched_location`, `confidence`.
+- Output: preserve the source DOCX and emit a new commented DOCX plus the required audit report.
+- Reference: `contracts/docs/pdf-anchored-docx-comment-injection.md` for a concise narrative specification.
+
 ### standards_manifest
 - Purpose: machine-readable registry of contract versions and stability state.
 - Required: `artifact_type`, `artifact_id`, `artifact_version`, `schema_version`, `standards_version`, `created_at`, `created_by`, `source_repo`, `source_repo_version`, `contracts`.

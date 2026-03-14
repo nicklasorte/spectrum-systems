@@ -1,0 +1,685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pdf_anchored_docx_comment_injection_contract.schema.json",
+  "title": "PDF-Anchored DOCX Comment Injection Contract",
+  "description": "Deterministic contract for inserting Word comments based on PDF page + line anchors validated against excerpts, with mandatory audit reporting.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "contract_id",
+    "target_revision",
+    "inputs",
+    "injection_candidates",
+    "status_policy",
+    "insertion_behavior",
+    "audit_requirements",
+    "validation_rules",
+    "output"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pdf_anchored_docx_comment_injection_contract",
+      "description": "Canonical artifact type identifier for PDF-anchored DOCX comment insertion."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for this contract artifact."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this contract instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for the PDF-anchored DOCX comment injection contract."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this contract instance."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this contract instance was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced this contract."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "contract_id": {
+      "type": "string",
+      "pattern": "^DOCXINJ-[A-Z0-9._-]+$",
+      "description": "Identifier for this PDF-anchored DOCX comment injection contract."
+    },
+    "target_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision identifier shared by the source DOCX and source PDF; engines must verify both artifacts match this revision."
+    },
+    "input_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/input_artifact"
+      },
+      "description": "Upstream artifacts used to derive this contract instance (e.g., resolution matrix, source documents)."
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolution_matrix",
+        "source_pdf",
+        "source_docx"
+      ],
+      "properties": {
+        "resolution_matrix": {
+          "$ref": "#/$defs/document_reference",
+          "description": "Path and checksum for the resolution matrix supplying comment data; must map to the same revision_id as the DOCX/PDF."
+        },
+        "source_pdf": {
+          "$ref": "#/$defs/document_reference",
+          "description": "PDF generated from the source DOCX revision; serves as the primary placement anchor."
+        },
+        "source_docx": {
+          "$ref": "#/$defs/document_reference",
+          "description": "Original Word document that will receive injected comments."
+        },
+        "insertion_policy_config": {
+          "$ref": "#/$defs/document_reference",
+          "description": "Optional configuration file defining status normalization or insertion policy overrides when allowed."
+        }
+      }
+    },
+    "injection_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/injection_candidate"
+      },
+      "description": "Normalized rows eligible for comment insertion, anchored by PDF page + line and excerpt."
+    },
+    "status_policy": {
+      "$ref": "#/$defs/status_policy"
+    },
+    "insertion_behavior": {
+      "$ref": "#/$defs/insertion_behavior"
+    },
+    "audit_requirements": {
+      "$ref": "#/$defs/audit_requirements"
+    },
+    "validation_rules": {
+      "$ref": "#/$defs/validation_rules"
+    },
+    "output": {
+      "$ref": "#/$defs/output_spec"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional commentary on contract assumptions or downstream expectations."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type",
+        "organization",
+        "contact"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "workflow",
+            "system"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "input_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "artifact_version",
+        "role",
+        "source_repo",
+        "source_repo_version"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_version": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source_repo": {
+          "type": "string"
+        },
+        "source_repo_version": {
+          "type": "string"
+        }
+      }
+    },
+    "document_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "artifact_version",
+        "revision_id",
+        "path",
+        "checksum"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "description": "Type of the referenced artifact (e.g., comment_resolution_matrix, pdf, docx)."
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        "artifact_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "revision_id": {
+          "type": "string",
+          "pattern": "^rev[0-9]+$",
+          "description": "Revision identifier that must match target_revision."
+        },
+        "path": {
+          "type": "string",
+          "description": "Location of the referenced artifact."
+        },
+        "checksum": {
+          "type": "string",
+          "description": "Checksum for integrity verification."
+        },
+        "mime_type": {
+          "type": "string",
+          "description": "Optional MIME type for the artifact."
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Page count when the artifact is a PDF."
+        },
+        "generated_from_artifact_id": {
+          "type": "string",
+          "description": "Identifier of the source DOCX used to generate the PDF."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "status_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible_statuses",
+        "skip_statuses",
+        "normalization_rules"
+      ],
+      "properties": {
+        "eligible_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/status_value"
+          },
+          "description": "Statuses that must be injected as Word comments."
+        },
+        "skip_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/status_value"
+          },
+          "description": "Statuses that must never trigger insertion (complete/no action/not applicable)."
+        },
+        "normalization_rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "map"
+          ],
+          "properties": {
+            "map": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/status_value"
+              },
+              "description": "Mapping of variant spreadsheet labels to canonical statuses."
+            }
+          },
+          "description": "Normalization map from freeform spreadsheet labels into canonical status values."
+        }
+      }
+    },
+    "status_value": {
+      "type": "string",
+      "enum": [
+        "pending_injection",
+        "requires_insertion",
+        "needs_injection_review",
+        "complete",
+        "no_action",
+        "not_applicable",
+        "rejected",
+        "blocked"
+      ]
+    },
+    "injection_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "comment_id",
+        "source_agency",
+        "comment_text",
+        "comment_response",
+        "status",
+        "revision_id",
+        "pdf_page",
+        "pdf_line_number",
+        "target_excerpt",
+        "injection_text",
+        "injection_mode",
+        "anchor_confidence"
+      ],
+      "properties": {
+        "comment_id": {
+          "type": "string",
+          "pattern": "^CMT-[A-Z0-9._-]+$"
+        },
+        "source_agency": {
+          "type": "string"
+        },
+        "comment_text": {
+          "type": "string"
+        },
+        "comment_response": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/status_value"
+        },
+        "revision_id": {
+          "type": "string",
+          "pattern": "^rev[0-9]+$"
+        },
+        "pdf_page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pdf_line_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_excerpt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_section_heading": {
+          "type": "string",
+          "description": "Optional heading to narrow placement; recommended when available."
+        },
+        "injection_text": {
+          "type": "string",
+          "description": "Text inserted into the Word comment."
+        },
+        "injection_mode": {
+          "type": "string",
+          "enum": [
+            "insert_comment",
+            "reply_to_existing",
+            "update_existing_comment"
+          ]
+        },
+        "anchor_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence score from anchor verification; engines must favor wrong-placement prevention over convenience."
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending_injection",
+                  "requires_insertion",
+                  "needs_injection_review"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "injection_text": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "insertion_behavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor_strategy",
+        "verification_steps",
+        "docx_mapping",
+        "failure_behavior",
+        "output_policy"
+      ],
+      "properties": {
+        "anchor_strategy": {
+          "type": "string",
+          "const": "pdf_page_line_primary",
+          "description": "The PDF page + line number is the primary placement constraint; DOCX layout alone cannot drive insertion."
+        },
+        "verification_steps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requires_excerpt_match",
+            "requires_line_presence"
+          ],
+          "properties": {
+            "requires_excerpt_match": {
+              "type": "boolean",
+              "const": true,
+              "description": "Engines must confirm target_excerpt appears near the PDF page/line before any DOCX insertion."
+            },
+            "requires_line_presence": {
+              "type": "boolean",
+              "const": true,
+              "description": "Engines must fail loudly if the PDF page + line anchor cannot be located."
+            },
+            "use_heading_hint": {
+              "type": "boolean",
+              "description": "When target_section_heading is present, engines must use it as a narrowing constraint without overriding the PDF anchor."
+            }
+          }
+        },
+        "docx_mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "allow_approximate_mapping"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "map_pdf_excerpt_to_docx_text",
+              "description": "DOCX placement derives from PDF-validated excerpt mapping, not visual proximity alone."
+            },
+            "allow_approximate_mapping": {
+              "type": "boolean",
+              "const": false,
+              "description": "Engines must not guess; ambiguous mappings are failures."
+            }
+          }
+        },
+        "failure_behavior": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "fail_on_missing_pdf_anchor",
+              "fail_on_missing_excerpt_verification",
+              "fail_on_ambiguous_pdf_anchor",
+              "fail_on_ambiguous_docx_mapping",
+              "fail_on_missing_injection_text"
+            ]
+          },
+          "description": "Failure modes that must short-circuit insertion; engines must never silently guess."
+        },
+        "output_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "preserve_source_docx",
+            "commented_docx_role"
+          ],
+          "properties": {
+            "preserve_source_docx": {
+              "type": "boolean",
+              "const": true,
+              "description": "The original DOCX must remain unmodified; engines emit a new commented DOCX."
+            },
+            "commented_docx_role": {
+              "type": "string",
+              "enum": [
+                "commented_output"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "audit_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report_fields",
+        "result_values"
+      ],
+      "properties": {
+        "report_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "comment_id",
+              "pdf_page",
+              "pdf_line_number",
+              "target_excerpt",
+              "result",
+              "reason",
+              "matched_pdf_text",
+              "matched_docx_text",
+              "matched_location",
+              "confidence"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Fields that every injection report row must emit."
+        },
+        "result_values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "inserted",
+              "skipped",
+              "failed"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Allowed result values for audit rows."
+        }
+      }
+    },
+    "validation_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_columns",
+        "unique_keys",
+        "field_rules",
+        "revision_alignment_rules"
+      ],
+      "properties": {
+        "required_columns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "comment_id",
+              "source_agency",
+              "comment_text",
+              "comment_response",
+              "status",
+              "revision_id",
+              "pdf_page",
+              "pdf_line_number",
+              "target_excerpt",
+              "target_section_heading",
+              "injection_text",
+              "injection_mode",
+              "anchor_confidence",
+              "notes"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Columns that must exist in the normalized matrix for comment injection."
+        },
+        "unique_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "comment_id",
+              "comment_id_revision_id"
+            ]
+          },
+          "description": "Keys that must be unique; duplicate conflicting rows are disallowed unless explicitly permitted."
+        },
+        "field_rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pdf_page_positive",
+            "pdf_line_positive",
+            "target_excerpt_required",
+            "injection_text_required_for_eligible"
+          ],
+          "properties": {
+            "pdf_page_positive": {
+              "type": "boolean",
+              "const": true
+            },
+            "pdf_line_positive": {
+              "type": "boolean",
+              "const": true
+            },
+            "target_excerpt_required": {
+              "type": "boolean",
+              "const": true
+            },
+            "injection_text_required_for_eligible": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "revision_alignment_rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pdf_matches_docx_revision",
+            "matrix_matches_revision"
+          ],
+          "properties": {
+            "pdf_matches_docx_revision": {
+              "type": "boolean",
+              "const": true
+            },
+            "matrix_matches_revision": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "output_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commented_docx",
+        "audit_report"
+      ],
+      "properties": {
+        "commented_docx": {
+          "$ref": "#/$defs/document_reference",
+          "description": "Generated DOCX with injected Word comments; must preserve the source DOCX separately."
+        },
+        "audit_report": {
+          "$ref": "#/$defs/document_reference",
+          "description": "Injection report containing required audit fields."
+        }
+      }
+    }
+  }
+}

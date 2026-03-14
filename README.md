@@ -22,6 +22,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - `examples/` — illustrative artifacts.
 - `issues/` — backlog and research questions.
 - Comment resolution matrix spreadsheet contract (authoritative headers/order for the czar org): `docs/comment-resolution-matrix-spreadsheet-contract.md` with schema in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`.
+- PDF-anchored DOCX comment injection contract (authoritative PDF line-anchor insertion rules and audit requirements): schema in `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` with fixtures in `contracts/examples/`.
 
 ## Repository Philosophy
 - Schema-led, deterministic systems with explicit human review gates.
@@ -42,3 +43,4 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Validation expectations: `VALIDATION.md`, `docs/system-failure-modes.md`.
 - Maintenance: `docs/repo-maintenance-checklist.md`, `docs/doc-governance.md`.
 - Comment resolution matrix authority: this repo governs the spreadsheet contract consumed by `working-paper-review-engine` and `comment-resolution-engine`; column names and order live in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` and must not be redefined elsewhere.
+- PDF-anchored DOCX comment injection authority: PDF page + line anchors with excerpt verification are required for Word comment insertion; engines must follow `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` and emit the required audit report when generating commented DOCX outputs.

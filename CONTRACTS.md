@@ -18,9 +18,12 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - reviewer_comment_set — normalized comment batches ready for resolution.
 - comment_resolution_matrix — canonical mapping from comments to dispositions/actions.
 - comment_resolution_matrix_spreadsheet_contract — official human-facing spreadsheet interface (exact headers/order, normalized mapping, input vs. adjudication guidance).
+- pdf_anchored_docx_comment_injection_contract — authoritative PDF line-anchored insertion contract for turning resolution matrices + PDF anchors into commented DOCX outputs with mandatory audit reports.
 - standards_manifest — registry of published contract versions and status.
 - provenance_record — reusable provenance record for contract artifacts and runs.
 
 The comment resolution matrix spreadsheet contract is now part of the standards layer for user-visible artifacts. Downstream repos must preserve the exact headers and order defined in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` when importing/exporting spreadsheets. Metadata fields (provenance ids, validation flags, run ids) must not be added to the visible sheet by default; place them in sidecars or hidden worksheets unless a formal contract update is published.
 
 `spectrum-systems` is the czar repo for this contract. `working-paper-review-engine` must emit the canonical spreadsheet shape and `comment-resolution-engine` must ingest/export it without renaming or reordering columns; sibling repos must treat this contract as authoritative rather than redefining matrix layouts.
+
+`pdf_anchored_docx_comment_injection_contract` is the czar-level law for injecting DOCX comments from resolution matrices using PDF page + line anchors. Engines must verify PDF anchors via target excerpts before mapping into DOCX text, fail loudly on ambiguity, preserve the source DOCX, and emit the mandated audit report fields for every attempted insertion.
