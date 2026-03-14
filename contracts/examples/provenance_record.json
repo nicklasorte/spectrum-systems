@@ -1,0 +1,75 @@
+{
+  "artifact_type": "provenance_record",
+  "artifact_id": "PRV-CRM-2026-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-PRV-CRM-2026-001",
+  "run_id": "run-20260314T101900Z",
+  "created_at": "2026-03-14T10:19:00Z",
+  "created_by": {
+    "name": "Comment Resolution Engine",
+    "role": "lineage-writer",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab",
+    "contact": "cre@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "record_type": "transformation",
+  "entity_id": "CRM-2026-001",
+  "activity": {
+    "workflow_name": "comment-resolution-engine",
+    "workflow_step": "disposition-drafting",
+    "timestamp": "2026-03-14T10:19:00Z",
+    "status": "completed",
+    "parameters": {
+      "model": "claude-3.5",
+      "temperature": 0.0
+    }
+  },
+  "agents": [
+    {
+      "agent_id": "SYS-001",
+      "agent_type": "workflow",
+      "role": "generator",
+      "name": "Comment Resolution Engine",
+      "contact": "cre@spectrum-systems.test"
+    },
+    {
+      "agent_id": "HUM-204",
+      "agent_type": "human",
+      "role": "reviewer",
+      "name": "Reviewer Two",
+      "contact": "reviewer.two@example.com"
+    }
+  ],
+  "derived_from": [
+    {
+      "id": "CSET-2026-001",
+      "type": "reviewer_comment_set",
+      "version": "1.0.0",
+      "relationship": "input"
+    }
+  ],
+  "lineage": {
+    "version_id": "CRM-2026-001-v1",
+    "version_number": "1",
+    "lineage_type": "derived"
+  },
+  "working_paper_revision": "rev1",
+  "input_artifacts": [
+    {
+      "artifact_id": "CSET-2026-001",
+      "artifact_type": "reviewer_comment_set",
+      "artifact_version": "1.0.0",
+      "role": "source",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    }
+  ],
+  "review_status": "pending_review",
+  "reviewed_by": "Reviewer Two",
+  "review_notes": "Awaiting validation of action ACT-0001",
+  "quality_status": "validated"
+}

@@ -9,11 +9,12 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 4. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
 5. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
 6. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
-7. `schemas/` and `prompts/` — authoritative contracts and prompt registry.
+7. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
 
 ## Navigation
 - `systems/` — per-system overview/interface/design/evaluation/prompts (see `systems/README.md`).
 - `schemas/` — authoritative data contracts; see `schemas/README.md` for inventory.
+- `contracts/` — canonical artifact contracts, examples, and standards manifest (`CONTRACTS.md` for guidance).
 - `prompts/` — prompt registry aligned to schemas and systems.
 - `eval/` — evaluation harness scaffolds and `eval/test-matrix.md`.
 - `docs/` — architecture standards, lifecycle, governance, and bottleneck analysis.

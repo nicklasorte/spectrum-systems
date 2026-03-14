@@ -1,0 +1,99 @@
+{
+  "artifact_type": "standards_manifest",
+  "artifact_id": "STD-CONTRACTS",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-STD-2026-03-14",
+  "run_id": "run-20260314T101900Z",
+  "created_at": "2026-03-14T10:19:00Z",
+  "created_by": {
+    "name": "Spectrum Systems Architecture Team",
+    "role": "standards-publication",
+    "agent_type": "human",
+    "organization": "Spectrum Systems Lab",
+    "contact": "architecture@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "input_artifacts": [
+    {
+      "artifact_id": "STD-CONTRACTS",
+      "artifact_type": "standards_manifest",
+      "artifact_version": "0.9.0",
+      "role": "superseded_manifest",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "v2025.12.0"
+    }
+  ],
+  "contracts": [
+    {
+      "artifact_type": "working_paper_input",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/working_paper_input.json",
+      "notes": "Initial canonical intake contract."
+    },
+    {
+      "artifact_type": "reviewer_comment_set",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/reviewer_comment_set.json",
+      "notes": "Normalized reviewer comments with provenance links."
+    },
+    {
+      "artifact_type": "comment_resolution_matrix",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/comment_resolution_matrix.json",
+      "notes": "Deterministic mapping from comments to dispositions and actions."
+    },
+    {
+      "artifact_type": "standards_manifest",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "system-factory",
+        "downstream schema loaders"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/standards_manifest.json",
+      "notes": "Machine-readable registry of contract versions."
+    },
+    {
+      "artifact_type": "provenance_record",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/provenance_record.json",
+      "notes": "Reusable provenance structure aligned to data-provenance-standard."
+    }
+  ]
+}

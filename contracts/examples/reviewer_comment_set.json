@@ -1,0 +1,80 @@
+{
+  "artifact_type": "reviewer_comment_set",
+  "artifact_id": "CSET-2026-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-CSET-2026-001",
+  "run_id": "run-20260314T101900Z",
+  "created_at": "2026-03-14T10:19:00Z",
+  "created_by": {
+    "name": "Review Intake Workflow",
+    "role": "comment-normalization",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab",
+    "contact": "workflow@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "working_paper_id": "WKP-2026-001",
+  "working_paper_revision": "rev1",
+  "comment_set_id": "CSET-2026-001",
+  "input_artifacts": [
+    {
+      "artifact_id": "WKP-2026-001",
+      "artifact_type": "working_paper_input",
+      "artifact_version": "1.0.0",
+      "role": "source",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    }
+  ],
+  "comments": [
+    {
+      "comment_id": "CMT-0001",
+      "text": "Clarify how aggregate interference margin is calculated for rural deployments.",
+      "severity": "major",
+      "priority": "high",
+      "location": {
+        "section_id": "SEC-PATHLOSS",
+        "page": 7,
+        "reference": "Section 2.3 paragraph 2"
+      },
+      "status": "triaged",
+      "proposed_disposition": "Needs additional propagation analysis and cite annex A baseline.",
+      "provenance_id": "PRV-CMT-0001",
+      "proposed_change": "Add explicit description of clutter loss sensitivity.",
+      "tags": [
+        "interference",
+        "pathloss"
+      ],
+      "linked_issue_ids": [
+        "ISS-2026-010"
+      ],
+      "attachments": [
+        "s3://comment-uploads/0001.pdf"
+      ],
+      "confidence_score": 0.82
+    },
+    {
+      "comment_id": "CMT-0002",
+      "text": "Provide rationale for 5 MHz guard band.",
+      "severity": "minor",
+      "priority": "medium",
+      "location": {
+        "section_id": "SEC-INTRO",
+        "page": 2,
+        "reference": "Executive summary bullet 3"
+      },
+      "status": "new",
+      "proposed_disposition": "Pending policy review.",
+      "provenance_id": "PRV-CMT-0002",
+      "tags": [
+        "guard_band"
+      ],
+      "linked_issue_ids": [],
+      "attachments": [],
+      "confidence_score": 0.7
+    }
+  ]
+}

@@ -9,6 +9,7 @@
 - Schema-led interfaces with deterministic outputs and explicit human review gates.
 - Provenance and reproducibility metadata are required for every material artifact.
 - Implementation code lives elsewhere; this repo defines interfaces, prompts, schemas, and evaluation plans.
+- Artifact contracts live in `contracts/` and are the authoritative source for inputs/outputs shared across engines.
 
 ## System Catalog
 
@@ -24,6 +25,13 @@
 - Interfaces and standards: `docs/system-interface-spec.md`, `docs/system-philosophy.md`, `docs/system-lifecycle.md`.
 - Traceability and reproducibility: `docs/data-provenance-standard.md`, `docs/reproducibility-standard.md`.
 - Status and failure modes: `docs/system-status-registry.md`, `docs/system-failure-modes.md`.
+- Contracts and schema versions: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`.
+
+## Contract Layer
+- Spectrum Systems publishes canonical artifact contracts in `contracts/schemas/` with examples in `contracts/examples/`.
+- Downstream repos (comment-resolution-engine, working-paper-review-engine, system-factory scaffolds) must import these schemas instead of redefining them.
+- Contract versions and stability are tracked in `contracts/standards-manifest.json`; downstream consumers should pin to manifest versions.
+- Changes follow the rules in `CONTRACT_VERSIONING.md` and must include provenance-ready metadata to align with `docs/data-provenance-standard.md`.
 
 ## Implementation Guidance
 - Keep schemas authoritative; update prompts and evaluations in lockstep with interface changes.
