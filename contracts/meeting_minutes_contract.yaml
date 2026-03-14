@@ -1,30 +1,85 @@
-artifact_type: meeting_minutes
-artifact_version: 1.0.0
-schema_version: 1.0.0
-standards_version: 2026.03.0
-
 meeting:
-  title: ""
-  date: ""  # ISO 8601 date (YYYY-MM-DD) for the meeting session
-  meeting_type: ""  # e.g., planning, decision_review, standup
-  location: ""  # physical or virtual location descriptor
+  title:
+  date:
+  start_time:
+  end_time:
+  location:
+  meeting_type:
+  prepared_by:
+  transcript_available:
 
-participants:
-  chair: ""
-  attendees: []
-  observers: []
+context:
+  purpose:
+  relationship_to_project:
+  changes_since_last_meeting:
 
-agenda_items: []  # ordered list of agenda topics as strings
+attendance:
+  chair:
+  recorder:
+  attendees:
+  absent:
+  guests:
 
-discussion_summary: []  # ordered list of discussion notes aligned to agenda items
+agenda:
+  items:
 
-decisions_made: []  # ordered list of decisions with brief rationale
+executive_summary:
+  key_points:
+
+decisions_made:
+  - decision_id:
+    decision:
+    rationale:
+    decision_owner:
+    agenda_item:
+    date_made:
+    revisit_trigger:
+
+agenda_item_summaries:
+  - agenda_item:
+    presenter:
+    discussion_summary:
+    key_points:
+    decisions:
+    open_questions:
+    related_materials:
+
+discussion_questions_log:
+  - category:
+    question:
+    asked_by:
+    response:
+    follow_up:
+    source_reference:
 
 action_items:
-  - task: ""
-    responsible: ""
-    due_date: ""  # ISO 8601 date (YYYY-MM-DD)
+  - action_id:
+    task:
+    owner:
+    due_date:
+    dependencies:
+    status:
 
-risks_or_open_questions: []  # list of unresolved risks or follow-up questions
+risks_or_open_questions:
+  - issue_id:
+    description:
+    impact:
+    owner:
+    target_resolution_date:
 
-context_notes: ""  # free-text notes for meeting context or constraints
+next_steps:
+  milestones:
+  upcoming_inputs_required:
+
+next_meeting:
+  date:
+  time:
+  location:
+  tentative_topics:
+
+traceability:
+  transcript_reference:
+    timestamp:
+    speaker:
+    agenda_item:
+    extraction_confidence:
