@@ -47,6 +47,9 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 7. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
 8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
 
+## Ecosystem Map
+See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relationships, and artifact flow across the organization.
+
 ## Security Model
 - Operational data and generated artifacts stay off GitHub; only schemas, prompts, workflows, and lightweight synthetic fixtures live here.
 - GitHub is the control plane with rules and contracts; the data plane is local or approved network storage referenced via manifests.
