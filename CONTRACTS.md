@@ -18,7 +18,7 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - reviewer_comment_set — normalized comment batches ready for resolution.
 - comment_resolution_matrix — canonical mapping from comments to dispositions/actions.
 - comment_resolution_matrix_spreadsheet_contract — official human-facing spreadsheet interface (exact headers/order, normalized mapping, input vs. adjudication guidance).
-- pdf_anchored_docx_comment_injection_contract — authoritative PDF line-anchored insertion contract for turning resolution matrices + PDF anchors into commented DOCX outputs with mandatory audit reports.
+- pdf_anchored_docx_comment_injection_contract — authoritative PDF line-anchored insertion contract for turning resolution matrices + PDF anchors into commented DOCX outputs with mandatory audit reports and fixed canonical column order.
 - standards_manifest — registry of published contract versions and status.
 - provenance_record — reusable provenance record for contract artifacts and runs.
 
@@ -26,4 +26,4 @@ The comment resolution matrix spreadsheet contract is now part of the standards 
 
 `spectrum-systems` is the czar repo for this contract. `working-paper-review-engine` must emit the canonical spreadsheet shape and `comment-resolution-engine` must ingest/export it without renaming or reordering columns; sibling repos must treat this contract as authoritative rather than redefining matrix layouts.
 
-`pdf_anchored_docx_comment_injection_contract` is the czar-level law for injecting DOCX comments from resolution matrices using PDF page + line anchors. Engines must verify PDF anchors via target excerpts before mapping into DOCX text, fail loudly on ambiguity, preserve the source DOCX, and emit the mandated audit report fields for every attempted insertion.
+`pdf_anchored_docx_comment_injection_contract` is the czar-level law for injecting DOCX comments from resolution matrices using PDF page + line anchors. Engines must verify PDF anchors via target excerpts before mapping into DOCX text, enforce canonical column order and unique `comment_id`/`comment_id+revision_id` keys, fail loudly on ambiguity, preserve the source DOCX, and emit the mandated audit report fields for every attempted insertion.

@@ -83,6 +83,21 @@
       "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping."
     },
     {
+      "artifact_type": "pdf_anchored_docx_comment_injection_contract",
+      "schema_version": "1.0.1",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "docx-comment-injection-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.1",
+      "example_path": "contracts/examples/pdf_anchored_docx_comment_injection_contract.json",
+      "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, and mandatory audit report fields."
+    },
+    {
       "artifact_type": "standards_manifest",
       "schema_version": "1.0.0",
       "status": "stable",

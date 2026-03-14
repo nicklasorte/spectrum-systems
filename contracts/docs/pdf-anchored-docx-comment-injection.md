@@ -3,12 +3,12 @@
 Authoritative contract for inserting Word comments based on PDF page + line anchors validated by excerpts. The PDF anchor is the source of truth; engines must never guess or rely on DOCX layout alone.
 
 ## Required inputs
-- Resolution matrix aligned to the target revision.
+- Resolution matrix aligned to `target_revision`.
 - Source PDF generated from the same DOCX revision (line-number view).
-- Source DOCX for comment insertion (preserved; do not overwrite).
+- Source DOCX for comment insertion (preserve; do not overwrite).
 - Optional insertion policy config for status normalization or eligibility tuning.
 
-## Canonical row fields
+## Canonical row schema (ordered)
 - `comment_id`, `source_agency`, `comment_text`, `comment_response`, `status`, `revision_id`
 - `pdf_page` (required, integer > 0), `pdf_line_number` (required, integer > 0)
 - `target_excerpt` (required), `target_section_heading` (optional but recommended)
@@ -23,7 +23,7 @@ Authoritative contract for inserting Word comments based on PDF page + line anch
 - Never silently guess; optimize for wrong-placement prevention.
 
 ## Canonical insertion behavior
-- Inject Word comments only for statuses eligible under the status policy.
+- Inject Word comments only for eligible statuses.
 - Skip rows marked complete, no action, not applicable, rejected, or blocked.
 - `injection_text` must be non-empty for eligible rows.
 - Preserve the original DOCX; emit a new commented DOCX output.
@@ -31,16 +31,17 @@ Authoritative contract for inserting Word comments based on PDF page + line anch
 ## Status policy
 - Eligible: `pending_injection`, `requires_insertion`, `needs_injection_review`.
 - Skip: `complete`, `no_action`, `not_applicable`, `rejected`, `blocked`.
-- Normalization: map spreadsheet variants (e.g., “Pending”, “Needs insertion”, “N/A”, “Done”) into the canonical statuses before eligibility checks.
+- Normalization: map spreadsheet variants (e.g., “Pending”, “Needs insertion”, “N/A”, “Done”, “No action”) into canonical statuses before eligibility checks.
 
 ## Audit requirements
-Every engine run must emit an injection report row with: `comment_id`, `pdf_page`, `pdf_line_number`, `target_excerpt`, `result` (inserted/skipped/failed), `reason`, `matched_pdf_text`, `matched_docx_text`, `matched_location`, `confidence`.
+Every engine run must emit an injection report row with all fields: `comment_id`, `pdf_page`, `pdf_line_number`, `target_excerpt`, `result` (inserted/skipped/failed), `reason`, `matched_pdf_text`, `matched_docx_text`, `matched_location`, `confidence`.
 
 ## Validation rules
-- Required columns present and `comment_id` unique (or unique with `revision_id`).
+- Required columns must match the canonical list above; `comment_id` and `comment_id+revision_id` must be unique.
 - `pdf_page` and `pdf_line_number` are positive integers.
 - `target_excerpt` is non-empty.
 - `injection_text` is non-empty for insertion-eligible rows.
+- Conflicting duplicates for the same comment_id + revision_id are forbidden.
 - Source PDF and DOCX correspond to the same `revision_id`.
 
 ## Implementation guidance

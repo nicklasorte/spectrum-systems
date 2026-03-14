@@ -45,7 +45,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0",
+      "const": "1.0.1",
       "description": "Schema version for the PDF-anchored DOCX comment injection contract."
     },
     "standards_version": {
@@ -284,18 +284,22 @@
       "properties": {
         "eligible_statuses": {
           "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/status_value"
-          },
+          "const": [
+            "pending_injection",
+            "requires_insertion",
+            "needs_injection_review"
+          ],
           "description": "Statuses that must be injected as Word comments."
         },
         "skip_statuses": {
           "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/status_value"
-          },
+          "const": [
+            "complete",
+            "no_action",
+            "not_applicable",
+            "rejected",
+            "blocked"
+          ],
           "description": "Statuses that must never trigger insertion (complete/no action/not applicable)."
         },
         "normalization_rules": {
@@ -307,10 +311,25 @@
           "properties": {
             "map": {
               "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/status_value"
+              "const": {
+                "Pending": "pending_injection",
+                "pending": "pending_injection",
+                "Needs insertion": "requires_insertion",
+                "needs insertion": "requires_insertion",
+                "Needs injection review": "needs_injection_review",
+                "needs injection review": "needs_injection_review",
+                "Done": "complete",
+                "done": "complete",
+                "Completed": "complete",
+                "N/A": "not_applicable",
+                "n/a": "not_applicable",
+                "Not applicable": "not_applicable",
+                "No action": "no_action",
+                "no action": "no_action",
+                "Rejected": "rejected",
+                "Blocked": "blocked"
               },
-              "description": "Mapping of variant spreadsheet labels to canonical statuses."
+              "description": "Mapping of variant spreadsheet labels to canonical statuses; must normalize into the deterministic eligible/skip sets."
             }
           },
           "description": "Normalization map from freeform spreadsheet labels into canonical status values."
@@ -491,17 +510,13 @@
         },
         "failure_behavior": {
           "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "enum": [
-              "fail_on_missing_pdf_anchor",
-              "fail_on_missing_excerpt_verification",
-              "fail_on_ambiguous_pdf_anchor",
-              "fail_on_ambiguous_docx_mapping",
-              "fail_on_missing_injection_text"
-            ]
-          },
+          "const": [
+            "fail_on_missing_pdf_anchor",
+            "fail_on_missing_excerpt_verification",
+            "fail_on_ambiguous_pdf_anchor",
+            "fail_on_ambiguous_docx_mapping",
+            "fail_on_missing_injection_text"
+          ],
           "description": "Failure modes that must short-circuit insertion; engines must never silently guess."
         },
         "output_policy": {
@@ -537,35 +552,27 @@
       "properties": {
         "report_fields": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "comment_id",
-              "pdf_page",
-              "pdf_line_number",
-              "target_excerpt",
-              "result",
-              "reason",
-              "matched_pdf_text",
-              "matched_docx_text",
-              "matched_location",
-              "confidence"
-            ]
-          },
-          "uniqueItems": true,
+          "const": [
+            "comment_id",
+            "pdf_page",
+            "pdf_line_number",
+            "target_excerpt",
+            "result",
+            "reason",
+            "matched_pdf_text",
+            "matched_docx_text",
+            "matched_location",
+            "confidence"
+          ],
           "description": "Fields that every injection report row must emit."
         },
         "result_values": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "inserted",
-              "skipped",
-              "failed"
-            ]
-          },
-          "uniqueItems": true,
+          "const": [
+            "inserted",
+            "skipped",
+            "failed"
+          ],
           "description": "Allowed result values for audit rows."
         }
       }
@@ -577,42 +584,36 @@
         "required_columns",
         "unique_keys",
         "field_rules",
-        "revision_alignment_rules"
+        "revision_alignment_rules",
+        "duplicate_conflict_policy"
       ],
       "properties": {
         "required_columns": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "comment_id",
-              "source_agency",
-              "comment_text",
-              "comment_response",
-              "status",
-              "revision_id",
-              "pdf_page",
-              "pdf_line_number",
-              "target_excerpt",
-              "target_section_heading",
-              "injection_text",
-              "injection_mode",
-              "anchor_confidence",
-              "notes"
-            ]
-          },
-          "uniqueItems": true,
+          "const": [
+            "comment_id",
+            "source_agency",
+            "comment_text",
+            "comment_response",
+            "status",
+            "revision_id",
+            "pdf_page",
+            "pdf_line_number",
+            "target_excerpt",
+            "target_section_heading",
+            "injection_text",
+            "injection_mode",
+            "anchor_confidence",
+            "notes"
+          ],
           "description": "Columns that must exist in the normalized matrix for comment injection."
         },
         "unique_keys": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "comment_id",
-              "comment_id_revision_id"
-            ]
-          },
+          "const": [
+            "comment_id",
+            "comment_id_revision_id"
+          ],
           "description": "Keys that must be unique; duplicate conflicting rows are disallowed unless explicitly permitted."
         },
         "field_rules": {
@@ -658,6 +659,20 @@
             "matrix_matches_revision": {
               "type": "boolean",
               "const": true
+            }
+          }
+        },
+        "duplicate_conflict_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "allow_conflicting_duplicates"
+          ],
+          "properties": {
+            "allow_conflicting_duplicates": {
+              "type": "boolean",
+              "const": false,
+              "description": "Conflicting duplicate rows for the same comment_id + revision_id are prohibited; engines must fail validation instead of guessing."
             }
           }
         }

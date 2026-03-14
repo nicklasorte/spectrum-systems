@@ -1,8 +1,8 @@
 {
   "artifact_type": "pdf_anchored_docx_comment_injection_contract",
   "artifact_id": "DOCXINJ-2026-001",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
+  "artifact_version": "1.0.1",
+  "schema_version": "1.0.1",
   "standards_version": "2026.03.0",
   "record_id": "REC-DOCXINJ-2026-001",
   "run_id": "run-20260314T140000Z",
@@ -163,26 +163,26 @@
     }
   ],
   "status_policy": {
-    "eligible_statuses": [
-      "pending_injection",
-      "requires_insertion",
-      "needs_injection_review"
-    ],
-    "skip_statuses": [
-      "complete",
-      "no_action",
-      "not_applicable",
-      "rejected",
-      "blocked"
-    ],
+    "eligible_statuses": ["pending_injection", "requires_insertion", "needs_injection_review"],
+    "skip_statuses": ["complete", "no_action", "not_applicable", "rejected", "blocked"],
     "normalization_rules": {
       "map": {
         "Pending": "pending_injection",
+        "pending": "pending_injection",
         "Needs insertion": "requires_insertion",
+        "needs insertion": "requires_insertion",
         "Needs injection review": "needs_injection_review",
+        "needs injection review": "needs_injection_review",
         "Done": "complete",
+        "done": "complete",
+        "Completed": "complete",
         "N/A": "not_applicable",
-        "No action": "no_action"
+        "n/a": "not_applicable",
+        "Not applicable": "not_applicable",
+        "No action": "no_action",
+        "no action": "no_action",
+        "Rejected": "rejected",
+        "Blocked": "blocked"
       }
     }
   },
@@ -229,25 +229,8 @@
     ]
   },
   "validation_rules": {
-    "required_columns": [
-      "comment_id",
-      "source_agency",
-      "comment_text",
-      "comment_response",
-      "status",
-      "revision_id",
-      "pdf_page",
-      "pdf_line_number",
-      "target_excerpt",
-      "target_section_heading",
-      "injection_text",
-      "injection_mode",
-      "anchor_confidence",
-      "notes"
-    ],
-    "unique_keys": [
-      "comment_id_revision_id"
-    ],
+    "required_columns": ["comment_id", "source_agency", "comment_text", "comment_response", "status", "revision_id", "pdf_page", "pdf_line_number", "target_excerpt", "target_section_heading", "injection_text", "injection_mode", "anchor_confidence", "notes"],
+    "unique_keys": ["comment_id", "comment_id_revision_id"],
     "field_rules": {
       "pdf_page_positive": true,
       "pdf_line_positive": true,
@@ -257,6 +240,9 @@
     "revision_alignment_rules": {
       "pdf_matches_docx_revision": true,
       "matrix_matches_revision": true
+    },
+    "duplicate_conflict_policy": {
+      "allow_conflicting_duplicates": false
     }
   },
   "output": {

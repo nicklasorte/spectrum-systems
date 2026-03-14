@@ -39,7 +39,8 @@ All contracts carry:
 - Purpose: authoritative PDF line-anchored insertion contract that turns resolution matrices into commented DOCX outputs.
 - Required: metadata fields plus `contract_id`, `target_revision`, `inputs` (resolution matrix, source PDF, source DOCX, optional insertion policy config), `injection_candidates`, `status_policy`, `insertion_behavior`, `audit_requirements`, `validation_rules`, `output`.
 - Rules: PDF page + line anchors with `target_excerpt` verification are mandatory; engines must fail loudly if anchors cannot be verified or mapped into DOCX, and must not guess when mappings are ambiguous.
-- Status policy: only rows with eligible statuses inject; complete/no action/not applicable rows are skipped; normalization maps spreadsheet variants into canonical statuses.
+- Status policy: only rows with eligible statuses inject; complete/no action/not applicable/rejected/blocked rows are skipped; normalization maps spreadsheet variants into canonical statuses before eligibility checks.
+- Validation: canonical column order is fixed, `comment_id` and `comment_id+revision_id` must be unique, and conflicting duplicates are forbidden.
 - Audit: every engine emits a report with fields `comment_id`, `pdf_page`, `pdf_line_number`, `target_excerpt`, `result`, `reason`, `matched_pdf_text`, `matched_docx_text`, `matched_location`, `confidence`.
 - Output: preserve the source DOCX and emit a new commented DOCX plus the required audit report.
 - Reference: `contracts/docs/pdf-anchored-docx-comment-injection.md` for a concise narrative specification.
