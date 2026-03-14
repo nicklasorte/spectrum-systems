@@ -31,8 +31,9 @@ All contracts carry:
 
 ### comment_resolution_matrix_spreadsheet_contract
 - Purpose: canonical human-facing spreadsheet interface for the comment resolution matrix with fixed headers and ordering.
-- Required: metadata fields plus `ordered_headers`, `headers` (definitions with normalized keys and roles), `normalized_key_map`, `input_columns`, `adjudication_columns`, `comment_type_values`, `metadata_handling`, `compatibility`, `validation_rules`.
+- Required: metadata fields plus `ordered_headers`, `headers` (definitions with normalized keys and roles), `normalized_key_map`, `header_normalization_rules`, `input_columns`, `optional_input_columns`, `adjudication_columns`, `generated_output_columns`, `comment_type_values`, `completion_semantics`, `output_workbook`, `metadata_handling`, `compatibility`, `validation_rules`.
 - Header order: `Comment Number`, `Reviewer Initials`, `Agency`, `Report Version`, `Section`, `Page`, `Line`, `Comment Type: Editorial/Grammar, Clarification, Technical`, `Agency Notes`, `Agency Suggested Text Change`, `NTIA Comments`, `Comment Disposition`, `Resolution`.
+- Completion semantics: rows are completed when `Comment Disposition` is in {Accepted, Partially Accepted, Rejected, Out of Scope} and `Resolution` is populated; `Pending` or blank dispositions remain open.
 - Downstream usage: comment-resolution-engine and spectrum-pipeline-engine import/export spreadsheets using these exact headers; normalized keys may be used internally but exports must preserve official headers. No additional visible metadata columns; place metadata in sidecars or hidden worksheets.
 
 ### pdf_anchored_docx_comment_injection_contract
