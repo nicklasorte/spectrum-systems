@@ -4,9 +4,10 @@ This guide defines how schemas evolve so that downstream systems remain stable a
 
 ## Schema Versioning
 
-- Version format: `MAJOR.MINOR`.
+- Version format: `MAJOR.MINOR.PATCH`.
 - Breaking changes increment `MAJOR`.
-- Backward-compatible changes increment `MINOR`.
+- Backward-compatible schema additions increment `MINOR`.
+- Documentation clarifications or validation-neutral updates increment `PATCH` so downstream consumers do not need to repin.
 
 ## Breaking Changes
 
@@ -20,6 +21,7 @@ Examples of changes that require a major version bump:
 Examples of changes that only require a minor version bump:
 - Adding optional fields.
 - Adding metadata fields that do not change existing requirements.
+- Clarifying documentation without altering validation rules should use a patch bump instead of a minor bump.
 
 ## Approval Process
 
