@@ -33,9 +33,9 @@ This directory contains authoritative schemas that anchor every system and workf
 
 ## Schema Evolution
 
-- Use `MAJOR.MINOR` versioning (patch is implicit in data values).
+- Use `MAJOR.MINOR.PATCH` versioning.
 - Breaking changes (field removals, renames, or type changes) increment `MAJOR`.
-- Additive, backward-compatible fields increment `MINOR`.
+- Additive, backward-compatible fields increment `MINOR`; documentation clarifications or validation-neutral updates increment `PATCH` and do not require downstream repins.
 - Deprecated fields remain documented with clear deprecation notes to preserve compatibility.
 
 ## Governance

@@ -95,9 +95,9 @@ Root `schemas/` contains nine minimal schemas (comment, issue, provenance, assum
 
 `AGENTS.md` is 12 lines: five rules and a five-step development cycle. `CLAUDE.md` and `CODEX.md` are both comprehensive (100+ lines each) with specific responsibilities, task scopes, and interaction models. `AGENTS.md` provides no additional value over the two agent-specific files and does not reflect the ecosystem's actual agent architecture. It should either be significantly expanded or consolidated.
 
-### G-9: Schema Versioning Format Is Inconsistent
+### G-9: Schema Versioning Format Standardized
 
-`docs/schema-governance.md` defines versions as `MAJOR.MINOR`. `CONTRACT_VERSIONING.md` defines versions as `MAJOR.MINOR.PATCH`. Both documents govern the same schema assets. The two-part vs three-part version format creates ambiguity when downstream repos try to pin versions or automate compatibility checks.
+`docs/schema-governance.md` now matches `CONTRACT_VERSIONING.md` at `MAJOR.MINOR.PATCH`, preserving the PATCH lane for documentation-only clarifications and other validation-neutral updates. Manifest entries remain semver-formatted so downstream repos can pin consistently.
 
 ### G-10: Roadmap Does Not Reflect Current State
 
@@ -237,7 +237,7 @@ Without this process, breaking changes will be coordinated informally, creating 
 
 ### REC-10: Resolve Schema Versioning Format Inconsistency (Priority: Medium)
 
-Choose either `MAJOR.MINOR` or `MAJOR.MINOR.PATCH` uniformly across `docs/schema-governance.md` and `CONTRACT_VERSIONING.md`. Update all schema `$schema_version` fields and the standards manifest to use the chosen format. The manifest currently mixes formats implicitly (all at 1.0.0 which is valid in both, but the governing documents conflict). `MAJOR.MINOR.PATCH` from `CONTRACT_VERSIONING.md` is recommended — it provides a PATCH lane for documentation-only clarifications that do not require downstream repinning.
+Schema versioning is standardized on `MAJOR.MINOR.PATCH` across `docs/schema-governance.md` and `CONTRACT_VERSIONING.md`. Keep schema `$schema_version` fields and the standards manifest in semver format; the PATCH lane covers documentation clarifications and other validation-neutral updates without forcing downstream repins.
 
 ---
 
