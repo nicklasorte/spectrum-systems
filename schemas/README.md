@@ -15,6 +15,7 @@ This directory contains authoritative schemas that anchor every system and workf
 | diagnostics.schema.json | 1.0.0 | SYS-004 diagnostics with explicit warnings/errors | Artifact/section references, provenance, checksum placeholders |
 | precedent-schema.json | 1.1.0 | Precedent cases used in decisions | Provenance, review status |
 | provenance-schema.json | 1.0.0 | Reusable lineage, validation, and version metadata | Required across all schemas |
+| repository-metadata.schema.json | 1.0.0 | Standard repo metadata contract (role, governance, maintainer, status) | Governance authority, maintainer contact |
 | data-lake/comment-resolution-history.json | 1.0.0 | Historical disposition records in the data lake | Provenance, revision info |
 | data-lake/assumption-registry.json | 1.0.0 | Persisted assumptions with review metadata | Provenance, impact level |
 | data-lake/source-document-registry.json | 1.0.0 | Registered source documents and revisions | Provenance, trust metadata |
