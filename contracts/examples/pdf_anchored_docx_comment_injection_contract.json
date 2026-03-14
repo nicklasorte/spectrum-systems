@@ -1,0 +1,281 @@
+{
+  "artifact_type": "pdf_anchored_docx_comment_injection_contract",
+  "artifact_id": "DOCXINJ-2026-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-DOCXINJ-2026-001",
+  "run_id": "run-20260314T140000Z",
+  "created_at": "2026-03-14T14:00:00Z",
+  "created_by": {
+    "name": "Comment Injection Orchestrator",
+    "role": "docx-comment-injection",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab",
+    "contact": "injection@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "contract_id": "DOCXINJ-2026-001",
+  "target_revision": "rev1",
+  "input_artifacts": [
+    {
+      "artifact_id": "CRM-2026-001",
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_version": "1.0.0",
+      "role": "source_matrix",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    },
+    {
+      "artifact_id": "WKP-2026-001-PDF",
+      "artifact_type": "pdf",
+      "artifact_version": "1.0.0",
+      "role": "anchor_pdf",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    },
+    {
+      "artifact_id": "WKP-2026-001-DOCX",
+      "artifact_type": "docx",
+      "artifact_version": "1.0.0",
+      "role": "source_docx",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    }
+  ],
+  "inputs": {
+    "resolution_matrix": {
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_id": "CRM-2026-001",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://contracts/comment-resolution/CRM-2026-001.json",
+      "checksum": "sha256:crm-2026-001"
+    },
+    "source_pdf": {
+      "artifact_type": "pdf",
+      "artifact_id": "WKP-2026-001-PDF",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://working-papers/WKP-2026-001-rev1.pdf",
+      "checksum": "sha256:wkp-2026-001-rev1-pdf",
+      "page_count": 42,
+      "generated_from_artifact_id": "WKP-2026-001-DOCX"
+    },
+    "source_docx": {
+      "artifact_type": "docx",
+      "artifact_id": "WKP-2026-001-DOCX",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://working-papers/WKP-2026-001-rev1.docx",
+      "checksum": "sha256:wkp-2026-001-rev1-docx"
+    },
+    "insertion_policy_config": {
+      "artifact_type": "insertion_policy",
+      "artifact_id": "INJ-POLICY-001",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://policies/comment-injection/insertion-policy.yaml",
+      "checksum": "sha256:injection-policy-001"
+    }
+  },
+  "injection_candidates": [
+    {
+      "comment_id": "CMT-0001",
+      "source_agency": "Agency A",
+      "comment_text": "Clarify modeling assumption for suburban clutter loss.",
+      "comment_response": "Response drafted; needs inline citation and reviewer confirmation.",
+      "status": "pending_injection",
+      "revision_id": "rev1",
+      "pdf_page": 3,
+      "pdf_line_number": 12,
+      "target_excerpt": "suburban clutter loss sensitivity",
+      "target_section_heading": "1.1 Scope",
+      "injection_text": "Pending injection: please confirm clutter loss sensitivity text matches resolution matrix.",
+      "injection_mode": "insert_comment",
+      "anchor_confidence": 0.96,
+      "notes": "Use heading to disambiguate similar phrasing on page 3."
+    },
+    {
+      "comment_id": "CMT-0002",
+      "source_agency": "Agency B",
+      "comment_text": "Add cite to guard band study.",
+      "comment_response": "Guard band study added; confirm correct section placement.",
+      "status": "requires_insertion",
+      "revision_id": "rev1",
+      "pdf_page": 5,
+      "pdf_line_number": 7,
+      "target_excerpt": "Guard band study",
+      "target_section_heading": "1.2 References",
+      "injection_text": "Insert reviewer note: guard band study citation added per matrix; verify pagination in PDF anchor.",
+      "injection_mode": "insert_comment",
+      "anchor_confidence": 0.91,
+      "notes": "PDF shows two instances; choose the one under References heading."
+    },
+    {
+      "comment_id": "CMT-0003",
+      "source_agency": "Agency C",
+      "comment_text": "Explain rural drive test gap.",
+      "comment_response": "Deferred to rev2; mark as no action for this revision.",
+      "status": "no_action",
+      "revision_id": "rev1",
+      "pdf_page": 8,
+      "pdf_line_number": 18,
+      "target_excerpt": "rural drive test",
+      "target_section_heading": "2.1 Data gaps",
+      "injection_text": "No insertion; matrix marks no action for rev1.",
+      "injection_mode": "update_existing_comment",
+      "anchor_confidence": 0.4,
+      "notes": "Should be skipped by status policy."
+    },
+    {
+      "comment_id": "CMT-0004",
+      "source_agency": "Agency D",
+      "comment_text": "Resolve typo in table header.",
+      "comment_response": "Fixed in DOCX; note should confirm PDF line reference.",
+      "status": "needs_injection_review",
+      "revision_id": "rev1",
+      "pdf_page": 10,
+      "pdf_line_number": 4,
+      "target_excerpt": "Interference Margin",
+      "target_section_heading": "Table 3",
+      "injection_text": "Verify table header correction aligns with PDF line anchor before finalizing.",
+      "injection_mode": "reply_to_existing",
+      "anchor_confidence": 0.83,
+      "notes": "Use excerpt match to avoid nearby duplicate header."
+    },
+    {
+      "comment_id": "CMT-0005",
+      "source_agency": "Agency E",
+      "comment_text": "Reviewer thanked for clarification.",
+      "comment_response": "Already confirmed complete in matrix.",
+      "status": "complete",
+      "revision_id": "rev1",
+      "pdf_page": 12,
+      "pdf_line_number": 22,
+      "target_excerpt": "clarification provided",
+      "target_section_heading": "Appendix A",
+      "injection_text": "No insertion required; disposition complete.",
+      "injection_mode": "update_existing_comment",
+      "anchor_confidence": 0.35,
+      "notes": "Skipped due to status."
+    }
+  ],
+  "status_policy": {
+    "eligible_statuses": [
+      "pending_injection",
+      "requires_insertion",
+      "needs_injection_review"
+    ],
+    "skip_statuses": [
+      "complete",
+      "no_action",
+      "not_applicable",
+      "rejected",
+      "blocked"
+    ],
+    "normalization_rules": {
+      "map": {
+        "Pending": "pending_injection",
+        "Needs insertion": "requires_insertion",
+        "Needs injection review": "needs_injection_review",
+        "Done": "complete",
+        "N/A": "not_applicable",
+        "No action": "no_action"
+      }
+    }
+  },
+  "insertion_behavior": {
+    "anchor_strategy": "pdf_page_line_primary",
+    "verification_steps": {
+      "requires_excerpt_match": true,
+      "requires_line_presence": true,
+      "use_heading_hint": true
+    },
+    "docx_mapping": {
+      "method": "map_pdf_excerpt_to_docx_text",
+      "allow_approximate_mapping": false
+    },
+    "failure_behavior": [
+      "fail_on_missing_pdf_anchor",
+      "fail_on_missing_excerpt_verification",
+      "fail_on_ambiguous_pdf_anchor",
+      "fail_on_ambiguous_docx_mapping",
+      "fail_on_missing_injection_text"
+    ],
+    "output_policy": {
+      "preserve_source_docx": true,
+      "commented_docx_role": "commented_output"
+    }
+  },
+  "audit_requirements": {
+    "report_fields": [
+      "comment_id",
+      "pdf_page",
+      "pdf_line_number",
+      "target_excerpt",
+      "result",
+      "reason",
+      "matched_pdf_text",
+      "matched_docx_text",
+      "matched_location",
+      "confidence"
+    ],
+    "result_values": [
+      "inserted",
+      "skipped",
+      "failed"
+    ]
+  },
+  "validation_rules": {
+    "required_columns": [
+      "comment_id",
+      "source_agency",
+      "comment_text",
+      "comment_response",
+      "status",
+      "revision_id",
+      "pdf_page",
+      "pdf_line_number",
+      "target_excerpt",
+      "target_section_heading",
+      "injection_text",
+      "injection_mode",
+      "anchor_confidence",
+      "notes"
+    ],
+    "unique_keys": [
+      "comment_id_revision_id"
+    ],
+    "field_rules": {
+      "pdf_page_positive": true,
+      "pdf_line_positive": true,
+      "target_excerpt_required": true,
+      "injection_text_required_for_eligible": true
+    },
+    "revision_alignment_rules": {
+      "pdf_matches_docx_revision": true,
+      "matrix_matches_revision": true
+    }
+  },
+  "output": {
+    "commented_docx": {
+      "artifact_type": "docx",
+      "artifact_id": "WKP-2026-001-DOCX-COMMENTED",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://working-papers/WKP-2026-001-rev1-commented.docx",
+      "checksum": "sha256:wkp-2026-001-rev1-commented"
+    },
+    "audit_report": {
+      "artifact_type": "csv",
+      "artifact_id": "DOCXINJ-2026-001-AUDIT",
+      "artifact_version": "1.0.0",
+      "revision_id": "rev1",
+      "path": "s3://reports/comment-injection/DOCXINJ-2026-001-audit.csv",
+      "checksum": "sha256:docxinjection-audit-001"
+    }
+  },
+  "notes": "PDF page + line anchors remain the source of truth; engines must not infer placement when anchors or excerpt checks fail."
+}
