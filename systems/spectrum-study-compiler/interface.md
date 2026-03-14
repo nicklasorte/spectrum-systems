@@ -10,14 +10,17 @@ Compile normalized study artifacts into a validated, packaged deliverable with e
 - Validation/packaging rules (versioned) that define required checks and error classes.
 
 ## Schemas Used
+- `schemas/compiler-manifest.schema.json`
+- `schemas/artifact-bundle.schema.json`
+- `schemas/diagnostics.schema.json`
 - `schemas/study-output-schema.json`
 - `schemas/provenance-schema.json`
 - Manifests that enumerate compiler passes, rule versions, and outputs.
 
 ## Outputs
-- Compiled package of validated artifacts with consistent formatting and report anchors.
-- Compiler manifest: inputs, passes executed, warnings/errors emitted, schema versions, and model/prompt versions (when used).
-- Summary of blocking errors and warnings suitable for reviewers.
+- Compiled package of validated artifacts with consistent formatting and report anchors aligned to `schemas/artifact-bundle.schema.json`.
+- Compiler manifest aligned to `schemas/compiler-manifest.schema.json`: inputs, passes executed, warnings/errors emitted, schema versions, ordering rules, and model/prompt versions (when used).
+- Diagnostics aligned to `schemas/diagnostics.schema.json` with explicit warnings/errors and artifact/section references.
 
 ## Validation Rules
 - All inputs must pass schema validation before compilation; missing provenance is blocking.
@@ -26,7 +29,7 @@ Compile normalized study artifacts into a validated, packaged deliverable with e
 - Any dropped artifact must be recorded with reason.
 
 ## Evaluation Method
-- Initial evaluation uses `eval/study-artifacts` cases to confirm manifest completeness, warning/error propagation, and deterministic packaging.
+- Primary evaluation uses `eval/spectrum-study-compiler` fixtures paired with `examples/compiler-input/` and `examples/compiler-output/` to confirm manifest completeness, warning/error propagation, and deterministic packaging.
 - Blocking failures: missing manifest fields, silent acceptance of invalid artifacts, non-deterministic ordering or formatting.
 
 ## Versioning

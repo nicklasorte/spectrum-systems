@@ -10,6 +10,9 @@ This directory contains authoritative schemas that anchor every system and workf
 | issue-schema.json | 1.1.0 | Issues/actions extracted from transcripts or comments | Provenance with speaker/time, manifest reference |
 | assumption-schema.json | 1.1.0 | Assumptions linked to simulations and artifacts | Provenance, impact level, manifest reference |
 | study-output-schema.json | 1.1.0 | Structured study artifacts (tables/figures/narratives) | Provenance, assumptions, manifest reference |
+| compiler-manifest.schema.json | 1.0.0 | SYS-004 manifest capturing passes, ordering, and outputs | Provenance reference, revision lineage, checksum placeholders |
+| artifact-bundle.schema.json | 1.0.0 | SYS-004 compiled bundle with deterministic ordering | Provenance references, ordering keys, checksum placeholders |
+| diagnostics.schema.json | 1.0.0 | SYS-004 diagnostics with explicit warnings/errors | Artifact/section references, provenance, checksum placeholders |
 | precedent-schema.json | 1.1.0 | Precedent cases used in decisions | Provenance, review status |
 | provenance-schema.json | 1.0.0 | Reusable lineage, validation, and version metadata | Required across all schemas |
 | data-lake/comment-resolution-history.json | 1.0.0 | Historical disposition records in the data lake | Provenance, revision info |
