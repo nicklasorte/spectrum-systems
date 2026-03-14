@@ -75,6 +75,7 @@ See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relati
 - `workflows/` — stepwise automation blueprints.
 - `examples/` — illustrative artifacts.
 - `issues/` — backlog and research questions.
+- `architecture-decisions/` — ADR system for immutable architecture choices (see `architecture-decisions/README.md`).
 - Comment resolution matrix spreadsheet contract (authoritative headers/order for the czar org): `docs/comment-resolution-matrix-spreadsheet-contract.md` with schema in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`.
 - PDF-anchored DOCX comment injection contract (authoritative PDF line-anchor insertion rules and audit requirements): schema in `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` with fixtures in `contracts/examples/`.
 - Meeting agenda contract (canonical next-meeting agenda generator from minutes + resolution matrix + optional comments/context): `contracts/docs/meeting-agenda-contract.md` with schema in `contracts/schemas/meeting_agenda_contract.schema.json` and examples in `contracts/examples/`.
@@ -117,6 +118,7 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Action trackers and template: `docs/review-actions/` and `docs/review-actions/action-tracker-template.md`
 - Registry of reviews: `docs/review-registry.md`
 - Culture and rationale: `docs/design-review-culture.md`
+- Architecture decisions derived from reviews are captured as ADRs in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
 
 <!-- SSOS_MENTAL_MAP_START -->
 ## Mental Map System View
