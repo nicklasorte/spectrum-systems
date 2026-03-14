@@ -1,0 +1,18 @@
+bundle_id: BND-MISSING-PRV
+source_revision: rev5
+run_manifest_ref: RUN-2026-03-14
+section_order:
+  - SEC-EXEC
+  - SEC-RESULTS
+artifacts:
+  - artifact_id: ART-TBL-010
+    section_id: SEC-EXEC
+    ordering_key: "01"
+    assumption_links: [ASM-010]
+    render_ref: outputs/tables/executive.csv
+  - artifact_id: ART-TBL-011
+    section_id: SEC-RESULTS
+    ordering_key: "02"
+    provenance_ref: PRV-ART-011
+    assumption_links: [ASM-010]
+    render_ref: outputs/tables/results.csv

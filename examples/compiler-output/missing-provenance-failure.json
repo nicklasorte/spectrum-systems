@@ -1,0 +1,87 @@
+{
+  "manifest": {
+    "schema_version": "1.0.0",
+    "manifest_id": "CMF-FAIL-PRV-001",
+    "system_id": "SYS-004",
+    "source_revision": "rev5",
+    "resolved_revision": "rev5",
+    "inputs": {
+      "bundle_ref": "BND-MISSING-PRV",
+      "assumption_registry_ref": "ASM-REG-2026-03-14",
+      "run_manifest_ref": "RUN-2026-03-14",
+      "dependency_refs": []
+    },
+    "outputs": {
+      "bundle_ref": "BND-MISSING-PRV-OUT",
+      "export_package_ref": "pkg/study-compiler/missing-provenance.zip"
+    },
+    "passes": [
+      {
+        "name": "input-validation-pass",
+        "version": "1.0.0",
+        "status": "failed",
+        "started_at": "2026-03-14T09:50:00Z",
+        "completed_at": "2026-03-14T09:50:01Z",
+        "warnings": [],
+        "errors": [
+          "ERR-MISSING-PROVENANCE:ART-TBL-010"
+        ]
+      }
+    ],
+    "ordering": {
+      "sort_rule": "section_order then ordering_key",
+      "section_order": [
+        "SEC-EXEC",
+        "SEC-RESULTS"
+      ],
+      "artifact_order": [
+        "ART-TBL-010",
+        "ART-TBL-011"
+      ],
+      "reject_on_ties": true
+    },
+    "diagnostics_ref": "DIA-FAIL-PRV-001",
+    "provenance_ref": "PRV-MANIFEST-FAIL-001",
+    "warnings": [],
+    "errors": [
+      "ERR-MISSING-PROVENANCE:ART-TBL-010"
+    ],
+    "hash_placeholders": {
+      "input_bundle_checksum": "PENDING",
+      "output_bundle_checksum": "PENDING",
+      "export_package_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:50:01Z",
+    "updated_at": "2026-03-14T09:50:01Z"
+  },
+  "bundle": null,
+  "diagnostics": {
+    "schema_version": "1.0.0",
+    "diagnostics_id": "DIA-FAIL-PRV-001",
+    "source_manifest_ref": "CMF-FAIL-PRV-001",
+    "source_bundle_ref": "BND-MISSING-PRV-OUT",
+    "source_revision": "rev5",
+    "resolved_revision": "rev5",
+    "ordered_artifact_ids": [
+      "ART-TBL-010",
+      "ART-TBL-011"
+    ],
+    "warnings": [],
+    "errors": [
+      {
+        "code": "ERR-MISSING-PROVENANCE",
+        "message": "Artifact ART-TBL-010 is missing required provenance reference.",
+        "artifact_id": "ART-TBL-010",
+        "section_id": "SEC-EXEC",
+        "severity": "error",
+        "blocking_reason": "Provenance is mandatory for compilation."
+      }
+    ],
+    "provenance_ref": "PRV-DIAG-FAIL-001",
+    "hash_placeholders": {
+      "diagnostics_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:50:01Z",
+    "updated_at": "2026-03-14T09:50:01Z"
+  }
+}

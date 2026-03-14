@@ -1,0 +1,21 @@
+bundle_id: BND-VALID-001
+source_revision: rev5
+run_manifest_ref: RUN-2026-03-14
+assumption_registry_ref: ASM-REG-2026-03-14
+section_order:
+  - SEC-EXEC
+  - SEC-METHODOLOGY
+  - SEC-RESULTS
+artifacts:
+  - artifact_id: ART-TBL-001
+    section_id: SEC-EXEC
+    ordering_key: "01"
+    provenance_ref: PRV-ART-001
+    assumption_links: [ASM-001]
+    render_ref: outputs/tables/summary.csv
+  - artifact_id: ART-FIG-002
+    section_id: SEC-RESULTS
+    ordering_key: "02"
+    provenance_ref: PRV-ART-002
+    assumption_links: [ASM-002, ASM-003]
+    render_ref: outputs/figures/impact.png

@@ -1,0 +1,94 @@
+{
+  "manifest": {
+    "schema_version": "1.0.0",
+    "manifest_id": "CMF-FAIL-DUP-001",
+    "system_id": "SYS-004",
+    "source_revision": "rev4",
+    "resolved_revision": "rev4",
+    "inputs": {
+      "bundle_ref": "BND-DUP-SEC",
+      "assumption_registry_ref": "ASM-REG-2026-03-12",
+      "run_manifest_ref": "RUN-2026-03-12",
+      "dependency_refs": []
+    },
+    "outputs": {
+      "bundle_ref": "BND-DUP-SEC-OUT",
+      "export_package_ref": "pkg/study-compiler/duplicate-section.zip"
+    },
+    "passes": [
+      {
+        "name": "artifact-completeness-pass",
+        "version": "1.0.0",
+        "status": "failed",
+        "started_at": "2026-03-14T09:52:00Z",
+        "completed_at": "2026-03-14T09:52:01Z",
+        "warnings": [],
+        "errors": [
+          "ERR-DUPLICATE-SECTION-ORDER:SEC-RESULTS"
+        ]
+      }
+    ],
+    "ordering": {
+      "sort_rule": "section_order then ordering_key",
+      "section_order": [
+        "SEC-RESULTS"
+      ],
+      "artifact_order": [
+        "ART-FIG-020",
+        "ART-FIG-021"
+      ],
+      "reject_on_ties": true
+    },
+    "diagnostics_ref": "DIA-FAIL-DUP-001",
+    "provenance_ref": "PRV-MANIFEST-FAIL-002",
+    "warnings": [],
+    "errors": [
+      "ERR-DUPLICATE-SECTION-ORDER:SEC-RESULTS"
+    ],
+    "hash_placeholders": {
+      "input_bundle_checksum": "PENDING",
+      "output_bundle_checksum": "PENDING",
+      "export_package_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:52:01Z",
+    "updated_at": "2026-03-14T09:52:01Z"
+  },
+  "bundle": null,
+  "diagnostics": {
+    "schema_version": "1.0.0",
+    "diagnostics_id": "DIA-FAIL-DUP-001",
+    "source_manifest_ref": "CMF-FAIL-DUP-001",
+    "source_bundle_ref": "BND-DUP-SEC-OUT",
+    "source_revision": "rev4",
+    "resolved_revision": "rev4",
+    "ordered_artifact_ids": [
+      "ART-FIG-020",
+      "ART-FIG-021"
+    ],
+    "warnings": [],
+    "errors": [
+      {
+        "code": "ERR-DUPLICATE-SECTION-ORDER",
+        "message": "Artifacts ART-FIG-020 and ART-FIG-021 share the same section/order key.",
+        "artifact_id": "ART-FIG-020",
+        "section_id": "SEC-RESULTS",
+        "severity": "error",
+        "blocking_reason": "Ordering ties must be resolved before packaging."
+      },
+      {
+        "code": "ERR-DUPLICATE-SECTION-ORDER",
+        "message": "Artifacts ART-FIG-020 and ART-FIG-021 share the same section/order key.",
+        "artifact_id": "ART-FIG-021",
+        "section_id": "SEC-RESULTS",
+        "severity": "error",
+        "blocking_reason": "Ordering ties must be resolved before packaging."
+      }
+    ],
+    "provenance_ref": "PRV-DIAG-FAIL-002",
+    "hash_placeholders": {
+      "diagnostics_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:52:01Z",
+    "updated_at": "2026-03-14T09:52:01Z"
+  }
+}

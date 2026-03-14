@@ -1,0 +1,19 @@
+bundle_id: BND-MISSING-ASM
+source_revision: rev6
+run_manifest_ref: RUN-2026-03-15
+section_order:
+  - SEC-METHODOLOGY
+  - SEC-RESULTS
+artifacts:
+  - artifact_id: ART-NARR-030
+    section_id: SEC-METHODOLOGY
+    ordering_key: "01"
+    provenance_ref: PRV-ART-030
+    assumption_links: []
+    render_ref: outputs/narratives/methodology.md
+  - artifact_id: ART-TBL-031
+    section_id: SEC-RESULTS
+    ordering_key: "02"
+    provenance_ref: PRV-ART-031
+    assumption_links: [ASM-031]
+    render_ref: outputs/tables/results.csv
