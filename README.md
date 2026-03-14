@@ -178,3 +178,7 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
                   └──────────────────────────┘
 ```
 <!-- SSOS_MENTAL_MAP_END -->
+
+## Architecture Reviews
+- [docs/reviews/](docs/reviews/)
+- [docs/architecture-actions.md](docs/architecture-actions.md)
