@@ -1,0 +1,74 @@
+name: SSOS Artifact
+description: Create a new artifact in the Spectrum Study Operating System pipeline
+title: "[Artifact] "
+labels:
+  - artifact
+body:
+  - type: dropdown
+    id: artifact_type
+    attributes:
+      label: Artifact Type
+      options:
+        - Transcript
+        - Meeting Minutes
+        - Meeting Agenda
+        - Working Paper
+        - Comment Matrix
+        - Adjudicated Matrix
+        - Word Comments
+        - FAQ
+        - Report Section
+        - Decision
+    validations:
+      required: true
+
+  - type: dropdown
+    id: system_layer
+    attributes:
+      label: System Layer
+      options:
+        - Factory
+        - Governance
+        - Orchestrator
+        - Engine
+        - Knowledge
+        - Advisor
+    validations:
+      required: true
+
+  - type: dropdown
+    id: lifecycle_stage
+    attributes:
+      label: Lifecycle Stage
+      options:
+        - Raw Evidence
+        - Normalized
+        - Reviewed
+        - Adjudication
+        - Approved
+        - Report Ready
+        - Complete
+
+  - type: input
+    id: study
+    attributes:
+      label: Study / Band
+      placeholder: "7 GHz, 4.4-4.94 GHz, 2.7 GHz, etc."
+
+  - type: input
+    id: upstream
+    attributes:
+      label: Upstream Artifact
+      placeholder: "meeting-2026-04-11, working-paper-rev2"
+
+  - type: input
+    id: downstream
+    attributes:
+      label: Downstream Artifact
+      placeholder: "faq-7ghz-023, report-section-3.2"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the artifact and its role in the SSOS pipeline.
