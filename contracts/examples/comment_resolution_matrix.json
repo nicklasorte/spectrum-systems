@@ -1,0 +1,80 @@
+{
+  "artifact_type": "comment_resolution_matrix",
+  "artifact_id": "CRM-2026-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-CRM-2026-001",
+  "run_id": "run-20260314T101900Z",
+  "created_at": "2026-03-14T10:19:00Z",
+  "created_by": {
+    "name": "Comment Resolution Engine",
+    "role": "disposition-drafting",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab",
+    "contact": "cre@spectrum-systems.test"
+  },
+  "source_repo": "nicklasorte/spectrum-systems",
+  "source_repo_version": "main@abcd1234",
+  "matrix_id": "CRM-2026-001",
+  "comment_set_id": "CSET-2026-001",
+  "working_paper_id": "WKP-2026-001",
+  "working_paper_revision": "rev1",
+  "input_artifacts": [
+    {
+      "artifact_id": "CSET-2026-001",
+      "artifact_type": "reviewer_comment_set",
+      "artifact_version": "1.0.0",
+      "role": "source",
+      "source_repo": "nicklasorte/spectrum-systems",
+      "source_repo_version": "main@abcd1234"
+    }
+  ],
+  "entries": [
+    {
+      "entry_id": "ENT-0001",
+      "comment_id": "CMT-0001",
+      "resolution_status": "partially_resolved",
+      "response_text": "Added clutter loss sensitivity discussion and flagged need for rural drive data.",
+      "action_items": [
+        {
+          "action_id": "ACT-0001",
+          "description": "Collect rural clutter loss measurements",
+          "owner": "Field Measurements",
+          "due_date": "2026-04-05T00:00:00Z",
+          "status": "in_progress"
+        }
+      ],
+      "evidence_links": [
+        "s3://evidence/rural-loss.csv"
+      ],
+      "validation_notes": "Awaiting dataset delivery; disposition text ready.",
+      "validated_by": {
+        "name": "Reviewer One",
+        "role": "technical-review",
+        "timestamp": "2026-03-14T10:10:00Z",
+        "review_status": "pending_review"
+      },
+      "applies_to_revision": "rev1",
+      "provenance_id": "PRV-CRM-0001"
+    },
+    {
+      "entry_id": "ENT-0002",
+      "comment_id": "CMT-0002",
+      "resolution_status": "resolved",
+      "response_text": "Document now cites guard band study in Section 1.2.",
+      "action_items": [],
+      "evidence_links": [
+        "s3://evidence/guard-band-rationale.pdf"
+      ],
+      "validated_by": {
+        "name": "Reviewer Two",
+        "role": "policy-review",
+        "timestamp": "2026-03-14T10:15:00Z",
+        "review_status": "approved"
+      },
+      "applies_to_revision": "rev1",
+      "provenance_id": "PRV-CRM-0002"
+    }
+  ]
+}

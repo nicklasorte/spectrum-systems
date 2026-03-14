@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/working_paper_input.schema.json",
+  "title": "Working Paper Input",
+  "description": "Canonical intake contract for working paper revisions used by review and resolution engines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "working_paper_id",
+    "working_paper_revision",
+    "title",
+    "summary",
+    "sections",
+    "submission_window",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "working_paper_input",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for the working paper intake record."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the working_paper_input schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this intake record was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "working_paper_id": {
+      "type": "string",
+      "pattern": "^WKP-[A-Z0-9._-]+$",
+      "description": "Identifier of the working paper being reviewed."
+    },
+    "working_paper_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision marker for the working paper input."
+    },
+    "title": {
+      "type": "string",
+      "description": "Working paper title."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Concise description of the working paper scope."
+    },
+    "submission_window": {
+      "type": "object",
+      "required": [
+        "submitted_at",
+        "due_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "due_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Submission and due window for the review cycle."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_review",
+        "final"
+      ],
+      "description": "State of the working paper intake."
+    },
+    "primary_author": {
+      "type": "string",
+      "description": "Primary author or owning organization."
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional contributors or SMEs."
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topical tags for routing."
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/section"
+      },
+      "description": "Structured section metadata to anchor downstream comments."
+    },
+    "document_checksums": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_pdf_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[A-Fa-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      },
+      "description": "Checksums for the submitted files to support reproducibility."
+    },
+    "input_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/input_artifact"
+      },
+      "description": "Upstream artifacts used to generate this intake (e.g., previous revisions, datasets)."
+    },
+    "provenance_record_id": {
+      "type": "string",
+      "pattern": "^PRV-[A-Z0-9._-]+$",
+      "description": "Identifier linking to a detailed provenance record."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "ai_model",
+            "workflow",
+            "script"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "input_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "artifact_version",
+        "role"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source_repo": {
+          "type": "string"
+        },
+        "source_repo_version": {
+          "type": "string"
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "title",
+        "status"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "pattern": "^SEC-[A-Za-z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "page_start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "in_review",
+            "final"
+          ]
+        }
+      }
+    }
+  }
+}
