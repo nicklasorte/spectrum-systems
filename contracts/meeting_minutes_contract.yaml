@@ -1,0 +1,30 @@
+artifact_type: meeting_minutes
+artifact_version: 1.0.0
+schema_version: 1.0.0
+standards_version: 2026.03.0
+
+meeting:
+  title: ""
+  date: ""  # ISO 8601 date (YYYY-MM-DD) for the meeting session
+  meeting_type: ""  # e.g., planning, decision_review, standup
+  location: ""  # physical or virtual location descriptor
+
+participants:
+  chair: ""
+  attendees: []
+  observers: []
+
+agenda_items: []  # ordered list of agenda topics as strings
+
+discussion_summary: []  # ordered list of discussion notes aligned to agenda items
+
+decisions_made: []  # ordered list of decisions with brief rationale
+
+action_items:
+  - task: ""
+    responsible: ""
+    due_date: ""  # ISO 8601 date (YYYY-MM-DD)
+
+risks_or_open_questions: []  # list of unresolved risks or follow-up questions
+
+context_notes: ""  # free-text notes for meeting context or constraints
