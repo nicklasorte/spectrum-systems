@@ -1,0 +1,158 @@
+name: SSOS Project Automation
+
+on:
+  issues:
+    types: [opened, closed]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  sync-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync issue with SSOS project
+        uses: actions/github-script@v7
+        env:
+          PROJECT_ID: ${{ vars.SSOS_PROJECT_ID }}
+          LIFECYCLE_FIELD_ID: ${{ vars.SSOS_LIFECYCLE_FIELD_ID }}
+          RAW_EVIDENCE_OPTION_ID: ${{ vars.SSOS_RAW_EVIDENCE_OPTION_ID }}
+          COMPLETE_OPTION_ID: ${{ vars.SSOS_COMPLETE_OPTION_ID }}
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const projectId = process.env.PROJECT_ID;
+            const lifecycleFieldId = process.env.LIFECYCLE_FIELD_ID;
+            const rawEvidenceOptionId = process.env.RAW_EVIDENCE_OPTION_ID;
+            const completeOptionId = process.env.COMPLETE_OPTION_ID;
+
+            if (!projectId || !lifecycleFieldId || !rawEvidenceOptionId || !completeOptionId) {
+              core.setFailed("Missing one or more required repository variables.");
+              return;
+            }
+
+            const issueNodeId = context.payload.issue.node_id;
+            const action = context.payload.action;
+
+            async function addProjectItem(contentId) {
+              const mutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: {
+                    projectId: $projectId,
+                    contentId: $contentId
+                  }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+              const result = await github.graphql(mutation, {
+                projectId,
+                contentId
+              });
+              return result.addProjectV2ItemById.item.id;
+            }
+
+            async function findProjectItemByContent(contentId) {
+              let after = null;
+
+              while (true) {
+                const query = `
+                  query($projectId: ID!, $after: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 100, after: $after) {
+                          pageInfo {
+                            hasNextPage
+                            endCursor
+                          }
+                          nodes {
+                            id
+                            content {
+                              ... on Issue {
+                                id
+                                number
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                `;
+
+                const result = await github.graphql(query, { projectId, after });
+                const items = result.node.items.nodes || [];
+                const match = items.find(
+                  item => item.content && item.content.id === contentId
+                );
+
+                if (match) return match.id;
+
+                const pageInfo = result.node.items.pageInfo;
+                if (!pageInfo.hasNextPage) break;
+                after = pageInfo.endCursor;
+              }
+
+              return null;
+            }
+
+            async function setSingleSelectField(projectId, itemId, fieldId, optionId) {
+              const mutation = `
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { singleSelectOptionId: $optionId }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `;
+              return await github.graphql(mutation, {
+                projectId,
+                itemId,
+                fieldId,
+                optionId
+              });
+            }
+
+            let itemId = await findProjectItemByContent(issueNodeId);
+
+            if (action === "opened") {
+              if (!itemId) {
+                itemId = await addProjectItem(issueNodeId);
+              }
+
+              await setSingleSelectField(
+                projectId,
+                itemId,
+                lifecycleFieldId,
+                rawEvidenceOptionId
+              );
+
+              core.info("Issue added to project and Lifecycle Stage set to Raw Evidence.");
+            }
+
+            if (action === "closed") {
+              if (!itemId) {
+                core.info("Issue not found in project. Nothing to update.");
+                return;
+              }
+
+              await setSingleSelectField(
+                projectId,
+                itemId,
+                lifecycleFieldId,
+                completeOptionId
+              );
+
+              core.info("Lifecycle Stage set to Complete.");
+            }
