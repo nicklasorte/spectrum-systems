@@ -106,6 +106,7 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Conformance readiness: `docs/governance-conformance-checklist.md`.
 - Comment resolution matrix authority: this repo governs the spreadsheet contract consumed by `working-paper-review-engine` and `comment-resolution-engine`; column names and order live in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` and must not be redefined elsewhere.
 - PDF-anchored DOCX comment injection authority: PDF page + line anchors with excerpt verification are required for Word comment insertion; engines must follow `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` and emit the required audit report when generating commented DOCX outputs.
+- Prompt governance: see `prompts/prompt-governance.md`, `prompts/prompt-versioning.md`, and the drafting scaffold in `prompts/prompt-template.md`.
 
 ## Design Review Framework
 - Canonical format: `docs/design-review-standard.md`
