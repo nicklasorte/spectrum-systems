@@ -1,0 +1,170 @@
+{
+  "artifact_type": "study_readiness_assessment",
+  "artifact_id": "SRA-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-SRA-001",
+  "run_id": "run-20260314T151100Z",
+  "created_at": "2026-03-14T15:11:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "assessment_window": {
+    "assessed_at": "2026-03-14T15:00:00Z",
+    "valid_through": "2026-03-21T00:00:00Z"
+  },
+  "readiness_level": "partial",
+  "decision_readiness": {
+    "status": "evidence_needed",
+    "score": 62,
+    "blocking_items": [
+      "Validation rerun pending",
+      "Stakeholder concurrence memo outstanding"
+    ],
+    "missing_evidence": [
+      "Updated validation residuals",
+      "Signed concurrence memo"
+    ]
+  },
+  "gates": [
+    {
+      "gate_id": "GATE-001",
+      "name": "Technical validation complete",
+      "status": "partial",
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "validation_report_v0.3"
+        }
+      ],
+      "blocking_risks": [
+        "RISK-001"
+      ],
+      "notes": "Awaiting rerun with 2024 clutter data"
+    },
+    {
+      "gate_id": "GATE-002",
+      "name": "Stakeholder alignment confirmed",
+      "status": "partial",
+      "evidence_refs": [
+        {
+          "ref_type": "minutes_entry",
+          "ref_id": "MTG-2026-03-12-ITEM3"
+        }
+      ],
+      "blocking_risks": [
+        "RISK-002"
+      ],
+      "notes": "Concurrence memo pending"
+    }
+  ],
+  "artifact_status": {
+    "working_paper_metadata": {
+      "status": "validated",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "WKP-SPEC-REV1"
+      }
+    },
+    "comment_resolution_matrix_metadata": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "CRM-REV1"
+      }
+    },
+    "meeting_minutes_metadata": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "MTG-2026-03-12"
+      }
+    },
+    "risk_register": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "RISKREG-001"
+      }
+    },
+    "milestone_plan": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "MSPLAN-001"
+      }
+    },
+    "decision_log": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "DECLOG-001"
+      }
+    },
+    "assumption_register": {
+      "status": "present",
+      "ref": {
+        "ref_type": "artifact",
+        "ref_id": "ASMREG-001"
+      }
+    }
+  },
+  "dependency_risks": [
+    {
+      "ref_type": "milestone",
+      "ref_id": "MS-001",
+      "risk_ids": [
+        "RISK-001"
+      ]
+    },
+    {
+      "ref_type": "decision",
+      "ref_id": "DEC-002",
+      "risk_ids": [
+        "RISK-002"
+      ]
+    }
+  ],
+  "open_questions": [
+    "How sensitive are interference results to rural clutter variants?"
+  ],
+  "recommended_actions": [
+    {
+      "action_id": "NBA-001",
+      "title": "Run validation rerun",
+      "description": "Execute rerun with 2024 clutter dataset and publish residuals",
+      "priority": "urgent",
+      "dependencies": [
+        "ASM-001"
+      ],
+      "related_risks": [
+        "RISK-001"
+      ],
+      "related_decisions": [
+        "DEC-001"
+      ]
+    },
+    {
+      "action_id": "NBA-002",
+      "title": "Draft stakeholder comparison brief",
+      "description": "Summarize phased vs single-step mitigation impacts for board",
+      "priority": "high",
+      "related_risks": [
+        "RISK-002"
+      ],
+      "related_decisions": [
+        "DEC-002"
+      ],
+      "related_assumptions": [
+        "ASM-002"
+      ]
+    }
+  ]
+}

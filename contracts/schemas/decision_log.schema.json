@@ -1,0 +1,382 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_log.schema.json",
+  "title": "Decision Log",
+  "description": "Canonical decision log capturing status, readiness, evidence, and traceability for program decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "program_id",
+    "decisions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "decision_log",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^DECLOG-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this decision log instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the decision_log schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this log was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9._-]+$",
+      "description": "Program identifier this decision log belongs to."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_artifact"
+      },
+      "description": "Traceable list of inputs used to assemble the log."
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/decision"
+      },
+      "description": "Decisions with readiness status, options, and evidence."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "automated_system",
+            "ai_assistant"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "artifact",
+            "decision",
+            "risk",
+            "assumption",
+            "milestone",
+            "issue",
+            "evidence"
+          ]
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "provenance_id": {
+          "type": "string"
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "role"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        }
+      }
+    },
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "option_id",
+        "description"
+      ],
+      "properties": {
+        "option_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "pros": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "decision_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "blocked",
+            "evidence_needed",
+            "ready_for_review",
+            "ready_for_decision",
+            "decided"
+          ]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "blocking_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "title",
+        "status",
+        "decision_type",
+        "decision_readiness"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9._-]+$",
+          "description": "Stable identifier for the decision."
+        },
+        "title": {
+          "type": "string"
+        },
+        "decision_type": {
+          "type": "string",
+          "enum": [
+            "technical",
+            "policy",
+            "process",
+            "scope",
+            "resourcing",
+            "schedule",
+            "risk_response"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "draft",
+            "in_review",
+            "approved",
+            "rejected",
+            "deferred",
+            "superseded"
+          ]
+        },
+        "needed_by": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Deadline or milestone-aligned need date."
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Decision owner(s) or accountable parties."
+        },
+        "approvers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "type": "string",
+          "description": "Context or framing for the decision."
+        },
+        "options_considered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/option"
+          }
+        },
+        "selected_option": {
+          "type": "string",
+          "description": "Identifier for the chosen option."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Reasoning behind the selected option."
+        },
+        "impacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Expected impacts of the decision."
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Dependencies to reach decision readiness."
+        },
+        "related_risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        },
+        "assumption_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ASM-[A-Z0-9._-]+$"
+          }
+        },
+        "milestone_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^MS-[A-Z0-9._-]+$"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "decision_readiness": {
+          "$ref": "#/$defs/decision_readiness"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

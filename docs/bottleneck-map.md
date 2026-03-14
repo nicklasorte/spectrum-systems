@@ -23,6 +23,13 @@
 - **Why it is suitable for automation**: Output parsing, templated rendering, and schema validation can reliably produce artifacts with embedded provenance for review.
 - **What system would solve it**: Study Artifact Generator that converts simulation outputs using `study-output-schema`, applies templates, and prepares report-ready sections with traceability.
 
+### BN-004 Decision Readiness Clarity
+- **Description**: Program managers and governance boards lack a unified view of risks, assumptions, milestones, and decisions, making readiness unclear.
+- **Why it slows decision-making**: Decisions stall because blockers, missing evidence, and dependencies are scattered across spreadsheets, minutes, and email.
+- **Why it consumes expert time**: PMs manually reconcile risks, assumptions, milestones, and decisions before each review.
+- **Why it is suitable for automation**: Canonical contracts exist for each artifact; normalization plus deterministic readiness scoring can produce auditable briefs.
+- **What system would solve it**: Spectrum Program Advisor that normalizes canonical artifacts into a program-state model and emits decision-readiness outputs.
+
 | Bottleneck | Category | Description | Impact | Frequency | Expert Time Cost | Automation Potential | Priority |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Fragmented source systems | Data | Allocation, licensing, assignment, satellite, terrain, clutter, population, and coordination records live in separate systems with different schemas. | High | Frequent | High | Medium | High |
@@ -71,6 +78,7 @@
 | Preference for bespoke judgment over structured process | Governance / Decision | Expert discretion is rewarded over standardized workflows. | Medium | Frequent | Medium | Low | Medium |
 | Fear of transparency | Governance / Decision | Reproducible analysis may expose assumptions and disagreements. | Medium | Occasional | Medium | Low | Medium |
 | Hard to separate technical disagreement from institutional posture | Governance / Decision | Engineering debate may reflect negotiation tactics or posture. | Medium | Occasional | Medium | Low | Medium |
+| Decision readiness is unclear | Governance / Decision | Risks, assumptions, milestones, and decisions are fragmented, making readiness opaque and slowing approvals. | High | Frequent | High | High | High |
 | Expert attention is scarce | Human / Organizational | High-value people spend time on formatting, lookup, coordination, and repetitive synthesis. | High | Frequent | High | Medium | High |
 | Cognitive overload | Human / Organizational | Individuals hold too many moving pieces in working memory. | Medium | Frequent | Medium | Medium | Medium |
 | Training burden on managers / senior engineers | Human / Organizational | Senior staff act as human APIs for recurring questions. | Medium | Frequent | High | Medium | Medium |

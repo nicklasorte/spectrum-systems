@@ -1,0 +1,104 @@
+{
+  "artifact_type": "risk_register",
+  "artifact_id": "RISKREG-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-RISKREG-001",
+  "run_id": "run-20260314T150600Z",
+  "created_at": "2026-03-14T15:06:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "source_artifacts": [
+    {
+      "artifact_type": "decision_log",
+      "artifact_id": "DECLOG-001",
+      "role": "input"
+    },
+    {
+      "artifact_type": "assumption_register",
+      "artifact_id": "ASMREG-001",
+      "role": "input"
+    }
+  ],
+  "risks": [
+    {
+      "risk_id": "RISK-001",
+      "title": "Propagation model validation gap",
+      "category": "technical",
+      "description": "Calibration traces not yet validated against field measurements for dense urban morphologies.",
+      "likelihood": "medium",
+      "impact": "high",
+      "exposure_score": 0.72,
+      "status": "open",
+      "owner": "Lead RF Engineer",
+      "triggers": [
+        "Field data deviates >2 dB from model",
+        "Validation run slips past gate"
+      ],
+      "mitigation_plan": "Schedule joint validation with data team and rerun sensitivity cases.",
+      "related_decisions": [
+        "DEC-001"
+      ],
+      "related_milestones": [
+        "MS-001"
+      ],
+      "assumption_refs": [
+        "ASM-001"
+      ],
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "validation_report_v0.3",
+          "description": "Preliminary validation summary",
+          "uri": "s3://spec-study/validation/report_v0.3.pdf"
+        }
+      ],
+      "decision_readiness_effect": "blocks_decision",
+      "last_reviewed_at": "2026-03-13T20:00:00Z",
+      "confidence": "medium"
+    },
+    {
+      "risk_id": "RISK-002",
+      "title": "Stakeholder alignment on mitigation options",
+      "category": "stakeholder",
+      "description": "Two agencies prefer divergent mitigation strategies for the sharing recommendation.",
+      "likelihood": "high",
+      "impact": "medium",
+      "exposure_score": 0.63,
+      "status": "mitigating",
+      "owner": "Program Manager",
+      "triggers": [
+        "Non-concurrence memo received",
+        "No consensus by next interagency meeting"
+      ],
+      "mitigation_plan": "Run side-by-side option comparison and brief leadership before next governance review.",
+      "related_decisions": [
+        "DEC-002"
+      ],
+      "related_milestones": [
+        "MS-002"
+      ],
+      "assumption_refs": [
+        "ASM-002"
+      ],
+      "evidence_refs": [
+        {
+          "ref_type": "minutes_entry",
+          "ref_id": "MTG-2026-03-12-ITEM3",
+          "description": "Meeting minutes capturing divergent views"
+        }
+      ],
+      "decision_readiness_effect": "slows_decision",
+      "last_reviewed_at": "2026-03-14T10:00:00Z",
+      "confidence": "high"
+    }
+  ]
+}

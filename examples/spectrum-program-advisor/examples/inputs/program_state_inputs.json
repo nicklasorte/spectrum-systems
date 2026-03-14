@@ -1,0 +1,11 @@
+{
+  "program_id": "PRG-SPEC-001",
+  "working_paper_metadata_ref": "WKP-SPEC-REV1",
+  "comment_resolution_matrix_metadata_ref": "CRM-REV1",
+  "meeting_minutes_metadata_ref": "MTG-2026-03-12",
+  "risk_register_fixture": "../outputs/risk_register.json",
+  "decision_log_fixture": "../outputs/decision_log.json",
+  "assumption_register_fixture": "../outputs/assumption_register.json",
+  "milestone_plan_fixture": "../outputs/milestone_plan.json",
+  "notes": "Inputs mirror canonical contracts; fixtures live in ../outputs for the scaffold."
+}

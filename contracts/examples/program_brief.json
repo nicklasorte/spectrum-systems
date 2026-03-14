@@ -1,0 +1,142 @@
+{
+  "artifact_type": "program_brief",
+  "artifact_id": "PB-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-PB-001",
+  "run_id": "run-20260314T151000Z",
+  "created_at": "2026-03-14T15:10:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "program_name": "5G Sharing Study PMO",
+  "study_scope": "Assess sharing feasibility across 3.5 GHz scenarios with phased mitigations.",
+  "current_phase": "analysis",
+  "source_artifacts": [
+    {
+      "artifact_type": "risk_register",
+      "artifact_id": "RISKREG-001",
+      "role": "input"
+    },
+    {
+      "artifact_type": "decision_log",
+      "artifact_id": "DECLOG-001",
+      "role": "input"
+    },
+    {
+      "artifact_type": "milestone_plan",
+      "artifact_id": "MSPLAN-001",
+      "role": "input"
+    }
+  ],
+  "decision_readiness": {
+    "status": "evidence_needed",
+    "score": 62,
+    "blocking_items": [
+      "Validation rerun pending",
+      "Stakeholder concurrence memo outstanding"
+    ],
+    "primary_blockers": [
+      {
+        "ref_type": "risk",
+        "ref_id": "RISK-001",
+        "description": "Validation gap"
+      },
+      {
+        "ref_type": "decision",
+        "ref_id": "DEC-002",
+        "description": "Mitigation selection requires concurrence"
+      }
+    ],
+    "next_steps": [
+      {
+        "action_id": "NBA-001",
+        "title": "Run validation rerun",
+        "priority": "urgent",
+        "status": "planned",
+        "related_risks": [
+          "RISK-001"
+        ]
+      }
+    ]
+  },
+  "state_snapshot": {
+    "open_decisions": 2,
+    "open_risks": 2,
+    "open_assumptions": 2,
+    "milestones_at_risk": 1
+  },
+  "top_risks": [
+    {
+      "risk_id": "RISK-001",
+      "title": "Propagation model validation gap",
+      "status": "open",
+      "category": "technical",
+      "decision_readiness_effect": "blocks_decision"
+    },
+    {
+      "risk_id": "RISK-002",
+      "title": "Stakeholder alignment on mitigation options",
+      "status": "mitigating",
+      "category": "stakeholder",
+      "decision_readiness_effect": "slows_decision"
+    }
+  ],
+  "open_decisions": [
+    {
+      "decision_id": "DEC-001",
+      "title": "Approve propagation model and calibration parameters",
+      "status": "in_review",
+      "needed_by": "2026-03-25T00:00:00Z",
+      "decision_readiness": {
+        "status": "evidence_needed",
+        "score": 45
+      }
+    },
+    {
+      "decision_id": "DEC-002",
+      "title": "Select mitigation approach for sharing recommendation",
+      "status": "draft",
+      "needed_by": "2026-03-31T00:00:00Z",
+      "decision_readiness": {
+        "status": "ready_for_review",
+        "score": 78
+      }
+    }
+  ],
+  "next_best_actions": [
+    {
+      "action_id": "NBA-001",
+      "title": "Run validation rerun",
+      "summary": "Execute validation rerun with updated clutter dataset",
+      "priority": "urgent",
+      "status": "planned",
+      "related_decision": "DEC-001",
+      "related_risks": [
+        "RISK-001"
+      ]
+    },
+    {
+      "action_id": "NBA-002",
+      "title": "Draft stakeholder comparison brief",
+      "summary": "Summarize phased vs single-step mitigation impacts for board",
+      "priority": "high",
+      "status": "in_progress",
+      "related_decision": "DEC-002",
+      "related_risks": [
+        "RISK-002"
+      ]
+    }
+  ],
+  "missing_artifacts": [
+    "Updated validation report",
+    "Stakeholder concurrence memo"
+  ]
+}

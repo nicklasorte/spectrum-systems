@@ -1,0 +1,84 @@
+{
+  "artifact_type": "next_best_action_memo",
+  "artifact_id": "NBA-MEMO-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-NBA-001",
+  "run_id": "run-20260314T151200Z",
+  "created_at": "2026-03-14T15:12:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "summary": "Next best actions to reach decision readiness for the 5G sharing study.",
+  "source_artifacts": [
+    {
+      "artifact_type": "study_readiness_assessment",
+      "artifact_id": "SRA-001",
+      "role": "input"
+    },
+    {
+      "artifact_type": "decision_log",
+      "artifact_id": "DECLOG-001",
+      "role": "input"
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "NBA-001",
+      "title": "Run validation rerun",
+      "description": "Execute validation rerun with updated clutter dataset and publish residuals.",
+      "owner": "Lead RF Engineer",
+      "due_at": "2026-03-18T00:00:00Z",
+      "priority": "urgent",
+      "status": "planned",
+      "decision_dependency": "DEC-001",
+      "related_risks": [
+        "RISK-001"
+      ],
+      "related_assumptions": [
+        "ASM-001"
+      ],
+      "related_milestones": [
+        "MS-001"
+      ],
+      "expected_outcome": "Unblock technical validation gate with updated residuals.",
+      "impact": "Decision readiness score improves by ~15 points.",
+      "confidence": "medium",
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "validation_plan_v1"
+        }
+      ]
+    },
+    {
+      "action_id": "NBA-002",
+      "title": "Draft stakeholder comparison brief",
+      "description": "Prepare side-by-side mitigation comparison for governance review.",
+      "owner": "Program Manager",
+      "due_at": "2026-03-20T00:00:00Z",
+      "priority": "high",
+      "status": "in_progress",
+      "decision_dependency": "DEC-002",
+      "related_risks": [
+        "RISK-002"
+      ],
+      "related_assumptions": [
+        "ASM-002"
+      ],
+      "related_milestones": [
+        "MS-002"
+      ],
+      "expected_outcome": "Enable convergence on mitigation option and prepare concurrence memo.",
+      "impact": "Clarifies stakeholder posture; improves readiness score by ~8 points.",
+      "confidence": "high"
+    }
+  ]
+}
