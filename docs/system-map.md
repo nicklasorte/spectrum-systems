@@ -10,6 +10,7 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | BN-002 | Transcript-to-issue gaps that leave actions untracked after meetings. | SYS-002 Transcript-to-Issue Engine |
 | BN-003 | Simulation output-to-report translation bottlenecks. | SYS-003 Study Artifact Generator, SYS-004 Spectrum Study Compiler |
 | BN-004 | Decision readiness is unclear because program artifacts (risks, decisions, milestones, assumptions) are fragmented and stale. | SYS-005 Spectrum Program Advisor |
+| BN-005 | Meeting output evaporates without canonical minutes, breaking traceability to transcripts and agenda items. | SYS-006 Meeting Minutes Engine |
 
 ## Systems → Key Assets
 
@@ -20,6 +21,7 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | Study Artifact Generator | SYS-003 | systems/study-artifact-generator/overview.md | systems/study-artifact-generator/interface.md | systems/study-artifact-generator/design.md | schemas/study-output-schema.json, schemas/assumption-schema.json, schemas/provenance-schema.json | prompts/report-drafting.md | eval/study-artifacts |
 | Spectrum Study Compiler | SYS-004 | systems/spectrum-study-compiler/overview.md | systems/spectrum-study-compiler/interface.md | systems/spectrum-study-compiler/design.md | schemas/compiler-manifest.schema.json, schemas/artifact-bundle.schema.json, schemas/diagnostics.schema.json, schemas/study-output-schema.json, schemas/provenance-schema.json | prompts/spectrum-study-compiler.md, prompts/report-drafting.md | eval/spectrum-study-compiler |
 | Spectrum Program Advisor | SYS-005 | systems/spectrum-program-advisor/overview.md | systems/spectrum-program-advisor/interface.md | systems/spectrum-program-advisor/design.md | contracts/schemas/program_brief.schema.json, contracts/schemas/study_readiness_assessment.schema.json, contracts/schemas/next_best_action_memo.schema.json, contracts/schemas/decision_log.schema.json, contracts/schemas/risk_register.schema.json, contracts/schemas/assumption_register.schema.json, contracts/schemas/milestone_plan.schema.json | systems/spectrum-program-advisor/prompts.md | eval/spectrum-program-advisor |
+| Meeting Minutes Engine | SYS-006 | systems/meeting-minutes-engine/overview.md | systems/meeting-minutes-engine/interface.md | systems/meeting-minutes-engine/design.md | contracts/meeting_minutes_contract.yaml | systems/meeting-minutes-engine/prompts.md | systems/meeting-minutes-engine/evaluation.md |
 
 ## Systems → Workflows
 
@@ -30,6 +32,7 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | SYS-003 | workflows/study-artifact-generator.md | simulation outputs, assumptions, study templates | compiler-ready artifacts, report assembly, decision briefs |
 | SYS-004 | workflows/spectrum-study-compiler.md | SYS-003 artifacts, manifests, provenance records | packaged study deliverables, decision artifacts, report assembly |
 | SYS-005 | workflows/spectrum-program-advisor.md | canonical metadata for working papers, CRM, minutes, risk register, milestone plan, decision log, assumption register | program briefs, readiness assessments, next-best-action memos, risk/decision/missing-evidence summaries |
+| SYS-006 | (workflow spec forthcoming) | meeting transcripts, meeting minutes template, prior minutes/agenda/resolution matrices (optional) | contract-governed minutes JSON/DOCX, validation report feeding agenda and advisor workflows |
 
 ## Related Standards
 - `docs/system-philosophy.md` — shared design beliefs and scope boundaries.

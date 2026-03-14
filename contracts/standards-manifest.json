@@ -84,6 +84,21 @@
       "notes": "Canonical agenda-generation contract derived from prior minutes, resolution matrices, submitted comments, and context notes."
     },
     {
+      "artifact_type": "meeting_minutes",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/meeting_minutes_contract.json",
+      "notes": "Canonical meeting minutes contract (JSON + DOCX + validation report); downstream repos must not add unsupported fields or alter required nesting."
+    },
+    {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
       "schema_version": "1.0.0",
       "status": "stable",

@@ -31,6 +31,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - Comment resolution matrix spreadsheet contract (authoritative headers/order for the czar org): `docs/comment-resolution-matrix-spreadsheet-contract.md` with schema in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json`.
 - PDF-anchored DOCX comment injection contract (authoritative PDF line-anchor insertion rules and audit requirements): schema in `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` with fixtures in `contracts/examples/`.
 - Meeting agenda contract (canonical next-meeting agenda generator from minutes + resolution matrix + optional comments/context): `contracts/docs/meeting-agenda-contract.md` with schema in `contracts/schemas/meeting_agenda_contract.schema.json` and examples in `contracts/examples/`.
+- Meeting minutes contract (canonical transcript-to-minutes artifact; JSON + DOCX + validation report required): `contracts/meeting_minutes_contract.yaml` with contract entry in `contracts/standards-manifest.json`; downstream engines must not add unsupported fields.
 
 ## Repository Philosophy
 - Schema-led, deterministic systems with explicit human review gates.
@@ -44,6 +45,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - SYS-003 Study Artifact Generator — `systems/study-artifact-generator/`
 - SYS-004 Spectrum Study Compiler — `systems/spectrum-study-compiler/`
 - SYS-005 Spectrum Program Advisor — `systems/spectrum-program-advisor/`
+- SYS-006 Meeting Minutes Engine — `systems/meeting-minutes-engine/`
 See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 
 ## Governance & Standards
