@@ -1,0 +1,53 @@
+{
+  "artifact_type": "meeting_agenda_input_mapping",
+  "agenda_for": "Spectrum TAC — April Working Session",
+  "target_agenda_id": "MAG-2026-001",
+  "inputs": [
+    {
+      "role": "prior_minutes",
+      "artifact_type": "meeting_minutes",
+      "artifact_id": "MIN-2026-003",
+      "version": "1.0.0",
+      "location": "s3://minutes/MIN-2026-003.yaml",
+      "notes": "Source of action items and unresolved topics."
+    },
+    {
+      "role": "resolution_matrix",
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_id": "CRM-2026-015",
+      "version": "1.0.0",
+      "location": "s3://crm/CRM-2026-015.json",
+      "notes": "Identify unresolved/open/pending dispositions to carry forward."
+    },
+    {
+      "role": "submitted_comments",
+      "artifact_type": "submitted_comments",
+      "artifact_id": "CSET-2026-015",
+      "version": "1.0.0",
+      "location": "s3://comments/CSET-2026-015.json",
+      "notes": "Optional; supplements matrix with context on unresolved IDs."
+    },
+    {
+      "role": "prior_agenda",
+      "artifact_type": "prior_agenda",
+      "artifact_id": "AG-2026-002",
+      "version": "1.0.0",
+      "location": "s3://agendas/AG-2026-002.md",
+      "notes": "Carry-forward items and timeboxes from previous session."
+    },
+    {
+      "role": "policy_context",
+      "artifact_type": "context_notes",
+      "artifact_id": "CTX-2026-004",
+      "version": "1.0.0",
+      "location": "s3://context/CTX-2026-004.md",
+      "notes": "Optional policy notes influencing agenda ordering."
+    }
+  ],
+  "generation_rules_applied": [
+    "carry_forward_unresolved_items",
+    "elevate_decision_required_entries",
+    "cluster_related_sections",
+    "prioritize_by_deadline_dependency_and_risk"
+  ]
+}

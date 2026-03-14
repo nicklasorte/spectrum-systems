@@ -69,6 +69,21 @@
       "notes": "Deterministic mapping from comments to dispositions and actions."
     },
     {
+      "artifact_type": "meeting_agenda_contract",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "meeting-minutes-engine",
+        "comment-resolution-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/meeting_agenda_contract.json",
+      "notes": "Canonical agenda-generation contract derived from prior minutes, resolution matrices, submitted comments, and context notes."
+    },
+    {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
       "schema_version": "1.0.0",
       "status": "stable",

@@ -1,0 +1,603 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_agenda_contract.schema.json",
+  "title": "Meeting Agenda Contract",
+  "description": "Canonical contract for generating the next meeting agenda from prior minutes, comment resolution matrices, submitted comments, and optional context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "meeting_title",
+    "meeting_objective",
+    "source_artifacts",
+    "agenda_items",
+    "carry_forward_items",
+    "decisions_needed",
+    "risks_blockers",
+    "pre_reads",
+    "suggested_attendees",
+    "output_targets"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "meeting_agenda_contract",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for this agenda artifact."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this agenda instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the meeting_agenda_contract schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this agenda."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this agenda was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced this agenda."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "meeting_title": {
+      "type": "string",
+      "description": "Human-readable meeting title."
+    },
+    "meeting_objective": {
+      "type": "string",
+      "description": "Primary objective or decision goal for the meeting."
+    },
+    "meeting_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled start time for the meeting."
+    },
+    "meeting_location": {
+      "type": "string",
+      "description": "Planned meeting location or modality (e.g., hybrid)."
+    },
+    "meeting_series": {
+      "type": "string",
+      "description": "Name of the meeting series (if applicable)."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/input_artifact"
+      },
+      "description": "Upstream artifacts (minutes, resolution matrix, submitted comments, prior agendas, context notes) used to generate this agenda."
+    },
+    "agenda_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/agenda_item"
+      },
+      "description": "Ordered list of agenda items for the meeting."
+    },
+    "carry_forward_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/carry_forward_item"
+      },
+      "description": "Items carried forward from prior meetings with reasons and traceability."
+    },
+    "decisions_needed": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision_needed"
+      },
+      "description": "Decisions that must be made in the meeting."
+    },
+    "risks_blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk_blocker"
+      },
+      "description": "Risks or blockers that threaten schedule or outcomes."
+    },
+    "pre_reads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pre_read"
+      },
+      "description": "Pre-read materials required to prepare for the meeting."
+    },
+    "suggested_attendees": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attendee"
+      },
+      "description": "Suggested attendees and roles for the meeting."
+    },
+    "output_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "json",
+          "markdown",
+          "docx"
+        ]
+      },
+      "description": "Target output formats to emit."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "ai_model",
+            "workflow",
+            "script"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "input_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "artifact_version",
+        "role"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source_repo": {
+          "type": "string"
+        },
+        "source_repo_version": {
+          "type": "string"
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "minutes_topic",
+            "minutes_action_item",
+            "resolution_matrix_comment",
+            "submitted_comment",
+            "supporting_document"
+          ]
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location within the source (e.g., timestamp, page:line)."
+        },
+        "link": {
+          "type": "string",
+          "description": "URI or path to the source artifact."
+        },
+        "provenance_id": {
+          "type": "string",
+          "description": "Identifier for provenance tracking."
+        }
+      }
+    },
+    "speaker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        }
+      }
+    },
+    "agenda_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agenda_id",
+        "section",
+        "title",
+        "description",
+        "source_refs",
+        "status_basis",
+        "recommended_outcome",
+        "proposed_owner",
+        "proposed_speakers",
+        "estimated_minutes",
+        "priority",
+        "pre_read_required",
+        "pre_read_refs"
+      ],
+      "properties": {
+        "agenda_id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9._-]+$"
+        },
+        "section": {
+          "type": "string",
+          "description": "Agenda section grouping (e.g., Decision, Review, Risk)."
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "status_basis": {
+          "type": "string",
+          "enum": [
+            "unresolved_comment",
+            "open_action_item",
+            "pending_decision",
+            "new_submission",
+            "risk_escalation",
+            "carry_forward",
+            "context_alignment"
+          ],
+          "description": "Basis for why this item is on the agenda."
+        },
+        "recommended_outcome": {
+          "type": "string",
+          "description": "Outcome the meeting should drive toward for this item."
+        },
+        "proposed_owner": {
+          "type": "string",
+          "description": "Person responsible for driving the item."
+        },
+        "proposed_speakers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/speaker"
+          }
+        },
+        "estimated_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "pre_read_required": {
+          "type": "boolean"
+        },
+        "pre_read_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        }
+      }
+    },
+    "carry_forward_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "carry_forward_id",
+        "from_agenda_id",
+        "reason",
+        "status_basis",
+        "source_refs"
+      ],
+      "properties": {
+        "carry_forward_id": {
+          "type": "string",
+          "pattern": "^CF-[A-Z0-9._-]+$"
+        },
+        "from_agenda_id": {
+          "type": "string",
+          "description": "Agenda item identifier from the prior meeting."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason this item is being carried forward."
+        },
+        "status_basis": {
+          "type": "string",
+          "enum": [
+            "open",
+            "partial",
+            "pending_validation",
+            "deferred"
+          ]
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "proposed_slot_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
+    },
+    "decision_needed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "description",
+        "related_items",
+        "source_refs"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9._-]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required_by": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "related_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        }
+      }
+    },
+    "risk_blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_id",
+        "description",
+        "impact",
+        "owner",
+        "status",
+        "related_items",
+        "source_refs"
+      ],
+      "properties": {
+        "risk_id": {
+          "type": "string",
+          "pattern": "^RB-[A-Z0-9._-]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "impact": {
+          "type": "string",
+          "enum": [
+            "schedule",
+            "scope",
+            "quality",
+            "compliance",
+            "resource"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "monitoring",
+            "closed"
+          ]
+        },
+        "related_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "mitigation": {
+          "type": "string"
+        },
+        "target_resolution": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pre_read": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pre_read_id",
+        "title",
+        "link",
+        "required_for",
+        "source_refs",
+        "mandatory"
+      ],
+      "properties": {
+        "pre_read_id": {
+          "type": "string",
+          "pattern": "^PR-[A-Z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "required_for": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "due_by": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "mandatory": {
+          "type": "boolean"
+        }
+      }
+    },
+    "attendee": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "required",
+        "rationale"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
