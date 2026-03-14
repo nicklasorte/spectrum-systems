@@ -3,7 +3,7 @@
 Standardized GitHub labels for the Spectrum Study Operating System (SSOS) to keep issue tracking consistent across repositories.
 
 ## Categories and naming
-- **artifact:** Output from meetings and study work products. Examples include `artifact:transcript`, `artifact:minutes`, `artifact:agenda`, `artifact:working-paper`, `artifact:comment-matrix`, `artifact:faq`, `artifact:report-section`, `artifact:decision`.
+- **artifact:** Output from meetings and study work products. Labels include `artifact:transcript`, `artifact:minutes`, `artifact:agenda`, `artifact:working-paper`, `artifact:comment-matrix`, `artifact:adjudicated-matrix`, `artifact:word-comments`, `artifact:faq`, `artifact:report-section`, `artifact:decision`.
 - **layer:** SSOS system architecture layers. Labels include `layer:factory`, `layer:governance`, `layer:orchestrator`, `layer:engine`, `layer:knowledge`, `layer:advisor`.
 - **study:** Study or band focus. Labels include `study:7ghz`, `study:4.4ghz`, `study:2.7ghz`, `study:system`.
 - **priority:** Work urgency. Labels include `priority:critical`, `priority:high`, `priority:medium`, `priority:low`.

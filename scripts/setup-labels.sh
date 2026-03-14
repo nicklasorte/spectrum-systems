@@ -2,7 +2,7 @@
 
 set -e
 
-REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+REPO=${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}
 
 create_label () {
   gh label create "$1" \
@@ -20,6 +20,8 @@ create_label "artifact:minutes" "1D76DB" "Meeting minutes artifact"
 create_label "artifact:agenda" "1D76DB" "Meeting agenda artifact"
 create_label "artifact:working-paper" "0E8A16" "Working paper artifact"
 create_label "artifact:comment-matrix" "0E8A16" "Agency comment matrix"
+create_label "artifact:adjudicated-matrix" "0E8A16" "Adjudicated comment matrix"
+create_label "artifact:word-comments" "0E8A16" "Line-anchored Word comments"
 create_label "artifact:faq" "5319E7" "FAQ entry derived from meetings"
 create_label "artifact:report-section" "5319E7" "Report-ready text section"
 create_label "artifact:decision" "BFD4F2" "Formal decision artifact"
