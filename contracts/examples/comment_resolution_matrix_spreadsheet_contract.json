@@ -122,7 +122,14 @@
       "normalized_key": "comment_disposition",
       "description": "Adjudication output describing the resolution decision (e.g., Accepted, Partially Accepted, Out of Scope).",
       "required_for_input": false,
-      "populated_by": "adjudication_output"
+      "populated_by": "adjudication_output",
+      "allowed_values": [
+        "Pending",
+        "Accepted",
+        "Partially Accepted",
+        "Rejected",
+        "Out of Scope"
+      ]
     },
     {
       "header": "Resolution",
@@ -147,6 +154,14 @@
     "Comment Disposition": "comment_disposition",
     "Resolution": "resolution"
   },
+  "header_normalization_rules": {
+    "preserve_input_casing": true,
+    "trim_whitespace": true,
+    "normalized_form": "snake_case",
+    "normalized_key_map_ref": "normalized_key_map",
+    "allow_header_aliases": false,
+    "notes": "Spreadsheets must present headers exactly as written; internal systems may normalize to snake_case via normalized_key_map."
+  },
   "input_columns": [
     "Comment Number",
     "Reviewer Initials",
@@ -159,7 +174,13 @@
     "Agency Notes",
     "Agency Suggested Text Change"
   ],
+  "optional_input_columns": [],
   "adjudication_columns": [
+    "NTIA Comments",
+    "Comment Disposition",
+    "Resolution"
+  ],
+  "generated_output_columns": [
     "NTIA Comments",
     "Comment Disposition",
     "Resolution"
@@ -169,6 +190,48 @@
     "Clarification",
     "Technical"
   ],
+  "completion_semantics": {
+    "status_column": "Comment Disposition",
+    "open_status_values": [
+      "Pending"
+    ],
+    "completed_status_values": [
+      "Accepted",
+      "Partially Accepted",
+      "Rejected",
+      "Out of Scope"
+    ],
+    "requires_fields_when_completed": [
+      "Comment Disposition",
+      "Resolution"
+    ],
+    "notes": "A row is open when Comment Disposition is blank or listed in open_status_values; it is considered completed only when Comment Disposition matches a completed_status_value and Resolution is non-empty."
+  },
+  "output_workbook": {
+    "preferred_formats": [
+      "csv",
+      "xlsx"
+    ],
+    "primary_sheet_name": "Comment Resolution Matrix",
+    "primary_sheet_headers": [
+      "Comment Number",
+      "Reviewer Initials",
+      "Agency",
+      "Report Version",
+      "Section",
+      "Page",
+      "Line",
+      "Comment Type: Editorial/Grammar, Clarification, Technical",
+      "Agency Notes",
+      "Agency Suggested Text Change",
+      "NTIA Comments",
+      "Comment Disposition",
+      "Resolution"
+    ],
+    "allow_hidden_metadata_sheets": true,
+    "allow_extra_visible_columns": false,
+    "notes": "The primary visible sheet must preserve the canonical header order. Additional hidden worksheets may hold metadata; do not append visible columns to the primary sheet."
+  },
   "metadata_handling": {
     "allow_extra_columns": false,
     "visible_metadata_policy": "Do not add visible metadata columns (e.g., provenance ids, validation flags) to the primary sheet unless formally added to the contract.",
