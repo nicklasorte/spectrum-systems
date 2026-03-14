@@ -12,3 +12,32 @@ __pycache__/
 # Study runner outputs
 outputs/
 logs/
+
+# Operational artifacts are prohibited in GitHub (see docs/data-boundary-governance.md)
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.rtf
+*.msg
+*.eml
+*.zip
+*.7z
+*.tar
+*.gz
+*.bz2
+*.rar
+*.bin
+*.sqlite
+*.db
+
+# Allow synthetic fixtures under clearly named example/test paths
+!examples/**/*.pdf
+!examples/**/*.docx
+!tests/fixtures/**/*.pdf
+!tests/fixtures/**/*.docx
+!contracts/examples/**/*.pdf
+!contracts/examples/**/*.docx

@@ -62,6 +62,13 @@ All contracts carry:
 - Content coverage: executive summary, decisions made, agenda-item summaries, action items, risks/open questions, next meeting, and transcript traceability.
 - Governance: downstream repos must not add unsupported fields; traceability to transcript timestamps/speakers is required whenever available.
 
+### external_artifact_manifest
+- Purpose: canonical manifest for artifacts stored on local or network storage outside GitHub; encodes storage_kind, local_path, checksum, and lineage.
+- Required: metadata fields plus `study_id`, `source_engine`, `revision`, `logical_role`, `storage_kind`, `local_path`, `sha256`, `parent_artifact_id`, `status`, `tags`.
+- Constraints: storage_kind must be an external class (e.g., local, NFS, SMB); `local_path` must be an absolute filesystem or mounted path, never a GitHub URL.
+- Downstream usage: every engine registers inputs/outputs through manifests instead of embedding artifacts in Git; keep manifests with artifacts in external storage.
+- References: schema at `contracts/schemas/external_artifact_manifest.schema.json`; examples at `contracts/examples/external_artifact_manifest.local.json` and `contracts/examples/external_artifact_manifest.network.json`; narrative in `contracts/docs/external-artifact-manifest.md`.
+
 ### standards_manifest
 - Purpose: machine-readable registry of contract versions and stability state.
 - Required: `artifact_type`, `artifact_id`, `artifact_version`, `schema_version`, `standards_version`, `created_at`, `created_by`, `source_repo`, `source_repo_version`, `contracts`.

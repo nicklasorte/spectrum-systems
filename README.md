@@ -11,12 +11,19 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 6. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
 7. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
 
+## Security Model
+- Operational data and generated artifacts stay off GitHub; only schemas, prompts, workflows, and lightweight synthetic fixtures live here.
+- GitHub is the control plane with rules and contracts; the data plane is local or approved network storage referenced via manifests.
+- Production workflows must accept external paths and emit manifests instead of writing artifacts into the repo.
+- Do not use GitHub Releases or Git LFS for protected or operational artifacts; keep them in external storage with manifest coverage.
+
 ## GitHub Operating Layer
 - `.github/ISSUE_TEMPLATE/` — deterministic issue intake aligned to SSOS contracts.
 - `.github/workflows/` — GitHub Project automation for SSOS boards.
 - `scripts/setup-labels.sh` — reusable label bootstrapper for SSOS repos.
 - `docs/project-automation-setup.md` — script-driven setup for SSOS project automation variables and secret.
 - `docs/github-operations.md` — governance guide and manual UI setup requirements.
+- Data boundary: GitHub holds the machinery (schemas, prompts, workflows, docs); operational data and generated artifacts stay on approved local or network storage. See `docs/data-boundary-governance.md` and `docs/external-storage-implementation-guide.md`.
 
 ## Navigation
 - `systems/` — per-system overview/interface/design/evaluation/prompts (see `systems/README.md`).
@@ -38,6 +45,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - Prompts and rules are versioned; evaluation must precede implementation changes.
 - Provenance and reproducibility metadata are mandatory for material artifacts.
 - Implementation code belongs in downstream repos; this repo stays documentation-first.
+- Operational data never lives in GitHub; this control plane links to external storage and uses manifests instead of embedding artifacts.
 
 ## Current Systems
 - SYS-001 Comment Resolution Engine — `systems/comment-resolution/`

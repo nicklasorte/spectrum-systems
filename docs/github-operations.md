@@ -7,6 +7,7 @@ Spectrum-systems is the governance and control-plane repository for SSOS GitHub 
 - Labels created by `scripts/setup-labels.sh` follow `docs/label-system.md` so filtering is deterministic across repositories.
 - Workflows in `.github/workflows/` keep GitHub Projects in sync with issues; see `docs/github-project-automation.md` for required secrets and variables.
 - Documentation in `docs/` (schema governance, provenance, lifecycle) sets the policy that templates, labels, and automation enforce.
+- The `artifact-boundary` workflow plus `scripts/check_artifact_boundary.py` enforce the rule that operational data and binaries never enter GitHub; see `docs/data-boundary-governance.md` for the boundary policy.
 
 ## Running `scripts/setup-labels.sh`
 Use the label bootstrap script to apply the standardized SSOS label set to this repo or any downstream repo:
