@@ -7,7 +7,7 @@
 - **Why it slows decision-making**: Decision memos wait on manual reconciliation of duplicate threads, unclear owners, and missing links to report text, delaying approvals.
 - **Why it consumes expert time**: Senior engineers re-read source sections, restate requirements, and craft disposition language by hand for each comment cycle.
 - **Why it is suitable for automation**: Comment ingestion, clustering, mapping to sections, and draft disposition generation can be schema-driven with human review checkpoints.
-- **What system would solve it**: Comment Resolution Engine that enforces `comment-schema`, aligns comments to report sections, drafts dispositions, and routes for review.
+- **What system would solve it**: Comment Resolution Engine that enforces `comment-schema`, aligns comments to report sections, drafts dispositions, and routes for review. Upstream normalization via Working Paper Review Engine (SYS-007) and anchored DOCX propagation via DOCX Comment Injection Engine (SYS-008) keep inputs contract-aligned.
 
 ### BN-002 Transcript to Issue Extraction
 - **Description**: Converting raw meeting transcripts into structured, prioritized issues with categories, owners, and dependencies.
@@ -36,6 +36,13 @@
 - **Why it consumes expert time**: Staff recreate summaries from transcripts or memory, and downstream teams debate what was decided.
 - **Why it is suitable for automation**: Transcripts provide speaker/timestamp anchors; a governed contract plus template can produce deterministic JSON/DOCX minutes with provenance and validation.
 - **What system would solve it**: Meeting Minutes Engine that applies `contracts/meeting_minutes_contract.yaml` to emit contract-aligned minutes, validation reports, and traceability needed for agenda generation and readiness pipelines.
+
+### BN-006 Orchestration Gaps Between Engines
+- **Description**: Upstream engines produce governed artifacts (minutes, agendas, comment matrices, readiness records) but there is no deterministic orchestration layer to sequence them, detect drift, or assemble decision-ready bundles.
+- **Why it slows decision-making**: Inconsistent sequencing and version drift force manual reconciliation before agenda prep or readiness brief generation.
+- **Why it consumes expert time**: Experts manually stitch minutes, comment matrices, and risk/decision/assumption artifacts into coherent packages, revalidating provenance each time.
+- **Why it is suitable for automation**: All artifacts are contract-governed; a deterministic orchestrator can validate versions, enforce sequencing, and emit readiness bundles with manifests.
+- **What system would solve it**: Spectrum Pipeline Engine (SYS-009) orchestrating meeting_minutes, meeting_agenda_contract, comment_resolution_matrix_spreadsheet_contract, and readiness artifacts into agenda packages and advisor-ready bundles with deterministic manifests.
 
 | Bottleneck | Category | Description | Impact | Frequency | Expert Time Cost | Automation Potential | Priority |
 | --- | --- | --- | --- | --- | --- | --- | --- |
