@@ -2,6 +2,41 @@
 
 Design and planning lab notebook for spectrum automation systems. Implementation code lives in separate repositories; this repo holds architecture, schemas, prompts, workflows, and evaluation plans. This is the governance/control-plane repo for SSOS GitHub operations across the czar organization.
 
+## Why This Exists
+This repository is building a policy-engineering operating system for spectrum studies—a system-first alternative to document-only workflows.
+
+Most policy work is still done through documents, meetings, and iterative rewrites.
+
+The typical pattern looks like this:
+```text
+documents → meetings → confusion → rewrite → more meetings → more rewrite
+```
+That approach works for small efforts, but it breaks down when multiple agencies, technical studies, and regulatory processes are involved. Traceability disappears. Decisions become difficult to reconstruct. Analysis is repeatedly re-done.
+
+This project takes a different approach.
+
+Instead of managing spectrum studies through documents alone, the system treats every artifact as a structured object that flows through a governed pipeline.
+```text
+structured artifacts → governed contracts → automated pipelines
+```
+Working papers, comment matrices, meeting minutes, and adjudications become machine-readable artifacts with defined interfaces, not just files passed around in email.
+
+The result is something unusual:
+
+A policy-engineering operating system for spectrum studies.
+
+Most engineering organizations build pipelines for software.
+This system builds pipelines for policy analysis, technical consensus, and interagency coordination.
+
+That shift enables:
+- traceable decision histories
+- reproducible technical analysis
+- automated document workflows
+- structured comment resolution
+- durable institutional knowledge
+
+Spectrum policy sits at the intersection of engineering, regulation, and multi-agency governance. This system is designed to make that complexity manageable by turning policy workflows into structured, auditable processes.
+
 ## Start Here (fast path)
 1. `docs/vision.md` — the why.
 2. `docs/bottleneck-map.md` — the problems worth solving.
