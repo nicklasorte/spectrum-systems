@@ -4,3 +4,11 @@ dist/
 
 # OS files
 .DS_Store
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# Study runner outputs
+outputs/
+logs/

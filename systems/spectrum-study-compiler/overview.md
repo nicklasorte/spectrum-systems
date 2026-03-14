@@ -9,3 +9,7 @@ Purpose: compile study inputs, artifacts, and manifests into a validated, packag
 - **Downstream Consumers**: Report assembly, decision briefs, archival stores.
 - **Related Assets**: `schemas/study-output-schema.json`, `schemas/provenance-schema.json`, `prompts/report-drafting.md` (compiler-aware), `eval/study-artifacts` (compiler cases to be added).
 - **Lifecycle Status**: Interfaces and design in draft; evaluation cases pending (`docs/system-status-registry.md`).
+
+## Study runner scaffold
+- Deterministic study runner prototype lives in `spectrum_systems/study_runner/`.
+- CLI: `python run_study.py study_config.yaml` loads YAML configs, executes the pipeline, and emits outputs to `outputs/` (`tables/`, `figures/`, `maps/`, `results.json`, `study_summary.json`).
