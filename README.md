@@ -99,6 +99,14 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Comment resolution matrix authority: this repo governs the spreadsheet contract consumed by `working-paper-review-engine` and `comment-resolution-engine`; column names and order live in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` and must not be redefined elsewhere.
 - PDF-anchored DOCX comment injection authority: PDF page + line anchors with excerpt verification are required for Word comment insertion; engines must follow `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` and emit the required audit report when generating commented DOCX outputs.
 
+## Design Review Framework
+- Canonical format: `docs/design-review-standard.md`
+- Review-to-action flow: `docs/review-to-action-standard.md`
+- Immutable artifacts directory: `docs/reviews/`
+- Action trackers and template: `docs/review-actions/` and `docs/review-actions/action-tracker-template.md`
+- Registry of reviews: `docs/review-registry.md`
+- Culture and rationale: `docs/design-review-culture.md`
+
 <!-- SSOS_MENTAL_MAP_START -->
 ## Mental Map System View
 

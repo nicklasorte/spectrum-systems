@@ -77,6 +77,12 @@ Claude should primarily be used for high-leverage reasoning tasks such as:
 
 Claude operates as the **reasoning and design agent** for this architecture.
 
+## Design review duties
+- Use the canonical review format in `docs/design-review-standard.md` for every architecture/design review.
+- Produce explicit action extraction aligned to `docs/review-to-action-standard.md` and emit an action tracker stub using `docs/review-actions/action-tracker-template.md`.
+- Distinguish governance work (standards, schemas, contracts) that belongs in this repo from implementation work that belongs in downstream engine repos; recommend the correct target for GitHub issues.
+- Recommend next-step sequencing and follow-up triggers so reviews feed the registry in `docs/review-registry.md`.
+
 ---------------------------------------------------------------------
 
 # Interaction With Other Agents
