@@ -1,0 +1,58 @@
+- id: CASE-SUCCESS-COMPILE
+  description: Successful compilation of validated SYS-003 artifacts
+  input: examples/compiler-input/valid-bundle-input.yaml
+  expected_output: examples/compiler-output/valid-bundle.json
+  expected_result: success
+  checks:
+    - manifests validate against schemas/compiler-manifest.schema.json
+    - bundle ordering matches manifest.section_order and manifest.ordering.artifact_order
+    - diagnostics.warnings and diagnostics.errors are empty
+
+- id: CASE-MISSING-PROVENANCE
+  description: Block emission when any artifact is missing required provenance
+  input: examples/compiler-input/missing-provenance-input.yaml
+  expected_output: examples/compiler-output/missing-provenance-failure.json
+  expected_result: failure
+  checks:
+    - diagnostics.errors contain ERR-MISSING-PROVENANCE tied to offending artifact_id
+    - bundle output remains null or empty
+    - manifest.errors mirrors diagnostics codes
+
+- id: CASE-DUPLICATE-ARTIFACT-ORDER
+  description: Fail when artifact ordering is non-deterministic due to duplicate section/order keys
+  input: examples/compiler-input/duplicate-section-input.yaml
+  expected_output: examples/compiler-output/duplicate-section-failure.json
+  expected_result: failure
+  checks:
+    - diagnostics.errors contain ERR-DUPLICATE-SECTION-ORDER for each conflicting artifact_id
+    - manifest.ordering.reject_on_ties is true
+    - bundle emission blocked
+
+- id: CASE-MISSING-REQUIRED-SECTIONS
+  description: Fail when required sections are absent from the assembled bundle
+  input: examples/compiler-input/valid-bundle-input.yaml
+  expected_output: null
+  expected_result: failure
+  checks:
+    - diagnostics.errors reference missing section IDs
+    - manifest.errors includes ERR-MISSING-SECTION codes
+    - bundle emission blocked
+
+- id: CASE-OPTIONAL-ARTIFACT-WARN
+  description: Warn when optional artifacts or assumptions are absent but proceed with packaging
+  input: examples/compiler-input/missing-assumption-linkage-input.yaml
+  expected_output: examples/compiler-output/missing-assumption-linkage-warning.json
+  expected_result: warn
+  checks:
+    - diagnostics.warnings contain WARN-MISSING-ASSUMPTION for ART-NARR-030
+    - manifest.errors is empty and warnings propagate
+    - bundle emitted with warning annotated artifact
+
+- id: CASE-DETERMINISTIC-ORDERING
+  description: Ensure repeated runs preserve ordering and hash placeholders
+  input: examples/compiler-input/valid-bundle-input.yaml
+  expected_output: examples/compiler-output/valid-bundle.json
+  expected_result: success
+  checks:
+    - artifact_order and ordered_artifact_ids are identical across runs
+    - hash_placeholders remain stable until populated by implementation

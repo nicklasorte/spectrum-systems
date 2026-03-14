@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/diagnostics.schema.json",
+  "title": "Spectrum Study Compiler Diagnostics",
+  "description": "Schema for SYS-004 diagnostics capturing warnings and errors produced during compilation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "diagnostics_id",
+    "source_manifest_ref",
+    "source_bundle_ref",
+    "source_revision",
+    "resolved_revision",
+    "ordered_artifact_ids",
+    "warnings",
+    "errors",
+    "provenance_ref",
+    "hash_placeholders",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the diagnostics schema."
+    },
+    "diagnostics_id": {
+      "type": "string",
+      "pattern": "^DIA-[A-Z0-9._-]+$",
+      "description": "Identifier for this diagnostics record."
+    },
+    "source_manifest_ref": {
+      "type": "string",
+      "pattern": "^CMF-[A-Z0-9._-]+$",
+      "description": "Compiler manifest that generated these diagnostics."
+    },
+    "source_bundle_ref": {
+      "type": "string",
+      "pattern": "^BND-[A-Z0-9._-]+$",
+      "description": "Bundle the diagnostics describe."
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Upstream revision evaluated when emitting diagnostics."
+    },
+    "resolved_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision resolved after validation/linkage."
+    },
+    "ordered_artifact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ART-[A-Z0-9._-]+$"
+      },
+      "description": "Artifact order used when evaluating diagnostics to ensure determinism."
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Non-blocking issues discovered during compilation.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "artifact_id",
+          "section_id",
+          "suggested_action",
+          "severity"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable identifier for the warning condition."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable warning description."
+          },
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^ART-[A-Z0-9._-]+$",
+            "description": "Artifact the warning is tied to."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^SEC-[A-Z0-9._-]+$",
+            "description": "Section anchor the warning affects."
+          },
+          "severity": {
+            "type": "string",
+            "const": "warning",
+            "description": "Fixed severity for warnings."
+          },
+          "suggested_action": {
+            "type": "string",
+            "description": "Next action to resolve or acknowledge the warning."
+          }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "Blocking issues discovered during compilation.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "artifact_id",
+          "section_id",
+          "severity",
+          "blocking_reason"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable identifier for the error condition."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error description."
+          },
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^ART-[A-Z0-9._-]+$",
+            "description": "Artifact the error is tied to."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^SEC-[A-Z0-9._-]+$",
+            "description": "Section anchor the error affects."
+          },
+          "severity": {
+            "type": "string",
+            "const": "error",
+            "description": "Fixed severity for errors."
+          },
+          "blocking_reason": {
+            "type": "string",
+            "description": "Why this error blocks compilation or emission."
+          }
+        }
+      }
+    },
+    "provenance_ref": {
+      "type": "string",
+      "pattern": "^PRV-[A-Z0-9._-]+$",
+      "description": "Provenance record describing diagnostics generation."
+    },
+    "hash_placeholders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnostics_checksum"
+      ],
+      "properties": {
+        "diagnostics_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for diagnostics payload."
+        }
+      },
+      "description": "Checksum placeholder to be populated by implementation."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp (UTC)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp (UTC)."
+    }
+  }
+}

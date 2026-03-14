@@ -17,7 +17,7 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | Comment Resolution Engine | SYS-001 | systems/comment-resolution/overview.md | systems/comment-resolution/interface.md | systems/comment-resolution/design.md | schemas/comment-schema.json, schemas/issue-schema.json, schemas/provenance-schema.json | prompts/comment-resolution.md | eval/comment-resolution |
 | Transcript-to-Issue Engine | SYS-002 | systems/transcript-to-issue/overview.md | systems/transcript-to-issue/interface.md | systems/transcript-to-issue/design.md | schemas/issue-schema.json, schemas/provenance-schema.json | prompts/transcript-to-issue.md | eval/transcript-to-issue |
 | Study Artifact Generator | SYS-003 | systems/study-artifact-generator/overview.md | systems/study-artifact-generator/interface.md | systems/study-artifact-generator/design.md | schemas/study-output-schema.json, schemas/assumption-schema.json, schemas/provenance-schema.json | prompts/report-drafting.md | eval/study-artifacts |
-| Spectrum Study Compiler | SYS-004 | systems/spectrum-study-compiler/overview.md | systems/spectrum-study-compiler/interface.md | systems/spectrum-study-compiler/design.md | schemas/study-output-schema.json, schemas/provenance-schema.json | prompts/report-drafting.md | eval/study-artifacts |
+| Spectrum Study Compiler | SYS-004 | systems/spectrum-study-compiler/overview.md | systems/spectrum-study-compiler/interface.md | systems/spectrum-study-compiler/design.md | schemas/compiler-manifest.schema.json, schemas/artifact-bundle.schema.json, schemas/diagnostics.schema.json, schemas/study-output-schema.json, schemas/provenance-schema.json | prompts/spectrum-study-compiler.md, prompts/report-drafting.md | eval/spectrum-study-compiler |
 
 ## Systems → Workflows
 
@@ -25,8 +25,8 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | --- | --- | --- | --- |
 | SYS-001 | workflows/comment-resolution-engine.md | comment spreadsheets, working paper PDFs, section anchors | report drafting, issue backlogs |
 | SYS-002 | workflows/transcript-to-issue-engine.md | meeting transcripts, speaker metadata | issue backlog, assumption registry |
-| SYS-003 | workflows/study-artifact-generator.md | simulation outputs, assumptions, study templates | report assembly, decision briefs |
-| SYS-004 | workflows/spectrum-study-compiler.md | study artifacts, manifests, provenance records | packaged study deliverables, decision artifacts |
+| SYS-003 | workflows/study-artifact-generator.md | simulation outputs, assumptions, study templates | compiler-ready artifacts, report assembly, decision briefs |
+| SYS-004 | workflows/spectrum-study-compiler.md | SYS-003 artifacts, manifests, provenance records | packaged study deliverables, decision artifacts, report assembly |
 
 ## Related Standards
 - `docs/system-philosophy.md` — shared design beliefs and scope boundaries.

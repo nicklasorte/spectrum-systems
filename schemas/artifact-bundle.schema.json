@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/artifact-bundle.schema.json",
+  "title": "Spectrum Study Compiler Artifact Bundle",
+  "description": "Schema for SYS-004 compiled artifact bundles with deterministic ordering and provenance links.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "manifest_ref",
+    "source_revision",
+    "resolved_revision",
+    "section_order",
+    "artifact_order",
+    "artifacts",
+    "warnings",
+    "errors",
+    "hash_placeholders",
+    "compiled_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the artifact bundle schema."
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^BND-[A-Z0-9._-]+$",
+      "description": "Identifier for the compiled bundle."
+    },
+    "manifest_ref": {
+      "type": "string",
+      "pattern": "^CMF-[A-Z0-9._-]+$",
+      "description": "Compiler manifest that produced this bundle."
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Upstream document or artifact revision compiled."
+    },
+    "resolved_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision resolved after validation and linkage."
+    },
+    "section_order": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^SEC-[A-Z0-9._-]+$"
+      },
+      "description": "Explicit order of sections or anchors used during assembly."
+    },
+    "artifact_order": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ART-[A-Z0-9._-]+$"
+      },
+      "description": "Final deterministic ordering of artifacts emitted."
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Artifacts included in the compiled bundle.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "section_id",
+          "ordering_key",
+          "assumption_links",
+          "provenance_ref",
+          "checksum_placeholder",
+          "warnings",
+          "errors"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "pattern": "^ART-[A-Z0-9._-]+$",
+            "description": "Identifier of the artifact in the bundle."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^SEC-[A-Z0-9._-]+$",
+            "description": "Section anchor the artifact is assembled into."
+          },
+          "ordering_key": {
+            "type": "string",
+            "description": "Deterministic key used to order within the section."
+          },
+          "assumption_links": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ASM-[A-Z0-9._-]+$"
+            },
+            "description": "Assumption IDs required by the artifact; may be empty when optional."
+          },
+          "precedent_links": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Precedent or reference IDs linked to the artifact."
+          },
+          "provenance_ref": {
+            "type": "string",
+            "pattern": "^PRV-[A-Z0-9._-]+$",
+            "description": "Provenance record ID for the artifact."
+          },
+          "checksum_placeholder": {
+            "type": "string",
+            "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+            "description": "Checksum placeholder for the compiled artifact rendering."
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Non-blocking warnings associated with the artifact."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Blocking errors associated with the artifact."
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bundle-level warnings propagated from passes."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bundle-level blocking errors that must be cleared before release."
+    },
+    "hash_placeholders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_checksum",
+        "diagnostics_checksum"
+      ],
+      "properties": {
+        "bundle_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for the full bundle payload."
+        },
+        "diagnostics_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for the diagnostics emitted with the bundle."
+        }
+      },
+      "description": "Checksum placeholders to be populated by downstream implementation."
+    },
+    "compiled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the bundle was compiled (UTC)."
+    }
+  }
+}

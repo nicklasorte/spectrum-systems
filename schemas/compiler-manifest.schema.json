@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/compiler-manifest.schema.json",
+  "title": "Spectrum Study Compiler Manifest",
+  "description": "Schema for SYS-004 compiler manifests capturing inputs, passes, ordering, diagnostics, and reproducibility placeholders.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "system_id",
+    "source_revision",
+    "resolved_revision",
+    "inputs",
+    "outputs",
+    "passes",
+    "ordering",
+    "diagnostics_ref",
+    "provenance_ref",
+    "warnings",
+    "errors",
+    "hash_placeholders",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the compiler manifest schema."
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^CMF-[A-Z0-9._-]+$",
+      "description": "Stable identifier for the compiler manifest."
+    },
+    "system_id": {
+      "type": "string",
+      "const": "SYS-004",
+      "description": "System identifier producing the manifest."
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Upstream document or artifact revision compiled."
+    },
+    "resolved_revision": {
+      "type": "string",
+      "pattern": "^rev[0-9]+$",
+      "description": "Revision the compiler resolved against after validation."
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_ref",
+        "assumption_registry_ref",
+        "run_manifest_ref"
+      ],
+      "properties": {
+        "bundle_ref": {
+          "type": "string",
+          "pattern": "^BND-[A-Z0-9._-]+$",
+          "description": "Identifier for the incoming artifact bundle."
+        },
+        "assumption_registry_ref": {
+          "type": "string",
+          "description": "Reference to the assumption registry snapshot used."
+        },
+        "run_manifest_ref": {
+          "type": "string",
+          "description": "Reference to the run manifest supporting provenance."
+        },
+        "dependency_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional dependency identifiers required for compilation."
+        }
+      },
+      "description": "Input references that feed the compiler."
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_ref",
+        "export_package_ref"
+      ],
+      "properties": {
+        "bundle_ref": {
+          "type": "string",
+          "pattern": "^BND-[A-Z0-9._-]+$",
+          "description": "Identifier for the emitted artifact bundle."
+        },
+        "export_package_ref": {
+          "type": "string",
+          "description": "Path or URI for the packaged export emitted by SYS-004."
+        }
+      },
+      "description": "Output bundle and package references produced by the compiler."
+    },
+    "passes": {
+      "type": "array",
+      "description": "Deterministically ordered compiler passes with outcomes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "status",
+          "started_at",
+          "completed_at",
+          "warnings",
+          "errors"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Compiler pass name."
+          },
+          "version": {
+            "type": "string",
+            "description": "Version or hash of the pass definition."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failed",
+              "skipped"
+            ],
+            "description": "Execution status of the pass."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start time of the pass execution (UTC)."
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Completion time of the pass execution (UTC)."
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Warning identifiers raised by this pass."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Error identifiers raised by this pass."
+          }
+        }
+      }
+    },
+    "ordering": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sort_rule",
+        "section_order",
+        "artifact_order"
+      ],
+      "properties": {
+        "sort_rule": {
+          "type": "string",
+          "description": "Deterministic ordering rule applied to artifacts (e.g., section, then ordering_key)."
+        },
+        "section_order": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^SEC-[A-Z0-9._-]+$"
+          },
+          "description": "Explicit order of sections/anchors."
+        },
+        "artifact_order": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ART-[A-Z0-9._-]+$"
+          },
+          "description": "Final ordered list of artifacts emitted."
+        },
+        "reject_on_ties": {
+          "type": "boolean",
+          "description": "Whether the compiler fails when ordering keys collide."
+        }
+      },
+      "description": "Recorded ordering rules to guarantee deterministic output."
+    },
+    "diagnostics_ref": {
+      "type": "string",
+      "pattern": "^DIA-[A-Z0-9._-]+$",
+      "description": "Identifier referencing the diagnostics record for this run."
+    },
+    "provenance_ref": {
+      "type": "string",
+      "pattern": "^PRV-[A-Z0-9._-]+$",
+      "description": "Provenance record referencing the manifest creation."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Non-blocking findings aggregated across passes."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Blocking findings aggregated across passes."
+    },
+    "hash_placeholders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_bundle_checksum",
+        "output_bundle_checksum",
+        "export_package_checksum"
+      ],
+      "properties": {
+        "input_bundle_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for the input bundle."
+        },
+        "output_bundle_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for the compiled output bundle."
+        },
+        "export_package_checksum": {
+          "type": "string",
+          "pattern": "^(PENDING|[A-Fa-f0-9]{8,64})$",
+          "description": "Checksum placeholder for the packaged export."
+        }
+      },
+      "description": "Future implementation slots for deterministic verification hashes."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp for the manifest (UTC)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp for the manifest (UTC)."
+    }
+  }
+}

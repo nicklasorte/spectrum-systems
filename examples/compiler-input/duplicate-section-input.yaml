@@ -1,0 +1,16 @@
+bundle_id: BND-DUP-SEC
+source_revision: rev4
+run_manifest_ref: RUN-2026-03-12
+section_order:
+  - SEC-RESULTS
+artifacts:
+  - artifact_id: ART-FIG-020
+    section_id: SEC-RESULTS
+    ordering_key: "01"
+    provenance_ref: PRV-ART-020
+    assumption_links: [ASM-020]
+  - artifact_id: ART-FIG-021
+    section_id: SEC-RESULTS
+    ordering_key: "01"
+    provenance_ref: PRV-ART-021
+    assumption_links: [ASM-021]

@@ -1,0 +1,138 @@
+{
+  "manifest": {
+    "schema_version": "1.0.0",
+    "manifest_id": "CMF-WARN-ASM-001",
+    "system_id": "SYS-004",
+    "source_revision": "rev6",
+    "resolved_revision": "rev6",
+    "inputs": {
+      "bundle_ref": "BND-MISSING-ASM",
+      "assumption_registry_ref": "ASM-REG-2026-03-15",
+      "run_manifest_ref": "RUN-2026-03-15",
+      "dependency_refs": []
+    },
+    "outputs": {
+      "bundle_ref": "BND-MISSING-ASM-OUT",
+      "export_package_ref": "pkg/study-compiler/missing-assumption.zip"
+    },
+    "passes": [
+      {
+        "name": "assumption-linkage-pass",
+        "version": "1.0.0",
+        "status": "success",
+        "started_at": "2026-03-14T09:54:00Z",
+        "completed_at": "2026-03-14T09:54:01Z",
+        "warnings": [
+          "WARN-MISSING-ASSUMPTION:ART-NARR-030"
+        ],
+        "errors": []
+      }
+    ],
+    "ordering": {
+      "sort_rule": "section_order then ordering_key",
+      "section_order": [
+        "SEC-METHODOLOGY",
+        "SEC-RESULTS"
+      ],
+      "artifact_order": [
+        "ART-NARR-030",
+        "ART-TBL-031"
+      ],
+      "reject_on_ties": true
+    },
+    "diagnostics_ref": "DIA-WARN-ASM-001",
+    "provenance_ref": "PRV-MANIFEST-WARN-001",
+    "warnings": [
+      "WARN-MISSING-ASSUMPTION:ART-NARR-030"
+    ],
+    "errors": [],
+    "hash_placeholders": {
+      "input_bundle_checksum": "PENDING",
+      "output_bundle_checksum": "PENDING",
+      "export_package_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:54:01Z",
+    "updated_at": "2026-03-14T09:54:01Z"
+  },
+  "bundle": {
+    "schema_version": "1.0.0",
+    "bundle_id": "BND-MISSING-ASM-OUT",
+    "manifest_ref": "CMF-WARN-ASM-001",
+    "source_revision": "rev6",
+    "resolved_revision": "rev6",
+    "section_order": [
+      "SEC-METHODOLOGY",
+      "SEC-RESULTS"
+    ],
+    "artifact_order": [
+      "ART-NARR-030",
+      "ART-TBL-031"
+    ],
+    "artifacts": [
+      {
+        "artifact_id": "ART-NARR-030",
+        "section_id": "SEC-METHODOLOGY",
+        "ordering_key": "01",
+        "assumption_links": [],
+        "precedent_links": [],
+        "provenance_ref": "PRV-ART-030",
+        "checksum_placeholder": "PENDING",
+        "warnings": [
+          "WARN-MISSING-ASSUMPTION"
+        ],
+        "errors": []
+      },
+      {
+        "artifact_id": "ART-TBL-031",
+        "section_id": "SEC-RESULTS",
+        "ordering_key": "02",
+        "assumption_links": [
+          "ASM-031"
+        ],
+        "precedent_links": [],
+        "provenance_ref": "PRV-ART-031",
+        "checksum_placeholder": "PENDING",
+        "warnings": [],
+        "errors": []
+      }
+    ],
+    "warnings": [
+      "WARN-MISSING-ASSUMPTION:ART-NARR-030"
+    ],
+    "errors": [],
+    "hash_placeholders": {
+      "bundle_checksum": "PENDING",
+      "diagnostics_checksum": "PENDING"
+    },
+    "compiled_at": "2026-03-14T09:54:01Z"
+  },
+  "diagnostics": {
+    "schema_version": "1.0.0",
+    "diagnostics_id": "DIA-WARN-ASM-001",
+    "source_manifest_ref": "CMF-WARN-ASM-001",
+    "source_bundle_ref": "BND-MISSING-ASM-OUT",
+    "source_revision": "rev6",
+    "resolved_revision": "rev6",
+    "ordered_artifact_ids": [
+      "ART-NARR-030",
+      "ART-TBL-031"
+    ],
+    "warnings": [
+      {
+        "code": "WARN-MISSING-ASSUMPTION",
+        "message": "Artifact ART-NARR-030 is missing assumption linkage; mark as optional or attach references.",
+        "artifact_id": "ART-NARR-030",
+        "section_id": "SEC-METHODOLOGY",
+        "severity": "warning",
+        "suggested_action": "Attach assumption IDs or mark the section as optional before release."
+      }
+    ],
+    "errors": [],
+    "provenance_ref": "PRV-DIAG-WARN-001",
+    "hash_placeholders": {
+      "diagnostics_checksum": "PENDING"
+    },
+    "created_at": "2026-03-14T09:54:01Z",
+    "updated_at": "2026-03-14T09:54:01Z"
+  }
+}

@@ -7,8 +7,8 @@ Purpose: compile study inputs, artifacts, and manifests into a validated, packag
 - **Outputs**: Validated compiled package (tables/figures/narratives), manifest of passes applied, warnings/errors, and publication-ready bundle.
 - **Upstream Dependencies**: Study Artifact Generator outputs, provenance schema, reproducibility manifests, rule packs for validation.
 - **Downstream Consumers**: Report assembly, decision briefs, archival stores.
-- **Related Assets**: `schemas/study-output-schema.json`, `schemas/provenance-schema.json`, `prompts/report-drafting.md` (compiler-aware), `eval/study-artifacts` (compiler cases to be added).
-- **Lifecycle Status**: Interfaces and design in draft; evaluation cases pending (`docs/system-status-registry.md`).
+- **Related Assets**: `schemas/compiler-manifest.schema.json`, `schemas/artifact-bundle.schema.json`, `schemas/diagnostics.schema.json`, `schemas/study-output-schema.json`, `schemas/provenance-schema.json`, `prompts/spectrum-study-compiler.md`, `eval/spectrum-study-compiler`.
+- **Lifecycle Status**: Spec complete with evaluation scaffolding (`docs/system-status-registry.md`).
 
 ## Study runner scaffold
 - Deterministic study runner prototype lives in `spectrum_systems/study_runner/`.

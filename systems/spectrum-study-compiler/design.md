@@ -1,15 +1,15 @@
 # Spectrum Study Compiler — Design (SYS-004)
 
 ## Role
-Acts as a compiler for study artifacts: ingest normalized inputs, run validation and transformation passes, and emit a packaged deliverable with explicit diagnostics.
+Acts as a compiler for study artifacts: ingest normalized inputs, run validation and transformation passes, and emit a packaged deliverable with explicit diagnostics and manifest records aligned to `schemas/compiler-manifest.schema.json`, `schemas/artifact-bundle.schema.json`, and `schemas/diagnostics.schema.json`.
 
 ## Compiler Passes (initial)
 1. **Intake**: Validate input schemas, check presence of provenance/run manifests, and verify revision lineage.
-2. **Normalization**: Ensure consistent units, scenario labels, and identifiers across artifacts.
+2. **Provenance integrity**: Ensure `derived_from`, manifest references, and checksum placeholders are present and consistent.
 3. **Linking**: Attach assumptions, simulation runs, and precedent references to each artifact; verify `derived_from` completeness.
 4. **Validation**: Apply rule packs to enforce mandatory fields, template adherence, and cross-artifact consistency; classify findings as warnings vs. errors.
-5. **Packaging**: Assemble tables/figures/narratives into a bundle with report anchors; produce compiler manifest listing passes and outcomes.
-6. **Emission**: Emit compiled outputs only if errors are zero; propagate warnings and unresolved items to reviewers.
+5. **Packaging**: Assemble tables/figures/narratives into a bundle with report anchors; record deterministic ordering and checksum placeholders.
+6. **Emission**: Emit compiled outputs only if errors are zero; propagate warnings and unresolved items to reviewers; include diagnostics and manifest references.
 
 ## Inputs
 - Study artifacts and narratives from SYS-003 with provenance.
