@@ -46,6 +46,11 @@ Updating registry files
 
 Codex is the preferred agent when changes involve **multiple files or repository structure**.
 
+## Design review follow-up
+- Consume review action trackers from `docs/review-actions/` and update related governance artifacts deterministically.
+- Do not generate automation code in this repo; focus on standards, registries, and documentation specified by the review outputs.
+- When implementing follow-ups, preserve the canonical structures in `docs/design-review-standard.md`, `docs/review-to-action-standard.md`, and `docs/review-registry.md`.
+
 ---------------------------------------------------------------------
 
 # Tasks Codex Should Avoid
