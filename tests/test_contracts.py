@@ -1,12 +1,17 @@
 import csv
+import sys
 from pathlib import Path
 import unittest
 
 from jsonschema.exceptions import ValidationError
 
-from spectrum_systems.contracts import (
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
+from spectrum_systems.contracts import (  # noqa: E402
     list_supported_contracts,
     load_example,
+    load_schema,
     validate_artifact,
 )
 
@@ -20,6 +25,13 @@ CONTRACTS = [
     "pdf_anchored_docx_comment_injection_contract",
     "standards_manifest",
     "provenance_record",
+    "program_brief",
+    "study_readiness_assessment",
+    "next_best_action_memo",
+    "decision_log",
+    "risk_register",
+    "assumption_register",
+    "milestone_plan",
 ]
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -96,6 +108,14 @@ class ContractSchemaTests(unittest.TestCase):
             reader = csv.reader(handle)
             header_row = next(reader)
         self.assertEqual(header_row, CRM_SPREADSHEET_HEADERS)
+
+    def test_risk_register_category_enum_covers_required_categories(self) -> None:
+        schema = load_schema("risk_register")
+        categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]
+        self.assertEqual(
+            categories,
+            ["technical", "data", "schedule", "stakeholder", "process_legal", "coordination", "narrative"],
+        )
 
 
 if __name__ == "__main__":

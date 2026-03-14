@@ -1,0 +1,163 @@
+{
+  "artifact_type": "decision_log",
+  "artifact_id": "DECLOG-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-DECLOG-001",
+  "run_id": "run-20260314T150900Z",
+  "created_at": "2026-03-14T15:09:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "source_artifacts": [
+    {
+      "artifact_type": "risk_register",
+      "artifact_id": "RISKREG-001",
+      "role": "input"
+    },
+    {
+      "artifact_type": "assumption_register",
+      "artifact_id": "ASMREG-001",
+      "role": "input"
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "DEC-001",
+      "title": "Approve propagation model and calibration parameters",
+      "decision_type": "technical",
+      "status": "in_review",
+      "needed_by": "2026-03-25T00:00:00Z",
+      "owners": [
+        "Lead RF Engineer"
+      ],
+      "approvers": [
+        "Technical Director"
+      ],
+      "context": "Validation results pending for dense urban clutter; decision gates MS-001.",
+      "options_considered": [
+        {
+          "option_id": "OPT-001",
+          "description": "Approve current calibration",
+          "pros": [
+            "Keeps schedule"
+          ],
+          "cons": [
+            "Validation incomplete"
+          ]
+        },
+        {
+          "option_id": "OPT-002",
+          "description": "Delay approval pending validation rerun",
+          "pros": [
+            "Higher confidence"
+          ],
+          "cons": [
+            "Delays downstream analysis"
+          ]
+        }
+      ],
+      "selected_option": "OPT-002",
+      "rationale": "Need field data alignment before decision gate.",
+      "impacts": [
+        "Extends MS-001 by 3 days"
+      ],
+      "dependencies": [
+        "Validation rerun complete",
+        "Assumption ASM-001 validated"
+      ],
+      "related_risks": [
+        "RISK-001"
+      ],
+      "assumption_refs": [
+        "ASM-001"
+      ],
+      "milestone_refs": [
+        "MS-001"
+      ],
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "validation_report_v0.3"
+        }
+      ],
+      "decision_readiness": {
+        "status": "evidence_needed",
+        "score": 45,
+        "blocking_items": [
+          "Pending validation rerun"
+        ],
+        "notes": "Awaiting dataset completeness check"
+      }
+    },
+    {
+      "decision_id": "DEC-002",
+      "title": "Select mitigation approach for sharing recommendation",
+      "decision_type": "policy",
+      "status": "draft",
+      "needed_by": "2026-03-31T00:00:00Z",
+      "owners": [
+        "Program Manager"
+      ],
+      "approvers": [
+        "Governance Board"
+      ],
+      "context": "Two mitigation options with differing stakeholder preferences.",
+      "options_considered": [
+        {
+          "option_id": "OPT-003",
+          "description": "Adopt phased mitigation",
+          "pros": [
+            "Lower immediate disruption"
+          ],
+          "cons": [
+            "Longer timeline to full protection"
+          ]
+        },
+        {
+          "option_id": "OPT-004",
+          "description": "Single-step mitigation",
+          "pros": [
+            "Faster assurance"
+          ],
+          "cons": [
+            "Higher upfront cost"
+          ]
+        }
+      ],
+      "selected_option": "OPT-003",
+      "rationale": "Aligns with stakeholder appetite while keeping schedule risk manageable.",
+      "impacts": [
+        "Requires interim monitoring commitment"
+      ],
+      "dependencies": [
+        "Finalize risk comparisons",
+        "Concurrence memo from stakeholders"
+      ],
+      "related_risks": [
+        "RISK-002"
+      ],
+      "assumption_refs": [
+        "ASM-002"
+      ],
+      "milestone_refs": [
+        "MS-002"
+      ],
+      "decision_readiness": {
+        "status": "ready_for_review",
+        "score": 78,
+        "blocking_items": [
+          "Stakeholder concurrence memo pending"
+        ],
+        "notes": "Option comparison drafted"
+      }
+    }
+  ]
+}

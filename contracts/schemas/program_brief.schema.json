@@ -1,0 +1,414 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_brief.schema.json",
+  "title": "Program Brief",
+  "description": "Canonical program brief output summarizing decision readiness, risks, decisions, and recommended actions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "program_id",
+    "program_name",
+    "current_phase",
+    "decision_readiness",
+    "top_risks",
+    "open_decisions",
+    "next_best_actions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "program_brief",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^PB-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this program brief instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the program_brief schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this brief was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9._-]+$",
+      "description": "Program identifier this brief represents."
+    },
+    "program_name": {
+      "type": "string",
+      "description": "Human-readable program name."
+    },
+    "study_scope": {
+      "type": "string",
+      "description": "Short description of the study scope."
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "analysis",
+        "coordination",
+        "reporting",
+        "decision"
+      ],
+      "description": "Lifecycle phase of the study."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_artifact"
+      },
+      "description": "Traceable list of inputs used to assemble the brief."
+    },
+    "decision_readiness": {
+      "$ref": "#/$defs/decision_readiness_summary"
+    },
+    "state_snapshot": {
+      "$ref": "#/$defs/state_snapshot"
+    },
+    "top_risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk_ref"
+      }
+    },
+    "open_decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision_ref"
+      }
+    },
+    "next_best_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action_ref"
+      }
+    },
+    "missing_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required artifacts or evidence not yet available."
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "automated_system",
+            "ai_assistant"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "role"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "artifact",
+            "decision",
+            "risk",
+            "assumption",
+            "milestone",
+            "issue",
+            "evidence"
+          ]
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "provenance_id": {
+          "type": "string"
+        }
+      }
+    },
+    "decision_readiness_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "score"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "blocked",
+            "evidence_needed",
+            "ready_for_review",
+            "ready_for_decision"
+          ]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "blocking_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "primary_blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "next_steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action_ref"
+          }
+        }
+      }
+    },
+    "state_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "open_decisions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_risks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_assumptions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "milestones_at_risk": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "risk_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_id",
+        "title",
+        "status"
+      ],
+      "properties": {
+        "risk_id": {
+          "type": "string",
+          "pattern": "^RISK-[A-Z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "decision_readiness_effect": {
+          "type": "string"
+        }
+      }
+    },
+    "decision_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "title",
+        "status"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "needed_by": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decision_readiness": {
+          "$ref": "#/$defs/decision_readiness_summary"
+        }
+      }
+    },
+    "action_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_id",
+        "title",
+        "priority",
+        "status"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "pattern": "^NBA-[A-Z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "urgent",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "blocked",
+            "complete",
+            "deferred"
+          ]
+        },
+        "related_decision": {
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9._-]+$"
+        },
+        "related_risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        }
+      }
+    }
+  }
+}

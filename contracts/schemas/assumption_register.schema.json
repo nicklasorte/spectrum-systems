@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/assumption_register.schema.json",
+  "title": "Assumption Register",
+  "description": "Canonical register of assumptions with validation status, evidence, and links to decisions and risks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "program_id",
+    "assumptions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "assumption_register",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^ASMREG-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this assumption register instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the assumption_register schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this register was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9._-]+$",
+      "description": "Program identifier this assumption register belongs to."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_artifact"
+      },
+      "description": "Traceable list of inputs used to assemble the register."
+    },
+    "assumptions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/assumption"
+      },
+      "description": "Tracked assumptions with validation status and linkages."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "automated_system",
+            "ai_assistant"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "artifact",
+            "decision",
+            "risk",
+            "assumption",
+            "milestone",
+            "issue",
+            "minutes_entry",
+            "evidence"
+          ]
+        },
+        "ref_id": {
+          "type": "string",
+          "description": "Identifier within the referenced artifact set."
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "provenance_id": {
+          "type": "string"
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "role"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        }
+      }
+    },
+    "validation_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "method",
+        "due_at"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "due_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "complete",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assumption_id",
+        "statement",
+        "status",
+        "confidence"
+      ],
+      "properties": {
+        "assumption_id": {
+          "type": "string",
+          "pattern": "^ASM-[A-Z0-9._-]+$",
+          "description": "Stable identifier for the assumption."
+        },
+        "statement": {
+          "type": "string",
+          "description": "Concise statement of the assumption."
+        },
+        "basis": {
+          "type": "string",
+          "description": "Supporting rationale, sources, or constraints that led to the assumption."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "in_review",
+            "approved",
+            "challenged",
+            "retired"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Confidence level in the assumption."
+        },
+        "criticality": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "important",
+            "contextual"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "validation_plan": {
+          "$ref": "#/$defs/validation_plan"
+        },
+        "dependent_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^DEC-[A-Z0-9._-]+$"
+          }
+        },
+        "related_risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        },
+        "mitigation_if_false": {
+          "type": "string",
+          "description": "Fallback plan if the assumption proves false."
+        },
+        "decision_readiness_effect": {
+          "type": "string",
+          "enum": [
+            "blocking",
+            "watch",
+            "informational"
+          ]
+        },
+        "last_reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

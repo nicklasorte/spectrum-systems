@@ -1,0 +1,116 @@
+{
+  "artifact_type": "milestone_plan",
+  "artifact_id": "MSPLAN-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-MSPLAN-001",
+  "run_id": "run-20260314T150800Z",
+  "created_at": "2026-03-14T15:08:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "source_artifacts": [
+    {
+      "artifact_type": "decision_log",
+      "artifact_id": "DECLOG-001",
+      "role": "input"
+    }
+  ],
+  "milestones": [
+    {
+      "milestone_id": "MS-001",
+      "name": "Validate propagation model",
+      "description": "Complete validation runs and publish summary prior to readiness review.",
+      "due_at": "2026-03-22T00:00:00Z",
+      "status": "in_progress",
+      "criticality": "critical",
+      "owner": "Lead RF Engineer",
+      "dependencies": [
+        {
+          "ref_type": "assumption",
+          "ref_id": "ASM-001",
+          "status": "in_progress"
+        }
+      ],
+      "entry_criteria": [
+        "Validation datasets available",
+        "Calibration parameters frozen"
+      ],
+      "exit_criteria": [
+        "Validation residuals within threshold",
+        "Summary published to repository"
+      ],
+      "decision_gates": [
+        "DEC-001"
+      ],
+      "risk_refs": [
+        "RISK-001"
+      ],
+      "assumption_refs": [
+        "ASM-001"
+      ],
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "validation_plan_v1",
+          "uri": "s3://spec-study/validation/plan_v1.yaml"
+        }
+      ],
+      "latest_assessment": {
+        "decision_gate_ready": false,
+        "readiness_notes": "Awaiting field trial data",
+        "last_checked_at": "2026-03-14T10:00:00Z"
+      }
+    },
+    {
+      "milestone_id": "MS-002",
+      "name": "Governance decision package",
+      "description": "Compile readiness brief, risk responses, and decision options for governance board.",
+      "due_at": "2026-04-02T00:00:00Z",
+      "status": "planned",
+      "criticality": "major",
+      "owner": "Program Manager",
+      "dependencies": [
+        {
+          "ref_type": "decision",
+          "ref_id": "DEC-002",
+          "status": "not_started"
+        },
+        {
+          "ref_type": "milestone",
+          "ref_id": "MS-001",
+          "status": "in_progress"
+        }
+      ],
+      "entry_criteria": [
+        "Risk register updated",
+        "Assumption challenges resolved"
+      ],
+      "exit_criteria": [
+        "Program brief approved for circulation",
+        "Decision options signed by owners"
+      ],
+      "decision_gates": [
+        "DEC-002"
+      ],
+      "risk_refs": [
+        "RISK-002"
+      ],
+      "assumption_refs": [
+        "ASM-002"
+      ],
+      "latest_assessment": {
+        "decision_gate_ready": false,
+        "readiness_notes": "Dependent on stakeholder alignment",
+        "last_checked_at": "2026-03-14T10:00:00Z"
+      }
+    }
+  ]
+}

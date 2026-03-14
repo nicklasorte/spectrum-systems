@@ -138,6 +138,97 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/provenance_record.json",
       "notes": "Reusable provenance structure aligned to data-provenance-standard."
+    },
+    {
+      "artifact_type": "program_brief",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/program_brief.json",
+      "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions."
+    },
+    {
+      "artifact_type": "study_readiness_assessment",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/study_readiness_assessment.json",
+      "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers."
+    },
+    {
+      "artifact_type": "next_best_action_memo",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/next_best_action_memo.json",
+      "notes": "Prioritized action recommendations with dependencies and decision/risk linkage."
+    },
+    {
+      "artifact_type": "decision_log",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/decision_log.json",
+      "notes": "Structured decision tracking with readiness, options, dependencies, and evidence."
+    },
+    {
+      "artifact_type": "risk_register",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/risk_register.json",
+      "notes": "Risk tracking across required categories with decision-readiness effects."
+    },
+    {
+      "artifact_type": "assumption_register",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/assumption_register.json",
+      "notes": "Structured assumptions with validation plans and dependency links."
+    },
+    {
+      "artifact_type": "milestone_plan",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/milestone_plan.json",
+      "notes": "Dependency-aware milestone tracking with decision gates and risk alignment."
     }
   ]
 }

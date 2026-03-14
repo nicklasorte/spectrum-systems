@@ -1,0 +1,83 @@
+{
+  "artifact_type": "assumption_register",
+  "artifact_id": "ASMREG-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-ASMREG-001",
+  "run_id": "run-20260314T150700Z",
+  "created_at": "2026-03-14T15:07:00Z",
+  "created_by": {
+    "name": "Program Advisor Scaffold",
+    "role": "standards-publication",
+    "agent_type": "ai_assistant",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/spectrum-program-advisor",
+  "source_repo_version": "scaffold@0001",
+  "program_id": "PRG-SPEC-001",
+  "source_artifacts": [
+    {
+      "artifact_type": "working_paper_input",
+      "artifact_id": "WKP-SPEC-REV1",
+      "role": "context"
+    }
+  ],
+  "assumptions": [
+    {
+      "assumption_id": "ASM-001",
+      "statement": "Propagation model uses 2024 high-resolution clutter data for urban cores.",
+      "basis": "Urban clutter data is latest available; rural data is unchanged from 2023 collection.",
+      "status": "in_review",
+      "confidence": "medium",
+      "criticality": "critical",
+      "evidence_refs": [
+        {
+          "ref_type": "artifact",
+          "ref_id": "clutter_dataset_v2024",
+          "uri": "s3://spec-study/data/clutter/v2024/",
+          "description": "Dataset descriptor"
+        }
+      ],
+      "validation_plan": {
+        "owner": "Data Lead",
+        "method": "Cross-check clutter mapping against GIS control sites",
+        "due_at": "2026-03-20T00:00:00Z",
+        "status": "in_progress"
+      },
+      "dependent_decisions": [
+        "DEC-001"
+      ],
+      "related_risks": [
+        "RISK-001"
+      ],
+      "mitigation_if_false": "Re-run sensitivity cases with rural clutter fallback and widen error bounds.",
+      "decision_readiness_effect": "blocking",
+      "last_reviewed_at": "2026-03-13T18:30:00Z"
+    },
+    {
+      "assumption_id": "ASM-002",
+      "statement": "Stakeholder agencies will accept a phased mitigation rollout over two quarters.",
+      "basis": "Prior coordination notes indicate phased deployments acceptable if risk is bounded.",
+      "status": "draft",
+      "confidence": "high",
+      "criticality": "important",
+      "evidence_refs": [
+        {
+          "ref_type": "minutes_entry",
+          "ref_id": "MTG-2026-03-05-ITEM2",
+          "description": "Meeting note describing phased approach preference"
+        }
+      ],
+      "dependent_decisions": [
+        "DEC-002"
+      ],
+      "related_risks": [
+        "RISK-002"
+      ],
+      "mitigation_if_false": "Escalate to governance board to select single mitigation package.",
+      "decision_readiness_effect": "watch",
+      "last_reviewed_at": "2026-03-12T14:00:00Z"
+    }
+  ]
+}

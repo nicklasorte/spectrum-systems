@@ -36,6 +36,7 @@ Design and planning lab notebook for spectrum automation systems. Implementation
 - SYS-002 Transcript-to-Issue Engine — `systems/transcript-to-issue/`
 - SYS-003 Study Artifact Generator — `systems/study-artifact-generator/`
 - SYS-004 Spectrum Study Compiler — `systems/spectrum-study-compiler/`
+- SYS-005 Spectrum Program Advisor — `systems/spectrum-program-advisor/`
 See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 
 ## Governance & Standards

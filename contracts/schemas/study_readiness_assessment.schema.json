@@ -1,0 +1,439 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/study_readiness_assessment.schema.json",
+  "title": "Study Readiness Assessment",
+  "description": "Canonical readiness assessment for spectrum studies with decision readiness, gate checks, and missing artifact reporting.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "program_id",
+    "assessment_window",
+    "readiness_level",
+    "decision_readiness",
+    "gates",
+    "artifact_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "study_readiness_assessment",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^SRA-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this readiness assessment instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the study_readiness_assessment schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this assessment was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9._-]+$",
+      "description": "Program identifier this assessment belongs to."
+    },
+    "assessment_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessed_at",
+        "valid_through"
+      ],
+      "properties": {
+        "assessed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_through": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "readiness_level": {
+      "type": "string",
+      "enum": [
+        "blocked",
+        "gathering_inputs",
+        "partial",
+        "ready_for_review",
+        "ready_for_decision"
+      ],
+      "description": "Overall readiness level."
+    },
+    "decision_readiness": {
+      "$ref": "#/$defs/decision_readiness"
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gate_check"
+      },
+      "description": "Gate checks required to declare readiness."
+    },
+    "artifact_status": {
+      "$ref": "#/$defs/artifact_status"
+    },
+    "dependency_risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dependency_risk"
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/recommended_action"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "automated_system",
+            "ai_assistant"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "decision_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "score"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "blocked",
+            "evidence_needed",
+            "ready_for_review",
+            "ready_for_decision"
+          ]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "blocking_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Evidence or artifacts required to advance readiness."
+        }
+      }
+    },
+    "gate_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id",
+        "name",
+        "status"
+      ],
+      "properties": {
+        "gate_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "partial"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        },
+        "blocking_risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "artifact_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "working_paper_metadata": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "comment_resolution_matrix_metadata": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "meeting_minutes_metadata": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "risk_register": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "milestone_plan": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "decision_log": {
+          "$ref": "#/$defs/artifact_state"
+        },
+        "assumption_register": {
+          "$ref": "#/$defs/artifact_state"
+        }
+      }
+    },
+    "artifact_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "missing",
+            "stale",
+            "present",
+            "validated"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/source_reference"
+        }
+      }
+    },
+    "dependency_risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id",
+        "risk_ids"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "milestone",
+            "decision"
+          ]
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "risk_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        }
+      }
+    },
+    "recommended_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_id",
+        "title",
+        "priority"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "pattern": "^NBA-[A-Z0-9._-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "urgent",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "related_risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RISK-[A-Z0-9._-]+$"
+          }
+        },
+        "related_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^DEC-[A-Z0-9._-]+$"
+          }
+        },
+        "related_assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ASM-[A-Z0-9._-]+$"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          }
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "artifact",
+            "decision",
+            "risk",
+            "assumption",
+            "milestone",
+            "issue",
+            "minutes_entry",
+            "evidence"
+          ]
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "provenance_id": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

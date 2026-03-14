@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/risk_register.schema.json",
+  "title": "Risk Register",
+  "description": "Canonical risk register contract for program-level decision readiness with traceability to decisions, milestones, and assumptions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "program_id",
+    "risks"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "risk_register",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^RISKREG-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this risk register instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the risk_register schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this register was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that published this contract instance."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9._-]+$",
+      "description": "Program identifier this risk register belongs to."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_artifact"
+      },
+      "description": "Traceable list of inputs used to assemble the register."
+    },
+    "risks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/risk"
+      },
+      "description": "Enumerated risks with decision-readiness impacts."
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "automated_system",
+            "ai_assistant"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_type",
+        "ref_id"
+      ],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "artifact",
+            "decision",
+            "risk",
+            "assumption",
+            "milestone",
+            "issue",
+            "minutes_entry",
+            "comment",
+            "evidence"
+          ]
+        },
+        "ref_id": {
+          "type": "string",
+          "description": "Identifier within the referenced artifact set."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description of why this reference is relevant."
+        },
+        "location": {
+          "type": "string",
+          "description": "Optional structured location (timestamp, page/line, section anchor)."
+        },
+        "uri": {
+          "type": "string",
+          "description": "Link to the underlying artifact."
+        },
+        "provenance_id": {
+          "type": "string",
+          "description": "Provenance identifier tying to provenance_record entries."
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "role"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role the artifact played in assembling this register (e.g., input, evidence, prior_run)."
+        },
+        "uri": {
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_id",
+        "title",
+        "category",
+        "likelihood",
+        "impact",
+        "status"
+      ],
+      "properties": {
+        "risk_id": {
+          "type": "string",
+          "pattern": "^RISK-[A-Z0-9._-]+$",
+          "description": "Stable identifier for the risk."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short label for the risk."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "technical",
+            "data",
+            "schedule",
+            "stakeholder",
+            "process_legal",
+            "coordination",
+            "narrative"
+          ],
+          "description": "Risk category aligned to program governance."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the risk and context."
+        },
+        "likelihood": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "impact": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "exposure_score": {
+          "type": "number",
+          "description": "Optional numeric score derived from likelihood and impact."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "mitigating",
+            "accepted",
+            "closed",
+            "watching"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "description": "Owner accountable for mitigation and reporting."
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Signals that indicate the risk is materializing."
+        },
+        "mitigation_plan": {
+          "type": "string",
+          "description": "Mitigation or contingency plan."
+        },
+        "related_decisions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^DEC-[A-Z0-9._-]+$"
+          },
+          "description": "Decisions this risk influences or blocks."
+        },
+        "related_milestones": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^MS-[A-Z0-9._-]+$"
+          },
+          "description": "Milestones impacted by this risk."
+        },
+        "assumption_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ASM-[A-Z0-9._-]+$"
+          },
+          "description": "Assumptions connected to this risk."
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_reference"
+          },
+          "description": "Evidence supporting likelihood/impact assessment."
+        },
+        "decision_readiness_effect": {
+          "type": "string",
+          "enum": [
+            "blocks_decision",
+            "slows_decision",
+            "informational"
+          ],
+          "description": "Effect on decision readiness for the study."
+        },
+        "last_reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Confidence in the assessment."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
