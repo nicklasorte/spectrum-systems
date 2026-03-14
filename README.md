@@ -40,11 +40,12 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 ## Start Here (fast path)
 1. `docs/vision.md` — the why.
 2. `docs/bottleneck-map.md` — the problems worth solving.
-3. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
-4. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
-5. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
-6. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
-7. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
+3. `docs/ecosystem-map.md` — authoritative czar repo map and flows.
+4. `SYSTEMS.md` and `docs/system-map.md` — what systems exist and where to find their docs.
+5. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
+6. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
+7. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
+8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
 
 ## Security Model
 - Operational data and generated artifacts stay off GitHub; only schemas, prompts, workflows, and lightweight synthetic fixtures live here.
@@ -89,6 +90,9 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 - SYS-004 Spectrum Study Compiler — `systems/spectrum-study-compiler/`
 - SYS-005 Spectrum Program Advisor — `systems/spectrum-program-advisor/`
 - SYS-006 Meeting Minutes Engine — `systems/meeting-minutes-engine/`
+- SYS-007 Working Paper Review Engine — `systems/working-paper-review-engine/`
+- SYS-008 DOCX Comment Injection Engine — `systems/docx-comment-injection-engine/`
+- SYS-009 Spectrum Pipeline Engine — `systems/spectrum-pipeline-engine/`
 See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 
 ## Governance & Standards
@@ -96,6 +100,7 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Terminology: `GLOSSARY.md`, `docs/terminology.md`.
 - Validation expectations: `VALIDATION.md`, `docs/system-failure-modes.md`.
 - Maintenance: `docs/repo-maintenance-checklist.md`, `docs/doc-governance.md`.
+- Conformance readiness: `docs/governance-conformance-checklist.md`.
 - Comment resolution matrix authority: this repo governs the spreadsheet contract consumed by `working-paper-review-engine` and `comment-resolution-engine`; column names and order live in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` and must not be redefined elsewhere.
 - PDF-anchored DOCX comment injection authority: PDF page + line anchors with excerpt verification are required for Word comment insertion; engines must follow `contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json` and emit the required audit report when generating commented DOCX outputs.
 

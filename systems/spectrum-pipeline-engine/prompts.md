@@ -6,6 +6,7 @@ Prompt and rule guidance for deterministic orchestration. Implementation repos m
 - Use contract-aware templates that preserve field names and ordering; never rename keys from upstream artifacts.
 - Require explicit citations to upstream artifacts (minutes spans, comment IDs, risk/decision IDs) in generated agenda and readiness outputs.
 - Enforce deterministic rendering: avoid randomized sampling; set temperature to zero; require consistent ordering of agenda items and readiness sections.
+- Do not allow prompts to invent new fields or restructure contracts; block when required source artifacts are missing or unvalidated.
 
 ## Rule Pack Expectations
 - Agenda rules: carry over unresolved items; prioritize comment dispositions requiring meeting time; map each agenda item to minutes spans or comment IDs.

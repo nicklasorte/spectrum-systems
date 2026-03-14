@@ -9,6 +9,7 @@ Ensure orchestration preserves contract integrity, determinism, and traceable se
 - **Cross-Artifact Consistency**: Confirm agenda items reference minutes spans; readiness artifacts cite current risks/assumptions/decisions/milestones; no orphaned references.
 - **Failure Boundaries**: Inject missing inputs, stale versions, and malformed manifests to verify blocking behavior with explicit failure codes.
 - **Throughput Checks**: Measure orchestration latency and ensure gating does not introduce undue delay relative to input size.
+- **Governance Guardrails**: Assert outputs never include undeclared fields and that manifests capture all prompt/rule/model version pins.
 
 ## Fixtures (to be added)
 - Valid set: meeting_minutes + validation, comment_resolution_matrix_spreadsheet_contract, reviewer_comment_set, readiness artifacts, external_artifact_manifest, agenda seed.
