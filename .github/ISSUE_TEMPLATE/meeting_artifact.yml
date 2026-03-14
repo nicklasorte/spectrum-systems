@@ -1,0 +1,26 @@
+name: Meeting Artifact
+description: Track artifacts derived from a meeting transcript
+title: "[Meeting Artifact] "
+labels:
+  - meeting
+body:
+  - type: input
+    id: meeting
+    attributes:
+      label: Meeting Name / Date
+
+  - type: dropdown
+    id: artifact_type
+    attributes:
+      label: Artifact Type
+      options:
+        - Transcript
+        - Meeting Minutes
+        - Meeting Agenda
+        - FAQ
+        - Decision
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary

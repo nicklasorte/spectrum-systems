@@ -1,0 +1,46 @@
+name: SSOS System Feature
+description: Propose or implement a system capability across the SSOS ecosystem
+title: "[System Feature] "
+labels:
+  - architecture
+body:
+  - type: dropdown
+    id: system_layer
+    attributes:
+      label: System Layer
+      options:
+        - Factory
+        - Governance
+        - Orchestrator
+        - Engine
+        - Knowledge
+        - Advisor
+
+  - type: input
+    id: repository
+    attributes:
+      label: Repository
+      placeholder: "spectrum-pipeline-engine, comment-resolution-engine"
+
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose
+      description: Why this feature exists.
+
+  - type: textarea
+    id: inputs
+    attributes:
+      label: Inputs
+      description: Data or artifacts consumed.
+
+  - type: textarea
+    id: outputs
+    attributes:
+      label: Outputs
+      description: Artifacts produced.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria

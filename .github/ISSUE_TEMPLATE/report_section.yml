@@ -1,0 +1,21 @@
+name: Report Section Artifact
+description: Track report-ready text derived from working papers and FAQs
+title: "[Report Section] "
+labels:
+  - report
+body:
+  - type: input
+    id: section
+    attributes:
+      label: Report Section
+
+  - type: input
+    id: source
+    attributes:
+      label: Source Artifacts
+      placeholder: "FAQ IDs, working paper sections"
+
+  - type: textarea
+    id: text
+    attributes:
+      label: Draft Text

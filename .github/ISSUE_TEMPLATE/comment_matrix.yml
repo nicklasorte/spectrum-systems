@@ -1,0 +1,25 @@
+name: Comment Matrix Artifact
+description: Track generation and adjudication of comment matrices
+title: "[Comment Matrix] "
+labels:
+  - comments
+body:
+  - type: input
+    id: working_paper
+    attributes:
+      label: Working Paper Revision
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      options:
+        - Generated
+        - Under Review
+        - Adjudicated
+        - Injected Into DOCX
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
