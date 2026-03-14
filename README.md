@@ -20,6 +20,7 @@ Instead of managing spectrum studies through documents alone, the system treats 
 structured artifacts → governed contracts → automated pipelines
 ```
 Working papers, comment matrices, meeting minutes, and adjudications become machine-readable artifacts with defined interfaces, not just files passed around in email.
+`spectrum-systems` is the canonical source for those artifact contracts; operational engines must import the schemas in `contracts/` (see `contracts/artifact-contracts.md`) and pin to the published standards manifest instead of redefining local copies.
 
 The result is something unusual:
 
@@ -45,7 +46,7 @@ Spectrum policy sits at the intersection of engineering, regulation, and multi-a
 5. `docs/system-philosophy.md` and `docs/system-interface-spec.md` — how systems must behave.
 6. `docs/system-lifecycle.md` and `docs/system-status-registry.md` — lifecycle and current maturity.
 7. `docs/data-provenance-standard.md` and `docs/reproducibility-standard.md` — lineage and rerun expectations.
-8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards.
+8. `contracts/` and `schemas/` — authoritative artifact contracts and schema registry, plus `prompts/` for prompt standards (see `contracts/artifact-contracts.md` for how engines should reference contracts).
 
 ## Ecosystem Map
 See `docs/ecosystem-map.md` for the authoritative czar repo map, contract relationships, and artifact flow across the organization.

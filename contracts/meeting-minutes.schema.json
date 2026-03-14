@@ -1,0 +1,606 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting-minutes.schema.json",
+  "title": "Meeting Minutes",
+  "description": "Canonical minutes output produced by meeting-minutes-engine.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "meeting",
+    "context",
+    "attendance",
+    "agenda",
+    "executive_summary",
+    "decisions_made",
+    "agenda_item_summaries",
+    "discussion_questions_log",
+    "action_items",
+    "risks_or_open_questions",
+    "next_steps",
+    "next_meeting",
+    "traceability"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "meeting_minutes",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9._-]+$",
+      "description": "Stable identifier for this minutes artifact."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this minutes instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the meeting-minutes schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this minutes artifact."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when these minutes were generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced these minutes."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "meeting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "date",
+        "start_time",
+        "end_time",
+        "location",
+        "meeting_type",
+        "prepared_by",
+        "transcript_available"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "time"
+        },
+        "location": {
+          "type": "string"
+        },
+        "meeting_type": {
+          "type": "string"
+        },
+        "prepared_by": {
+          "type": "string"
+        },
+        "transcript_available": {
+          "type": "boolean"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "relationship_to_project",
+        "changes_since_last_meeting"
+      ],
+      "properties": {
+        "purpose": {
+          "type": "string"
+        },
+        "relationship_to_project": {
+          "type": "string"
+        },
+        "changes_since_last_meeting": {
+          "type": "string"
+        }
+      }
+    },
+    "attendance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chair",
+        "recorder",
+        "attendees",
+        "absent",
+        "guests"
+      ],
+      "properties": {
+        "chair": {
+          "type": "string"
+        },
+        "recorder": {
+          "type": "string"
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "absent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "guests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        }
+      }
+    },
+    "agenda": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/agenda_item"
+          }
+        }
+      }
+    },
+    "executive_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key_points"
+      ],
+      "properties": {
+        "key_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "decisions_made": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "agenda_item_summaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/agenda_item_summary"
+      }
+    },
+    "discussion_questions_log": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/discussion_entry"
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action_item"
+      }
+    },
+    "risks_or_open_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk_or_question"
+      }
+    },
+    "next_steps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "milestones",
+        "upcoming_inputs_required"
+      ],
+      "properties": {
+        "milestones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "upcoming_inputs_required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "next_meeting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "time",
+        "location",
+        "tentative_topics"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "time": {
+          "type": "string",
+          "format": "time"
+        },
+        "location": {
+          "type": "string"
+        },
+        "tentative_topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transcript_reference"
+      ],
+      "properties": {
+        "transcript_reference": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/traceability_reference"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "ai_model",
+            "workflow",
+            "script"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        }
+      }
+    },
+    "agenda_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agenda_item",
+        "title",
+        "presenter",
+        "allocated_minutes"
+      ],
+      "properties": {
+        "agenda_item": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "presenter": {
+          "type": "string"
+        },
+        "allocated_minutes": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "decision",
+        "rationale",
+        "decision_owner",
+        "agenda_item",
+        "date_made"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9._-]+$"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "decision_owner": {
+          "type": "string"
+        },
+        "agenda_item": {
+          "type": "string"
+        },
+        "date_made": {
+          "type": "string",
+          "format": "date"
+        },
+        "revisit_trigger": {
+          "type": "string"
+        }
+      }
+    },
+    "agenda_item_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agenda_item",
+        "presenter",
+        "discussion_summary",
+        "key_points",
+        "decisions",
+        "open_questions"
+      ],
+      "properties": {
+        "agenda_item": {
+          "type": "string"
+        },
+        "presenter": {
+          "type": "string"
+        },
+        "discussion_summary": {
+          "type": "string"
+        },
+        "key_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "open_questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "related_materials": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "discussion_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "question",
+        "asked_by",
+        "response"
+      ],
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "asked_by": {
+          "type": "string"
+        },
+        "response": {
+          "type": "string"
+        },
+        "follow_up": {
+          "type": "string"
+        },
+        "source_reference": {
+          "type": "string"
+        }
+      }
+    },
+    "action_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_id",
+        "task",
+        "owner",
+        "status"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "pattern": "^ACT-[A-Z0-9._-]+$"
+        },
+        "task": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "in_progress",
+            "complete",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "risk_or_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_id",
+        "description",
+        "impact",
+        "owner"
+      ],
+      "properties": {
+        "issue_id": {
+          "type": "string",
+          "pattern": "^ISS-[A-Z0-9._-]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "impact": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "target_resolution_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "traceability_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timestamp",
+        "speaker",
+        "agenda_item",
+        "extraction_confidence"
+      ],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "description": "Transcript timestamp anchor (e.g., 00:12:30)."
+        },
+        "speaker": {
+          "type": "string"
+        },
+        "agenda_item": {
+          "type": "string"
+        },
+        "extraction_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "source_transcript": {
+          "type": "string",
+          "description": "Reference to the transcript artifact or manifest entry."
+        }
+      }
+    }
+  }
+}
