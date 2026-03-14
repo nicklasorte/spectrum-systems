@@ -1,0 +1,217 @@
+{
+  "$schema": "./claude-review.schema.json",
+  "schema_version": "1.0.0",
+  "review_metadata": {
+    "review_id": "2026-03-14-claude-review-automation",
+    "review_date": "2026-03-14",
+    "repository": "nicklasorte/spectrum-systems",
+    "scope": "Claude design review artifacts and automation readiness",
+    "reviewer": "Claude (Reasoning Agent)",
+    "source_artifact": "design-reviews/example-claude-review.md",
+    "actions_artifact": "design-reviews/example-claude-review.actions.json",
+    "source_commit": "main@HEAD",
+    "inputs": [
+      "docs/design-review-standard.md",
+      "docs/review-to-action-standard.md",
+      "docs/review-registry.md",
+      "design-reviews/claude-review.schema.json"
+    ]
+  },
+  "summary": {
+    "executive_summary": [
+      "Dual artifacts (markdown + JSON) are required for deterministic automation of Claude reviews.",
+      "Identifiers are currently informal; schema-backed IDs enable cross-repo ingestion.",
+      "Follow-up triggers must live next to actions to avoid stalled reviews."
+    ],
+    "strengths": [
+      "Design review standard already defines stable section ordering.",
+      "Review registry exists for linking artifacts and follow-up scheduling."
+    ],
+    "gaps": [
+      {
+        "id": "G1",
+        "statement": "Markdown reviews lack enforced identifier conventions, making cross-repo ingestion brittle."
+      },
+      {
+        "id": "G2",
+        "statement": "No machine-readable action file exists to translate recommendations into GitHub issues."
+      },
+      {
+        "id": "G3",
+        "statement": "Follow-up triggers are not encoded alongside actions, reducing automation fidelity."
+      }
+    ],
+    "risks": [
+      {
+        "id": "R1",
+        "statement": "Automation may create incomplete or duplicated issues because IDs are not deterministic.",
+        "severity": "high",
+        "likelihood": "medium",
+        "rationale": "Gaps in identifier discipline and missing machine-readable actions make mapping brittle.",
+        "related_gaps": [
+          "G1",
+          "G2"
+        ]
+      },
+      {
+        "id": "R2",
+        "statement": "Missing follow-up triggers causes reviews to stall without scheduled checkpoints.",
+        "severity": "medium",
+        "likelihood": "medium",
+        "rationale": "Actions do not yet encode due dates or triggers in a consumable format.",
+        "related_gaps": [
+          "G3"
+        ]
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "id": "REC-1",
+      "statement": "Adopt the Claude review template with stable IDs that mirror machine-readable actions; keep mapping explicit in the review artifact.",
+      "priority": "high",
+      "expected_outcome": "Reviews carry deterministic identifiers that downstream automation can parse and link.",
+      "related_gaps": [
+        "G1"
+      ]
+    },
+    {
+      "id": "REC-2",
+      "statement": "Require a JSON actions file per review aligned to the schema so automation can emit GitHub issues with labels and targets.",
+      "priority": "critical",
+      "expected_outcome": "Every review emits automation-ready data for issue creation and tracking.",
+      "related_gaps": [
+        "G2"
+      ],
+      "related_risks": [
+        "R1"
+      ]
+    },
+    {
+      "id": "REC-3",
+      "statement": "Capture follow-up triggers and due dates next to actions and surface them in the registry.",
+      "priority": "medium",
+      "expected_outcome": "Reviews stay on schedule and trigger follow-up when conditions are met.",
+      "related_gaps": [
+        "G3"
+      ],
+      "related_risks": [
+        "R2"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-1",
+      "title": "Publish Claude review template and identifier guidance",
+      "description": "Add a Claude-specific markdown template with stable IDs and ensure documentation explains how to keep markdown and JSON artifacts aligned.",
+      "priority": "high",
+      "status": "open",
+      "owners": [
+        "Architecture WG"
+      ],
+      "source_recommendations": [
+        "REC-1"
+      ],
+      "related_gaps": [
+        "G1"
+      ],
+      "related_risks": [
+        "R1"
+      ],
+      "target_repos": [
+        "nicklasorte/spectrum-systems"
+      ],
+      "labels": [
+        "design-review",
+        "claude",
+        "governance"
+      ],
+      "expected_artifact": "Updated documentation and template in design-reviews/",
+      "acceptance_criteria": [
+        "Template includes ID guidance that mirrors the JSON schema expectations.",
+        "README documents the dual-artifact requirement and naming conventions.",
+        "Example review references both the markdown and JSON artifacts."
+      ],
+      "due_date": "2026-03-21"
+    },
+    {
+      "id": "A-2",
+      "title": "Provide JSON schema and example actions file",
+      "description": "Publish a machine-readable schema and sample actions file that map recommendations to automation-ready actions and GitHub routing metadata.",
+      "priority": "critical",
+      "status": "open",
+      "owners": [
+        "Governance Automation"
+      ],
+      "source_recommendations": [
+        "REC-2"
+      ],
+      "related_gaps": [
+        "G2"
+      ],
+      "related_risks": [
+        "R1"
+      ],
+      "target_repos": [
+        "nicklasorte/spectrum-systems"
+      ],
+      "labels": [
+        "design-review",
+        "automation",
+        "schema"
+      ],
+      "expected_artifact": "claude-review.schema.json with a validating example actions file.",
+      "acceptance_criteria": [
+        "Schema uses stable IDs and disallows additionalProperties by default.",
+        "Example actions JSON validates against the schema and references the markdown artifact.",
+        "Actions include target repos and label suggestions for GitHub issue creation."
+      ],
+      "due_date": "2026-03-21"
+    },
+    {
+      "id": "A-3",
+      "title": "Encode follow-up triggers next to actions",
+      "description": "Record due dates and triggers in the actions file and mirror them in the review registry when automation is enabled.",
+      "priority": "medium",
+      "status": "open",
+      "owners": [
+        "Program Management"
+      ],
+      "source_recommendations": [
+        "REC-3"
+      ],
+      "related_gaps": [
+        "G3"
+      ],
+      "related_risks": [
+        "R2"
+      ],
+      "target_repos": [
+        "nicklasorte/spectrum-systems"
+      ],
+      "labels": [
+        "design-review",
+        "follow-up"
+      ],
+      "expected_artifact": "Actions JSON with explicit follow-up triggers and due dates, mirrored into review registry entries.",
+      "acceptance_criteria": [
+        "Actions include due_date fields when timelines are known.",
+        "Follow-up triggers are present in the actions JSON and consumable by automation.",
+        "Registry entries link the markdown and actions artifacts when the review is recorded."
+      ],
+      "due_date": "2026-04-01",
+      "follow_up_triggers": [
+        "After first automated issue creation run",
+        "When schema_version increments beyond 1.0.0"
+      ]
+    }
+  ],
+  "follow_up": {
+    "next_review_due": "2026-04-30",
+    "triggers": [
+      "Post-automation pilot for issue creation",
+      "Any update to claude-review.schema.json"
+    ]
+  }
+}
