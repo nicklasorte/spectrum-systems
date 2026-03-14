@@ -2,6 +2,7 @@
 
 ## How to Navigate
 - Start with `docs/system-map.md` and `docs/system-status-registry.md` for the current picture.
+- Use `docs/ecosystem-map.md` for repo-level flows and control-plane coverage.
 - Each system lives under `systems/<system>/` with `overview`, `interface`, `design`, `evaluation`, and `prompts` docs.
 - Workflows live in `workflows/`; schemas in `schemas/`; evaluation assets in `eval/`.
 
@@ -23,7 +24,7 @@
 | Meeting Minutes Engine | SYS-006 | BN-005 meeting output evaporation and unstructured minutes | systems/meeting-minutes-engine/overview.md; systems/meeting-minutes-engine/interface.md (contract-governed minutes) | contracts/meeting_minutes_contract.yaml | systems/meeting-minutes-engine/prompts.md | systems/meeting-minutes-engine/evaluation.md |
 | Working Paper Review Engine | SYS-007 | BN-001 comment intake and normalization | systems/working-paper-review-engine/overview.md | contracts/examples/reviewer_comment_set.json, contracts/examples/comment_resolution_matrix_spreadsheet_contract.json, contracts/examples/working_paper_input.json | systems/working-paper-review-engine/prompts.md | systems/working-paper-review-engine/evaluation.md |
 | DOCX Comment Injection Engine | SYS-008 | BN-001 anchored DOCX injection | systems/docx-comment-injection-engine/overview.md | contracts/examples/pdf_anchored_docx_comment_injection_contract.json, docs/comment-resolution-matrix-spreadsheet-contract.md | systems/docx-comment-injection-engine/prompts.md | systems/docx-comment-injection-engine/evaluation.md |
-| Spectrum Pipeline Engine | SYS-009 | BN-006 orchestration gaps across engines | systems/spectrum-pipeline-engine/overview.md | contracts/standards-manifest.json (meeting_minutes, meeting_agenda_contract, comment_resolution_matrix_spreadsheet_contract, readiness artifacts, external_artifact_manifest) | systems/spectrum-pipeline-engine/prompts.md | systems/spectrum-pipeline-engine/evaluation.md |
+| Spectrum Pipeline Engine | SYS-009 | BN-006 orchestration gaps across engines | systems/spectrum-pipeline-engine/overview.md; workflows/spectrum-pipeline-engine.md | contracts/standards-manifest.json (meeting_minutes, meeting_agenda_contract, comment_resolution_matrix_spreadsheet_contract, readiness artifacts, external_artifact_manifest) | systems/spectrum-pipeline-engine/prompts.md | systems/spectrum-pipeline-engine/evaluation.md |
 
 ## Relationships
 - Bottlenecks are defined in `docs/bottleneck-map.md`.
@@ -31,6 +32,7 @@
 - Traceability and reproducibility: `docs/data-provenance-standard.md`, `docs/reproducibility-standard.md`.
 - Status and failure modes: `docs/system-status-registry.md`, `docs/system-failure-modes.md`.
 - Contracts and schema versions: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`.
+- Governance conformance: `docs/implementation-boundary.md`, `docs/governance-conformance-checklist.md`, `docs/ecosystem-map.md`.
 
 ## Contract Layer
 - Spectrum Systems publishes canonical artifact contracts in `contracts/schemas/` with examples in `contracts/examples/`.

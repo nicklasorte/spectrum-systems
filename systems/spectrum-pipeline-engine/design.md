@@ -26,6 +26,7 @@ BN-006: Orchestration gaps between upstream engines cause contract drift, incons
 - Cross-artifact inconsistency (e.g., agenda item lacks minutes span) → block with `CONSISTENCY_CHECK_FAILED`.
 - Non-deterministic outputs detected across replays → block with `DETERMINISM_BROKEN`.
 - Downstream contract emission blocked until failure is cleared; partial outputs must not be published.
+- Local prohibitions: no schema redefinition, no silent field additions, no local scoring heuristics that diverge from governance, and no writing governed artifacts outside manifest-controlled storage paths.
 
 ## Outputs
 - Agenda package (JSON + optional DOCX) aligned to meeting_agenda_contract with explicit traceability to minutes and comment matrices.

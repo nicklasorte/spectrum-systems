@@ -1,6 +1,7 @@
 # System Map
 
 Traceability map for systems, bottlenecks, schemas, prompts, and evaluation assets.
+See `docs/ecosystem-map.md` for repo-level control and artifact flow.
 
 ## Bottlenecks → Systems
 
@@ -39,7 +40,7 @@ Traceability map for systems, bottlenecks, schemas, prompts, and evaluation asse
 | SYS-006 | (workflow spec forthcoming) | meeting transcripts, meeting minutes template, prior minutes/agenda/resolution matrices (optional) | contract-governed minutes JSON/DOCX, validation report feeding agenda and advisor workflows |
 | SYS-007 | workflows/working-paper-review-engine.md | working paper inputs, reviewer assignments, anchors | reviewer_comment_set, comment_resolution_matrix_spreadsheet_contract, anchored DOCX payloads |
 | SYS-008 | workflows/docx-comment-injection-engine.md | comment_resolution_matrix_spreadsheet_contract, anchored payloads, DOCX/PDF | annotated DOCX, updated matrix, run manifest |
-| SYS-009 | workflows/spectrum-pipeline-engine.md | meeting_minutes, comment matrices, agenda seeds, readiness artifacts, external manifests | agenda packages, readiness bundles, pipeline run manifest |
+| SYS-009 | workflows/spectrum-pipeline-engine.md | meeting_minutes, comment matrices, agenda seeds, readiness artifacts, external manifests | agenda packages, readiness bundles, pipeline run manifest (block on schema drift; no field renames) |
 
 ## Related Standards
 - `docs/system-philosophy.md` — shared design beliefs and scope boundaries.
