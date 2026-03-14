@@ -13,5 +13,6 @@ Systems currently defined:
 - `study-artifact-generator` (SYS-003)
 - `spectrum-study-compiler` (SYS-004)
 - `spectrum-program-advisor` (SYS-005)
+- `meeting-minutes-engine` (SYS-006)
 
 Follow `docs/system-interface-spec.md` and `docs/system-lifecycle.md` when adding or updating a system.

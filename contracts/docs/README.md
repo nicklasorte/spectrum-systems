@@ -55,6 +55,13 @@ All contracts carry:
 - Output formats: JSON (machine-readable), Markdown, DOCX (human-readable).
 - References: schema at `contracts/schemas/meeting_agenda_contract.schema.json`; examples at `contracts/examples/meeting_agenda_contract.json` and `contracts/examples/meeting_agenda_contract.md`.
 
+### meeting_minutes_contract
+- Purpose: canonical transcript-to-minutes structure that produces governed JSON and DOCX outputs plus a validation report.
+- Required inputs: meeting transcript with speaker/timestamps, meeting minutes DOCX template; optional prior minutes, agenda, resolution matrices, and context notes.
+- Required outputs: `meeting_minutes.json` (authoritative), `meeting_minutes.docx` (template-rendered), `validation_report.json` (contract validation + manifest/provenance).
+- Content coverage: executive summary, decisions made, agenda-item summaries, action items, risks/open questions, next meeting, and transcript traceability.
+- Governance: downstream repos must not add unsupported fields; traceability to transcript timestamps/speakers is required whenever available.
+
 ### standards_manifest
 - Purpose: machine-readable registry of contract versions and stability state.
 - Required: `artifact_type`, `artifact_id`, `artifact_version`, `schema_version`, `standards_version`, `created_at`, `created_by`, `source_repo`, `source_repo_version`, `contracts`.

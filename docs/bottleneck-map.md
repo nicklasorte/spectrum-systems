@@ -30,6 +30,13 @@
 - **Why it is suitable for automation**: Canonical contracts exist for each artifact; normalization plus deterministic readiness scoring can produce auditable briefs.
 - **What system would solve it**: Spectrum Program Advisor that normalizes canonical artifacts into a program-state model and emits decision-readiness outputs.
 
+### BN-005 Meeting Output Evaporation
+- **Description**: Meeting outcomes decay into unstructured notes, losing transcript traceability and consistent minutes.
+- **Why it slows decision-making**: Action items, decisions, and risks are missed or disputed because canonical minutes are absent or inconsistent.
+- **Why it consumes expert time**: Staff recreate summaries from transcripts or memory, and downstream teams debate what was decided.
+- **Why it is suitable for automation**: Transcripts provide speaker/timestamp anchors; a governed contract plus template can produce deterministic JSON/DOCX minutes with provenance and validation.
+- **What system would solve it**: Meeting Minutes Engine that applies `contracts/meeting_minutes_contract.yaml` to emit contract-aligned minutes, validation reports, and traceability needed for agenda generation and readiness pipelines.
+
 | Bottleneck | Category | Description | Impact | Frequency | Expert Time Cost | Automation Potential | Priority |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Fragmented source systems | Data | Allocation, licensing, assignment, satellite, terrain, clutter, population, and coordination records live in separate systems with different schemas. | High | Frequent | High | Medium | High |

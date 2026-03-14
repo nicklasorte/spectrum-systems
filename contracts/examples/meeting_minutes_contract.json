@@ -1,0 +1,143 @@
+{
+  "meeting": {
+    "title": "Spectrum Coordination Working Group",
+    "date": "2026-03-12",
+    "start_time": "10:00",
+    "end_time": "11:30",
+    "location": "Virtual",
+    "meeting_type": "working_session",
+    "prepared_by": "Program Secretariat",
+    "transcript_available": true
+  },
+  "context": {
+    "purpose": "Align on interference test plan and carry forward open items from prior review.",
+    "relationship_to_project": "Feeds readiness assessment and agenda for next sprint review.",
+    "changes_since_last_meeting": "New lab data from 28 GHz urban scenario; updated antenna configs."
+  },
+  "attendance": {
+    "chair": "Program Manager",
+    "recorder": "Systems Engineer",
+    "attendees": [
+      "Program Manager",
+      "Systems Engineer",
+      "Ops Lead",
+      "Policy Lead"
+    ],
+    "absent": [
+      "Test Lead"
+    ],
+    "guests": [
+      "External Reviewer"
+    ]
+  },
+  "agenda": {
+    "items": [
+      "Review interference test plan updates",
+      "Action item walkthrough"
+    ]
+  },
+  "executive_summary": {
+    "key_points": [
+      "Interference margin sensitivity test will run on updated antenna configs this week.",
+      "Two action items carried forward; no new blockers identified.",
+      "Next meeting to confirm lab results and close out dependency on antenna delivery."
+    ]
+  },
+  "decisions_made": [
+    {
+      "decision_id": "DEC-2026-03-12-01",
+      "decision": "Proceed with updated antenna configuration for urban sensitivity run.",
+      "rationale": "Prior config under-represented edge cases; new config reflects deployment reality.",
+      "decision_owner": "Ops Lead",
+      "agenda_item": "Review interference test plan updates",
+      "date_made": "2026-03-12",
+      "revisit_trigger": "If lab results show margin degradation > 2 dB."
+    }
+  ],
+  "agenda_item_summaries": [
+    {
+      "agenda_item": "Review interference test plan updates",
+      "presenter": "Ops Lead",
+      "discussion_summary": "Walked through revised antenna configs and schedule; alignment on sensitivity sweep.",
+      "key_points": [
+        "Include dense urban and suburban runs.",
+        "Capture spectrum analyzer screenshots for report appendix."
+      ],
+      "decisions": [
+        "Proceed with updated antenna configuration for urban sensitivity run."
+      ],
+      "open_questions": [
+        "Do we need a rural scenario run before gate review?"
+      ],
+      "related_materials": [
+        "lab_test_plan_v3.docx"
+      ]
+    }
+  ],
+  "discussion_questions_log": [
+    {
+      "category": "risk",
+      "question": "What is the risk if antenna delivery slips?",
+      "asked_by": "Policy Lead",
+      "response": "Schedule buffer of one week; alternative vendor available.",
+      "follow_up": "Confirm alternate vendor lead time.",
+      "source_reference": "00:24:11"
+    }
+  ],
+  "action_items": [
+    {
+      "action_id": "AI-2026-03-12-01",
+      "task": "Run interference margin sensitivity with updated antenna config",
+      "owner": "Ops Lead",
+      "due_date": "2026-03-19",
+      "dependencies": [
+        "Antenna delivery confirmation"
+      ],
+      "status": "open"
+    }
+  ],
+  "risks_or_open_questions": [
+    {
+      "issue_id": "RQ-2026-03-12-01",
+      "description": "Potential schedule slip if antenna delivery is late.",
+      "impact": "medium",
+      "owner": "Program Manager",
+      "target_resolution_date": "2026-03-19"
+    }
+  ],
+  "next_steps": {
+    "milestones": [
+      "Complete urban sensitivity run",
+      "Review lab results with external reviewer"
+    ],
+    "upcoming_inputs_required": [
+      "Antenna delivery confirmation",
+      "Lab data export"
+    ]
+  },
+  "next_meeting": {
+    "date": "2026-03-20",
+    "time": "10:00",
+    "location": "Virtual",
+    "tentative_topics": [
+      "Review lab results",
+      "Decision on rural scenario run"
+    ]
+  },
+  "traceability": {
+    "transcript_reference": [
+      {
+        "timestamp": "00:12:15",
+        "speaker": "Ops Lead",
+        "agenda_item": "Review interference test plan updates",
+        "extraction_confidence": 0.94
+      },
+      {
+        "timestamp": "00:24:11",
+        "speaker": "Policy Lead",
+        "agenda_item": "Review interference test plan updates",
+        "extraction_confidence": 0.88
+      }
+    ]
+  }
+}
