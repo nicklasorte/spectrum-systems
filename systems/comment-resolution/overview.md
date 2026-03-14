@@ -7,5 +7,5 @@ Purpose: resolve agency comments deterministically with traceable dispositions t
 - **Outputs**: Structured comment records with dispositions, section mappings, revision lineage, provenance, and run manifest references.
 - **Upstream Dependencies**: Source documents, section anchors, rule packs in `rules/comment-resolution/`.
 - **Downstream Consumers**: Report drafting workflows, issue backlogs, decision artifacts.
-- **Related Assets**: `schemas/comment-schema.json`, `schemas/issue-schema.json`, `prompts/comment-resolution.md`, `eval/comment-resolution`.
+- **Related Assets**: `schemas/comment-schema.json`, `schemas/issue-schema.json`, `prompts/comment-resolution.md`, `eval/comment-resolution`, `docs/comment-resolution-matrix-spreadsheet-contract.md` + `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` (canonical spreadsheet interface).
 - **Lifecycle Status**: Design complete; evaluation scaffolding in place (`docs/system-status-registry.md`).

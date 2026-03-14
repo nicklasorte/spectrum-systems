@@ -21,6 +21,9 @@ This directory contains authoritative schemas that anchor every system and workf
 | data-lake/study-artifact-metadata.json | 1.0.0 | Metadata for stored study artifacts | Provenance, assumptions, code version |
 | data-lake/transcript-output.json | 1.0.0 | Transcript-derived issues persisted in the lake | Provenance, speaker/time |
 
+## Related contracts
+- Comment resolution matrix spreadsheet contract (canonical user-facing headers/order for the czar org) lives in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` with companion doc `docs/comment-resolution-matrix-spreadsheet-contract.md`. Downstream producers (e.g., `working-paper-review-engine`) and consumers (`comment-resolution-engine`) must not alter header names or order.
+
 ## Expectations
 
 - Every schema includes `schema_version` and clearly separates required vs optional fields.
