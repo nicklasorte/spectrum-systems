@@ -57,9 +57,11 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 
 ## Testing
 - `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
-- Install dev dependencies then run locally:
-  - `pip install -r requirements-dev.txt`
-  - `pytest`
+- Run locally after installing dev dependencies:
+  ```bash
+  pip install -r requirements-dev.txt
+  pytest
+  ```
 
 ## Design Review Framework
 - Canonical format: `docs/design-review-standard.md`
