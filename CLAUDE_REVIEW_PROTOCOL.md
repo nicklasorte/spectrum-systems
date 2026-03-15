@@ -12,6 +12,7 @@ Canonical protocol for Claude-led architecture and governance reviews across the
 - **Architecture:** repository structure, engine interface compliance, artifact contract compliance, and alignment to the system registry.
 - **Maturity:** claimed maturity level, supporting evidence, and promotion readiness per the maturity model.
 - **Operational Evidence (critical):** presence and freshness of run manifests, evaluation artifacts, contract validation outputs, registry consistency, and pipeline reproducibility proofs.
+- **Roadmap alignment:** current roadmap step cluster, dependencies from `ecosystem/roadmap-tracker.json`, and whether blockers are architectural, roadmap, or maturity-related.
 - **Governance:** compliance with spectrum-systems standards, required governance files present, schema/contract validation status.
 - **Risk:** architectural drift, system complexity risks, governance gaps, reliability risks.
 - Architecture or maturity claims without operational evidence remain provisional.
@@ -32,6 +33,14 @@ Every Claude review produces two artifacts:
 - Verify that `run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json` all exist for the reviewed scope.
 - Confirm each artifact contains an identical `run_id`; any mismatch or omission is a finding (`category: operational_evidence`, `severity: high`).
 - Block maturity promotion if evidence bundles cannot be correlated by `run_id`.
+
+## Roadmap context
+- Reviews may reference `ecosystem/roadmap-tracker.json` to understand the active step cluster, upstream dependencies, and blocking risks.
+- Distinguish blockers explicitly:
+  - **Architecture blockers:** missing or flawed contracts, schemas, or interfaces.
+  - **Roadmap blockers:** prerequisite steps or sequencing gaps preventing progress.
+  - **Maturity blockers:** absent evidence against the maturity model or playbook criteria.
+- Call out maturity implications of unfinished roadmap items when assessing readiness or promotion claims.
 
 ## Dependency graph checks
 - Inspect `ecosystem/dependency-graph.json` (and summary/visualization outputs) for completeness and freshness; call out missing systems, artifacts, or contracts.
