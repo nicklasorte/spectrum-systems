@@ -1,0 +1,16 @@
+{
+  "name": "spectrum-systems-dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "settings": {
+    "python.defaultInterpreterPath": "/usr/local/bin/python"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-toolsai.jupyter"
+  ],
+  "postCreateCommand": "pip install -r requirements-base.txt",
+  "remoteUser": "vscode"
+}
