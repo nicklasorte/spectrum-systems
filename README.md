@@ -23,6 +23,18 @@ This repository serves as the governing constitution for the spectrum ecosystem,
 ## Architecture Reviews
 Architecture reviews are stored under `design-reviews/`. Claude-led reviews produce both a markdown review artifact and a machine-readable JSON actions file aligned to `design-reviews/claude-review.schema.json`.
 
+## Testing
+- `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
+- Run locally with: `pytest`
+
+## Design Review Framework
+- Canonical format: `docs/design-review-standard.md`
+- Review-to-action flow: `docs/review-to-action-standard.md`
+- Immutable artifacts directory: `docs/reviews/`
+- Action trackers and template: `docs/review-actions/` and `docs/review-actions/action-tracker-template.md`
+- Registry of reviews: `docs/review-registry.md`
+- Culture and rationale: `docs/design-review-culture.md`
+- Architecture decisions derived from reviews are captured as ADRs in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
 ## Ecosystem Registry
 The ecosystem registry tracks all repositories participating in the spectrum ecosystem and their governance state. See `docs/systems-registry.md`; the JSON registry reference is `ecosystem/ecosystem-registry.json`.
 
