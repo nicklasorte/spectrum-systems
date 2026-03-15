@@ -3,6 +3,11 @@
 Traceability map for systems, bottlenecks, schemas, prompts, and evaluation assets.
 See `docs/ecosystem-map.md` for repo-level control and artifact flow.
 
+## Loop Traceability
+- Coordination Loop: SYS-006 Meeting Minutes Engine; SYS-002 Transcript-to-Issue Engine.
+- Document Production Loop: SYS-007 Working Paper Review Engine; SYS-001 Comment Resolution Engine; SYS-008 DOCX Comment Injection Engine; SYS-003 Study Artifact Generator; SYS-004 Spectrum Study Compiler.
+- Cross-loop orchestration: SYS-009 Spectrum Pipeline Engine; SYS-005 Spectrum Program Advisor.
+
 ## Bottlenecks → Systems
 
 | Bottleneck ID | Description | Systems |
