@@ -46,6 +46,9 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## Local Governance Artifact Rule
+The ecosystem assumes governance artifacts are part of the platform control plane and are always locally available to engines and orchestration. Schemas, contracts, standards manifests, and registry files must be mounted or vendored from the `spectrum-systems` checkout rather than fetched over the network at runtime.
+
 ## System Registry as Ecosystem Control Plane
 - The System Registry (`docs/system-registry.md` and `ecosystem/system-registry.json`) is the authoritative inventory of systems, roles, loop alignment, and maturity states across the ecosystem.
 - Future dependency graphing, compliance checks, and advisor capabilities build on this registry to understand what each system consumes, emits, and depends on.
