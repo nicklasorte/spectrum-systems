@@ -1,6 +1,12 @@
 # YYYY-MM-DD - <scope> Claude Design Review
 
-Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]`. Finding IDs are the anchor for traceability—every `[F-#]` called out in this markdown **must** appear as the same `id` inside the JSON `findings` array. Number once per review in the order introduced and do not renumber after publication. Example: `[F-1] Deterministic IDs keep markdown and JSON aligned` in this file must map to `"id": "F-1"` inside `findings[0]` of `YYYY-MM-DD-<slug>.actions.json`. Tag every required change, recommendation, and action below with its stable marker so automation can match sections directly to JSON entries.
+Deterministic finding IDs keep markdown and JSON aligned: mint `[F-1]`, `[F-2]`, `[F-3]`, … in the order each required change, recommended enhancement, or follow-up first appears in this markdown. Reuse those exact IDs as `findings[*].id` in the paired JSON and do not renumber after publication. Also keep gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]` stable and cross-referenced to the relevant `[F-#]`.
+
+Minimal example of the required mapping:
+- Markdown: `[F-1] Deterministic IDs keep markdown and JSON aligned`
+- JSON: `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned", ...}]`
+
+Tag every required change, recommendation, follow-up trigger, and action below with its stable marker so automation can match sections directly to JSON entries.
 
 > Claude: Produce two artifacts for every review.
 > 1) This markdown file using the sections below.
@@ -31,17 +37,17 @@ JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medi
 - Validated positive 1
 - Validated positive 2
 
-## 5. Structural Gaps
-- [F-1][G1] Gap statement — evidence/reference
-- [F-2][G2] Gap statement — evidence/reference
+## 5. Structural Gaps (Required Changes)
+- [F-1][G1] Gap / required change — evidence/reference
+- [F-2][G2] Gap / required change — evidence/reference
 
-## 6. Risk Areas
+## 6. Risk Areas (Finding-linked)
 - [F-3][R1] Risk statement — severity/likelihood — rationale — linked gaps
 - [F-4][R2] Risk statement — severity/likelihood — rationale — linked gaps
 
 ## 7. Recommendations
-- [REC-1] Recommendation — mapped to gaps/risks with expected outcome — source findings [F-#]
-- [REC-2] Recommendation — mapped to gaps/risks with expected outcome — source findings [F-#]
+- [REC-1] Recommendation / enhancement — mapped to gaps/risks with expected outcome — source findings [F-#]
+- [REC-2] Recommendation / enhancement — mapped to gaps/risks with expected outcome — source findings [F-#]
 
 ## 8. Priority Classification
 - [REC-1] Priority: Critical | High | Medium | Low — rationale
@@ -52,7 +58,7 @@ JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medi
 2. [A-2] Owner: TBD — Item — expected artifact — acceptance criteria — source [REC-#] — supports findings [F-#]
 
 ## 10. Blocking Items
-- Blocking item 1 — condition to clear
+- [F-#] Blocking item — condition to clear
 
 ## 11. Deferred Items
-- Deferred item 1 — review trigger/condition
+- [F-#] Deferred item — review trigger/condition
