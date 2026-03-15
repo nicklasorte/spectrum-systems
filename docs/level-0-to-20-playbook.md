@@ -56,6 +56,19 @@ The ecosystem draws on proven practices:
 - **Governance (11-15)**: Deliver observability, risk-aware change management, automated governance, and preserved institutional memory.
 - **Intelligence (16-20)**: Layer decision intelligence, cross-workflow learning, predictive capabilities, adaptive execution, and strategic advisories.
 
+## Platform inflection points by maturity
+Platform inflection points (see `docs/platform-inflection-points.md`) indicate when structural shifts are expected.
+
+| Inflection Point | Approximate Maturity |
+| --- | --- |
+| First Executable Artifact | Level 3-4 |
+| First Closed Loop | Level 4-5 |
+| First Pipeline | Level 6-7 |
+| Platform Standardization | Level 8-10 |
+| Observability Maturity | Level 10-12 |
+| Institutional Memory | Level 12-15 |
+| Intelligence Layer | Level 15-20 |
+
 ## Dependency awareness
 - Cross-repo ecosystems must become dependency-legible before scaling; hidden edges block promotion beyond Level 7.
 - Levels 8–10 expect a current `ecosystem/dependency-graph.json` as the authoritative map for contract alignment, loop participation, and artifact flows.
