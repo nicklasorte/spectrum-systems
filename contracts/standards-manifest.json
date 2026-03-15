@@ -99,6 +99,19 @@
       "notes": "Canonical meeting minutes contract (JSON + DOCX + validation report); downstream repos must not add unsupported fields or alter required nesting."
     },
     {
+      "artifact_type": "meeting_minutes_record",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "meeting-minutes-engine",
+        "spectrum-program-advisor"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/meeting_minutes_record.example.json",
+      "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering."
+    },
+    {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
       "schema_version": "1.0.0",
       "status": "stable",

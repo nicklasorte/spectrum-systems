@@ -39,6 +39,11 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## Meeting Minutes Artifact
+- Meeting-minutes-engine ingests transcript text and emits a governed `meeting_minutes_record` JSON artifact.
+- The JSON record is the source of truth that downstream engines consume before rendering DOCX outputs for stakeholders.
+- The flow is: transcript input → `meeting_minutes_record` → DOCX export.
+
 ## Governance Manifest Enforcement
 - Every governed repository publishes `.spectrum-governance.json` aligned to `governance/schemas/spectrum-governance.schema.json`.
 - Manifests declare contract dependencies and pin versions to the canonical `contracts/standards-manifest.json`.

@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes_record.schema.json",
+  "title": "Meeting Minutes Record",
+  "description": "Canonical machine-validated meeting minutes artifact produced by meeting-minutes-engine and consumed by downstream engines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "meeting_id",
+    "meeting_title",
+    "date",
+    "source_transcript",
+    "attendees",
+    "agenda_items",
+    "decisions",
+    "action_items",
+    "open_questions",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "meeting_minutes_record",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^MMR-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this meeting minutes record instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the meeting_minutes_record schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this record."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this record was generated."
+    },
+    "created_by": {
+      "$ref": "#/$defs/created_by"
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository slug that produced this record."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Tag or commit hash of the source repository."
+    },
+    "meeting_id": {
+      "type": "string",
+      "description": "Stable meeting identifier or series instance ID."
+    },
+    "meeting_title": {
+      "type": "string",
+      "description": "Human-readable meeting title."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the meeting occurred."
+    },
+    "source_transcript": {
+      "type": "string",
+      "description": "Reference to the transcript text or path used to generate the record."
+    },
+    "attendees": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "List of attendees present for the meeting."
+    },
+    "agenda_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/agenda_item"
+      },
+      "description": "Agenda items discussed with context from the transcript."
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      },
+      "description": "Decisions made during the meeting."
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action_item"
+      },
+      "description": "Action items derived from the meeting."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/open_question"
+      },
+      "description": "Open questions that remain unresolved."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated_by",
+        "generation_timestamp",
+        "source_file"
+      ],
+      "properties": {
+        "generated_by": {
+          "type": "string",
+          "description": "Workflow, engine, or agent that generated this record."
+        },
+        "generation_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the record was generated."
+        },
+        "source_file": {
+          "type": "string",
+          "description": "Path or URI to the transcript input used for generation."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "agent_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "ai_model",
+            "workflow",
+            "script"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        }
+      }
+    },
+    "agenda_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "description"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "description",
+        "rationale",
+        "decided_by"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string",
+          "description": "Person or group responsible for the decision."
+        }
+      }
+    },
+    "action_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_id",
+        "description",
+        "owner",
+        "due_date",
+        "status"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "in_progress",
+            "done",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "open_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "description",
+        "raised_by"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "raised_by": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "artifact_type": "meeting_minutes_record",
+  "artifact_id": "MMR-Q2-2026-PROG-ALPHA",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "2026.03.0",
+  "record_id": "REC-MMR-20260314-001",
+  "run_id": "run-20260314T150000Z",
+  "created_at": "2026-03-14T15:05:00Z",
+  "created_by": {
+    "name": "Meeting Minutes Workflow",
+    "role": "automation",
+    "agent_type": "workflow",
+    "organization": "Spectrum Systems Lab"
+  },
+  "source_repo": "nicklasorte/meeting-minutes-engine",
+  "source_repo_version": "v1.2.0",
+  "meeting_id": "MM-2026-03-14",
+  "meeting_title": "Spectrum Architecture Working Session",
+  "date": "2026-03-14",
+  "source_transcript": "transcripts/2026-03-14-spectrum-architecture.txt",
+  "attendees": [
+    "Alex Chen",
+    "Priya Raman",
+    "Morgan Lee",
+    "Dana Schultz"
+  ],
+  "agenda_items": [
+    {
+      "title": "Pipeline alignment for meeting-minutes-engine outputs",
+      "description": "Reviewed how meeting_minutes_record artifacts flow into spectrum-program-advisor and DOCX output generation."
+    },
+    {
+      "title": "Risk and action item carryover",
+      "description": "Validated that unresolved action items from last session are captured with due dates and owners."
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "DEC-2026-03-14-01",
+      "description": "Adopt meeting_minutes_record as the canonical downstream artifact from meeting-minutes-engine.",
+      "rationale": "Provides deterministic structure for DOCX rendering and advisory consumption.",
+      "decided_by": "Architecture working group"
+    },
+    {
+      "decision_id": "DEC-2026-03-14-02",
+      "description": "Target DOCX export format for stakeholder distribution by default.",
+      "rationale": "Aligns with external reviewer expectations while keeping JSON as the source of truth.",
+      "decided_by": "Program manager"
+    }
+  ],
+  "action_items": [
+    {
+      "action_id": "AI-2026-03-14-01",
+      "description": "Update pipeline orchestration to emit meeting_minutes_record JSON alongside DOCX outputs.",
+      "owner": "Priya Raman",
+      "due_date": "2026-03-21",
+      "status": "in_progress"
+    },
+    {
+      "action_id": "AI-2026-03-14-02",
+      "description": "Backfill last two meeting transcripts into the new schema for regression testing.",
+      "owner": "Morgan Lee",
+      "due_date": "2026-03-18",
+      "status": "open"
+    }
+  ],
+  "open_questions": [
+    {
+      "question_id": "Q-2026-03-14-01",
+      "description": "Do we need a confidence score per decision extracted from the transcript?",
+      "raised_by": "Dana Schultz"
+    },
+    {
+      "question_id": "Q-2026-03-14-02",
+      "description": "Should attendee absences be tracked for quorum checks?",
+      "raised_by": "Alex Chen"
+    }
+  ],
+  "provenance": {
+    "generated_by": "meeting-minutes-engine@1.2.0",
+    "generation_timestamp": "2026-03-14T15:04:20Z",
+    "source_file": "transcripts/2026-03-14-spectrum-architecture.txt"
+  }
+}
