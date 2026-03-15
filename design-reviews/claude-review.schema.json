@@ -190,6 +190,16 @@
           "trigger": {
             "type": "string",
             "description": "Optional trigger or condition associated with this finding."
+          },
+          "follow_up_trigger": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Specific event or checkpoint that should prompt follow-up for this finding."
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Optional due date (YYYY-MM-DD) when this finding should be re-evaluated or closed."
           }
         }
       },

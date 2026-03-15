@@ -75,6 +75,8 @@
         "design-reviews/example-claude-review.actions.json",
         "docs/review-registry.md"
       ],
+      "follow_up_trigger": "After first registry entry is updated with automation-sourced scheduling metadata",
+      "due_date": "2026-03-28",
       "create_issue": true,
       "suggested_issue_title": "Encode follow-up triggers next to actions",
       "suggested_labels": [
