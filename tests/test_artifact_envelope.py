@@ -34,6 +34,12 @@ class ArtifactEnvelopeTests(unittest.TestCase):
         registry_classes = {entry["name"] for entry in registry["artifact_classes"]}
         self.assertEqual(schema_classes, registry_classes, "artifact_class enum must match the classification standard")
 
+    def test_lifecycle_stage_enum(self) -> None:
+        schema_path = REPO_ROOT / "contracts" / "schemas" / "artifact_envelope.schema.json"
+        schema = json.loads(schema_path.read_text())
+        lifecycle_enum = set(schema["properties"]["lifecycle_stage"]["enum"])
+        self.assertEqual(lifecycle_enum, {"raw", "processed", "final", "fixture"})
+
 
 if __name__ == "__main__":
     unittest.main()

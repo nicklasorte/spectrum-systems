@@ -1,42 +1,13 @@
 {
-  "artifact_id": "MMR-2026-03-15-001",
+  "artifact_id": "transcript-7ghz-tig-2026-03-12",
   "artifact_class": "coordination",
-  "artifact_type": "meeting_minutes_record",
-  "contract_name": "meeting_minutes_record",
-  "contract_version": "1.0.0",
-  "lifecycle_stage": "published",
-  "produced_by": {
-    "name": "meeting-minutes-engine",
-    "agent_type": "workflow",
-    "role": "minutes_generation",
-    "run_id": "mme-run-20260315T153500Z",
-    "organization": "Spectrum Systems Lab"
-  },
-  "created_at": "2026-03-15T15:35:00Z",
-  "derived_from": [
-    "agenda-2026-03-15-001",
-    "transcript-2026-03-15-raw"
-  ],
-  "study_id": "STUDY-NTIA-5G-2026",
-  "meeting_id": "MTG-2026-03-15-TR1",
-  "review_cycle_id": "RC-2026-03-15-A",
-  "tags": [
-    "minutes",
-    "coordination",
-    "official-record"
-  ],
-  "payload": {
-    "artifact_type": "meeting_minutes_record",
-    "artifact_version": "1.0.0",
-    "schema_version": "1.0.0",
-    "standards_version": "2026.03.0",
-    "meeting_summary": "Consensus reached on data sources for interference study; follow-up actions recorded.",
-    "actions": [
-      {
-        "action_id": "ACT-2026-03-15-01",
-        "description": "Submit revised propagation assumptions to reviewers.",
-        "owner": "working-paper-review-engine"
-      }
-    ]
-  }
+  "artifact_type": "transcript",
+  "contract_name": null,
+  "contract_version": null,
+  "lifecycle_stage": "raw",
+  "produced_by": "human",
+  "created_at": "2026-03-12T18:05:00Z",
+  "source_path": "fixtures/transcripts/example-meeting-transcript.docx",
+  "meeting_id": "7ghz-tig-2026-03-12",
+  "tags": ["transcript", "docx", "coordination"]
 }

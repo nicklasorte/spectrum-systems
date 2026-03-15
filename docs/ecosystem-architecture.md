@@ -41,8 +41,9 @@ flowchart TB
 
 ## Artifact Envelope as the Interoperability Layer
 - Engines exchange artifacts as **envelope + payload** pairs: the envelope standardizes `artifact_class`, `artifact_type`, `contract_version`, and lineage hooks; the payload remains the contract-defined schema.
-- Shared envelope metadata reduces bespoke routing logic—pipelines can dispatch on envelope fields before touching payloads.
-- Data lake and orchestration components should index and validate envelope fields first, then apply payload-specific schema validation.
+- Raw DOCX transcripts are first-class artifacts: they enter with an envelope (`artifact_class=coordination`, `artifact_type=transcript`, `lifecycle_stage=raw`) even when no payload contract is attached yet.
+- Shared envelope metadata reduces bespoke routing logic—pipelines can dispatch on envelope fields before touching payloads, and data lake sidecars mirror the envelope before considering payload contents.
+- Pipeline and data lake components should reason over envelope fields first for routing, indexing, and compatibility, then apply payload-specific schema validation.
 - See `docs/artifact-envelope-standard.md` and `contracts/schemas/artifact_envelope.schema.json` for the canonical envelope definition.
 
 ## Artifact Classes as the Core Ecosystem Abstraction
