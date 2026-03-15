@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "policies": [
+    {
+      "policy_id": "GOV-001",
+      "title": "Repo must exist in ecosystem registry",
+      "description": "Every repository with a governance manifest must have a matching entry in the ecosystem registry.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "ecosystem",
+      "input_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "governance/examples/manifests/*.json"
+      ],
+      "expected_check": "Repository names in governance manifests resolve to entries in the ecosystem registry."
+    },
+    {
+      "policy_id": "GOV-002",
+      "title": "Repo must declare a governance manifest",
+      "description": "All registered systems must publish a governance manifest describing identity and contract pins.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "repo",
+      "input_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "governance/examples/manifests/*.json"
+      ],
+      "expected_check": "Registered systems expose a governance manifest aligned to the registry record."
+    },
+    {
+      "policy_id": "GOV-003",
+      "title": "Manifest system_id must match registry entry",
+      "description": "Governance manifest system identifiers must align with the canonical ecosystem registry entry.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "repo",
+      "input_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "governance/examples/manifests/*.json"
+      ],
+      "expected_check": "system_id in each manifest equals the system_id in the registry for the same repo."
+    },
+    {
+      "policy_id": "GOV-004",
+      "title": "Manifest contract pins must exist in standards manifest",
+      "description": "Contracts pinned by governance manifests must reference contracts that are published in the standards manifest.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "contract",
+      "input_artifacts": [
+        "governance/examples/manifests/*.json",
+        "contracts/standards-manifest.json"
+      ],
+      "expected_check": "All contract keys in manifests are present in the standards manifest catalogue."
+    },
+    {
+      "policy_id": "GOV-005",
+      "title": "Repo must not consume undeclared contracts",
+      "description": "Repos may only pin contracts that are declared for that repo in the ecosystem registry.",
+      "severity": "warning",
+      "enabled": true,
+      "scope": "repo",
+      "input_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "governance/examples/manifests/*.json"
+      ],
+      "expected_check": "Manifest contract pins are a subset of the contracts listed for the repo in the registry."
+    },
+    {
+      "policy_id": "GOV-006",
+      "title": "Standards manifest intended consumers must exist in ecosystem registry",
+      "description": "Every intended consumer listed for a contract must map to a repository in the ecosystem registry.",
+      "severity": "warning",
+      "enabled": true,
+      "scope": "contract",
+      "input_artifacts": [
+        "contracts/standards-manifest.json",
+        "ecosystem/ecosystem-registry.json"
+      ],
+      "expected_check": "Intended consumers in the standards manifest reference registered repositories."
+    },
+    {
+      "policy_id": "GOV-007",
+      "title": "Dependency graph systems must resolve to registered repos",
+      "description": "Systems enumerated in the ecosystem dependency graph must resolve to repositories in the ecosystem registry.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "ecosystem",
+      "input_artifacts": [
+        "artifacts/ecosystem-dependency-graph.json",
+        "ecosystem/ecosystem-registry.json"
+      ],
+      "expected_check": "All systems in the dependency graph map to known repositories and identities."
+    },
+    {
+      "policy_id": "GOV-008",
+      "title": "Governance repo must not contain production implementation package paths",
+      "description": "Governance/control-plane repositories must avoid production implementation package directories.",
+      "severity": "warning",
+      "enabled": true,
+      "scope": "repo",
+      "input_artifacts": [
+        "repository filesystem"
+      ],
+      "expected_check": "Governance repo tree lacks implementation-heavy directories such as src/, package/, spectrum_systems/, app/, or service/."
+    }
+  ]
+}
