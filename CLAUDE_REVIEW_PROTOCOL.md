@@ -28,6 +28,11 @@ Every Claude review produces two artifacts:
 - Platform governance: interface adherence, contract/schema validation outputs, and alignment to standards manifests.
 - Observability: metrics/logs/traces coverage, alert quality, and linkage to evaluation or run manifests.
 
+## Dependency graph checks
+- Inspect `ecosystem/dependency-graph.json` (and summary/visualization outputs) for completeness and freshness; call out missing systems, artifacts, or contracts.
+- Identify hidden or unmodeled dependencies, contract/artifact coupling risks, and any architecture areas that are no longer legible from the graph.
+- Explicitly comment on whether loop participation and cross-loop orchestration/advisory roles remain clear in the graph before approving architectural changes.
+
 ## Review method
 1. Ingest supplied artifacts and confirm scope; reject scopes lacking run manifests or registry alignment if evidence cannot be evaluated.
 2. Evaluate each scope lens (architecture, maturity, operational evidence, governance, risk) against the expectations above.

@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spectrum Ecosystem Dependency Graph",
+  "type": "object",
+  "required": [
+    "systems",
+    "artifacts",
+    "contracts",
+    "edges"
+  ],
+  "properties": {
+    "systems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system_id",
+          "repo_name",
+          "repo_type",
+          "primary_loop_alignment",
+          "maturity_level",
+          "consumes_artifact_types",
+          "emits_artifact_types",
+          "contract_dependencies"
+        ],
+        "properties": {
+          "system_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repo_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repo_type": {
+            "type": "string",
+            "enum": [
+              "governance",
+              "data_lake",
+              "operational_engine",
+              "orchestration",
+              "advisory",
+              "factory"
+            ]
+          },
+          "primary_loop_alignment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maturity_level": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "consumes_artifact_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "emits_artifact_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "contract_dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_type",
+          "artifact_class",
+          "description",
+          "producing_systems",
+          "consuming_systems"
+        ],
+        "properties": {
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_class": {
+            "type": "string",
+            "enum": [
+              "coordination",
+              "work",
+              "review"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "producing_systems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "consuming_systems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_name",
+          "artifact_class",
+          "intended_consumers",
+          "related_artifact_types"
+        ],
+        "properties": {
+          "contract_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_class": {
+            "type": "string",
+            "enum": [
+              "coordination",
+              "work",
+              "review"
+            ]
+          },
+          "intended_consumers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "related_artifact_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_type",
+          "from_id",
+          "relation",
+          "to_type",
+          "to_id"
+        ],
+        "properties": {
+          "from_type": {
+            "type": "string",
+            "enum": [
+              "system",
+              "artifact",
+              "contract"
+            ]
+          },
+          "from_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "emits",
+              "consumes",
+              "validates_against",
+              "depends_on",
+              "participates_in",
+              "governed_by"
+            ]
+          },
+          "to_type": {
+            "type": "string",
+            "enum": [
+              "system",
+              "artifact",
+              "contract"
+            ]
+          },
+          "to_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

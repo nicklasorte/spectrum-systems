@@ -1,0 +1,175 @@
+flowchart TD
+  sys_comment_resolution_engine["comment-resolution-engine\noperational_engine"]
+  sys_docx_comment_injection_engine["docx-comment-injection-engine\noperational_engine"]
+  sys_meeting_minutes_engine["meeting-minutes-engine\noperational_engine"]
+  sys_spectrum_data_lake["spectrum-data-lake\ndata_lake"]
+  sys_spectrum_pipeline_engine["spectrum-pipeline-engine\norchestration"]
+  sys_spectrum_program_advisor["spectrum-program-advisor\nadvisory"]
+  sys_spectrum_systems["spectrum-systems\ngovernance"]
+  sys_system_factory["system-factory\nfactory"]
+  sys_working_paper_review_engine["working-paper-review-engine\noperational_engine"]
+  art_adjudicated_matrix["adjudicated_matrix\nreview"]
+  art_assumption_register["assumption_register\nwork"]
+  art_comment_resolution_matrix["comment_resolution_matrix\nreview"]
+  art_comment_resolution_matrix_spreadsheet["comment_resolution_matrix_spreadsheet\nreview"]
+  art_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\nreview"]
+  art_coordination_loop["coordination_loop\ncoordination"]
+  art_cross_loop["cross_loop\ncoordination"]
+  art_decision_log["decision_log\ncoordination"]
+  art_document_production_loop["document_production_loop\nwork"]
+  art_external_artifact_manifest["external_artifact_manifest\ncoordination"]
+  art_governance_guidance["governance_guidance\ncoordination"]
+  art_governance_loop["governance_loop\ncoordination"]
+  art_governance_templates["governance_templates\ncoordination"]
+  art_meeting_agenda_contract["meeting_agenda_contract\ncoordination"]
+  art_meeting_minutes["meeting_minutes\ncoordination"]
+  art_meeting_minutes_docx["meeting_minutes_docx\ncoordination"]
+  art_meeting_minutes_record["meeting_minutes_record\ncoordination"]
+  art_milestone_plan["milestone_plan\ncoordination"]
+  art_next_best_action_memo["next_best_action_memo\ncoordination"]
+  art_pdf_anchored_docx_comment_injection_contract["pdf_anchored_docx_comment_injection_contract\nreview"]
+  art_pipeline_run_manifest["pipeline_run_manifest\ncoordination"]
+  art_program_brief["program_brief\ncoordination"]
+  art_provenance_record["provenance_record\ncoordination"]
+  art_review_guidance["review_guidance\nreview"]
+  art_reviewer_comment_set["reviewer_comment_set\nreview"]
+  art_risk_register["risk_register\ncoordination"]
+  art_scaffolded_repository_manifest["scaffolded_repository_manifest\ncoordination"]
+  art_standards_manifest["standards_manifest\ncoordination"]
+  art_study_readiness_assessment["study_readiness_assessment\ncoordination"]
+  art_transcript["transcript\ncoordination"]
+  art_updated_working_paper["updated_working_paper\nwork"]
+  art_updated_working_paper_docx["updated_working_paper_docx\nwork"]
+  art_working_paper_input["working_paper_input\nwork"]
+  con_assumption_register["assumption_register\ncontract"]
+  con_comment_resolution_matrix["comment_resolution_matrix\ncontract"]
+  con_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\ncontract"]
+  con_decision_log["decision_log\ncontract"]
+  con_external_artifact_manifest["external_artifact_manifest\ncontract"]
+  con_meeting_agenda_contract["meeting_agenda_contract\ncontract"]
+  con_meeting_minutes["meeting_minutes\ncontract"]
+  con_meeting_minutes_record["meeting_minutes_record\ncontract"]
+  con_milestone_plan["milestone_plan\ncontract"]
+  con_next_best_action_memo["next_best_action_memo\ncontract"]
+  con_pdf_anchored_docx_comment_injection_contract["pdf_anchored_docx_comment_injection_contract\ncontract"]
+  con_program_brief["program_brief\ncontract"]
+  con_provenance_record["provenance_record\ncontract"]
+  con_reviewer_comment_set["reviewer_comment_set\ncontract"]
+  con_risk_register["risk_register\ncontract"]
+  con_standards_manifest["standards_manifest\ncontract"]
+  con_study_readiness_assessment["study_readiness_assessment\ncontract"]
+  con_working_paper_input["working_paper_input\ncontract"]
+  art_assumption_register -. governed_by .-> con_assumption_register
+  art_comment_resolution_matrix -. governed_by .-> con_comment_resolution_matrix
+  art_comment_resolution_matrix_spreadsheet_contract -. governed_by .-> con_comment_resolution_matrix_spreadsheet_contract
+  art_decision_log -. governed_by .-> con_decision_log
+  art_external_artifact_manifest -. governed_by .-> con_external_artifact_manifest
+  art_meeting_agenda_contract -. governed_by .-> con_meeting_agenda_contract
+  art_meeting_minutes -. governed_by .-> con_meeting_minutes
+  art_meeting_minutes_record -. governed_by .-> con_meeting_minutes_record
+  art_milestone_plan -. governed_by .-> con_milestone_plan
+  art_next_best_action_memo -. governed_by .-> con_next_best_action_memo
+  art_pdf_anchored_docx_comment_injection_contract -. governed_by .-> con_pdf_anchored_docx_comment_injection_contract
+  art_program_brief -. governed_by .-> con_program_brief
+  art_provenance_record -. governed_by .-> con_provenance_record
+  art_reviewer_comment_set -. governed_by .-> con_reviewer_comment_set
+  art_risk_register -. governed_by .-> con_risk_register
+  art_standards_manifest -. governed_by .-> con_standards_manifest
+  art_study_readiness_assessment -. governed_by .-> con_study_readiness_assessment
+  art_working_paper_input -. governed_by .-> con_working_paper_input
+  con_assumption_register -->|validates| art_assumption_register
+  con_comment_resolution_matrix -->|validates| art_comment_resolution_matrix
+  con_comment_resolution_matrix_spreadsheet_contract -->|validates| art_comment_resolution_matrix_spreadsheet_contract
+  con_decision_log -->|validates| art_decision_log
+  con_external_artifact_manifest -->|validates| art_external_artifact_manifest
+  con_meeting_agenda_contract -->|validates| art_meeting_agenda_contract
+  con_meeting_minutes -->|validates| art_meeting_minutes
+  con_meeting_minutes_record -->|validates| art_meeting_minutes_record
+  con_milestone_plan -->|validates| art_milestone_plan
+  con_next_best_action_memo -->|validates| art_next_best_action_memo
+  con_pdf_anchored_docx_comment_injection_contract -->|validates| art_pdf_anchored_docx_comment_injection_contract
+  con_program_brief -->|validates| art_program_brief
+  con_provenance_record -->|validates| art_provenance_record
+  con_reviewer_comment_set -->|validates| art_reviewer_comment_set
+  con_risk_register -->|validates| art_risk_register
+  con_standards_manifest -->|validates| art_standards_manifest
+  con_study_readiness_assessment -->|validates| art_study_readiness_assessment
+  con_working_paper_input -->|validates| art_working_paper_input
+  art_comment_resolution_matrix -->|consumes| sys_comment_resolution_engine
+  art_reviewer_comment_set -->|consumes| sys_comment_resolution_engine
+  art_working_paper_input -->|consumes| sys_comment_resolution_engine
+  sys_comment_resolution_engine -. depends_on .-> con_comment_resolution_matrix
+  sys_comment_resolution_engine -. depends_on .-> con_comment_resolution_matrix_spreadsheet_contract
+  sys_comment_resolution_engine -. depends_on .-> con_provenance_record
+  sys_comment_resolution_engine -. depends_on .-> con_reviewer_comment_set
+  sys_comment_resolution_engine -->|emits| art_comment_resolution_matrix
+  sys_comment_resolution_engine -->|emits| art_comment_resolution_matrix_spreadsheet_contract
+  sys_comment_resolution_engine -. participates_in .-> art_document_production_loop
+  art_comment_resolution_matrix_spreadsheet_contract -->|consumes| sys_docx_comment_injection_engine
+  art_working_paper_input -->|consumes| sys_docx_comment_injection_engine
+  sys_docx_comment_injection_engine -. depends_on .-> con_comment_resolution_matrix_spreadsheet_contract
+  sys_docx_comment_injection_engine -. depends_on .-> con_pdf_anchored_docx_comment_injection_contract
+  sys_docx_comment_injection_engine -. depends_on .-> con_provenance_record
+  sys_docx_comment_injection_engine -->|emits| art_pdf_anchored_docx_comment_injection_contract
+  sys_docx_comment_injection_engine -->|emits| art_updated_working_paper_docx
+  sys_docx_comment_injection_engine -. participates_in .-> art_document_production_loop
+  art_meeting_agenda_contract -->|consumes| sys_meeting_minutes_engine
+  art_transcript -->|consumes| sys_meeting_minutes_engine
+  sys_meeting_minutes_engine -. depends_on .-> con_meeting_agenda_contract
+  sys_meeting_minutes_engine -. depends_on .-> con_meeting_minutes
+  sys_meeting_minutes_engine -. depends_on .-> con_provenance_record
+  sys_meeting_minutes_engine -->|emits| art_meeting_minutes
+  sys_meeting_minutes_engine -->|emits| art_meeting_minutes_record
+  sys_meeting_minutes_engine -. participates_in .-> art_coordination_loop
+  art_meeting_minutes_record -->|consumes| sys_spectrum_data_lake
+  art_provenance_record -->|consumes| sys_spectrum_data_lake
+  art_reviewer_comment_set -->|consumes| sys_spectrum_data_lake
+  art_working_paper_input -->|consumes| sys_spectrum_data_lake
+  sys_spectrum_data_lake -. depends_on .-> con_external_artifact_manifest
+  sys_spectrum_data_lake -. depends_on .-> con_provenance_record
+  sys_spectrum_data_lake -. depends_on .-> con_standards_manifest
+  sys_spectrum_data_lake -->|emits| art_external_artifact_manifest
+  sys_spectrum_data_lake -->|emits| art_provenance_record
+  sys_spectrum_data_lake -. participates_in .-> art_cross_loop
+  art_pipeline_run_manifest -->|consumes| sys_spectrum_pipeline_engine
+  art_provenance_record -->|consumes| sys_spectrum_pipeline_engine
+  art_standards_manifest -->|consumes| sys_spectrum_pipeline_engine
+  sys_spectrum_pipeline_engine -. depends_on .-> con_external_artifact_manifest
+  sys_spectrum_pipeline_engine -. depends_on .-> con_provenance_record
+  sys_spectrum_pipeline_engine -. depends_on .-> con_standards_manifest
+  sys_spectrum_pipeline_engine -. depends_on .-> con_study_readiness_assessment
+  sys_spectrum_pipeline_engine -->|emits| art_pipeline_run_manifest
+  sys_spectrum_pipeline_engine -->|emits| art_study_readiness_assessment
+  sys_spectrum_pipeline_engine -. participates_in .-> art_cross_loop
+  art_pipeline_run_manifest -->|consumes| sys_spectrum_program_advisor
+  art_provenance_record -->|consumes| sys_spectrum_program_advisor
+  art_study_readiness_assessment -->|consumes| sys_spectrum_program_advisor
+  sys_spectrum_program_advisor -. depends_on .-> con_next_best_action_memo
+  sys_spectrum_program_advisor -. depends_on .-> con_program_brief
+  sys_spectrum_program_advisor -. depends_on .-> con_provenance_record
+  sys_spectrum_program_advisor -. depends_on .-> con_risk_register
+  sys_spectrum_program_advisor -. depends_on .-> con_study_readiness_assessment
+  sys_spectrum_program_advisor -->|emits| art_next_best_action_memo
+  sys_spectrum_program_advisor -->|emits| art_program_brief
+  sys_spectrum_program_advisor -->|emits| art_risk_register
+  sys_spectrum_program_advisor -. participates_in .-> art_cross_loop
+  art_provenance_record -->|consumes| sys_spectrum_systems
+  art_standards_manifest -->|consumes| sys_spectrum_systems
+  sys_spectrum_systems -. depends_on .-> con_standards_manifest
+  sys_spectrum_systems -->|emits| art_governance_guidance
+  sys_spectrum_systems -->|emits| art_standards_manifest
+  sys_spectrum_systems -. participates_in .-> art_governance_loop
+  art_governance_templates -->|consumes| sys_system_factory
+  art_standards_manifest -->|consumes| sys_system_factory
+  sys_system_factory -. depends_on .-> con_provenance_record
+  sys_system_factory -. depends_on .-> con_standards_manifest
+  sys_system_factory -->|emits| art_scaffolded_repository_manifest
+  sys_system_factory -->|emits| art_standards_manifest
+  sys_system_factory -. participates_in .-> art_governance_loop
+  art_review_guidance -->|consumes| sys_working_paper_review_engine
+  art_working_paper_input -->|consumes| sys_working_paper_review_engine
+  sys_working_paper_review_engine -. depends_on .-> con_provenance_record
+  sys_working_paper_review_engine -. depends_on .-> con_reviewer_comment_set
+  sys_working_paper_review_engine -. depends_on .-> con_working_paper_input
+  sys_working_paper_review_engine -->|emits| art_reviewer_comment_set
+  sys_working_paper_review_engine -. participates_in .-> art_document_production_loop
