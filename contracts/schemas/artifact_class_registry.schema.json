@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/artifact_class_registry.schema.json",
+  "title": "Artifact Class Registry",
+  "description": "Machine-readable registry of canonical artifact classes and allowed transitions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_classes",
+    "allowed_transitions"
+  ],
+  "properties": {
+    "artifact_classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact_class"
+      }
+    },
+    "allowed_transitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/allowed_transition"
+      }
+    }
+  },
+  "$defs": {
+    "artifact_class": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "examples"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "coordination",
+            "work",
+            "review"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "examples": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "allowed_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "enum": [
+            "coordination",
+            "work",
+            "review"
+          ]
+        },
+        "to": {
+          "type": "string",
+          "enum": [
+            "coordination",
+            "work",
+            "review"
+          ]
+        }
+      }
+    }
+  }
+}

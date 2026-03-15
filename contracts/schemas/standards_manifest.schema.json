@@ -157,6 +157,7 @@
       "additionalProperties": false,
       "required": [
         "artifact_type",
+        "artifact_class",
         "schema_version",
         "status",
         "intended_consumers",
@@ -165,6 +166,15 @@
       "properties": {
         "artifact_type": {
           "type": "string"
+        },
+        "artifact_class": {
+          "type": "string",
+          "enum": [
+            "coordination",
+            "work",
+            "review"
+          ],
+          "description": "Canonical artifact class for this contract."
         },
         "schema_version": {
           "type": "string",

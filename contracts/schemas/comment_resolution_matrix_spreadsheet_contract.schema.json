@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": [
     "artifact_type",
+    "artifact_class",
     "artifact_id",
     "artifact_version",
     "schema_version",
@@ -38,6 +39,11 @@
       "type": "string",
       "const": "comment_resolution_matrix_spreadsheet_contract",
       "description": "Canonical artifact type identifier for the spreadsheet interface."
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "review",
+      "description": "Canonical artifact class identifier."
     },
     "artifact_id": {
       "type": "string",

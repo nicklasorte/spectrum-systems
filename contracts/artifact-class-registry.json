@@ -1,0 +1,68 @@
+{
+  "artifact_classes": [
+    {
+      "name": "coordination",
+      "description": "Artifacts that align people, decisions, schedules, and next steps.",
+      "examples": [
+        "roster",
+        "agenda",
+        "transcript",
+        "meeting minutes",
+        "action items",
+        "FAQ",
+        "schedule"
+      ]
+    },
+    {
+      "name": "work",
+      "description": "Artifacts that capture technical analysis or study outputs in progress or final form.",
+      "examples": [
+        "study plan",
+        "engineering outputs",
+        "working paper",
+        "updated working paper",
+        "report sections",
+        "figures",
+        "tables"
+      ]
+    },
+    {
+      "name": "review",
+      "description": "Artifacts that capture comments, critique, adjudication, or approval/revision state.",
+      "examples": [
+        "agency review",
+        "reviewer comment set",
+        "comment resolution matrix",
+        "adjudicated matrix",
+        "decision log",
+        "review findings"
+      ]
+    }
+  ],
+  "allowed_transitions": [
+    {
+      "from": "coordination",
+      "to": "coordination"
+    },
+    {
+      "from": "coordination",
+      "to": "work"
+    },
+    {
+      "from": "work",
+      "to": "work"
+    },
+    {
+      "from": "work",
+      "to": "review"
+    },
+    {
+      "from": "review",
+      "to": "work"
+    },
+    {
+      "from": "review",
+      "to": "coordination"
+    }
+  ]
+}

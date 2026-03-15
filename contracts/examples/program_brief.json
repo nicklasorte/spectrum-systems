@@ -1,5 +1,6 @@
 {
   "artifact_type": "program_brief",
+  "artifact_class": "coordination",
   "artifact_id": "PB-001",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",

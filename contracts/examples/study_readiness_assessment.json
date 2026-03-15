@@ -1,5 +1,6 @@
 {
   "artifact_type": "study_readiness_assessment",
+  "artifact_class": "coordination",
   "artifact_id": "SRA-001",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",

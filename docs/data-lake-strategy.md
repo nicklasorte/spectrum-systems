@@ -271,3 +271,7 @@ Artifacts
 ↓
 Decisions
 ```
+
+## Manifest metadata expectations
+- All artifact manifests that land in the lake must declare both `artifact_class` and `artifact_type` so orchestration layers can route, validate, and enforce class transitions.
+- Manifest records should continue to carry versions, provenance, and checksums; the class identifier complements `artifact_type` and schema version to keep storage governance deterministic.

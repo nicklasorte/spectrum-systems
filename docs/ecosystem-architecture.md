@@ -39,6 +39,12 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## Artifact Classes as the Core Ecosystem Abstraction
+- The ecosystem is organized around three canonical artifact classes: coordination, work, and review (see `docs/artifact-classification-standard.md` and `contracts/artifact-class-registry.json`).
+- Every engine declares which artifact classes it consumes and emits; manifests must include `artifact_class` alongside `artifact_type` to keep routing deterministic.
+- Orchestration and advisory layers can reason over classes to simplify compatibility checks, reduce bespoke integrations, and enforce allowable transitions between classes.
+- Class-aware manifests make it easier to swap implementations while preserving contract alignment across systems and pipelines.
+
 ## Meeting Minutes Artifact
 - Meeting-minutes-engine ingests transcript text and emits a governed `meeting_minutes_record` JSON artifact.
 - The JSON record is the source of truth that downstream engines consume before rendering DOCX outputs for stakeholders.

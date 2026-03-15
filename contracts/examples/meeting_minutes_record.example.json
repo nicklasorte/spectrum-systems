@@ -1,5 +1,6 @@
 {
   "artifact_type": "meeting_minutes_record",
+  "artifact_class": "coordination",
   "artifact_id": "MMR-Q2-2026-PROG-ALPHA",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",

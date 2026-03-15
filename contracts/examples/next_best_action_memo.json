@@ -1,5 +1,6 @@
 {
   "artifact_type": "next_best_action_memo",
+  "artifact_class": "coordination",
   "artifact_id": "NBA-MEMO-001",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",

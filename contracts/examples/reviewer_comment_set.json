@@ -1,5 +1,6 @@
 {
   "artifact_type": "reviewer_comment_set",
+  "artifact_class": "review",
   "artifact_id": "CSET-2026-001",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
