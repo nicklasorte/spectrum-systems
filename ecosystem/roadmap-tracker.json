@@ -1,0 +1,1300 @@
+[
+  {
+    "step_number": 1,
+    "title": "Codify operating model loops",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 3,
+    "dependencies": [],
+    "primary_risk": "Coordination and document loops drift or stay implicit",
+    "guardrail": "Keep loop definitions anchored to docs/vision.md and spectrum-study-operating-model",
+    "primary_purpose": "Codify operating model loops to strengthen control plane foundations."
+  },
+  {
+    "step_number": 2,
+    "title": "Publish Level 0-20 maturity ladder",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 3,
+    "dependencies": [
+      1
+    ],
+    "primary_risk": "Promotions become subjective or inconsistent",
+    "guardrail": "Require evidence-backed increments and rubric alignment",
+    "primary_purpose": "Publish Level 0-20 maturity ladder to strengthen control plane foundations."
+  },
+  {
+    "step_number": 3,
+    "title": "Stabilize system registry baseline",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 3,
+    "dependencies": [
+      2
+    ],
+    "primary_risk": "Mystery repos and unclear loop alignment",
+    "guardrail": "Register systems before adoption with loop and maturity placement",
+    "primary_purpose": "Stabilize system registry baseline to strengthen control plane foundations."
+  },
+  {
+    "step_number": 4,
+    "title": "Harden standards manifest and contract catalog",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 3,
+    "dependencies": [
+      3
+    ],
+    "primary_risk": "Contract drift and incompatible consumers",
+    "guardrail": "Versioned manifest with governed schema and intended consumers",
+    "primary_purpose": "Harden standards manifest and contract catalog to strengthen control plane foundations."
+  },
+  {
+    "step_number": 5,
+    "title": "Publish dependency graph schema and initial map",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 4,
+    "dependencies": [
+      4
+    ],
+    "primary_risk": "Hidden dependencies and unmanaged blast radius",
+    "guardrail": "Refresh graph on changes and review compatibility impacts",
+    "primary_purpose": "Publish dependency graph schema and initial map to strengthen control plane foundations."
+  },
+  {
+    "step_number": 6,
+    "title": "Define engine interface standard",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 4,
+    "dependencies": [
+      5
+    ],
+    "primary_risk": "Adapter sprawl and bespoke IO per engine",
+    "guardrail": "Reuse contract patterns and control signals across engines",
+    "primary_purpose": "Define engine interface standard to strengthen control plane foundations."
+  },
+  {
+    "step_number": 7,
+    "title": "Finalize artifact envelope standard",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 4,
+    "dependencies": [
+      6
+    ],
+    "primary_risk": "Lost provenance or unverifiable outputs",
+    "guardrail": "Enforce envelope fields for lineage, signatures, and validation",
+    "primary_purpose": "Finalize artifact envelope standard to strengthen control plane foundations."
+  },
+  {
+    "step_number": 8,
+    "title": "Standardize review protocol",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 4,
+    "dependencies": [
+      7
+    ],
+    "primary_risk": "Decision drift and fragmented findings",
+    "guardrail": "Use CLAUDE review standard and action tracker template",
+    "primary_purpose": "Standardize review protocol to strengthen control plane foundations."
+  },
+  {
+    "step_number": 9,
+    "title": "Set operational evidence baseline",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 4,
+    "dependencies": [
+      8
+    ],
+    "primary_risk": "Claims without run evidence",
+    "guardrail": "Require run manifests, validation, evaluation, provenance bundle",
+    "primary_purpose": "Set operational evidence baseline to strengthen control plane foundations."
+  },
+  {
+    "step_number": 10,
+    "title": "Publish canonical 100-step roadmap",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 4,
+    "dependencies": [
+      9
+    ],
+    "primary_risk": "Ad-hoc prioritization and short-term drift",
+    "guardrail": "Tie steps to maturity model and evidence gates",
+    "primary_purpose": "Publish canonical 100-step roadmap to strengthen control plane foundations."
+  },
+  {
+    "step_number": 11,
+    "title": "Activate governance enforcement roadmap",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      10
+    ],
+    "primary_risk": "Governance remains documentary only",
+    "guardrail": "Phase gates with measurable enforcement outputs",
+    "primary_purpose": "Activate governance enforcement roadmap to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 12,
+    "title": "Ship governance declaration template in system-factory",
+    "repo": "system-factory",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      11
+    ],
+    "primary_risk": "New repos omit contract pins",
+    "guardrail": "Scaffolds include mandatory governance declaration",
+    "primary_purpose": "Ship governance declaration template in system-factory to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 13,
+    "title": "Enforce declarations via compliance scanner",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      12
+    ],
+    "primary_risk": "Undetected governance drift",
+    "guardrail": "CI validation of declarations against standards manifest",
+    "primary_purpose": "Enforce declarations via compliance scanner to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 14,
+    "title": "Propagate standards pins through scaffolds",
+    "repo": "system-factory",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      13
+    ],
+    "primary_risk": "Engines adopt mismatched contract versions",
+    "guardrail": "Templates lock contract and schema versions",
+    "primary_purpose": "Propagate standards pins through scaffolds to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 15,
+    "title": "Adopt run evidence correlation rule",
+    "repo": "operational-engines",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      14
+    ],
+    "primary_risk": "Orphaned artifacts and unverifiable runs",
+    "guardrail": "Require shared run_id across manifest, evaluation, validation, provenance",
+    "primary_purpose": "Adopt run evidence correlation rule to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 16,
+    "title": "Align registry and maturity tracker",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      15
+    ],
+    "primary_risk": "Registry maturity claims without evidence",
+    "guardrail": "Cross-link maturity tracker entries to registry systems",
+    "primary_purpose": "Align registry and maturity tracker to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 17,
+    "title": "Complete review registry coverage",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 5,
+    "dependencies": [
+      16
+    ],
+    "primary_risk": "Lost actions and missing follow-ups",
+    "guardrail": "All reviews registered with actions and triggers",
+    "primary_purpose": "Complete review registry coverage to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 18,
+    "title": "Require ADRs for interface-affecting decisions",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      17
+    ],
+    "primary_risk": "Relitigated decisions and hidden rationale",
+    "guardrail": "ADR before adoption for interface or contract changes",
+    "primary_purpose": "Require ADRs for interface-affecting decisions to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 19,
+    "title": "Enforce artifact boundary in CI",
+    "repo": "spectrum-systems",
+    "status": "active",
+    "maturity_target": 5,
+    "dependencies": [
+      18
+    ],
+    "primary_risk": "Sensitive data or binaries creep into repo",
+    "guardrail": "Boundary workflow blocks non-governance artifacts",
+    "primary_purpose": "Enforce artifact boundary in CI to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 20,
+    "title": "Publish contract compatibility matrix",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      19
+    ],
+    "primary_risk": "Breakage when orchestrating mixed versions",
+    "guardrail": "Compatibility table governs orchestration decisions",
+    "primary_purpose": "Publish contract compatibility matrix to strengthen governed architecture baselines."
+  },
+  {
+    "step_number": 21,
+    "title": "Pin meeting-minutes-engine contracts",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      20
+    ],
+    "primary_risk": "Minutes engine drifts from governance",
+    "guardrail": "Manifest and contracts pinned to standards",
+    "primary_purpose": "Pin meeting-minutes-engine contracts to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 22,
+    "title": "Create synthetic fixtures for minutes",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      21
+    ],
+    "primary_risk": "Flaky or non-deterministic tests",
+    "guardrail": "Deterministic fixtures covering edge cases",
+    "primary_purpose": "Create synthetic fixtures for minutes to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 23,
+    "title": "Capture real fixtures for minutes",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      22
+    ],
+    "primary_risk": "Non-representative data",
+    "guardrail": "Use diverse transcripts and agendas with consent",
+    "primary_purpose": "Capture real fixtures for minutes to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 24,
+    "title": "Build evaluation harness for minutes",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      23
+    ],
+    "primary_risk": "No quality signal for outputs",
+    "guardrail": "Define pass/fail and scoring linked to contracts",
+    "primary_purpose": "Build evaluation harness for minutes to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 25,
+    "title": "Emit evidence bundle for minutes runs",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      24
+    ],
+    "primary_risk": "Missing provenance and validation",
+    "guardrail": "Emit run manifest, validation, evaluation, provenance with shared run_id",
+    "primary_purpose": "Emit evidence bundle for minutes runs to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 26,
+    "title": "Add observability baseline to minutes engine",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 5,
+    "dependencies": [
+      25
+    ],
+    "primary_risk": "Operational blind spots",
+    "guardrail": "Logs/metrics/traces mapped to runs and artifacts",
+    "primary_purpose": "Add observability baseline to minutes engine to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 27,
+    "title": "Define SLO and error budget for minutes engine",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      26
+    ],
+    "primary_risk": "Unbounded reliability debt",
+    "guardrail": "Release gating tied to SLO health",
+    "primary_purpose": "Define SLO and error budget for minutes engine to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 28,
+    "title": "Stand up incident/postmortem loop for minutes",
+    "repo": "meeting-minutes-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      27
+    ],
+    "primary_risk": "Repeating outages without learning",
+    "guardrail": "Blameless postmortems with action tracking",
+    "primary_purpose": "Stand up incident/postmortem loop for minutes to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 29,
+    "title": "Run first governed pipeline with minutes engine",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      28
+    ],
+    "primary_risk": "Manual glue and non-reproducible runs",
+    "guardrail": "Pipeline uses governed contracts and evidence bundle",
+    "primary_purpose": "Run first governed pipeline with minutes engine to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 30,
+    "title": "Prove repeatable coordination loop",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      29
+    ],
+    "primary_risk": "One-off demos without stability",
+    "guardrail": "CI fixtures and replayable pipeline runs",
+    "primary_purpose": "Prove repeatable coordination loop to strengthen first executable coordination loop."
+  },
+  {
+    "step_number": 31,
+    "title": "Pin working-paper-review-engine contracts",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      30
+    ],
+    "primary_risk": "Review engine drifts from standards",
+    "guardrail": "Contract pins with manifest validation",
+    "primary_purpose": "Pin working-paper-review-engine contracts to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 32,
+    "title": "Synthetic fixtures for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      31
+    ],
+    "primary_risk": "Incomplete test coverage",
+    "guardrail": "Cover happy path and edge cases deterministically",
+    "primary_purpose": "Synthetic fixtures for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 33,
+    "title": "Real fixtures for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      32
+    ],
+    "primary_risk": "Outputs misaligned with real content",
+    "guardrail": "Use governed working papers with approvals",
+    "primary_purpose": "Real fixtures for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 34,
+    "title": "Evaluation harness for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      33
+    ],
+    "primary_risk": "No quality or regression signal",
+    "guardrail": "Scorecard tied to reviewer selection accuracy",
+    "primary_purpose": "Evaluation harness for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 35,
+    "title": "Evidence bundle emission for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      34
+    ],
+    "primary_risk": "Unverifiable reviewer outputs",
+    "guardrail": "Include manifests, evaluation, validation with run_id",
+    "primary_purpose": "Evidence bundle emission for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 36,
+    "title": "Observability baseline for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      35
+    ],
+    "primary_risk": "Slow diagnosis of failures",
+    "guardrail": "Traces and metrics tied to paper IDs and runs",
+    "primary_purpose": "Observability baseline for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 37,
+    "title": "SLO and error budget for review engine",
+    "repo": "working-paper-review-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      36
+    ],
+    "primary_risk": "Service level undefined and fragile",
+    "guardrail": "Budget burn gates release velocity",
+    "primary_purpose": "SLO and error budget for review engine to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 38,
+    "title": "Minutes-to-review integration contract checks",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      37
+    ],
+    "primary_risk": "Coordination outputs fail review ingestion",
+    "guardrail": "Pipeline validates contract compatibility before run",
+    "primary_purpose": "Minutes-to-review integration contract checks to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 39,
+    "title": "Pin comment-resolution-engine contracts",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      38
+    ],
+    "primary_risk": "Resolution engine diverges from matrix contract",
+    "guardrail": "Contract pins and schema validation in CI",
+    "primary_purpose": "Pin comment-resolution-engine contracts to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 40,
+    "title": "Synthetic fixtures for comment-resolution",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      39
+    ],
+    "primary_risk": "Edge cases missed",
+    "guardrail": "Fixtures cover conflicting and duplicate comments",
+    "primary_purpose": "Synthetic fixtures for comment-resolution to strengthen second and third engines for document loop."
+  },
+  {
+    "step_number": 41,
+    "title": "Real fixtures for comment-resolution",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      40
+    ],
+    "primary_risk": "Adjudication unproven on real papers",
+    "guardrail": "Governed samples with reviewer consent",
+    "primary_purpose": "Real fixtures for comment-resolution to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 42,
+    "title": "Evaluation harness for comment-resolution",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      41
+    ],
+    "primary_risk": "Unmeasured resolution quality",
+    "guardrail": "Resolution accuracy and coverage metrics defined",
+    "primary_purpose": "Evaluation harness for comment-resolution to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 43,
+    "title": "Evidence bundle for comment-resolution runs",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      42
+    ],
+    "primary_risk": "No provenance for adjudication",
+    "guardrail": "Bundle includes matrix version and decision rationale",
+    "primary_purpose": "Evidence bundle for comment-resolution runs to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 44,
+    "title": "Observability baseline for comment-resolution",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 6,
+    "dependencies": [
+      43
+    ],
+    "primary_risk": "Silent failures during adjudication",
+    "guardrail": "Telemetry keyed by document and reviewer IDs",
+    "primary_purpose": "Observability baseline for comment-resolution to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 45,
+    "title": "SLO and error budget for comment-resolution",
+    "repo": "comment-resolution-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      44
+    ],
+    "primary_risk": "Resolution latency or accuracy regressions",
+    "guardrail": "Budget burn halts risky releases",
+    "primary_purpose": "SLO and error budget for comment-resolution to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 46,
+    "title": "Pipeline wiring for review and resolution flow",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      45
+    ],
+    "primary_risk": "Manual glue code between engines",
+    "guardrail": "Use standardized interfaces and compatibility checks",
+    "primary_purpose": "Pipeline wiring for review and resolution flow to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 47,
+    "title": "Integrate DOCX comment injection",
+    "repo": "docx-comment-injection-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      46
+    ],
+    "primary_risk": "Injected outputs bypass governance",
+    "guardrail": "Contract validation and provenance before publishing",
+    "primary_purpose": "Integrate DOCX comment injection to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 48,
+    "title": "Prove document loop end-to-end with provenance",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 7,
+    "dependencies": [
+      47
+    ],
+    "primary_risk": "Doc loop claims without closed evidence",
+    "guardrail": "Run evidence bundle across engines with run_id continuity",
+    "primary_purpose": "Prove document loop end-to-end with provenance to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 49,
+    "title": "Cross-repo contract validation gate in CI",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 8,
+    "dependencies": [
+      48
+    ],
+    "primary_risk": "Contract drift merges unnoticed",
+    "guardrail": "CI blocks when schemas or contracts misalign",
+    "primary_purpose": "Cross-repo contract validation gate in CI to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 50,
+    "title": "Standards pin audit across repos",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 8,
+    "dependencies": [
+      49
+    ],
+    "primary_risk": "Repos silently upgrade or downgrade contracts",
+    "guardrail": "Audit pins and alert on unsupported versions",
+    "primary_purpose": "Standards pin audit across repos to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 51,
+    "title": "Automate dependency graph refresh",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 8,
+    "dependencies": [
+      50
+    ],
+    "primary_risk": "Stale maps hide coupling",
+    "guardrail": "Regenerate graph in CI and publish diffs",
+    "primary_purpose": "Automate dependency graph refresh to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 52,
+    "title": "Contract drift detection alerts",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 8,
+    "dependencies": [
+      51
+    ],
+    "primary_risk": "Drift accumulates until breakage",
+    "guardrail": "Alerting tied to manifest deltas and registry consumers",
+    "primary_purpose": "Contract drift detection alerts to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 53,
+    "title": "Impact analysis for contract changes",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 8,
+    "dependencies": [
+      52
+    ],
+    "primary_risk": "Breaking changes without blast radius review",
+    "guardrail": "Graph-driven impact reports before merges",
+    "primary_purpose": "Impact analysis for contract changes to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 54,
+    "title": "Shared observability platform foundation",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 9,
+    "dependencies": [
+      53
+    ],
+    "primary_risk": "Telemetry fragmentation across engines",
+    "guardrail": "Common telemetry schema and exporters",
+    "primary_purpose": "Shared observability platform foundation to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 55,
+    "title": "Toil tracking instrumentation",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 9,
+    "dependencies": [
+      54
+    ],
+    "primary_risk": "Toil creep hidden until burnout",
+    "guardrail": "Track repetitive work and automate before scaling",
+    "primary_purpose": "Toil tracking instrumentation to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 56,
+    "title": "Reliability review cadence tied to error budgets",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 9,
+    "dependencies": [
+      55
+    ],
+    "primary_risk": "Reliability debt unchecked",
+    "guardrail": "Regular reviews pause changes when budgets burn",
+    "primary_purpose": "Reliability review cadence tied to error budgets to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 57,
+    "title": "SLO scoreboard across engines",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 9,
+    "dependencies": [
+      56
+    ],
+    "primary_risk": "No visibility into service health",
+    "guardrail": "Central SLO reporting with thresholds",
+    "primary_purpose": "SLO scoreboard across engines to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 58,
+    "title": "Incident response and runbook library",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 9,
+    "dependencies": [
+      57
+    ],
+    "primary_risk": "Inconsistent incident handling",
+    "guardrail": "Standard runbooks with ownership and triggers",
+    "primary_purpose": "Incident response and runbook library to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 59,
+    "title": "Resilience and chaos smoke tests",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 10,
+    "dependencies": [
+      58
+    ],
+    "primary_risk": "Unknown failure modes",
+    "guardrail": "Controlled fault injection with rollback plans",
+    "primary_purpose": "Resilience and chaos smoke tests to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 60,
+    "title": "Release gating on SLO and error budgets",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 10,
+    "dependencies": [
+      59
+    ],
+    "primary_risk": "Shipping during instability",
+    "guardrail": "Block risky deploys when budgets are exhausted",
+    "primary_purpose": "Release gating on SLO and error budgets to strengthen reliability, observability, and governance enforcement."
+  },
+  {
+    "step_number": 61,
+    "title": "Define program-advisor contract",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 12,
+    "dependencies": [
+      60
+    ],
+    "primary_risk": "Advisory outputs ungoverned",
+    "guardrail": "Contract ties recommendations to evidence",
+    "primary_purpose": "Define program-advisor contract to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 62,
+    "title": "Build recommendation engine MVP",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 12,
+    "dependencies": [
+      61
+    ],
+    "primary_risk": "Advice lacks precision",
+    "guardrail": "Start with narrow, measurable recommendations",
+    "primary_purpose": "Build recommendation engine MVP to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 63,
+    "title": "Track recommendation precision and recall",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 12,
+    "dependencies": [
+      62
+    ],
+    "primary_risk": "Unvalidated guidance",
+    "guardrail": "Measure adoption and correctness against outcomes",
+    "primary_purpose": "Track recommendation precision and recall to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 64,
+    "title": "Pattern detection across run evidence",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 13,
+    "dependencies": [
+      63
+    ],
+    "primary_risk": "Hidden recurrent failures",
+    "guardrail": "Use standardized evidence fields to mine patterns",
+    "primary_purpose": "Pattern detection across run evidence to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 65,
+    "title": "Assemble cross-study learning dataset",
+    "repo": "spectrum-data-lake",
+    "status": "planned",
+    "maturity_target": 13,
+    "dependencies": [
+      64
+    ],
+    "primary_risk": "Insights siloed per engine",
+    "guardrail": "Governed dataset with provenance and access controls",
+    "primary_purpose": "Assemble cross-study learning dataset to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 66,
+    "title": "Prediction models for risk and lead time",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 14,
+    "dependencies": [
+      65
+    ],
+    "primary_risk": "Unreliable forecasts",
+    "guardrail": "Backtest models and publish confidence bounds",
+    "primary_purpose": "Prediction models for risk and lead time to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 67,
+    "title": "Adaptive workflow policy engine",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 14,
+    "dependencies": [
+      66
+    ],
+    "primary_risk": "Dynamic paths bypass governance",
+    "guardrail": "Policies enforce contracts and approvals before branching",
+    "primary_purpose": "Adaptive workflow policy engine to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 68,
+    "title": "Strategic summary generator",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 14,
+    "dependencies": [
+      67
+    ],
+    "primary_risk": "Summaries lack traceability",
+    "guardrail": "Summaries link to evidence bundles and registry entries",
+    "primary_purpose": "Strategic summary generator to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 69,
+    "title": "Instrument feedback loops for recommendations",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 14,
+    "dependencies": [
+      68
+    ],
+    "primary_risk": "No learning from adoption",
+    "guardrail": "Capture acceptance/override signals with provenance",
+    "primary_purpose": "Instrument feedback loops for recommendations to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 70,
+    "title": "Report advisory adoption metrics",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      69
+    ],
+    "primary_risk": "Advisories ignored or unmeasured",
+    "guardrail": "Track usage, outcomes, and false positives",
+    "primary_purpose": "Report advisory adoption metrics to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 71,
+    "title": "Run evidence correlation aggregator",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      70
+    ],
+    "primary_risk": "Evidence scattered across engines",
+    "guardrail": "Central service indexes bundles by run_id",
+    "primary_purpose": "Run evidence correlation aggregator to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 72,
+    "title": "Governance automation opens issues on violations",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      71
+    ],
+    "primary_risk": "Violations stay latent",
+    "guardrail": "Auto-file issues with evidence and owners",
+    "primary_purpose": "Governance automation opens issues on violations to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 73,
+    "title": "Suggest contract drift remediations",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      72
+    ],
+    "primary_risk": "Drift accumulates without fixes",
+    "guardrail": "Recommendations cite manifest versions and risk",
+    "primary_purpose": "Suggest contract drift remediations to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 74,
+    "title": "Expand evaluation harness coverage",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      73
+    ],
+    "primary_risk": "Unvalidated pathways grow",
+    "guardrail": "Add fixtures per contract and workflow path",
+    "primary_purpose": "Expand evaluation harness coverage to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 75,
+    "title": "Enforce provenance in data lake",
+    "repo": "spectrum-data-lake",
+    "status": "planned",
+    "maturity_target": 15,
+    "dependencies": [
+      74
+    ],
+    "primary_risk": "Untraceable data reuse",
+    "guardrail": "Lineage queries and provenance metadata mandatory",
+    "primary_purpose": "Enforce provenance in data lake to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 76,
+    "title": "Artifact signing and SBOM generation",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 16,
+    "dependencies": [
+      75
+    ],
+    "primary_risk": "Supply-chain tampering",
+    "guardrail": "Signed artifacts with SBOMs for governed outputs",
+    "primary_purpose": "Artifact signing and SBOM generation to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 77,
+    "title": "Supply-chain attestations in CI",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 16,
+    "dependencies": [
+      76
+    ],
+    "primary_risk": "Unsigned or unverified dependencies",
+    "guardrail": "CI requires attestations for builds and artifacts",
+    "primary_purpose": "Supply-chain attestations in CI to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 78,
+    "title": "Access control and secrets policy enforcement",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 16,
+    "dependencies": [
+      77
+    ],
+    "primary_risk": "Unauthorized access or key leakage",
+    "guardrail": "Central policy with automated checks",
+    "primary_purpose": "Access control and secrets policy enforcement to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 79,
+    "title": "Paved-path pipeline templates",
+    "repo": "system-factory",
+    "status": "planned",
+    "maturity_target": 16,
+    "dependencies": [
+      78
+    ],
+    "primary_risk": "One-off pipelines recreate toil",
+    "guardrail": "Templates bake in governance, telemetry, and evidence",
+    "primary_purpose": "Paved-path pipeline templates to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 80,
+    "title": "Platform API for orchestrated runs",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 16,
+    "dependencies": [
+      79
+    ],
+    "primary_risk": "Inconsistent orchestration interfaces",
+    "guardrail": "Stable API with contract-aware routing",
+    "primary_purpose": "Platform API for orchestrated runs to strengthen platform and advisory foundations."
+  },
+  {
+    "step_number": 81,
+    "title": "Platform observability SLOs",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 17,
+    "dependencies": [
+      80
+    ],
+    "primary_risk": "Platform unreliability hidden",
+    "guardrail": "SLOs and alerts for orchestration plane",
+    "primary_purpose": "Platform observability SLOs to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 82,
+    "title": "Cost and efficiency monitoring",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 17,
+    "dependencies": [
+      81
+    ],
+    "primary_risk": "Runaway compute costs",
+    "guardrail": "Budget alerts and efficiency benchmarks",
+    "primary_purpose": "Cost and efficiency monitoring to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 83,
+    "title": "Performance and capacity testing",
+    "repo": "operational-engines",
+    "status": "planned",
+    "maturity_target": 17,
+    "dependencies": [
+      82
+    ],
+    "primary_risk": "Throughput bottlenecks surprise",
+    "guardrail": "Load tests with regression thresholds",
+    "primary_purpose": "Performance and capacity testing to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 84,
+    "title": "High-availability failover simulation",
+    "repo": "operational-engines",
+    "status": "planned",
+    "maturity_target": 17,
+    "dependencies": [
+      83
+    ],
+    "primary_risk": "Single-region or single-instance fragility",
+    "guardrail": "Failover drills with evidence capture",
+    "primary_purpose": "High-availability failover simulation to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 85,
+    "title": "Knowledge graph for decisions and runs",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      84
+    ],
+    "primary_risk": "Institutional memory loss",
+    "guardrail": "Graph links ADRs, reviews, runs, artifacts",
+    "primary_purpose": "Knowledge graph for decisions and runs to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 86,
+    "title": "Search across ADRs, actions, and evidence",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      85
+    ],
+    "primary_risk": "Decisions undiscoverable",
+    "guardrail": "Indexed, access-controlled search with provenance",
+    "primary_purpose": "Search across ADRs, actions, and evidence to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 87,
+    "title": "Automate roadmap tracker updates",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      86
+    ],
+    "primary_risk": "Roadmap becomes stale",
+    "guardrail": "Pull status from registries and CI where possible",
+    "primary_purpose": "Automate roadmap tracker updates to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 88,
+    "title": "Establish roadmap review cadence",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      87
+    ],
+    "primary_risk": "Roadmap diverges from reality",
+    "guardrail": "Quarterly checkpoint tied to maturity evidence",
+    "primary_purpose": "Establish roadmap review cadence to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 89,
+    "title": "External audit readiness package",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      88
+    ],
+    "primary_risk": "Cannot demonstrate governance to auditors",
+    "guardrail": "Bundle policies, evidence, and attestations",
+    "primary_purpose": "External audit readiness package to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 90,
+    "title": "Security posture assessment and pen-test response",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 18,
+    "dependencies": [
+      89
+    ],
+    "primary_risk": "Undiscovered vulnerabilities",
+    "guardrail": "Track findings to closure with provenance",
+    "primary_purpose": "Security posture assessment and pen-test response to strengthen auditability and operational resilience."
+  },
+  {
+    "step_number": 91,
+    "title": "Adaptive orchestrations with policy guardrails",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      90
+    ],
+    "primary_risk": "Autonomy overrides governance",
+    "guardrail": "Policies enforce approvals and rollback paths",
+    "primary_purpose": "Adaptive orchestrations with policy guardrails to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 92,
+    "title": "Scenario simulation for program planning",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      91
+    ],
+    "primary_risk": "Unvetted strategies",
+    "guardrail": "Simulations grounded in evidence bundles",
+    "primary_purpose": "Scenario simulation for program planning to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 93,
+    "title": "Impact forecasting tied to backlog",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      92
+    ],
+    "primary_risk": "Prioritization decoupled from evidence",
+    "guardrail": "Forecasts cite confidence and historic accuracy",
+    "primary_purpose": "Impact forecasting tied to backlog to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 94,
+    "title": "Blue/green and canary patterns for engines",
+    "repo": "operational-engines",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      93
+    ],
+    "primary_risk": "Risky releases without safety valves",
+    "guardrail": "Progressive delivery tied to SLO signals",
+    "primary_purpose": "Blue/green and canary patterns for engines to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 95,
+    "title": "Pipeline change management board",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      94
+    ],
+    "primary_risk": "Uncoordinated pipeline changes",
+    "guardrail": "Approvals and impact notes before promotion",
+    "primary_purpose": "Pipeline change management board to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 96,
+    "title": "Governance anomaly detection from telemetry",
+    "repo": "spectrum-program-advisor",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      95
+    ],
+    "primary_risk": "Silent drift in governance signals",
+    "guardrail": "Detect anomalies in run evidence and registry state",
+    "primary_purpose": "Governance anomaly detection from telemetry to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 97,
+    "title": "Self-remediation for low-risk gaps",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 19,
+    "dependencies": [
+      96
+    ],
+    "primary_risk": "Automation creates new drift",
+    "guardrail": "Approve/autorevert pattern with audit trail",
+    "primary_purpose": "Self-remediation for low-risk gaps to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 98,
+    "title": "Autonomous pipeline rebalancing",
+    "repo": "spectrum-pipeline-engine",
+    "status": "planned",
+    "maturity_target": 20,
+    "dependencies": [
+      97
+    ],
+    "primary_risk": "Optimization harms reliability",
+    "guardrail": "Rebalancing respects SLOs and error budgets",
+    "primary_purpose": "Autonomous pipeline rebalancing to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 99,
+    "title": "Level 20 evidence package",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 20,
+    "dependencies": [
+      98
+    ],
+    "primary_risk": "Cannot prove maturity claims",
+    "guardrail": "Compiled proofs for all maturity dimensions",
+    "primary_purpose": "Level 20 evidence package to strengthen adaptive, Level 20 maturity capabilities."
+  },
+  {
+    "step_number": 100,
+    "title": "Institutionalize strategic planning with evidence",
+    "repo": "spectrum-systems",
+    "status": "planned",
+    "maturity_target": 20,
+    "dependencies": [
+      99
+    ],
+    "primary_risk": "Decisions revert to intuition",
+    "guardrail": "Roadmap and advisor outputs drive prioritization with audits",
+    "primary_purpose": "Institutionalize strategic planning with evidence to strengthen adaptive, Level 20 maturity capabilities."
+  }
+]
