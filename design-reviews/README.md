@@ -4,11 +4,12 @@ This directory stores architecture and governance reviews produced by Claude Cod
 
 Each review must include two artifacts:
 1) Human-readable markdown: `YYYY-MM-DD-<slug>.md` using `design-reviews/claude-review-template.md` and the canonical sections in `docs/design-review-standard.md`.
-2) Machine-readable actions JSON: `YYYY-MM-DD-<slug>.actions.json` validated against `design-reviews/claude-review.schema.json`. Keep identifiers (gaps, risks, recommendations, actions) in sync with the markdown.
+2) Machine-readable actions JSON: `YYYY-MM-DD-<slug>.actions.json` validated against `design-reviews/claude-review.schema.json`. Keep identifiers (gaps, risks, recommendations, actions, findings) in sync with the markdown.
 
 Workflow:
 - Copy the template markdown and JSON schema to draft a new review; use deterministic filenames to preserve ordering.
-- Extract recommendations and actions with stable IDs (`G1`, `R1`, `REC-1`, `A-1`) so automation can map them to GitHub issues and labels.
+- Extract findings, recommendations, and actions with stable IDs (`F-1`, `G1`, `R1`, `REC-1`, `A-1`) so automation can map them to GitHub issues and labels.
+- The root-level `findings` array in the JSON actions file drives issue generation. Each finding should include `recommended_action`, `files_affected`, `create_issue`, and `suggested_labels` so automation can file well-formed issues.
 - After publishing, register the review in `docs/review-registry.md` and follow `docs/review-to-action-standard.md` for tracker updates and follow-up triggers.
 
 Examples:

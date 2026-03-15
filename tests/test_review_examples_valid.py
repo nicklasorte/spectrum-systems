@@ -1,12 +1,15 @@
 import json
 from pathlib import Path
 
+import jsonschema
 import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE_REVIEW_PATH = REPO_ROOT / "design-reviews" / "example-claude-review.actions.json"
 REQUIRED_FIELDS = ("id", "severity", "category", "title", "description")
+REQUIRED_FINDING_FIELDS = ("recommended_action", "files_affected", "create_issue")
+SCHEMA_PATH = REPO_ROOT / "design-reviews" / "claude-review.schema.json"
 
 
 def _load_example() -> dict:
@@ -24,3 +27,38 @@ def test_example_review_actions_structure() -> None:
         for field in REQUIRED_FIELDS:
             assert field in finding, f"Missing '{field}' in finding: {finding}"
             assert finding[field], f"Field '{field}' must be non-empty"
+        for field in REQUIRED_FINDING_FIELDS:
+            assert field in finding, f"Missing '{field}' in finding: {finding}"
+        assert isinstance(finding["create_issue"], bool), "create_issue must be a boolean"
+
+        recommended = finding["recommended_action"]
+        if isinstance(recommended, str):
+            assert recommended.strip(), "recommended_action string must be non-empty"
+        else:
+            assert isinstance(recommended, list) and recommended, "recommended_action must be string or non-empty list"
+            assert all(isinstance(item, str) and item.strip() for item in recommended), "recommended_action list items must be non-empty strings"
+
+        files_affected = finding["files_affected"]
+        if isinstance(files_affected, str):
+            assert files_affected.strip(), "files_affected string must be non-empty"
+        else:
+            assert isinstance(files_affected, list) and files_affected, "files_affected must be string or non-empty list"
+            assert all(isinstance(item, str) and item.strip() for item in files_affected), "files_affected list items must be non-empty strings"
+
+
+def test_example_actions_matches_summary() -> None:
+    payload = _load_example()
+    assert payload["summary"]["gaps"], "Summary gaps must not be empty"
+
+
+def test_example_actions_validates_against_schema() -> None:
+    payload = _load_example()
+    assert SCHEMA_PATH.is_file(), "claude-review.schema.json is missing"
+    with SCHEMA_PATH.open(encoding="utf-8") as handle:
+        schema = json.load(handle)
+
+    validator = jsonschema.Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(payload), key=lambda e: e.json_path)
+    if errors:
+        formatted = "\n".join(f"{err.json_path or '$'}: {err.message}" for err in errors)
+        pytest.fail(f"Schema validation errors:\\n{formatted}")

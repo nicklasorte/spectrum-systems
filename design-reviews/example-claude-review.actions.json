@@ -23,21 +23,65 @@
       "severity": "high",
       "category": "governance",
       "title": "Identifiers are not enforced across review artifacts",
-      "description": "Markdown reviews lack deterministic identifiers, creating ambiguity when automation parses the actions file."
+      "description": "Markdown reviews lack deterministic identifiers, creating ambiguity when automation parses the actions file.",
+      "recommended_action": [
+        "Adopt stable IDs in markdown that mirror the JSON schema expectations.",
+        "Add guidance in the template and README to keep markdown and JSON artifacts aligned."
+      ],
+      "files_affected": [
+        "design-reviews/claude-review-template.md",
+        "design-reviews/README.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Enforce deterministic review identifiers",
+      "suggested_labels": [
+        "design-review",
+        "governance"
+      ]
     },
     {
       "id": "F-2",
       "severity": "critical",
       "category": "automation",
       "title": "Missing machine-readable action payloads",
-      "description": "No JSON actions file accompanies the markdown review, preventing downstream automation from emitting GitHub issues."
+      "description": "No JSON actions file accompanies the markdown review, preventing downstream automation from emitting GitHub issues.",
+      "recommended_action": [
+        "Require a claude-review.actions.json artifact alongside every markdown review.",
+        "Validate the actions file against the schema before publishing."
+      ],
+      "files_affected": [
+        "design-reviews/claude-review.schema.json",
+        "design-reviews/example-claude-review.actions.json"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Publish Claude actions schema and example",
+      "suggested_labels": [
+        "automation",
+        "schema",
+        "design-review"
+      ],
+      "target_repo": "nicklasorte/spectrum-systems"
     },
     {
       "id": "F-3",
       "severity": "medium",
       "category": "process",
       "title": "Follow-up triggers are not encoded",
-      "description": "Triggers and due dates are not captured alongside actions, so reviews can stall without scheduled checkpoints."
+      "description": "Triggers and due dates are not captured alongside actions, so reviews can stall without scheduled checkpoints.",
+      "recommended_action": [
+        "Include follow-up triggers and due dates in the actions JSON and mirror them in the review registry."
+      ],
+      "files_affected": [
+        "design-reviews/example-claude-review.actions.json",
+        "docs/review-registry.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Encode follow-up triggers next to actions",
+      "suggested_labels": [
+        "follow-up",
+        "process",
+        "design-review"
+      ]
     }
   ],
   "summary": {
