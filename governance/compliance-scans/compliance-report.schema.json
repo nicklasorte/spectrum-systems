@@ -46,6 +46,7 @@
         "repo_path",
         "compliant",
         "missing_requirements",
+        "failures",
         "warnings"
       ],
       "properties": {
@@ -56,6 +57,14 @@
         "repo_path": {
           "type": "string",
           "description": "Filesystem path inspected for this repository."
+        },
+        "expected_system_id": {
+          "type": "string",
+          "description": "Expected system identifier supplied in the scan config."
+        },
+        "expected_repo_type": {
+          "type": "string",
+          "description": "Expected repository type supplied in the scan config."
         },
         "compliant": {
           "type": "boolean",
@@ -68,12 +77,67 @@
           },
           "description": "List of required governance elements not found."
         },
+        "failures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/failure"
+          },
+          "description": "Blocking compliance failures with severity and type metadata."
+        },
         "warnings": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "description": "Non-blocking issues or informational notes."
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity",
+        "type",
+        "repo",
+        "repo_path"
+      ],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "description": "Severity of the compliance failure."
+        },
+        "type": {
+          "type": "string",
+          "description": "Machine-readable failure category."
+        },
+        "repo": {
+          "type": "string",
+          "description": "Repository name associated with the failure."
+        },
+        "repo_path": {
+          "type": "string",
+          "description": "Filesystem path to the repository being evaluated."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Optional detail or error message."
+        },
+        "expected": {
+          "type": "string",
+          "description": "Expected value when applicable."
+        },
+        "actual": {
+          "type": "string",
+          "description": "Observed value when applicable."
+        },
+        "contract": {
+          "type": "string",
+          "description": "Contract identifier tied to the failure when relevant."
         }
       }
     }

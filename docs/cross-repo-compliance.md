@@ -15,8 +15,34 @@ Point the scanner at a JSON config listing the repos to inspect. Example: `gover
 ```json
 {
   "repos": [
-    { "name": "comment-resolution-engine", "path": "../comment-resolution-engine" },
-    { "name": "working-paper-review-engine", "path": "../working-paper-review-engine" }
+    {
+      "repo_name": "comment-resolution-engine",
+      "repo_path": "../comment-resolution-engine",
+      "expected_system_id": "SYS-001",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "external_artifact_manifest",
+        "meeting_agenda_contract",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set"
+      ]
+    },
+    {
+      "repo_name": "working-paper-review-engine",
+      "repo_path": "../working-paper-review-engine",
+      "expected_system_id": "SYS-007",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "comment_resolution_matrix",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ]
+    }
   ]
 }
 ```
@@ -42,15 +68,28 @@ Reports follow `governance/compliance-scans/compliance-report.schema.json`.
     {
       "repo_name": "comment-resolution-engine",
       "repo_path": "/repos/comment-resolution-engine",
+      "expected_system_id": "SYS-001",
+      "expected_repo_type": "operational_engine",
       "compliant": true,
       "missing_requirements": [],
+      "failures": [],
       "warnings": []
     },
     {
       "repo_name": "working-paper-review-engine",
       "repo_path": "/repos/working-paper-review-engine",
+      "expected_system_id": "SYS-007",
+      "expected_repo_type": "operational_engine",
       "compliant": false,
       "missing_requirements": ["CLAUDE.md", "tests/"],
+      "failures": [
+        {
+          "severity": "error",
+          "type": "missing_governance_manifest",
+          "repo": "working-paper-review-engine",
+          "repo_path": "/repos/working-paper-review-engine"
+        }
+      ],
       "warnings": ["README missing reference to spectrum-systems", "GitHub workflows directory missing or empty"]
     }
   ]
