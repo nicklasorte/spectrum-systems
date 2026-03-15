@@ -47,6 +47,10 @@ Every Claude review produces two artifacts:
 - Identify hidden or unmodeled dependencies, contract/artifact coupling risks, and any architecture areas that are no longer legible from the graph.
 - Explicitly comment on whether loop participation and cross-loop orchestration/advisory roles remain clear in the graph before approving architectural changes.
 
+## ADR alignment
+- Reference relevant ADRs when evaluating architecture changes and ensure findings cite the governing decision.
+- If a proposal conflicts with an ADR, flag the conflict and recommend either updating the ADR (with a new design review) or reconsidering the change until governance is aligned.
+
 ## Review method
 1. Ingest supplied artifacts and confirm scope; reject scopes lacking run manifests or registry alignment if evidence cannot be evaluated.
 2. Evaluate each scope lens (architecture, maturity, operational evidence, governance, risk) against the expectations above.
