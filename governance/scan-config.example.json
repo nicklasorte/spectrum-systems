@@ -1,0 +1,51 @@
+{
+  "repos": [
+    {
+      "repo_name": "comment-resolution-engine",
+      "repo_path": "../comment-resolution-engine",
+      "expected_system_id": "SYS-001",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "external_artifact_manifest",
+        "meeting_agenda_contract",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set"
+      ]
+    },
+    {
+      "repo_name": "working-paper-review-engine",
+      "repo_path": "../working-paper-review-engine",
+      "expected_system_id": "SYS-007",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "comment_resolution_matrix",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ]
+    },
+    {
+      "repo_name": "meeting-minutes-engine",
+      "repo_path": "../meeting-minutes-engine",
+      "expected_system_id": "SYS-006",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "meeting_agenda_contract",
+        "meeting_minutes"
+      ]
+    },
+    {
+      "repo_name": "docx-comment-injection-engine",
+      "repo_path": "../docx-comment-injection-engine",
+      "expected_system_id": "SYS-008",
+      "expected_repo_type": "operational_engine",
+      "required_contracts": [
+        "pdf_anchored_docx_comment_injection_contract"
+      ]
+    }
+  ]
+}

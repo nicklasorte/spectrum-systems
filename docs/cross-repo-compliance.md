@@ -10,7 +10,7 @@ The cross-repo compliance scanner provides a deterministic way for spectrum-syst
 - Baseline hygiene (unchanged): required files (`README.md`, `CLAUDE.md`, `CODEX.md`, `SYSTEMS.md`), directories (`docs/`, `tests/`), README reference to spectrum-systems (warning), GitHub workflows presence (warning), repository path reachability.
 
 ## Configuration
-Point the scanner at a JSON config listing the repos to inspect. Example: `governance/compliance-scans/scan-config.example.json`
+Point the scanner at a JSON config listing the repos to inspect. Example: `governance/scan-config.example.json`
 
 ```json
 {
@@ -52,10 +52,14 @@ Paths can be relative to the current working directory or absolute.
 ## Running the scanner
 
 ```bash
-node governance/compliance-scans/run-cross-repo-compliance.js governance/compliance-scans/scan-config.example.json
+node governance/compliance-scans/run-cross-repo-compliance.js --config governance/scan-config.example.json
 ```
 
-The scanner emits a JSON report to stdout. Redirect to a file if you want to persist the results.
+The scanner emits a JSON report to stdout. Use `--output <path>` to persist the results:
+
+```bash
+node governance/compliance-scans/run-cross-repo-compliance.js --config governance/scan-config.example.json --output compliance-report.json
+```
 
 ## Output format
 Reports follow `governance/compliance-scans/compliance-report.schema.json`.
@@ -97,3 +101,12 @@ Reports follow `governance/compliance-scans/compliance-report.schema.json`.
 ```
 
 Use any JSON Schema validator (e.g., `jsonschema` in Python) to verify reports against the schema if needed.
+
+## Automated Compliance Monitoring
+
+The automated governance check runs in `.github/workflows/cross-repo-compliance.yml`. It triggers on pushes to `main` that touch governance/contract/schema/ecosystem assets, on a weekly schedule, or on manual `workflow_dispatch`.
+
+- Manual run: trigger the “Cross Repo Governance Compliance” workflow from the GitHub Actions tab, or dispatch it with `gh workflow run cross-repo-compliance.yml`.
+- Scanner invocation: `node governance/compliance-scans/run-cross-repo-compliance.js --config governance/scan-config.example.json --output compliance-report.json`
+- Reports: uploaded as the `governance-compliance-report` workflow artifact containing `compliance-report.json`.
+- Interpreting failures: the job fails when any repository is non-compliant (missing requirements or recorded failures). Warnings do not fail the job but are included in the report and summary logs.

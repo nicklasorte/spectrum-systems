@@ -1,0 +1,68 @@
+name: Cross Repo Governance Compliance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1" # weekly on Mondays at 09:00 UTC
+  push:
+    branches:
+      - main
+    paths:
+      - "governance/**"
+      - "contracts/**"
+      - "schemas/**"
+      - "ecosystem/**"
+      - ".github/workflows/cross-repo-compliance.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  cross-repo-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run cross-repo compliance scanner
+        run: |
+          node governance/compliance-scans/run-cross-repo-compliance.js \
+            --config governance/scan-config.example.json \
+            --output compliance-report.json
+
+      - name: Summarize compliance results
+        run: |
+          node -e "const fs=require('fs'); \
+const report=JSON.parse(fs.readFileSync('compliance-report.json','utf-8')); \
+const isFailure=(repo)=>repo.status==='fail'||repo.compliant===false; \
+const total=report.repos.length; \
+const failures=report.repos.filter(isFailure); \
+const passed=report.repos.length-failures.length; \
+const warnings=report.repos.reduce((sum,r)=>sum+((r.warnings&&r.warnings.length)||0),0); \
+console.log('Governance Compliance Summary'); \
+console.log('-----------------------------'); \
+console.log(`Repos checked: ${total}`); \
+console.log(`Passed: ${passed}`); \
+console.log(`Warnings: ${warnings}`); \
+console.log(`Failures: ${failures.length}`); \
+if(failures.length){console.log(''); console.log('Failed repos:'); failures.forEach(repo=>console.log(`- ${repo.repo_name}`));} \
+"
+
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-compliance-report
+          path: compliance-report.json
+
+      - name: Fail on compliance violations
+        run: |
+          node -e "const fs=require('fs'); \
+const report=JSON.parse(fs.readFileSync('compliance-report.json','utf-8')); \
+const failed=report.repos.filter(r=>r.status==='fail'||r.compliant===false); \
+if(failed.length){console.error('Compliance failures detected in:', failed.map(r=>r.repo_name).join(', ')); process.exit(1);} \
+"
