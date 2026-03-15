@@ -42,10 +42,14 @@ def load_example(name: str) -> Dict[str, Any]:
     """
     Load a JSON example instance for a contract.
     """
-    example_path = _EXAMPLES_DIR / f"{name}.json"
-    if not example_path.exists():
-        raise FileNotFoundError(f"Example not found: {example_path}")
-    return json.loads(example_path.read_text())
+    primary_path = _EXAMPLES_DIR / f"{name}.json"
+    fallback_path = _EXAMPLES_DIR / f"{name}.example.json"
+
+    if primary_path.exists():
+        return json.loads(primary_path.read_text())
+    if fallback_path.exists():
+        return json.loads(fallback_path.read_text())
+    raise FileNotFoundError(f"Example not found: {primary_path} or {fallback_path}")
 
 
 def validate_artifact(instance: Dict[str, Any], schema_name: str) -> None:
