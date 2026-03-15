@@ -1,5 +1,7 @@
 # Review Registry
 
+Canonical machine-readable registry: `docs/reviews/review-registry.json`. This markdown view is the human-readable mirror kept in sync with the JSON source.
+
 Central ledger for all design/architecture reviews across the Spectrum Systems ecosystem. Every review must be recorded here once the review artifact and action tracker exist.
 
 ## How to use

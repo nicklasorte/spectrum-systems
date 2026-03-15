@@ -4,11 +4,21 @@ on:
   push:
     paths:
       - 'design-reviews/**'
+      - 'docs/reviews/review-registry.json'
+      - 'docs/reviews/review-registry.schema.json'
+      - 'docs/review-registry.md'
+      - 'scripts/check_review_registry.py'
+      - 'tests/test_review_registry_json.py'
       - 'scripts/validate-review-artifacts.js'
       - '.github/workflows/review-artifact-validation.yml'
   pull_request:
     paths:
       - 'design-reviews/**'
+      - 'docs/reviews/review-registry.json'
+      - 'docs/reviews/review-registry.schema.json'
+      - 'docs/review-registry.md'
+      - 'scripts/check_review_registry.py'
+      - 'tests/test_review_registry_json.py'
       - 'scripts/validate-review-artifacts.js'
       - '.github/workflows/review-artifact-validation.yml'
 
@@ -40,6 +50,9 @@ jobs:
 
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
+
+      - name: Validate review registry
+        run: python scripts/check_review_registry.py --fail-on-overdue
 
       - name: Run pytest
         run: pytest
