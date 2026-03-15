@@ -190,6 +190,15 @@
           "trigger": {
             "type": "string",
             "description": "Optional trigger or condition associated with this finding."
+          },
+          "follow_up_trigger": {
+            "type": "string",
+            "description": "Event or condition that should trigger follow-up for this finding and its linked actions."
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Target date to revisit or close the finding (YYYY-MM-DD)."
           }
         }
       },
@@ -496,7 +505,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Events that should trigger review or escalation."
+            "description": "Events that should trigger review or escalation; mirror these in the review registry."
           }
         }
       },

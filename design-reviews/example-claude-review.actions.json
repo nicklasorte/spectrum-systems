@@ -32,6 +32,8 @@
         "design-reviews/claude-review-template.md",
         "design-reviews/README.md"
       ],
+      "follow_up_trigger": "After the template PR merges so identifier guidance is in place before the next review cycle.",
+      "due_date": "2026-03-24",
       "create_issue": true,
       "suggested_issue_title": "Enforce deterministic review identifiers",
       "suggested_labels": [
@@ -53,6 +55,8 @@
         "design-reviews/claude-review.schema.json",
         "design-reviews/example-claude-review.actions.json"
       ],
+      "follow_up_trigger": "Before enabling automated issue emission from the actions JSON.",
+      "due_date": "2026-03-24",
       "create_issue": true,
       "suggested_issue_title": "Publish Claude actions schema and example",
       "suggested_labels": [
@@ -75,6 +79,8 @@
         "design-reviews/example-claude-review.actions.json",
         "docs/review-registry.md"
       ],
+      "follow_up_trigger": "After the first automation pilot run emits issues and registry updates are wired.",
+      "due_date": "2026-04-05",
       "create_issue": true,
       "suggested_issue_title": "Encode follow-up triggers next to actions",
       "suggested_labels": [
