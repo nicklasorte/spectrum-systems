@@ -14,8 +14,9 @@ Required outputs and flow that must occur after every design review in the Spect
 2. Extract action items into the architecture action tracker template (see `docs/review-actions/action-tracker-template.md`).
 3. Link every action item to its source gap/risk/recommendation and assign a priority.
 4. Identify which items belong in governance repos (contracts, schemas, standards) versus implementation repos (code, pipelines); propose the correct target repo for GitHub issues.
-5. Update `docs/review-registry.md` with links to the review artifact and action tracker.
+5. Update `docs/reviews/review-registry.json` (canonical machine-readable) and mirror into `docs/review-registry.md` with links to the review artifact and action tracker.
 6. Define follow-up triggers and due dates; record them in the registry.
+7. Reference the prior `review_id` when a review is a follow-up and explicitly carry forward unresolved finding IDs so reconciliation is auditable.
 
 ## Action item requirements
 - Include explicit acceptance criteria for each item.

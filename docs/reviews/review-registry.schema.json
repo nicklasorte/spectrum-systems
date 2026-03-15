@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/review-registry.schema.json",
+  "title": "Review Registry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "review_id",
+      "review_date",
+      "review_type",
+      "repo",
+      "reviewer",
+      "status",
+      "artifact_path",
+      "action_tracker_path",
+      "follow_up_trigger"
+    ],
+    "properties": {
+      "review_id": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "review_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "review_type": {
+        "type": "string",
+        "minLength": 1
+      },
+      "repo": {
+        "type": "string",
+        "minLength": 1
+      },
+      "reviewer": {
+        "type": "string",
+        "minLength": 1
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "Open",
+          "In Progress",
+          "Blocked",
+          "Closed"
+        ]
+      },
+      "maturity_rating": {
+        "type": "string"
+      },
+      "artifact_path": {
+        "type": "string",
+        "pattern": "^docs/reviews/.+\\.[A-Za-z0-9]+$"
+      },
+      "action_tracker_path": {
+        "type": "string",
+        "pattern": "^docs/review-actions/.+\\.[A-Za-z0-9]+$"
+      },
+      "follow_up_trigger": {
+        "type": "string",
+        "minLength": 1
+      },
+      "follow_up_due_date": {
+        "type": "string",
+        "format": "date"
+      },
+      "reconciles_prior_review_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
+      },
+      "carried_forward_finding_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
+      },
+      "notes": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

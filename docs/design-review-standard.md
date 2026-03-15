@@ -35,6 +35,7 @@ Reviews **must** follow this order and include each section:
 ## Review completion rules
 - A review is **not complete** until action items are extracted and linked to an action tracker.
 - Every review must produce an immutable artifact stored under `docs/reviews/` (or repo-equivalent) and an entry in the review registry.
+- Registry entries are recorded in `docs/reviews/review-registry.json` (canonical) and mirrored to `docs/review-registry.md` for human readability; follow-up reviews should reference the prior `review_id` and note any carried-forward findings.
 
 ## Relationships to other standards
 - Action extraction and follow-through are governed by `docs/review-to-action-standard.md`.
