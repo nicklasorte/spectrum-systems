@@ -28,6 +28,11 @@ Every Claude review produces two artifacts:
 - Platform governance: interface adherence, contract/schema validation outputs, and alignment to standards manifests.
 - Observability: metrics/logs/traces coverage, alert quality, and linkage to evaluation or run manifests.
 
+## Run Evidence Correlation
+- Verify that `run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json` all exist for the reviewed scope.
+- Confirm each artifact contains an identical `run_id`; any mismatch or omission is a finding (`category: operational_evidence`, `severity: high`).
+- Block maturity promotion if evidence bundles cannot be correlated by `run_id`.
+
 ## Dependency graph checks
 - Inspect `ecosystem/dependency-graph.json` (and summary/visualization outputs) for completeness and freshness; call out missing systems, artifacts, or contracts.
 - Identify hidden or unmodeled dependencies, contract/artifact coupling risks, and any architecture areas that are no longer legible from the graph.

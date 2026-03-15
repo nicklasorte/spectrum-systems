@@ -62,5 +62,10 @@ Evidence files must be written for every governed run, even when the run fails o
 - Claude reviews and maturity assessments SHOULD cite evidence bundle paths for claims.
 - Advisory engines SHOULD consume evidence to reason about reliability and readiness at higher maturity levels.
 
+## Run Evidence Correlation
+- `run_id` MUST appear in `run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json`.
+- Engines and pipelines MUST propagate the same `run_id` into every evidence artifact produced during execution.
+- Evidence bundles with missing artifacts or mismatched `run_id` values are invalid and must be rejected or regenerated.
+
 ## Examples
 A complete example evidence bundle lives in `governance/examples/evidence-bundle/`. Use it as a template when instrumenting engines and pipelines.

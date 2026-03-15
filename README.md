@@ -39,6 +39,9 @@ The ecosystem maintains a canonical System Registry that records every governed 
 ## Governance Artifact Rule
 Governance artifacts (schemas, contracts, registry files, standards manifests) are platform dependencies and must be loaded from the local `spectrum-systems` checkout, not fetched over the network. See `docs/governance-artifact-loading-rule.md` for the full rule and rationale.
 
+## Run Evidence Correlation Rule
+All governed runs must emit a correlated evidence bundle (`run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json`) that shares a single `run_id`. Pipelines should reject or regenerate bundles when any artifact is missing or the `run_id` values diverge. See `docs/run-evidence-correlation-rule.md` for the full rule and rationale.
+
 ## System Maturity Model
 The spectrum ecosystem advances along a Level 0-20 maturity ladder that charts the progression from concept to durable institutional infrastructure. The ladder and current ecosystem mapping live in `docs/system-maturity-model.md`.
 
