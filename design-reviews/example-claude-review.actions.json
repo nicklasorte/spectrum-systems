@@ -202,6 +202,7 @@
         "README documents the dual-artifact requirement and naming conventions.",
         "Example review references both the markdown and JSON artifacts."
       ],
+      "follow_up_trigger": "After the updated template is merged and referenced in the review standard",
       "due_date": "2026-03-21"
     },
     {
@@ -236,6 +237,7 @@
         "Example actions JSON validates against the schema and references the markdown artifact.",
         "Actions include target repos and label suggestions for GitHub issue creation."
       ],
+      "follow_up_trigger": "Once schema and example actions are published to main and linted by automation",
       "due_date": "2026-03-21"
     },
     {
@@ -269,6 +271,7 @@
         "Follow-up triggers are present in the actions JSON and consumable by automation.",
         "Registry entries link the markdown and actions artifacts when the review is recorded."
       ],
+      "follow_up_trigger": "After the first registry entry mirrors scheduling metadata from this actions file",
       "due_date": "2026-04-01",
       "follow_up_triggers": [
         "After first automated issue creation run",
