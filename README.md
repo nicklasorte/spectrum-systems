@@ -3,8 +3,7 @@
 Constitutional governance/control-plane for the czar repo org. This repo defines the rules, contracts, schemas, prompts, workflows, and evaluation standards that downstream engines must follow; operational code lives in separate implementation repos.
 
 ## North Star Workflow
-- Ecosystem is designed around a recurring spectrum-study operating model with two interacting loops.
-- One loop coordinates people, decisions, schedules, and action items; the other produces and revises formal study documents.
+- Operating model with two interacting loops: **Coordination Loop** (roster → meetings → transcript → minutes → action items/FAQ → agenda/slides → next meeting) and **Document Production Loop** (**Engineering Tasks** → **Engineering Outputs** → working paper → review → adjudication → updated paper).
 - The bridge is **Engineering Tasks** and **Engineering Outputs**, flowing between coordination and document production.
 - See `docs/spectrum-study-operating-model.md` for the canonical operating model and ASCII loop diagram.
 
