@@ -1,6 +1,6 @@
 # YYYY-MM-DD - <scope> Claude Design Review
 
-Use stable identifiers (`G1`, `R1`, `REC-1`, `A-1`) so the paired JSON file can reference the same items.
+Use stable identifiers (`F-1`, `G1`, `R1`, `REC-1`, `A-1`) so the paired JSON file can reference the same items.
 
 ## 1. Review Metadata
 - Review ID: YYYY-MM-DD-<slug>
@@ -17,9 +17,9 @@ Use stable identifiers (`G1`, `R1`, `REC-1`, `A-1`) so the paired JSON file can 
 - Rationale:
 
 ## 3. Executive Summary
-- Key finding 1
-- Key finding 2
-- Key finding 3
+- [F-1] Key finding 1 (also captured in `.actions.json` under `findings`)
+- [F-2] Key finding 2
+- [F-3] Key finding 3
 
 ## 4. Strengths
 - Validated positive 1

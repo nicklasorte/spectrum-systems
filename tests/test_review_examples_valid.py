@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft202012Validator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE_REVIEW_PATH = REPO_ROOT / "design-reviews" / "example-claude-review.actions.json"
+SCHEMA_PATH = REPO_ROOT / "design-reviews" / "claude-review.schema.json"
 REQUIRED_FIELDS = ("id", "severity", "category", "title", "description")
 
 
@@ -24,3 +26,12 @@ def test_example_review_actions_structure() -> None:
         for field in REQUIRED_FIELDS:
             assert field in finding, f"Missing '{field}' in finding: {finding}"
             assert finding[field], f"Field '{field}' must be non-empty"
+
+
+def test_example_review_validates_against_schema() -> None:
+    payload = _load_example()
+    assert SCHEMA_PATH.is_file(), "claude-review.schema.json is missing"
+    with SCHEMA_PATH.open(encoding="utf-8") as handle:
+        schema = json.load(handle)
+
+    Draft202012Validator(schema).validate(payload)

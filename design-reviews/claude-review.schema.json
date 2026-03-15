@@ -8,6 +8,7 @@
   "required": [
     "schema_version",
     "review_metadata",
+    "findings",
     "summary",
     "recommendations",
     "actions"
@@ -76,6 +77,127 @@
           }
         }
       }
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "category",
+          "title",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]+$",
+            "description": "Finding identifier linked to the markdown review."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Impact classification for routing and triage."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the finding (e.g., governance, automation, process)."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short label for the finding."
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed finding statement."
+          },
+          "create_issue": {
+            "type": "boolean",
+            "description": "Whether automation should open an issue for this finding."
+          },
+          "target_repo": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+            "description": "Repository where an issue should be created."
+          },
+          "suggested_issue_title": {
+            "type": "string",
+            "description": "Override for the generated GitHub issue title."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Labels to apply when creating issues."
+          },
+          "files_affected": {
+            "description": "Files referenced by the finding.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "recommended_action": {
+            "description": "Recommended action text for issue bodies.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "trigger": {
+            "type": "string",
+            "description": "Trigger or condition associated with the finding."
+          },
+          "related_gaps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^G[0-9]+$"
+            },
+            "description": "Gap IDs linked to this finding."
+          },
+          "related_risks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^R[0-9]+$"
+            },
+            "description": "Risk IDs linked to this finding."
+          },
+          "related_recommendations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^REC-[0-9]+$"
+            },
+            "description": "Recommendation IDs supporting this finding."
+          }
+        }
+      },
+      "description": "Structured findings that can be transformed into GitHub issues."
     },
     "summary": {
       "type": "object",
