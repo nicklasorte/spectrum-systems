@@ -1,11 +1,11 @@
 # YYYY-MM-DD - <scope> Claude Design Review
 
-Deterministic finding IDs are review-scoped:
-- Start at `[F-1]` for the first required change, recommended enhancement, or follow-up that appears in this markdown and increment as new findings surface. Numbering resets per review slug and must not be renumbered after publication.
-- Reuse those exact IDs as `findings[*].id` in the paired JSON actions file. Keep gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]` stable and cross-referenced to the relevant `[F-#]`.
-- Minimal mapping example: Markdown `[F-1] Deterministic IDs keep markdown and JSON aligned` ↔ JSON `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned", ...}]`
+Finding ID convention (markdown + JSON pair):
+- Use bracketed finding IDs `[F-1]`, `[F-2]`, `[F-3]`, … in the order they first appear in this markdown. IDs are review-scoped, reset per review slug, and must not be renumbered after publication.
+- Reuse those exact IDs as `findings[*].id` in the paired JSON actions file. Keep gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]` stable and mapped back to the relevant `[F-#]`.
+- Minimal alignment example: Markdown `[F-1] Deterministic IDs keep markdown and JSON aligned` ↔ JSON `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned"}]`
 
-Tag every required change, recommendation, follow-up trigger, and action below with its stable marker so automation can match sections directly to JSON entries. Use the same slug across both filenames and inside `review_metadata` to preserve traceability.
+Tag every required change, recommendation, follow-up trigger, and action with its stable marker so automation can match sections directly to JSON entries. Use the same slug across both filenames and inside `review_metadata` to preserve traceability.
 
 > Claude: Produce two artifacts for every review.
 > 1) This markdown file using the sections below.
