@@ -198,6 +198,7 @@
           },
           "due_date": {
             "type": "string",
+            "format": "date",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "description": "Optional due date (YYYY-MM-DD) when this finding should be re-evaluated or closed; use this value for registry follow-up scheduling."
           }
@@ -496,6 +497,7 @@
           },
           "due_date": {
             "type": "string",
+            "format": "date",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "description": "Due date for the action in YYYY-MM-DD format when a checkpoint is scheduled; use this for registry follow-up entries."
           },
