@@ -53,7 +53,9 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 - Downstream repos and PRs should run conformance checks in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; the artifact boundary workflow enforces that only governed areas change when required.
 ## Testing
 - `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
-- Run locally with: `pytest`
+- Install dev dependencies then run locally:
+  - `pip install -r requirements-dev.txt`
+  - `pytest`
 
 ## Design Review Framework
 - Canonical format: `docs/design-review-standard.md`
