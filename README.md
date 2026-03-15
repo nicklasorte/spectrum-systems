@@ -118,6 +118,10 @@ See `SYSTEMS.md` and `docs/system-status-registry.md` for details.
 - Prompt governance: see `prompts/prompt-governance.md`, `prompts/prompt-versioning.md`, and the drafting scaffold in `prompts/prompt-template.md`.
 - Repository metadata contract: `schemas/repository-metadata.schema.json` with guidance in `docs/repository-metadata.md`; operational repos must ship a root-level `repository-metadata.json` that conforms to the schema (template in `docs/repository-metadata-template.json`).
 
+## Testing
+- `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
+- Run locally with: `pytest`
+
 ## Design Review Framework
 - Canonical format: `docs/design-review-standard.md`
 - Review-to-action flow: `docs/review-to-action-standard.md`

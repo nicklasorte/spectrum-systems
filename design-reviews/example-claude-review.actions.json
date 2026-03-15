@@ -17,6 +17,29 @@
       "design-reviews/claude-review.schema.json"
     ]
   },
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "high",
+      "category": "governance",
+      "title": "Identifiers are not enforced across review artifacts",
+      "description": "Markdown reviews lack deterministic identifiers, creating ambiguity when automation parses the actions file."
+    },
+    {
+      "id": "F-2",
+      "severity": "critical",
+      "category": "automation",
+      "title": "Missing machine-readable action payloads",
+      "description": "No JSON actions file accompanies the markdown review, preventing downstream automation from emitting GitHub issues."
+    },
+    {
+      "id": "F-3",
+      "severity": "medium",
+      "category": "process",
+      "title": "Follow-up triggers are not encoded",
+      "description": "Triggers and due dates are not captured alongside actions, so reviews can stall without scheduled checkpoints."
+    }
+  ],
   "summary": {
     "executive_summary": [
       "Dual artifacts (markdown + JSON) are required for deterministic automation of Claude reviews.",
