@@ -10,6 +10,13 @@ Explain how the czar repo organization is layered from scaffolding through advis
 - **Layer 4 — Orchestration (spectrum-pipeline-engine)**: sequences operational engines, aligns contract versions, and emits pipeline run manifests and readiness bundles.
 - **Layer 5 — Program Intelligence (spectrum-program-advisor)**: analyzes orchestrated artifacts and produces advisory outputs for program management decisions.
 
+## Operating Model: Two Interacting Loops
+- **Coordination Loop** keeps people, decisions, schedules, and next steps aligned; it is anchored by `meeting-minutes-engine` and other coordination assets.
+- **Document Production Loop** turns **Engineering Outputs** into governed working papers, reviews, adjudicated matrices, and updated papers; engines like `working-paper-review-engine`, `comment-resolution-engine`, and `docx-comment-injection-engine` live here.
+- **Engineering Tasks / Engineering Outputs bridge** carries prioritized work from coordination into document production, and returns updated papers and adjudication back to future agendas and action items.
+- Orchestration (`spectrum-pipeline-engine`) and program intelligence (`spectrum-program-advisor`) span the loops to keep sequencing, provenance, and readiness aligned.
+- See `docs/spectrum-study-operating-model.md` for the canonical operating model and ASCII loop diagram.
+
 ## Architecture Diagram
 ```mermaid
 flowchart TB
