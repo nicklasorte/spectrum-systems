@@ -17,7 +17,24 @@
       "repo_type": "template",
       "status": "active",
       "layer": "Layer 1",
-      "contracts": [],
+      "contracts": [
+        "assumption_register",
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "decision_log",
+        "meeting_agenda_contract",
+        "meeting_minutes",
+        "milestone_plan",
+        "next_best_action_memo",
+        "pdf_anchored_docx_comment_injection_contract",
+        "program_brief",
+        "provenance_record",
+        "reviewer_comment_set",
+        "risk_register",
+        "standards_manifest",
+        "study_readiness_assessment",
+        "working_paper_input"
+      ],
       "description": "Scaffolding repo that generates governed system repositories with pinned contracts."
     },
     {
@@ -26,7 +43,16 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "contracts": [],
+      "system_id": "SYS-001",
+      "contracts": [
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "external_artifact_manifest",
+        "meeting_agenda_contract",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set"
+      ],
       "description": "Operational engine for adjudicating reviewer comments and maintaining resolution matrices."
     },
     {
@@ -35,7 +61,14 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "contracts": [],
+      "system_id": "SYS-007",
+      "contracts": [
+        "comment_resolution_matrix",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ],
       "description": "Operational engine that normalizes working papers and seeds reviewer comment sets."
     },
     {
@@ -44,7 +77,11 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "contracts": [],
+      "system_id": "SYS-006",
+      "contracts": [
+        "meeting_agenda_contract",
+        "meeting_minutes"
+      ],
       "description": "Operational engine that generates governed meeting minutes from transcripts and agendas."
     },
     {
@@ -53,7 +90,10 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "contracts": [],
+      "system_id": "SYS-008",
+      "contracts": [
+        "pdf_anchored_docx_comment_injection_contract"
+      ],
       "description": "Operational engine that injects anchored comments into DOCX outputs with provenance."
     },
     {
@@ -62,8 +102,21 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "contracts": [],
+      "system_id": "SYS-003",
+      "contracts": [
+        "external_artifact_manifest"
+      ],
       "description": "Operational engine that turns simulation outputs into governed study artifacts with provenance."
+    },
+    {
+      "repo_name": "spectrum-study-compiler",
+      "repo_url": "https://github.com/nicklasorte/spectrum-study-compiler",
+      "repo_type": "operational_engine",
+      "status": "planned",
+      "layer": "Layer 3",
+      "system_id": "SYS-004",
+      "contracts": [],
+      "description": "Compiler that packages validated study artifacts into governed bundles."
     },
     {
       "repo_name": "spectrum-pipeline-engine",
@@ -71,7 +124,20 @@
       "repo_type": "operational_engine",
       "status": "planned",
       "layer": "Layer 4",
-      "contracts": [],
+      "system_id": "SYS-009",
+      "contracts": [
+        "assumption_register",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "decision_log",
+        "external_artifact_manifest",
+        "meeting_agenda_contract",
+        "meeting_minutes",
+        "milestone_plan",
+        "next_best_action_memo",
+        "program_brief",
+        "risk_register",
+        "study_readiness_assessment"
+      ],
       "description": "Orchestration layer that sequences governed artifacts through downstream engines."
     },
     {
@@ -80,7 +146,17 @@
       "repo_type": "advisory",
       "status": "experimental",
       "layer": "Layer 5",
-      "contracts": [],
+      "system_id": "SYS-005",
+      "contracts": [
+        "assumption_register",
+        "decision_log",
+        "meeting_minutes",
+        "milestone_plan",
+        "next_best_action_memo",
+        "program_brief",
+        "risk_register",
+        "study_readiness_assessment"
+      ],
       "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
     }
   ]

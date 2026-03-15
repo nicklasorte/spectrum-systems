@@ -1,0 +1,14 @@
+{
+  "system_id": "SYS-001",
+  "governance_repo": "nicklasorte/spectrum-systems",
+  "governance_version": "2026.03.0",
+  "contracts": {
+    "comment_resolution_matrix": "1.0.0",
+    "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
+    "external_artifact_manifest": "1.0.0",
+    "meeting_agenda_contract": "1.0.0",
+    "pdf_anchored_docx_comment_injection_contract": "1.0.1",
+    "provenance_record": "1.0.0",
+    "reviewer_comment_set": "1.0.0"
+  }
+}

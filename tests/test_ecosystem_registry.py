@@ -9,7 +9,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "ecosystem" / "ecosystem-registry.json"
 STANDARDS_MANIFEST_PATH = REPO_ROOT / "contracts" / "standards-manifest.json"
-REQUIRED_FIELDS = ("repo_name", "repo_type", "status", "layer")
+REQUIRED_FIELDS = ("repo_name", "repo_type", "status", "layer", "contracts")
 REPO_NAME_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
@@ -58,7 +58,14 @@ def test_registry_entries_have_required_fields() -> None:
         assert isinstance(entry, dict), "Each repository entry must be an object"
         for field in REQUIRED_FIELDS:
             assert field in entry, f"Missing required field '{field}' in entry: {entry}"
-            assert entry[field], f"Field '{field}' must be non-empty in entry: {entry}"
+            if field != "contracts":
+                assert entry[field], f"Field '{field}' must be non-empty in entry: {entry}"
+        assert REPO_NAME_PATTERN.match(entry["repo_name"]), f"Invalid repo_name format: {entry['repo_name']}"
+        assert isinstance(entry["contracts"], list), "contracts must be a list"
+        for contract in entry["contracts"]:
+            assert isinstance(contract, str), "contracts entries must be strings"
+        if entry["repo_type"] not in {"governance", "template"}:
+            assert "system_id" in entry, f"Missing system_id for governed repo: {entry.get('repo_name')}"
 
 
 def test_contract_consumers_exist_in_registry() -> None:
@@ -67,3 +74,10 @@ def test_contract_consumers_exist_in_registry() -> None:
     consumers = _load_standards_manifest()
     missing = sorted(consumers - registry_repo_names)
     assert not missing, f"Registry missing intended consumers from standards manifest: {missing}"
+
+
+def test_repo_names_are_unique() -> None:
+    _, entries = _load_registry()
+    names = [entry.get("repo_name") for entry in entries if isinstance(entry, dict)]
+    duplicates = sorted(name for name in set(names) if names.count(name) > 1)
+    assert not duplicates, f"Duplicate repo_name values found: {duplicates}"
