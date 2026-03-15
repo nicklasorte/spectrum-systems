@@ -1,0 +1,19 @@
+{
+  "run_id": "RUN-2026-03-15-PIPE-001",
+  "artifact_type": "comment_resolution_matrix",
+  "contract_name": "comment_resolution_matrix_spreadsheet_contract",
+  "contract_version": "1.3.0",
+  "validation_result": "fail",
+  "violations": [
+    {
+      "field": "rows[12].disposition_notes",
+      "issue": "Missing reviewer justification for rejection",
+      "severity": "medium"
+    },
+    {
+      "field": "metadata.review_cycle",
+      "issue": "Review cycle value not aligned to SYSTEMS registry",
+      "severity": "low"
+    }
+  ]
+}

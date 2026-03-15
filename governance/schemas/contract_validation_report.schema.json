@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/contract_validation_report.schema.json",
+  "title": "Contract Validation Report",
+  "description": "Validation outcome for artifacts against their governing contracts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "artifact_type",
+    "contract_name",
+    "contract_version",
+    "validation_result",
+    "violations"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Identifier of the run that produced this artifact."
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Classification of the validated artifact."
+    },
+    "contract_name": {
+      "type": "string",
+      "description": "Contract applied during validation."
+    },
+    "contract_version": {
+      "$ref": "#/$defs/semver",
+      "description": "Version of the contract applied during validation."
+    },
+    "validation_result": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Overall validation result."
+    },
+    "violations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/violation" },
+      "description": "List of field-level issues discovered during validation."
+    }
+  },
+  "$defs": {
+    "violation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "issue", "severity"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field or path where the violation occurred."
+        },
+        "issue": {
+          "type": "string",
+          "description": "Description of the validation issue."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Severity of the violation."
+        }
+      }
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$",
+      "description": "Semantic version string."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "run_id": "RUN-2026-03-15-PIPE-001",
+  "engine_name": "spectrum-pipeline-engine",
+  "evaluations": [
+    {
+      "evaluation_name": "contract bundle validation",
+      "result": "pass",
+      "metric": 1.0,
+      "notes": "All schemas pinned to governance versions."
+    },
+    {
+      "evaluation_name": "evidence completeness",
+      "result": "warn",
+      "metric": 0.9,
+      "notes": "Two agenda attachments missing; noted in manifest."
+    },
+    {
+      "evaluation_name": "study readiness gate",
+      "result": "fail",
+      "metric": 0.72,
+      "notes": "Readiness score below 0.8 threshold due to missing risk register update."
+    }
+  ],
+  "summary": {
+    "total_checks": 3,
+    "passed": 1,
+    "failed": 1,
+    "warnings": 1
+  }
+}

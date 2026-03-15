@@ -1,0 +1,43 @@
+{
+  "run_id": "RUN-2026-03-15-PIPE-001",
+  "engine_name": "spectrum-pipeline-engine",
+  "engine_version": "0.8.1",
+  "system_id": "SYS-009",
+  "started_at": "2026-03-15T17:55:00Z",
+  "completed_at": "2026-03-15T18:10:20Z",
+  "status": "partial",
+  "inputs": [
+    {
+      "artifact_type": "meeting_transcript",
+      "artifact_path": "artifacts/RUN-2026-03-15-PIPE-001/inputs/meeting-041.json",
+      "contract_name": "meeting_minutes_contract",
+      "contract_version": "1.2.0"
+    },
+    {
+      "artifact_type": "issue_register",
+      "artifact_path": "artifacts/RUN-2026-03-15-PIPE-001/inputs/issues-latest.json",
+      "contract_name": "issue_schema",
+      "contract_version": "0.4.0"
+    }
+  ],
+  "outputs": [
+    {
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_path": "artifacts/RUN-2026-03-15-PIPE-001/outputs/comment-resolution-matrix.v1.json",
+      "contract_name": "comment_resolution_matrix_spreadsheet_contract",
+      "contract_version": "1.3.0"
+    },
+    {
+      "artifact_type": "study_readiness_assessment",
+      "artifact_path": "artifacts/RUN-2026-03-15-PIPE-001/outputs/study-readiness.v1.json",
+      "contract_name": "study_readiness_assessment",
+      "contract_version": "0.2.0"
+    }
+  ],
+  "environment": {
+    "repo": "spectrum-pipeline-engine",
+    "commit_sha": "9f4c3b5e7a2d4b1f9c0e6d3a4b8f2c1d9a7e5f4c",
+    "runtime": "python3.12+orchestration-kit"
+  },
+  "notes": "Partial coverage on two agenda items; attachments pending from upstream repo."
+}

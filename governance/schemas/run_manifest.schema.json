@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/run_manifest.schema.json",
+  "title": "Operational Run Manifest",
+  "description": "Canonical record emitted by every governed engine run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "engine_name",
+    "engine_version",
+    "system_id",
+    "started_at",
+    "completed_at",
+    "status",
+    "inputs",
+    "outputs",
+    "environment"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for this engine run."
+    },
+    "engine_name": {
+      "type": "string",
+      "description": "Engine emitting the evidence bundle."
+    },
+    "engine_version": {
+      "$ref": "#/$defs/semver",
+      "description": "Engine version or build identifier."
+    },
+    "system_id": {
+      "type": "string",
+      "description": "Registered system identifier aligned to the ecosystem registry."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when execution began (ISO 8601)."
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when execution ended (ISO 8601)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failure", "partial"],
+      "description": "Final disposition of the run."
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" },
+      "description": "Artifacts consumed by the run."
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" },
+      "description": "Artifacts produced by the run."
+    },
+    "environment": {
+      "$ref": "#/$defs/environment",
+      "description": "Execution fingerprint for reproducibility."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional freeform context about anomalies, partial coverage, or feature flags."
+    }
+  },
+  "$defs": {
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "artifact_path", "contract_name", "contract_version"],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "description": "Classification of the artifact (e.g., transcript, manifest, summary)."
+        },
+        "artifact_path": {
+          "type": "string",
+          "description": "Relative or absolute path where the artifact is stored."
+        },
+        "contract_name": {
+          "type": "string",
+          "description": "Contract governing the artifact."
+        },
+        "contract_version": {
+          "$ref": "#/$defs/semver",
+          "description": "Pinned version of the governing contract."
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "commit_sha", "runtime"],
+      "properties": {
+        "repo": {
+          "type": "string",
+          "description": "Repository URL or slug for the engine."
+        },
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{7,40}$",
+          "description": "Commit SHA that produced this run."
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Runtime description (e.g., Python 3.12, container image tag)."
+        }
+      }
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$",
+      "description": "Semantic version string."
+    }
+  }
+}
