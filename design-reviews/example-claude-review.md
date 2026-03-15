@@ -8,6 +8,7 @@
 - Reviewer/agent: Claude (Reasoning Agent)
 - Commit/version reviewed: main@HEAD
 - Inputs consulted: `docs/design-review-standard.md`, `docs/review-to-action-standard.md`, `docs/review-registry.md`, `design-reviews/claude-review.schema.json`
+- Finding IDs: [F-1], [F-2], [F-3] (mirrors `findings.id` in the paired JSON; minted once per review)
 
 ## 2. Scope
 - In-bounds: Review storage model, action extraction, automation readiness for issue creation, identifier stability across artifacts.
