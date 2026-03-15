@@ -6,13 +6,11 @@ Each review must include two artifacts that form a paired set:
 1) Human-readable markdown: `YYYY-MM-DD-<slug>.md` using `design-reviews/claude-review-template.md` and the canonical sections in `docs/design-review-standard.md`.
 2) Machine-readable actions JSON: `YYYY-MM-DD-<slug>.actions.json` validated against `design-reviews/claude-review.schema.json`.
 
-Deterministic finding IDs keep the pair aligned:
-- Mint `[F-1]`, `[F-2]`, `[F-3]`, … in the order findings first appear in the markdown; treat every required change, recommended enhancement, or follow-up as a finding and tag it with `[F-#]`.
-- Reuse those exact IDs as `findings[*].id` in the JSON actions file and do not renumber after publication. The same slug should appear in both filenames and inside `review_metadata` to preserve traceability.
-- Keep secondary IDs stable and mapped back to findings: gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, actions `[A-1]`.
-- Minimal example of aligned identifiers:
-  - Markdown: `[F-1] Deterministic IDs keep markdown and JSON aligned`
-  - JSON: `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned", ...}]`
+- Deterministic finding IDs keep the pair aligned:
+  - Review-scoped IDs reset per review: start at `[F-1]`, `[F-2]`, `[F-3]`, … in the order findings first appear in the markdown; treat every required change, recommended enhancement, or follow-up as a finding and do not renumber after publication.
+  - Reuse those exact IDs as `findings[*].id` in the JSON actions file. The same slug should appear in both filenames and inside `review_metadata` to preserve traceability.
+  - Keep secondary IDs stable and mapped back to findings: gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, actions `[A-1]`.
+  - Minimal example of aligned identifiers: Markdown `[F-1] Deterministic IDs keep markdown and JSON aligned` ↔ JSON `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned", ...}]`
 
 Workflow:
 - Copy the template markdown and JSON schema to draft a new review; use deterministic filenames to preserve ordering.
