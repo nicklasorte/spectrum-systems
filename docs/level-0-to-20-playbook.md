@@ -3,6 +3,8 @@
 ## Purpose
 This playbook guides the spectrum ecosystem from concept to strategic operating system. Progression is evaluated through evidence, metrics, and architectural capabilities-not intuition or aspiration. Each level requires observable proofs that the new capability exists and is durable.
 
+The roadmap tracker (`ecosystem/roadmap-tracker.json`) is the execution companion to this playbook: roadmap steps should advance maturity levels with evidence recorded in both the tracker and the maturity model.
+
 ## External best-practice anchors
 The ecosystem draws on proven practices:
 - **Software delivery performance metrics**: shorten lead time, improve deployment frequency, reduce change failure, and recover quickly.

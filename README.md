@@ -50,6 +50,9 @@ The spectrum ecosystem advances along a Level 0-20 maturity ladder that charts t
 - Claude reviews evaluate maturity explicitly using the rubric and refuse promotion without proof.
 - See the canonical playbook in `docs/level-0-to-20-playbook.md` and the review rubric in `docs/review-maturity-rubric.md`.
 
+## Long-Term Roadmap
+The ecosystem maintains a maturity model, a playbook, and a canonical 100-step roadmap to guide long-range execution toward Level 20 maturity. See `docs/100-step-roadmap.md` for the roadmap and guardrails.
+
 ## Key Directories
 | Directory | Purpose |
 | --- | --- |
