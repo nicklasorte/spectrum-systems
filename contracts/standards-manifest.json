@@ -39,7 +39,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/working_paper_input.json",
-      "notes": "Initial canonical intake contract."
+      "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
     },
     {
       "artifact_type": "reviewer_comment_set",
@@ -54,7 +54,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/reviewer_comment_set.json",
-      "notes": "Normalized reviewer comments with provenance links."
+      "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "comment_resolution_matrix",
@@ -69,7 +69,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/comment_resolution_matrix.json",
-      "notes": "Deterministic mapping from comments to dispositions and actions."
+      "notes": "Deterministic mapping from comments to dispositions and actions; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "meeting_agenda_contract",
@@ -115,7 +115,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/meeting_minutes_record.example.json",
-      "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering."
+      "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
@@ -130,7 +130,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/comment_resolution_matrix_spreadsheet_contract.json",
-      "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping."
+      "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
@@ -189,7 +189,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/program_brief.json",
-      "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions."
+      "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "study_readiness_assessment",
@@ -203,7 +203,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/study_readiness_assessment.json",
-      "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers."
+      "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "next_best_action_memo",
@@ -217,7 +217,7 @@
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/next_best_action_memo.json",
-      "notes": "Prioritized action recommendations with dependencies and decision/risk linkage."
+      "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "decision_log",

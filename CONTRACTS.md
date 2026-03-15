@@ -13,6 +13,12 @@ Spectrum Systems is the authoritative source for machine-readable artifact contr
 - Load schemas programmatically via `spectrum_systems.contracts.load_schema` and validate instances with `validate_artifact`.
 - Track the standards release in `contracts/standards-manifest.json`; do not fork schema definitions in downstream repos.
 
+## Envelope + payload interoperability
+- Contract schemas define the payload structure; the artifact envelope standard (`docs/artifact-envelope-standard.md`, `contracts/schemas/artifact_envelope.schema.json`) defines the outer interoperability metadata.
+- Engines should emit payloads wrapped in the envelope so orchestration and data lake layers can route by `artifact_class`, `artifact_type`, and `contract_version` without inspecting payload contents.
+- Sidecar manifests and data lake records should carry envelope fields alongside the payload contract to keep lineage, routing, and compatibility deterministic.
+- Key payload contracts expected to travel inside the envelope: `meeting_minutes_record`, `reviewer_comment_set`, `comment_resolution_matrix`, `comment_resolution_matrix_spreadsheet_contract`, `working_paper_input`, `program_brief`, `study_readiness_assessment`, and `next_best_action_memo`.
+
 ## Versioning and compatibility
 - Changes to contracts follow the semantic rules in `CONTRACT_VERSIONING.md` and the compatibility policy in `docs/contract-versioning.md` (required version fields plus compatible/minor/breaking change definitions).
 - Breaking changes require architecture review approval before publishing a new major and must include migration guidance for operational engines.
