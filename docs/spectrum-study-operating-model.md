@@ -84,3 +84,6 @@ The loops operate by transitioning among these artifact classes: coordination ar
 - Coordination Loop produces prioritized **Engineering Tasks** and context that define the work queue.
 - Document Production Loop consumes **Engineering Outputs** to evolve working papers and adjudicated matrices.
 - Updated papers, comment outcomes, and schedule adjustments flow back to meetings, agendas, FAQs, and action items so coordination stays grounded in the latest study state.
+
+## System Registry Mapping
+The System Registry (`docs/system-registry.md`) encodes primary loop alignment via `primary_loop_alignment` so orchestration and governance can see which systems anchor the Coordination Loop, Document Production Loop, cross-loop orchestration, and governance control plane. Loop assignments in the registry keep routing, compliance, and roadmap decisions grounded in the operating model.

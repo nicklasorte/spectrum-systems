@@ -50,6 +50,9 @@ The spectrum ecosystem is intentionally designed as a long-lived system that acc
 - **spectrum-pipeline-engine**: Workflow orchestration (Levels 7-10).
 - **spectrum-program-advisor**: Future intelligence layer (Levels 9-16).
 
+## Registry as Maturity Control Plane
+The System Registry (`docs/system-registry.md` and `ecosystem/system-registry.json`) records where every system sits on the maturity ladder and which loop it primarily serves. Governance, orchestration, and advisory capabilities use this registry to track progression, prevent drift, and anchor roadmap decisions to explicit maturity targets.
+
 ## Immediate Target: Level 5
 The near-term milestone is a working loop that transforms a transcript into a minutes artifact through the meeting-minutes engine. Achieving this end-to-end path establishes the first operational system workflow and proves governed execution on real inputs.
 

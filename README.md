@@ -16,6 +16,9 @@ Constitutional governance/control-plane for the czar repo org. This repo defines
 - Governs artifact contracts and standards manifests, schema registry, prompt governance, evaluation standards, design reviews, ADRs, and ecosystem/state registries.
 - Does not implement operational engines, runtime configs, or data pipelines; those live in downstream system repos.
 
+## System Registry
+The ecosystem maintains a canonical System Registry that records every governed repository, its role, loop alignment, maturity placement, and contract dependencies. See `docs/system-registry.md` for the control-plane catalog and machine-readable registry.
+
 ## Ecosystem Architecture
 - Layers are detailed in `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md`.
 - system-factory scaffolds governed repos from templates.

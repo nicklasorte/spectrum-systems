@@ -46,6 +46,11 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## System Registry as Ecosystem Control Plane
+- The System Registry (`docs/system-registry.md` and `ecosystem/system-registry.json`) is the authoritative inventory of systems, roles, loop alignment, and maturity states across the ecosystem.
+- Future dependency graphing, compliance checks, and advisor capabilities build on this registry to understand what each system consumes, emits, and depends on.
+- Keeping the registry current prevents hidden components and repo drift, giving orchestrators and governance automation a single control-plane view.
+
 ## Artifact Envelope as the Interoperability Layer
 - Engines exchange artifacts as **envelope + payload** pairs: the envelope standardizes `artifact_class`, `artifact_type`, `contract_version`, and lineage hooks; the payload remains the contract-defined schema.
 - Raw DOCX transcripts are first-class artifacts: they enter with an envelope (`artifact_class=coordination`, `artifact_type=transcript`, `lifecycle_stage=raw`) even when no payload contract is attached yet.
