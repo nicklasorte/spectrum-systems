@@ -50,7 +50,7 @@ jobs:
           echo "$CHANGED"
           printf "files=%s\n" "$(echo "$CHANGED" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
 
-      - name: Validate action files
+      - name: Validate action files (schema + pairing)
         if: steps.changed.outputs.files != ''
         run: |
           node scripts/ingest-claude-review.js --mode validate --schema design-reviews/claude-review.schema.json ${{ steps.changed.outputs.files }}

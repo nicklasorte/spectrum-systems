@@ -32,7 +32,8 @@
         "repository",
         "scope",
         "reviewer",
-        "source_artifact"
+        "source_artifact",
+        "actions_artifact"
       ],
       "properties": {
         "review_id": {
@@ -59,10 +60,12 @@
         },
         "source_artifact": {
           "type": "string",
+          "pattern": "^design-reviews/\\d{4}-\\d{2}-\\d{2}-[a-z0-9-]+\\.md$",
           "description": "Relative path to the human-readable markdown review."
         },
         "actions_artifact": {
           "type": "string",
+          "pattern": "^design-reviews/\\d{4}-\\d{2}-\\d{2}-[a-z0-9-]+\\.actions\\.json$",
           "description": "Relative path to this actions file."
         },
         "source_commit": {

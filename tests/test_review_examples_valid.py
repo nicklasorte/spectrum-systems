@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import jsonschema
@@ -6,15 +7,17 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-EXAMPLE_REVIEW_PATH = REPO_ROOT / "design-reviews" / "example-claude-review.actions.json"
+EXAMPLE_SLUG = "2026-03-14-claude-review-automation"
+EXAMPLE_ACTIONS_PATH = REPO_ROOT / "design-reviews" / f"{EXAMPLE_SLUG}.actions.json"
+EXAMPLE_MARKDOWN_PATH = REPO_ROOT / "design-reviews" / f"{EXAMPLE_SLUG}.md"
 REQUIRED_FIELDS = ("id", "severity", "category", "title", "description")
 REQUIRED_FINDING_FIELDS = ("recommended_action", "files_affected", "create_issue")
 SCHEMA_PATH = REPO_ROOT / "design-reviews" / "claude-review.schema.json"
 
 
 def _load_example() -> dict:
-    assert EXAMPLE_REVIEW_PATH.is_file(), "example-claude-review.actions.json is missing"
-    with EXAMPLE_REVIEW_PATH.open(encoding="utf-8") as handle:
+    assert EXAMPLE_ACTIONS_PATH.is_file(), "2026-03-14-claude-review-automation.actions.json is missing"
+    with EXAMPLE_ACTIONS_PATH.open(encoding="utf-8") as handle:
         return json.load(handle)
 
 
@@ -62,3 +65,28 @@ def test_example_actions_validates_against_schema() -> None:
     if errors:
         formatted = "\n".join(f"{err.json_path or '$'}: {err.message}" for err in errors)
         pytest.fail(f"Schema validation errors:\\n{formatted}")
+
+
+def test_example_pairing_and_alignment() -> None:
+    payload = _load_example()
+    metadata = payload["review_metadata"]
+
+    assert EXAMPLE_MARKDOWN_PATH.is_file(), "Example markdown review is missing"
+    assert metadata["review_id"] == EXAMPLE_SLUG
+    assert metadata["source_artifact"] == f"design-reviews/{EXAMPLE_SLUG}.md"
+    assert metadata["actions_artifact"] == f"design-reviews/{EXAMPLE_SLUG}.actions.json"
+    assert EXAMPLE_ACTIONS_PATH.is_file(), "Example actions file is missing"
+
+    result = subprocess.run(
+        [
+            "python",
+            "scripts/validate_review_alignment.py",
+            f"design-reviews/{EXAMPLE_SLUG}.md",
+            f"design-reviews/{EXAMPLE_SLUG}.actions.json",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, f"Alignment validation failed:\\nSTDOUT: {result.stdout}\\nSTDERR: {result.stderr}"

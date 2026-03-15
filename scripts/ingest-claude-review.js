@@ -54,6 +54,15 @@ function formatAjvError(error) {
   return `${path} ${error.message}`;
 }
 
+async function fileExists(candidatePath) {
+  try {
+    await fs.access(candidatePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function validateFiles(schemaPath, files) {
   if (!schemaPath) {
     throw new Error('Schema path is required for validation.');
@@ -72,12 +81,50 @@ async function validateFiles(schemaPath, files) {
     } catch (error) {
       throw new Error(`Invalid JSON in ${file}: ${error.message}`);
     }
+
     const valid = validate(data);
     if (!valid) {
       const errors = validate.errors || [];
       const details = errors.map((e) => formatAjvError(e)).join('; ');
       throw new Error(`Schema validation failed for ${file}: ${details}`);
     }
+
+    const reviewMetadata = data.review_metadata || {};
+    const normalizedFilePath = path.relative(process.cwd(), path.resolve(file));
+    const actionsArtifact = reviewMetadata.actions_artifact;
+    if (!actionsArtifact) {
+      throw new Error(`review_metadata.actions_artifact is required in ${file}`);
+    }
+    const normalizedActionsArtifact = path.relative(
+      process.cwd(),
+      path.resolve(actionsArtifact)
+    );
+    if (normalizedActionsArtifact !== normalizedFilePath) {
+      throw new Error(
+        `Actions artifact path mismatch for ${file}: review_metadata.actions_artifact is "${actionsArtifact}" but expected "${normalizedFilePath}"`
+      );
+    }
+
+    const sourceArtifact = reviewMetadata.source_artifact;
+    if (!sourceArtifact) {
+      throw new Error(`review_metadata.source_artifact is required in ${file}`);
+    }
+    const resolvedSourceArtifact = path.isAbsolute(sourceArtifact)
+      ? sourceArtifact
+      : path.join(process.cwd(), sourceArtifact);
+    if (!(await fileExists(resolvedSourceArtifact))) {
+      throw new Error(
+        `Paired markdown review not found at ${sourceArtifact} referenced by ${file}`
+      );
+    }
+
+    const slugFromFilename = path.basename(file).replace(/\.actions\.json$/, '');
+    if (reviewMetadata.review_id && reviewMetadata.review_id !== slugFromFilename) {
+      throw new Error(
+        `review_id "${reviewMetadata.review_id}" must match actions filename slug "${slugFromFilename}" for ${file}`
+      );
+    }
+
     results.push(data);
     console.log(`Validated ${file} against ${schemaPath}`);
   }

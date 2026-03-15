@@ -1,10 +1,12 @@
 # YYYY-MM-DD - <scope> Claude Design Review
 
-Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]`. Finding IDs are the anchor for traceability—every `[F-#]` called out in this markdown **must** appear as the same `id` inside the JSON `findings` array. Number once per review in the order introduced and do not renumber after publication.
+Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]`. Finding IDs are the anchor for traceability—every `[F-#]` called out in this markdown **must** appear as the same `id` inside the JSON `findings` array. Number once per review in the order introduced and do not renumber after publication. The slug in the title drives `review_id`, the markdown filename, and the actions filename.
 
-> Claude: Produce two artifacts for every review.
-> 1) This markdown file using the sections below.
-> 2) A JSON actions file at `design-reviews/YYYY-MM-DD-<slug>.actions.json` that validates against `design-reviews/claude-review.schema.json` with root fields: `schema_version`, `review_metadata`, `findings`, `summary`, `recommendations`, `actions`, `follow_up`. The JSON `findings[*].id` values must match the `[F-#]` markers in this markdown.
+> Claude: Produce two artifacts for every review—automation is incomplete without both.
+> 1) This markdown file using the sections below at `design-reviews/YYYY-MM-DD-<slug>.md`.
+> 2) A JSON actions file at `design-reviews/YYYY-MM-DD-<slug>.actions.json` that validates against `design-reviews/claude-review.schema.json` with root fields: `schema_version`, `review_metadata`, `findings`, `summary`, `recommendations`, `actions`, `follow_up`. The JSON `findings[*].id` values must match the `[F-#]` markers in this markdown. Validate before publishing with:
+>    - `python scripts/validate_review_alignment.py design-reviews/YYYY-MM-DD-<slug>.md design-reviews/YYYY-MM-DD-<slug>.actions.json`
+>    - `node scripts/ingest-claude-review.js --mode validate --schema design-reviews/claude-review.schema.json design-reviews/YYYY-MM-DD-<slug>.actions.json`
 
 JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medium|low), `category`, `title`, `description`, `recommended_action` (string or list of strings), `files_affected` (list or string), `create_issue` (boolean), `suggested_issue_title`, `suggested_labels`, and optional `target_repo`/`trigger`. Keep IDs consistent across markdown and JSON.
 

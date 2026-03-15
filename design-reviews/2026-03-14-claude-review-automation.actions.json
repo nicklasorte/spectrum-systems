@@ -7,8 +7,8 @@
     "repository": "nicklasorte/spectrum-systems",
     "scope": "Claude design review artifacts and automation readiness",
     "reviewer": "Claude (Reasoning Agent)",
-    "source_artifact": "design-reviews/example-claude-review.md",
-    "actions_artifact": "design-reviews/example-claude-review.actions.json",
+    "source_artifact": "design-reviews/2026-03-14-claude-review-automation.md",
+    "actions_artifact": "design-reviews/2026-03-14-claude-review-automation.actions.json",
     "source_commit": "main@HEAD",
     "inputs": [
       "docs/design-review-standard.md",
@@ -51,7 +51,7 @@
       ],
       "files_affected": [
         "design-reviews/claude-review.schema.json",
-        "design-reviews/example-claude-review.actions.json"
+        "design-reviews/2026-03-14-claude-review-automation.actions.json"
       ],
       "create_issue": true,
       "suggested_issue_title": "Publish Claude actions schema and example",
@@ -72,7 +72,7 @@
         "Include follow-up triggers and due dates in the actions JSON and mirror them in the review registry."
       ],
       "files_affected": [
-        "design-reviews/example-claude-review.actions.json",
+        "design-reviews/2026-03-14-claude-review-automation.actions.json",
         "docs/review-registry.md"
       ],
       "create_issue": true,

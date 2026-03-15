@@ -4,7 +4,7 @@
 - Review ID: 2026-03-14-claude-review-automation
 - Repository: nicklasorte/spectrum-systems
 - Scope: Claude design review artifacts and automation readiness
-- Review artifacts: `design-reviews/example-claude-review.md` + `design-reviews/example-claude-review.actions.json`
+- Review artifacts: `design-reviews/2026-03-14-claude-review-automation.md` + `design-reviews/2026-03-14-claude-review-automation.actions.json`
 - Reviewer/agent: Claude (Reasoning Agent)
 - Commit/version reviewed: main@HEAD
 - Inputs consulted: `docs/design-review-standard.md`, `docs/review-to-action-standard.md`, `docs/review-registry.md`, `design-reviews/claude-review.schema.json`
