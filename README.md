@@ -19,6 +19,9 @@ Constitutional governance/control-plane for the czar repo org. This repo defines
 ## System Registry
 The ecosystem maintains a canonical System Registry that records every governed repository, its role, loop alignment, maturity placement, and contract dependencies. See `docs/system-registry.md` for the control-plane catalog and machine-readable registry.
 
+## Ecosystem Runtime Standard
+This repository defines the canonical development environment for the ecosystem in `devcontainer-spec/`. Downstream engines, pipelines, and data lake tooling should inherit that devcontainer to ensure consistent Python 3.11 runtime and shared tooling across repos.
+
 ## Ecosystem Architecture
 - Layers are detailed in `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md`.
 - system-factory scaffolds governed repos from templates.
