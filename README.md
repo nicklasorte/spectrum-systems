@@ -51,6 +51,10 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 - Initiate architecture changes with a design review using `design-reviews/claude-review-template.md` and the sections in `docs/design-review-standard.md`; capture actions in the paired `.actions.json`, validate against the schema, and register in `docs/review-registry.md`.
 - Convert accepted decisions into ADRs under `architecture-decisions/` and align updates with `contracts/standards-manifest.json` and schema changes.
 - Downstream repos and PRs should run conformance checks in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; the artifact boundary workflow enforces that only governed areas change when required.
+
+## Claude Review Triage
+- Apply the triage rule in `docs/governance-triage-rule.md` for new Claude findings: default to merging into canonical workstream buckets, reserve standalone issues for architecturally distinct items, and use labels such as `claude-review`, `workstream`, `standalone`, `duplicate`, `required-change`, or `optional-improvement` (see `docs/label-system.md`).
+
 ## Testing
 - `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
 - Install dev dependencies then run locally:
