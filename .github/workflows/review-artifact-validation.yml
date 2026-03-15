@@ -1,0 +1,45 @@
+name: review-artifact-validation
+
+on:
+  push:
+    paths:
+      - 'design-reviews/**'
+      - 'scripts/validate-review-artifacts.js'
+      - '.github/workflows/review-artifact-validation.yml'
+  pull_request:
+    paths:
+      - 'design-reviews/**'
+      - 'scripts/validate-review-artifacts.js'
+      - '.github/workflows/review-artifact-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-review-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install validation dependencies
+        run: npm install --no-save --no-package-lock ajv@^8 ajv-formats@^2
+
+      - name: Validate review artifacts
+        run: node scripts/validate-review-artifacts.js
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run pytest
+        run: pytest
