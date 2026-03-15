@@ -8,6 +8,7 @@
   "required": [
     "schema_version",
     "review_metadata",
+    "findings",
     "summary",
     "recommendations",
     "actions"
@@ -76,6 +77,123 @@
           }
         }
       }
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "category",
+          "title",
+          "description",
+          "recommended_action",
+          "files_affected",
+          "create_issue"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]+$",
+            "description": "Stable finding identifier referenced across artifacts."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Impact classification for the finding."
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Thematic grouping for the finding (e.g., governance, automation, process)."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short label for the finding."
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the finding."
+          },
+          "recommended_action": {
+            "description": "Remediation guidance for the finding.",
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            ]
+          },
+          "files_affected": {
+            "description": "Paths or components impacted by this finding.",
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            ]
+          },
+          "create_issue": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether automation should open a GitHub issue for this finding."
+          },
+          "suggested_issue_title": {
+            "type": "string",
+            "description": "Preferred GitHub issue title."
+          },
+          "suggested_labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Labels to apply when creating an issue."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Deprecated alias for suggested_labels."
+          },
+          "target_repo": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+            "description": "Optional override for the repository where the issue should be created."
+          },
+          "trigger": {
+            "type": "string",
+            "description": "Optional trigger or condition associated with this finding."
+          }
+        }
+      },
+      "description": "Automation-ready findings that can be turned into GitHub issues."
     },
     "summary": {
       "type": "object",

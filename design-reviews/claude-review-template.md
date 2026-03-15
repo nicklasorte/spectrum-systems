@@ -2,6 +2,12 @@
 
 Use stable identifiers (`G1`, `R1`, `REC-1`, `A-1`) so the paired JSON file can reference the same items.
 
+> Claude: Produce two artifacts for every review.
+> 1) This markdown file using the sections below.
+> 2) A JSON actions file at `design-reviews/YYYY-MM-DD-<slug>.actions.json` that validates against `design-reviews/claude-review.schema.json` with root fields: `schema_version`, `review_metadata`, `findings`, `summary`, `recommendations`, `actions`, `follow_up`.
+
+JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medium|low), `category`, `title`, `description`, `recommended_action` (string or list of strings), `files_affected` (list or string), `create_issue` (boolean), `suggested_issue_title`, `suggested_labels`, and optional `target_repo`/`trigger`. Keep IDs consistent across markdown and JSON.
+
 ## 1. Review Metadata
 - Review ID: YYYY-MM-DD-<slug>
 - Repository:

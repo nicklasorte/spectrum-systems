@@ -43,6 +43,17 @@ function parseArgs(argv) {
   return args;
 }
 
+function formatAjvError(error) {
+  const path = error.instancePath && error.instancePath.length ? error.instancePath : '(root)';
+  if (error.keyword === 'additionalProperties' && error.params?.additionalProperty) {
+    return `${path} has unknown property "${error.params.additionalProperty}"`;
+  }
+  if (error.keyword === 'required' && error.params?.missingProperty) {
+    return `${path} is missing required property "${error.params.missingProperty}"`;
+  }
+  return `${path} ${error.message}`;
+}
+
 async function validateFiles(schemaPath, files) {
   if (!schemaPath) {
     throw new Error('Schema path is required for validation.');
@@ -64,7 +75,7 @@ async function validateFiles(schemaPath, files) {
     const valid = validate(data);
     if (!valid) {
       const errors = validate.errors || [];
-      const details = errors.map((e) => `${e.instancePath || '(root)'} ${e.message}`).join('; ');
+      const details = errors.map((e) => formatAjvError(e)).join('; ');
       throw new Error(`Schema validation failed for ${file}: ${details}`);
     }
     results.push(data);
@@ -174,7 +185,11 @@ async function ingestFindings(files, schemaPath) {
       const title =
         finding.suggested_issue_title ||
         (finding.id ? `Review finding ${finding.id}` : 'Claude review finding');
-      const labels = Array.isArray(finding.labels) ? finding.labels : undefined;
+      const labels = Array.isArray(finding.suggested_labels)
+        ? finding.suggested_labels
+        : Array.isArray(finding.labels)
+          ? finding.labels
+          : undefined;
       const body = buildIssueBody(reviewMetadata, finding, path.relative(process.cwd(), file));
 
       await createIssue(owner, repo, title, body, labels, token);
