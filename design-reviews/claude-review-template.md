@@ -56,6 +56,8 @@ JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medi
 1. [A-1] Owner: TBD — Item — expected artifact — acceptance criteria — source [REC-#] — supports findings [F-#]
 2. [A-2] Owner: TBD — Item — expected artifact — acceptance criteria — source [REC-#] — supports findings [F-#]
 
+Include `follow_up_trigger` (event) and `due_date` (YYYY-MM-DD) for each action in the JSON so registries and automation can schedule checkpoints.
+
 ## 10. Blocking Items
 - [F-#] Blocking item — condition to clear
 
