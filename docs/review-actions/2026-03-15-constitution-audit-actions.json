@@ -1,0 +1,265 @@
+{
+  "schema_version": "1.0.0",
+  "review_date": "2026-03-15",
+  "review_artifact": "docs/reviews/2026-03-15-ecosystem-constitution-audit.md",
+  "reviewer": "Claude (Principal Systems Architect stance)",
+  "review_scope": "Full audit of spectrum-systems as governing constitution for a distributed multi-repository ecosystem",
+  "actions": [
+    {
+      "id": "RC-1",
+      "severity": "required",
+      "category": "architecture-boundary",
+      "title": "Remove or formally relocate the spectrum_systems Python package",
+      "description": "The spectrum_systems/ Python package contains a full production study runner pipeline (pipeline.py, run_study.py, artifact_writer.py, load_config.py) and a contract loading utility. This directly violates the repo's own stated boundary rule: 'This repository should NOT contain production implementation code.' The presence of this code also creates a CI coupling — test_contracts.py imports from spectrum_systems.contracts, making the test suite dependent on the production code being present. The artifact boundary CI check does not detect Python source files.",
+      "recommended_action": "Move spectrum_systems/study_runner/ to a dedicated engine repo (e.g., spectrum-study-compiler-engine). Evaluate whether spectrum_systems/contracts/__init__.py belongs in a narrow published SDK or can be replaced with direct JSON schema loading in tests. Refactor test_contracts.py to not import from a production Python package. Remove run_study.py from the repo root.",
+      "files_affected": [
+        "spectrum_systems/",
+        "spectrum_systems/contracts/__init__.py",
+        "spectrum_systems/study_runner/",
+        "spectrum_systems/study_runner/pipeline.py",
+        "spectrum_systems/study_runner/run_study.py",
+        "spectrum_systems/study_runner/artifact_writer.py",
+        "spectrum_systems/study_runner/load_config.py",
+        "run_study.py",
+        "tests/test_contracts.py",
+        "requirements-dev.txt"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Remove production Python package from governance repo (spectrum_systems/)",
+      "suggested_labels": ["architecture", "governance-violation", "priority-critical", "boundary-enforcement"]
+    },
+    {
+      "id": "RC-2",
+      "severity": "required",
+      "category": "boundary-enforcement",
+      "title": "Extend artifact boundary CI check to detect production implementation code",
+      "description": "scripts/check_artifact_boundary.py enforces a data boundary (no .pdf, .docx, binary blobs) but does not enforce the architecture boundary (no production implementation code). Python source files, runnable pipeline scripts, and business logic modules pass through CI unchallenged. The check must be extended to catch violations of the 'no implementation code' rule, not only data artifact violations.",
+      "recommended_action": "Add detection logic to check_artifact_boundary.py that flags: (1) Python packages with __init__.py containing non-trivial business logic, (2) root-level runnable scripts (run_*.py pattern), (3) any src/ directory. Define an allowlist for narrow utilities (e.g., scripts/ directory). Document the distinction between utility scripts and implementation code in docs/implementation-boundary.md.",
+      "files_affected": [
+        "scripts/check_artifact_boundary.py",
+        "docs/implementation-boundary.md",
+        ".github/workflows/artifact-boundary.yml"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Extend artifact-boundary CI to enforce architecture boundary, not only data boundary",
+      "suggested_labels": ["ci", "governance-enforcement", "boundary-enforcement", "priority-high"]
+    },
+    {
+      "id": "RC-3",
+      "severity": "required",
+      "category": "ecosystem-registry",
+      "title": "Populate ecosystem registry with all operational engines",
+      "description": "ecosystem/ecosystem-registry.json currently lists only 4 of the 8 known ecosystem repos. Missing: working-paper-review-engine, comment-resolution-engine, meeting-minutes-engine, docx-comment-injection-engine. These four are the primary Layer 3 consumers of the contract czar model. A constitution that does not enumerate the entities it governs cannot govern them. The registry also lacks a compliance_status field, providing no machine-readable governance validation state per repo.",
+      "recommended_action": "Add all four missing operational engines to ecosystem/ecosystem-registry.json with accurate repo_type, status, and description fields. Add a compliance_status field (e.g., 'compliant', 'pending', 'non-compliant', 'unknown') per entry. Add a governance_version field indicating which constitution version the repo was last validated against. Wire a CI check that validates registry completeness against a declared expected-repos list.",
+      "files_affected": [
+        "ecosystem/ecosystem-registry.json",
+        "ecosystem/ecosystem-registry.schema.json"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Add missing operational engine repos to ecosystem-registry.json",
+      "suggested_labels": ["ecosystem-registry", "governance", "priority-high"]
+    },
+    {
+      "id": "RC-4",
+      "severity": "required",
+      "category": "governance-enforcement",
+      "title": "Activate Phase 1 of the governance enforcement roadmap",
+      "description": "The governance enforcement roadmap defines 4 phases but no phase is active. Phase 1 (declared identity and contract pins) is the prerequisite for all subsequent enforcement. Without it, downstream engines have no machine-enforceable obligation to declare their system_id or pin contract versions. Every engine added to the ecosystem before Phase 1 is activated represents a permanently unverifiable governance claim.",
+      "recommended_action": "Define a system-manifest.json schema (system_id, contract_pins: [{contract_id, version}], governance_version, last_validated). Wire system-factory scaffolding to generate this file automatically for new repos. Add a CI step in this repo that fetches ecosystem-registry.json entries and validates that accessible repos contain system-manifest.json files conforming to the schema. Document the manifest requirement in docs/new-repo-checklist.md.",
+      "files_affected": [
+        "docs/governance-enforcement-roadmap.md",
+        "docs/new-repo-checklist.md",
+        "ecosystem/ecosystem-registry.json",
+        ".github/workflows/"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Implement Phase 1 governance enforcement: declared identity and contract pins",
+      "suggested_labels": ["governance-enforcement", "phase-1", "priority-high", "system-factory"]
+    },
+    {
+      "id": "RC-5",
+      "severity": "required",
+      "category": "governance-coverage",
+      "title": "Complete governance coverage for SYS-007, SYS-008, SYS-009",
+      "description": "Implementation boundary declarations and failure mode documentation are incomplete or absent for SYS-007 (working-paper-review-engine), SYS-008 (docx-comment-injection-engine), and SYS-009 (spectrum-pipeline-engine). SYS-007 through SYS-009 are the systems next in line for implementation. Governance gaps at the moment of implementation are the highest-risk point for contract drift and local standard creation.",
+      "recommended_action": "Add SYS-007, SYS-008, SYS-009 to docs/implementation-boundary.md with explicit declarations of what belongs in the engine repo vs. the governance repo. Complete failure mode documentation in docs/system-failure-modes.md for these three systems. Validate that interface.md files in systems/working-paper-review-engine/, systems/docx-comment-injection-engine/, and systems/spectrum-pipeline-engine/ meet the depth requirements in docs/system-interface-spec.md.",
+      "files_affected": [
+        "docs/implementation-boundary.md",
+        "docs/system-failure-modes.md",
+        "systems/working-paper-review-engine/interface.md",
+        "systems/docx-comment-injection-engine/interface.md",
+        "systems/spectrum-pipeline-engine/interface.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Complete governance coverage for SYS-007, SYS-008, SYS-009 before implementation begins",
+      "suggested_labels": ["governance-coverage", "SYS-007", "SYS-008", "SYS-009", "priority-high"]
+    },
+    {
+      "id": "RC-6",
+      "severity": "required",
+      "category": "contract-stability",
+      "title": "Resolve external_artifact_manifest draft status",
+      "description": "The external_artifact_manifest contract carries 'draft' status in contracts/standards-manifest.json but is referenced in docs/contract-dependency-map.md as a consumer-facing contract for artifact storage governance. Any engine implementing storage behavior against a draft contract is building against an unstable interface. The mismatch between declared status and consumed status is a live contradiction.",
+      "recommended_action": "Either promote external_artifact_manifest to 'stable' if the contract is ready for consumption, or explicitly annotate dependent entries in the contract-dependency-map.md as 'pending contract stabilization' and block engine implementations from consuming it until promoted. Update standards-manifest.json accordingly. Add a CI check that warns when a 'draft' contract appears in the dependency map as consumed.",
+      "files_affected": [
+        "contracts/standards-manifest.json",
+        "contracts/schemas/external_artifact_manifest.schema.json",
+        "docs/contract-dependency-map.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Promote or formally block external_artifact_manifest contract (currently draft, consumed as stable)",
+      "suggested_labels": ["contract-stability", "external-artifacts", "priority-high"]
+    },
+    {
+      "id": "RC-7",
+      "severity": "required",
+      "category": "governance-process",
+      "title": "Wire review-to-issue automation to close the action tracker loop",
+      "description": "Design reviews produce action trackers (markdown files with action items GA-001 through GA-011, CR-1 through LI-2, etc.) but no automation converts these items into GitHub issues. The ingest workflow (.github/workflows/claude-review-ingest.yml) exists but does not create tracked work. Review artifacts accumulate in docs/review-actions/ without becoming assignable, trackable issues. This breaks the feedback loop between governance review and execution.",
+      "recommended_action": "Extend scripts/ingest-claude-review.js or create a companion script that parses action tracker JSON files (use review-actions/action-tracker-template.md as the schema basis) and creates GitHub issues using the gh CLI or GitHub API. Each action item with create_issue: true should generate one issue with the suggested_issue_title and suggested_labels. Wire this to the claude-review-ingest.yml workflow or create a separate workflow triggered by action tracker file additions.",
+      "files_affected": [
+        "scripts/ingest-claude-review.js",
+        ".github/workflows/claude-review-ingest.yml",
+        "docs/review-actions/action-tracker-template.md",
+        "docs/review-registry.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Automate GitHub issue creation from review action tracker files",
+      "suggested_labels": ["governance-process", "automation", "review-loop", "priority-high"]
+    },
+    {
+      "id": "RE-1",
+      "severity": "optional",
+      "category": "adr-discipline",
+      "title": "Create ADRs for all architectural decisions made since ADR-001",
+      "description": "Only one ADR is recorded (ADR-001: czar repo pattern). Significant subsequent decisions lack ADR coverage: dual-track schema model (schemas/ vs contracts/schemas/), Python package introduction, evaluation coverage boundary (SYS-001–004 only), 9-system lifecycle model, and agent role assignments. As the team grows and contributors rotate, undocumented decisions will be relitigated at cost.",
+      "recommended_action": "Write ADRs for: (1) dual-track schema model rationale and ownership rules, (2) evaluation harness coverage scope decision, (3) agent role separation and governance file requirements, (4) enforcement roadmap phasing decision. Establish a policy in CONTRIBUTING.md that any decision affecting ecosystem interfaces requires an ADR before merging.",
+      "files_affected": [
+        "architecture-decisions/",
+        "CONTRIBUTING.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Create ADRs for architectural decisions made since ADR-001",
+      "suggested_labels": ["adr", "documentation", "governance", "priority-medium"]
+    },
+    {
+      "id": "RE-2",
+      "severity": "optional",
+      "category": "contract-governance",
+      "title": "Create a machine-readable contract consumer registry",
+      "description": "docs/contract-dependency-map.md documents the producer-consumer relationship between contracts and engines in prose/table form. The standards-manifest.json includes intended_consumers per contract but there is no inverse registry: no machine-readable file mapping each engine repo to its pinned contract versions. When a contract bumps to a new MINOR or MAJOR version, there is no automated way to identify affected consumers or validate that they have migrated.",
+      "recommended_action": "Create a machine-readable consumer-registry.json (or extend ecosystem-registry.json) that maps each engine repo to a list of pinned contract versions: {repo_name, contracts: [{artifact_type, pinned_version, status}]}. Generate this from engine system-manifest.json files (once Phase 1 enforcement exists). Add a CI job that validates pinned versions against the standards-manifest for compatibility.",
+      "files_affected": [
+        "ecosystem/",
+        "docs/contract-dependency-map.md",
+        "contracts/standards-manifest.json"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Create machine-readable contract consumer registry for version impact analysis",
+      "suggested_labels": ["contract-governance", "automation", "priority-medium"]
+    },
+    {
+      "id": "RE-3",
+      "severity": "optional",
+      "category": "evaluation",
+      "title": "Extend evaluation harness coverage to SYS-005 through SYS-009",
+      "description": "eval/test-matrix.md currently covers SYS-001 through SYS-004. SYS-005 (spectrum-program-advisor), SYS-006 (meeting-minutes-engine), SYS-007 (working-paper-review-engine), SYS-008 (docx-comment-injection-engine), and SYS-009 (spectrum-pipeline-engine) have no evaluation fixtures, test cases, or rubrics in the eval/ directory. Without evaluation coverage, systems cannot be validated before implementation repos consume their contracts.",
+      "recommended_action": "For each of SYS-005 through SYS-009: create eval/<system>/ directory with test-cases.md (sample inputs/outputs), fixtures/, and evaluation rubric aligned to docs/system-failure-modes.md for that system. Update eval/test-matrix.md to reflect full coverage. Prioritize SYS-009 (pipeline orchestrator) due to its cross-cutting dependencies.",
+      "files_affected": [
+        "eval/",
+        "eval/test-matrix.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Add evaluation harness coverage for SYS-005 through SYS-009",
+      "suggested_labels": ["evaluation", "SYS-005", "SYS-006", "SYS-007", "SYS-008", "SYS-009", "priority-medium"]
+    },
+    {
+      "id": "RE-4",
+      "severity": "optional",
+      "category": "schema-governance",
+      "title": "Clarify and machine-enforce the dual-track schema ownership model",
+      "description": "The repo maintains two schema registries: schemas/ (10 schemas, kebab-case, data lake base schemas) and contracts/schemas/ (16 schemas, snake_case, contract schemas). The relationship between these tracks is described in prose only. Nothing prevents a downstream engine from consuming schemas/comment-schema.json as its contract reference while the authoritative contract is contracts/schemas/comment_resolution_matrix.schema.json. Schema drift between tracks is a live risk.",
+      "recommended_action": "Add schemas/README.md and contracts/schemas/README.md sections that explicitly state the ownership rule: schemas/ holds base data lake field definitions (not consumed as artifact contracts), contracts/schemas/ holds the authoritative artifact contracts. Add a CI check that validates no field definition in schemas/ contradicts the corresponding field in contracts/schemas/. Cross-reference shared types explicitly.",
+      "files_affected": [
+        "schemas/README.md",
+        "contracts/schemas/",
+        "docs/schema-governance.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Clarify and enforce dual-track schema ownership (schemas/ vs contracts/schemas/)",
+      "suggested_labels": ["schema-governance", "documentation", "priority-medium"]
+    },
+    {
+      "id": "RE-5",
+      "severity": "optional",
+      "category": "release-discipline",
+      "title": "Implement constitutional release versioning",
+      "description": "There is no versioned release discipline for the constitution itself. Engine repos can pin to individual contract versions but cannot pin to a governance version that packages a consistent set of contracts, schemas, prompts, and standards together. When multiple contracts change between constitution versions, engines face N separate migration decisions with no coordinated compatibility signal.",
+      "recommended_action": "Define a governance release process: tag governance-v<MAJOR>.<MINOR>.0 when the constitution reaches a stable state with a defined set of contract versions. Maintain a GOVERNANCE-CHANGELOG.md that lists the contract, schema, and prompt versions included in each governance release. Engine repos can then pin to a governance release rather than to individual contract versions.",
+      "files_affected": [
+        "CHANGELOG.md",
+        "contracts/standards-manifest.json"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Define constitutional release versioning and governance changelog discipline",
+      "suggested_labels": ["release-discipline", "versioning", "governance", "priority-medium"]
+    },
+    {
+      "id": "RE-6",
+      "severity": "optional",
+      "category": "observability",
+      "title": "Implement an ecosystem health signal",
+      "description": "There is no machine-readable ecosystem health summary. Maintainers cannot determine at a glance: which repos are compliant, which contracts have open migration debt, which reviews have unresolved actions, or which systems have evaluation coverage gaps. The only observability is manual review of markdown files.",
+      "recommended_action": "Create a CI job that generates ecosystem-health.json aggregating: (1) registry completeness (expected repos present/absent), (2) per-repo compliance status from system-manifest.json files, (3) open action items count from review-actions/ files, (4) contract versions with pending consumers, (5) evaluation coverage by system. Commit this file on a scheduled basis or on push to main. This is the minimum viable observability primitive.",
+      "files_affected": [
+        "ecosystem/",
+        ".github/workflows/"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Create automated ecosystem-health.json signal for governance observability",
+      "suggested_labels": ["observability", "automation", "ecosystem-registry", "priority-medium"]
+    },
+    {
+      "id": "RE-7",
+      "severity": "optional",
+      "category": "contract-testing",
+      "title": "Add schema backward-compatibility CI tests",
+      "description": "CONTRACT_VERSIONING.md declares a semantic versioning policy where MINOR bumps must be backward compatible. This compatibility claim is currently untested. A MINOR bump could silently break existing consumers if required fields are added or enum values are removed. The policy exists but is not enforced mechanically.",
+      "recommended_action": "Add a CI test that, on any contract schema change, loads the previous schema version (from git history or a versioned archive), runs existing example payloads against both the old and new schema, and fails if an example valid under the old schema is invalid under the new schema. This enforces the backward compatibility promise mechanically.",
+      "files_affected": [
+        "tests/",
+        "contracts/schemas/",
+        ".github/workflows/"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Add backward-compatibility CI tests for contract schema MINOR version bumps",
+      "suggested_labels": ["contract-testing", "ci", "contract-versioning", "priority-low"]
+    },
+    {
+      "id": "RE-8",
+      "severity": "follow-up",
+      "category": "system-factory",
+      "title": "Formalize system-factory as the governance propagation mechanism",
+      "description": "system-factory is described as the repo that scaffolds new engine repos with governance primitives. However, the propagation path for governance updates to existing repos (new contract versions, updated prompts, schema changes) is not specified or implemented. As the constitution evolves, existing engines will drift unless there is a defined update delivery mechanism.",
+      "recommended_action": "Document the update propagation model for existing repos: how do existing engines learn about and adopt new contract versions? Define whether this is a PR-based pull model (engine maintainers pull updates), a push model (system-factory generates PRs), or a notification model (ecosystem health check flags stale pins). Implement the chosen model with at least a notification mechanism before the second engine implementation begins.",
+      "files_affected": [
+        "docs/governance-enforcement-roadmap.md",
+        "docs/new-repo-checklist.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Define and implement governance update propagation path for existing engine repos",
+      "suggested_labels": ["system-factory", "governance-propagation", "follow-up", "priority-low"]
+    }
+  ],
+  "summary": {
+    "total_actions": 15,
+    "required": 7,
+    "optional": 7,
+    "follow_up": 1,
+    "create_issue_count": 15,
+    "maturity_rating": 2,
+    "maturity_label": "Structured",
+    "target_rating": 3,
+    "target_label": "Governed"
+  }
+}
