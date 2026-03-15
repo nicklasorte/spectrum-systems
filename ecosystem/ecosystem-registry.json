@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-15T00:00:00Z",
+  "repositories": [
+    {
+      "repo_name": "spectrum-systems",
+      "repo_url": "https://github.com/nicklasorte/spectrum-systems",
+      "repo_type": "governance",
+      "status": "active",
+      "description": "Governance/control plane with contracts, schemas, workflows, and prompts for the ecosystem."
+    },
+    {
+      "repo_name": "system-factory",
+      "repo_url": "https://github.com/nicklasorte/system-factory",
+      "repo_type": "template",
+      "status": "active",
+      "description": "Scaffolding repo that generates governed system repositories with pinned contracts."
+    },
+    {
+      "repo_name": "spectrum-pipeline-engine",
+      "repo_url": "https://github.com/nicklasorte/spectrum-pipeline-engine",
+      "repo_type": "operational_engine",
+      "status": "planned",
+      "description": "Orchestration layer that sequences governed artifacts through downstream engines."
+    },
+    {
+      "repo_name": "spectrum-program-advisor",
+      "repo_url": "https://github.com/nicklasorte/spectrum-program-advisor",
+      "repo_type": "advisory",
+      "status": "experimental",
+      "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
+    }
+  ]
+}

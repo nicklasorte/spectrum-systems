@@ -51,6 +51,23 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 - Initiate architecture changes with a design review using `design-reviews/claude-review-template.md` and the sections in `docs/design-review-standard.md`; capture actions in the paired `.actions.json`, validate against the schema, and register in `docs/review-registry.md`.
 - Convert accepted decisions into ADRs under `architecture-decisions/` and align updates with `contracts/standards-manifest.json` and schema changes.
 - Downstream repos and PRs should run conformance checks in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; the artifact boundary workflow enforces that only governed areas change when required.
+## Testing
+- `pytest` validates governance artifacts and schemas, including registry completeness and review action examples.
+- Run locally with: `pytest`
+
+## Design Review Framework
+- Canonical format: `docs/design-review-standard.md`
+- Review-to-action flow: `docs/review-to-action-standard.md`
+- Immutable artifacts directory: `docs/reviews/`
+- Action trackers and template: `docs/review-actions/` and `docs/review-actions/action-tracker-template.md`
+- Registry of reviews: `docs/review-registry.md`
+- Culture and rationale: `docs/design-review-culture.md`
+- Architecture decisions derived from reviews are captured as ADRs in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
+## Ecosystem Registry
+The ecosystem registry tracks all repositories participating in the spectrum ecosystem and their governance state. See `docs/systems-registry.md`; the JSON registry reference is `ecosystem/ecosystem-registry.json`.
+
+## Repository Compliance
+Downstream repositories can run compliance validation against the governance rules and contracts defined here to ensure alignment before adoption or release. See `VALIDATION.md` and `docs/governance-conformance-checklist.md`.
 
 ## Documentation
 - Orientation: `REPO_MAP.md`, `SYSTEMS.md`, `docs/system-map.md`, `docs/system-status-registry.md`.
