@@ -92,5 +92,8 @@ CLI expectations:
 - Evaluation flags should run fixtures in-place and emit a report under the output root.
 - Errors must exit non-zero, emit the deterministic status file, and surface a concise human-readable note.
 
+## Governance Artifact Access
+Engines must resolve governance artifacts (schemas, contracts, registry files, standards manifests) from a local schema root path provided at runtime. A canonical flag pattern is `--schema-root ../spectrum-systems/governance/schemas`. Engines must not fetch governance artifacts over the network and should fail clearly when the schema root cannot be found.
+
 ## Registry tagging
 Engines that are expected to conform to this standard are marked with `interface_standard_expected = true` in the System Registry (`docs/system-registry.md`). That flag gives orchestrators and compliance checks a single place to see which systems must present the canonical interface.
