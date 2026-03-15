@@ -54,6 +54,11 @@ The ecosystem draws on proven practices:
 - **Governance (11-15)**: Deliver observability, risk-aware change management, automated governance, and preserved institutional memory.
 - **Intelligence (16-20)**: Layer decision intelligence, cross-workflow learning, predictive capabilities, adaptive execution, and strategic advisories.
 
+## Dependency awareness
+- Cross-repo ecosystems must become dependency-legible before scaling; hidden edges block promotion beyond Level 7.
+- Levels 8–10 expect a current `ecosystem/dependency-graph.json` as the authoritative map for contract alignment, loop participation, and artifact flows.
+- Dependency graph freshness is a promotion enabler: CI should regenerate it and reviews should use it to assess blast radius and maturity readiness.
+
 ## Promotion criteria by phase
 - **To Level 5**: At least one governed workflow runs end-to-end on real artifacts with evaluation evidence and provenance.
 - **To Level 10**: Pipelines orchestrate multiple engines through governed interfaces with CI enforcement and dependency awareness.

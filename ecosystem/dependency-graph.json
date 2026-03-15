@@ -1,0 +1,1505 @@
+{
+  "systems": [
+    {
+      "system_id": "comment-resolution-engine",
+      "repo_name": "comment-resolution-engine",
+      "repo_type": "operational_engine",
+      "primary_loop_alignment": "document_production",
+      "maturity_level": 6,
+      "consumes_artifact_types": [
+        "comment_resolution_matrix",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ],
+      "emits_artifact_types": [
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract"
+      ],
+      "contract_dependencies": [
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "provenance_record",
+        "reviewer_comment_set"
+      ]
+    },
+    {
+      "system_id": "docx-comment-injection-engine",
+      "repo_name": "docx-comment-injection-engine",
+      "repo_type": "operational_engine",
+      "primary_loop_alignment": "document_production",
+      "maturity_level": 6,
+      "consumes_artifact_types": [
+        "comment_resolution_matrix_spreadsheet_contract",
+        "working_paper_input"
+      ],
+      "emits_artifact_types": [
+        "pdf_anchored_docx_comment_injection_contract",
+        "updated_working_paper_docx"
+      ],
+      "contract_dependencies": [
+        "comment_resolution_matrix_spreadsheet_contract",
+        "pdf_anchored_docx_comment_injection_contract",
+        "provenance_record"
+      ]
+    },
+    {
+      "system_id": "meeting-minutes-engine",
+      "repo_name": "meeting-minutes-engine",
+      "repo_type": "operational_engine",
+      "primary_loop_alignment": "coordination",
+      "maturity_level": 5,
+      "consumes_artifact_types": [
+        "meeting_agenda_contract",
+        "transcript"
+      ],
+      "emits_artifact_types": [
+        "meeting_minutes",
+        "meeting_minutes_record"
+      ],
+      "contract_dependencies": [
+        "meeting_agenda_contract",
+        "meeting_minutes",
+        "provenance_record"
+      ]
+    },
+    {
+      "system_id": "spectrum-data-lake",
+      "repo_name": "spectrum-data-lake",
+      "repo_type": "data_lake",
+      "primary_loop_alignment": "cross_loop",
+      "maturity_level": 5,
+      "consumes_artifact_types": [
+        "meeting_minutes_record",
+        "provenance_record",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ],
+      "emits_artifact_types": [
+        "external_artifact_manifest",
+        "provenance_record"
+      ],
+      "contract_dependencies": [
+        "external_artifact_manifest",
+        "provenance_record",
+        "standards_manifest"
+      ]
+    },
+    {
+      "system_id": "spectrum-pipeline-engine",
+      "repo_name": "spectrum-pipeline-engine",
+      "repo_type": "orchestration",
+      "primary_loop_alignment": "cross_loop",
+      "maturity_level": 7,
+      "consumes_artifact_types": [
+        "pipeline_run_manifest",
+        "provenance_record",
+        "standards_manifest"
+      ],
+      "emits_artifact_types": [
+        "pipeline_run_manifest",
+        "study_readiness_assessment"
+      ],
+      "contract_dependencies": [
+        "external_artifact_manifest",
+        "provenance_record",
+        "standards_manifest",
+        "study_readiness_assessment"
+      ]
+    },
+    {
+      "system_id": "spectrum-program-advisor",
+      "repo_name": "spectrum-program-advisor",
+      "repo_type": "advisory",
+      "primary_loop_alignment": "cross_loop",
+      "maturity_level": 9,
+      "consumes_artifact_types": [
+        "pipeline_run_manifest",
+        "provenance_record",
+        "study_readiness_assessment"
+      ],
+      "emits_artifact_types": [
+        "next_best_action_memo",
+        "program_brief",
+        "risk_register"
+      ],
+      "contract_dependencies": [
+        "next_best_action_memo",
+        "program_brief",
+        "provenance_record",
+        "risk_register",
+        "study_readiness_assessment"
+      ]
+    },
+    {
+      "system_id": "spectrum-systems",
+      "repo_name": "spectrum-systems",
+      "repo_type": "governance",
+      "primary_loop_alignment": "governance",
+      "maturity_level": 4,
+      "consumes_artifact_types": [
+        "provenance_record",
+        "standards_manifest"
+      ],
+      "emits_artifact_types": [
+        "governance_guidance",
+        "standards_manifest"
+      ],
+      "contract_dependencies": [
+        "standards_manifest"
+      ]
+    },
+    {
+      "system_id": "system-factory",
+      "repo_name": "system-factory",
+      "repo_type": "factory",
+      "primary_loop_alignment": "governance",
+      "maturity_level": 3,
+      "consumes_artifact_types": [
+        "governance_templates",
+        "standards_manifest"
+      ],
+      "emits_artifact_types": [
+        "scaffolded_repository_manifest",
+        "standards_manifest"
+      ],
+      "contract_dependencies": [
+        "provenance_record",
+        "standards_manifest"
+      ]
+    },
+    {
+      "system_id": "working-paper-review-engine",
+      "repo_name": "working-paper-review-engine",
+      "repo_type": "operational_engine",
+      "primary_loop_alignment": "document_production",
+      "maturity_level": 6,
+      "consumes_artifact_types": [
+        "review_guidance",
+        "working_paper_input"
+      ],
+      "emits_artifact_types": [
+        "reviewer_comment_set"
+      ],
+      "contract_dependencies": [
+        "provenance_record",
+        "reviewer_comment_set",
+        "working_paper_input"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_type": "adjudicated_matrix",
+      "artifact_class": "review",
+      "description": "Approved adjudication state for reviewer comments.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "assumption_register",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `assumption_register`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "comment_resolution_matrix",
+      "artifact_class": "review",
+      "description": "Governed artifact for contract `comment_resolution_matrix`.",
+      "producing_systems": [
+        "comment-resolution-engine"
+      ],
+      "consuming_systems": [
+        "comment-resolution-engine"
+      ]
+    },
+    {
+      "artifact_type": "comment_resolution_matrix_spreadsheet",
+      "artifact_class": "review",
+      "description": "Spreadsheet representation of the governed comment resolution matrix.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+      "artifact_class": "review",
+      "description": "Governed artifact for contract `comment_resolution_matrix_spreadsheet_contract`.",
+      "producing_systems": [
+        "comment-resolution-engine"
+      ],
+      "consuming_systems": [
+        "docx-comment-injection-engine"
+      ]
+    },
+    {
+      "artifact_type": "coordination_loop",
+      "artifact_class": "coordination",
+      "description": "Marker node for systems participating in the coordination loop.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "cross_loop",
+      "artifact_class": "coordination",
+      "description": "Marker node for systems that orchestrate or advise across loops.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "decision_log",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `decision_log`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "document_production_loop",
+      "artifact_class": "work",
+      "description": "Marker node for systems participating in the document production loop.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "external_artifact_manifest",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `external_artifact_manifest`.",
+      "producing_systems": [
+        "spectrum-data-lake"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "governance_guidance",
+      "artifact_class": "coordination",
+      "description": "Narrative governance instructions emitted by spectrum-systems.",
+      "producing_systems": [
+        "spectrum-systems"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "governance_loop",
+      "artifact_class": "coordination",
+      "description": "Marker node for control-plane and governance functions.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "governance_templates",
+      "artifact_class": "coordination",
+      "description": "Template files used by system-factory when scaffolding governed repos.",
+      "producing_systems": [],
+      "consuming_systems": [
+        "system-factory"
+      ]
+    },
+    {
+      "artifact_type": "meeting_agenda_contract",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `meeting_agenda_contract`.",
+      "producing_systems": [],
+      "consuming_systems": [
+        "meeting-minutes-engine"
+      ]
+    },
+    {
+      "artifact_type": "meeting_minutes",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `meeting_minutes`.",
+      "producing_systems": [
+        "meeting-minutes-engine"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "meeting_minutes_docx",
+      "artifact_class": "coordination",
+      "description": "Rendered DOCX minutes distributed to participants.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "meeting_minutes_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `meeting_minutes_record`.",
+      "producing_systems": [
+        "meeting-minutes-engine"
+      ],
+      "consuming_systems": [
+        "spectrum-data-lake"
+      ]
+    },
+    {
+      "artifact_type": "milestone_plan",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `milestone_plan`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "next_best_action_memo",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `next_best_action_memo`.",
+      "producing_systems": [
+        "spectrum-program-advisor"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "pdf_anchored_docx_comment_injection_contract",
+      "artifact_class": "review",
+      "description": "Governed artifact for contract `pdf_anchored_docx_comment_injection_contract`.",
+      "producing_systems": [
+        "docx-comment-injection-engine"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "pipeline_run_manifest",
+      "artifact_class": "coordination",
+      "description": "Structured manifest describing a pipeline run configuration and outputs.",
+      "producing_systems": [
+        "spectrum-pipeline-engine"
+      ],
+      "consuming_systems": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ]
+    },
+    {
+      "artifact_type": "program_brief",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `program_brief`.",
+      "producing_systems": [
+        "spectrum-program-advisor"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "provenance_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `provenance_record`.",
+      "producing_systems": [
+        "spectrum-data-lake"
+      ],
+      "consuming_systems": [
+        "spectrum-data-lake",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "spectrum-systems"
+      ]
+    },
+    {
+      "artifact_type": "review_guidance",
+      "artifact_class": "review",
+      "description": "Guidance documents steering reviewer expectations and rubric.",
+      "producing_systems": [],
+      "consuming_systems": [
+        "working-paper-review-engine"
+      ]
+    },
+    {
+      "artifact_type": "reviewer_comment_set",
+      "artifact_class": "review",
+      "description": "Governed artifact for contract `reviewer_comment_set`.",
+      "producing_systems": [
+        "working-paper-review-engine"
+      ],
+      "consuming_systems": [
+        "comment-resolution-engine",
+        "spectrum-data-lake"
+      ]
+    },
+    {
+      "artifact_type": "risk_register",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `risk_register`.",
+      "producing_systems": [
+        "spectrum-program-advisor"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "scaffolded_repository_manifest",
+      "artifact_class": "coordination",
+      "description": "Manifest describing the generated repository from system-factory.",
+      "producing_systems": [
+        "system-factory"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "standards_manifest",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `standards_manifest`.",
+      "producing_systems": [
+        "spectrum-systems",
+        "system-factory"
+      ],
+      "consuming_systems": [
+        "spectrum-pipeline-engine",
+        "spectrum-systems",
+        "system-factory"
+      ]
+    },
+    {
+      "artifact_type": "study_readiness_assessment",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `study_readiness_assessment`.",
+      "producing_systems": [
+        "spectrum-pipeline-engine"
+      ],
+      "consuming_systems": [
+        "spectrum-program-advisor"
+      ]
+    },
+    {
+      "artifact_type": "transcript",
+      "artifact_class": "coordination",
+      "description": "Raw meeting transcript captured before governance processing.",
+      "producing_systems": [],
+      "consuming_systems": [
+        "meeting-minutes-engine"
+      ]
+    },
+    {
+      "artifact_type": "updated_working_paper",
+      "artifact_class": "work",
+      "description": "Working paper revision after adjudication or injection.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "updated_working_paper_docx",
+      "artifact_class": "work",
+      "description": "DOCX export of the updated working paper.",
+      "producing_systems": [
+        "docx-comment-injection-engine"
+      ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "working_paper_input",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `working_paper_input`.",
+      "producing_systems": [],
+      "consuming_systems": [
+        "comment-resolution-engine",
+        "docx-comment-injection-engine",
+        "spectrum-data-lake",
+        "working-paper-review-engine"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "contract_name": "assumption_register",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "assumption_register"
+      ]
+    },
+    {
+      "contract_name": "comment_resolution_matrix",
+      "artifact_class": "review",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "comment_resolution_matrix"
+      ]
+    },
+    {
+      "contract_name": "comment_resolution_matrix_spreadsheet_contract",
+      "artifact_class": "review",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ],
+      "related_artifact_types": [
+        "comment_resolution_matrix_spreadsheet_contract"
+      ]
+    },
+    {
+      "contract_name": "decision_log",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "decision_log"
+      ]
+    },
+    {
+      "contract_name": "external_artifact_manifest",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "study-artifact-generator"
+      ],
+      "related_artifact_types": [
+        "external_artifact_manifest"
+      ]
+    },
+    {
+      "contract_name": "meeting_agenda_contract",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ],
+      "related_artifact_types": [
+        "meeting_agenda_contract"
+      ]
+    },
+    {
+      "contract_name": "meeting_minutes",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ],
+      "related_artifact_types": [
+        "meeting_minutes"
+      ]
+    },
+    {
+      "contract_name": "meeting_minutes_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "meeting-minutes-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "meeting_minutes_record"
+      ]
+    },
+    {
+      "contract_name": "milestone_plan",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "milestone_plan"
+      ]
+    },
+    {
+      "contract_name": "next_best_action_memo",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "next_best_action_memo"
+      ]
+    },
+    {
+      "contract_name": "pdf_anchored_docx_comment_injection_contract",
+      "artifact_class": "review",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "docx-comment-injection-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "pdf_anchored_docx_comment_injection_contract"
+      ]
+    },
+    {
+      "contract_name": "program_brief",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "program_brief"
+      ]
+    },
+    {
+      "contract_name": "provenance_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "provenance_record"
+      ]
+    },
+    {
+      "contract_name": "reviewer_comment_set",
+      "artifact_class": "review",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "reviewer_comment_set"
+      ]
+    },
+    {
+      "contract_name": "risk_register",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "risk_register"
+      ]
+    },
+    {
+      "contract_name": "standards_manifest",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "downstream schema loaders",
+        "system-factory"
+      ],
+      "related_artifact_types": [
+        "standards_manifest"
+      ]
+    },
+    {
+      "contract_name": "study_readiness_assessment",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "related_artifact_types": [
+        "study_readiness_assessment"
+      ]
+    },
+    {
+      "contract_name": "working_paper_input",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "system-factory",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "working_paper_input"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from_type": "artifact",
+      "from_id": "assumption_register",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "assumption_register"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "comment_resolution_matrix",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "comment_resolution_matrix"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "comment_resolution_matrix_spreadsheet_contract",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "decision_log",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "decision_log"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "external_artifact_manifest",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "external_artifact_manifest"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "meeting_agenda_contract",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "meeting_agenda_contract"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "meeting_minutes",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "meeting_minutes"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "meeting_minutes_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "meeting_minutes_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "milestone_plan",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "milestone_plan"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "next_best_action_memo",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "next_best_action_memo"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "pdf_anchored_docx_comment_injection_contract",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "pdf_anchored_docx_comment_injection_contract"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "program_brief",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "program_brief"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "provenance_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "reviewer_comment_set",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "risk_register",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "risk_register"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "standards_manifest",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "study_readiness_assessment",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "working_paper_input",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "assumption_register",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "assumption_register"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "comment_resolution_matrix",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "comment_resolution_matrix_spreadsheet_contract",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "decision_log",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "decision_log"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "external_artifact_manifest",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "external_artifact_manifest"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "meeting_agenda_contract",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "meeting_agenda_contract"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "meeting_minutes",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "meeting_minutes"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "meeting_minutes_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "meeting_minutes_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "milestone_plan",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "milestone_plan"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "next_best_action_memo",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "next_best_action_memo"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "pdf_anchored_docx_comment_injection_contract",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "pdf_anchored_docx_comment_injection_contract"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "program_brief",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "program_brief"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "provenance_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "reviewer_comment_set",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "risk_register",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "risk_register"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "standards_manifest",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "study_readiness_assessment",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "working_paper_input",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "comment_resolution_matrix"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "comment-resolution-engine",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "document_production_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "pdf_anchored_docx_comment_injection_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "pdf_anchored_docx_comment_injection_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "updated_working_paper_docx"
+    },
+    {
+      "from_type": "system",
+      "from_id": "docx-comment-injection-engine",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "document_production_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "meeting_agenda_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "transcript"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "meeting_agenda_contract"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "meeting_minutes"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "meeting_minutes"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "meeting_minutes_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "meeting-minutes-engine",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "coordination_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "meeting_minutes_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "external_artifact_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "external_artifact_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-data-lake",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "cross_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "pipeline_run_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "external_artifact_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "pipeline_run_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-pipeline-engine",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "cross_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "pipeline_run_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "next_best_action_memo"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "program_brief"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "risk_register"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "next_best_action_memo"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "program_brief"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "risk_register"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-program-advisor",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "cross_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "governance_guidance"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "spectrum-systems",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "governance_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "governance_templates"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "scaffolded_repository_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "standards_manifest"
+    },
+    {
+      "from_type": "system",
+      "from_id": "system-factory",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "governance_loop"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "review_guidance"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "consumes",
+      "to_type": "artifact",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "provenance_record"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "depends_on",
+      "to_type": "contract",
+      "to_id": "working_paper_input"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "emits",
+      "to_type": "artifact",
+      "to_id": "reviewer_comment_set"
+    },
+    {
+      "from_type": "system",
+      "from_id": "working-paper-review-engine",
+      "relation": "participates_in",
+      "to_type": "artifact",
+      "to_id": "document_production_loop"
+    }
+  ]
+}
