@@ -39,6 +39,13 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## Machine-Readable Ecosystem Dependency Graph
+- Each downstream repo publishes `.spectrum-governance.json` aligned to `governance/schemas/spectrum-governance.schema.json`.
+- Manifests are aggregated with `ecosystem/ecosystem-registry.json` to emit `artifacts/ecosystem-dependency-graph.json` (machine-readable) and `artifacts/ecosystem-dependency-graph.mmd` (Mermaid diagram).
+- Contract pins in manifests must match `contracts/standards-manifest.json`, giving deterministic contract-to-system mappings.
+- Upstream/downstream links in manifests capture system-to-system edges so orchestrators can reason about sequencing and impact analysis.
+- The graph is regenerated in CI, keeping the registry, manifests, and visualization synchronized.
+
 ## Related References
 - `docs/ecosystem-map.md`
 - `docs/artifact-flow.md`

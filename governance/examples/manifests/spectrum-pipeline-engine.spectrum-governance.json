@@ -1,0 +1,29 @@
+{
+  "system_id": "SYS-009",
+  "repo_name": "spectrum-pipeline-engine",
+  "repo_type": "operational_engine",
+  "governance_repo": "spectrum-systems",
+  "governance_version": "1.0.0",
+  "contracts": {
+    "assumption_register": "1.0.0",
+    "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
+    "decision_log": "1.0.0",
+    "external_artifact_manifest": "1.0.0",
+    "meeting_agenda_contract": "1.0.0",
+    "meeting_minutes": "1.0.0",
+    "milestone_plan": "1.0.0",
+    "next_best_action_memo": "1.0.0",
+    "program_brief": "1.0.0",
+    "risk_register": "1.0.0",
+    "study_readiness_assessment": "1.0.0"
+  },
+  "upstream_systems": [
+    "SYS-001",
+    "SYS-006",
+    "SYS-007",
+    "SYS-008"
+  ],
+  "downstream_systems": [
+    "SYS-005"
+  ]
+}
