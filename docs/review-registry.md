@@ -6,7 +6,7 @@ Central ledger for all design/architecture reviews across the Spectrum Systems e
 - Add a row for each review after generating the immutable review artifact and action tracker.
 - Keep filenames stable and prefer relative links into `docs/reviews/` and `docs/review-actions/`.
 - Update `Status` as items progress (`Open`, `In Progress`, `Blocked`, `Closed`).
-- Mirror scheduling metadata from the actions JSON: record `due_date` values (YYYY-MM-DD) and `follow_up_trigger` conditions so the next review is scheduled and automation can track checkpoints.
+- Mirror scheduling metadata from the actions JSON: record the primary `follow_up_trigger` (event/condition) and `due_date` (YYYY-MM-DD) so the next review is scheduled and automation can track checkpoints. Use the canonical trigger from the actions payload; if only finding-level triggers exist, mirror those until actions are created.
 - Treat `follow_up_trigger` as the event or condition that signals when the action should be revisited; treat `due_date` as the calendar checkpoint when the action is expected to be reviewed or closed.
 
 ## Registry
@@ -18,6 +18,6 @@ Central ledger for all design/architecture reviews across the Spectrum Systems e
 | 2026-03-15 | Ecosystem (all 8 repos) | Claude (Principal Systems Architect — cross-repo ecosystem audit) | Cross-repository architectural audit of the 8-repo distributed ecosystem: layering integrity, governance propagation, coupling analysis, interface contracts, orchestration readiness, system-factory effectiveness, program advisor scope, scaling risks, maturity assessment (rated 2/5 — Structured), 18 action items (8 required, 8 optional, 2 follow-up) | [docs/reviews/2026-03-15-cross-repo-ecosystem-architecture-review.md](reviews/2026-03-15-cross-repo-ecosystem-architecture-review.md) | [docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json](review-actions/2026-03-15-ecosystem-architecture-audit-actions.json) | Open | When REC-1 through REC-4 are completed (self-governance gap closed, registry complete, boundary CI extended, Phase 1 active); re-audit ecosystem maturity |
 
 **Recording follow-up metadata**
-- Use the earliest `due_date` from the actions JSON for the entry and add concise `follow_up_trigger` text so checkpoints stay auditable.
+- Use the earliest `due_date` from the actions JSON for the entry and add concise `follow_up_trigger` text so checkpoints stay auditable. When both action-level and finding-level triggers exist, prefer the action-level `follow_up_trigger` as the canonical registry value.
 - If multiple triggers exist, list the primary automation trigger first (e.g., after merge of related PR, before next release) and append secondary conditions.
 - Downstream tooling can read these cells to schedule reminders and surface overdue items.
