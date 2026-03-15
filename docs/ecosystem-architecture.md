@@ -39,6 +39,12 @@ flowchart TB
 - `spectrum-pipeline-engine` coordinates governed engines, enforces contract compatibility across a run, and publishes pipeline manifests that capture provenance and versions.
 - `spectrum-program-advisor` consumes the governed bundles, applies program intelligence, and surfaces advisory outputs while staying pinned to the contract versions issued by the constitution.
 
+## Artifact Envelope as the Interoperability Layer
+- Engines exchange artifacts as **envelope + payload** pairs: the envelope standardizes `artifact_class`, `artifact_type`, `contract_version`, and lineage hooks; the payload remains the contract-defined schema.
+- Shared envelope metadata reduces bespoke routing logic—pipelines can dispatch on envelope fields before touching payloads.
+- Data lake and orchestration components should index and validate envelope fields first, then apply payload-specific schema validation.
+- See `docs/artifact-envelope-standard.md` and `contracts/schemas/artifact_envelope.schema.json` for the canonical envelope definition.
+
 ## Artifact Classes as the Core Ecosystem Abstraction
 - The ecosystem is organized around three canonical artifact classes: coordination, work, and review (see `docs/artifact-classification-standard.md` and `contracts/artifact-class-registry.json`).
 - Every engine declares which artifact classes it consumes and emits; manifests must include `artifact_class` alongside `artifact_type` to keep routing deterministic.

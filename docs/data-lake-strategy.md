@@ -275,3 +275,8 @@ Decisions
 ## Manifest metadata expectations
 - All artifact manifests that land in the lake must declare both `artifact_class` and `artifact_type` so orchestration layers can route, validate, and enforce class transitions.
 - Manifest records should continue to carry versions, provenance, and checksums; the class identifier complements `artifact_type` and schema version to keep storage governance deterministic.
+
+## Sidecar manifest alignment to the artifact envelope
+- Sidecar manifests stored with lake objects should mirror the envelope fields: `artifact_class`, `artifact_type`, `contract_name`, `contract_version`, `produced_by`, and `derived_from`.
+- Envelope-aligned sidecars let the lake index, deduplicate, and trace artifacts without reading the payload; payload validation still occurs via the contract schema.
+- When ingesting governed artifacts, persist the envelope metadata alongside the payload pointer so orchestration and advisory engines can reason over lineage and compatibility uniformly.
