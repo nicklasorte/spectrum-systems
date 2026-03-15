@@ -11,9 +11,9 @@ Explain how the czar repo organization is layered from scaffolding through advis
 - **Layer 5 — Program Intelligence (spectrum-program-advisor)**: analyzes orchestrated artifacts and produces advisory outputs for program management decisions.
 
 ## Operating Model: Two Interacting Loops
-- **Coordination Loop** keeps people, decisions, schedules, and next steps aligned; it is anchored by `meeting-minutes-engine` and other coordination assets.
-- **Document Production Loop** turns **Engineering Outputs** into governed working papers, reviews, adjudicated matrices, and updated papers; engines like `working-paper-review-engine`, `comment-resolution-engine`, and `docx-comment-injection-engine` live here.
-- **Engineering Tasks / Engineering Outputs bridge** carries prioritized work from coordination into document production, and returns updated papers and adjudication back to future agendas and action items.
+- **Coordination Loop** moves roster → meetings → transcript → minutes → action items/FAQ → agenda/slides → next meeting and emits **Engineering Tasks** to the work queue; `meeting-minutes-engine` anchors this loop.
+- **Document Production Loop** runs **Engineering Tasks** → **Engineering Outputs** → working paper → compare with previous revision → updated working paper → agency review → reviewer comments → comment resolution matrix → adjudicated matrix → updated paper; engines like `working-paper-review-engine`, `comment-resolution-engine`, and `docx-comment-injection-engine` live here.
+- **Bridge** separates **Engineering Tasks** (from action items, study plan, schedule, open questions) and **Engineering Outputs** (figures, tables, analysis artifacts, working paper revisions) so the loops hand off cleanly.
 - Orchestration (`spectrum-pipeline-engine`) and program intelligence (`spectrum-program-advisor`) span the loops to keep sequencing, provenance, and readiness aligned.
 - See `docs/spectrum-study-operating-model.md` for the canonical operating model and ASCII loop diagram.
 

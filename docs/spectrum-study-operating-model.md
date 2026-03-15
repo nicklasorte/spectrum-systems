@@ -3,12 +3,12 @@
 Canonical north-star model for how spectrum studies run across the ecosystem: two interacting loops that keep people aligned and documents advancing. The bridge between the loops is the pair **Engineering Tasks** (what must be done) and **Engineering Outputs** (what the work produces).
 
 ## Two Interacting Loops
-- **Coordination Loop** — aligns people, decisions, schedules, and next steps so the study stays on track.
+- **Coordination Loop** — aligns people, decisions, schedules, and next steps so the study stays on track and generates the engineering work.
 - **Document Production Loop** — turns engineering work into reviewed and revised study documents that become the record of decision.
-- **Bridge** — **Engineering Tasks** are driven by action items, schedule, study plan, and open questions; **Engineering Outputs** feed working papers, figures, tables, and study artifacts.
+- **Bridge** — split “engineering work” into **Engineering Tasks** and **Engineering Outputs** so each loop can hand off and accept work deterministically.
 
 ## Coordination Loop
-Purpose: align the team on who is doing what, by when, and why.
+Purpose: align the team on who is doing what, by when, and why; produce the next wave of **Engineering Tasks**.
 
 Stages and artifacts:
 - roster
@@ -19,16 +19,16 @@ Stages and artifacts:
 - FAQ
 - agenda / agenda slides
 - next meeting
-- **Engineering Tasks** (handed to the bridge)
+- **Engineering Tasks** (emitted to the bridge and prioritized in the work queue)
 
 ## Document Production Loop
-Purpose: convert engineering work into governed study documents, keep revisions explicit, and capture adjudication.
+Purpose: convert engineering work into governed study documents, keep revisions explicit, and capture adjudication that feeds future meetings.
 
 Stages and artifacts:
 - **Engineering Tasks** (drive the work queue)
 - **Engineering Outputs**
 - working paper
-- compare against last revision
+- compare with previous revision
 - updated working paper
 - agency review
 - reviewer comments
@@ -36,42 +36,49 @@ Stages and artifacts:
 - adjudicated matrix
 - updated paper (feeds back into coordination)
 
+## Bridge Between Loops
+- **Engineering Tasks** come from action items, the study plan, schedule, and open questions in the Coordination Loop.
+- **Engineering Outputs** produce figures, tables, analysis artifacts, and working paper revisions that the Document Production Loop consumes.
+- The bridge keeps a clear interface: coordination creates tasks; production returns outputs that inform agendas, FAQs, and action items.
+
 ## ASCII Architecture Diagram
 ```
 Coordination Loop
 [Roster] -> [Meetings] -> [Transcript] -> [Meeting Minutes]
-    -> [Action Items / FAQ] -> [Agenda / Next Meeting] -> [Engineering Tasks]
+    -> [Action Items] -> [FAQ] -> [Agenda / Slides] -> [Next Meeting]
+                               \                     /
+                                \-> [Engineering Tasks]
 
-                     Bridge
+                   Bridge
         [Engineering Tasks] --> [Engineering Outputs]
 
 Document Production Loop
-[Engineering Outputs] -> [Working Paper] -> [Compare vs Last Revision]
+[Engineering Outputs] -> [Working Paper] -> [Compare w/ Previous Revision]
     -> [Updated Working Paper] -> [Agency Review] -> [Reviewer Comments]
     -> [Comment Resolution Matrix] -> [Adjudicated Matrix] -> [Updated Paper]
-                                          ^
+                                          ^                       |
+                                          |                       |
+                     (agendas, action items, FAQs, next meeting updates)
                                           |
-        (agenda, action items, FAQ, next meeting inputs)
-                                          |
-                              feedback to Coordination Loop
+                               feedback to Coordination Loop
 ```
 
 ## Repo-to-Loop Mapping
-- `spectrum-systems` — governance / constitution for both loops.
-- `spectrum-data-lake` — artifact lake, fixtures, historical evidence.
+- `spectrum-systems` — governance and contract definitions for both loops.
+- `spectrum-data-lake` — artifact lake for transcripts, minutes, working papers, and review artifacts.
 - `meeting-minutes-engine` — Coordination Loop engine.
-- `working-paper-review-engine` — Document Production Loop upstream review engine.
-- `comment-resolution-engine` — review and adjudication engine.
-- `docx-comment-injection-engine` — document update engine.
-- `spectrum-pipeline-engine` — orchestration across both loops.
-- `spectrum-program-advisor` — intelligence layer across the loops.
+- `working-paper-review-engine` — generates reviewer comment sets from working papers.
+- `comment-resolution-engine` — produces adjudicated comment matrices.
+- `docx-comment-injection-engine` — applies adjudicated comments to working papers.
+- `spectrum-pipeline-engine` — runs end-to-end workflows across both loops.
+- `spectrum-program-advisor` — analyzes artifacts and pipeline reports to recommend improvements.
 
 ## Artifact Class Mapping
-- **coordination artifacts**: roster, agenda, transcript, meeting minutes, action items, FAQ, schedule.
-- **work artifacts**: engineering outputs, figures, tables, working papers, updated papers.
-- **review artifacts**: reviewer comments, comment matrix, adjudicated matrix, review findings, decision records.
+- **coordination artifacts**: roster, agenda, transcript, meeting minutes, action items, FAQ.
+- **work artifacts**: engineering outputs, figures, tables, working papers.
+- **review artifacts**: review comments, comment matrices, adjudicated matrices.
 
-The loops operate by transitioning among these artifact classes: coordination artifacts generate **Engineering Tasks**, work artifacts capture **Engineering Outputs** and updated papers, and review artifacts drive adjudication and feed back into the coordination backlog.
+The loops operate by transitioning among these artifact classes: coordination artifacts generate **Engineering Tasks**; work artifacts capture **Engineering Outputs** and updated papers; review artifacts drive adjudication and feed back into the coordination backlog.
 
 ## How the Loops Interact
 - Coordination Loop produces prioritized **Engineering Tasks** and context that define the work queue.
