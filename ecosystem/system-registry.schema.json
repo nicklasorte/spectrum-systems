@@ -71,7 +71,7 @@
         "maturity_level": {
           "type": "integer",
           "minimum": 0,
-          "description": "Placement on the ecosystem maturity ladder (Level 0-25)."
+          "description": "Placement on the ecosystem maturity ladder (Level 0-20)."
         },
         "primary_loop_alignment": {
           "type": "string",

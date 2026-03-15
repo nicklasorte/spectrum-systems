@@ -15,6 +15,7 @@ The System Registry is the authoritative catalog for the spectrum ecosystem. It 
 ## Machine-readable registry
 - Source: `ecosystem/system-registry.json`
 - Schema: `ecosystem/system-registry.schema.json`
+- Maturity tracking: `ecosystem/maturity-tracker.json` (schema in `ecosystem/maturity-tracker.schema.json`) with evidence and blockers aligned to `docs/level-0-to-20-playbook.md` and `docs/review-maturity-rubric.md`.
 
 ## Current systems
 | System ID | Repo | Type | Loop | Maturity | Status | Role |

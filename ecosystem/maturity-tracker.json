@@ -1,0 +1,162 @@
+[
+  {
+    "system_id": "spectrum-systems",
+    "current_level": 4,
+    "target_level_next": 5,
+    "target_date": "2026-06-30",
+    "blocking_gaps": [
+      "Evidence-backed end-to-end loop validation across governance assets",
+      "Telemetry coverage for governance workflows and registries",
+      "Maturity rubric adoption in all reviews"
+    ],
+    "evidence": [
+      "Governance/control-plane standards, contracts, and registries are published",
+      "Design review standard and action tracking are operational"
+    ],
+    "notes": "Control-plane maturity depends on enforcing new maturity rubric and tracker usage."
+  },
+  {
+    "system_id": "system-factory",
+    "current_level": 3,
+    "target_level_next": 4,
+    "blocking_gaps": [
+      "Embed maturity rubric and tracker hooks into generated repos",
+      "CI templates enforcing contract validation for new systems"
+    ],
+    "evidence": [
+      "Factory scaffolds governed repos with pinned contracts",
+      "Standards manifest integration exists in templates"
+    ],
+    "notes": "Raising maturity requires generated projects to ship with telemetry and contract checks by default."
+  },
+  {
+    "system_id": "spectrum-data-lake",
+    "current_level": 5,
+    "target_level_next": 6,
+    "blocking_gaps": [
+      "Integration of lineage sidecars into orchestrated pipelines",
+      "Run manifests and provenance attached to ingests",
+      "Contract-aware interfaces for ingest/egress"
+    ],
+    "evidence": [
+      "Governed storage patterns and indexing approach documented",
+      "Provenance sidecar concept defined"
+    ],
+    "notes": "Promotion depends on repeatable ingest harnesses and observable runs."
+  },
+  {
+    "system_id": "meeting-minutes-engine",
+    "current_level": 4,
+    "target_level_next": 5,
+    "target_date": "2026-05-31",
+    "blocking_gaps": [
+      "Evidence of transcript-to-minutes loop on real inputs",
+      "Evaluation artifacts captured with each run",
+      "Contract version traceability in outputs"
+    ],
+    "evidence": [
+      "Engine processes transcripts to governed minutes on sample data",
+      "Contracts and schemas defined for inputs/outputs"
+    ]
+  },
+  {
+    "system_id": "working-paper-review-engine",
+    "current_level": 5,
+    "target_level_next": 6,
+    "blocking_gaps": [
+      "Deterministic fixtures and evaluation harness",
+      "Cross-engine orchestration readiness",
+      "Telemetry coverage for reviewer set generation"
+    ],
+    "evidence": [
+      "Reviewer set production is documented",
+      "Contract alignment with working paper inputs exists"
+    ]
+  },
+  {
+    "system_id": "comment-resolution-engine",
+    "current_level": 5,
+    "target_level_next": 6,
+    "blocking_gaps": [
+      "Provenance enforcement for adjudication steps",
+      "CI checks for contract drift",
+      "Evaluation artifacts covering edge cases"
+    ],
+    "evidence": [
+      "Adjudication workflows defined",
+      "Contract-driven outputs produced on exemplars"
+    ]
+  },
+  {
+    "system_id": "docx-comment-injection-engine",
+    "current_level": 5,
+    "target_level_next": 6,
+    "blocking_gaps": [
+      "Traceable lineage from inputs to injected DOCX outputs",
+      "Shared engine interface compliance",
+      "Observability signals for run health"
+    ],
+    "evidence": [
+      "Anchored comment injection implemented",
+      "Schema for injection outputs available"
+    ]
+  },
+  {
+    "system_id": "spectrum-pipeline-engine",
+    "current_level": 6,
+    "target_level_next": 7,
+    "blocking_gaps": [
+      "Dependency-aware orchestration across multiple engines",
+      "Run manifests and error-budget signals emitted",
+      "Contract validation baked into pipelines"
+    ],
+    "evidence": [
+      "Pipeline orchestration patterns defined",
+      "Planned role in coordinating governed engines"
+    ],
+    "notes": "Promotion requires live orchestration of multiple engines with governed manifests."
+  },
+  {
+    "system_id": "spectrum-program-advisor",
+    "current_level": 8,
+    "target_level_next": 9,
+    "blocking_gaps": [
+      "Evidence-backed recommendation precision tracking",
+      "Adoption metrics for advisories",
+      "Stable inputs from orchestrated pipelines"
+    ],
+    "evidence": [
+      "Advisory brief concepts and readiness bundle consumption defined",
+      "Initial recommendation patterns captured"
+    ],
+    "notes": "Needs sustained evidence of recommendation accuracy and adoption."
+  },
+  {
+    "system_id": "study-artifact-generator",
+    "current_level": 4,
+    "target_level_next": 5,
+    "blocking_gaps": [
+      "Governed fixtures and repeatable harness",
+      "Provenance sidecars attached to generated artifacts",
+      "Integration into orchestrated pipelines"
+    ],
+    "evidence": [
+      "Generates governed study artifacts from simulations",
+      "Contract dependencies defined"
+    ]
+  },
+  {
+    "system_id": "spectrum-study-compiler",
+    "current_level": 2,
+    "target_level_next": 3,
+    "blocking_gaps": [
+      "Repository scaffold with contracts and schemas",
+      "Defined role in ecosystem registry",
+      "Initial pipeline integration plan"
+    ],
+    "evidence": [
+      "Planned compiler role documented in ecosystem registry"
+    ],
+    "notes": "Promotion depends on creating governed scaffolding and contracts."
+  }
+]

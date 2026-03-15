@@ -22,6 +22,7 @@ Required outputs and flow that must occur after every design review in the Spect
 - Include explicit acceptance criteria for each item.
 - Add an evidence placeholder that must be filled with proof per `docs/review-evidence-standard.md` before closure.
 - Record the target repository for execution (governance vs implementation) and any blocking relationships.
+- For maturity-related findings, map each item to the current maturity gap, the target maturity level, and whether it is a promotion blocker or enabler.
 - Maintain stable finding IDs; follow-up reviews must reconcile prior findings by ID and mark closure, open status, or deferral with evidence.
 
 ## Completion criteria
