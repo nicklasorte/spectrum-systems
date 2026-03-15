@@ -19,6 +19,14 @@ def test_compliance_report_schema_accepts_valid_report() -> None:
                 "repo_path": "/tmp/sample-engine",
                 "compliant": False,
                 "missing_requirements": ["CLAUDE.md", "tests/"],
+                "failures": [
+                    {
+                        "severity": "error",
+                        "type": "missing_governance_manifest",
+                        "repo": "sample-engine",
+                        "repo_path": "/tmp/sample-engine",
+                    }
+                ],
                 "warnings": ["README missing reference to spectrum-systems"],
             }
         ],

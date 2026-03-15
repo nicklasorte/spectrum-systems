@@ -3,6 +3,45 @@
 const fs = require("fs");
 const path = require("path");
 
+const GOVERNANCE_MANIFEST = ".spectrum-governance.json";
+
+function normalizeRepoConfig(raw, index) {
+  const repoConfig = {
+    repo_name: raw.repo_name || raw.name,
+    repo_path: raw.repo_path || raw.path,
+    expected_system_id: raw.expected_system_id,
+    expected_repo_type: raw.expected_repo_type,
+    required_contracts: Array.isArray(raw.required_contracts) ? raw.required_contracts : [],
+  };
+
+  const missingFields = [];
+  if (!repoConfig.repo_name) missingFields.push("repo_name");
+  if (!repoConfig.repo_path) missingFields.push("repo_path");
+  if (!repoConfig.expected_system_id) missingFields.push("expected_system_id");
+  if (!repoConfig.expected_repo_type) missingFields.push("expected_repo_type");
+
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Repo config at index ${index} is missing required fields: ${missingFields.join(", ")}`
+    );
+  }
+
+  if (
+    typeof repoConfig.repo_name !== "string" ||
+    typeof repoConfig.repo_path !== "string" ||
+    typeof repoConfig.expected_system_id !== "string" ||
+    typeof repoConfig.expected_repo_type !== "string"
+  ) {
+    throw new Error(`Repo config at index ${index} must use string values for all identifiers and paths.`);
+  }
+
+  if (!Array.isArray(raw.required_contracts)) {
+    throw new Error(`Repo config at index ${index} must include required_contracts as an array.`);
+  }
+
+  return repoConfig;
+}
+
 function loadConfig(configPath) {
   if (!configPath) {
     console.error("Usage: node run-cross-repo-compliance.js <config-path>");
@@ -21,7 +60,7 @@ function loadConfig(configPath) {
     if (!Array.isArray(parsed.repos)) {
       throw new Error("Config must include a 'repos' array.");
     }
-    return parsed.repos;
+    return parsed.repos.map(normalizeRepoConfig);
   } catch (error) {
     console.error(`Failed to load config: ${error.message}`);
     process.exit(1);
@@ -61,18 +100,75 @@ function readReadme(repoPath) {
   return fs.readFileSync(readmePath, "utf-8");
 }
 
+function loadGovernanceManifest(manifestPath, repoName, failures) {
+  try {
+    const manifestRaw = fs.readFileSync(manifestPath, "utf-8");
+    return JSON.parse(manifestRaw);
+  } catch (error) {
+    failures.push({
+      severity: "error",
+      type: "invalid_governance_manifest",
+      repo: repoName,
+      repo_path: path.dirname(manifestPath),
+      detail: error.message,
+    });
+    return null;
+  }
+}
+
+function validateManifest(manifest, repoConfig, failures) {
+  if (!manifest) {
+    return;
+  }
+
+  if (repoConfig.expected_system_id && manifest.system_id !== repoConfig.expected_system_id) {
+    failures.push({
+      severity: "error",
+      type: "system_id_mismatch",
+      repo: repoConfig.repo_name,
+      repo_path: repoConfig.repo_path,
+      expected: repoConfig.expected_system_id,
+      actual: manifest.system_id,
+    });
+  }
+
+  if (!manifest.contracts || typeof manifest.contracts !== "object") {
+    failures.push({
+      severity: "error",
+      type: "contracts_section_missing",
+      repo: repoConfig.repo_name,
+      repo_path: repoConfig.repo_path,
+    });
+    return;
+  }
+
+  repoConfig.required_contracts.forEach((contractName) => {
+    if (!manifest.contracts[contractName]) {
+      failures.push({
+        severity: "error",
+        type: "missing_required_contract_pin",
+        repo: repoConfig.repo_name,
+        repo_path: repoConfig.repo_path,
+        contract: contractName,
+      });
+    }
+  });
+}
+
 function checkRepo(repoConfig) {
-  const repoPath = path.resolve(repoConfig.path);
+  const repoPath = path.resolve(repoConfig.repo_path);
   const missingRequirements = [];
   const warnings = [];
+  const failures = [];
 
   if (!isDirectory(repoPath)) {
     missingRequirements.push("repository path not found");
     return {
-      repo_name: repoConfig.name,
+      repo_name: repoConfig.repo_name,
       repo_path: repoPath,
       compliant: false,
       missing_requirements: missingRequirements,
+      failures,
       warnings,
     };
   }
@@ -105,11 +201,28 @@ function checkRepo(repoConfig) {
     warnings.push("GitHub workflows directory missing or empty");
   }
 
+  const manifestPath = path.join(repoPath, GOVERNANCE_MANIFEST);
+  let manifest = null;
+  if (!pathExists(manifestPath)) {
+    failures.push({
+      severity: "error",
+      type: "missing_governance_manifest",
+      repo: repoConfig.repo_name,
+      repo_path: repoPath,
+    });
+  } else {
+    manifest = loadGovernanceManifest(manifestPath, repoConfig.repo_name, failures);
+    validateManifest(manifest, repoConfig, failures);
+  }
+
   return {
-    repo_name: repoConfig.name,
+    repo_name: repoConfig.repo_name,
     repo_path: repoPath,
-    compliant: missingRequirements.length === 0,
+    expected_system_id: repoConfig.expected_system_id,
+    expected_repo_type: repoConfig.expected_repo_type,
+    compliant: missingRequirements.length === 0 && failures.length === 0,
     missing_requirements: missingRequirements,
+    failures,
     warnings,
   };
 }
