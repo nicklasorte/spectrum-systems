@@ -5,6 +5,38 @@ const path = require("path");
 
 const GOVERNANCE_MANIFEST = ".spectrum-governance.json";
 
+function parseArgs(argv) {
+  const args = argv.slice(2);
+  let configPath = null;
+  let outputPath = null;
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--config" || arg === "-c") {
+      if (i + 1 >= args.length) {
+        console.error("Missing value for --config");
+        process.exit(1);
+      }
+      configPath = args[i + 1];
+      i += 1;
+    } else if (arg === "--output" || arg === "-o") {
+      if (i + 1 >= args.length) {
+        console.error("Missing value for --output");
+        process.exit(1);
+      }
+      outputPath = args[i + 1];
+      i += 1;
+    } else if (!arg.startsWith("-") && !configPath) {
+      configPath = arg;
+    } else {
+      console.error(`Unknown argument: ${arg}`);
+      process.exit(1);
+    }
+  }
+
+  return { configPath, outputPath };
+}
+
 function normalizeRepoConfig(raw, index) {
   const repoConfig = {
     repo_name: raw.repo_name || raw.name,
@@ -44,7 +76,9 @@ function normalizeRepoConfig(raw, index) {
 
 function loadConfig(configPath) {
   if (!configPath) {
-    console.error("Usage: node run-cross-repo-compliance.js <config-path>");
+    console.error(
+      "Usage: node run-cross-repo-compliance.js --config <config-path> [--output <output-path>]"
+    );
     process.exit(1);
   }
 
@@ -228,7 +262,8 @@ function checkRepo(repoConfig) {
 }
 
 function run() {
-  const repos = loadConfig(process.argv[2]);
+  const { configPath, outputPath } = parseArgs(process.argv);
+  const repos = loadConfig(configPath);
   const results = repos.map(checkRepo);
 
   const report = {
@@ -236,6 +271,11 @@ function run() {
     scan_date: new Date().toISOString().slice(0, 10),
     repos: results,
   };
+
+  if (outputPath) {
+    const resolvedOutput = path.resolve(outputPath);
+    fs.writeFileSync(resolvedOutput, JSON.stringify(report, null, 2));
+  }
 
   console.log(JSON.stringify(report, null, 2));
 }
