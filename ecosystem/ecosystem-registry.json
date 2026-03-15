@@ -7,6 +7,8 @@
       "repo_url": "https://github.com/nicklasorte/spectrum-systems",
       "repo_type": "governance",
       "status": "active",
+      "layer": "Layer 2",
+      "contracts": [],
       "description": "Governance/control plane with contracts, schemas, workflows, and prompts for the ecosystem."
     },
     {
@@ -14,13 +16,62 @@
       "repo_url": "https://github.com/nicklasorte/system-factory",
       "repo_type": "template",
       "status": "active",
+      "layer": "Layer 1",
+      "contracts": [],
       "description": "Scaffolding repo that generates governed system repositories with pinned contracts."
+    },
+    {
+      "repo_name": "comment-resolution-engine",
+      "repo_url": "https://github.com/nicklasorte/comment-resolution-engine",
+      "repo_type": "operational_engine",
+      "status": "active",
+      "layer": "Layer 3",
+      "contracts": [],
+      "description": "Operational engine for adjudicating reviewer comments and maintaining resolution matrices."
+    },
+    {
+      "repo_name": "working-paper-review-engine",
+      "repo_url": "https://github.com/nicklasorte/working-paper-review-engine",
+      "repo_type": "operational_engine",
+      "status": "active",
+      "layer": "Layer 3",
+      "contracts": [],
+      "description": "Operational engine that normalizes working papers and seeds reviewer comment sets."
+    },
+    {
+      "repo_name": "meeting-minutes-engine",
+      "repo_url": "https://github.com/nicklasorte/meeting-minutes-engine",
+      "repo_type": "operational_engine",
+      "status": "active",
+      "layer": "Layer 3",
+      "contracts": [],
+      "description": "Operational engine that generates governed meeting minutes from transcripts and agendas."
+    },
+    {
+      "repo_name": "docx-comment-injection-engine",
+      "repo_url": "https://github.com/nicklasorte/docx-comment-injection-engine",
+      "repo_type": "operational_engine",
+      "status": "active",
+      "layer": "Layer 3",
+      "contracts": [],
+      "description": "Operational engine that injects anchored comments into DOCX outputs with provenance."
+    },
+    {
+      "repo_name": "study-artifact-generator",
+      "repo_url": "https://github.com/nicklasorte/study-artifact-generator",
+      "repo_type": "operational_engine",
+      "status": "active",
+      "layer": "Layer 3",
+      "contracts": [],
+      "description": "Operational engine that turns simulation outputs into governed study artifacts with provenance."
     },
     {
       "repo_name": "spectrum-pipeline-engine",
       "repo_url": "https://github.com/nicklasorte/spectrum-pipeline-engine",
       "repo_type": "operational_engine",
       "status": "planned",
+      "layer": "Layer 4",
+      "contracts": [],
       "description": "Orchestration layer that sequences governed artifacts through downstream engines."
     },
     {
@@ -28,6 +79,8 @@
       "repo_url": "https://github.com/nicklasorte/spectrum-program-advisor",
       "repo_type": "advisory",
       "status": "experimental",
+      "layer": "Layer 5",
+      "contracts": [],
       "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
     }
   ]
