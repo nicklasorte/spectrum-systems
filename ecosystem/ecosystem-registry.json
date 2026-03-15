@@ -8,15 +8,18 @@
       "repo_type": "governance",
       "status": "active",
       "layer": "Layer 2",
+      "manifest_required": false,
       "contracts": [],
       "description": "Governance/control plane with contracts, schemas, workflows, and prompts for the ecosystem."
     },
     {
       "repo_name": "system-factory",
       "repo_url": "https://github.com/nicklasorte/system-factory",
-      "repo_type": "template",
+      "repo_type": "factory",
       "status": "active",
       "layer": "Layer 1",
+      "system_id": "system-factory",
+      "manifest_required": true,
       "contracts": [
         "assumption_register",
         "comment_resolution_matrix",
@@ -43,7 +46,8 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
+      "manifest_required": true,
       "contracts": [
         "comment_resolution_matrix",
         "comment_resolution_matrix_spreadsheet_contract",
@@ -61,7 +65,8 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "system_id": "SYS-007",
+      "system_id": "working-paper-review-engine",
+      "manifest_required": true,
       "contracts": [
         "comment_resolution_matrix",
         "pdf_anchored_docx_comment_injection_contract",
@@ -77,7 +82,8 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "system_id": "SYS-006",
+      "system_id": "meeting-minutes-engine",
+      "manifest_required": true,
       "contracts": [
         "meeting_agenda_contract",
         "meeting_minutes"
@@ -90,7 +96,8 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "system_id": "SYS-008",
+      "system_id": "docx-comment-injection-engine",
+      "manifest_required": true,
       "contracts": [
         "pdf_anchored_docx_comment_injection_contract"
       ],
@@ -102,7 +109,8 @@
       "repo_type": "operational_engine",
       "status": "active",
       "layer": "Layer 3",
-      "system_id": "SYS-003",
+      "system_id": "study-artifact-generator",
+      "manifest_required": true,
       "contracts": [
         "external_artifact_manifest"
       ],
@@ -114,17 +122,19 @@
       "repo_type": "operational_engine",
       "status": "planned",
       "layer": "Layer 3",
-      "system_id": "SYS-004",
+      "system_id": "spectrum-study-compiler",
+      "manifest_required": true,
       "contracts": [],
       "description": "Compiler that packages validated study artifacts into governed bundles."
     },
     {
       "repo_name": "spectrum-pipeline-engine",
       "repo_url": "https://github.com/nicklasorte/spectrum-pipeline-engine",
-      "repo_type": "operational_engine",
+      "repo_type": "pipeline",
       "status": "planned",
       "layer": "Layer 4",
-      "system_id": "SYS-009",
+      "system_id": "spectrum-pipeline-engine",
+      "manifest_required": true,
       "contracts": [
         "assumption_register",
         "comment_resolution_matrix_spreadsheet_contract",
@@ -146,7 +156,8 @@
       "repo_type": "advisory",
       "status": "experimental",
       "layer": "Layer 5",
-      "system_id": "SYS-005",
+      "system_id": "spectrum-program-advisor",
+      "manifest_required": true,
       "contracts": [
         "assumption_register",
         "decision_log",

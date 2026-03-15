@@ -57,3 +57,15 @@ def test_systems_match_registry_and_references_are_known() -> None:
             assert upstream in known_ids, f"{system_id} upstream_system {upstream} missing from registry"
         for downstream in manifest.get("downstream_systems", []):
             assert downstream in known_ids, f"{system_id} downstream_system {downstream} missing from registry"
+
+
+def test_registry_entries_require_manifests_when_flagged() -> None:
+    registry = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+    required_entries = {
+        entry["system_id"]
+        for entry in registry.get("repositories", [])
+        if entry.get("manifest_required")
+    }
+    manifest_systems = {json.loads(path.read_text(encoding="utf-8"))["system_id"] for path in iter_manifest_paths()}
+    missing = sorted(required_entries - manifest_systems)
+    assert not missing, f"Registry entries missing manifests: {missing}"

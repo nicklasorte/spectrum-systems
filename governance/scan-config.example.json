@@ -3,7 +3,7 @@
     {
       "repo_name": "comment-resolution-engine",
       "repo_path": "../comment-resolution-engine",
-      "expected_system_id": "SYS-001",
+      "expected_system_id": "comment-resolution-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "comment_resolution_matrix",
@@ -18,7 +18,7 @@
     {
       "repo_name": "working-paper-review-engine",
       "repo_path": "../working-paper-review-engine",
-      "expected_system_id": "SYS-007",
+      "expected_system_id": "working-paper-review-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "comment_resolution_matrix",
@@ -31,7 +31,7 @@
     {
       "repo_name": "meeting-minutes-engine",
       "repo_path": "../meeting-minutes-engine",
-      "expected_system_id": "SYS-006",
+      "expected_system_id": "meeting-minutes-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "meeting_agenda_contract",
@@ -41,7 +41,7 @@
     {
       "repo_name": "docx-comment-injection-engine",
       "repo_path": "../docx-comment-injection-engine",
-      "expected_system_id": "SYS-008",
+      "expected_system_id": "docx-comment-injection-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "pdf_anchored_docx_comment_injection_contract"

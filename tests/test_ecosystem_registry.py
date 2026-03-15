@@ -64,7 +64,7 @@ def test_registry_entries_have_required_fields() -> None:
         assert isinstance(entry["contracts"], list), "contracts must be a list"
         for contract in entry["contracts"]:
             assert isinstance(contract, str), "contracts entries must be strings"
-        if entry["repo_type"] not in {"governance", "template"}:
+        if entry["repo_type"] not in {"governance", "factory"}:
             assert "system_id" in entry, f"Missing system_id for governed repo: {entry.get('repo_name')}"
 
 

@@ -18,7 +18,7 @@ Point the scanner at a JSON config listing the repos to inspect. Example: `gover
     {
       "repo_name": "comment-resolution-engine",
       "repo_path": "../comment-resolution-engine",
-      "expected_system_id": "SYS-001",
+      "expected_system_id": "comment-resolution-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "comment_resolution_matrix",
@@ -33,7 +33,7 @@ Point the scanner at a JSON config listing the repos to inspect. Example: `gover
     {
       "repo_name": "working-paper-review-engine",
       "repo_path": "../working-paper-review-engine",
-      "expected_system_id": "SYS-007",
+      "expected_system_id": "working-paper-review-engine",
       "expected_repo_type": "operational_engine",
       "required_contracts": [
         "comment_resolution_matrix",
@@ -72,7 +72,7 @@ Reports follow `governance/compliance-scans/compliance-report.schema.json`.
     {
       "repo_name": "comment-resolution-engine",
       "repo_path": "/repos/comment-resolution-engine",
-      "expected_system_id": "SYS-001",
+      "expected_system_id": "comment-resolution-engine",
       "expected_repo_type": "operational_engine",
       "compliant": true,
       "missing_requirements": [],
@@ -82,7 +82,7 @@ Reports follow `governance/compliance-scans/compliance-report.schema.json`.
     {
       "repo_name": "working-paper-review-engine",
       "repo_path": "/repos/working-paper-review-engine",
-      "expected_system_id": "SYS-007",
+      "expected_system_id": "working-paper-review-engine",
       "expected_repo_type": "operational_engine",
       "compliant": false,
       "missing_requirements": ["CLAUDE.md", "tests/"],

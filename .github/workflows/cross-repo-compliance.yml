@@ -18,6 +18,30 @@ permissions:
   contents: read
 
 jobs:
+  governance-manifest-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run pytest
+        run: python -m pytest
+
+      - name: Validate governance manifests
+        run: |
+          set -euo pipefail
+          for manifest in governance/examples/manifests/*.spectrum-governance.json; do
+            python scripts/validate_governance_manifest.py "$manifest";
+          done
+
   cross-repo-compliance:
     runs-on: ubuntu-latest
     steps:

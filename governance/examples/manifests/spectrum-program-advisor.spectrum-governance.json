@@ -1,5 +1,5 @@
 {
-  "system_id": "SYS-005",
+  "system_id": "spectrum-program-advisor",
   "repo_name": "spectrum-program-advisor",
   "repo_type": "advisory",
   "governance_repo": "spectrum-systems",
@@ -13,9 +13,5 @@
     "program_brief": "1.0.0",
     "risk_register": "1.0.0",
     "study_readiness_assessment": "1.0.0"
-  },
-  "upstream_systems": [
-    "SYS-009"
-  ],
-  "downstream_systems": []
+  }
 }

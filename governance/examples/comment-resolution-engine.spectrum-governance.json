@@ -1,5 +1,5 @@
 {
-  "system_id": "SYS-001",
+  "system_id": "comment-resolution-engine",
   "repo_name": "comment-resolution-engine",
   "repo_type": "operational_engine",
   "governance_repo": "spectrum-systems",
@@ -12,12 +12,5 @@
     "pdf_anchored_docx_comment_injection_contract": "1.0.1",
     "provenance_record": "1.0.0",
     "reviewer_comment_set": "1.0.0"
-  },
-  "upstream_systems": [
-    "SYS-007",
-    "SYS-008"
-  ],
-  "downstream_systems": [
-    "SYS-009"
-  ]
+  }
 }

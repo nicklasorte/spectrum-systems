@@ -5,60 +5,49 @@
   "description": "Required governance manifest (.spectrum-governance.json) for downstream repositories.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "system_id",
-    "repo_name",
-    "repo_type",
-    "governance_repo",
-    "governance_version",
-    "contracts"
-  ],
+  "required": ["system_id", "repo_name", "repo_type", "governance_repo", "governance_version", "contracts"],
   "properties": {
     "system_id": {
-      "type": "string",
-      "pattern": "^SYS-[0-9]{3}$",
-      "description": "System identifier published by spectrum-systems."
+      "$ref": "#/$defs/system_slug"
     },
     "repo_name": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9_.-]+$",
-      "description": "Repository name for the governed system."
+      "$ref": "#/$defs/system_slug"
     },
     "repo_type": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_.-]+$",
-      "description": "Repository type (e.g., operational_engine, advisory, template, governance)."
+      "enum": ["governance", "factory", "operational_engine", "advisory", "pipeline"],
+      "description": "Repository type aligned to the ecosystem registry."
     },
     "governance_repo": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?$",
-      "description": "Repository slug or name for the governance source (e.g., spectrum-systems or nicklasorte/spectrum-systems)."
+      "const": "spectrum-systems",
+      "description": "Canonical governance authority for manifests."
     },
     "governance_version": {
       "$ref": "#/$defs/semver",
-      "description": "Pinned governance release version (semver or calendar-semver)."
+      "description": "Pinned governance release version (semver)."
     },
     "contracts": {
       "$ref": "#/$defs/contracts"
     },
     "upstream_systems": {
       "type": "array",
-      "items": { "$ref": "#/$defs/system_id" },
+      "items": { "$ref": "#/$defs/system_slug" },
       "uniqueItems": true,
       "description": "Optional list of system_ids that provide inputs to this system."
     },
     "downstream_systems": {
       "type": "array",
-      "items": { "$ref": "#/$defs/system_id" },
+      "items": { "$ref": "#/$defs/system_slug" },
       "uniqueItems": true,
       "description": "Optional list of system_ids that consume outputs from this system."
     }
   },
   "$defs": {
-    "system_id": {
+    "system_slug": {
       "type": "string",
-      "pattern": "^SYS-[0-9]{3}$",
-      "description": "Registered system identifier."
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "description": "Registered system identifier matching ecosystem registry entries."
     },
     "semver": {
       "type": "string",
@@ -67,7 +56,7 @@
     },
     "contracts": {
       "type": "object",
-      "minProperties": 1,
+      "minProperties": 0,
       "patternProperties": {
         "^[A-Za-z0-9._-]+$": {
           "$ref": "#/$defs/semver"
