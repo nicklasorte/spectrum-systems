@@ -12,6 +12,7 @@ EXAMPLE_REVIEW_PATH = REPO_ROOT / "design-reviews" / "example-claude-review.acti
 REQUIRED_FIELDS = ("id", "severity", "category", "title", "description")
 REQUIRED_FINDING_FIELDS = ("recommended_action", "files_affected", "create_issue")
 SCHEMA_PATH = REPO_ROOT / "design-reviews" / "claude-review.schema.json"
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def _load_example() -> dict:
@@ -78,3 +79,22 @@ def test_example_markdown_and_json_ids_align() -> None:
 
     assert not json_duplicates, f"Duplicate finding IDs in JSON: {', '.join(json_duplicates)}"
     assert set(md_ids) == set(json_ids), "Finding IDs must match between markdown and JSON artifacts"
+
+
+def test_due_dates_use_iso_format() -> None:
+    payload = _load_example()
+    due_dates = []
+    for finding in payload.get("findings", []):
+        if "due_date" in finding:
+            due_dates.append(("finding", finding.get("id"), finding["due_date"]))
+    for action in payload.get("actions", []):
+        if "due_date" in action:
+            due_dates.append(("action", action.get("id"), action["due_date"]))
+
+    follow_up_due = payload.get("follow_up", {}).get("next_review_due")
+    if follow_up_due:
+        due_dates.append(("follow_up", "next_review_due", follow_up_due))
+
+    assert due_dates, "Expected at least one due_date in example review artifacts"
+    for item_type, identifier, due_date in due_dates:
+        assert DATE_PATTERN.match(due_date), f"{item_type} {identifier} due_date must use YYYY-MM-DD format"

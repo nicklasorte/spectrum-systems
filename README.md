@@ -20,7 +20,7 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 - spectrum-program-advisor consumes readiness bundles to provide program guidance.
 
 ## Governance Components
-- **Design reviews and actions**: `design-reviews/` holds review markdown and machine-readable actions validated by `design-reviews/claude-review.schema.json`; actions are tracked via `docs/review-actions/action-tracker-template.md` and registered in `docs/review-registry.md`. Actions may include scheduling metadata (`follow_up_trigger`, `due_date`) so registries and automation can set checkpoints.
+- **Design reviews and actions**: `design-reviews/` holds review markdown and machine-readable actions validated by `design-reviews/claude-review.schema.json`; actions are tracked via `docs/review-actions/action-tracker-template.md` and registered in `docs/review-registry.md`. Actions may include scheduling metadata (`follow_up_trigger`, `due_date`) so registries and automation can set checkpoints. CI automatically validates pairing, schema alignment, finding IDs, and due_date format via `node scripts/validate-review-artifacts.js` in `.github/workflows/review-artifact-validation.yml`.
 - **Architecture decisions**: ADRs live in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
 - **Artifact contracts and versioning**: `CONTRACTS.md`, `contracts/standards-manifest.json`, `contracts/schemas/`, and `CONTRACT_VERSIONING.md` define canonical inputs/outputs and compatibility rules.
 - **Schema registry**: `schemas/` contains the authoritative schemas; inventory in `schemas/README.md`.
