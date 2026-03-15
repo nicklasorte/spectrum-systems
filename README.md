@@ -28,13 +28,16 @@ The ecosystem maintains a canonical System Registry that records every governed 
 
 ## Governance Components
 - **Design reviews and actions**: `design-reviews/` holds review markdown and paired `.actions.json` files validated by `design-reviews/claude-review.schema.json`; actions register in `docs/review-registry.md` with the tracker template in `docs/review-actions/action-tracker-template.md`.
-- **Architecture decisions**: ADRs live in `architecture-decisions/` using `architecture-decisions/adr-template.md`.
+- **Architecture decisions**: ADRs live in `docs/adr/` using `docs/adr/ADR-TEMPLATE.md` (legacy ADRs remain in `architecture-decisions/`).
 - **Artifact contracts and schema registry**: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`, `contracts/schemas/`, and `schemas/README.md` define canonical inputs/outputs and compatibility.
 - **Prompt governance**: `prompts/` with standards in `docs/prompt-standard.md` and `prompts/prompt-governance.md`.
 - **Evaluation framework**: per-system assets in `eval/` (coverage in `eval/test-matrix.md`) and shared guidance in `evals/`.
 - **Ecosystem registry**: machine-readable registry in `ecosystem/ecosystem-registry.json` and schema; status and maps in `SYSTEMS.md`, `docs/system-map.md`, and `docs/system-status-registry.md`.
 - **Rule packs and guidance**: governed rule sets under `rules/` with supporting governance docs in `docs/`.
 - **Compliance automation**: conformance guidance in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; cross-repo scanning in `docs/cross-repo-compliance.md` and `governance/compliance-scans/`; CI workflows in `.github/workflows/` with supporting scripts in `scripts/`.
+
+## Architectural Decision Records
+Major ecosystem architecture decisions are recorded as ADRs to preserve context, alternatives, and consequences. The canonical index and template live in `docs/adr/README.md`; new proposals should start from `docs/adr/ADR-TEMPLATE.md` and be referenced during Claude design reviews.
 
 ## Governance Artifact Rule
 Governance artifacts (schemas, contracts, registry files, standards manifests) are platform dependencies and must be loaded from the local `spectrum-systems` checkout, not fetched over the network. See `docs/governance-artifact-loading-rule.md` for the full rule and rationale.
@@ -57,8 +60,9 @@ The ecosystem maintains a maturity model, a playbook, and a canonical 100-step r
 | Directory | Purpose |
 | --- | --- |
 | docs/ | Governance standards, ecosystem maps, lifecycle guides, triage rules, registries. |
+| docs/adr/ | ADR template and accepted ecosystem decision records integrated with Claude reviews. |
 | design-reviews/ | Claude-led review artifacts plus machine-readable action files. |
-| architecture-decisions/ | ADRs derived from design reviews (template included). |
+| architecture-decisions/ | Legacy ADRs derived from design reviews (template included). |
 | contracts/ | Artifact contracts, schema examples, and the standards manifest. |
 | schemas/ | Canonical schema registry for governed artifacts. |
 | prompts/ | Prompt catalog and governance notes. |
