@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'design-reviews/*.actions.json'
+      - 'design-reviews/*.md'
 
 permissions:
   contents: read
@@ -35,20 +36,47 @@ jobs:
           AFTER="${{ github.sha }}"
 
           if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
-            CHANGED=$(git ls-tree -r --name-only "$AFTER" | grep '^design-reviews/.*\.actions.json$' || true)
+            CHANGED_ACTIONS=$(git ls-tree -r --name-only "$AFTER" | grep '^design-reviews/.*\.actions.json$' || true)
+            CHANGED_MD=$(git ls-tree -r --name-only "$AFTER" | grep '^design-reviews/.*\.md$' | grep -v '^design-reviews/README.md$' | grep -v '^design-reviews/claude-review-template.md$' || true)
           else
-            CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" -- 'design-reviews/*.actions.json')
+            CHANGED_ACTIONS=$(git diff --name-only "$BEFORE" "$AFTER" -- 'design-reviews/*.actions.json')
+            CHANGED_MD=$(git diff --name-only "$BEFORE" "$AFTER" -- 'design-reviews/*.md')
+            CHANGED_MD=$(echo "$CHANGED_MD" | grep -v '^design-reviews/README.md$' | grep -v '^design-reviews/claude-review-template.md$' || true)
           fi
 
-          if [ -z "$CHANGED" ]; then
+          FILES=()
+          MISSING=()
+
+          for md in $CHANGED_MD; do
+            base="${md%.md}"
+            action="${base}.actions.json"
+            if git ls-tree -r --name-only "$AFTER" | grep -qx "$action"; then
+              FILES+=("$action")
+            else
+              echo "::error::Missing required actions artifact for $md. Expected $action"
+              MISSING+=("$md")
+            fi
+          done
+
+          for action in $CHANGED_ACTIONS; do
+            FILES+=("$action")
+          done
+
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            echo "Missing actions files detected: ${MISSING[*]}"
+            exit 1
+          fi
+
+          if [ ${#FILES[@]} -eq 0 ]; then
             echo "No changed action files detected."
             echo "files=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          UNIQUE_FILES=$(printf "%s\n" "${FILES[@]}" | sort -u | tr '\n' ' ')
           echo "Changed files:"
-          echo "$CHANGED"
-          printf "files=%s\n" "$(echo "$CHANGED" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          echo "$UNIQUE_FILES" | tr ' ' '\n'
+          printf "files=%s\n" "$UNIQUE_FILES" >> "$GITHUB_OUTPUT"
 
       - name: Validate action files
         if: steps.changed.outputs.files != ''

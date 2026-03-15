@@ -54,6 +54,38 @@ function formatAjvError(error) {
   return `${path} ${error.message}`;
 }
 
+async function ensureArtifactPairing(filePath, data) {
+  const reviewMetadata = data.review_metadata || {};
+  const sourceArtifact = reviewMetadata.source_artifact;
+  const actionsArtifact = reviewMetadata.actions_artifact;
+
+  if (!actionsArtifact) {
+    throw new Error(`Missing review_metadata.actions_artifact for ${filePath}; actions and markdown must be paired.`);
+  }
+
+  const normalizedProvidedActions = path.normalize(actionsArtifact);
+  const normalizedExpectedActions = path.normalize(path.relative(process.cwd(), path.resolve(filePath)));
+  if (normalizedProvidedActions !== normalizedExpectedActions) {
+    throw new Error(
+      `actions_artifact mismatch for ${filePath}: expected "${normalizedExpectedActions}" but found "${actionsArtifact}".`
+    );
+  }
+
+  if (!sourceArtifact) {
+    throw new Error(`Missing review_metadata.source_artifact for ${filePath}; markdown counterpart is required.`);
+  }
+
+  const normalizedSourceArtifact = path.normalize(sourceArtifact);
+  const sourceAbsolute = path.resolve(process.cwd(), normalizedSourceArtifact);
+  try {
+    await fs.access(sourceAbsolute);
+  } catch (error) {
+    throw new Error(
+      `Paired markdown review not found at "${normalizedSourceArtifact}" referenced from ${filePath}: ${error.message}`
+    );
+  }
+}
+
 async function validateFiles(schemaPath, files) {
   if (!schemaPath) {
     throw new Error('Schema path is required for validation.');
@@ -78,6 +110,7 @@ async function validateFiles(schemaPath, files) {
       const details = errors.map((e) => formatAjvError(e)).join('; ');
       throw new Error(`Schema validation failed for ${file}: ${details}`);
     }
+    await ensureArtifactPairing(file, data);
     results.push(data);
     console.log(`Validated ${file} against ${schemaPath}`);
   }
