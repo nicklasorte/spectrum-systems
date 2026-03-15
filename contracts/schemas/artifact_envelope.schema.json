@@ -18,7 +18,7 @@
   "properties": {
     "artifact_id": {
       "type": "string",
-      "pattern": "^[A-Z0-9._-]+$",
+      "pattern": "^[A-Za-z0-9._-]+$",
       "description": "Stable identifier for the specific artifact instance."
     },
     "artifact_class": {
@@ -35,32 +35,42 @@
       "description": "Contract-scoped type name (e.g., meeting_minutes_record)."
     },
     "contract_name": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Authoritative contract name that defines the payload schema."
     },
     "contract_version": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
       "description": "Semantic version of the payload contract."
     },
     "lifecycle_stage": {
       "type": "string",
       "enum": [
-        "draft",
-        "in_review",
-        "published",
-        "superseded",
-        "archived"
+        "raw",
+        "processed",
+        "final",
+        "fixture"
       ],
       "description": "Lifecycle state for routing, retention, and review."
     },
     "produced_by": {
-      "$ref": "#/$defs/agent"
+      "type": "string",
+      "description": "Workflow, system, or human that produced the artifact."
     },
     "created_at": {
       "type": "string",
       "format": "date-time",
       "description": "Timestamp when this artifact instance was created."
+    },
+    "source_path": {
+      "type": "string",
+      "description": "Filesystem or object-store path where the source artifact originated."
     },
     "derived_from": {
       "type": "array",
@@ -87,53 +97,6 @@
         "type": "string"
       },
       "description": "Free-form labels to aid discovery and filtering."
-    },
-    "payload": {
-      "type": "object",
-      "description": "Contract-specific payload carried inside the envelope.",
-      "additionalProperties": true
-    }
-  },
-  "$defs": {
-    "agent": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "agent_type"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Human-readable name of the producing agent."
-        },
-        "agent_type": {
-          "type": "string",
-          "enum": [
-            "human",
-            "ai_model",
-            "workflow",
-            "script"
-          ],
-          "description": "Category of the producing agent."
-        },
-        "role": {
-          "type": "string",
-          "description": "Role performed when producing the artifact (e.g., reviewer, orchestrator)."
-        },
-        "organization": {
-          "type": "string",
-          "description": "Organization responsible for the producing agent."
-        },
-        "contact": {
-          "type": "string",
-          "description": "Contact info for the producing agent."
-        },
-        "run_id": {
-          "type": "string",
-          "description": "Run identifier from the producing workflow, when applicable."
-        }
-      }
     }
   }
 }

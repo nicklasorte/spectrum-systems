@@ -277,6 +277,23 @@ Decisions
 - Manifest records should continue to carry versions, provenance, and checksums; the class identifier complements `artifact_type` and schema version to keep storage governance deterministic.
 
 ## Sidecar manifest alignment to the artifact envelope
-- Sidecar manifests stored with lake objects should mirror the envelope fields: `artifact_class`, `artifact_type`, `contract_name`, `contract_version`, `produced_by`, and `derived_from`.
+- Sidecar manifests stored with lake objects should mirror the envelope fields: `artifact_id`, `artifact_class`, `artifact_type`, `contract_name`, `contract_version`, `lifecycle_stage`, `produced_by`, `source_path`, and `derived_from` (when present).
 - Envelope-aligned sidecars let the lake index, deduplicate, and trace artifacts without reading the payload; payload validation still occurs via the contract schema.
 - When ingesting governed artifacts, persist the envelope metadata alongside the payload pointer so orchestration and advisory engines can reason over lineage and compatibility uniformly.
+
+### Example: DOCX transcript sidecar
+```json
+{
+  "artifact_id": "transcript-7ghz-tig-2026-03-12",
+  "artifact_class": "coordination",
+  "artifact_type": "transcript",
+  "contract_name": null,
+  "contract_version": null,
+  "lifecycle_stage": "raw",
+  "produced_by": "human",
+  "created_at": "2026-03-12T18:05:00Z",
+  "source_path": "fixtures/transcripts/example-meeting-transcript.docx",
+  "meeting_id": "7ghz-tig-2026-03-12",
+  "derived_from": []
+}
+```
