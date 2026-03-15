@@ -6,7 +6,9 @@ Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, ris
 > 1) This markdown file using the sections below.
 > 2) A JSON actions file at `design-reviews/YYYY-MM-DD-<slug>.actions.json` that validates against `design-reviews/claude-review.schema.json` with root fields: `schema_version`, `review_metadata`, `findings`, `summary`, `recommendations`, `actions`, `follow_up`. The JSON `findings[*].id` values must match the `[F-#]` markers in this markdown.
 
-JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medium|low), `category`, `title`, `description`, `recommended_action` (string or list of strings), `files_affected` (list or string), `create_issue` (boolean), `suggested_issue_title`, `suggested_labels`, and optional `target_repo`/`trigger`. Keep IDs consistent across markdown and JSON.
+JSON findings entries must include: `id` (`F-1`), `severity` (critical|high|medium|low), `category`, `title`, `description`, `recommended_action` (string or list of strings), `files_affected` (list or string), `create_issue` (boolean), `suggested_issue_title`, `suggested_labels`, and optional `target_repo`/`follow_up_trigger`/`due_date` (YYYY-MM-DD). Keep IDs consistent across markdown and JSON.
+
+Follow-up scheduling: whenever a finding or action needs a checkpoint, add `follow_up_trigger` plus a `due_date` to the finding entry, and use `follow_up_triggers` (array) plus `due_date` on the linked actions when multiple events apply. Triggers should be concrete (e.g., after merge of the related PR, next architecture review, before release, after compliance scan) so the review registry can mirror them.
 
 ## 1. Review Metadata
 - Review ID: YYYY-MM-DD-<slug>

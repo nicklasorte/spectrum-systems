@@ -7,6 +7,7 @@ Central ledger for all design/architecture reviews across the Spectrum Systems e
 - Keep filenames stable and prefer relative links into `docs/reviews/` and `docs/review-actions/`.
 - Update `Status` as items progress (`Open`, `In Progress`, `Blocked`, `Closed`).
 - Capture follow-up triggers (date or condition) so the next review is scheduled.
+- When registering a review, pull scheduling metadata directly from the actions JSON: use `findings[*].follow_up_trigger` and `findings[*].due_date` (YYYY-MM-DD) for per-finding checkpoints, and `actions[*].follow_up_triggers` plus `actions[*].due_date` for action-level checkpoints. Mirror the primary due date and trigger in the `Follow-up Due/Trigger` column so downstream automation can surface it consistently.
 
 ## Registry
 | Review Date | Repo Reviewed | Reviewer/Agent | Review Scope | Review Artifact | Action Tracker | Status | Follow-up Due/Trigger |

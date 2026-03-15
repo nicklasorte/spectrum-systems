@@ -14,6 +14,8 @@ Identifier discipline keeps the pair aligned:
   - Markdown: `[F-1] Deterministic IDs keep markdown and JSON aligned`
   - JSON: `"findings": [{"id": "F-1", "title": "Deterministic IDs keep markdown and JSON aligned", ...}]`
 
+Follow-up scheduling keeps reviews actionable: encode checkpoints next to the work. Populate `findings[*].follow_up_trigger` and `findings[*].due_date` (YYYY-MM-DD) when a finding needs a timed follow-up, and use `actions[*].follow_up_triggers` (array) plus `actions[*].due_date` for the corresponding action items. Mirror these values when you register the review so the registry can surface upcoming checkpoints.
+
 Workflow:
 - Copy the template markdown and JSON schema to draft a new review; use deterministic filenames to preserve ordering.
 - Extract findings, recommendations, and actions with stable IDs (`F-1`, `G1`, `R1`, `REC-1`, `A-1`) so automation can map them to GitHub issues and labels. `[F-#]` identifiers must exactly match between markdown and JSON.
