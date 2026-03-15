@@ -28,6 +28,8 @@
         "Adopt stable IDs in markdown that mirror the JSON schema expectations.",
         "Add guidance in the template and README to keep markdown and JSON artifacts aligned."
       ],
+      "follow_up_trigger": "Next architecture review cycle or after template guidance lands",
+      "due_date": "2026-03-22",
       "files_affected": [
         "design-reviews/claude-review-template.md",
         "design-reviews/README.md"
@@ -49,6 +51,8 @@
         "Require a claude-review.actions.json artifact alongside every markdown review.",
         "Validate the actions file against the schema before publishing."
       ],
+      "follow_up_trigger": "After publishing the schema and sample actions file to main",
+      "due_date": "2026-03-21",
       "files_affected": [
         "design-reviews/claude-review.schema.json",
         "design-reviews/example-claude-review.actions.json"
@@ -71,6 +75,8 @@
       "recommended_action": [
         "Include follow-up triggers and due dates in the actions JSON and mirror them in the review registry."
       ],
+      "follow_up_trigger": "After the first registry entry that consumes these fields or before the next registry audit",
+      "due_date": "2026-03-28",
       "files_affected": [
         "design-reviews/example-claude-review.actions.json",
         "docs/review-registry.md"

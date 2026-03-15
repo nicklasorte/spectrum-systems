@@ -15,6 +15,7 @@ Workflow:
 - Copy the template markdown and JSON schema to draft a new review; use deterministic filenames to preserve ordering.
 - Extract findings, recommendations, and actions with stable IDs (`F-1`, `G1`, `R1`, `REC-1`, `A-1`) so automation can map them to GitHub issues and labels. `[F-#]` identifiers must exactly match between markdown and JSON.
 - The root-level `findings` array in the JSON actions file drives issue generation. Each finding should include `recommended_action`, `files_affected`, `create_issue`, and `suggested_labels` so automation can file well-formed issues.
+- Add scheduling metadata when relevant: `follow_up_trigger` (event such as after merge, before release, next architecture review, after compliance scan) and `due_date` (`YYYY-MM-DD`). These fields keep reviews actionable and can be mirrored into the review registry.
 - Validate both artifacts together: run `python scripts/validate_review_alignment.py design-reviews/<review>.md design-reviews/<review>.actions.json` to confirm `[F-#]` markers match the JSON `findings` IDs, then validate the JSON with `jsonschema` against `claude-review.schema.json`.
 - After publishing, register the review in `docs/review-registry.md` and follow `docs/review-to-action-standard.md` for tracker updates and follow-up triggers.
 
