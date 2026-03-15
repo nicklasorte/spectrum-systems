@@ -29,6 +29,7 @@
   "contracts": [
     {
       "artifact_type": "working_paper_input",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -42,6 +43,7 @@
     },
     {
       "artifact_type": "reviewer_comment_set",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -56,6 +58,7 @@
     },
     {
       "artifact_type": "comment_resolution_matrix",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -70,6 +73,7 @@
     },
     {
       "artifact_type": "meeting_agenda_contract",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -85,6 +89,7 @@
     },
     {
       "artifact_type": "meeting_minutes",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -100,6 +105,7 @@
     },
     {
       "artifact_type": "meeting_minutes_record",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -113,6 +119,7 @@
     },
     {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -127,6 +134,7 @@
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
+      "artifact_class": "review",
       "schema_version": "1.0.1",
       "status": "stable",
       "intended_consumers": [
@@ -142,6 +150,7 @@
     },
     {
       "artifact_type": "standards_manifest",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -155,6 +164,7 @@
     },
     {
       "artifact_type": "provenance_record",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -169,6 +179,7 @@
     },
     {
       "artifact_type": "program_brief",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -182,6 +193,7 @@
     },
     {
       "artifact_type": "study_readiness_assessment",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -195,6 +207,7 @@
     },
     {
       "artifact_type": "next_best_action_memo",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -208,6 +221,7 @@
     },
     {
       "artifact_type": "decision_log",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -221,6 +235,7 @@
     },
     {
       "artifact_type": "risk_register",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -234,6 +249,7 @@
     },
     {
       "artifact_type": "assumption_register",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -247,6 +263,7 @@
     },
     {
       "artifact_type": "milestone_plan",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -260,6 +277,7 @@
     },
     {
       "artifact_type": "external_artifact_manifest",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "draft",
       "intended_consumers": [

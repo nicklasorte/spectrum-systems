@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": [
     "artifact_type",
+    "artifact_class",
     "artifact_id",
     "artifact_version",
     "schema_version",
@@ -30,6 +31,11 @@
       "type": "string",
       "const": "program_brief",
       "description": "Canonical artifact type identifier."
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination",
+      "description": "Canonical artifact class identifier."
     },
     "artifact_id": {
       "type": "string",

@@ -1,5 +1,6 @@
 {
   "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+  "artifact_class": "review",
   "artifact_id": "CRM-SPREADSHEET-CONTRACT-2026-03",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",

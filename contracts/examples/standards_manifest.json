@@ -29,6 +29,7 @@
   "contracts": [
     {
       "artifact_type": "working_paper_input",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -42,6 +43,7 @@
     },
     {
       "artifact_type": "reviewer_comment_set",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -56,6 +58,7 @@
     },
     {
       "artifact_type": "comment_resolution_matrix",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -70,6 +73,7 @@
     },
     {
       "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -84,6 +88,7 @@
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
+      "artifact_class": "review",
       "schema_version": "1.0.1",
       "status": "stable",
       "intended_consumers": [
@@ -99,6 +104,7 @@
     },
     {
       "artifact_type": "standards_manifest",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -112,6 +118,7 @@
     },
     {
       "artifact_type": "provenance_record",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -126,6 +133,7 @@
     },
     {
       "artifact_type": "external_artifact_manifest",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "draft",
       "intended_consumers": [
