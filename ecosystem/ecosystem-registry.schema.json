@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/ecosystem/ecosystem-registry.schema.json",
   "title": "Ecosystem Registry",
-  "description": "Authoritative registry of repositories in the Spectrum Systems ecosystem.",
+  "description": "Authoritative ecosystem inventory and dependency-tracking source for the czar GitHub org.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,6 +24,7 @@
     "repositories": {
       "type": "array",
       "minItems": 1,
+      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/repository"
       },
@@ -38,16 +39,20 @@
         "repo_name",
         "repo_url",
         "repo_type",
-        "status"
+        "status",
+        "layer",
+        "contracts"
       ],
       "properties": {
         "repo_name": {
           "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
           "description": "Repository slug or descriptive name."
         },
         "repo_url": {
           "type": "string",
           "format": "uri",
+          "pattern": "^https://github.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/?$",
           "description": "URL to the repository home."
         },
         "repo_type": {
@@ -71,8 +76,20 @@
           ],
           "description": "Lifecycle status of the repository."
         },
+        "layer": {
+          "type": "string",
+          "enum": [
+            "Layer 1",
+            "Layer 2",
+            "Layer 3",
+            "Layer 4",
+            "Layer 5"
+          ],
+          "description": "Layer within the governed ecosystem stack."
+        },
         "system_id": {
           "type": "string",
+          "pattern": "^SYS-[0-9]{3}$",
           "description": "System identifier when the repository implements a governed system."
         },
         "description": {
@@ -82,11 +99,63 @@
         "contracts": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
           },
+          "uniqueItems": true,
+          "minItems": 0,
           "description": "Contracts produced or consumed by this repository."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "repo_type"
+            ],
+            "properties": {
+              "repo_type": {
+                "const": "template"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "contracts": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "repo_type",
+              "status"
+            ],
+            "properties": {
+              "repo_type": {
+                "not": {
+                  "const": "governance"
+                }
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "experimental"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "contracts": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
