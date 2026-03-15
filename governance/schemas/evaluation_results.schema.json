@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/evaluation_results.schema.json",
+  "title": "Evaluation Results",
+  "description": "Results of automated evaluations performed during a governed engine run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "engine_name", "evaluations", "summary"],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Identifier of the run this evaluation applies to."
+    },
+    "engine_name": {
+      "type": "string",
+      "description": "Engine emitting the evaluation results."
+    },
+    "evaluations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evaluation_result" },
+      "description": "Per-check evaluation records."
+    },
+    "summary": {
+      "$ref": "#/$defs/summary",
+      "description": "Aggregated totals for the evaluation set."
+    }
+  },
+  "$defs": {
+    "evaluation_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evaluation_name", "result"],
+      "properties": {
+        "evaluation_name": {
+          "type": "string",
+          "description": "Human-readable name of the evaluation."
+        },
+        "result": {
+          "type": "string",
+          "enum": ["pass", "fail", "warn"],
+          "description": "Outcome of the evaluation."
+        },
+        "metric": {
+          "description": "Optional numeric or textual metric associated with the evaluation.",
+          "oneOf": [
+            { "type": "number" },
+            { "type": "string" }
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional context or rationale for the evaluation result."
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_checks", "passed", "failed", "warnings"],
+      "properties": {
+        "total_checks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of evaluations executed."
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of passing evaluations."
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of failing evaluations."
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of evaluations that produced warnings."
+        }
+      }
+    }
+  }
+}

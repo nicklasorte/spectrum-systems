@@ -1,0 +1,13 @@
+{
+  "artifact_id": "comment-resolution-matrix.v1.json",
+  "generated_by_engine": "spectrum-pipeline-engine",
+  "engine_version": "0.8.1",
+  "source_artifacts": [
+    "artifacts/RUN-2026-03-15-PIPE-001/inputs/meeting-041.json",
+    "artifacts/RUN-2026-03-15-PIPE-001/inputs/issues-latest.json"
+  ],
+  "timestamp": "2026-03-15T18:09:45Z",
+  "repo": "spectrum-pipeline-engine",
+  "commit_sha": "9f4c3b5e7a2d4b1f9c0e6d3a4b8f2c1d9a7e5f4c",
+  "contract_version": "1.3.0"
+}

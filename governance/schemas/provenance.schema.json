@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/provenance.schema.json",
+  "title": "Operational Provenance Record",
+  "description": "Lineage metadata linking generated artifacts to sources and governing contracts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "generated_by_engine",
+    "engine_version",
+    "source_artifacts",
+    "timestamp",
+    "repo",
+    "commit_sha",
+    "contract_version"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Identifier for the generated artifact."
+    },
+    "generated_by_engine": {
+      "type": "string",
+      "description": "Engine responsible for generating the artifact."
+    },
+    "engine_version": {
+      "$ref": "#/$defs/semver",
+      "description": "Version of the generating engine."
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Identifiers or paths to source artifacts used during generation."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time the artifact was generated (ISO 8601)."
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository URL or slug containing the generating engine."
+    },
+    "commit_sha": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{7,40}$",
+      "description": "Commit SHA that generated the artifact."
+    },
+    "contract_version": {
+      "$ref": "#/$defs/semver",
+      "description": "Version of the contract governing the artifact."
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$",
+      "description": "Semantic version string."
+    }
+  }
+}
