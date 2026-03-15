@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/spectrum-governance.schema.json",
+  "title": "Spectrum Governance Manifest",
+  "description": "Required governance manifest (.spectrum-governance.json) for downstream repositories.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system_id",
+    "governance_repo",
+    "governance_version",
+    "contracts"
+  ],
+  "properties": {
+    "system_id": {
+      "type": "string",
+      "pattern": "^SYS-[0-9]{3}$",
+      "description": "System identifier published by spectrum-systems."
+    },
+    "governance_repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "description": "Repository slug for the governance source (e.g., nicklasorte/spectrum-systems)."
+    },
+    "governance_version": {
+      "$ref": "#/$defs/semver",
+      "description": "Pinned governance release version (semver or calendar-semver)."
+    },
+    "contracts": {
+      "$ref": "#/$defs/contracts"
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$",
+      "description": "Semantic version string."
+    },
+    "contracts": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^[A-Za-z0-9._-]+$": {
+          "$ref": "#/$defs/semver"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Map of contract names to pinned versions."
+    }
+  }
+}

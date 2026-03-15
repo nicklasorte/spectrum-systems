@@ -2,12 +2,12 @@
 
 The cross-repo compliance scanner provides a deterministic way for spectrum-systems to evaluate whether downstream repositories adhere to the constitutional governance rules. It runs entirely on local checkouts—no GitHub API calls or network access—and produces a machine-readable report for evidence and follow-up actions.
 
-## What the scanner checks
-- Required top-level governance files: `README.md`, `CLAUDE.md`, `CODEX.md`, `SYSTEMS.md`
-- Required directories: `docs/`, `tests/`
-- README reference to `spectrum-systems` (warning if missing)
-- GitHub workflows presence (warning if `.github/workflows` is missing or empty)
-- Repository path reachability (fails if the configured path does not exist)
+## Phase 1 checks (governance identity + contract pins)
+- Registry presence: repository must be listed in `ecosystem/ecosystem-registry.json` with correct `repo_name`, `layer`, `status`, and `contracts`.
+- Governance manifest presence: `.spectrum-governance.json` must exist at repo root and validate against `governance/schemas/spectrum-governance.schema.json`.
+- Identity alignment: manifest `system_id` must match the registry entry for the same `repo_name`.
+- Contract pinning: manifest `contracts` keys must appear in `contracts/standards-manifest.json`, and the pinned versions must match published versions.
+- Baseline hygiene (unchanged): required files (`README.md`, `CLAUDE.md`, `CODEX.md`, `SYSTEMS.md`), directories (`docs/`, `tests/`), README reference to spectrum-systems (warning), GitHub workflows presence (warning), repository path reachability.
 
 ## Configuration
 Point the scanner at a JSON config listing the repos to inspect. Example: `governance/compliance-scans/scan-config.example.json`

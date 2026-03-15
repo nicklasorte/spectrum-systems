@@ -10,6 +10,7 @@ REQUIRED_SCHEMAS = [
     REPO_ROOT / "ecosystem" / "ecosystem-registry.schema.json",
     REPO_ROOT / "governance" / "compliance-scans" / "compliance-report.schema.json",
     REPO_ROOT / "governance" / "repo-compliance.schema.json",
+    REPO_ROOT / "governance" / "schemas" / "spectrum-governance.schema.json",
 ]
 
 OPTIONAL_SCHEMAS = [
