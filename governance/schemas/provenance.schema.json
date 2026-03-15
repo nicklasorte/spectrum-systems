@@ -6,6 +6,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "run_id",
     "artifact_id",
     "generated_by_engine",
     "engine_version",
@@ -16,6 +17,10 @@
     "contract_version"
   ],
   "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Identifier of the run that produced this provenance record."
+    },
     "artifact_id": {
       "type": "string",
       "description": "Identifier for the generated artifact."

@@ -65,6 +65,8 @@ The ecosystem draws on proven practices:
 - **To Level 15**: Runs, decisions, and provenance are durable, queryable, and reviewable; governance automation is active.
 - **To Level 20**: The system influences prioritization and planning via evidence-backed advisories that are adopted and measured.
 
+Levels above 5 require correlated run evidence: every governed execution must emit `run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json` sharing the same `run_id`. Systems cannot claim maturity without traceable, correlated execution artifacts.
+
 ## Scoreboard / measures
 Use these measures to assess maturity honestly; track them in the registry and reviews.
 - **Delivery**: change lead time; deployment frequency; failed deployment recovery time; change failure percentage; deployment rework rate.

@@ -15,6 +15,8 @@ The dependency graph is the machine-readable map of the Spectrum Systems ecosyst
 - Which systems participate in the coordination loop, document-production loop, or cross-loop orchestration/advisory roles?
 - What breaks if a contract or artifact changes, and which edges are impacted?
 
+Correlated run evidence (shared `run_id` across manifests, evaluations, validation reports, and provenance) lets the graph trace `system -> artifact -> contract -> pipeline run`, making blast-radius analysis and replay deterministic.
+
 ## Location and generation
 - Machine-readable graph: `ecosystem/dependency-graph.json` (validated by `ecosystem/dependency-graph.schema.json`).
 - Human-readable summary: `artifacts/dependency-graph-summary.md`.
