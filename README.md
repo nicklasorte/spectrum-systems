@@ -75,7 +75,7 @@ See `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md` for details. Cu
 The ecosystem registry tracks all repositories participating in the spectrum ecosystem and their governance state. See `docs/systems-registry.md`; the JSON registry reference is `ecosystem/ecosystem-registry.json`.
 
 ## Repository Compliance
-Downstream repositories can run compliance validation against the governance rules and contracts defined here to ensure alignment before adoption or release. See `VALIDATION.md` and `docs/governance-conformance-checklist.md`.
+Downstream repositories can run compliance validation against the governance rules and contracts defined here to ensure alignment before adoption or release. See `VALIDATION.md`, `docs/governance-conformance-checklist.md`, and the cross-repo scanner in `docs/cross-repo-compliance.md`.
 
 ## Documentation
 - Orientation: `REPO_MAP.md`, `SYSTEMS.md`, `docs/system-map.md`, `docs/system-status-registry.md`.

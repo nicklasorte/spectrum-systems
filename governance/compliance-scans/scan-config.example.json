@@ -1,0 +1,12 @@
+{
+  "repos": [
+    {
+      "name": "comment-resolution-engine",
+      "path": "../comment-resolution-engine"
+    },
+    {
+      "name": "working-paper-review-engine",
+      "path": "../working-paper-review-engine"
+    }
+  ]
+}
