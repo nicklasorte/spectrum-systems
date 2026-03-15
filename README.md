@@ -37,7 +37,12 @@ The ecosystem maintains a canonical System Registry that records every governed 
 - **Compliance automation**: conformance guidance in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; cross-repo scanning in `docs/cross-repo-compliance.md` and `governance/compliance-scans/`; CI workflows in `.github/workflows/` with supporting scripts in `scripts/`.
 
 ## System Maturity Model
-The spectrum ecosystem advances along a Level 0-25 maturity ladder that charts the progression from concept to durable institutional infrastructure. The full ladder and current ecosystem mapping live in `docs/system-maturity-model.md`.
+The spectrum ecosystem advances along a Level 0-20 maturity ladder that charts the progression from concept to durable institutional infrastructure. The ladder and current ecosystem mapping live in `docs/system-maturity-model.md`.
+
+## Maturity Framework and Playbook
+- The ecosystem uses a Level 0-20 maturity model with evidence-based advancement.
+- Claude reviews evaluate maturity explicitly using the rubric and refuse promotion without proof.
+- See the canonical playbook in `docs/level-0-to-20-playbook.md` and the review rubric in `docs/review-maturity-rubric.md`.
 
 ## Key Directories
 | Directory | Purpose |

@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/ecosystem/maturity-tracker.schema.json",
+  "title": "Ecosystem Maturity Tracker",
+  "description": "Machine-readable tracker for maturity placement and promotion targets across spectrum systems (Levels 0-20).",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "$ref": "#/$defs/maturity_record"
+  },
+  "$defs": {
+    "maturity_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system_id",
+        "current_level",
+        "target_level_next",
+        "blocking_gaps",
+        "evidence"
+      ],
+      "properties": {
+        "system_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
+          "description": "Canonical system identifier."
+        },
+        "current_level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20,
+          "description": "Current maturity level (0-20)."
+        },
+        "target_level_next": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20,
+          "description": "Next target level; must be >= current_level and <= 20."
+        },
+        "target_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Optional target date for reaching the next level."
+        },
+        "blocking_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Open gaps blocking promotion."
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Evidence supporting the current level."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Optional accountable owner."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional context or follow-ups."
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"current_level": {"minimum": 0, "maximum": 0}}},
+          "then": {"properties": {"target_level_next": {"minimum": 0}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 1, "maximum": 1}}},
+          "then": {"properties": {"target_level_next": {"minimum": 1}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 2, "maximum": 2}}},
+          "then": {"properties": {"target_level_next": {"minimum": 2}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 3, "maximum": 3}}},
+          "then": {"properties": {"target_level_next": {"minimum": 3}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 4, "maximum": 4}}},
+          "then": {"properties": {"target_level_next": {"minimum": 4}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 5, "maximum": 5}}},
+          "then": {"properties": {"target_level_next": {"minimum": 5}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 6, "maximum": 6}}},
+          "then": {"properties": {"target_level_next": {"minimum": 6}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 7, "maximum": 7}}},
+          "then": {"properties": {"target_level_next": {"minimum": 7}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 8, "maximum": 8}}},
+          "then": {"properties": {"target_level_next": {"minimum": 8}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 9, "maximum": 9}}},
+          "then": {"properties": {"target_level_next": {"minimum": 9}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 10, "maximum": 10}}},
+          "then": {"properties": {"target_level_next": {"minimum": 10}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 11, "maximum": 11}}},
+          "then": {"properties": {"target_level_next": {"minimum": 11}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 12, "maximum": 12}}},
+          "then": {"properties": {"target_level_next": {"minimum": 12}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 13, "maximum": 13}}},
+          "then": {"properties": {"target_level_next": {"minimum": 13}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 14, "maximum": 14}}},
+          "then": {"properties": {"target_level_next": {"minimum": 14}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 15, "maximum": 15}}},
+          "then": {"properties": {"target_level_next": {"minimum": 15}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 16, "maximum": 16}}},
+          "then": {"properties": {"target_level_next": {"minimum": 16}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 17, "maximum": 17}}},
+          "then": {"properties": {"target_level_next": {"minimum": 17}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 18, "maximum": 18}}},
+          "then": {"properties": {"target_level_next": {"minimum": 18}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 19, "maximum": 19}}},
+          "then": {"properties": {"target_level_next": {"minimum": 19}}}
+        },
+        {
+          "if": {"properties": {"current_level": {"minimum": 20, "maximum": 20}}},
+          "then": {"properties": {"target_level_next": {"minimum": 20}}}
+        }
+      ]
+    }
+  }
+}

@@ -16,14 +16,15 @@ Reviews **must** follow this order and include each section:
 1. **Review Metadata** — review date, repository/name, commit or document version, reviewer/agent id, inputs consulted.
 2. **Scope** — what was in-bounds, what was out-of-bounds, and why.
 3. **Executive Summary** — 3–7 bullet synthesis of the most important findings and direction.
-4. **Strengths** — validated positives that should be preserved.
-5. **Structural Gaps** — missing components, incomplete flows, absent contracts/schemas.
-6. **Risk Areas** — architectural, data, governance, or operational risks; note severity and likelihood where known.
-7. **Recommendations** — concrete, testable fixes mapped to gaps/risks; include expected outcome.
-8. **Priority Classification** — tag each recommendation as `Critical`, `High`, `Medium`, or `Low` with rationale.
-9. **Extracted Action Items** — numbered list ready for tracking; each item includes owner placeholder, expected artifact, and acceptance criteria.
-10. **Blocking Items** — blockers that prevent progress until resolved.
-11. **Deferred Items** — intentionally postponed work with review trigger/condition.
+4. **Maturity Assessment** — current level (0–20), evidence summary, unmet criteria, and next-level blockers; reference the maturity playbook and tracker.
+5. **Strengths** — validated positives that should be preserved.
+6. **Structural Gaps** — missing components, incomplete flows, absent contracts/schemas.
+7. **Risk Areas** — architectural, data, governance, or operational risks; note severity and likelihood where known.
+8. **Recommendations** — concrete, testable fixes mapped to gaps/risks; include expected outcome.
+9. **Priority Classification** — tag each recommendation as `Critical`, `High`, `Medium`, or `Low` with rationale.
+10. **Extracted Action Items** — numbered list ready for tracking; each item includes owner placeholder, expected artifact, and acceptance criteria.
+11. **Blocking Items** — blockers that prevent progress until resolved.
+12. **Deferred Items** — intentionally postponed work with review trigger/condition.
 - System reviews must explicitly confirm defined inputs, outputs, and evaluation tests.
 
 ## Output format and determinism

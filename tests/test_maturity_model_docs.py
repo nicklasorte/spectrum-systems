@@ -17,5 +17,5 @@ def test_readme_references_maturity_model() -> None:
 
 def test_maturity_model_contains_level_markers() -> None:
     content = MATURITY_MODEL_PATH.read_text()
-    for marker in ["Level 0", "Level 25"]:
+    for marker in ["Level 0", "Level 20"]:
         assert marker in content, f"'{marker}' missing from system maturity model document"
