@@ -8,6 +8,7 @@ Usage:
 """
 
 import json
+from collections import Counter
 import re
 import sys
 from pathlib import Path
@@ -19,13 +20,16 @@ FINDING_PATTERN = re.compile(r"\[F-(\d+)\]")
 
 def extract_markdown_ids(markdown_path: Path) -> Set[str]:
     text = markdown_path.read_text()
-    return {f"F-{match}" for match in FINDING_PATTERN.findall(text)}
+    ids = [f"F-{match}" for match in FINDING_PATTERN.findall(text)]
+    return set(ids)
 
 
-def extract_json_ids(json_path: Path) -> Set[str]:
+def extract_json_ids(json_path: Path) -> tuple[Set[str], list[str]]:
     data = json.loads(json_path.read_text())
     findings = data.get("findings", [])
-    return {item["id"] for item in findings if isinstance(item, dict) and "id" in item}
+    ids = [item["id"] for item in findings if isinstance(item, dict) and "id" in item]
+    duplicates = sorted([id_ for id_, count in Counter(ids).items() if count > 1])
+    return set(ids), duplicates
 
 
 def main() -> int:
@@ -50,9 +54,13 @@ def main() -> int:
         return 1
 
     try:
-        json_ids = extract_json_ids(json_path)
+        json_ids, json_duplicates = extract_json_ids(json_path)
     except Exception as exc:  # pragma: no cover
         print(f"Error reading JSON: {exc}")
+        return 1
+
+    if json_duplicates:
+        print("Duplicate finding IDs in JSON:", ", ".join(json_duplicates))
         return 1
 
     missing_in_json = sorted(markdown_ids - json_ids)

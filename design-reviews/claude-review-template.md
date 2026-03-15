@@ -1,6 +1,6 @@
 # YYYY-MM-DD - <scope> Claude Design Review
 
-Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]`. Finding IDs are the anchor for traceability—every `[F-#]` called out in this markdown **must** appear as the same `id` inside the JSON `findings` array. Number once per review in the order introduced and do not renumber after publication.
+Use stable identifiers across both artifacts: findings `[F-1]`, gaps `[G1]`, risks `[R1]`, recommendations `[REC-1]`, and actions `[A-1]`. Finding IDs are the anchor for traceability—every `[F-#]` called out in this markdown **must** appear as the same `id` inside the JSON `findings` array. Number once per review in the order introduced and do not renumber after publication. Example: `[F-1] Deterministic IDs keep markdown and JSON aligned` in this file must map to `"id": "F-1"` inside `findings[0]` of `YYYY-MM-DD-<slug>.actions.json`. Tag every required change, recommendation, and action below with its stable marker so automation can match sections directly to JSON entries.
 
 > Claude: Produce two artifacts for every review.
 > 1) This markdown file using the sections below.
