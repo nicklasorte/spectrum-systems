@@ -1,4 +1,6 @@
 import json
+import re
+from collections import Counter
 from pathlib import Path
 
 import jsonschema
@@ -61,4 +63,18 @@ def test_example_actions_validates_against_schema() -> None:
     errors = sorted(validator.iter_errors(payload), key=lambda e: e.json_path)
     if errors:
         formatted = "\n".join(f"{err.json_path or '$'}: {err.message}" for err in errors)
-        pytest.fail(f"Schema validation errors:\\n{formatted}")
+        pytest.fail(f"Schema validation errors:\n{formatted}")
+
+
+def test_example_markdown_and_json_ids_align() -> None:
+    markdown_path = REPO_ROOT / "design-reviews" / "example-claude-review.md"
+    assert markdown_path.is_file(), "example markdown review is missing"
+    md_text = markdown_path.read_text(encoding="utf-8")
+    md_ids = [f"F-{match}" for match in re.findall(r"\[F-(\d+)\]", md_text)]
+
+    json_ids = [item["id"] for item in _load_example().get("findings", []) if "id" in item]
+
+    json_duplicates = sorted([id_ for id_, count in Counter(json_ids).items() if count > 1])
+
+    assert not json_duplicates, f"Duplicate finding IDs in JSON: {', '.join(json_duplicates)}"
+    assert set(md_ids) == set(json_ids), "Finding IDs must match between markdown and JSON artifacts"

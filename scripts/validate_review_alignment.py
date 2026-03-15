@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
 Validate that finding identifiers stay aligned between a markdown Claude review
-and its paired JSON actions file.
+and its paired JSON actions file (including duplicate detection in JSON findings).
 
 Usage:
   python scripts/validate_review_alignment.py path/to/review.md path/to/review.actions.json
 """
 
 import json
-from collections import Counter
 import re
 import sys
 from pathlib import Path
+from collections import Counter
 from typing import Set
 
 
