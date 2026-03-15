@@ -13,6 +13,10 @@ __pycache__/
 outputs/
 logs/
 
+# Policy engine outputs
+artifacts/policy-engine-report.json
+artifacts/policy-engine-summary.md
+
 # Operational artifacts are prohibited in GitHub (see docs/data-boundary-governance.md)
 *.pdf
 *.doc

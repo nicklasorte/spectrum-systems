@@ -110,3 +110,12 @@ The automated governance check runs in `.github/workflows/cross-repo-compliance.
 - Scanner invocation: `node governance/compliance-scans/run-cross-repo-compliance.js --config governance/scan-config.example.json --output compliance-report.json`
 - Reports: uploaded as the `governance-compliance-report` workflow artifact containing `compliance-report.json`.
 - Interpreting failures: the job fails when any repository is non-compliant (missing requirements or recorded failures). Warnings do not fail the job but are included in the report and summary logs.
+
+## Policy Engine Layer
+
+The compliance scanner gathers facts; the policy engine evaluates rules. The policy engine consumes the ecosystem registry, standards manifest, governance manifests, and (when available) the dependency graph to enforce the policy registry in `governance/policies/policy-registry.json`.
+
+- Compliance scanner: performs file presence, schema validation, and baseline hygiene checks.
+- Governance manifests: declare identity and contract pins per repository.
+- Dependency graph: maps systems and contract dependencies to validate cross-system wiring.
+- Policy engine: executes policy-as-code rules over the gathered artifacts, emitting JSON and markdown reports. Error-severity policy failures halt CI; warning-severity findings are surfaced without blocking.

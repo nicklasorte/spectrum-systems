@@ -84,6 +84,9 @@ if(failed.length){console.error('Compliance failures detected in:', failed.map(r
       - name: Generate ecosystem dependency graph
         run: python scripts/generate_dependency_graph.py
 
+      - name: Run policy engine
+        run: python governance/policies/run-policy-engine.py
+
       - name: Upload dependency graph artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -91,3 +94,28 @@ if(failed.length){console.error('Compliance failures detected in:', failed.map(r
           path: |
             artifacts/ecosystem-dependency-graph.json
             artifacts/ecosystem-dependency-graph.mmd
+
+      - name: Upload policy engine artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: policy-engine-report
+          path: |
+            artifacts/policy-engine-report.json
+            artifacts/policy-engine-summary.md
+
+      - name: Fail on error-severity policy failures
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          report_path = Path("artifacts") / "policy-engine-report.json"
+          report = json.loads(report_path.read_text(encoding="utf-8"))
+          failures = [
+              r for r in report.get("results", [])
+              if r.get("severity") == "error" and r.get("status") == "fail"
+          ]
+          if failures:
+              subjects = ", ".join({f"{item['policy_id']}:{item['subject']}" for item in failures})
+              raise SystemExit(f"Error-severity policy failures detected: {subjects}")
+          PYCODE
