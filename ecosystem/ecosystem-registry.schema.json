@@ -59,10 +59,11 @@
           "type": "string",
           "enum": [
             "governance",
+            "factory",
             "operational_engine",
             "tooling",
-            "template",
-            "advisory"
+            "advisory",
+            "pipeline"
           ],
           "description": "Role of the repository within the ecosystem."
         },
@@ -89,8 +90,12 @@
         },
         "system_id": {
           "type": "string",
-          "pattern": "^SYS-[0-9]{3}$",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
           "description": "System identifier when the repository implements a governed system."
+        },
+        "manifest_required": {
+          "type": "boolean",
+          "description": "Indicates whether this repository must publish a governance manifest."
         },
         "description": {
           "type": "string",
@@ -115,7 +120,7 @@
             ],
             "properties": {
               "repo_type": {
-                "const": "template"
+                "const": "factory"
               }
             }
           },

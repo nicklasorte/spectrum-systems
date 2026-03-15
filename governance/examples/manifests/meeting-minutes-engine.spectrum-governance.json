@@ -1,5 +1,5 @@
 {
-  "system_id": "SYS-006",
+  "system_id": "meeting-minutes-engine",
   "repo_name": "meeting-minutes-engine",
   "repo_type": "operational_engine",
   "governance_repo": "spectrum-systems",
@@ -7,10 +7,5 @@
   "contracts": {
     "meeting_agenda_contract": "1.0.0",
     "meeting_minutes": "1.0.0"
-  },
-  "upstream_systems": [],
-  "downstream_systems": [
-    "SYS-009",
-    "SYS-005"
-  ]
+  }
 }

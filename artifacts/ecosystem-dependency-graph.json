@@ -2,115 +2,137 @@
   "contracts": {
     "assumption_register": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "comment_resolution_matrix": {
       "consumers": [
-        "SYS-001",
-        "SYS-007"
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
       ],
       "version": "1.0.0"
     },
     "comment_resolution_matrix_spreadsheet_contract": {
       "consumers": [
-        "SYS-001",
-        "SYS-009"
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "decision_log": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "external_artifact_manifest": {
       "consumers": [
-        "SYS-001",
-        "SYS-009"
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "study-artifact-generator"
       ],
       "version": "1.0.0"
     },
     "meeting_agenda_contract": {
       "consumers": [
-        "SYS-001",
-        "SYS-006",
-        "SYS-009"
+        "comment-resolution-engine",
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "meeting_minutes": {
       "consumers": [
-        "SYS-005",
-        "SYS-006",
-        "SYS-009"
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "milestone_plan": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "next_best_action_memo": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "pdf_anchored_docx_comment_injection_contract": {
       "consumers": [
-        "SYS-001",
-        "SYS-007",
-        "SYS-008"
+        "comment-resolution-engine",
+        "docx-comment-injection-engine",
+        "system-factory",
+        "working-paper-review-engine"
       ],
       "version": "1.0.1"
     },
     "program_brief": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "provenance_record": {
       "consumers": [
-        "SYS-001",
-        "SYS-007"
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
       ],
       "version": "1.0.0"
     },
     "reviewer_comment_set": {
       "consumers": [
-        "SYS-001",
-        "SYS-007"
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
       ],
       "version": "1.0.0"
     },
     "risk_register": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ],
+      "version": "1.0.0"
+    },
+    "standards_manifest": {
+      "consumers": [
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "study_readiness_assessment": {
       "consumers": [
-        "SYS-005",
-        "SYS-009"
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
       ],
       "version": "1.0.0"
     },
     "working_paper_input": {
       "consumers": [
-        "SYS-007"
+        "system-factory",
+        "working-paper-review-engine"
       ],
       "version": "1.0.0"
     }
@@ -118,177 +140,262 @@
   "dependencies": [
     {
       "contract": "comment_resolution_matrix",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.0"
     },
     {
       "contract": "comment_resolution_matrix_spreadsheet_contract",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.0"
     },
     {
       "contract": "external_artifact_manifest",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.0"
     },
     {
       "contract": "meeting_agenda_contract",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.0"
     },
     {
       "contract": "pdf_anchored_docx_comment_injection_contract",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.1"
     },
     {
       "contract": "provenance_record",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
       "version": "1.0.0"
     },
     {
       "contract": "reviewer_comment_set",
-      "system_id": "SYS-001",
+      "system_id": "comment-resolution-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "pdf_anchored_docx_comment_injection_contract",
+      "system_id": "docx-comment-injection-engine",
+      "version": "1.0.1"
+    },
+    {
+      "contract": "meeting_agenda_contract",
+      "system_id": "meeting-minutes-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "meeting_minutes",
+      "system_id": "meeting-minutes-engine",
       "version": "1.0.0"
     },
     {
       "contract": "assumption_register",
-      "system_id": "SYS-005",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "comment_resolution_matrix_spreadsheet_contract",
+      "system_id": "spectrum-pipeline-engine",
       "version": "1.0.0"
     },
     {
       "contract": "decision_log",
-      "system_id": "SYS-005",
+      "system_id": "spectrum-pipeline-engine",
       "version": "1.0.0"
     },
     {
-      "contract": "meeting_minutes",
-      "system_id": "SYS-005",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "milestone_plan",
-      "system_id": "SYS-005",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "next_best_action_memo",
-      "system_id": "SYS-005",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "program_brief",
-      "system_id": "SYS-005",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "risk_register",
-      "system_id": "SYS-005",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "study_readiness_assessment",
-      "system_id": "SYS-005",
+      "contract": "external_artifact_manifest",
+      "system_id": "spectrum-pipeline-engine",
       "version": "1.0.0"
     },
     {
       "contract": "meeting_agenda_contract",
-      "system_id": "SYS-006",
+      "system_id": "spectrum-pipeline-engine",
       "version": "1.0.0"
     },
     {
       "contract": "meeting_minutes",
-      "system_id": "SYS-006",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "milestone_plan",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "next_best_action_memo",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "program_brief",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "risk_register",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "study_readiness_assessment",
+      "system_id": "spectrum-pipeline-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "assumption_register",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "decision_log",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "meeting_minutes",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "milestone_plan",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "next_best_action_memo",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "program_brief",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "risk_register",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "study_readiness_assessment",
+      "system_id": "spectrum-program-advisor",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "external_artifact_manifest",
+      "system_id": "study-artifact-generator",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "assumption_register",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "comment_resolution_matrix",
-      "system_id": "SYS-007",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "pdf_anchored_docx_comment_injection_contract",
-      "system_id": "SYS-007",
-      "version": "1.0.1"
-    },
-    {
-      "contract": "provenance_record",
-      "system_id": "SYS-007",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "reviewer_comment_set",
-      "system_id": "SYS-007",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "working_paper_input",
-      "system_id": "SYS-007",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "pdf_anchored_docx_comment_injection_contract",
-      "system_id": "SYS-008",
-      "version": "1.0.1"
-    },
-    {
-      "contract": "assumption_register",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "comment_resolution_matrix_spreadsheet_contract",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "decision_log",
-      "system_id": "SYS-009",
-      "version": "1.0.0"
-    },
-    {
-      "contract": "external_artifact_manifest",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "meeting_agenda_contract",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "meeting_minutes",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "milestone_plan",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "next_best_action_memo",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
+      "contract": "pdf_anchored_docx_comment_injection_contract",
+      "system_id": "system-factory",
+      "version": "1.0.1"
+    },
+    {
       "contract": "program_brief",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "provenance_record",
+      "system_id": "system-factory",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "reviewer_comment_set",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "risk_register",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "standards_manifest",
+      "system_id": "system-factory",
       "version": "1.0.0"
     },
     {
       "contract": "study_readiness_assessment",
-      "system_id": "SYS-009",
+      "system_id": "system-factory",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "working_paper_input",
+      "system_id": "system-factory",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "comment_resolution_matrix",
+      "system_id": "working-paper-review-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "pdf_anchored_docx_comment_injection_contract",
+      "system_id": "working-paper-review-engine",
+      "version": "1.0.1"
+    },
+    {
+      "contract": "provenance_record",
+      "system_id": "working-paper-review-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "reviewer_comment_set",
+      "system_id": "working-paper-review-engine",
+      "version": "1.0.0"
+    },
+    {
+      "contract": "working_paper_input",
+      "system_id": "working-paper-review-engine",
       "version": "1.0.0"
     }
   ],
   "systems": {
-    "SYS-001": {
+    "comment-resolution-engine": {
       "contracts": [
         "comment_resolution_matrix",
         "comment_resolution_matrix_spreadsheet_contract",
@@ -298,17 +405,50 @@
         "provenance_record",
         "reviewer_comment_set"
       ],
-      "downstream_systems": [
-        "SYS-009"
-      ],
+      "downstream_systems": [],
       "repo_name": "comment-resolution-engine",
       "repo_type": "operational_engine",
-      "upstream_systems": [
-        "SYS-007",
-        "SYS-008"
-      ]
+      "upstream_systems": []
     },
-    "SYS-005": {
+    "docx-comment-injection-engine": {
+      "contracts": [
+        "pdf_anchored_docx_comment_injection_contract"
+      ],
+      "downstream_systems": [],
+      "repo_name": "docx-comment-injection-engine",
+      "repo_type": "operational_engine",
+      "upstream_systems": []
+    },
+    "meeting-minutes-engine": {
+      "contracts": [
+        "meeting_agenda_contract",
+        "meeting_minutes"
+      ],
+      "downstream_systems": [],
+      "repo_name": "meeting-minutes-engine",
+      "repo_type": "operational_engine",
+      "upstream_systems": []
+    },
+    "spectrum-pipeline-engine": {
+      "contracts": [
+        "assumption_register",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "decision_log",
+        "external_artifact_manifest",
+        "meeting_agenda_contract",
+        "meeting_minutes",
+        "milestone_plan",
+        "next_best_action_memo",
+        "program_brief",
+        "risk_register",
+        "study_readiness_assessment"
+      ],
+      "downstream_systems": [],
+      "repo_name": "spectrum-pipeline-engine",
+      "repo_type": "pipeline",
+      "upstream_systems": []
+    },
+    "spectrum-program-advisor": {
       "contracts": [
         "assumption_register",
         "decision_log",
@@ -322,24 +462,49 @@
       "downstream_systems": [],
       "repo_name": "spectrum-program-advisor",
       "repo_type": "advisory",
-      "upstream_systems": [
-        "SYS-009"
-      ]
+      "upstream_systems": []
     },
-    "SYS-006": {
-      "contracts": [
-        "meeting_agenda_contract",
-        "meeting_minutes"
-      ],
-      "downstream_systems": [
-        "SYS-009",
-        "SYS-005"
-      ],
-      "repo_name": "meeting-minutes-engine",
+    "spectrum-study-compiler": {
+      "contracts": [],
+      "downstream_systems": [],
+      "repo_name": "spectrum-study-compiler",
       "repo_type": "operational_engine",
       "upstream_systems": []
     },
-    "SYS-007": {
+    "study-artifact-generator": {
+      "contracts": [
+        "external_artifact_manifest"
+      ],
+      "downstream_systems": [],
+      "repo_name": "study-artifact-generator",
+      "repo_type": "operational_engine",
+      "upstream_systems": []
+    },
+    "system-factory": {
+      "contracts": [
+        "assumption_register",
+        "comment_resolution_matrix",
+        "comment_resolution_matrix_spreadsheet_contract",
+        "decision_log",
+        "meeting_agenda_contract",
+        "meeting_minutes",
+        "milestone_plan",
+        "next_best_action_memo",
+        "pdf_anchored_docx_comment_injection_contract",
+        "program_brief",
+        "provenance_record",
+        "reviewer_comment_set",
+        "risk_register",
+        "standards_manifest",
+        "study_readiness_assessment",
+        "working_paper_input"
+      ],
+      "downstream_systems": [],
+      "repo_name": "system-factory",
+      "repo_type": "factory",
+      "upstream_systems": []
+    },
+    "working-paper-review-engine": {
       "contracts": [
         "comment_resolution_matrix",
         "pdf_anchored_docx_comment_injection_contract",
@@ -347,54 +512,10 @@
         "reviewer_comment_set",
         "working_paper_input"
       ],
-      "downstream_systems": [
-        "SYS-001",
-        "SYS-009"
-      ],
+      "downstream_systems": [],
       "repo_name": "working-paper-review-engine",
       "repo_type": "operational_engine",
-      "upstream_systems": [
-        "SYS-008"
-      ]
-    },
-    "SYS-008": {
-      "contracts": [
-        "pdf_anchored_docx_comment_injection_contract"
-      ],
-      "downstream_systems": [
-        "SYS-001",
-        "SYS-007",
-        "SYS-009"
-      ],
-      "repo_name": "docx-comment-injection-engine",
-      "repo_type": "operational_engine",
       "upstream_systems": []
-    },
-    "SYS-009": {
-      "contracts": [
-        "assumption_register",
-        "comment_resolution_matrix_spreadsheet_contract",
-        "decision_log",
-        "external_artifact_manifest",
-        "meeting_agenda_contract",
-        "meeting_minutes",
-        "milestone_plan",
-        "next_best_action_memo",
-        "program_brief",
-        "risk_register",
-        "study_readiness_assessment"
-      ],
-      "downstream_systems": [
-        "SYS-005"
-      ],
-      "repo_name": "spectrum-pipeline-engine",
-      "repo_type": "operational_engine",
-      "upstream_systems": [
-        "SYS-001",
-        "SYS-006",
-        "SYS-007",
-        "SYS-008"
-      ]
     }
   }
 }

@@ -1,20 +1,25 @@
 {
-  "system_id": "spectrum-pipeline-engine",
-  "repo_name": "spectrum-pipeline-engine",
-  "repo_type": "pipeline",
+  "system_id": "system-factory",
+  "repo_name": "system-factory",
+  "repo_type": "factory",
   "governance_repo": "spectrum-systems",
   "governance_version": "1.0.0",
   "contracts": {
     "assumption_register": "1.0.0",
+    "comment_resolution_matrix": "1.0.0",
     "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
     "decision_log": "1.0.0",
-    "external_artifact_manifest": "1.0.0",
     "meeting_agenda_contract": "1.0.0",
     "meeting_minutes": "1.0.0",
     "milestone_plan": "1.0.0",
     "next_best_action_memo": "1.0.0",
+    "pdf_anchored_docx_comment_injection_contract": "1.0.1",
     "program_brief": "1.0.0",
+    "provenance_record": "1.0.0",
+    "reviewer_comment_set": "1.0.0",
     "risk_register": "1.0.0",
-    "study_readiness_assessment": "1.0.0"
+    "standards_manifest": "1.0.0",
+    "study_readiness_assessment": "1.0.0",
+    "working_paper_input": "1.0.0"
   }
 }

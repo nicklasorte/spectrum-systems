@@ -1,10 +1,13 @@
 graph TD
-  SYS-001["comment-resolution-engine (operational_engine)"]
-  SYS-005["spectrum-program-advisor (advisory)"]
-  SYS-006["meeting-minutes-engine (operational_engine)"]
-  SYS-007["working-paper-review-engine (operational_engine)"]
-  SYS-008["docx-comment-injection-engine (operational_engine)"]
-  SYS-009["spectrum-pipeline-engine (operational_engine)"]
+  comment-resolution-engine["comment-resolution-engine (operational_engine)"]
+  docx-comment-injection-engine["docx-comment-injection-engine (operational_engine)"]
+  meeting-minutes-engine["meeting-minutes-engine (operational_engine)"]
+  spectrum-pipeline-engine["spectrum-pipeline-engine (pipeline)"]
+  spectrum-program-advisor["spectrum-program-advisor (advisory)"]
+  spectrum-study-compiler["spectrum-study-compiler (operational_engine)"]
+  study-artifact-generator["study-artifact-generator (operational_engine)"]
+  system-factory["system-factory (factory)"]
+  working-paper-review-engine["working-paper-review-engine (operational_engine)"]
   contract_assumption_register["assumption_register v1.0.0"]
   contract_comment_resolution_matrix["comment_resolution_matrix v1.0.0"]
   contract_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract v1.0.0"]
@@ -19,48 +22,57 @@ graph TD
   contract_provenance_record["provenance_record v1.0.0"]
   contract_reviewer_comment_set["reviewer_comment_set v1.0.0"]
   contract_risk_register["risk_register v1.0.0"]
+  contract_standards_manifest["standards_manifest v1.0.0"]
   contract_study_readiness_assessment["study_readiness_assessment v1.0.0"]
   contract_working_paper_input["working_paper_input v1.0.0"]
-  SYS-001 --> contract_comment_resolution_matrix
-  SYS-001 --> contract_comment_resolution_matrix_spreadsheet_contract
-  SYS-001 --> contract_external_artifact_manifest
-  SYS-001 --> contract_meeting_agenda_contract
-  SYS-001 --> contract_pdf_anchored_docx_comment_injection_contract
-  SYS-001 --> contract_provenance_record
-  SYS-001 --> contract_reviewer_comment_set
-  SYS-005 --> contract_assumption_register
-  SYS-005 --> contract_decision_log
-  SYS-005 --> contract_meeting_minutes
-  SYS-005 --> contract_milestone_plan
-  SYS-005 --> contract_next_best_action_memo
-  SYS-005 --> contract_program_brief
-  SYS-005 --> contract_risk_register
-  SYS-005 --> contract_study_readiness_assessment
-  SYS-006 --> contract_meeting_agenda_contract
-  SYS-006 --> contract_meeting_minutes
-  SYS-007 --> contract_comment_resolution_matrix
-  SYS-007 --> contract_pdf_anchored_docx_comment_injection_contract
-  SYS-007 --> contract_provenance_record
-  SYS-007 --> contract_reviewer_comment_set
-  SYS-007 --> contract_working_paper_input
-  SYS-008 --> contract_pdf_anchored_docx_comment_injection_contract
-  SYS-009 --> contract_assumption_register
-  SYS-009 --> contract_comment_resolution_matrix_spreadsheet_contract
-  SYS-009 --> contract_decision_log
-  SYS-009 --> contract_external_artifact_manifest
-  SYS-009 --> contract_meeting_agenda_contract
-  SYS-009 --> contract_meeting_minutes
-  SYS-009 --> contract_milestone_plan
-  SYS-009 --> contract_next_best_action_memo
-  SYS-009 --> contract_program_brief
-  SYS-009 --> contract_risk_register
-  SYS-009 --> contract_study_readiness_assessment
-  SYS-001 -.-> SYS-009
-  SYS-006 -.-> SYS-009
-  SYS-006 -.-> SYS-005
-  SYS-007 -.-> SYS-001
-  SYS-007 -.-> SYS-009
-  SYS-008 -.-> SYS-001
-  SYS-008 -.-> SYS-007
-  SYS-008 -.-> SYS-009
-  SYS-009 -.-> SYS-005
+  comment-resolution-engine --> contract_comment_resolution_matrix
+  comment-resolution-engine --> contract_comment_resolution_matrix_spreadsheet_contract
+  comment-resolution-engine --> contract_external_artifact_manifest
+  comment-resolution-engine --> contract_meeting_agenda_contract
+  comment-resolution-engine --> contract_pdf_anchored_docx_comment_injection_contract
+  comment-resolution-engine --> contract_provenance_record
+  comment-resolution-engine --> contract_reviewer_comment_set
+  docx-comment-injection-engine --> contract_pdf_anchored_docx_comment_injection_contract
+  meeting-minutes-engine --> contract_meeting_agenda_contract
+  meeting-minutes-engine --> contract_meeting_minutes
+  spectrum-pipeline-engine --> contract_assumption_register
+  spectrum-pipeline-engine --> contract_comment_resolution_matrix_spreadsheet_contract
+  spectrum-pipeline-engine --> contract_decision_log
+  spectrum-pipeline-engine --> contract_external_artifact_manifest
+  spectrum-pipeline-engine --> contract_meeting_agenda_contract
+  spectrum-pipeline-engine --> contract_meeting_minutes
+  spectrum-pipeline-engine --> contract_milestone_plan
+  spectrum-pipeline-engine --> contract_next_best_action_memo
+  spectrum-pipeline-engine --> contract_program_brief
+  spectrum-pipeline-engine --> contract_risk_register
+  spectrum-pipeline-engine --> contract_study_readiness_assessment
+  spectrum-program-advisor --> contract_assumption_register
+  spectrum-program-advisor --> contract_decision_log
+  spectrum-program-advisor --> contract_meeting_minutes
+  spectrum-program-advisor --> contract_milestone_plan
+  spectrum-program-advisor --> contract_next_best_action_memo
+  spectrum-program-advisor --> contract_program_brief
+  spectrum-program-advisor --> contract_risk_register
+  spectrum-program-advisor --> contract_study_readiness_assessment
+  study-artifact-generator --> contract_external_artifact_manifest
+  system-factory --> contract_assumption_register
+  system-factory --> contract_comment_resolution_matrix
+  system-factory --> contract_comment_resolution_matrix_spreadsheet_contract
+  system-factory --> contract_decision_log
+  system-factory --> contract_meeting_agenda_contract
+  system-factory --> contract_meeting_minutes
+  system-factory --> contract_milestone_plan
+  system-factory --> contract_next_best_action_memo
+  system-factory --> contract_pdf_anchored_docx_comment_injection_contract
+  system-factory --> contract_program_brief
+  system-factory --> contract_provenance_record
+  system-factory --> contract_reviewer_comment_set
+  system-factory --> contract_risk_register
+  system-factory --> contract_standards_manifest
+  system-factory --> contract_study_readiness_assessment
+  system-factory --> contract_working_paper_input
+  working-paper-review-engine --> contract_comment_resolution_matrix
+  working-paper-review-engine --> contract_pdf_anchored_docx_comment_injection_contract
+  working-paper-review-engine --> contract_provenance_record
+  working-paper-review-engine --> contract_reviewer_comment_set
+  working-paper-review-engine --> contract_working_paper_input

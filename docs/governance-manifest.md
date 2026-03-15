@@ -1,48 +1,43 @@
-# Governance Manifest Standard
+# Governance Manifest
 
-The spectrum governance manifest (`.spectrum-governance.json`) is the machine-readable identity card every governed repository publishes. It anchors a repo to the ecosystem registry, declares the contracts it consumes, and exposes upstream/downstream dependencies so the global dependency graph stays deterministic.
+Downstream repositories must declare a machine-readable `.spectrum-governance.json` so the ecosystem can deterministically enforce governance rules. The manifest records the system identity, repository type, upstream governance source, governance version, and pinned contract versions aligned to the standards manifest.
 
-## Required fields
-- `system_id` — system identifier issued in `ecosystem/ecosystem-registry.json`.
-- `repo_name` — repository name.
-- `repo_type` — category such as `operational_engine`, `advisory`, `template`, or `governance`.
-- `governance_repo` — governance source (use `spectrum-systems` or the full slug `nicklasorte/spectrum-systems`).
-- `governance_version` — semver of the governance baseline pinned by this repo.
-- `contracts` — object mapping contract name to semver version.
-- `upstream_systems` (optional) — array of `system_id` values that provide inputs to this system.
-- `downstream_systems` (optional) — array of `system_id` values that consume this system’s outputs.
+## Purpose
+- Capture the canonical identity of every governed repository and bind it to the ecosystem registry.
+- Declare contract dependencies as explicit version pins to prevent schema drift.
+- Provide a uniform artifact for CI validation and cross-repo enforcement.
+- Enable policy engines and dependency graphs to reason about compatibility across the ecosystem.
 
-The canonical schema lives at `governance/schemas/spectrum-governance.schema.json` and enforces field types, semver versions, and identifier formats.
+## Declaring contract dependencies
+- Add a `.spectrum-governance.json` at the repository root that conforms to `governance/schemas/spectrum-governance.schema.json`.
+- Pin every contract the repo consumes or emits. Versions must be semantic versions and must exist in `contracts/standards-manifest.json`.
+- Set `governance_repo` to `spectrum-systems` and `governance_version` to the governance release being followed.
+- Use the repository slug for `system_id` so it matches the entry in `ecosystem/ecosystem-registry.json`.
 
-## Relationship to the ecosystem registry
-`system_id`, `repo_name`, and `repo_type` must match the authoritative entries in `ecosystem/ecosystem-registry.json`. Manifests extend the registry by pinning contract versions and declaring graph edges, enabling spectrum-systems to assemble a global dependency graph without scraping downstream code.
+## Ecosystem enforcement
+- CI validates manifests against the schema, the standards manifest, and the ecosystem registry to block unknown systems or undeclared contracts.
+- Policy-as-code and the dependency graph consume manifests to detect drift and generate ecosystem-wide compatibility maps.
+- The ecosystem registry marks systems with `manifest_required` so governance tooling knows which repos must publish manifests.
 
-## Pinning contracts
-Downstream repositories must pin each consumed contract to the exact version published in `contracts/standards-manifest.json`. When a contract upgrades, downstream repos should:
-1. Update their manifest contract pins.
-2. Regenerate and review the dependency graph for compatibility.
-3. Run local validation against the new schema version before promoting the change.
+## Relationship to ecosystem registry and standards manifest
+- `ecosystem/ecosystem-registry.json` is the authoritative list of systems; `system_id` in manifests must match a registry entry.
+- `contracts/standards-manifest.json` is the authoritative list of contracts and versions; manifest contract pins must reference contracts defined there.
+- Together, the registry, standards manifest, and governance manifests provide deterministic inputs for governance CI and policy evaluation.
 
-## Example manifest
+## Canonical example
+Place this file at the repository root as `.spectrum-governance.json`:
+
 ```json
 {
-  "system_id": "SYS-001",
+  "system_id": "comment-resolution-engine",
   "repo_name": "comment-resolution-engine",
   "repo_type": "operational_engine",
   "governance_repo": "spectrum-systems",
   "governance_version": "1.0.0",
   "contracts": {
-    "comment_resolution_matrix": "1.0.0",
     "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
+    "comment_resolution_matrix": "1.0.0",
     "provenance_record": "1.0.0"
-  },
-  "upstream_systems": [
-    "SYS-007"
-  ],
-  "downstream_systems": [
-    "SYS-009"
-  ]
+  }
 }
 ```
-
-Use the schema validator in `tests/test_governance_manifest_schema.py` to confirm manifests stay aligned with governance rules.

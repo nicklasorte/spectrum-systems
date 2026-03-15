@@ -1,5 +1,5 @@
 {
-  "system_id": "SYS-007",
+  "system_id": "working-paper-review-engine",
   "repo_name": "working-paper-review-engine",
   "repo_type": "operational_engine",
   "governance_repo": "spectrum-systems",
@@ -10,12 +10,5 @@
     "provenance_record": "1.0.0",
     "reviewer_comment_set": "1.0.0",
     "working_paper_input": "1.0.0"
-  },
-  "upstream_systems": [
-    "SYS-008"
-  ],
-  "downstream_systems": [
-    "SYS-001",
-    "SYS-009"
-  ]
+  }
 }
