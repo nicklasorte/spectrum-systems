@@ -17,6 +17,21 @@ Canonical protocol for Claude-led architecture and governance reviews across the
 - **Risk:** architectural drift, system complexity risks, governance gaps, reliability risks.
 - Architecture or maturity claims without operational evidence remain provisional.
 
+## Horizon evaluation
+- Reference `docs/architecture-horizons.md` and determine whether the scope is balanced across horizons:
+  - **H1**: executable functionality present.
+  - **H2**: architecture contracts defined.
+  - **H3**: long-term direction documented.
+- If one horizon dominates or is missing, flag the imbalance and tie findings to evidence gaps.
+
+## Inflection point detection
+- Reference `docs/platform-inflection-points.md` and evaluate whether the ecosystem has crossed major platform inflection points.
+- Report achieved inflection points, the next expected inflection, and any architecture risks blocking the next point.
+- Example output:
+  - Inflection Points Achieved: First Executable Artifact
+  - Next Expected Inflection: First Closed Loop
+  - Architecture Risks: evaluation harness not yet implemented
+
 ## Required review outputs
 Every Claude review produces two artifacts:
 1. **Human-readable report** stored under `docs/reviews/` using `docs/design-review-standard.md` structure. Include metadata (date, repo, commit or document version, inputs consulted) and stable finding IDs.
