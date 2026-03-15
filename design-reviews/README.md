@@ -15,7 +15,7 @@ Each review must include two artifacts that form a paired set:
 Workflow:
 - Copy the template markdown and JSON schema to draft a new review; use deterministic filenames to preserve ordering.
 - Populate findings, recommendations, and actions with stable IDs (`F-1`, `G1`, `R1`, `REC-1`, `A-1`) so automation can map them to GitHub issues and labels. `[F-#]` identifiers must exactly match between markdown and JSON.
-- Capture scheduling metadata next to findings and actions: include `follow_up_trigger` (event checkpoint) and `due_date` (YYYY-MM-DD) when follow-up is required so registries and automation can schedule re-checks.
+- Capture scheduling metadata next to findings and actions: include `follow_up_trigger` (event checkpoint) and `due_date` (YYYY-MM-DD) when follow-up is required so registries and automation can schedule re-checks. Treat `follow_up_trigger` as the canonical event that should be mirrored into `docs/review-registry.md`; keep secondary events in `follow_up_triggers` when they help automation.
 - Validate both artifacts together: run `python scripts/validate_review_alignment.py design-reviews/<review>.md design-reviews/<review>.actions.json` to confirm `[F-#]` markers match the JSON `findings` IDs and to flag duplicate finding IDs in the JSON; then validate the JSON with `jsonschema` against `claude-review.schema.json`.
 - After publishing, register the review in `docs/review-registry.md` and follow `docs/review-to-action-standard.md` for tracker updates and follow-up triggers.
 

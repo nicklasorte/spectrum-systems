@@ -194,12 +194,12 @@
           "follow_up_trigger": {
             "type": "string",
             "minLength": 1,
-            "description": "Specific event or checkpoint that should prompt follow-up for this finding."
+            "description": "Primary event or checkpoint that should prompt follow-up for this finding and can be mirrored into the review registry (e.g., after merge of related PR, next architecture review)."
           },
           "due_date": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-            "description": "Optional due date (YYYY-MM-DD) when this finding should be re-evaluated or closed."
+            "description": "Optional due date (YYYY-MM-DD) when this finding should be re-evaluated or closed; use this value for registry follow-up scheduling."
           }
         }
       },
@@ -492,12 +492,12 @@
           "follow_up_trigger": {
             "type": "string",
             "minLength": 1,
-            "description": "Primary event or checkpoint that should prompt a revisit of this action."
+            "description": "Primary event or checkpoint that should prompt a revisit of this action and should be mirrored into the review registry."
           },
           "due_date": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-            "description": "Due date for the action in YYYY-MM-DD format when a checkpoint is scheduled."
+            "description": "Due date for the action in YYYY-MM-DD format when a checkpoint is scheduled; use this for registry follow-up entries."
           },
           "blocking_dependencies": {
             "type": "array",
@@ -511,7 +511,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Events that should trigger review or escalation."
+            "description": "Secondary events that should trigger review or escalation, in addition to the primary follow_up_trigger."
           }
         }
       },
