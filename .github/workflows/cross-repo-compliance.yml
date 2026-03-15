@@ -66,3 +66,28 @@ const report=JSON.parse(fs.readFileSync('compliance-report.json','utf-8')); \
 const failed=report.repos.filter(r=>r.status==='fail'||r.compliant===false); \
 if(failed.length){console.error('Compliance failures detected in:', failed.map(r=>r.repo_name).join(', ')); process.exit(1);} \
 "
+
+  dependency-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate ecosystem dependency graph
+        run: python scripts/generate_dependency_graph.py
+
+      - name: Upload dependency graph artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecosystem-dependency-graph
+          path: |
+            artifacts/ecosystem-dependency-graph.json
+            artifacts/ecosystem-dependency-graph.mmd

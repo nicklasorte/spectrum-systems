@@ -1,0 +1,16 @@
+{
+  "system_id": "SYS-008",
+  "repo_name": "docx-comment-injection-engine",
+  "repo_type": "operational_engine",
+  "governance_repo": "spectrum-systems",
+  "governance_version": "1.0.0",
+  "contracts": {
+    "pdf_anchored_docx_comment_injection_contract": "1.0.1"
+  },
+  "upstream_systems": [],
+  "downstream_systems": [
+    "SYS-001",
+    "SYS-007",
+    "SYS-009"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "system_id": "SYS-005",
+  "repo_name": "spectrum-program-advisor",
+  "repo_type": "advisory",
+  "governance_repo": "spectrum-systems",
+  "governance_version": "1.0.0",
+  "contracts": {
+    "assumption_register": "1.0.0",
+    "decision_log": "1.0.0",
+    "meeting_minutes": "1.0.0",
+    "milestone_plan": "1.0.0",
+    "next_best_action_memo": "1.0.0",
+    "program_brief": "1.0.0",
+    "risk_register": "1.0.0",
+    "study_readiness_assessment": "1.0.0"
+  },
+  "upstream_systems": [
+    "SYS-009"
+  ],
+  "downstream_systems": []
+}

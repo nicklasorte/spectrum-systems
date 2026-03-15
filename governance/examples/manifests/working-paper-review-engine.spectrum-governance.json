@@ -1,23 +1,21 @@
 {
-  "system_id": "SYS-001",
-  "repo_name": "comment-resolution-engine",
+  "system_id": "SYS-007",
+  "repo_name": "working-paper-review-engine",
   "repo_type": "operational_engine",
   "governance_repo": "spectrum-systems",
   "governance_version": "1.0.0",
   "contracts": {
     "comment_resolution_matrix": "1.0.0",
-    "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
-    "external_artifact_manifest": "1.0.0",
-    "meeting_agenda_contract": "1.0.0",
     "pdf_anchored_docx_comment_injection_contract": "1.0.1",
     "provenance_record": "1.0.0",
-    "reviewer_comment_set": "1.0.0"
+    "reviewer_comment_set": "1.0.0",
+    "working_paper_input": "1.0.0"
   },
   "upstream_systems": [
-    "SYS-007",
     "SYS-008"
   ],
   "downstream_systems": [
+    "SYS-001",
     "SYS-009"
   ]
 }

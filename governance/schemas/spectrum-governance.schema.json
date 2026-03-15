@@ -7,6 +7,8 @@
   "additionalProperties": false,
   "required": [
     "system_id",
+    "repo_name",
+    "repo_type",
     "governance_repo",
     "governance_version",
     "contracts"
@@ -17,10 +19,20 @@
       "pattern": "^SYS-[0-9]{3}$",
       "description": "System identifier published by spectrum-systems."
     },
+    "repo_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+$",
+      "description": "Repository name for the governed system."
+    },
+    "repo_type": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+$",
+      "description": "Repository type (e.g., operational_engine, advisory, template, governance)."
+    },
     "governance_repo": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
-      "description": "Repository slug for the governance source (e.g., nicklasorte/spectrum-systems)."
+      "pattern": "^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?$",
+      "description": "Repository slug or name for the governance source (e.g., spectrum-systems or nicklasorte/spectrum-systems)."
     },
     "governance_version": {
       "$ref": "#/$defs/semver",
@@ -28,9 +40,26 @@
     },
     "contracts": {
       "$ref": "#/$defs/contracts"
+    },
+    "upstream_systems": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/system_id" },
+      "uniqueItems": true,
+      "description": "Optional list of system_ids that provide inputs to this system."
+    },
+    "downstream_systems": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/system_id" },
+      "uniqueItems": true,
+      "description": "Optional list of system_ids that consume outputs from this system."
     }
   },
   "$defs": {
+    "system_id": {
+      "type": "string",
+      "pattern": "^SYS-[0-9]{3}$",
+      "description": "Registered system identifier."
+    },
     "semver": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?$",

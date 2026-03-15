@@ -1,0 +1,66 @@
+graph TD
+  SYS-001["comment-resolution-engine (operational_engine)"]
+  SYS-005["spectrum-program-advisor (advisory)"]
+  SYS-006["meeting-minutes-engine (operational_engine)"]
+  SYS-007["working-paper-review-engine (operational_engine)"]
+  SYS-008["docx-comment-injection-engine (operational_engine)"]
+  SYS-009["spectrum-pipeline-engine (operational_engine)"]
+  contract_assumption_register["assumption_register v1.0.0"]
+  contract_comment_resolution_matrix["comment_resolution_matrix v1.0.0"]
+  contract_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract v1.0.0"]
+  contract_decision_log["decision_log v1.0.0"]
+  contract_external_artifact_manifest["external_artifact_manifest v1.0.0"]
+  contract_meeting_agenda_contract["meeting_agenda_contract v1.0.0"]
+  contract_meeting_minutes["meeting_minutes v1.0.0"]
+  contract_milestone_plan["milestone_plan v1.0.0"]
+  contract_next_best_action_memo["next_best_action_memo v1.0.0"]
+  contract_pdf_anchored_docx_comment_injection_contract["pdf_anchored_docx_comment_injection_contract v1.0.1"]
+  contract_program_brief["program_brief v1.0.0"]
+  contract_provenance_record["provenance_record v1.0.0"]
+  contract_reviewer_comment_set["reviewer_comment_set v1.0.0"]
+  contract_risk_register["risk_register v1.0.0"]
+  contract_study_readiness_assessment["study_readiness_assessment v1.0.0"]
+  contract_working_paper_input["working_paper_input v1.0.0"]
+  SYS-001 --> contract_comment_resolution_matrix
+  SYS-001 --> contract_comment_resolution_matrix_spreadsheet_contract
+  SYS-001 --> contract_external_artifact_manifest
+  SYS-001 --> contract_meeting_agenda_contract
+  SYS-001 --> contract_pdf_anchored_docx_comment_injection_contract
+  SYS-001 --> contract_provenance_record
+  SYS-001 --> contract_reviewer_comment_set
+  SYS-005 --> contract_assumption_register
+  SYS-005 --> contract_decision_log
+  SYS-005 --> contract_meeting_minutes
+  SYS-005 --> contract_milestone_plan
+  SYS-005 --> contract_next_best_action_memo
+  SYS-005 --> contract_program_brief
+  SYS-005 --> contract_risk_register
+  SYS-005 --> contract_study_readiness_assessment
+  SYS-006 --> contract_meeting_agenda_contract
+  SYS-006 --> contract_meeting_minutes
+  SYS-007 --> contract_comment_resolution_matrix
+  SYS-007 --> contract_pdf_anchored_docx_comment_injection_contract
+  SYS-007 --> contract_provenance_record
+  SYS-007 --> contract_reviewer_comment_set
+  SYS-007 --> contract_working_paper_input
+  SYS-008 --> contract_pdf_anchored_docx_comment_injection_contract
+  SYS-009 --> contract_assumption_register
+  SYS-009 --> contract_comment_resolution_matrix_spreadsheet_contract
+  SYS-009 --> contract_decision_log
+  SYS-009 --> contract_external_artifact_manifest
+  SYS-009 --> contract_meeting_agenda_contract
+  SYS-009 --> contract_meeting_minutes
+  SYS-009 --> contract_milestone_plan
+  SYS-009 --> contract_next_best_action_memo
+  SYS-009 --> contract_program_brief
+  SYS-009 --> contract_risk_register
+  SYS-009 --> contract_study_readiness_assessment
+  SYS-001 -.-> SYS-009
+  SYS-006 -.-> SYS-009
+  SYS-006 -.-> SYS-005
+  SYS-007 -.-> SYS-001
+  SYS-007 -.-> SYS-009
+  SYS-008 -.-> SYS-001
+  SYS-008 -.-> SYS-007
+  SYS-008 -.-> SYS-009
+  SYS-009 -.-> SYS-005
