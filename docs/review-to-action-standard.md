@@ -17,6 +17,12 @@ Required outputs and flow that must occur after every design review in the Spect
 5. Update `docs/review-registry.md` with links to the review artifact and action tracker.
 6. Define follow-up triggers and due dates; record them in the registry.
 
+## Action item requirements
+- Include explicit acceptance criteria for each item.
+- Add an evidence placeholder that must be filled with proof per `docs/review-evidence-standard.md` before closure.
+- Record the target repository for execution (governance vs implementation) and any blocking relationships.
+- Maintain stable finding IDs; follow-up reviews must reconcile prior findings by ID and mark closure, open status, or deferral with evidence.
+
 ## Completion criteria
 - No review is considered done until the action tracker and registry entry exist.
 - Critical items must include draft GitHub issue language to reduce ambiguity when filed.

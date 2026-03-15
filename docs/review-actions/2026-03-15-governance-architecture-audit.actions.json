@@ -1,0 +1,603 @@
+{
+  "$schema": "./claude-review.schema.json",
+  "schema_version": "1.0.0",
+  "review_metadata": {
+    "review_id": "2026-03-15-governance-architecture-audit",
+    "review_date": "2026-03-15",
+    "repository": "nicklasorte/spectrum-systems",
+    "scope": "Full governance and architecture audit — constitutional governance effectiveness, cross-repo enforcement, artifact contracts, scalability",
+    "reviewer": "Claude (Principal Systems Architect — Opus 4.6)",
+    "source_artifact": "design-reviews/2026-03-15-governance-architecture-audit.md",
+    "actions_artifact": "design-reviews/2026-03-15-governance-architecture-audit.actions.json",
+    "source_commit": "main@HEAD",
+    "inputs": [
+      ".github/workflows/artifact-boundary.yml",
+      ".github/workflows/review-artifact-validation.yml",
+      ".github/workflows/claude-review-ingest.yml",
+      ".github/workflows/ssos-project-automation.yml",
+      "governance/compliance-scans/run-cross-repo-compliance.js",
+      "governance/compliance-scans/compliance-report.schema.json",
+      "governance/repo-compliance.schema.json",
+      "ecosystem/ecosystem-registry.json",
+      "ecosystem/ecosystem-registry.schema.json",
+      "contracts/standards-manifest.json",
+      "design-reviews/claude-review.schema.json",
+      "docs/governance-enforcement-roadmap.md",
+      "docs/cross-repo-compliance.md",
+      "docs/governance-triage-rule.md",
+      "docs/review-registry.md",
+      "tests/test_compliance_report_schema.py",
+      "tests/test_contracts.py",
+      "tests/test_registry_valid.py",
+      "tests/test_review_examples_valid.py",
+      "tests/test_schema_files_exist.py",
+      "scripts/check_artifact_boundary.py",
+      "scripts/validate-review-artifacts.js",
+      "scripts/ingest-claude-review.js",
+      "spectrum_systems/contracts/__init__.py",
+      "docs/reviews/2026-03-15-ecosystem-constitution-audit.md"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "high",
+      "category": "cross-repo-governance",
+      "title": "Compliance scanner checks file presence, not governance compliance",
+      "description": "The cross-repo compliance scanner (run-cross-repo-compliance.js) only verifies that required files and directories exist in downstream repos. It cannot detect contract version mismatches, schema incompatibility, governance section content violations, or architectural rule deviations. A downstream repo can pass all checks while implementing entirely incompatible contracts.",
+      "recommended_action": [
+        "Extend the compliance scanner to validate contract version pins against contracts/standards-manifest.json.",
+        "Add checks for governance content in CLAUDE.md/CODEX.md (e.g., required sections, spectrum-systems references).",
+        "Validate that declared system_id matches ecosystem-registry.json entries."
+      ],
+      "files_affected": [
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "governance/compliance-scans/scan-config.example.json",
+        "docs/cross-repo-compliance.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Extend compliance scanner beyond file-presence to contract version validation",
+      "suggested_labels": ["governance", "cross-repo", "enforcement", "priority-high"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "follow_up_trigger": "When Phase 1 enforcement begins",
+      "due_date": "2026-04-15"
+    },
+    {
+      "id": "F-2",
+      "severity": "high",
+      "category": "data-integrity",
+      "title": "Ecosystem registry missing 4 of 8 governed repositories",
+      "description": "ecosystem/ecosystem-registry.json lists only 4 repositories (spectrum-systems, system-factory, spectrum-pipeline-engine, spectrum-program-advisor). The four Layer 3 operational engines (comment-resolution-engine, working-paper-review-engine, meeting-minutes-engine, docx-comment-injection-engine) are absent. The registry cannot serve as an authoritative source of truth for the ecosystem.",
+      "recommended_action": [
+        "Add all four missing operational engines to ecosystem-registry.json with accurate repo_type, status, and contracts fields.",
+        "Add a 'contracts' field to each registry entry listing consumed contract names for dependency tracking.",
+        "Add CI validation that cross-references registry entries against standards-manifest.json intended_consumers."
+      ],
+      "files_affected": [
+        "ecosystem/ecosystem-registry.json",
+        "ecosystem/ecosystem-registry.schema.json",
+        "tests/test_registry_valid.py"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Complete ecosystem registry with all 8 governed repositories",
+      "suggested_labels": ["governance", "registry", "data-integrity", "priority-high"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "follow_up_trigger": "Before Phase 1 enforcement begins",
+      "due_date": "2026-04-01"
+    },
+    {
+      "id": "F-3",
+      "severity": "critical",
+      "category": "architecture-boundary",
+      "title": "Production code boundary violation remains unresolved",
+      "description": "spectrum_systems/study_runner/ contains production pipeline code (pipeline.py, run_study.py, artifact_writer.py, load_config.py) in a repository whose CLAUDE.md states 'This repository should NOT contain production implementation code.' This was previously identified as RC-1 in the 2026-03-15 constitution audit. The artifact boundary CI check cannot detect Python source files — it only bans binary extensions.",
+      "recommended_action": [
+        "Relocate spectrum_systems/study_runner/ to a dedicated engine repository.",
+        "Evaluate whether spectrum_systems/contracts/__init__.py should be reframed as a governance SDK or inlined in tests.",
+        "Remove run_study.py from repo root.",
+        "Extend check_artifact_boundary.py to detect production Python code in governance-only directories."
+      ],
+      "files_affected": [
+        "spectrum_systems/study_runner/",
+        "spectrum_systems/contracts/__init__.py",
+        "run_study.py",
+        "scripts/check_artifact_boundary.py"
+      ],
+      "create_issue": false,
+      "suggested_issue_title": "Remove production Python package from governance repo",
+      "suggested_labels": ["architecture", "governance-violation", "priority-critical", "boundary-enforcement"],
+      "trigger": "Previously identified as RC-1 — do not duplicate issue"
+    },
+    {
+      "id": "F-4",
+      "severity": "medium",
+      "category": "schema-governance",
+      "title": "Dual schema authority creates confusion",
+      "description": "Schemas exist in both schemas/ (12 files, no manifest tracking, no test coverage) and contracts/schemas/ (16 files, manifest-tracked, validated by test_contracts.py). It is unclear which schemas are authoritative for downstream consumption. New contributors and AI agents may reference the wrong source.",
+      "recommended_action": [
+        "Either consolidate all authoritative schemas into contracts/schemas/ with manifest tracking, or explicitly document schemas/ as internal/draft and add a README warning.",
+        "Add validation tests for schemas/ if those schemas are intended for downstream use."
+      ],
+      "files_affected": [
+        "schemas/",
+        "contracts/schemas/",
+        "schemas/README.md",
+        "contracts/standards-manifest.json"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Resolve dual schema authority between schemas/ and contracts/schemas/",
+      "suggested_labels": ["schema-governance", "architecture", "priority-medium"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "due_date": "2026-04-30"
+    },
+    {
+      "id": "F-5",
+      "severity": "medium",
+      "category": "cross-repo-governance",
+      "title": "Contract consumer declarations are not verified",
+      "description": "contracts/standards-manifest.json declares intended_consumers for each contract, but no mechanism verifies that those consumers actually import, pin, or validate against the declared contract version. This is a governance declaration without verification.",
+      "recommended_action": [
+        "As part of Phase 1 enforcement, require downstream repos to declare consumed contracts in a machine-readable manifest.",
+        "Cross-reference downstream manifests against standards-manifest.json intended_consumers to detect undeclared consumption or missing consumers."
+      ],
+      "files_affected": [
+        "contracts/standards-manifest.json",
+        "governance/compliance-scans/run-cross-repo-compliance.js"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Implement contract consumer verification against standards manifest",
+      "suggested_labels": ["governance", "cross-repo", "contracts", "priority-medium"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "follow_up_trigger": "When Phase 1 enforcement is operational",
+      "due_date": "2026-05-15"
+    },
+    {
+      "id": "F-6",
+      "severity": "high",
+      "category": "governance-enforcement",
+      "title": "Governance enforcement roadmap is entirely unstarted",
+      "description": "docs/governance-enforcement-roadmap.md describes a 4-phase enforcement model (declared identity → automated validation → CI conformance → ecosystem compatibility). All four phases are documented but zero are implemented. The gap between documented and enforced governance is the single largest structural risk.",
+      "recommended_action": [
+        "Begin Phase 1 implementation: define the downstream contract pin format (e.g., governance.json or .spectrum-systems.json).",
+        "Extend the compliance scanner to validate contract pins against the standards manifest.",
+        "Set a target date for Phase 1 completion."
+      ],
+      "files_affected": [
+        "docs/governance-enforcement-roadmap.md",
+        "governance/compliance-scans/run-cross-repo-compliance.js"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Implement Phase 1 of governance enforcement roadmap",
+      "suggested_labels": ["governance", "enforcement", "priority-high", "roadmap"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "follow_up_trigger": "When downstream contract pin format is defined and first repo declares pins",
+      "due_date": "2026-04-30"
+    },
+    {
+      "id": "F-7",
+      "severity": "high",
+      "category": "cross-repo-governance",
+      "title": "No cross-repo CI enforcement exists",
+      "description": "All CI workflows run exclusively within spectrum-systems. No mechanism triggers governance validation when downstream repos change. Downstream repos can remove governance files, modify schemas, implement contracts incorrectly, or skip evaluation harnesses without any signal reaching the governance layer.",
+      "recommended_action": [
+        "Add a scheduled CI workflow that runs the compliance scanner against all registered repos.",
+        "Publish compliance reports as CI artifacts with notification on drift.",
+        "Consider GitHub Actions workflow_dispatch or repository_dispatch for cross-repo triggers."
+      ],
+      "files_affected": [
+        ".github/workflows/",
+        "governance/compliance-scans/run-cross-repo-compliance.js"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Add scheduled CI workflow for cross-repo compliance scanning",
+      "suggested_labels": ["governance", "cross-repo", "ci", "priority-high"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "follow_up_trigger": "When compliance scanner is extended beyond file-presence (F-1)",
+      "due_date": "2026-05-15"
+    },
+    {
+      "id": "F-8",
+      "severity": "medium",
+      "category": "architecture-boundary",
+      "title": "Artifact boundary check cannot detect content-based violations",
+      "description": "scripts/check_artifact_boundary.py bans binary file extensions and enforces file size limits but cannot detect Python source files or any content-based boundary violation. The check is structurally incapable of enforcing the 'no production code' rule.",
+      "recommended_action": [
+        "Add a check for Python source files outside of tests/, scripts/, and spectrum_systems/contracts/ (if contracts/ is retained as a governance SDK).",
+        "Consider a simple allowlist of directories permitted to contain .py files."
+      ],
+      "files_affected": [
+        "scripts/check_artifact_boundary.py"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Extend artifact boundary check to detect production Python code",
+      "suggested_labels": ["boundary-enforcement", "ci", "priority-medium"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "due_date": "2026-04-15"
+    },
+    {
+      "id": "F-9",
+      "severity": "low",
+      "category": "automation",
+      "title": "Review-to-issue pipeline lacks cross-repo deduplication",
+      "description": "ingest-claude-review.js can create issues in target repos via target_repo fields but has no deduplication logic. Running the ingest pipeline multiple times on the same actions file will create duplicate issues. No mechanism checks if an issue for a given finding ID already exists.",
+      "recommended_action": "Add deduplication by searching for existing issues with the finding ID before creation. Consider adding a 'created_issue_url' field to track which findings have been ingested.",
+      "files_affected": [
+        "scripts/ingest-claude-review.js"
+      ],
+      "create_issue": false,
+      "suggested_issue_title": "Add deduplication logic to review-to-issue ingest pipeline",
+      "suggested_labels": ["automation", "enhancement", "priority-low"]
+    },
+    {
+      "id": "F-10",
+      "severity": "high",
+      "category": "scalability",
+      "title": "Manual compliance scanning cannot scale beyond 5-7 repos",
+      "description": "The compliance scanner requires local checkouts of all repos, manual CLI invocation, and manual review of JSON output. At 15-30 repositories this process will be abandoned. The scanner must be automated with scheduled CI runs and notification on drift.",
+      "recommended_action": [
+        "Automate the scanner in a scheduled CI workflow.",
+        "Publish compliance reports as GitHub Actions artifacts.",
+        "Send notifications (issue creation, PR comment, or external webhook) on non-compliance."
+      ],
+      "files_affected": [
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        ".github/workflows/"
+      ],
+      "create_issue": false,
+      "suggested_issue_title": "Automate cross-repo compliance scanning in CI",
+      "suggested_labels": ["scalability", "automation", "governance"],
+      "trigger": "Subsumed by F-7 action item"
+    },
+    {
+      "id": "F-11",
+      "severity": "medium",
+      "category": "schema-governance",
+      "title": "Schema dual-track will create version confusion at scale",
+      "description": "With schemas/ and contracts/schemas/ coexisting without clear differentiation, new team members and AI agents will reference the wrong schema source. As the ecosystem grows, this ambiguity will compound into schema version mismatches across repos.",
+      "recommended_action": "Consolidate schema authority as described in F-4. This finding describes the scaling risk of the dual-track status quo.",
+      "files_affected": [
+        "schemas/",
+        "contracts/schemas/"
+      ],
+      "create_issue": false,
+      "suggested_issue_title": "Schema dual-track creates scaling risk",
+      "suggested_labels": ["schema-governance", "scalability"],
+      "trigger": "Subsumed by F-4 action item"
+    },
+    {
+      "id": "F-12",
+      "severity": "medium",
+      "category": "review-infrastructure",
+      "title": "Review registry is a flat markdown table",
+      "description": "The review registry (docs/review-registry.md) tracks reviews in a markdown table. At 15-30 repos with quarterly reviews, this table will contain 60-120 rows within two years. Markdown tables do not support filtering, automated status updates, overdue item detection, or issue tracker integration.",
+      "recommended_action": [
+        "Create a machine-readable review-registry.json alongside the markdown table.",
+        "Add CI validation that checks for overdue review actions by comparing due_date fields against the current date.",
+        "Use the JSON registry as the source of truth; generate the markdown table from it."
+      ],
+      "files_affected": [
+        "docs/review-registry.md"
+      ],
+      "create_issue": true,
+      "suggested_issue_title": "Create machine-readable review registry with CI-driven status checks",
+      "suggested_labels": ["review-infrastructure", "automation", "priority-medium"],
+      "target_repo": "nicklasorte/spectrum-systems",
+      "due_date": "2026-05-30"
+    }
+  ],
+  "summary": {
+    "executive_summary": [
+      "spectrum-systems has strong governance infrastructure within its own boundaries: schema-validated design reviews, 16 artifact contracts with test coverage, and CI-enforced artifact integrity.",
+      "Cross-repo governance is aspirational but not operational: the compliance scanner checks file presence only, the enforcement roadmap is unstarted, and the ecosystem registry is incomplete.",
+      "The repository violates its own boundary rule by containing production Python code — a credibility risk that must be resolved before mandating compliance from downstream repos.",
+      "Maturity assessment: 2.5 (Structured, approaching Governed). Six specific moves would advance the ecosystem to level 3."
+    ],
+    "strengths": [
+      "Design review artifact system with paired markdown + JSON, schema validation, deterministic IDs, and review-to-issue pipeline.",
+      "16 artifact contracts with JSON schemas, example payloads, standards manifest, semantic versioning, and comprehensive pytest coverage.",
+      "Four CI workflows enforcing artifact boundaries, review artifact validation, review ingest, and project automation.",
+      "Clear layered architecture documentation with per-system design docs for all 9 systems.",
+      "Governance triage system with defined workstream buckets to prevent issue fragmentation."
+    ],
+    "gaps": [
+      {
+        "id": "G1",
+        "statement": "Cross-repo compliance scanning checks only file presence, not contract compliance or schema compatibility.",
+        "evidence": "governance/compliance-scans/run-cross-repo-compliance.js checks requiredFiles and requiredDirectories arrays only."
+      },
+      {
+        "id": "G2",
+        "statement": "Ecosystem registry lists only 4 of 8 governed repositories — all four Layer 3 operational engines are missing.",
+        "evidence": "ecosystem/ecosystem-registry.json contains spectrum-systems, system-factory, spectrum-pipeline-engine, spectrum-program-advisor only."
+      },
+      {
+        "id": "G3",
+        "statement": "Production code (spectrum_systems/study_runner/) violates the repository's own 'no production code' boundary rule.",
+        "evidence": "CLAUDE.md states 'This repository should NOT contain production implementation code.' spectrum_systems/study_runner/ contains pipeline.py, run_study.py, artifact_writer.py, load_config.py."
+      },
+      {
+        "id": "G4",
+        "statement": "Dual schema locations (schemas/ and contracts/schemas/) create ambiguity about authoritative schema source.",
+        "evidence": "schemas/ contains 12 files with no manifest tracking or test coverage; contracts/schemas/ contains 16 files tracked in standards-manifest.json with pytest validation."
+      },
+      {
+        "id": "G5",
+        "statement": "Contract consumer declarations in standards manifest are not verified against actual downstream usage.",
+        "evidence": "contracts/standards-manifest.json declares intended_consumers but no tooling validates consumption."
+      },
+      {
+        "id": "G6",
+        "statement": "Artifact boundary check detects binary extensions only — cannot detect Python source code violations.",
+        "evidence": "scripts/check_artifact_boundary.py BANNED_EXTS contains only binary/document extensions."
+      },
+      {
+        "id": "G7",
+        "statement": "Review registry is a flat markdown table that cannot support automated status tracking at scale.",
+        "evidence": "docs/review-registry.md uses markdown table format with manual updates."
+      }
+    ],
+    "risks": [
+      {
+        "id": "R1",
+        "statement": "Downstream repos can silently deviate from governance rules without detection, causing contract incompatibility and schema drift across the ecosystem.",
+        "severity": "high",
+        "likelihood": "high",
+        "rationale": "No cross-repo enforcement exists. The compliance scanner only checks file presence. Contract consumer declarations are unverified.",
+        "related_gaps": ["G1", "G5"]
+      },
+      {
+        "id": "R2",
+        "statement": "Governance enforcement roadmap remains permanently aspirational while the ecosystem grows without enforcement.",
+        "severity": "high",
+        "likelihood": "medium",
+        "rationale": "All four enforcement phases are documented but unstarted. Without a forcing function, enforcement will be deferred indefinitely.",
+        "related_gaps": ["G1", "G2"]
+      },
+      {
+        "id": "R3",
+        "statement": "Self-governance credibility erosion — downstream repos may resist compliance from a constitution that visibly violates its own rules.",
+        "severity": "medium",
+        "likelihood": "high",
+        "rationale": "Production code in spectrum_systems/study_runner/ directly contradicts the stated boundary rule in CLAUDE.md.",
+        "related_gaps": ["G3"]
+      },
+      {
+        "id": "R4",
+        "statement": "Manual compliance scanning will be abandoned as the ecosystem scales beyond 7 repos, creating an enforcement vacuum.",
+        "severity": "high",
+        "likelihood": "medium",
+        "rationale": "Scanner requires local checkouts and CLI invocation. No scheduled automation exists.",
+        "related_gaps": ["G1"]
+      },
+      {
+        "id": "R5",
+        "statement": "Schema version confusion across downstream repos as dual schema authority compounds at scale.",
+        "severity": "medium",
+        "likelihood": "medium",
+        "rationale": "Two schema directories with different governance levels create ambiguity about which source to use.",
+        "related_gaps": ["G4"]
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "id": "REC-1",
+      "statement": "Close the self-governance gap: remove production code from the governance repo and extend boundary checks to detect Python source files.",
+      "priority": "critical",
+      "expected_outcome": "spectrum-systems complies with its own boundary rule, establishing credibility for mandating compliance from downstream repos.",
+      "related_gaps": ["G3", "G6"],
+      "related_risks": ["R3"]
+    },
+    {
+      "id": "REC-2",
+      "statement": "Complete the ecosystem registry with all 8 governed repositories and add contract consumption fields for dependency tracking.",
+      "priority": "high",
+      "expected_outcome": "The ecosystem registry serves as an authoritative source of truth for all governed entities and their contract dependencies.",
+      "related_gaps": ["G2"],
+      "related_risks": ["R2"]
+    },
+    {
+      "id": "REC-3",
+      "statement": "Implement Phase 1 of the governance enforcement roadmap: define downstream contract pin format and validate against the standards manifest.",
+      "priority": "high",
+      "expected_outcome": "Downstream repos declare contract versions and those declarations are mechanically validated against the authoritative manifest.",
+      "related_gaps": ["G1", "G5"],
+      "related_risks": ["R1", "R2"]
+    },
+    {
+      "id": "REC-4",
+      "statement": "Extend the compliance scanner from file-presence checks to contract version validation and governance content verification.",
+      "priority": "high",
+      "expected_outcome": "Compliance scanning detects contract drift, schema mismatches, and governance content deviations — not just missing files.",
+      "related_gaps": ["G1"],
+      "related_risks": ["R1", "R4"]
+    },
+    {
+      "id": "REC-5",
+      "statement": "Consolidate schema authority by either merging schemas/ into contracts/schemas/ or explicitly documenting schemas/ as internal/draft with warnings.",
+      "priority": "medium",
+      "expected_outcome": "Single clear source of truth for authoritative schemas; reduced confusion for downstream consumers and AI agents.",
+      "related_gaps": ["G4"],
+      "related_risks": ["R5"]
+    },
+    {
+      "id": "REC-6",
+      "statement": "Evolve the review registry from markdown table to machine-readable JSON with CI-driven status and overdue checks.",
+      "priority": "medium",
+      "expected_outcome": "Review tracking scales with ecosystem growth; overdue actions are automatically flagged.",
+      "related_gaps": ["G7"]
+    },
+    {
+      "id": "REC-7",
+      "statement": "Automate compliance scanning in a scheduled CI workflow with drift notification and report publication.",
+      "priority": "high",
+      "expected_outcome": "Compliance scanning runs automatically without manual invocation; drift is detected and reported without human initiation.",
+      "related_gaps": ["G1"],
+      "related_risks": ["R4"]
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-1",
+      "title": "Remove production code and extend boundary enforcement",
+      "description": "Relocate spectrum_systems/study_runner/ to a dedicated engine repo. Extend check_artifact_boundary.py to detect Python source files outside of allowed directories (tests/, scripts/). Remove run_study.py from repo root.",
+      "priority": "critical",
+      "status": "open",
+      "owners": ["Architecture"],
+      "source_recommendations": ["REC-1"],
+      "related_gaps": ["G3", "G6"],
+      "related_risks": ["R3"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["architecture", "governance-violation", "boundary-enforcement"],
+      "expected_artifact": "PR removing production code; updated check_artifact_boundary.py",
+      "acceptance_criteria": [
+        "spectrum_systems/study_runner/ no longer exists in the repo",
+        "run_study.py no longer exists at repo root",
+        "check_artifact_boundary.py detects Python source files outside allowed directories",
+        "CI passes with the updated boundary check"
+      ],
+      "follow_up_trigger": "After PR is merged",
+      "due_date": "2026-04-01"
+    },
+    {
+      "id": "A-2",
+      "title": "Complete ecosystem registry with all governed repos",
+      "description": "Add comment-resolution-engine, working-paper-review-engine, meeting-minutes-engine, and docx-comment-injection-engine to ecosystem/ecosystem-registry.json. Add a contracts field to each entry listing consumed contract names. Update the ecosystem-registry.schema.json if needed.",
+      "priority": "high",
+      "status": "open",
+      "owners": ["Governance"],
+      "source_recommendations": ["REC-2"],
+      "related_gaps": ["G2"],
+      "related_risks": ["R2"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["governance", "registry", "data-integrity"],
+      "expected_artifact": "Updated ecosystem-registry.json with all 8 repos",
+      "acceptance_criteria": [
+        "All 8 governed repos appear in the registry",
+        "Each entry has repo_type, status, and contracts fields",
+        "test_registry_valid.py passes",
+        "Registry entries align with standards-manifest.json intended_consumers"
+      ],
+      "follow_up_trigger": "Before Phase 1 enforcement begins",
+      "due_date": "2026-04-01"
+    },
+    {
+      "id": "A-3",
+      "title": "Implement Phase 1 governance enforcement",
+      "description": "Define a machine-readable downstream contract pin format (e.g., .spectrum-systems.json). Extend the compliance scanner to read and validate contract pins against contracts/standards-manifest.json. Document the format in docs/governance-enforcement-roadmap.md.",
+      "priority": "high",
+      "status": "open",
+      "owners": ["Governance Automation"],
+      "source_recommendations": ["REC-3"],
+      "related_gaps": ["G1", "G5"],
+      "related_risks": ["R1", "R2"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["governance", "enforcement", "roadmap"],
+      "expected_artifact": "Contract pin format spec, extended compliance scanner, updated enforcement roadmap",
+      "acceptance_criteria": [
+        "Contract pin format is defined and documented",
+        "Compliance scanner validates pins against standards manifest",
+        "At least one downstream repo has a valid contract pin file",
+        "Enforcement roadmap Phase 1 is marked as 'in progress' or 'complete'"
+      ],
+      "follow_up_trigger": "When first downstream repo adopts contract pins",
+      "due_date": "2026-04-30",
+      "blocking_dependencies": ["A-2"]
+    },
+    {
+      "id": "A-4",
+      "title": "Extend compliance scanner to validate governance content",
+      "description": "Enhance run-cross-repo-compliance.js to validate contract version pins, check CLAUDE.md/CODEX.md for required governance sections, and verify system_id against ecosystem-registry.json.",
+      "priority": "high",
+      "status": "open",
+      "owners": ["Governance Automation"],
+      "source_recommendations": ["REC-4"],
+      "related_gaps": ["G1"],
+      "related_risks": ["R1", "R4"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["governance", "cross-repo", "enforcement"],
+      "expected_artifact": "Enhanced compliance scanner with content validation",
+      "acceptance_criteria": [
+        "Scanner validates contract pins (not just file presence)",
+        "Scanner checks for required CLAUDE.md/CODEX.md sections",
+        "Scanner cross-references system_id against ecosystem registry",
+        "Updated compliance-report.schema.json if report format changes"
+      ],
+      "follow_up_trigger": "After Phase 1 enforcement is defined (A-3)",
+      "due_date": "2026-05-15",
+      "blocking_dependencies": ["A-3"]
+    },
+    {
+      "id": "A-5",
+      "title": "Resolve dual schema authority",
+      "description": "Consolidate schemas/ and contracts/schemas/ by either moving all authoritative schemas into contracts/schemas/ with manifest tracking, or adding clear documentation and README warnings to schemas/ marking it as internal/draft.",
+      "priority": "medium",
+      "status": "open",
+      "owners": ["Architecture"],
+      "source_recommendations": ["REC-5"],
+      "related_gaps": ["G4"],
+      "related_risks": ["R5"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["schema-governance", "architecture"],
+      "expected_artifact": "Consolidated schema structure or clear documentation differentiating the two directories",
+      "acceptance_criteria": [
+        "Each schema directory has a clear documented purpose",
+        "Authoritative downstream schemas are in one canonical location",
+        "schemas/README.md explicitly states whether schemas are for downstream consumption",
+        "If schemas are authoritative, they are tracked in standards-manifest.json and have test coverage"
+      ],
+      "due_date": "2026-04-30"
+    },
+    {
+      "id": "A-6",
+      "title": "Create machine-readable review registry",
+      "description": "Create docs/reviews/review-registry.json alongside the markdown table. Add CI validation that checks for overdue review actions by comparing due_date fields. Generate the markdown table from the JSON source.",
+      "priority": "medium",
+      "status": "open",
+      "owners": ["Program Management"],
+      "source_recommendations": ["REC-6"],
+      "related_gaps": ["G7"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["review-infrastructure", "automation"],
+      "expected_artifact": "Machine-readable review-registry.json with CI validation",
+      "acceptance_criteria": [
+        "review-registry.json exists alongside the markdown table",
+        "CI validates JSON structure and flags overdue items",
+        "All existing registry entries are represented in JSON"
+      ],
+      "due_date": "2026-05-30"
+    },
+    {
+      "id": "A-7",
+      "title": "Automate cross-repo compliance scanning in CI",
+      "description": "Add a scheduled GitHub Actions workflow that runs the compliance scanner against all registered repos. Publish compliance reports as CI artifacts. Create issues or notifications on drift detection.",
+      "priority": "high",
+      "status": "open",
+      "owners": ["Governance Automation"],
+      "source_recommendations": ["REC-7"],
+      "related_gaps": ["G1"],
+      "related_risks": ["R4"],
+      "target_repos": ["nicklasorte/spectrum-systems"],
+      "labels": ["governance", "cross-repo", "ci", "automation"],
+      "expected_artifact": "Scheduled CI workflow with compliance reporting and drift notification",
+      "acceptance_criteria": [
+        "Scheduled workflow runs at least weekly",
+        "Compliance reports are published as CI artifacts",
+        "Non-compliance triggers notification (issue or alert)",
+        "Workflow handles repos that are unavailable gracefully"
+      ],
+      "follow_up_trigger": "After compliance scanner is extended (A-4)",
+      "due_date": "2026-05-31",
+      "blocking_dependencies": ["A-4"]
+    }
+  ],
+  "follow_up": {
+    "next_review_due": "2026-06-15",
+    "triggers": [
+      "When A-1 (production code removal) is completed",
+      "When A-3 (Phase 1 enforcement) is operational",
+      "When ecosystem grows beyond 8 repositories",
+      "Re-audit to assess maturity level advancement toward level 3 (Governed)"
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "review_id": "2026-03-20-governance-precheck",
+  "prior_findings_reconciled": [
+    {
+      "finding_id": "F-7",
+      "status": "closed",
+      "evidence_links": [
+        {
+          "type": "file",
+          "value": "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json#L42"
+        },
+        {
+          "type": "ci_workflow",
+          "value": "https://github.com/nicklasorte/spectrum-systems/actions/runs/123456789"
+        }
+      ],
+      "notes": "Cross-repo enforcement workflow landed and validated."
+    },
+    {
+      "finding_id": "F-3",
+      "status": "open",
+      "evidence_links": [],
+      "notes": "Boundary remediation tracked but not merged; keep in scope for follow-up."
+    }
+  ],
+  "open_findings": [
+    {
+      "finding_id": "F-12",
+      "reason": "Awaiting downstream repo to declare contract pins",
+      "evidence_placeholder": "Add link to compliance scan once run"
+    }
+  ],
+  "deferred_findings": [
+    {
+      "finding_id": "F-9",
+      "trigger": "After first pilot deployment of spectrum-pipeline-engine",
+      "evidence_placeholder": "Pilot run report and pipeline logs"
+    }
+  ],
+  "evidence_links": [
+    {
+      "type": "schema",
+      "value": "contracts/schemas/governance-manifest.schema.json"
+    },
+    {
+      "type": "issue",
+      "value": "https://github.com/nicklasorte/spectrum-systems/issues/123"
+    },
+    {
+      "type": "adr",
+      "value": "DECISIONS.md#adr-0004-governance-manifest"
+    }
+  ],
+  "ready_for_review": false
+}
