@@ -85,6 +85,43 @@
       },
       "notes": {
         "type": "string"
+      },
+      "resolution_notes": {
+        "type": "string",
+        "description": "Summary of actions taken to resolve findings from this review, or explanation of why findings remain open."
+      },
+      "carried_forward_findings": {
+        "type": "array",
+        "description": "Structured tracking of individual findings carried forward from this or prior reviews, with per-finding resolution status.",
+        "items": {
+          "type": "object",
+          "required": ["finding_id", "status"],
+          "properties": {
+            "finding_id": {
+              "type": "string",
+              "description": "Finding identifier (e.g., RC-1, GA-007, F-2)."
+            },
+            "source_review_id": {
+              "type": "string",
+              "description": "ID of the review that originally raised this finding."
+            },
+            "description": {
+              "type": "string",
+              "description": "Short summary of the finding."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["Open", "Resolved", "Superseded", "Deferred"],
+              "description": "Current resolution status of the finding."
+            },
+            "resolution_note": {
+              "type": "string",
+              "description": "Brief note on how the finding was resolved or why it remains open."
+            }
+          },
+          "additionalProperties": false
+        },
+        "uniqueItems": false
       }
     },
     "additionalProperties": false

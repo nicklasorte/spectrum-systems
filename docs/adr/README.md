@@ -9,5 +9,8 @@ ADRs capture major ecosystem design choices, the context that shaped them, and t
 | [ADR-003](ADR-003-operational-evidence-standard.md) | Operational evidence standard | Accepted | 2026-03-15 |
 | [ADR-004](ADR-004-run-evidence-correlation.md) | Run evidence correlation | Accepted | 2026-03-15 |
 | [ADR-005](ADR-005-review-protocol.md) | Claude review protocol | Accepted | 2026-03-15 |
+| [ADR-006](ADR-006-governance-manifest-policy-engine.md) | Governance manifest and policy engine model | Accepted | 2026-03-16 |
+| [ADR-007](ADR-007-phase-1-governance-enforcement.md) | Phase 1 governance enforcement strategy | Accepted | 2026-03-16 |
+| [ADR-008](ADR-008-schema-authority-designation.md) | Canonical schema authority designation | Accepted | 2026-03-16 |
 
 Statuses: `Proposed` for pending decisions, `Accepted` for decisions in force, and `Superseded` when replaced by a newer ADR. All major architectural changes should reference relevant ADRs during design reviews; conflicts must trigger either an ADR update or a reconsideration of the change.

@@ -3,6 +3,36 @@
 ## Purpose
 Clarify ownership between this architecture repository (spectrum-systems) and executable implementation repositories so system contracts remain stable while implementations evolve.
 
+## Production-Code Boundary Rule
+
+`spectrum-systems` is a documentation-first governance repository. Per `CLAUDE.md` and `DECISIONS.md` (Decision 1 and Decision 2), this repository **must not contain production implementation code**. Production pipelines, runtime executables, and deployable services belong in dedicated downstream implementation repositories.
+
+This boundary is enforced in two ways:
+1. **Manually:** via this document, `CLAUDE.md`, and the governance conformance checklist (`docs/governance-conformance-checklist.md`).
+2. **Mechanically (planned):** via artifact boundary CI extension (action A-3 from the 2026-03-16 governance deep review). Until A-3 is implemented, the boundary is enforced through manual review.
+
+### Evaluation and example code
+
+Evaluation harnesses (`eval/`), evaluation rubrics (`evals/`), and example artifacts (`examples/`, `contracts/examples/`) may reside in this repository. These are not production services — they are test fixtures, reference implementations, and illustrative artifacts used to validate governance standards.
+
+Evaluation code that grows into a deployable service must be relocated to a dedicated implementation repository before it reaches Pilot status.
+
+### spectrum_systems/ — current status
+
+The `spectrum_systems/` Python package (including `spectrum_systems/study_runner/` and `run_study.py`) is present in this repository as an **evaluation scaffold**. It was originally introduced to support contract loading and study-runner prototype work.
+
+**Status as of 2026-03-16:** Pending relocation to a dedicated implementation repository.
+
+This package has been flagged as a boundary violation in the following reviews:
+- RC-1 (`2026-03-15-ecosystem-constitution-audit`)
+- A-1 (`2026-03-15-governance-architecture-audit`)
+- GA-008 (`2026-03-14-governance-architecture-review`)
+- F-3 (`2026-03-16-governance-constitution-deep-review`)
+
+Until relocation is completed, `spectrum_systems/` remains here with explicit evaluation-scaffold status. It must not be extended with production pipeline logic. The boundary CI extension (A-3) will flag this directory once implemented.
+
+See `DECISIONS.md` Decision 5 for the formal boundary resolution decision.
+
 ## Architecture Repository (spectrum-systems) Owns
 - System specifications and architecture decisions (e.g., `systems/comment-resolution/interface.md`).
 - Authoritative schemas and provenance guidance (`schemas/*.json`, `docs/provenance-implementation-guidance.md`).
