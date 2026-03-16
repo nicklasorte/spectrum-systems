@@ -15,7 +15,7 @@ There are two schema directories in this repository. Each has a distinct, non-ov
 
 **Migration:** Any schema in this directory that grows to the point where it defines a governed artifact contract should be formally promoted to `contracts/schemas/` and added to `contracts/standards-manifest.json`. Until that promotion, the schema in this directory is not governed under the contract versioning policy in `CONTRACT_VERSIONING.md`.
 
-See `CONTRACTS.md` for the canonical schema authority declaration.
+See `CONTRACTS.md` for the canonical schema authority declaration and `docs/adr/ADR-008-schema-authority-designation.md` for the architecture decision record governing this designation.
 
 ## Inventory
 

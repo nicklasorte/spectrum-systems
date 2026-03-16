@@ -36,3 +36,11 @@ Phase 1 is now initiated because `contracts/governance-declaration.template.json
 - `system-factory` will scaffold new implementation repos with required governance primitives: `system_id` declaration, contract pins pulled from the standards manifest, `.governance-declaration.json` template, manifest templates, and pre-wired validation hooks.
 - Scaffolded repos will include baseline CI jobs that run the validation harness and per-system evaluation tests, giving deterministic enforcement from day one.
 - As manifests and contracts evolve, `system-factory` updates will deliver compatible scaffolds and migration notes, reducing manual retrofits and preserving governance alignment across the ecosystem.
+
+## Related governance documents
+- `ADR-006-governance-manifest-policy-engine.md` — governance manifest and policy engine architecture decision
+- `ADR-007-phase-1-governance-enforcement.md` — Phase 1 enforcement strategy and rationale
+- `docs/governance-conformance-checklist.md` — per-repo compliance checklist
+- `docs/implementation-boundary.md` — production-code boundary rules
+- `contracts/governance-declaration.template.json` — canonical Phase 1 declaration template
+- `contracts/standards-manifest.json` — versioned contract and schema registry

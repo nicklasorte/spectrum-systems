@@ -39,3 +39,11 @@ Use this checklist to help implementation repositories verify compliance with th
 
 ## System Lifecycle
 - [ ] Current lifecycle gate status confirmed and recorded in `docs/system-status-registry.md`.
+
+## Related governance documents
+- `ADR-006-governance-manifest-policy-engine.md` — governance manifest model and policy engine
+- `ADR-007-phase-1-governance-enforcement.md` — Phase 1 enforcement strategy
+- `ADR-008-schema-authority-designation.md` — canonical schema authority designation
+- `docs/governance-enforcement-roadmap.md` — four-phase enforcement roadmap
+- `docs/implementation-boundary.md` — production-code boundary rules
+- `contracts/governance-declaration.template.json` — canonical governance declaration template
