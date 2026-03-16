@@ -4,11 +4,34 @@ const fs = require("fs");
 const path = require("path");
 
 const GOVERNANCE_MANIFEST = ".spectrum-governance.json";
+const GOVERNANCE_DECLARATION = ".governance-declaration.json";
+
+// Required fields in a governance declaration file
+const GOVERNANCE_DECLARATION_REQUIRED_FIELDS = [
+  "governance_declaration_version",
+  "architecture_source",
+  "standards_manifest_version",
+  "system_id",
+  "implementation_repo",
+  "declared_at",
+  "contract_pins",
+  "schema_pins",
+  "evaluation_manifest_path",
+  "last_evaluation_date",
+  "external_storage_policy",
+];
+
+// Detects unfilled template placeholders like "<YOUR_SYSTEM_ID>"
+function isPlaceholder(value) {
+  if (typeof value !== "string") return false;
+  return value.startsWith("<") && value.endsWith(">");
+}
 
 function parseArgs(argv) {
   const args = argv.slice(2);
   let configPath = null;
   let outputPath = null;
+  let standardsManifestPath = null;
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -26,6 +49,13 @@ function parseArgs(argv) {
       }
       outputPath = args[i + 1];
       i += 1;
+    } else if (arg === "--standards-manifest") {
+      if (i + 1 >= args.length) {
+        console.error("Missing value for --standards-manifest");
+        process.exit(1);
+      }
+      standardsManifestPath = args[i + 1];
+      i += 1;
     } else if (!arg.startsWith("-") && !configPath) {
       configPath = arg;
     } else {
@@ -34,7 +64,30 @@ function parseArgs(argv) {
     }
   }
 
-  return { configPath, outputPath };
+  return { configPath, outputPath, standardsManifestPath };
+}
+
+// Load contracts/standards-manifest.json from the governance repo root.
+function loadStandardsManifest(manifestPath) {
+  if (!manifestPath) return null;
+  try {
+    const content = fs.readFileSync(path.resolve(manifestPath), "utf-8");
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+// Build a map from artifact_type → contract entry from the standards manifest.
+function buildStandardsContractMap(standards) {
+  const contracts = (standards && Array.isArray(standards.contracts)) ? standards.contracts : [];
+  const map = {};
+  for (const contract of contracts) {
+    if (contract.artifact_type) {
+      map[contract.artifact_type] = contract;
+    }
+  }
+  return map;
 }
 
 function normalizeRepoConfig(raw, index) {
@@ -150,7 +203,7 @@ function loadGovernanceManifest(manifestPath, repoName, failures) {
   }
 }
 
-function validateManifest(manifest, repoConfig, failures) {
+function validateManifest(manifest, repoConfig, standardsContractMap, failures) {
   if (!manifest) {
     return;
   }
@@ -163,6 +216,7 @@ function validateManifest(manifest, repoConfig, failures) {
       repo_path: repoConfig.repo_path,
       expected: repoConfig.expected_system_id,
       actual: manifest.system_id,
+      detail: `Expected system_id '${repoConfig.expected_system_id}' but manifest declares '${manifest.system_id}'.`,
     });
   }
 
@@ -172,10 +226,12 @@ function validateManifest(manifest, repoConfig, failures) {
       type: "contracts_section_missing",
       repo: repoConfig.repo_name,
       repo_path: repoConfig.repo_path,
+      detail: "Governance manifest is missing the 'contracts' section.",
     });
     return;
   }
 
+  // Check that required contract pins are present.
   repoConfig.required_contracts.forEach((contractName) => {
     if (!manifest.contracts[contractName]) {
       failures.push({
@@ -184,26 +240,171 @@ function validateManifest(manifest, repoConfig, failures) {
         repo: repoConfig.repo_name,
         repo_path: repoConfig.repo_path,
         contract: contractName,
+        detail: `Required contract '${contractName}' is not pinned in the governance manifest.`,
       });
     }
   });
+
+  // Validate pinned contract versions against the standards manifest when available.
+  if (standardsContractMap && Object.keys(standardsContractMap).length > 0) {
+    for (const [artifactType, pinnedVersion] of Object.entries(manifest.contracts)) {
+      const standard = standardsContractMap[artifactType];
+      if (!standard) {
+        failures.push({
+          severity: "error",
+          type: "unknown_contract_pin",
+          repo: repoConfig.repo_name,
+          repo_path: repoConfig.repo_path,
+          contract: artifactType,
+          detail: `Contract '${artifactType}' is not defined in the standards manifest.`,
+        });
+        continue;
+      }
+      const canonicalVersion = standard.schema_version;
+      if (pinnedVersion !== canonicalVersion) {
+        failures.push({
+          severity: "error",
+          type: "contract_version_pin_mismatch",
+          repo: repoConfig.repo_name,
+          repo_path: repoConfig.repo_path,
+          contract: artifactType,
+          pinned_version: pinnedVersion,
+          canonical_version: canonicalVersion,
+          detail: `Contract '${artifactType}' is pinned at '${pinnedVersion}' but the standards manifest defines version '${canonicalVersion}'.`,
+        });
+      }
+    }
+  }
 }
 
-function checkRepo(repoConfig) {
+function validateGovernanceDeclaration(declarationPath, repoRoot, repoConfig, standardsContractMap, failures, warnings) {
+  let declaration;
+  try {
+    declaration = JSON.parse(fs.readFileSync(declarationPath, "utf-8"));
+  } catch (error) {
+    failures.push({
+      severity: "error",
+      type: "invalid_governance_declaration",
+      repo: repoConfig.repo_name,
+      repo_path: repoConfig.repo_path,
+      detail: `Failed to parse .governance-declaration.json: ${error.message}`,
+    });
+    return;
+  }
+
+  // Check required fields exist and are not placeholder values.
+  for (const field of GOVERNANCE_DECLARATION_REQUIRED_FIELDS) {
+    const value = declaration[field];
+    if (value === undefined || value === null) {
+      failures.push({
+        severity: "error",
+        type: "governance_declaration_missing_field",
+        repo: repoConfig.repo_name,
+        repo_path: repoConfig.repo_path,
+        field,
+        detail: `Governance declaration is missing required field '${field}'.`,
+      });
+      continue;
+    }
+    if (isPlaceholder(value)) {
+      failures.push({
+        severity: "error",
+        type: "governance_declaration_unfilled_placeholder",
+        repo: repoConfig.repo_name,
+        repo_path: repoConfig.repo_path,
+        field,
+        detail: `Field '${field}' still contains a template placeholder: ${value}`,
+      });
+    }
+  }
+
+  // Validate standards_manifest_version matches if we have the standards manifest.
+  if (standardsContractMap && Object.keys(standardsContractMap).length > 0) {
+    // We can check contract_pins against the map.
+    const contractPins = declaration.contract_pins;
+    if (contractPins && typeof contractPins === "object") {
+      for (const [artifactType, pinnedVersion] of Object.entries(contractPins)) {
+        if (isPlaceholder(artifactType) || isPlaceholder(pinnedVersion)) continue;
+        const standard = standardsContractMap[artifactType];
+        if (!standard) {
+          failures.push({
+            severity: "error",
+            type: "governance_declaration_unknown_contract_pin",
+            repo: repoConfig.repo_name,
+            repo_path: repoConfig.repo_path,
+            contract: artifactType,
+            detail: `contract_pins references '${artifactType}' which is not defined in the standards manifest.`,
+          });
+          continue;
+        }
+        const canonicalVersion = standard.schema_version;
+        if (pinnedVersion !== canonicalVersion) {
+          failures.push({
+            severity: "error",
+            type: "governance_declaration_contract_version_mismatch",
+            repo: repoConfig.repo_name,
+            repo_path: repoConfig.repo_path,
+            contract: artifactType,
+            pinned_version: pinnedVersion,
+            canonical_version: canonicalVersion,
+            detail: `contract_pins entry for '${artifactType}' is pinned at '${pinnedVersion}' but the standards manifest defines version '${canonicalVersion}'.`,
+          });
+        }
+      }
+    }
+  }
+
+  // Validate schema_pins: each referenced file path must exist relative to the governance repo root.
+  const schemaPins = declaration.schema_pins;
+  if (schemaPins && typeof schemaPins === "object") {
+    for (const [schemaPath, _schemaVersion] of Object.entries(schemaPins)) {
+      if (isPlaceholder(schemaPath)) continue;
+      const resolvedSchemaPath = path.resolve(repoRoot, schemaPath);
+      if (!pathExists(resolvedSchemaPath)) {
+        failures.push({
+          severity: "error",
+          type: "governance_declaration_schema_pin_missing",
+          repo: repoConfig.repo_name,
+          repo_path: repoConfig.repo_path,
+          schema_path: schemaPath,
+          detail: `schema_pins references '${schemaPath}' which does not exist in the governance repo.`,
+        });
+      }
+    }
+  }
+
+  // Warn if this looks like a stale declaration (very old last_evaluation_date).
+  const lastEval = declaration.last_evaluation_date;
+  if (lastEval && !isPlaceholder(lastEval)) {
+    const evalDate = new Date(lastEval);
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    if (!isNaN(evalDate.getTime()) && evalDate < oneYearAgo) {
+      warnings.push(
+        `Governance declaration last_evaluation_date '${lastEval}' is more than one year old.`
+      );
+    }
+  }
+}
+
+function checkRepo(repoConfig, repoRoot, standardsContractMap) {
   const repoPath = path.resolve(repoConfig.repo_path);
   const missingRequirements = [];
   const warnings = [];
   const failures = [];
 
+  // If the repo path doesn't exist, mark it as not_yet_enforceable rather than failing.
   if (!isDirectory(repoPath)) {
-    missingRequirements.push("repository path not found");
     return {
       repo_name: repoConfig.repo_name,
       repo_path: repoPath,
+      expected_system_id: repoConfig.expected_system_id,
+      expected_repo_type: repoConfig.expected_repo_type,
+      status: "not_yet_enforceable",
       compliant: false,
-      missing_requirements: missingRequirements,
-      failures,
-      warnings,
+      missing_requirements: ["repository path not found or not yet cloned"],
+      failures: [],
+      warnings: [],
     };
   }
 
@@ -243,10 +444,32 @@ function checkRepo(repoConfig) {
       type: "missing_governance_manifest",
       repo: repoConfig.repo_name,
       repo_path: repoPath,
+      detail: `Expected '${GOVERNANCE_MANIFEST}' not found in repository root.`,
     });
   } else {
     manifest = loadGovernanceManifest(manifestPath, repoConfig.repo_name, failures);
-    validateManifest(manifest, repoConfig, failures);
+    validateManifest(manifest, repoConfig, standardsContractMap, failures);
+  }
+
+  // If a governance declaration file exists, validate it too.
+  const declarationPath = path.join(repoPath, GOVERNANCE_DECLARATION);
+  if (pathExists(declarationPath)) {
+    validateGovernanceDeclaration(
+      declarationPath,
+      repoRoot,
+      repoConfig,
+      standardsContractMap,
+      failures,
+      warnings
+    );
+  }
+
+  const isCompliant = missingRequirements.length === 0 && failures.length === 0;
+  let status;
+  if (isCompliant) {
+    status = warnings.length > 0 ? "warning" : "pass";
+  } else {
+    status = "fail";
   }
 
   return {
@@ -254,17 +477,75 @@ function checkRepo(repoConfig) {
     repo_path: repoPath,
     expected_system_id: repoConfig.expected_system_id,
     expected_repo_type: repoConfig.expected_repo_type,
-    compliant: missingRequirements.length === 0 && failures.length === 0,
+    status,
+    compliant: isCompliant,
     missing_requirements: missingRequirements,
     failures,
     warnings,
   };
 }
 
+function printHumanSummary(report) {
+  const statusCounts = { pass: 0, fail: 0, warning: 0, not_yet_enforceable: 0 };
+  for (const repo of report.repos) {
+    const s = repo.status || (repo.compliant ? "pass" : "fail");
+    statusCounts[s] = (statusCounts[s] || 0) + 1;
+  }
+
+  console.log("");
+  console.log("=== Cross-Repo Compliance Scan Results ===");
+  console.log(`Scan date   : ${report.scan_date}`);
+  console.log(`Repos in config : ${report.repos.length}`);
+  console.log(`  PASS               : ${statusCounts.pass}`);
+  console.log(`  FAIL               : ${statusCounts.fail}`);
+  console.log(`  WARNING            : ${statusCounts.warning}`);
+  console.log(`  NOT YET ENFORCEABLE: ${statusCounts.not_yet_enforceable}`);
+  console.log("");
+
+  for (const repo of report.repos) {
+    const s = (repo.status || "fail").toUpperCase().replace(/_/g, " ");
+    console.log(`── ${repo.repo_name} [${s}]`);
+
+    if (repo.status === "not_yet_enforceable") {
+      console.log(`   ⚠ Repository path not accessible; validation deferred until repo is cloned.`);
+      continue;
+    }
+
+    for (const req of repo.missing_requirements || []) {
+      console.log(`   ✗ MISSING REQUIREMENT: ${req}`);
+    }
+    for (const failure of repo.failures || []) {
+      const label = failure.type ? failure.type.toUpperCase() : "ERROR";
+      console.log(`   ✗ ${label}: ${failure.detail || JSON.stringify(failure)}`);
+    }
+    for (const warning of repo.warnings || []) {
+      console.log(`   ⚠ WARNING: ${warning}`);
+    }
+    if (repo.status === "pass") {
+      console.log(`   ✓ All checks passed.`);
+    }
+  }
+  console.log("");
+}
+
 function run() {
-  const { configPath, outputPath } = parseArgs(process.argv);
+  const { configPath, outputPath, standardsManifestPath } = parseArgs(process.argv);
+  const repoRoot = process.cwd();
+
+  const resolvedManifestPath =
+    standardsManifestPath ||
+    path.join(repoRoot, "contracts", "standards-manifest.json");
+  const standards = loadStandardsManifest(resolvedManifestPath);
+  const standardsContractMap = buildStandardsContractMap(standards);
+
+  if (!standards) {
+    console.error(
+      `Warning: standards manifest not found at '${resolvedManifestPath}'. Contract version pin validation will be skipped.`
+    );
+  }
+
   const repos = loadConfig(configPath);
-  const results = repos.map(checkRepo);
+  const results = repos.map((repo) => checkRepo(repo, repoRoot, standardsContractMap));
 
   const report = {
     schema_version: "1.0.0",
@@ -275,9 +556,10 @@ function run() {
   if (outputPath) {
     const resolvedOutput = path.resolve(outputPath);
     fs.writeFileSync(resolvedOutput, JSON.stringify(report, null, 2));
+    printHumanSummary(report);
+  } else {
+    console.log(JSON.stringify(report, null, 2));
   }
-
-  console.log(JSON.stringify(report, null, 2));
 }
 
 run();
