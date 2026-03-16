@@ -9,6 +9,8 @@
 ### Phase 1 — Declared identity and contract pins
 **Status: Initiated (2026-03-16)**
 
+Phase 1 is now initiated because `contracts/governance-declaration.template.json` has been published as the concrete activation artifact; however, it is not yet fully active until downstream implementation repos adopt and file their own `.governance-declaration.json` files conforming to the template.
+
 - Every implementation repo must declare `system_id` and pin the contract and schema versions it implements (from `contracts/standards-manifest.json` and system interface docs).
 - Declarations live in a machine-readable `.governance-declaration.json` file in the implementation repo. Use `contracts/governance-declaration.template.json` as the canonical starting point for new declarations.
 - Governance declarations must be pinned to the current `standards_version` from `contracts/standards-manifest.json` and specify `contract_pins`, `schema_pins`, `rule_version`, `evaluation_manifest_path`, and `last_evaluation_date`.

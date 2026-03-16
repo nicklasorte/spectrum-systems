@@ -1,10 +1,58 @@
 {
-    "$comment": "Governance declaration template for implementation repositories. Copy this file to your implementation repo as .governance-declaration.json and fill in the values for your system. The SYS-001 example below shows a completed declaration for comment-resolution-engine.",
+    "_instructions": "Copy this file to your implementation repo as .governance-declaration.json and fill in all placeholder values for your system. Remove the _instructions, _field_docs, and _example keys before committing the live declaration. Pin every contract_pins entry to the version listed in contracts/standards-manifest.json at the time of filing. Advance last_evaluation_date whenever the evaluation harness is re-executed.",
+    "_field_docs": {
+        "governance_declaration_version": "Version of this declaration schema. Use '1.0.0' until a newer schema is published in spectrum-systems.",
+        "architecture_source": "GitHub repo that owns the authoritative governance standards. Always 'nicklasorte/spectrum-systems'.",
+        "standards_manifest_version": "The standards_version field from contracts/standards-manifest.json pinned at the time of this declaration (e.g. '2026.03.0').",
+        "system_id": "Canonical identifier from docs/system-status-registry.md or SYSTEMS.md (e.g. 'SYS-001').",
+        "implementation_repo": "GitHub repo slug for this implementation (e.g. 'owner/repo').",
+        "declared_at": "ISO 8601 date this declaration was filed or last updated (YYYY-MM-DD).",
+        "contract_pins": "Map of artifact_type to schema_version for every contract this system consumes. Keys must match artifact_type values in contracts/standards-manifest.json.",
+        "schema_pins": "Map of schema file path (relative to spectrum-systems root) to schema_version for every schema this system imports. Paths must resolve in the architecture_source repo.",
+        "rule_version": "Version identifier for the rule pack imported from rules/. Use null if no rule pack applies.",
+        "prompt_set_hash": "SHA-256 of the prompt files in prompts/ that this system depends on, or null if prompts are not versioned.",
+        "evaluation_manifest_path": "Repo-relative path to the evaluation manifest or README that describes the evaluation harness for this system.",
+        "last_evaluation_date": "ISO 8601 date (YYYY-MM-DD) of the most recent evaluation harness execution with recorded pass/fail results.",
+        "external_storage_policy": "Free-text description of how external artifacts (inputs, outputs) are stored and accessed at runtime. Use 'none' if all data resides in the repo."
+    },
+    "_example": {
+        "description": "Completed declaration for SYS-001 (comment-resolution-engine) pinned to standards manifest version 2026.03.0.",
+        "governance_declaration_version": "1.0.0",
+        "architecture_source": "nicklasorte/spectrum-systems",
+        "standards_manifest_version": "2026.03.0",
+        "system_id": "SYS-001",
+        "implementation_repo": "nicklasorte/comment-resolution-engine",
+        "declared_at": "2026-03-16",
+        "contract_pins": {
+            "comment_resolution_matrix": "1.0.0",
+            "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
+            "pdf_anchored_docx_comment_injection_contract": "1.0.1",
+            "reviewer_comment_set": "1.0.0",
+            "meeting_agenda_contract": "1.0.0",
+            "provenance_record": "1.0.0",
+            "external_artifact_manifest": "1.0.0"
+        },
+        "schema_pins": {
+            "contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json": "1.0.0",
+            "contracts/schemas/reviewer_comment_set.schema.json": "1.0.0",
+            "contracts/schemas/provenance_record.schema.json": "1.0.0",
+            "schemas/comment-schema.json": "1.0.0",
+            "schemas/issue-schema.json": "1.0.0",
+            "schemas/provenance-schema.json": "1.0.0",
+            "schemas/assumption-schema.json": "1.0.0"
+        },
+        "rule_version": "comment-resolution/v1.0",
+        "prompt_set_hash": null,
+        "evaluation_manifest_path": "eval/comment-resolution/README.md",
+        "last_evaluation_date": "2026-03-14",
+        "external_storage_policy": "Working paper PDFs and comment spreadsheets are ingested at runtime from external sources; no operational artifacts are stored in the implementation repo"
+    },
     "governance_declaration_version": "1.0.0",
     "architecture_source": "nicklasorte/spectrum-systems",
+    "standards_manifest_version": "<standards_version from contracts/standards-manifest.json>",
     "system_id": "<YOUR_SYSTEM_ID>",
     "implementation_repo": "<owner>/<repo>",
-    "declared_at": "<ISO-8601-date>",
+    "declared_at": "<YYYY-MM-DD>",
     "contract_pins": {
         "<artifact_type>": "<schema_version>"
     },
@@ -15,37 +63,5 @@
     "prompt_set_hash": "<sha256-of-prompt-files or null>",
     "evaluation_manifest_path": "<relative path to eval manifest or eval/README>",
     "last_evaluation_date": "<YYYY-MM-DD>",
-    "external_storage_policy": "<description of external storage policy or 'none'>",
-    "$examples": {
-        "SYS-001": {
-            "governance_declaration_version": "1.0.0",
-            "architecture_source": "nicklasorte/spectrum-systems",
-            "system_id": "SYS-001",
-            "implementation_repo": "nicklasorte/comment-resolution-engine",
-            "declared_at": "2026-03-16",
-            "contract_pins": {
-                "comment_resolution_matrix": "1.0.0",
-                "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
-                "pdf_anchored_docx_comment_injection_contract": "1.0.1",
-                "reviewer_comment_set": "1.0.0",
-                "meeting_agenda_contract": "1.0.0",
-                "provenance_record": "1.0.0",
-                "external_artifact_manifest": "1.0.0"
-            },
-            "schema_pins": {
-                "contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json": "1.0.0",
-                "contracts/schemas/reviewer_comment_set.schema.json": "1.0.0",
-                "contracts/schemas/provenance_record.schema.json": "1.0.0",
-                "schemas/comment-schema.json": "1.0.0",
-                "schemas/issue-schema.json": "1.0.0",
-                "schemas/provenance-schema.json": "1.0.0",
-                "schemas/assumption-schema.json": "1.0.0"
-            },
-            "rule_version": "comment-resolution/v1.0",
-            "prompt_set_hash": null,
-            "evaluation_manifest_path": "eval/comment-resolution/README.md",
-            "last_evaluation_date": "2026-03-14",
-            "external_storage_policy": "Working paper PDFs and comment spreadsheets are ingested at runtime from external sources; no operational artifacts are stored in the implementation repo"
-        }
-    }
+    "external_storage_policy": "<description of external storage policy or 'none'>"
 }
