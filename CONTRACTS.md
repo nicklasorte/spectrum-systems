@@ -2,6 +2,9 @@
 
 Spectrum Systems is the authoritative source for machine-readable artifact contracts that downstream implementation repos must consume. Contracts define the canonical input/output structures, required provenance metadata, and compatibility guarantees for spectrum engineering workflows.
 
+## Schema authority
+`contracts/schemas/` is the **canonical source** for all governed artifact contract schemas. Downstream repos must import schemas from this directory and pin versions against `contracts/standards-manifest.json`. Root `schemas/` contains supplemental structural schemas (comment, issue, provenance, etc.) that are not governed artifact contracts. See `schemas/README.md` for the full schema authority statement and import rules.
+
 ## Why contracts live here
 - This repo is the governing czar for the ecosystem; contracts must be published here before system-factory scaffolds them elsewhere.
 - Downstream engines (e.g., Comment Resolution Engine, Working Paper Review Engine) import these contracts instead of redefining them.

@@ -1,0 +1,630 @@
+{
+    "$schema": "../design-reviews/claude-review.schema.json",
+    "schema_version": "1.0.0",
+    "review_metadata": {
+        "review_id": "2026-03-16-governance-constitution-deep-review",
+        "review_date": "2026-03-16",
+        "repository": "nicklasorte/spectrum-systems",
+        "scope": "Deep architecture and governance review: governance completeness, cross-repo constitutional strength, review culture, operational readiness, artifact and contract quality, CI/automation enforcement",
+        "reviewer": "Claude (Principal Systems Architect — Governance Constitutional Review)",
+        "source_artifact": "docs/reviews/2026-03-16-governance-constitution-deep-review.md",
+        "actions_artifact": "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json",
+        "source_commit": "main@HEAD",
+        "inputs": [
+            "docs/design-review-standard.md",
+            "docs/governance-enforcement-roadmap.md",
+            "docs/governance-conformance-checklist.md",
+            "contracts/standards-manifest.json",
+            "ecosystem/ecosystem-registry.json",
+            "governance/compliance-scans/run-cross-repo-compliance.js",
+            "scripts/check_artifact_boundary.py",
+            ".github/workflows/",
+            "design-reviews/claude-review.schema.json",
+            "docs/reviews/review-registry.json"
+        ]
+    },
+    "findings": [
+        {
+            "id": "F-1",
+            "severity": "critical",
+            "category": "governance-enforcement",
+            "title": "Phase 1 enforcement not initiated: governance-declaration.template.json does not exist",
+            "description": "contracts/governance-declaration.template.json explicitly requested by GA-007 (2026-03-14-governance-architecture-review) does not exist. Phase 1 of the governance enforcement roadmap cannot be activated without it.",
+            "recommended_action": "Create contracts/governance-declaration.template.json; update governance-conformance-checklist.md and governance-enforcement-roadmap.md.",
+            "files_affected": [
+                "contracts/governance-declaration.template.json",
+                "docs/governance-conformance-checklist.md",
+                "docs/governance-enforcement-roadmap.md"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Create contracts/governance-declaration.template.json to initiate Phase 1 enforcement",
+            "suggested_labels": [
+                "governance-enforcement",
+                "phase-1",
+                "priority-critical"
+            ],
+            "due_date": "2026-03-23"
+        },
+        {
+            "id": "F-2",
+            "severity": "critical",
+            "category": "ci-enforcement",
+            "title": "Artifact boundary CI does not enforce implementation code boundary",
+            "description": "scripts/check_artifact_boundary.py enforces data artifact rules only; spectrum_systems/study_runner/ passes boundary CI unchallenged.",
+            "recommended_action": "Extend scripts/check_artifact_boundary.py to detect Python packages outside scripts/, root-level run_*.py scripts, and src/ directories.",
+            "files_affected": [
+                "scripts/check_artifact_boundary.py",
+                "docs/implementation-boundary.md"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Extend artifact-boundary CI to enforce implementation code boundary",
+            "suggested_labels": [
+                "ci-enforcement",
+                "boundary-enforcement",
+                "priority-critical"
+            ]
+        },
+        {
+            "id": "F-3",
+            "severity": "high",
+            "category": "architecture-boundary",
+            "title": "Production Python package spectrum_systems/ remains in governance-only repo",
+            "description": "spectrum_systems/study_runner/ violates CLAUDE.md boundary rule. Identified in RC-1 (2026-03-15), A-1 (2026-03-15 audit), GA-008 (2026-03-14) — carried forward unresolved across three reviews.",
+            "recommended_action": "Move spectrum_systems/study_runner/ to an engine repo, or formally document governance exemption in DECISIONS.md.",
+            "files_affected": [
+                "spectrum_systems/",
+                "run_study.py",
+                "DECISIONS.md"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Resolve production Python package in governance repo: remove or formally exempt spectrum_systems/",
+            "suggested_labels": [
+                "architecture-boundary",
+                "governance-violation",
+                "priority-high",
+                "RC-1-carried-forward"
+            ]
+        },
+        {
+            "id": "F-4",
+            "severity": "high",
+            "category": "schema-governance",
+            "title": "Schema authority is split across two directories without canonical designation",
+            "description": "Root schemas/ and contracts/schemas/ both contain schemas with no canonical source designation. Downstream repos face ambiguous import paths.",
+            "recommended_action": "Add Schema Authority section to schemas/README.md declaring contracts/schemas/ as canonical for contract schemas. Cross-reference in CONTRACTS.md.",
+            "files_affected": [
+                "schemas/README.md",
+                "CONTRACTS.md"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Designate canonical schema authority in schemas/README.md",
+            "suggested_labels": [
+                "schema-governance",
+                "priority-high"
+            ],
+            "due_date": "2026-03-30"
+        },
+        {
+            "id": "F-5",
+            "severity": "high",
+            "category": "ci-enforcement",
+            "title": "Cross-repo compliance scanner validates file presence only; policy engine not wired to CI",
+            "description": "The compliance scanner checks for file presence. governance/policies/run-policy-engine.py (4 GOV policies) is not invoked in any CI workflow.",
+            "recommended_action": "Add a step in cross-repo-compliance.yml that runs run-policy-engine.py and fails on violations.",
+            "files_affected": [
+                ".github/workflows/cross-repo-compliance.yml",
+                "governance/policies/run-policy-engine.py"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Wire governance policy engine to cross-repo compliance CI workflow",
+            "suggested_labels": [
+                "ci-enforcement",
+                "governance-enforcement",
+                "priority-high"
+            ]
+        },
+        {
+            "id": "F-6",
+            "severity": "medium",
+            "category": "review-culture",
+            "title": "All review registry entries are Open with no per-finding resolution tracking",
+            "description": "Seven reviews are Open/In Progress with no per-finding resolution mechanism. RC-1 violation appears in 3 reviews without closure tracking.",
+            "recommended_action": "Extend review-registry.schema.json with per-finding resolution tracking; define closure criteria.",
+            "files_affected": [
+                "docs/reviews/review-registry.json",
+                "docs/reviews/review-registry.schema.json"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Add per-finding resolution tracking to review registry",
+            "suggested_labels": [
+                "review-culture",
+                "governance",
+                "priority-medium"
+            ]
+        },
+        {
+            "id": "F-7",
+            "severity": "medium",
+            "category": "governance-completeness",
+            "title": "Governance conformance checklist is missing key pre-release gate items",
+            "description": "docs/governance-conformance-checklist.md is missing: machine-readable declaration requirement, evaluation harness completion, ADR review, CI-enforcement confirmation, lifecycle gate verification.",
+            "recommended_action": "Add five new checklist items to docs/governance-conformance-checklist.md.",
+            "files_affected": [
+                "docs/governance-conformance-checklist.md"
+            ],
+            "create_issue": true,
+            "suggested_issue_title": "Expand governance-conformance-checklist.md with evaluation, ADR, CI, and declaration requirements",
+            "suggested_labels": [
+                "governance-completeness",
+                "priority-medium"
+            ]
+        },
+        {
+            "id": "F-8",
+            "severity": "low",
+            "category": "documentation",
+            "title": "AGENTS.md is vestigial",
+            "description": "AGENTS.md (35 lines) adds no value over CLAUDE.md and CODEX.md. GA-010 identified this in 2026-03-14 review.",
+            "recommended_action": "Rewrite AGENTS.md as ecosystem agent entry point or redirect to CLAUDE.md/CODEX.md.",
+            "files_affected": [
+                "AGENTS.md"
+            ],
+            "create_issue": false
+        },
+        {
+            "id": "F-9",
+            "severity": "low",
+            "category": "evaluation",
+            "title": "Eval harness directories for SYS-005 through SYS-009 absent",
+            "description": "eval/test-matrix.md only covers SYS-001 through SYS-004. GA-011 identified this in 2026-03-14 review.",
+            "recommended_action": "Create eval/ directories for each missing system and add test-matrix.md rows.",
+            "files_affected": [
+                "eval/",
+                "eval/test-matrix.md"
+            ],
+            "create_issue": false
+        },
+        {
+            "id": "F-10",
+            "severity": "low",
+            "category": "governance-completeness",
+            "title": "ADR framework does not cover post-sprint architecture decisions",
+            "description": "Five ADRs cover initial phase only. Governance manifest, Phase 1 enforcement, and schema authority decisions have no ADRs.",
+            "recommended_action": "File ADR-006 through ADR-008 for post-sprint governance decisions.",
+            "files_affected": [
+                "docs/adr/"
+            ],
+            "create_issue": false
+        }
+    ],
+    "summary": {
+        "executive_summary": [
+            "spectrum-systems is at maturity Level 2 (Structured) approaching Level 3 (Governed).",
+            "contracts/governance-declaration.template.json — the Phase 1 trigger artifact — does not exist.",
+            "Artifact boundary CI passes production code; spectrum_systems/ violates the repo's own boundary rule across three unresolved reviews.",
+            "Policy engine (GOV-001–GOV-004) has zero enforcement value because it is not wired to CI.",
+            "Schema authority is ambiguous across two directories."
+        ],
+        "strengths": [
+            "Design review artifact system is production-grade with schema-backed validation and GitHub Issues bridge.",
+            "18 contracts with machine-readable registry, semver versioning, and CI-validated examples.",
+            "Ecosystem registry covers all 10 repositories.",
+            "Governance policy engine is present with four evaluable policies.",
+            "Five ADRs provide navigable decision history for the initial build phase."
+        ],
+        "gaps": [
+            {
+                "id": "G1",
+                "statement": "contracts/governance-declaration.template.json does not exist; Phase 1 enforcement cannot be activated without it."
+            },
+            {
+                "id": "G2",
+                "statement": "scripts/check_artifact_boundary.py does not detect Python packages or runnable scripts; spectrum_systems/ passes boundary CI unchallenged."
+            },
+            {
+                "id": "G3",
+                "statement": "schemas/README.md does not designate a canonical schema authority."
+            },
+            {
+                "id": "G4",
+                "statement": "governance/policies/run-policy-engine.py is not invoked in any CI workflow."
+            },
+            {
+                "id": "G5",
+                "statement": "docs/governance-conformance-checklist.md is missing machine-readable declaration, evaluation harness, ADR review, CI-enforcement, and lifecycle gate items."
+            },
+            {
+                "id": "G6",
+                "statement": "All seven review registry entries are Open or In Progress; no per-finding resolution mechanism exists."
+            },
+            {
+                "id": "G7",
+                "statement": "ADR framework ends at the initial build phase; governance manifest model and Phase 1 strategy have no ADRs."
+            }
+        ],
+        "risks": [
+            {
+                "id": "R1",
+                "statement": "Governance enforcement is entirely manual; downstream repos have no machine-verifiable commitment.",
+                "severity": "high",
+                "likelihood": "high",
+                "rationale": "Phase 1 not initiated; no governance declaration template exists.",
+                "related_gaps": [
+                    "G1"
+                ]
+            },
+            {
+                "id": "R2",
+                "statement": "Self-governance failure — production code in governance repo — undermines constitutional authority.",
+                "severity": "high",
+                "likelihood": "high",
+                "rationale": "spectrum_systems/ identified in three reviews without resolution.",
+                "related_gaps": [
+                    "G2"
+                ]
+            },
+            {
+                "id": "R3",
+                "statement": "Schema dual-track will produce divergent imports and undetectable drift at scale.",
+                "severity": "medium",
+                "likelihood": "medium",
+                "rationale": "No canonical designation; both directories contain domain-overlapping schemas.",
+                "related_gaps": [
+                    "G3"
+                ]
+            },
+            {
+                "id": "R4",
+                "statement": "Review culture generates institutional debt; 80+ action items across 7 open reviews with no closure mechanism.",
+                "severity": "medium",
+                "likelihood": "high",
+                "rationale": "All seven entries are Open/In Progress; same findings recur without closure.",
+                "related_gaps": [
+                    "G6"
+                ]
+            },
+            {
+                "id": "R5",
+                "statement": "Policy engine provides zero enforcement value; four governance policies are present but untriggered in CI.",
+                "severity": "medium",
+                "likelihood": "medium",
+                "rationale": "run-policy-engine.py not invoked in any workflow.",
+                "related_gaps": [
+                    "G4"
+                ]
+            }
+        ]
+    },
+    "recommendations": [
+        {
+            "id": "REC-1",
+            "statement": "Create contracts/governance-declaration.template.json with complete field specification and SYS-001 example. Update docs/governance-conformance-checklist.md and docs/governance-enforcement-roadmap.md to initiate Phase 1 enforcement.",
+            "priority": "critical",
+            "expected_outcome": "Phase 1 has a concrete template; downstream repos can file machine-verifiable governance declarations; system-factory can scaffold declarations automatically.",
+            "related_gaps": [
+                "G1"
+            ],
+            "related_risks": [
+                "R1"
+            ]
+        },
+        {
+            "id": "REC-2",
+            "statement": "Extend scripts/check_artifact_boundary.py to detect Python packages outside scripts/ with non-trivial business logic, root-level run_*.py scripts, and any src/ directory. Maintain explicit allowlist for scripts/. Document in docs/implementation-boundary.md.",
+            "priority": "critical",
+            "expected_outcome": "spectrum_systems/ would fail boundary CI; future production code additions are blocked automatically; self-governance credibility gap is closed.",
+            "related_gaps": [
+                "G2"
+            ],
+            "related_risks": [
+                "R2"
+            ]
+        },
+        {
+            "id": "REC-3",
+            "statement": "Add a Schema Authority section to schemas/README.md declaring contracts/schemas/ as canonical for governed contract schemas and root schemas/ as supplemental for non-contract structural schemas. Update CONTRACTS.md to reference this designation.",
+            "priority": "high",
+            "expected_outcome": "Downstream repos resolve import ambiguity deterministically; schema drift detection becomes possible; dual-track authority is eliminated.",
+            "related_gaps": [
+                "G3"
+            ],
+            "related_risks": [
+                "R3"
+            ]
+        },
+        {
+            "id": "REC-4",
+            "statement": "Add a step in .github/workflows/cross-repo-compliance.yml that runs governance/policies/run-policy-engine.py against all example governance manifests and fails the workflow on any policy violation.",
+            "priority": "high",
+            "expected_outcome": "Four GOV policies produce CI pass/fail signals; governance manifests that violate policy cannot merge; policy engine gains real enforcement value.",
+            "related_gaps": [
+                "G4"
+            ],
+            "related_risks": [
+                "R5"
+            ]
+        },
+        {
+            "id": "REC-5",
+            "statement": "Extend docs/reviews/review-registry.schema.json to support per-finding resolution tracking and define formal closure criteria: a review is Closed only when all findings are resolved, deferred with a trigger, or superseded.",
+            "priority": "medium",
+            "expected_outcome": "Finding accumulation becomes visible; review pipeline generates resolution pressure; carried-forward violations are machine-traceable across reviews.",
+            "related_gaps": [
+                "G6"
+            ]
+        },
+        {
+            "id": "REC-6",
+            "statement": "Add five missing items to docs/governance-conformance-checklist.md: machine-readable governance declaration, evaluation harness completion with pass/fail recorded, ADR review, CI-enforcement confirmation, and system lifecycle gate verification.",
+            "priority": "medium",
+            "expected_outcome": "Checklist becomes a complete pre-release gate; implementation repos have unambiguous compliance criteria.",
+            "related_gaps": [
+                "G5"
+            ]
+        },
+        {
+            "id": "REC-7",
+            "statement": "File ADR-006 for the governance manifest model and policy engine, ADR-007 for Phase 1 enforcement strategy, and ADR-008 for schema authority designation. Use docs/adr/ADR-TEMPLATE.md and reference motivating review IDs in each.",
+            "priority": "low",
+            "expected_outcome": "Decision record covers the full development history; subsequent reviewers can trace governance architecture choices.",
+            "related_gaps": [
+                "G7"
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "id": "A-1",
+            "title": "Create contracts/governance-declaration.template.json",
+            "description": "Create the Phase 1 governance declaration template with complete field specification and SYS-001 example.",
+            "priority": "critical",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-1"
+            ],
+            "related_gaps": [
+                "G1"
+            ],
+            "related_risks": [
+                "R1"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "governance-enforcement",
+                "phase-1",
+                "priority-critical"
+            ],
+            "expected_artifact": "contracts/governance-declaration.template.json with complete field structure and SYS-001 example",
+            "acceptance_criteria": [
+                "File exists at contracts/governance-declaration.template.json",
+                "All required fields present: system_id, implementation_repo, architecture_source, contract_pins, schema_pins, rule_version, prompt_set_hash, evaluation_manifest_path, last_evaluation_date, external_storage_policy, governance_declaration_version",
+                "SYS-001 example uses real contract versions from contracts/standards-manifest.json",
+                "docs/governance-conformance-checklist.md references the template in a new checklist item"
+            ],
+            "follow_up_trigger": "When contracts/governance-declaration.template.json is merged",
+            "due_date": "2026-03-23"
+        },
+        {
+            "id": "A-2",
+            "title": "Update governance-enforcement-roadmap.md to mark Phase 1 as initiated",
+            "description": "Add Status: Initiated to Phase 1, reference the template, record initiation date.",
+            "priority": "critical",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-1"
+            ],
+            "related_gaps": [
+                "G1"
+            ],
+            "related_risks": [
+                "R1"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "governance-enforcement",
+                "phase-1",
+                "priority-critical"
+            ],
+            "expected_artifact": "Updated docs/governance-enforcement-roadmap.md",
+            "acceptance_criteria": [
+                "Phase 1 section includes Status: Initiated",
+                "References contracts/governance-declaration.template.json",
+                "Initiation date recorded"
+            ],
+            "follow_up_trigger": "When Phase 1 transitions from Initiated to Active",
+            "due_date": "2026-03-23"
+        },
+        {
+            "id": "A-3",
+            "title": "Extend artifact boundary CI to detect implementation code violations",
+            "description": "Update scripts/check_artifact_boundary.py to flag Python packages, run_*.py scripts, and src/ directories.",
+            "priority": "critical",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-2"
+            ],
+            "related_gaps": [
+                "G2"
+            ],
+            "related_risks": [
+                "R2"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "ci-enforcement",
+                "boundary-enforcement",
+                "priority-critical"
+            ],
+            "expected_artifact": "Updated scripts/check_artifact_boundary.py; updated docs/implementation-boundary.md",
+            "acceptance_criteria": [
+                "Script flags spectrum_systems/ as a violation",
+                "Script flags run_study.py as a violation",
+                "scripts/ directory remains in allowlist",
+                "docs/implementation-boundary.md documents the enforcement rule"
+            ],
+            "follow_up_trigger": "When boundary CI flags spectrum_systems/ and the production code is removed or formally exempted",
+            "blocking_dependencies": [
+                "A-1"
+            ]
+        },
+        {
+            "id": "A-4",
+            "title": "Designate canonical schema authority in schemas/README.md",
+            "description": "Add Schema Authority section and cross-reference in CONTRACTS.md.",
+            "priority": "high",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-3"
+            ],
+            "related_gaps": [
+                "G3"
+            ],
+            "related_risks": [
+                "R3"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "schema-governance",
+                "priority-high"
+            ],
+            "expected_artifact": "Updated schemas/README.md; updated CONTRACTS.md",
+            "acceptance_criteria": [
+                "contracts/schemas/ declared canonical for contract schemas",
+                "Root schemas/ declared supplemental for non-contract structural schemas",
+                "Overlapping schemas identified with migration path",
+                "CONTRACTS.md references the canonical designation"
+            ],
+            "follow_up_trigger": "When schemas/README.md and CONTRACTS.md are merged",
+            "due_date": "2026-03-30"
+        },
+        {
+            "id": "A-5",
+            "title": "Wire governance policy engine to cross-repo compliance CI",
+            "description": "Add policy engine invocation step to .github/workflows/cross-repo-compliance.yml.",
+            "priority": "high",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-4"
+            ],
+            "related_gaps": [
+                "G4"
+            ],
+            "related_risks": [
+                "R5"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "ci-enforcement",
+                "governance-enforcement",
+                "priority-high"
+            ],
+            "expected_artifact": "Updated .github/workflows/cross-repo-compliance.yml",
+            "acceptance_criteria": [
+                "Policy engine step added to workflow",
+                "Workflow fails on policy violations",
+                "Step output is human-readable"
+            ],
+            "follow_up_trigger": "When policy engine step is added and at least one policy violation causes CI failure"
+        },
+        {
+            "id": "A-6",
+            "title": "Expand docs/governance-conformance-checklist.md",
+            "description": "Add five new checklist items: declaration, evaluation, ADR, CI, and lifecycle gate.",
+            "priority": "medium",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-6"
+            ],
+            "related_gaps": [
+                "G5"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "governance-completeness",
+                "priority-medium"
+            ],
+            "expected_artifact": "Updated docs/governance-conformance-checklist.md with at least 18 items",
+            "acceptance_criteria": [
+                "Machine-readable governance declaration item added",
+                "Evaluation harness completion item added",
+                "ADR review item added",
+                "CI-enforcement confirmation item added",
+                "System lifecycle gate item added"
+            ],
+            "follow_up_trigger": "When checklist is updated and tested against at least one implementation repo",
+            "blocking_dependencies": [
+                "A-1"
+            ]
+        },
+        {
+            "id": "A-7",
+            "title": "Create ADRs for post-sprint governance architecture decisions",
+            "description": "File ADR-006 through ADR-008 for governance manifest model, Phase 1 enforcement strategy, and schema authority designation.",
+            "priority": "low",
+            "status": "open",
+            "owners": [
+                "Codex"
+            ],
+            "source_recommendations": [
+                "REC-7"
+            ],
+            "related_gaps": [
+                "G7"
+            ],
+            "target_repos": [
+                "nicklasorte/spectrum-systems"
+            ],
+            "labels": [
+                "architecture-decision",
+                "priority-low"
+            ],
+            "expected_artifact": "Three new ADR files in docs/adr/",
+            "acceptance_criteria": [
+                "ADR-006 covers governance manifest model and policy engine",
+                "ADR-007 covers Phase 1 enforcement strategy",
+                "ADR-008 covers schema authority designation",
+                "All ADRs follow ADR-TEMPLATE.md format"
+            ],
+            "follow_up_trigger": "When A-1, A-2, and A-4 are completed"
+        }
+    ],
+    "follow_up": {
+        "next_review_due": "2026-04-30",
+        "triggers": [
+            "When contracts/governance-declaration.template.json is merged",
+            "When Phase 1 transitions from Initiated to Active",
+            "When scripts/check_artifact_boundary.py is updated",
+            "When any downstream implementation repo reaches pilot status"
+        ]
+    }
+}

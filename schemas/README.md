@@ -1,6 +1,21 @@
 # Schema Directory Guide
 
-This directory contains authoritative schemas that anchor every system and workflow. Schemas define the contracts that keep automation outputs deterministic and reviewable.
+This directory contains structural schemas that anchor every system and workflow. Schemas define the contracts that keep automation outputs deterministic and reviewable.
+
+## Schema Authority
+
+There are two schema directories in this repository. Each has a distinct, non-overlapping purpose:
+
+| Directory | Authority | Scope |
+| --- | --- | --- |
+| `contracts/schemas/` | **Canonical** for all governed artifact contracts | All schemas that correspond to a contract in `contracts/standards-manifest.json`; these are the authoritative sources that downstream repos must import and pin. |
+| `schemas/` (this directory) | **Supplemental** for non-contract structural schemas | Structural schemas used within spectrum-systems for internal data shapes, data-lake records, and system-level metadata that are not governed artifact contracts. |
+
+**Import rule for downstream repos:** Always import contract schemas from `contracts/schemas/`. Import supplemental structural schemas (comment, issue, provenance, assumption, study-output, precedent, diagnostics, compiler-manifest, artifact-bundle) from this directory only when no corresponding schema exists in `contracts/schemas/`.
+
+**Migration:** Any schema in this directory that grows to the point where it defines a governed artifact contract should be formally promoted to `contracts/schemas/` and added to `contracts/standards-manifest.json`. Until that promotion, the schema in this directory is not governed under the contract versioning policy in `CONTRACT_VERSIONING.md`.
+
+See `CONTRACTS.md` for the canonical schema authority declaration.
 
 ## Inventory
 
