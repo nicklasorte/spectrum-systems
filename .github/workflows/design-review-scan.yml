@@ -1,0 +1,20 @@
+name: Design Review Scanner
+
+on:
+  push:
+    paths:
+      - "design-reviews/*.md"
+
+jobs:
+  scan-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Repository Actions
+        run: |
+          echo "Scanning design reviews for Repository Actions..."
+          grep -A 10 "## Repository Actions" design-reviews/*.md || echo "No actions found"
+          echo "## Repository Actions Found" >> $GITHUB_STEP_SUMMARY
+          grep -A 10 "## Repository Actions" design-reviews/*.md >> $GITHUB_STEP_SUMMARY || echo "None found" >> $GITHUB_STEP_SUMMARY
