@@ -79,6 +79,10 @@
         },
         "uniqueItems": true
       },
+      "scope": {
+        "type": "string",
+        "description": "Scope of the design or architecture review (e.g., full repo audit, pipeline review, governance review)."
+      },
       "notes": {
         "type": "string"
       }
