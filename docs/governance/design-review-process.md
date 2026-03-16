@@ -13,3 +13,8 @@ Reviews must be converted into one or more of the following:
 No review should exist only as chat output.
 
 The repository is the source of truth for architectural decisions and findings.
+
+## CI Surfacing of Repository Actions
+
+Architecture reviews placed in `/design-reviews/` will automatically be scanned by CI.
+The workflow surfaces recommended repository actions in the GitHub job summary so maintainers can quickly convert them into ADRs or issues.
