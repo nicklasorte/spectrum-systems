@@ -1,0 +1,51 @@
+{
+    "$comment": "Governance declaration template for implementation repositories. Copy this file to your implementation repo as .governance-declaration.json and fill in the values for your system. The SYS-001 example below shows a completed declaration for comment-resolution-engine.",
+    "governance_declaration_version": "1.0.0",
+    "architecture_source": "nicklasorte/spectrum-systems",
+    "system_id": "<YOUR_SYSTEM_ID>",
+    "implementation_repo": "<owner>/<repo>",
+    "declared_at": "<ISO-8601-date>",
+    "contract_pins": {
+        "<artifact_type>": "<schema_version>"
+    },
+    "schema_pins": {
+        "<path/to/schema.json>": "<schema_version>"
+    },
+    "rule_version": "<rule-pack-version or null>",
+    "prompt_set_hash": "<sha256-of-prompt-files or null>",
+    "evaluation_manifest_path": "<relative path to eval manifest or eval/README>",
+    "last_evaluation_date": "<YYYY-MM-DD>",
+    "external_storage_policy": "<description of external storage policy or 'none'>",
+    "$examples": {
+        "SYS-001": {
+            "governance_declaration_version": "1.0.0",
+            "architecture_source": "nicklasorte/spectrum-systems",
+            "system_id": "SYS-001",
+            "implementation_repo": "nicklasorte/comment-resolution-engine",
+            "declared_at": "2026-03-16",
+            "contract_pins": {
+                "comment_resolution_matrix": "1.0.0",
+                "comment_resolution_matrix_spreadsheet_contract": "1.0.0",
+                "pdf_anchored_docx_comment_injection_contract": "1.0.1",
+                "reviewer_comment_set": "1.0.0",
+                "meeting_agenda_contract": "1.0.0",
+                "provenance_record": "1.0.0",
+                "external_artifact_manifest": "1.0.0"
+            },
+            "schema_pins": {
+                "contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json": "1.0.0",
+                "contracts/schemas/reviewer_comment_set.schema.json": "1.0.0",
+                "contracts/schemas/provenance_record.schema.json": "1.0.0",
+                "schemas/comment-schema.json": "1.0.0",
+                "schemas/issue-schema.json": "1.0.0",
+                "schemas/provenance-schema.json": "1.0.0",
+                "schemas/assumption-schema.json": "1.0.0"
+            },
+            "rule_version": "comment-resolution/v1.0",
+            "prompt_set_hash": null,
+            "evaluation_manifest_path": "eval/comment-resolution/README.md",
+            "last_evaluation_date": "2026-03-14",
+            "external_storage_policy": "Working paper PDFs and comment spreadsheets are ingested at runtime from external sources; no operational artifacts are stored in the implementation repo"
+        }
+    }
+}

@@ -7,9 +7,13 @@
 
 ## Future enforcement model
 ### Phase 1 — Declared identity and contract pins
+**Status: Initiated (2026-03-16)**
+
 - Every implementation repo must declare `system_id` and pin the contract and schema versions it implements (from `contracts/standards-manifest.json` and system interface docs).
-- Declarations live in repo metadata (README/system overview) and machine-readable manifests to enable downstream automation.
-- Outputs: consistent identity and version pins across the ecosystem; inputs: contract registry and interface specs; tests: manual verification via conformance checklist.
+- Declarations live in a machine-readable `.governance-declaration.json` file in the implementation repo. Use `contracts/governance-declaration.template.json` as the canonical starting point for new declarations.
+- Governance declarations must be pinned to the current `standards_version` from `contracts/standards-manifest.json` and specify `contract_pins`, `schema_pins`, `rule_version`, `evaluation_manifest_path`, and `last_evaluation_date`.
+- Outputs: consistent identity and version pins across the ecosystem; inputs: contract registry and interface specs; tests: manual verification via conformance checklist (`docs/governance-conformance-checklist.md`).
+- **Phase 1 is Active when:** at least two implementation repos have filed `.governance-declaration.json` files conforming to the template and the conformance checklist has been completed for each.
 
 ### Phase 2 — Automated validation of schema and contract versions
 - Tooling validates manifests against the authoritative contract registry and schema governance rules (version format, allowed statuses, intended consumers).
@@ -27,6 +31,6 @@
 - Outputs: ecosystem compatibility reports and upgrade guidance; inputs: per-repo manifests and dependency graph; tests: simulated upgrade/downgrade scenarios.
 
 ## System-factory path to automatic conformance
-- `system-factory` will scaffold new implementation repos with required governance primitives: `system_id` declaration, contract pins pulled from the standards manifest, manifest templates, and pre-wired validation hooks.
+- `system-factory` will scaffold new implementation repos with required governance primitives: `system_id` declaration, contract pins pulled from the standards manifest, `.governance-declaration.json` template, manifest templates, and pre-wired validation hooks.
 - Scaffolded repos will include baseline CI jobs that run the validation harness and per-system evaluation tests, giving deterministic enforcement from day one.
 - As manifests and contracts evolve, `system-factory` updates will deliver compatible scaffolds and migration notes, reducing manual retrofits and preserving governance alignment across the ecosystem.
