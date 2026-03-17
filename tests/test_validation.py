@@ -291,10 +291,10 @@ class TestValidateStructuredExtraction:
         assert any(f.severity == SEV_ERROR for f in findings)
 
     def test_missing_participants(self) -> None:
+        """participants is optional in the current contract format; absence is not an error."""
         bad = {k: v for k, v in VALID_EXTRACTION.items() if k != "participants"}
         findings = validate_structured_extraction(bad)
-        assert any("participants" in f.message for f in findings)
-        assert any(f.category == CATEGORY_EXTRACTION_ERROR for f in findings)
+        assert not any("participants" in f.message for f in findings)
 
     def test_missing_decisions(self) -> None:
         bad = {k: v for k, v in VALID_EXTRACTION.items() if k != "decisions"}
@@ -716,3 +716,428 @@ class TestValidateMeetingMinutesPackage:
         # Package is valid; only possible findings are propagation warnings.
         assert result.status in (STATUS_PASS, STATUS_PASS_WITH_WARNINGS)
         assert len(result.errors) == 0
+
+
+# ─── Contract-aligned validation (new tests per Prompt O fix pass) ─────────────
+
+import json as _json
+from pathlib import Path as _Path
+
+# Load the governed contract example once for the test suite.
+_CONTRACT_EXAMPLE_PATH = (
+    _Path(__file__).parent.parent / "contracts" / "examples" / "meeting_minutes_contract.json"
+)
+_CONTRACT_EXAMPLE: Dict[str, Any] = _json.loads(
+    _CONTRACT_EXAMPLE_PATH.read_text(encoding="utf-8")
+)
+
+# Legacy-only signals (contract format — no questions/assumptions/risks keys).
+LEGACY_SIGNALS: Dict[str, Any] = {
+    "risks_or_open_questions": [
+        {
+            "issue_id": "RQ-2026-03-12-01",
+            "description": "Potential schedule slip if antenna delivery is late.",
+            "impact": "medium",
+            "owner": "Program Manager",
+            "target_resolution_date": "2026-03-19",
+        }
+    ],
+    "decisions_made": [
+        {
+            "decision_id": "DEC-2026-03-12-01",
+            "decision": "Proceed with updated antenna configuration.",
+        }
+    ],
+}
+
+# Contract-format extraction (matches contracts/examples/meeting_minutes_contract.json).
+CONTRACT_EXTRACTION: Dict[str, Any] = {
+    "decisions_made": _CONTRACT_EXAMPLE["decisions_made"],
+    "action_items": _CONTRACT_EXAMPLE["action_items"],
+    "discussion_questions_log": _CONTRACT_EXAMPLE["discussion_questions_log"],
+    "risks_or_open_questions": _CONTRACT_EXAMPLE["risks_or_open_questions"],
+}
+
+
+# ── Part 1: Contract example passes structured_extraction validation ──────────
+
+class TestContractExampleValidation:
+    """The governed contract example must pass extraction validation clean."""
+
+    def test_contract_extraction_passes(self) -> None:
+        findings = validate_structured_extraction(CONTRACT_EXTRACTION)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == [], f"Unexpected errors: {[f.message for f in errors]}"
+
+    def test_contract_action_items_accepted(self) -> None:
+        """action_items with action_id/task (contract format) pass validation."""
+        extraction = {
+            "decisions_made": [
+                {"decision_id": "DEC-001", "decision": "Proceed with plan A."}
+            ],
+            "action_items": [
+                {
+                    "action_id": "AI-2026-03-12-01",
+                    "task": "Run interference margin sensitivity test",
+                    "owner": "Ops Lead",
+                    "due_date": "2026-03-19",
+                    "status": "open",
+                }
+            ],
+        }
+        findings = validate_structured_extraction(extraction)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == [], f"Unexpected errors: {[f.message for f in errors]}"
+
+    def test_contract_action_item_missing_task_raises_error(self) -> None:
+        """Contract-format action item missing 'task' → extraction_error."""
+        extraction = {
+            "decisions_made": [],
+            "action_items": [{"action_id": "AI-001"}],
+        }
+        findings = validate_structured_extraction(extraction)
+        assert any("task" in f.message for f in findings)
+        assert any(f.category == CATEGORY_EXTRACTION_ERROR for f in findings)
+
+    def test_decisions_made_accepted(self) -> None:
+        """decisions_made satisfies the decisions requirement."""
+        extraction = {"decisions_made": [], "action_items": []}
+        findings = validate_structured_extraction(extraction)
+        assert not any(f.severity == SEV_ERROR for f in findings)
+
+    def test_neither_decisions_field_raises_error(self) -> None:
+        """Extraction with no decisions field at all → extraction_error."""
+        extraction = {"action_items": []}
+        findings = validate_structured_extraction(extraction)
+        assert any("decisions" in f.message for f in findings)
+        assert any(f.category == CATEGORY_EXTRACTION_ERROR for f in findings)
+
+    def test_optional_discussion_questions_log_accepted(self) -> None:
+        extraction = {
+            "decisions_made": [],
+            "action_items": [],
+            "discussion_questions_log": [
+                {"category": "risk", "question": "What is the margin risk?"}
+            ],
+        }
+        findings = validate_structured_extraction(extraction)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == []
+
+    def test_optional_risks_or_open_questions_accepted(self) -> None:
+        extraction = {
+            "decisions_made": [],
+            "action_items": [],
+            "risks_or_open_questions": [
+                {"issue_id": "RQ-001", "description": "Schedule risk."}
+            ],
+        }
+        findings = validate_structured_extraction(extraction)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == []
+
+
+# ── Part 2: Legacy-only signals pass ─────────────────────────────────────────
+
+class TestLegacySignals:
+    """Signals in the legacy contract format must pass validation without errors."""
+
+    def test_legacy_only_signals_pass(self) -> None:
+        findings = validate_signals(LEGACY_SIGNALS)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == [], f"Unexpected errors: {[f.message for f in errors]}"
+
+    def test_legacy_empty_arrays_pass(self) -> None:
+        findings = validate_signals({
+            "risks_or_open_questions": [],
+            "decisions_made": [],
+        })
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == []
+
+    def test_no_signal_representation_raises_error(self) -> None:
+        """A signals dict with neither new nor legacy keys → signal_error."""
+        findings = validate_signals({"unrelated_key": []})
+        assert any(f.severity == SEV_ERROR for f in findings)
+        assert any(f.category == CATEGORY_SIGNAL_ERROR for f in findings)
+
+    def test_legacy_roq_missing_issue_id_raises_error(self) -> None:
+        findings = validate_signals({
+            "risks_or_open_questions": [{"description": "Some risk."}]
+        })
+        assert any("issue_id" in f.message for f in findings)
+        assert any(f.category == CATEGORY_SIGNAL_ERROR for f in findings)
+
+    def test_legacy_dm_missing_decision_raises_error(self) -> None:
+        findings = validate_signals({
+            "decisions_made": [{"decision_id": "DEC-001"}]
+        })
+        assert any("decision" in f.message for f in findings)
+        assert any(f.category == CATEGORY_SIGNAL_ERROR for f in findings)
+
+
+# ── Part 3: Mixed legacy + normalized signals pass ───────────────────────────
+
+class TestMixedSignals:
+    """When both legacy and normalized signal keys are present, both must validate."""
+
+    def test_mixed_signals_pass(self) -> None:
+        mixed = {
+            # new format
+            "questions": [
+                {
+                    "id": "Q-001",
+                    "text": "What is the margin risk?",
+                    "priority": "high",
+                    "status": "open",
+                    "source_excerpt": "Alice mentioned risk at 10:05",
+                }
+            ],
+            "assumptions": [],
+            "risks": [],
+            # legacy format
+            "risks_or_open_questions": [
+                {
+                    "issue_id": "RQ-001",
+                    "description": "Schedule risk.",
+                    "impact": "medium",
+                }
+            ],
+        }
+        findings = validate_signals(mixed)
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == [], f"Unexpected errors: {[f.message for f in errors]}"
+
+    def test_mixed_normalized_validated_independently(self) -> None:
+        """Invalid new-format item in mixed signals still produces an error."""
+        mixed = {
+            "questions": [{"id": "Q-001"}],  # missing required fields
+            "assumptions": [],
+            "risks": [],
+            "risks_or_open_questions": [],
+        }
+        findings = validate_signals(mixed)
+        assert any(f.severity == SEV_ERROR for f in findings)
+
+
+# ── Part 4: Crash-proofing — malformed classification ─────────────────────────
+
+class TestMalformedClassification:
+    """Non-string classification values must produce schema_error, never crash."""
+
+    def test_list_classification_produces_schema_error(self) -> None:
+        item = {**VALID_EXTRACTION["action_items"][0], "classification": ["bad", "value"]}
+        bad = {**VALID_EXTRACTION, "action_items": [item]}
+        findings = validate_structured_extraction(bad)
+        assert any(f.category == CATEGORY_SCHEMA_ERROR for f in findings)
+        assert any("classification" in f.message for f in findings)
+
+    def test_dict_classification_produces_schema_error(self) -> None:
+        item = {**VALID_EXTRACTION["action_items"][0], "classification": {"key": "val"}}
+        bad = {**VALID_EXTRACTION, "action_items": [item]}
+        findings = validate_structured_extraction(bad)
+        assert any(f.category == CATEGORY_SCHEMA_ERROR for f in findings)
+        assert any("classification" in f.message for f in findings)
+
+    def test_none_classification_allowed(self) -> None:
+        """None classification on an internal-format item is allowed (deferred check)."""
+        item = {**VALID_EXTRACTION["action_items"][0], "classification": None}
+        good = {**VALID_EXTRACTION, "action_items": [item]}
+        # None means the field is present but unset — no classification check needed.
+        findings = validate_structured_extraction(good)
+        assert not any("classification" in f.message and f.severity == SEV_ERROR for f in findings)
+
+    def test_malformed_classification_no_crash(self) -> None:
+        """Validator must never raise; it returns a structured result."""
+        for bad_value in ([], {}, 42, True, 3.14):
+            item = {**VALID_EXTRACTION["action_items"][0], "classification": bad_value}
+            bad = {**VALID_EXTRACTION, "action_items": [item]}
+            # Must not raise
+            result = validate_structured_extraction(bad)
+            assert isinstance(result, list)
+
+
+# ── Part 5: Crash-proofing — malformed IDs ───────────────────────────────────
+
+from spectrum_systems.modules.validation import normalize_to_internal_view
+
+
+class TestMalformedIDs:
+    """Non-hashable IDs in propagation checks must produce structured findings, not crash."""
+
+    def test_list_id_in_source_no_crash(self) -> None:
+        signals = {
+            "questions": [{"id": ["bad", "list"], "text": "q", "priority": "h",
+                            "status": "open", "source_excerpt": "ex"}],
+            "assumptions": [],
+            "risks": [],
+        }
+        state = {k: [] for k in VALID_STUDY_STATE}
+        state["questions"] = [{"id": "Q-001"}]
+        # Must not raise
+        findings = validate_study_state_document(state, signals=signals)
+        assert isinstance(findings, list)
+
+    def test_dict_id_in_target_no_crash(self) -> None:
+        state = {k: [] for k in VALID_STUDY_STATE}
+        state["questions"] = [{"id": {"nested": "dict"}}]
+        # Must not raise
+        findings = validate_study_state_document(state, signals=VALID_SIGNALS)
+        assert isinstance(findings, list)
+
+    def test_malformed_id_propagation_emits_finding(self) -> None:
+        """Mismatched IDs (one hashable, one not) still emit a propagation finding."""
+        state = {k: [] for k in VALID_STUDY_STATE}
+        state["questions"] = [{"id": "Q-999"}]  # different from Q-001 in VALID_SIGNALS
+        findings = validate_study_state_document(
+            state, signals=VALID_SIGNALS, extraction=VALID_EXTRACTION
+        )
+        # Should have a propagation warning (not a crash)
+        assert any(f.category == CATEGORY_STUDY_STATE_ERROR for f in findings)
+
+
+# ── Part 6: Propagation mismatch → study_state_error ─────────────────────────
+
+class TestPropagationWithNormalizedView:
+    """Propagation checks use the normalized view (supports legacy + new formats)."""
+
+    def test_legacy_extraction_propagation_mismatch(self) -> None:
+        """Mismatch between contract-format extraction and study_state → study_state_error."""
+        state = {k: [] for k in VALID_STUDY_STATE}
+        # study_state has AI-999, but contract extraction has AI-2026-03-12-01
+        state["action_items"] = [{"id": "AI-999"}]
+        state["questions"] = []
+        state["assumptions"] = []
+        state["risks"] = []
+        findings = validate_study_state_document(
+            state,
+            signals=LEGACY_SIGNALS,
+            extraction=CONTRACT_EXTRACTION,
+        )
+        assert any(f.category == CATEGORY_STUDY_STATE_ERROR for f in findings)
+
+    def test_legacy_signals_propagation_to_study_state(self) -> None:
+        """Risks from legacy signals map to study_state.risks via normalization."""
+        # LEGACY_SIGNALS has 1 risk in risks_or_open_questions (description has no '?')
+        state = {k: [] for k in VALID_STUDY_STATE}
+        state["action_items"] = []  # no contract extraction action items
+        state["questions"] = []
+        state["assumptions"] = []
+        # Set risks to match what normalization produces
+        state["risks"] = [{"id": "RQ-2026-03-12-01"}]
+        findings = validate_study_state_document(
+            state,
+            signals=LEGACY_SIGNALS,
+            extraction={"decisions_made": [], "action_items": []},
+        )
+        errors = [f for f in findings if f.severity == SEV_ERROR]
+        assert errors == []
+
+    def test_normalize_to_internal_view_contract_format(self) -> None:
+        """normalize_to_internal_view maps contract fields to internal model."""
+        normalized = normalize_to_internal_view(CONTRACT_EXTRACTION, LEGACY_SIGNALS)
+        # decisions_made → decisions with aliased id
+        assert len(normalized["decisions"]) == len(_CONTRACT_EXAMPLE["decisions_made"])
+        assert normalized["decisions"][0]["id"] == "DEC-2026-03-12-01"
+        # action_items: action_id → id, task → text
+        assert len(normalized["action_items"]) == len(_CONTRACT_EXAMPLE["action_items"])
+        assert normalized["action_items"][0]["id"] == "AI-2026-03-12-01"
+        assert "Run interference margin sensitivity" in normalized["action_items"][0]["text"]
+        # risks_or_open_questions (no '?') → risks
+        assert any("RQ-2026-03-12-01" == r.get("id") for r in normalized["risks"])
+
+    def test_normalize_to_internal_view_new_format(self) -> None:
+        """normalize_to_internal_view passes new-format data through unchanged."""
+        normalized = normalize_to_internal_view(VALID_EXTRACTION, VALID_SIGNALS)
+        # New-style action items keep their 'id' and are passed through
+        ai_ids = [a.get("id") for a in normalized["action_items"]]
+        assert "AI-001" in ai_ids
+        assert "AI-002" in ai_ids
+        # New-style signals pass through
+        q_ids = [q.get("id") for q in normalized["questions"]]
+        assert "Q-001" in q_ids
+
+    def test_normalize_handles_none_inputs(self) -> None:
+        """normalize_to_internal_view does not crash on None/non-dict inputs."""
+        result = normalize_to_internal_view(None, None)
+        assert result["decisions"] == []
+        assert result["action_items"] == []
+        assert result["questions"] == []
+        assert result["assumptions"] == []
+        assert result["risks"] == []
+
+
+# ── Part 7: Validation report is always produced ─────────────────────────────
+
+class TestValidationReportGuarantee:
+    """validation_report.json must be written whenever pipeline reaches validation."""
+
+    def _build_package(self, tmp_path: _Path, run_id: str = "run-report-001") -> _Path:
+        package_dir = tmp_path / run_id / "meeting_minutes"
+        package_dir.mkdir(parents=True, exist_ok=True)
+        _write_json(package_dir / "structured_extraction.json", VALID_EXTRACTION)
+        _write_json(package_dir / "signals.json", VALID_SIGNALS)
+        _write_json(package_dir / "study_state.json", VALID_STUDY_STATE)
+        _write_json(package_dir / "recommendations.json", {"recommendations": []})
+        _write_json(package_dir / "execution_metadata.json", {"stub": True})
+        (package_dir / "meeting_minutes.docx").write_bytes(b"PK real docx")
+        _write_json(package_dir / "validation_report.json", {"stub": True})
+        return package_dir
+
+    def test_report_written_on_pass(self, tmp_path: _Path) -> None:
+        package_dir = self._build_package(tmp_path)
+        validate_meeting_minutes_package(package_dir, write_report=True)
+        report = _json.loads((package_dir / "validation_report.json").read_text())
+        assert report["status"] == STATUS_PASS
+
+    def test_report_written_on_fail(self, tmp_path: _Path) -> None:
+        package_dir = self._build_package(tmp_path, run_id="run-fail-report")
+        (package_dir / "signals.json").unlink()  # cause packaging error
+        validate_meeting_minutes_package(package_dir, write_report=True)
+        report = _json.loads((package_dir / "validation_report.json").read_text())
+        assert report["status"] == STATUS_FAIL
+
+    def test_report_has_required_keys(self, tmp_path: _Path) -> None:
+        package_dir = self._build_package(tmp_path, run_id="run-keys-report")
+        validate_meeting_minutes_package(package_dir, write_report=True)
+        report = _json.loads((package_dir / "validation_report.json").read_text())
+        for key in ("status", "findings", "summary", "run_id", "validated_at",
+                    "schema_version"):
+            assert key in report, f"Missing key: {key}"
+
+
+# ── Part 8: Contract example passes end-to-end orchestrator validation ────────
+
+class TestContractExampleEndToEnd:
+    """The governed contract example must pass the full package validation."""
+
+    def _build_contract_package(self, tmp_path: _Path) -> _Path:
+        package_dir = tmp_path / "run-contract-e2e" / "meeting_minutes"
+        package_dir.mkdir(parents=True, exist_ok=True)
+        _write_json(package_dir / "structured_extraction.json", CONTRACT_EXTRACTION)
+        _write_json(package_dir / "signals.json", LEGACY_SIGNALS)
+        # study_state aligned with contract extraction (action_id → normalized id)
+        _write_json(package_dir / "study_state.json", {
+            "questions": [],
+            "assumptions": [],
+            "risks": [{"id": "RQ-2026-03-12-01"}],
+            "action_items": [{"id": "AI-2026-03-12-01"}],
+            "decisions": [],
+            "issues": [],
+            "evidence": [],
+            "data_needs": [],
+            "stakeholder_positions": [],
+        })
+        _write_json(package_dir / "recommendations.json", {"recommendations": []})
+        _write_json(package_dir / "execution_metadata.json", {"stub": True})
+        (package_dir / "meeting_minutes.docx").write_bytes(b"PK real docx")
+        _write_json(package_dir / "validation_report.json", {"stub": True})
+        return package_dir
+
+    def test_contract_example_passes_orchestrator(self, tmp_path: _Path) -> None:
+        package_dir = self._build_contract_package(tmp_path)
+        result = validate_meeting_minutes_package(package_dir, write_report=True)
+        errors = [f for f in result.findings if f.severity == SEV_ERROR]
+        assert errors == [], f"Unexpected errors: {[f.message for f in errors]}"
+        assert result.status in (STATUS_PASS, STATUS_PASS_WITH_WARNINGS)
+        assert (package_dir / "validation_report.json").exists()
