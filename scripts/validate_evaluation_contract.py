@@ -100,7 +100,7 @@ def discover_manifests() -> List[Path]:
     return list(examples_dir.glob("evaluation_manifest*.json"))
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate evaluation manifests against the control-loop contract."
     )

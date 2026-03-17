@@ -109,7 +109,7 @@ def discover_review_artifacts(directories: List[Path]) -> List[Path]:
     return paths
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate review artifact JSON files against the canonical schema."
     )
