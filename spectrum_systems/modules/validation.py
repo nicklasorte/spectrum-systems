@@ -249,10 +249,33 @@ def validate_structured_extraction(extraction: Dict[str, Any]) -> List[Validatio
     """
     Validate a structured_extraction document.
 
-    Required top-level keys: participants, decisions, action_items.
-    Each action_item must have: id, text, classification, confidence,
-    and target_section (value may be null but key must be present).
-    classification must be one of VALID_CLASSIFICATIONS.
+    Supports both the CURRENT governed contract format and the internal
+    normalized format:
+
+    Contract format (decisions_made / action_id+task):
+      - decisions_made : list of decision objects (decision_id, decision, ...)
+      - action_items   : list with action_id, task (owner, due_date, status optional)
+      - discussion_questions_log : optional list
+      - risks_or_open_questions  : optional list
+
+    Internal normalized format (decisions / id+text):
+      - decisions      : list (strings or objects)
+      - action_items   : list with id, text, classification, confidence, target_section
+      - participants   : optional list
+
+    At least one decisions representation (decisions_made OR decisions) must be
+    present.  action_items is always required (may be an empty list).
+
+    participants is OPTIONAL (not required by the current contract).
+
+    For each action item:
+      - If the item has 'action_id' → contract format: require 'task'.
+      - If the item has 'id'        → internal format : require 'text',
+        'classification', 'confidence', 'target_section'.
+      - If neither identifier is present → emit schema_error.
+
+    classification (internal format) must be one of VALID_CLASSIFICATIONS and
+    must be a string (crash-proofed: non-string values produce schema_error).
     """
     findings: List[ValidationFinding] = []
     stage = "structured_extraction"
@@ -269,29 +292,84 @@ def validate_structured_extraction(extraction: Dict[str, Any]) -> List[Validatio
         )
         return findings
 
-    # Required top-level keys.
-    for key in ("participants", "decisions", "action_items"):
-        if key not in extraction:
-            findings.append(
-                _make_finding(
-                    SEV_ERROR,
-                    CATEGORY_EXTRACTION_ERROR,
-                    f"structured_extraction is missing required top-level key: '{key}'",
-                    stage,
-                    f"Add a '{key}' key to structured_extraction (may be an empty list).",
-                )
+    # Require action_items (always).
+    if "action_items" not in extraction:
+        findings.append(
+            _make_finding(
+                SEV_ERROR,
+                CATEGORY_EXTRACTION_ERROR,
+                "structured_extraction is missing required top-level key: 'action_items'",
+                stage,
+                "Add an 'action_items' key to structured_extraction (may be an empty list).",
             )
-        elif not isinstance(extraction[key], list):
+        )
+    elif not isinstance(extraction["action_items"], list):
+        findings.append(
+            _make_finding(
+                SEV_ERROR,
+                CATEGORY_SCHEMA_ERROR,
+                f"structured_extraction['action_items'] must be a list, "
+                f"got {type(extraction['action_items']).__name__}",
+                stage,
+                "Change 'action_items' to a JSON array.",
+            )
+        )
+
+    # Require at least one decisions representation.
+    has_decisions_made = "decisions_made" in extraction
+    has_decisions = "decisions" in extraction
+    if not has_decisions_made and not has_decisions:
+        findings.append(
+            _make_finding(
+                SEV_ERROR,
+                CATEGORY_EXTRACTION_ERROR,
+                "structured_extraction is missing a decisions field "
+                "(expected 'decisions_made' for contract format or 'decisions' for "
+                "internal format)",
+                stage,
+                "Add 'decisions_made' (contract format) or 'decisions' (internal format).",
+            )
+        )
+    else:
+        for key in ("decisions_made", "decisions"):
+            if key in extraction and not isinstance(extraction[key], list):
+                findings.append(
+                    _make_finding(
+                        SEV_ERROR,
+                        CATEGORY_SCHEMA_ERROR,
+                        f"structured_extraction['{key}'] must be a list, "
+                        f"got {type(extraction[key]).__name__}",
+                        stage,
+                        f"Change '{key}' to a JSON array.",
+                    )
+                )
+
+    # Validate optional contract-format lists if present.
+    for opt_key in ("discussion_questions_log", "risks_or_open_questions"):
+        if opt_key in extraction and not isinstance(extraction[opt_key], list):
             findings.append(
                 _make_finding(
                     SEV_ERROR,
                     CATEGORY_SCHEMA_ERROR,
-                    f"structured_extraction['{key}'] must be a list, "
-                    f"got {type(extraction[key]).__name__}",
+                    f"structured_extraction['{opt_key}'] must be a list, "
+                    f"got {type(extraction[opt_key]).__name__}",
                     stage,
-                    f"Change '{key}' to a JSON array.",
+                    f"Change '{opt_key}' to a JSON array.",
                 )
             )
+
+    # Validate optional participants list if present.
+    if "participants" in extraction and not isinstance(extraction["participants"], list):
+        findings.append(
+            _make_finding(
+                SEV_ERROR,
+                CATEGORY_SCHEMA_ERROR,
+                f"structured_extraction['participants'] must be a list, "
+                f"got {type(extraction['participants']).__name__}",
+                stage,
+                "Change 'participants' to a JSON array.",
+            )
+        )
 
     # action_items item-level validation.
     action_items = extraction.get("action_items", [])
@@ -310,44 +388,87 @@ def validate_structured_extraction(extraction: Dict[str, Any]) -> List[Validatio
                 )
                 continue
 
-            # Required scalar fields.
-            for req_field in ("id", "text", "classification", "confidence"):
-                if req_field not in item:
+            is_contract_format = "action_id" in item
+            is_internal_format = "id" in item
+
+            if is_contract_format:
+                # Contract format: require action_id (present) and task.
+                if "task" not in item:
                     findings.append(
                         _make_finding(
                             SEV_ERROR,
                             CATEGORY_EXTRACTION_ERROR,
-                            f"{prefix} is missing required field: '{req_field}'",
+                            f"{prefix} is missing required field: 'task'",
                             stage,
-                            f"Add '{req_field}' to each action item.",
+                            "Add 'task' to each contract-format action item.",
+                        )
+                    )
+            elif is_internal_format:
+                # Internal normalized format: require id, text, classification,
+                # confidence, and target_section key.
+                for req_field in ("text", "classification", "confidence"):
+                    if req_field not in item:
+                        findings.append(
+                            _make_finding(
+                                SEV_ERROR,
+                                CATEGORY_EXTRACTION_ERROR,
+                                f"{prefix} is missing required field: '{req_field}'",
+                                stage,
+                                f"Add '{req_field}' to each action item.",
+                            )
+                        )
+
+                # target_section must be a key (value may be null).
+                if "target_section" not in item:
+                    findings.append(
+                        _make_finding(
+                            SEV_ERROR,
+                            CATEGORY_EXTRACTION_ERROR,
+                            f"{prefix} is missing key 'target_section' "
+                            "(value may be null but key must be present)",
+                            stage,
+                            "Include 'target_section': null if no section is known.",
                         )
                     )
 
-            # target_section must be a key (value may be null).
-            if "target_section" not in item:
-                findings.append(
-                    _make_finding(
-                        SEV_ERROR,
-                        CATEGORY_EXTRACTION_ERROR,
-                        f"{prefix} is missing key 'target_section' "
-                        "(value may be null but key must be present)",
-                        stage,
-                        "Include 'target_section': null if no section is known.",
-                    )
-                )
-
-            # classification value must be from the allowed set.
-            classification = item.get("classification")
-            if classification is not None and classification not in VALID_CLASSIFICATIONS:
+                # classification value must be a string and from the allowed set.
+                classification = item.get("classification")
+                if classification is not None:
+                    if not isinstance(classification, str):
+                        findings.append(
+                            _make_finding(
+                                SEV_ERROR,
+                                CATEGORY_SCHEMA_ERROR,
+                                f"{prefix} 'classification' must be a string, "
+                                f"got {type(classification).__name__}",
+                                stage,
+                                "Set classification to a string value from: "
+                                + ", ".join(sorted(VALID_CLASSIFICATIONS)),
+                            )
+                        )
+                    elif classification not in VALID_CLASSIFICATIONS:
+                        findings.append(
+                            _make_finding(
+                                SEV_ERROR,
+                                CATEGORY_SCHEMA_ERROR,
+                                f"{prefix} has invalid classification: {classification!r}. "
+                                f"Must be one of: {sorted(VALID_CLASSIFICATIONS)}",
+                                stage,
+                                "Set classification to one of: "
+                                + ", ".join(sorted(VALID_CLASSIFICATIONS)),
+                            )
+                        )
+            else:
+                # Neither format identifier found.
                 findings.append(
                     _make_finding(
                         SEV_ERROR,
                         CATEGORY_SCHEMA_ERROR,
-                        f"{prefix} has invalid classification: {classification!r}. "
-                        f"Must be one of: {sorted(VALID_CLASSIFICATIONS)}",
+                        f"{prefix} is missing an identifier field: "
+                        "expected 'action_id' (contract format) or 'id' (internal format)",
                         stage,
-                        "Set classification to one of: "
-                        + ", ".join(sorted(VALID_CLASSIFICATIONS)),
+                        "Add 'action_id' (contract format) or 'id' (internal format) "
+                        "to each action item.",
                     )
                 )
 
@@ -407,12 +528,23 @@ def validate_signals(signals: Dict[str, Any]) -> List[ValidationFinding]:
     """
     Validate a signals.json document.
 
-    Required top-level keys: questions, assumptions, risks.
-    Empty arrays are allowed, but keys must exist.
+    Accepts two representations:
 
-    questions  items: id, text, priority, status, source_excerpt
-    assumptions items: id, statement, risk_level, validation_needed, status
-    risks items: id, description, severity, status
+    Normalized (new) format — all three keys must be present:
+      questions    items: id, text, priority, status, source_excerpt
+      assumptions  items: id, statement, risk_level, validation_needed, status
+      risks        items: id, description, severity, status
+
+    Legacy (contract) format — at least one key must be present:
+      risks_or_open_questions  items: issue_id, description
+      decisions_made           items: decision_id, decision
+
+    When the normalized format is detected (any of questions/assumptions/risks is
+    present), all three keys are required.  When only legacy keys are present,
+    legacy item-level validation is applied.  Both formats may coexist; each is
+    validated independently.
+
+    At least one valid representation must exist in the document.
     """
     findings: List[ValidationFinding] = []
     stage = "signals"
@@ -429,41 +561,221 @@ def validate_signals(signals: Dict[str, Any]) -> List[ValidationFinding]:
         )
         return findings
 
-    for key in ("questions", "assumptions", "risks"):
-        if key not in signals:
-            findings.append(
-                _make_finding(
-                    SEV_ERROR,
-                    CATEGORY_SIGNAL_ERROR,
-                    f"signals is missing required top-level key: '{key}'",
+    _NEW_KEYS = {"questions", "assumptions", "risks"}
+    _LEGACY_KEYS = {"risks_or_open_questions", "decisions_made"}
+
+    has_new = bool(_NEW_KEYS & signals.keys())
+    has_legacy = bool(_LEGACY_KEYS & signals.keys())
+
+    if not has_new and not has_legacy:
+        findings.append(
+            _make_finding(
+                SEV_ERROR,
+                CATEGORY_SIGNAL_ERROR,
+                "signals contains no recognized representation: expected normalized keys "
+                "(questions, assumptions, risks) or legacy keys "
+                "(risks_or_open_questions, decisions_made)",
+                stage,
+                "Add normalized signal keys (questions/assumptions/risks) or legacy keys "
+                "(risks_or_open_questions/decisions_made).",
+            )
+        )
+        return findings
+
+    if has_new:
+        # Normalized format: all three keys required.
+        for key in ("questions", "assumptions", "risks"):
+            if key not in signals:
+                findings.append(
+                    _make_finding(
+                        SEV_ERROR,
+                        CATEGORY_SIGNAL_ERROR,
+                        f"signals is missing required top-level key: '{key}'",
+                        stage,
+                        f"Add a '{key}' key to signals (may be an empty array).",
+                    )
+                )
+
+        # Item-level validation for normalized format.
+        question_fields = ["id", "text", "priority", "status", "source_excerpt"]
+        findings.extend(
+            _validate_signal_items(
+                signals.get("questions", []), "questions", question_fields, stage
+            )
+        )
+
+        assumption_fields = ["id", "statement", "risk_level", "validation_needed", "status"]
+        findings.extend(
+            _validate_signal_items(
+                signals.get("assumptions", []), "assumptions", assumption_fields, stage
+            )
+        )
+
+        risk_fields = ["id", "description", "severity", "status"]
+        findings.extend(
+            _validate_signal_items(
+                signals.get("risks", []), "risks", risk_fields, stage
+            )
+        )
+
+    if has_legacy:
+        # Legacy format: validate each present legacy key.
+        roq = signals.get("risks_or_open_questions")
+        if roq is not None:
+            findings.extend(
+                _validate_signal_items(
+                    roq,
+                    "risks_or_open_questions",
+                    ["issue_id", "description"],
                     stage,
-                    f"Add a '{key}' key to signals (may be an empty array).",
                 )
             )
 
-    # Item-level validation.
-    question_fields = ["id", "text", "priority", "status", "source_excerpt"]
-    findings.extend(
-        _validate_signal_items(
-            signals.get("questions", []), "questions", question_fields, stage
-        )
-    )
-
-    assumption_fields = ["id", "statement", "risk_level", "validation_needed", "status"]
-    findings.extend(
-        _validate_signal_items(
-            signals.get("assumptions", []), "assumptions", assumption_fields, stage
-        )
-    )
-
-    risk_fields = ["id", "description", "severity", "status"]
-    findings.extend(
-        _validate_signal_items(
-            signals.get("risks", []), "risks", risk_fields, stage
-        )
-    )
+        dm = signals.get("decisions_made")
+        if dm is not None:
+            findings.extend(
+                _validate_signal_items(
+                    dm,
+                    "decisions_made",
+                    ["decision_id", "decision"],
+                    stage,
+                )
+            )
 
     return findings
+
+
+# ─── Normalization Layer ───────────────────────────────────────────────────────
+
+def normalize_to_internal_view(
+    extraction: Optional[Dict[str, Any]],
+    signals: Optional[Dict[str, Any]],
+) -> Dict[str, List[Any]]:
+    """
+    Map legacy contract fields to the internal normalized model.
+
+    Does NOT mutate the original extraction or signals dicts.
+
+    Mapping rules
+    -------------
+    decisions:
+      - extraction['decisions_made'] → [{id: decision_id, decision: decision, ...}]
+      - extraction['decisions']      → passthrough (already normalized)
+
+    action_items:
+      - items with 'action_id' (contract format):
+          action_id → id, task → text
+      - items with 'id' (internal format): passthrough
+
+    questions:
+      - signals['questions'] → passthrough
+      - signals['risks_or_open_questions'] items whose description looks like a
+        question (contains '?') are mapped to questions[]; the rest map to risks.
+
+    assumptions:
+      - signals['assumptions'] → passthrough (no legacy equivalent; empty if absent)
+
+    risks:
+      - signals['risks'] → passthrough
+      - signals['risks_or_open_questions'] items not mapped to questions go here.
+
+    Returns a dict with keys: decisions, action_items, questions, assumptions, risks.
+    Each value is a list (may be empty).  Never raises; returns partial result on error.
+    """
+    result: Dict[str, List[Any]] = {
+        "decisions": [],
+        "action_items": [],
+        "questions": [],
+        "assumptions": [],
+        "risks": [],
+    }
+
+    if not isinstance(extraction, dict):
+        extraction = {}
+    if not isinstance(signals, dict):
+        signals = {}
+
+    # ── decisions ─────────────────────────────────────────────────────────────
+    raw_decisions_made = extraction.get("decisions_made")
+    raw_decisions = extraction.get("decisions")
+
+    if isinstance(raw_decisions_made, list):
+        for item in raw_decisions_made:
+            if isinstance(item, dict):
+                normalized = dict(item)
+                # Alias decision_id → id for internal use
+                if "decision_id" in normalized and "id" not in normalized:
+                    normalized["id"] = normalized["decision_id"]
+                result["decisions"].append(normalized)
+    elif isinstance(raw_decisions, list):
+        for item in raw_decisions:
+            if isinstance(item, dict):
+                result["decisions"].append(item)
+            elif isinstance(item, str):
+                result["decisions"].append({"decision": item})
+
+    # ── action_items ──────────────────────────────────────────────────────────
+    raw_action_items = extraction.get("action_items")
+    if isinstance(raw_action_items, list):
+        for item in raw_action_items:
+            if not isinstance(item, dict):
+                continue
+            if "action_id" in item:
+                # Contract format → normalize
+                normalized = {
+                    "id": item["action_id"],
+                    "text": item.get("task", ""),
+                }
+                # Carry over other contract fields as-is
+                for extra in ("owner", "due_date", "dependencies", "status"):
+                    if extra in item:
+                        normalized[extra] = item[extra]
+                result["action_items"].append(normalized)
+            else:
+                # Already internal format (or unknown); pass through
+                result["action_items"].append(item)
+
+    # ── questions / risks (from signals) ──────────────────────────────────────
+    raw_questions = signals.get("questions")
+    raw_risks = signals.get("risks")
+    raw_roq = signals.get("risks_or_open_questions")
+    raw_assumptions = signals.get("assumptions")
+
+    if isinstance(raw_questions, list):
+        result["questions"].extend(raw_questions)
+
+    if isinstance(raw_risks, list):
+        result["risks"].extend(raw_risks)
+
+    if isinstance(raw_assumptions, list):
+        result["assumptions"].extend(raw_assumptions)
+
+    # Map legacy risks_or_open_questions by simple heuristic:
+    # items whose description contains '?' → questions; others → risks
+    if isinstance(raw_roq, list):
+        for item in raw_roq:
+            if not isinstance(item, dict):
+                continue
+            normalized: Dict[str, Any] = {}
+            # Alias issue_id → id
+            if "issue_id" in item:
+                normalized["id"] = item["issue_id"]
+            elif "id" in item:
+                normalized["id"] = item["id"]
+            desc = item.get("description", "")
+            normalized["text"] = desc
+            normalized["description"] = desc
+            # Carry extra fields
+            for extra in ("impact", "owner", "target_resolution_date"):
+                if extra in item:
+                    normalized[extra] = item[extra]
+
+            if isinstance(desc, str) and "?" in desc:
+                result["questions"].append(normalized)
+            else:
+                result["risks"].append(normalized)
+
+    return result
 
 
 # ─── Part 6: Study State Validation ──────────────────────────────────────────
@@ -478,11 +790,16 @@ def validate_study_state_document(
 
     Checks:
     1. All required top-level keys are present and are lists.
-    2. Propagation rules:
-       - questions IDs/count from signals.questions
-       - assumptions IDs/count from signals.assumptions
-       - risks IDs/count from signals.risks
-       - action_items IDs/count from structured_extraction.action_items
+    2. Propagation rules (using normalized view):
+       - questions IDs/count from normalized questions
+       - assumptions IDs/count from normalized assumptions
+       - risks IDs/count from normalized risks
+       - action_items IDs/count from normalized action_items
+
+    Normalization bridges legacy contract format → internal model so that
+    both old and new source artifacts produce accurate propagation checks.
+    If normalization cannot be built, a schema_error is emitted instead of
+    raising an exception.
     """
     findings: List[ValidationFinding] = []
     stage = "study_state"
@@ -523,43 +840,52 @@ def validate_study_state_document(
                 )
             )
 
-    # Propagation checks.
-    if signals is not None and isinstance(signals, dict):
-        # questions
+    # Build normalized view for propagation checks.
+    if signals is not None or extraction is not None:
+        try:
+            normalized = normalize_to_internal_view(extraction, signals)
+        except Exception as exc:
+            findings.append(
+                _make_finding(
+                    SEV_ERROR,
+                    CATEGORY_SCHEMA_ERROR,
+                    f"Could not build normalized view for propagation check: {exc}",
+                    stage,
+                    "Ensure extraction and signals are valid before running study_state "
+                    "validation.",
+                )
+            )
+            return findings
+
         _check_propagation(
             findings,
             stage,
-            source_name="signals.questions",
-            source_items=signals.get("questions", []),
+            source_name="normalized.questions",
+            source_items=normalized["questions"],
             target_name="study_state.questions",
             target_items=state.get("questions", []),
         )
-        # assumptions
         _check_propagation(
             findings,
             stage,
-            source_name="signals.assumptions",
-            source_items=signals.get("assumptions", []),
+            source_name="normalized.assumptions",
+            source_items=normalized["assumptions"],
             target_name="study_state.assumptions",
             target_items=state.get("assumptions", []),
         )
-        # risks
         _check_propagation(
             findings,
             stage,
-            source_name="signals.risks",
-            source_items=signals.get("risks", []),
+            source_name="normalized.risks",
+            source_items=normalized["risks"],
             target_name="study_state.risks",
             target_items=state.get("risks", []),
         )
-
-    if extraction is not None and isinstance(extraction, dict):
-        # action_items
         _check_propagation(
             findings,
             stage,
-            source_name="structured_extraction.action_items",
-            source_items=extraction.get("action_items", []),
+            source_name="normalized.action_items",
+            source_items=normalized["action_items"],
             target_name="study_state.action_items",
             target_items=state.get("action_items", []),
         )
@@ -575,7 +901,11 @@ def _check_propagation(
     target_name: str,
     target_items: Any,
 ) -> None:
-    """Compare source and target item counts and IDs; append drift findings."""
+    """Compare source and target item counts and IDs; append drift findings.
+
+    IDs are coerced to strings for comparison; non-hashable values (list/dict)
+    are skipped rather than raising a TypeError.
+    """
     if not isinstance(source_items, list) or not isinstance(target_items, list):
         return
 
@@ -592,13 +922,23 @@ def _check_propagation(
         )
         return
 
-    # ID-level drift check (if items are dicts with an 'id' key).
-    source_ids = [
-        item.get("id") for item in source_items if isinstance(item, dict) and "id" in item
-    ]
-    target_ids = [
-        item.get("id") for item in target_items if isinstance(item, dict) and "id" in item
-    ]
+    # ID-level drift check — only for dicts that carry an 'id' key.
+    # Coerce IDs to strings; skip unhashable values to avoid crashes.
+    def _safe_ids(items: List[Any]) -> List[str]:
+        result_ids = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            raw_id = item.get("id")
+            if raw_id is None:
+                continue
+            if isinstance(raw_id, (str, int, float)) and not isinstance(raw_id, bool):
+                result_ids.append(str(raw_id))
+            # skip unhashable types (list, dict, etc.) silently
+        return result_ids
+
+    source_ids = _safe_ids(source_items)
+    target_ids = _safe_ids(target_items)
     if source_ids and target_ids and set(source_ids) != set(target_ids):
         missing = set(source_ids) - set(target_ids)
         extra = set(target_ids) - set(source_ids)
@@ -617,7 +957,6 @@ def _check_propagation(
                 f"Verify that all IDs from {source_name} are preserved in {target_name}.",
             )
         )
-
 
 # ─── Part 7: Artifact Package Validation ──────────────────────────────────────
 
