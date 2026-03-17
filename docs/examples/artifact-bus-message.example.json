@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "message_id": "MSG-MEET-001.EVAL-001",
+  "artifact_id": "ART-MINUTES-2026-0317-001",
+  "artifact_type": "ArtifactEnvelope",
+  "source_module": "workflow_modules.meeting_intelligence",
+  "target_module": "control_plane.evaluation",
+  "lifecycle_state": "transformed",
+  "payload_ref": "ART-MINUTES-2026-0317-001",
+  "contract_version": "1.0.0",
+  "timestamp": "2026-03-17T14:00:00Z",
+  "run_id": "RUN-MEET-EVAL-2026-0317-001",
+  "lineage_ref": "LIN-MINUTES-2026-0317-001",
+  "evaluation_ref": "EVAL-MINUTES-2026-0317-001",
+  "metadata": {
+    "flow_id": "FLOW-MEETING-TO-EVAL-001",
+    "stage": "minutes_to_evaluation"
+  }
+}

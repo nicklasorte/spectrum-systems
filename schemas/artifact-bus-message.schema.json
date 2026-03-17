@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "artifact-bus-message.schema.json",
+  "title": "Artifact Bus Message",
+  "description": "Canonical schema for a message carried on the spectrum-systems artifact bus. All cross-module artifact transfers must conform to this schema. Defined and owned by the orchestration layer; modules must not redefine or extend this schema locally.",
+  "type": "object",
+  "required": [
+    "message_id",
+    "artifact_id",
+    "artifact_type",
+    "source_module",
+    "target_module",
+    "lifecycle_state",
+    "payload_ref",
+    "contract_version",
+    "schema_version",
+    "timestamp",
+    "run_id",
+    "lineage_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "Unique identifier for this artifact bus message.",
+      "pattern": "^MSG-[A-Z0-9._-]+$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Unique identifier for the artifact being transferred.",
+      "pattern": "^ART-[A-Z0-9._-]+$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Canonical artifact type name. Must match a type declared in the target module's manifest inputs.",
+      "minLength": 1
+    },
+    "source_module": {
+      "type": "string",
+      "description": "module_id of the module emitting the artifact. Must correspond to a real module manifest.",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+    },
+    "target_module": {
+      "type": "string",
+      "description": "module_id of the module receiving the artifact. Must correspond to a real module manifest and must declare artifact_type in its inputs.",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+    },
+    "lifecycle_state": {
+      "type": "string",
+      "description": "Lifecycle state of the artifact at the time of handoff. Must be a recognized state from lifecycle_states.json.",
+      "minLength": 1
+    },
+    "payload_ref": {
+      "type": "string",
+      "description": "Reference pointer to the artifact payload (e.g., a storage path, artifact envelope ID, or run manifest reference). Must be non-empty.",
+      "minLength": 1
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Version of the artifact contract governing this artifact type (semver).",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the artifact-bus-message schema used by this message.",
+      "const": "1.0.0"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "UTC ISO-8601 timestamp when this message was emitted by the orchestration layer.",
+      "format": "date-time"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Orchestration run identifier. Links this message to the originating pipeline run manifest.",
+      "pattern": "^RUN-[A-Z0-9._-]+$"
+    },
+    "lineage_ref": {
+      "type": "string",
+      "description": "Lineage record identifier for the artifact being transferred. Required for all governed handoffs.",
+      "pattern": "^LIN-[A-Z0-9._-]+$"
+    },
+    "evaluation_ref": {
+      "type": "string",
+      "description": "Optional evaluation result identifier linked to this handoff, when the artifact is being transferred as a result of an evaluation outcome.",
+      "pattern": "^EVAL-[A-Z0-9._-]+$"
+    },
+    "work_item_ref": {
+      "type": "string",
+      "description": "Optional work item identifier linked to this handoff, when the transfer was triggered by an action_required evaluation outcome.",
+      "pattern": "^WI-[A-Z0-9._-]+$"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional additional key-value metadata for this message. Must not include orchestration routing logic.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

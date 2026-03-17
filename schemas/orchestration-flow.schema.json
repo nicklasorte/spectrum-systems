@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "orchestration-flow.schema.json",
+  "title": "Orchestration Flow",
+  "description": "Canonical schema for an orchestration flow manifest. Orchestration flows define the staged sequence in which modules participate, what artifacts are transferred, and what validations govern each handoff. Only orchestration/ owns flow definitions.",
+  "type": "object",
+  "required": [
+    "flow_id",
+    "name",
+    "description",
+    "stages",
+    "source_modules",
+    "target_modules",
+    "artifact_types",
+    "required_validations",
+    "allowed_lifecycle_states",
+    "status",
+    "schema_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the orchestration-flow schema used by this manifest.",
+      "const": "1.0.0"
+    },
+    "flow_id": {
+      "type": "string",
+      "description": "Unique stable identifier for this orchestration flow.",
+      "pattern": "^FLOW-[A-Z0-9._-]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this flow.",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "Concise statement of what this flow does and why it exists.",
+      "minLength": 10
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of this flow definition.",
+      "enum": [
+        "planned",
+        "active",
+        "deprecated"
+      ]
+    },
+    "stages": {
+      "type": "array",
+      "description": "Ordered list of stages in this flow. Each stage represents a discrete step in the execution sequence.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "stage_id",
+          "name",
+          "source_module",
+          "target_module",
+          "artifact_type",
+          "lifecycle_state_at_handoff"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "description": "Unique identifier for this stage within the flow.",
+            "pattern": "^STG-[A-Z0-9._-]+$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for this stage.",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of what happens in this stage."
+          },
+          "source_module": {
+            "type": "string",
+            "description": "module_id of the module that emits the artifact at this stage.",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+          },
+          "target_module": {
+            "type": "string",
+            "description": "module_id of the module that receives the artifact at this stage.",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+          },
+          "artifact_type": {
+            "type": "string",
+            "description": "Canonical artifact type transferred at this stage.",
+            "minLength": 1
+          },
+          "lifecycle_state_at_handoff": {
+            "type": "string",
+            "description": "Required lifecycle state of the artifact when this stage executes.",
+            "minLength": 1
+          },
+          "required_validations": {
+            "type": "array",
+            "description": "Optional list of validation rules that must pass before this stage executes.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "optional": {
+            "type": "boolean",
+            "description": "If true, this stage may be skipped without failing the flow. Defaults to false.",
+            "default": false
+          }
+        }
+      }
+    },
+    "source_modules": {
+      "type": "array",
+      "description": "All module_id values that act as sources (emitters) in this flow.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      }
+    },
+    "target_modules": {
+      "type": "array",
+      "description": "All module_id values that act as targets (receivers) in this flow.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      }
+    },
+    "artifact_types": {
+      "type": "array",
+      "description": "All canonical artifact type names transferred across this flow.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_validations": {
+      "type": "array",
+      "description": "Flow-level validation rules that must pass before the flow may execute.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_lifecycle_states": {
+      "type": "array",
+      "description": "Lifecycle states that artifacts may be in when entering or exiting this flow.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes or rationale for this flow definition."
+    }
+  }
+}
