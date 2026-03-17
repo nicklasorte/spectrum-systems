@@ -161,17 +161,30 @@
     },
     "gap": {
       "type": "object",
-      "additionalProperties": true,
-      "required": ["gap_id", "description", "severity", "source_slide_id"],
+      "additionalProperties": false,
+      "required": ["gap_id", "gap_type", "description", "severity", "source_slide_id", "related_claim_ids"],
       "properties": {
         "gap_id": { "type": "string" },
+        "gap_type": {
+          "type": "string",
+          "enum": [
+            "missing_propagation_model",
+            "missing_assumption",
+            "missing_criteria",
+            "missing_method",
+            "missing_basis",
+            "contradiction",
+            "reconciliation_gap"
+          ]
+        },
         "description": { "type": "string" },
         "severity": {
           "type": "string",
           "enum": ["high", "medium", "low"]
         },
         "related_claim_ids": { "type": "array", "items": { "type": "string" } },
-        "source_slide_id": { "type": "string" }
+        "source_slide_id": { "type": ["string", "null"] },
+        "evidence": { "type": ["string", "null"] }
       }
     },
     "agency_question": {
