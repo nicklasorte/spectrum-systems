@@ -1,0 +1,1891 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-17T10:59:03Z",
+  "source_types": [
+    "review"
+  ],
+  "total_items": 72,
+  "work_items": [
+    {
+      "work_item_id": "WI-0001",
+      "source_type": "review",
+      "source_id": "2026-03-14-claude-review-automation",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-2",
+      "title": "Missing machine-readable action payloads",
+      "description": "No JSON actions file accompanies the markdown review, preventing downstream automation from emitting GitHub issues.",
+      "severity": "critical",
+      "category": "other",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-14",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "design-reviews/claude-review.schema.json",
+        "design-reviews/example-claude-review.actions.json"
+      ],
+      "suggested_issue_title": "Publish Claude actions schema and example",
+      "suggested_labels": [
+        "automation",
+        "schema",
+        "design-review"
+      ]
+    },
+    {
+      "work_item_id": "WI-0002",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-3",
+      "title": "Production code boundary violation remains unresolved",
+      "description": "spectrum_systems/study_runner/ contains production pipeline code (pipeline.py, run_study.py, artifact_writer.py, load_config.py) in a repository whose CLAUDE.md states 'This repository should NOT contain production implementation code.' This was previously identified as RC-1 in the 2026-03-15 constitution audit. The artifact boundary CI check cannot detect Python source files \u2014 it only bans binary extensions.",
+      "severity": "critical",
+      "category": "architecture-boundary",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum_systems/study_runner/",
+        "spectrum_systems/contracts/__init__.py",
+        "run_study.py",
+        "scripts/check_artifact_boundary.py",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "suggested_issue_title": "Remove production Python package from governance repo",
+      "suggested_labels": [
+        "architecture",
+        "governance-violation",
+        "priority-critical",
+        "boundary-enforcement"
+      ]
+    },
+    {
+      "work_item_id": "WI-0003",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-1",
+      "title": "Phase 1 enforcement not initiated: governance-declaration.template.json does not exist",
+      "description": "docs/governance-enforcement-roadmap.md defines four enforcement phases. None is active. docs/reviews/2026-03-14-governance-architecture-review.md (GA-007) explicitly requested contracts/governance-declaration.template.json with a full field specification and SYS-001 example. The file does not exist. Every downstream repo can declare governance compliance without any machine-verifiable commitment. system-factory cannot scaffold declarations. Phase 1 remains permanently aspirational.",
+      "severity": "critical",
+      "category": "governance-enforcement",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "contracts/governance-declaration.template.json",
+        "docs/governance-conformance-checklist.md",
+        "docs/governance-enforcement-roadmap.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "due_date": "2026-03-23",
+      "suggested_issue_title": "Create contracts/governance-declaration.template.json to initiate Phase 1 enforcement",
+      "suggested_labels": [
+        "governance-enforcement",
+        "phase-1",
+        "priority-critical",
+        "GA-007"
+      ]
+    },
+    {
+      "work_item_id": "WI-0004",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-2",
+      "title": "Artifact boundary CI does not enforce implementation code boundary",
+      "description": "scripts/check_artifact_boundary.py enforces data artifact rules (banned extensions: .pdf, .docx, binaries; size threshold: 2 MB) but does not enforce the architecture boundary stated in CLAUDE.md: 'This repository should NOT contain production implementation code.' The spectrum_systems/study_runner/ package (pipeline.py, run_study.py, artifact_writer.py, load_config.py) and run_study.py at repo root pass CI without any alert. This boundary violation has been identified in RC-2 (2026-03-15 constitution audit) and remains unresolved.",
+      "severity": "critical",
+      "category": "ci-enforcement",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "scripts/check_artifact_boundary.py",
+        "docs/implementation-boundary.md",
+        ".github/workflows/artifact-boundary.yml",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "suggested_issue_title": "Extend artifact-boundary CI to enforce implementation code boundary (not only data artifacts)",
+      "suggested_labels": [
+        "ci-enforcement",
+        "boundary-enforcement",
+        "priority-critical"
+      ]
+    },
+    {
+      "work_item_id": "WI-0005",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-1",
+      "title": "Remove production code and extend boundary enforcement",
+      "description": "Relocate spectrum_systems/study_runner/ to a dedicated engine repo. Extend check_artifact_boundary.py to detect Python source files outside of allowed directories (tests/, scripts/). Remove run_study.py from repo root.",
+      "severity": "critical",
+      "category": "other",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-01"
+    },
+    {
+      "work_item_id": "WI-0006",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-1",
+      "title": "Create contracts/governance-declaration.template.json",
+      "description": "Create the Phase 1 governance declaration template with complete field specification and SYS-001 example.",
+      "severity": "critical",
+      "category": "other",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ],
+      "due_date": "2026-03-23"
+    },
+    {
+      "work_item_id": "WI-0007",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-2",
+      "title": "Update governance-enforcement-roadmap.md to mark Phase 1 as initiated",
+      "description": "Add Status: Initiated to Phase 1, reference the template, record initiation date.",
+      "severity": "critical",
+      "category": "other",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ],
+      "due_date": "2026-03-23"
+    },
+    {
+      "work_item_id": "WI-0008",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-3",
+      "title": "Extend artifact boundary CI to detect implementation code violations",
+      "description": "Update scripts/check_artifact_boundary.py to flag Python packages, run_*.py scripts, and src/ directories.",
+      "severity": "critical",
+      "category": "other",
+      "status": "open",
+      "priority_score": 100,
+      "blocking": true,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0009",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-1",
+      "title": "Remove or formally relocate the spectrum_systems Python package",
+      "description": "The spectrum_systems/ Python package contains a full production study runner pipeline (pipeline.py, run_study.py, artifact_writer.py, load_config.py) and a contract loading utility. This directly violates the repo's own stated boundary rule: 'This repository should NOT contain production implementation code.' The presence of this code also creates a CI coupling \u2014 test_contracts.py imports from spectrum_systems.contracts, making the test suite dependent on the production code being present. The artifact boundary CI check does not detect Python source files.",
+      "severity": "high",
+      "category": "architecture-boundary",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum_systems/",
+        "spectrum_systems/contracts/__init__.py",
+        "spectrum_systems/study_runner/",
+        "spectrum_systems/study_runner/pipeline.py",
+        "spectrum_systems/study_runner/run_study.py",
+        "spectrum_systems/study_runner/artifact_writer.py",
+        "spectrum_systems/study_runner/load_config.py",
+        "run_study.py",
+        "tests/test_contracts.py",
+        "requirements-dev.txt",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Remove production Python package from governance repo (spectrum_systems/)",
+      "suggested_labels": [
+        "architecture",
+        "governance-violation",
+        "priority-critical",
+        "boundary-enforcement"
+      ]
+    },
+    {
+      "work_item_id": "WI-0010",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-2",
+      "title": "Extend artifact boundary CI check to detect production implementation code",
+      "description": "scripts/check_artifact_boundary.py enforces a data boundary (no .pdf, .docx, binary blobs) but does not enforce the architecture boundary (no production implementation code). Python source files, runnable pipeline scripts, and business logic modules pass through CI unchallenged. The check must be extended to catch violations of the 'no implementation code' rule, not only data artifact violations.",
+      "severity": "high",
+      "category": "boundary-enforcement",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "scripts/check_artifact_boundary.py",
+        "docs/implementation-boundary.md",
+        ".github/workflows/artifact-boundary.yml",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Extend artifact-boundary CI to enforce architecture boundary, not only data boundary",
+      "suggested_labels": [
+        "ci",
+        "governance-enforcement",
+        "boundary-enforcement",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0011",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-3",
+      "title": "Populate ecosystem registry with all operational engines",
+      "description": "ecosystem/ecosystem-registry.json currently lists only 4 of the 8 known ecosystem repos. Missing: working-paper-review-engine, comment-resolution-engine, meeting-minutes-engine, docx-comment-injection-engine. These four are the primary Layer 3 consumers of the contract czar model. A constitution that does not enumerate the entities it governs cannot govern them. The registry also lacks a compliance_status field, providing no machine-readable governance validation state per repo.",
+      "severity": "high",
+      "category": "ecosystem-registry",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "ecosystem/ecosystem-registry.schema.json",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add missing operational engine repos to ecosystem-registry.json",
+      "suggested_labels": [
+        "ecosystem-registry",
+        "governance",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0012",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-4",
+      "title": "Activate Phase 1 of the governance enforcement roadmap",
+      "description": "The governance enforcement roadmap defines 4 phases but no phase is active. Phase 1 (declared identity and contract pins) is the prerequisite for all subsequent enforcement. Without it, downstream engines have no machine-enforceable obligation to declare their system_id or pin contract versions. Every engine added to the ecosystem before Phase 1 is activated represents a permanently unverifiable governance claim.",
+      "severity": "high",
+      "category": "governance-enforcement",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/governance-enforcement-roadmap.md",
+        "docs/new-repo-checklist.md",
+        "ecosystem/ecosystem-registry.json",
+        ".github/workflows/",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Implement Phase 1 governance enforcement: declared identity and contract pins",
+      "suggested_labels": [
+        "governance-enforcement",
+        "phase-1",
+        "priority-high",
+        "system-factory"
+      ]
+    },
+    {
+      "work_item_id": "WI-0013",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-5",
+      "title": "Complete governance coverage for SYS-007, SYS-008, SYS-009",
+      "description": "Implementation boundary declarations and failure mode documentation are incomplete or absent for SYS-007 (working-paper-review-engine), SYS-008 (docx-comment-injection-engine), and SYS-009 (spectrum-pipeline-engine). SYS-007 through SYS-009 are the systems next in line for implementation. Governance gaps at the moment of implementation are the highest-risk point for contract drift and local standard creation.",
+      "severity": "high",
+      "category": "governance-coverage",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/implementation-boundary.md",
+        "docs/system-failure-modes.md",
+        "systems/working-paper-review-engine/interface.md",
+        "systems/docx-comment-injection-engine/interface.md",
+        "systems/spectrum-pipeline-engine/interface.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Complete governance coverage for SYS-007, SYS-008, SYS-009 before implementation begins",
+      "suggested_labels": [
+        "governance-coverage",
+        "SYS-007",
+        "SYS-008",
+        "SYS-009",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0014",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-6",
+      "title": "Resolve external_artifact_manifest draft status",
+      "description": "The external_artifact_manifest contract carries 'draft' status in contracts/standards-manifest.json but is referenced in docs/contract-dependency-map.md as a consumer-facing contract for artifact storage governance. Any engine implementing storage behavior against a draft contract is building against an unstable interface. The mismatch between declared status and consumed status is a live contradiction.",
+      "severity": "high",
+      "category": "contract-stability",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "contracts/standards-manifest.json",
+        "contracts/schemas/external_artifact_manifest.schema.json",
+        "docs/contract-dependency-map.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Promote or formally block external_artifact_manifest contract (currently draft, consumed as stable)",
+      "suggested_labels": [
+        "contract-stability",
+        "external-artifacts",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0015",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RC-7",
+      "title": "Wire review-to-issue automation to close the action tracker loop",
+      "description": "Design reviews produce action trackers (markdown files with action items GA-001 through GA-011, CR-1 through LI-2, etc.) but no automation converts these items into GitHub issues. The ingest workflow (.github/workflows/claude-review-ingest.yml) exists but does not create tracked work. Review artifacts accumulate in docs/review-actions/ without becoming assignable, trackable issues. This breaks the feedback loop between governance review and execution.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "scripts/ingest-claude-review.js",
+        ".github/workflows/claude-review-ingest.yml",
+        "docs/review-actions/action-tracker-template.md",
+        "docs/review-registry.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Automate GitHub issue creation from review action tracker files",
+      "suggested_labels": [
+        "governance-process",
+        "automation",
+        "review-loop",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0016",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-1",
+      "title": "Remove production implementation code from the constitution repo",
+      "description": "The spectrum_systems/ Python package contains a full production study runner pipeline (pipeline.py, run_study.py, artifact_writer.py, load_config.py) and a contract loading utility. This directly violates the repo's stated boundary rule: 'This repository should NOT contain production implementation code.' The test suite (test_contracts.py) imports from spectrum_systems.contracts, coupling CI to the production code. The artifact boundary CI check does not detect Python source files.",
+      "severity": "high",
+      "category": "architecture-boundary",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Remove production Python package from governance repo (spectrum_systems/)",
+      "suggested_labels": [
+        "architecture",
+        "governance-violation",
+        "priority-critical",
+        "boundary-enforcement"
+      ]
+    },
+    {
+      "work_item_id": "WI-0017",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-2",
+      "title": "Complete the ecosystem registry with all operational engines",
+      "description": "ecosystem/ecosystem-registry.json lists 4 of 8 known ecosystem repos. Missing: working-paper-review-engine, comment-resolution-engine, meeting-minutes-engine, docx-comment-injection-engine. These are the primary Layer 3 consumers of the contract czar model. The registry also lacks compliance_status, governance_version, and contract_pins fields, providing no machine-readable governance state per repo.",
+      "severity": "high",
+      "category": "ecosystem-registry",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add missing operational engine repos to ecosystem-registry.json with compliance fields",
+      "suggested_labels": [
+        "ecosystem-registry",
+        "governance",
+        "priority-critical"
+      ]
+    },
+    {
+      "work_item_id": "WI-0018",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-3",
+      "title": "Extend artifact boundary CI to enforce architecture boundary",
+      "description": "scripts/check_artifact_boundary.py enforces a data boundary (no .pdf, .docx, binary blobs) but does not enforce the architecture boundary (no production implementation code). Python source packages, runnable pipeline scripts, and business logic modules pass through CI unchallenged. The stated rule and the enforced rule are misaligned.",
+      "severity": "high",
+      "category": "boundary-enforcement",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Extend artifact-boundary CI to enforce architecture boundary, not only data boundary",
+      "suggested_labels": [
+        "ci",
+        "governance-enforcement",
+        "boundary-enforcement",
+        "priority-critical"
+      ]
+    },
+    {
+      "work_item_id": "WI-0019",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-4",
+      "title": "Activate Phase 1 governance enforcement: declared identity and contract pins",
+      "description": "The governance enforcement roadmap defines 4 phases but no phase is active. Phase 1 (declared identity and contract pins) is the prerequisite for all subsequent enforcement. Without it, downstream engines have no machine-enforceable obligation to declare system_id or pin contract versions. The governance/repo-compliance.schema.json exists but is never instantiated against any repo.",
+      "severity": "high",
+      "category": "governance-enforcement",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "system-factory",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Implement Phase 1 governance enforcement: declared identity and contract pins",
+      "suggested_labels": [
+        "governance-enforcement",
+        "phase-1",
+        "priority-high",
+        "system-factory"
+      ]
+    },
+    {
+      "work_item_id": "WI-0020",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-5",
+      "title": "Complete governance coverage for SYS-007, SYS-008, SYS-009",
+      "description": "Implementation boundary declarations and failure mode documentation are absent for SYS-007 (working-paper-review-engine), SYS-008 (docx-comment-injection-engine), and SYS-009 (spectrum-pipeline-engine). These systems are next in line for implementation. Governance gaps at implementation time become permanent architectural debt.",
+      "severity": "high",
+      "category": "governance-coverage",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Complete governance coverage for SYS-007, SYS-008, SYS-009 before implementation",
+      "suggested_labels": [
+        "governance-coverage",
+        "SYS-007",
+        "SYS-008",
+        "SYS-009",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0021",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-6",
+      "title": "Resolve external_artifact_manifest draft status",
+      "description": "The external_artifact_manifest contract carries 'draft' status in contracts/standards-manifest.json but is referenced in docs/contract-dependency-map.md as a consumer-facing contract for spectrum-pipeline-engine, study-artifact-generator, and comment-resolution-engine. SYS-008 (docx-comment-injection-engine) depends on this contract for binary artifact storage governance. Implementation against a draft contract is implementation against an unstable interface.",
+      "severity": "high",
+      "category": "contract-stability",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Promote or formally block external_artifact_manifest contract (currently draft, consumed as stable)",
+      "suggested_labels": [
+        "contract-stability",
+        "external-artifacts",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0022",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-7",
+      "title": "Wire review-to-issue automation to close the action tracker loop",
+      "description": "Design reviews produce action trackers (37+ items across three reviews) stored as markdown/JSON in docs/review-actions/. No automation converts these into GitHub issues. The ingest workflow exists but does not create tracked work. Action items are unassigned, untracked, and have unknown completion status.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Automate GitHub issue creation from review action tracker files",
+      "suggested_labels": [
+        "governance-process",
+        "automation",
+        "review-loop",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0023",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "REC-8",
+      "title": "Define orchestration execution model via ADR",
+      "description": "spectrum-pipeline-engine (SYS-009) is the most architecturally sensitive repo in the ecosystem \u2014 it has the highest cross-repo coupling and depends on contracts from every other engine. Its execution model (synchronous vs. asynchronous, file-based vs. API-based, event-driven vs. polling, partial failure handling) is undefined. Implementation without this ADR will bake in ad hoc coupling decisions that are expensive to reverse.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 90,
+      "blocking": true,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "spectrum-pipeline-engine",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "ADR: Define orchestration execution model for spectrum-pipeline-engine",
+      "suggested_labels": [
+        "architecture-decision",
+        "SYS-009",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0024",
+      "source_type": "review",
+      "source_id": "2026-03-14-claude-review-automation",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-1",
+      "title": "Identifiers are not enforced across review artifacts",
+      "description": "Markdown reviews lack deterministic identifiers, creating ambiguity when automation parses the actions file.",
+      "severity": "high",
+      "category": "governance",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-14",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "design-reviews/claude-review-template.md",
+        "design-reviews/README.md",
+        "design-reviews/example-claude-review.actions.json"
+      ],
+      "suggested_issue_title": "Enforce deterministic review identifiers",
+      "suggested_labels": [
+        "design-review",
+        "governance"
+      ]
+    },
+    {
+      "work_item_id": "WI-0025",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-1",
+      "title": "Compliance scanner checks file presence, not governance compliance",
+      "description": "The cross-repo compliance scanner (run-cross-repo-compliance.js) only verifies that required files and directories exist in downstream repos. It cannot detect contract version mismatches, schema incompatibility, governance section content violations, or architectural rule deviations. A downstream repo can pass all checks while implementing entirely incompatible contracts.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "governance/compliance-scans/scan-config.example.json",
+        "docs/cross-repo-compliance.md",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-15",
+      "suggested_issue_title": "Extend compliance scanner beyond file-presence to contract version validation",
+      "suggested_labels": [
+        "governance",
+        "cross-repo",
+        "enforcement",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0026",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-10",
+      "title": "Manual compliance scanning cannot scale beyond 5-7 repos",
+      "description": "The compliance scanner requires local checkouts of all repos, manual CLI invocation, and manual review of JSON output. At 15-30 repositories this process will be abandoned. The scanner must be automated with scheduled CI runs and notification on drift.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        ".github/workflows/",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "suggested_issue_title": "Automate cross-repo compliance scanning in CI",
+      "suggested_labels": [
+        "scalability",
+        "automation",
+        "governance"
+      ]
+    },
+    {
+      "work_item_id": "WI-0027",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-2",
+      "title": "Ecosystem registry missing 4 of 8 governed repositories",
+      "description": "ecosystem/ecosystem-registry.json lists only 4 repositories (spectrum-systems, system-factory, spectrum-pipeline-engine, spectrum-program-advisor). The four Layer 3 operational engines (comment-resolution-engine, working-paper-review-engine, meeting-minutes-engine, docx-comment-injection-engine) are absent. The registry cannot serve as an authoritative source of truth for the ecosystem.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "ecosystem/ecosystem-registry.json",
+        "ecosystem/ecosystem-registry.schema.json",
+        "tests/test_registry_valid.py",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-01",
+      "suggested_issue_title": "Complete ecosystem registry with all 8 governed repositories",
+      "suggested_labels": [
+        "governance",
+        "registry",
+        "data-integrity",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0028",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-6",
+      "title": "Governance enforcement roadmap is entirely unstarted",
+      "description": "docs/governance-enforcement-roadmap.md describes a 4-phase enforcement model (declared identity \u2192 automated validation \u2192 CI conformance \u2192 ecosystem compatibility). All four phases are documented but zero are implemented. The gap between documented and enforced governance is the single largest structural risk.",
+      "severity": "high",
+      "category": "governance-enforcement",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/governance-enforcement-roadmap.md",
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-30",
+      "suggested_issue_title": "Implement Phase 1 of governance enforcement roadmap",
+      "suggested_labels": [
+        "governance",
+        "enforcement",
+        "priority-high",
+        "roadmap"
+      ]
+    },
+    {
+      "work_item_id": "WI-0029",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-7",
+      "title": "No cross-repo CI enforcement exists",
+      "description": "All CI workflows run exclusively within spectrum-systems. No mechanism triggers governance validation when downstream repos change. Downstream repos can remove governance files, modify schemas, implement contracts incorrectly, or skip evaluation harnesses without any signal reaching the governance layer.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        ".github/workflows/",
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-15",
+      "suggested_issue_title": "Add scheduled CI workflow for cross-repo compliance scanning",
+      "suggested_labels": [
+        "governance",
+        "cross-repo",
+        "ci",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0030",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-3",
+      "title": "Production Python package spectrum_systems/ remains in governance-only repo",
+      "description": "spectrum_systems/study_runner/ contains production pipeline code (pipeline.py, run_study.py, artifact_writer.py, load_config.py). CLAUDE.md states this repo should NOT contain production implementation code. This violation was first identified in RC-1 (2026-03-15 constitution audit), then in A-1 (2026-03-15 audit), then in GA-008 (2026-03-14 governance review). It is carried forward unresolved across three reviews. A governance repository that does not enforce its own stated rules cannot credibly require compliance from downstream repos.",
+      "severity": "high",
+      "category": "architecture-boundary",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum_systems/",
+        "run_study.py",
+        "DECISIONS.md",
+        "docs/implementation-boundary.md",
+        "tests/test_contracts.py",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "suggested_issue_title": "Resolve production Python package in governance repo: remove or formally exempt spectrum_systems/",
+      "suggested_labels": [
+        "architecture-boundary",
+        "governance-violation",
+        "priority-high",
+        "RC-1-carried-forward"
+      ]
+    },
+    {
+      "work_item_id": "WI-0031",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-4",
+      "title": "Schema authority is split across two directories without canonical designation",
+      "description": "Root schemas/ contains nine schemas (comment, issue, provenance, assumption, study-output, precedent, compiler-manifest, artifact-bundle, diagnostics). contracts/schemas/ contains fifteen schemas with provenance coverage and example payloads. schemas/README.md does not state which directory is canonical. Downstream repos importing schemas cannot determine the authoritative source without consulting multiple documents. This will produce divergent import paths and undetectable drift when either directory is updated.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "schemas/README.md",
+        "CONTRACTS.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "due_date": "2026-03-30",
+      "suggested_issue_title": "Designate canonical schema authority in schemas/README.md (resolve dual-track ambiguity)",
+      "suggested_labels": [
+        "schema-governance",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0032",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-5",
+      "title": "Cross-repo compliance scanner validates file presence, not governance compliance",
+      "description": "governance/compliance-scans/run-cross-repo-compliance.js checks for: required files (README.md, CLAUDE.md, CODEX.md, SYSTEMS.md), required directories (docs/, tests/), README content containing 'spectrum-systems', presence of GitHub workflow files. It does not check contract version pins, schema compatibility, governance declaration presence, or evaluation harness currency. A repository can pass the compliance scanner while consuming incompatible contract versions or missing all governance declarations. The policy engine (governance/policies/run-policy-engine.py) evaluates four real policies but is not wired to any CI workflow.",
+      "severity": "high",
+      "category": "ci-enforcement",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        ".github/workflows/cross-repo-compliance.yml",
+        "governance/policies/run-policy-engine.py",
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "suggested_issue_title": "Wire governance policy engine to cross-repo compliance CI workflow",
+      "suggested_labels": [
+        "ci-enforcement",
+        "governance-enforcement",
+        "priority-high"
+      ]
+    },
+    {
+      "work_item_id": "WI-0033",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-2",
+      "title": "Complete ecosystem registry with all governed repos",
+      "description": "Add comment-resolution-engine, working-paper-review-engine, meeting-minutes-engine, and docx-comment-injection-engine to ecosystem/ecosystem-registry.json. Add a contracts field to each entry listing consumed contract names. Update the ecosystem-registry.schema.json if needed.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-01"
+    },
+    {
+      "work_item_id": "WI-0034",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-3",
+      "title": "Implement Phase 1 governance enforcement",
+      "description": "Define a machine-readable downstream contract pin format (e.g., .spectrum-systems.json). Extend the compliance scanner to read and validate contract pins against contracts/standards-manifest.json. Document the format in docs/governance-enforcement-roadmap.md.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-30"
+    },
+    {
+      "work_item_id": "WI-0035",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-4",
+      "title": "Extend compliance scanner to validate governance content",
+      "description": "Enhance run-cross-repo-compliance.js to validate contract version pins, check CLAUDE.md/CODEX.md for required governance sections, and verify system_id against ecosystem-registry.json.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-15"
+    },
+    {
+      "work_item_id": "WI-0036",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-4",
+      "title": "Designate canonical schema authority in schemas/README.md",
+      "description": "Add Schema Authority section and cross-reference in CONTRACTS.md.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ],
+      "due_date": "2026-03-30"
+    },
+    {
+      "work_item_id": "WI-0037",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-5",
+      "title": "Wire governance policy engine to cross-repo compliance CI",
+      "description": "Add policy engine invocation step to .github/workflows/cross-repo-compliance.yml.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0038",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-7",
+      "title": "Automate cross-repo compliance scanning in CI",
+      "description": "Add a scheduled GitHub Actions workflow that runs the compliance scanner against all registered repos. Publish compliance reports as CI artifacts. Create issues or notifications on drift detection.",
+      "severity": "high",
+      "category": "other",
+      "status": "open",
+      "priority_score": 70,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-31"
+    },
+    {
+      "work_item_id": "WI-0039",
+      "source_type": "review",
+      "source_id": "2026-03-14-claude-review-automation",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-3",
+      "title": "Follow-up triggers are not encoded",
+      "description": "Triggers and due dates are not captured alongside actions, so reviews can stall without scheduled checkpoints.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-14",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "design-reviews/example-claude-review.actions.json",
+        "docs/review-registry.md"
+      ],
+      "due_date": "2026-03-28",
+      "suggested_issue_title": "Encode follow-up triggers next to actions",
+      "suggested_labels": [
+        "follow-up",
+        "process",
+        "design-review"
+      ]
+    },
+    {
+      "work_item_id": "WI-0040",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-11",
+      "title": "Schema dual-track will create version confusion at scale",
+      "description": "With schemas/ and contracts/schemas/ coexisting without clear differentiation, new team members and AI agents will reference the wrong schema source. As the ecosystem grows, this ambiguity will compound into schema version mismatches across repos.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "schemas/",
+        "contracts/schemas/",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "suggested_issue_title": "Schema dual-track creates scaling risk",
+      "suggested_labels": [
+        "schema-governance",
+        "scalability"
+      ]
+    },
+    {
+      "work_item_id": "WI-0041",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-12",
+      "title": "Review registry is a flat markdown table",
+      "description": "The review registry (docs/review-registry.md) tracks reviews in a markdown table. At 15-30 repos with quarterly reviews, this table will contain 60-120 rows within two years. Markdown tables do not support filtering, automated status updates, overdue item detection, or issue tracker integration.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-registry.md",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-30",
+      "suggested_issue_title": "Create machine-readable review registry with CI-driven status checks",
+      "suggested_labels": [
+        "review-infrastructure",
+        "automation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0042",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-4",
+      "title": "Dual schema authority creates confusion",
+      "description": "Schemas exist in both schemas/ (12 files, no manifest tracking, no test coverage) and contracts/schemas/ (16 files, manifest-tracked, validated by test_contracts.py). It is unclear which schemas are authoritative for downstream consumption. New contributors and AI agents may reference the wrong source.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "schemas/",
+        "contracts/schemas/",
+        "schemas/README.md",
+        "contracts/standards-manifest.json",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-30",
+      "suggested_issue_title": "Resolve dual schema authority between schemas/ and contracts/schemas/",
+      "suggested_labels": [
+        "schema-governance",
+        "architecture",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0043",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-5",
+      "title": "Contract consumer declarations are not verified",
+      "description": "contracts/standards-manifest.json declares intended_consumers for each contract, but no mechanism verifies that those consumers actually import, pin, or validate against the declared contract version. This is a governance declaration without verification.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "contracts/standards-manifest.json",
+        "governance/compliance-scans/run-cross-repo-compliance.js",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-15",
+      "suggested_issue_title": "Implement contract consumer verification against standards manifest",
+      "suggested_labels": [
+        "governance",
+        "cross-repo",
+        "contracts",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0044",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-8",
+      "title": "Artifact boundary check cannot detect content-based violations",
+      "description": "scripts/check_artifact_boundary.py bans binary file extensions and enforces file size limits but cannot detect Python source files or any content-based boundary violation. The check is structurally incapable of enforcing the 'no production code' rule.",
+      "severity": "medium",
+      "category": "architecture-boundary",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "scripts/check_artifact_boundary.py",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-15",
+      "suggested_issue_title": "Extend artifact boundary check to detect production Python code",
+      "suggested_labels": [
+        "boundary-enforcement",
+        "ci",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0045",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-6",
+      "title": "All review registry entries are Open with no per-finding resolution tracking",
+      "description": "The review registry tracks reviews at a status level (Open/In Progress/Blocked/Closed) but all seven reviews are Open or In Progress. There is no per-finding resolution mechanism. RC-1 (2026-03-15), A-1 (2026-03-15 audit), and GA-008 (2026-03-14) all identify the same production code violation; none is marked as carried-forward-unresolved in any registry entry. Finding accumulation across 7 reviews without closure creates institutional debt rather than driving resolution.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/reviews/review-registry.json",
+        "docs/reviews/review-registry.schema.json",
+        "docs/review-registry.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "suggested_issue_title": "Add per-finding resolution tracking to review registry and close resolved reviews",
+      "suggested_labels": [
+        "review-culture",
+        "governance",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0046",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-7",
+      "title": "Governance conformance checklist is missing key pre-release gate items",
+      "description": "docs/governance-conformance-checklist.md has 13 items across seven categories. It is missing: machine-readable governance declaration requirement, evaluation harness completion with pass/fail recorded, ADR review for architecture decisions, CI-enforcement confirmation, and system lifecycle gate verification. An implementation repo that passes the current checklist could be missing all of these and still be considered compliant.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/governance-conformance-checklist.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ],
+      "suggested_issue_title": "Expand governance-conformance-checklist.md with evaluation, ADR, CI, and declaration requirements",
+      "suggested_labels": [
+        "governance-completeness",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0047",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-5",
+      "title": "Resolve dual schema authority",
+      "description": "Consolidate schemas/ and contracts/schemas/ by either moving all authoritative schemas into contracts/schemas/ with manifest tracking, or adding clear documentation and README warnings to schemas/ marking it as internal/draft.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-04-30"
+    },
+    {
+      "work_item_id": "WI-0048",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit.actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-6",
+      "title": "Create machine-readable review registry",
+      "description": "Create docs/reviews/review-registry.json alongside the markdown table. Add CI validation that checks for overdue review actions by comparing due_date fields. Generate the markdown table from the JSON source.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "due_date": "2026-05-30"
+    },
+    {
+      "work_item_id": "WI-0049",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-6",
+      "title": "Expand docs/governance-conformance-checklist.md",
+      "description": "Add five new checklist items: declaration, evaluation, ADR, CI, and lifecycle gate.",
+      "severity": "medium",
+      "category": "other",
+      "status": "open",
+      "priority_score": 50,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0050",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-1",
+      "title": "Resolve dual-track schema ambiguity (schemas/ vs contracts/schemas/)",
+      "description": "The repo maintains two schema registries with different naming conventions (kebab-case vs snake_case), different structural depth, and overlapping concerns. schemas/comment-schema.json coexists with contracts/schemas/comment_resolution_matrix.schema.json. SYSTEMS.md references schemas/ for SYS-001\u2013004 and contracts/schemas/ for SYS-005\u2013009. No CI validates consistency between tracks.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Clarify and enforce dual-track schema ownership (schemas/ vs contracts/schemas/)",
+      "suggested_labels": [
+        "schema-governance",
+        "documentation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0051",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-10",
+      "title": "Standardize meeting minutes contract format to JSON Schema",
+      "description": "The meeting minutes contract uses YAML (contracts/meeting_minutes_contract.yaml) while all other contracts use JSON Schema. This creates a different validation pathway and tooling requirement. Consistency in contract format reduces cognitive overhead and enables uniform validation tooling.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Standardize meeting minutes contract to JSON Schema format for ecosystem consistency",
+      "suggested_labels": [
+        "contract-format",
+        "SYS-006",
+        "follow-up"
+      ]
+    },
+    {
+      "work_item_id": "WI-0052",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-2",
+      "title": "Create machine-readable contract consumer registry",
+      "description": "The standards-manifest.json includes intended_consumers per contract but there is no inverse registry mapping each engine to its pinned contract versions. When a contract bumps to a new version, there is no automated way to identify affected consumers or validate migration. docs/contract-dependency-map.md exists in prose only.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create machine-readable contract consumer registry for version impact analysis",
+      "suggested_labels": [
+        "contract-governance",
+        "automation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0053",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-3",
+      "title": "Implement constitutional release versioning",
+      "description": "Engine repos can pin to individual contract versions but cannot pin to a governance version packaging a consistent set of contracts, schemas, prompts, and standards together. When multiple contracts change between governance releases, engines face N separate migration decisions with no coordinated compatibility signal.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Define constitutional release versioning and governance changelog discipline",
+      "suggested_labels": [
+        "release-discipline",
+        "versioning",
+        "governance",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0054",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-4",
+      "title": "Extend evaluation harness coverage to SYS-005 through SYS-009",
+      "description": "eval/test-matrix.md covers SYS-001 through SYS-004. SYS-005 through SYS-009 have evaluation.md files in systems/ directories but no corresponding eval/<system>/ directories with test cases, fixtures, or rubrics. Systems cannot be validated before implementation if there are no evaluation fixtures.",
+      "severity": "low",
+      "category": "evaluation",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add evaluation harness coverage for SYS-005 through SYS-009",
+      "suggested_labels": [
+        "evaluation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0055",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-5",
+      "title": "Create ADRs for all architectural decisions since ADR-001",
+      "description": "Only ADR-001 (czar repo pattern) exists. Significant subsequent decisions lack ADR coverage: dual-track schema model, Python package introduction, evaluation coverage boundary (SYS-001\u2013004 only), 9-system lifecycle model, agent role assignments, enforcement roadmap phasing. As the team grows, undocumented decisions will be relitigated.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create ADRs for architectural decisions made since ADR-001",
+      "suggested_labels": [
+        "adr",
+        "documentation",
+        "governance",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0056",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-6",
+      "title": "Formalize system-factory as governance update propagation mechanism",
+      "description": "system-factory scaffolds new repos with governance primitives but the propagation path for governance updates to existing repos (new contract versions, updated prompts, schema changes) is undefined. As the constitution evolves, existing engines drift. The update model (push/pull/notification) has not been decided.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "system-factory",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Define and implement governance update propagation path for existing engine repos",
+      "suggested_labels": [
+        "system-factory",
+        "governance-propagation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0057",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-7",
+      "title": "Implement ecosystem health signal",
+      "description": "No machine-readable ecosystem health summary exists. Maintainers cannot determine at a glance: which repos are compliant, which contracts have open migration debt, which reviews have unresolved actions, or which systems have evaluation gaps. Observability is manual review of markdown files.",
+      "severity": "low",
+      "category": "observability",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create automated ecosystem-health.json signal for governance observability",
+      "suggested_labels": [
+        "observability",
+        "automation",
+        "ecosystem-registry",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0058",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-8",
+      "title": "Add schema backward-compatibility CI tests",
+      "description": "CONTRACT_VERSIONING.md declares semantic versioning where MINOR bumps must be backward compatible. This compatibility claim is untested. A MINOR bump could silently break existing consumers. The policy exists but is not mechanically enforced.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add backward-compatibility CI tests for contract schema MINOR version bumps",
+      "suggested_labels": [
+        "contract-testing",
+        "ci",
+        "contract-versioning",
+        "priority-low"
+      ]
+    },
+    {
+      "work_item_id": "WI-0059",
+      "source_type": "review",
+      "source_id": "2026-03-15-ecosystem-architecture-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "ENH-9",
+      "title": "Evaluate spectrum-program-advisor output contract consolidation",
+      "description": "spectrum-program-advisor has 7 output contracts (program_brief, study_readiness_assessment, next_best_action_memo, decision_log, risk_register, assumption_register, milestone_plan). This is the largest output surface of any system. Some of these contracts may be better modeled as components of a single program_state aggregate rather than independent artifacts. Without explicit scope constraints, the repo risks absorbing unbounded program management responsibilities.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "spectrum-systems",
+        "spectrum-program-advisor",
+        "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json"
+      ],
+      "suggested_issue_title": "Evaluate consolidation of spectrum-program-advisor output contracts",
+      "suggested_labels": [
+        "scope-management",
+        "contract-design",
+        "SYS-005",
+        "follow-up"
+      ]
+    },
+    {
+      "work_item_id": "WI-0060",
+      "source_type": "review",
+      "source_id": "2026-03-15-governance-architecture-audit",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-9",
+      "title": "Review-to-issue pipeline lacks cross-repo deduplication",
+      "description": "ingest-claude-review.js can create issues in target repos via target_repo fields but has no deduplication logic. Running the ingest pipeline multiple times on the same actions file will create duplicate issues. No mechanism checks if an issue for a given finding ID already exists.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "scripts/ingest-claude-review.js",
+        "design-reviews/2026-03-15-governance-architecture-audit.actions.json"
+      ],
+      "suggested_issue_title": "Add deduplication logic to review-to-issue ingest pipeline",
+      "suggested_labels": [
+        "automation",
+        "enhancement",
+        "priority-low"
+      ]
+    },
+    {
+      "work_item_id": "WI-0061",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-1",
+      "title": "Create ADRs for all architectural decisions made since ADR-001",
+      "description": "Only one ADR is recorded (ADR-001: czar repo pattern). Significant subsequent decisions lack ADR coverage: dual-track schema model (schemas/ vs contracts/schemas/), Python package introduction, evaluation coverage boundary (SYS-001\u2013004 only), 9-system lifecycle model, and agent role assignments. As the team grows and contributors rotate, undocumented decisions will be relitigated at cost.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "architecture-decisions/",
+        "CONTRIBUTING.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create ADRs for architectural decisions made since ADR-001",
+      "suggested_labels": [
+        "adr",
+        "documentation",
+        "governance",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0062",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-2",
+      "title": "Create a machine-readable contract consumer registry",
+      "description": "docs/contract-dependency-map.md documents the producer-consumer relationship between contracts and engines in prose/table form. The standards-manifest.json includes intended_consumers per contract but there is no inverse registry: no machine-readable file mapping each engine repo to its pinned contract versions. When a contract bumps to a new MINOR or MAJOR version, there is no automated way to identify affected consumers or validate that they have migrated.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "ecosystem/",
+        "docs/contract-dependency-map.md",
+        "contracts/standards-manifest.json",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create machine-readable contract consumer registry for version impact analysis",
+      "suggested_labels": [
+        "contract-governance",
+        "automation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0063",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-3",
+      "title": "Extend evaluation harness coverage to SYS-005 through SYS-009",
+      "description": "eval/test-matrix.md currently covers SYS-001 through SYS-004. SYS-005 (spectrum-program-advisor), SYS-006 (meeting-minutes-engine), SYS-007 (working-paper-review-engine), SYS-008 (docx-comment-injection-engine), and SYS-009 (spectrum-pipeline-engine) have no evaluation fixtures, test cases, or rubrics in the eval/ directory. Without evaluation coverage, systems cannot be validated before implementation repos consume their contracts.",
+      "severity": "low",
+      "category": "evaluation",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "eval/",
+        "eval/test-matrix.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add evaluation harness coverage for SYS-005 through SYS-009",
+      "suggested_labels": [
+        "evaluation",
+        "SYS-005",
+        "SYS-006",
+        "SYS-007",
+        "SYS-008",
+        "SYS-009",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0064",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-4",
+      "title": "Clarify and machine-enforce the dual-track schema ownership model",
+      "description": "The repo maintains two schema registries: schemas/ (10 schemas, kebab-case, data lake base schemas) and contracts/schemas/ (16 schemas, snake_case, contract schemas). The relationship between these tracks is described in prose only. Nothing prevents a downstream engine from consuming schemas/comment-schema.json as its contract reference while the authoritative contract is contracts/schemas/comment_resolution_matrix.schema.json. Schema drift between tracks is a live risk.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "schemas/README.md",
+        "contracts/schemas/",
+        "docs/schema-governance.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Clarify and enforce dual-track schema ownership (schemas/ vs contracts/schemas/)",
+      "suggested_labels": [
+        "schema-governance",
+        "documentation",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0065",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-5",
+      "title": "Implement constitutional release versioning",
+      "description": "There is no versioned release discipline for the constitution itself. Engine repos can pin to individual contract versions but cannot pin to a governance version that packages a consistent set of contracts, schemas, prompts, and standards together. When multiple contracts change between constitution versions, engines face N separate migration decisions with no coordinated compatibility signal.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "CHANGELOG.md",
+        "contracts/standards-manifest.json",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Define constitutional release versioning and governance changelog discipline",
+      "suggested_labels": [
+        "release-discipline",
+        "versioning",
+        "governance",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0066",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-6",
+      "title": "Implement an ecosystem health signal",
+      "description": "There is no machine-readable ecosystem health summary. Maintainers cannot determine at a glance: which repos are compliant, which contracts have open migration debt, which reviews have unresolved actions, or which systems have evaluation coverage gaps. The only observability is manual review of markdown files.",
+      "severity": "low",
+      "category": "observability",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "ecosystem/",
+        ".github/workflows/",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Create automated ecosystem-health.json signal for governance observability",
+      "suggested_labels": [
+        "observability",
+        "automation",
+        "ecosystem-registry",
+        "priority-medium"
+      ]
+    },
+    {
+      "work_item_id": "WI-0067",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-7",
+      "title": "Add schema backward-compatibility CI tests",
+      "description": "CONTRACT_VERSIONING.md declares a semantic versioning policy where MINOR bumps must be backward compatible. This compatibility claim is currently untested. A MINOR bump could silently break existing consumers if required fields are added or enum values are removed. The policy exists but is not enforced mechanically.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "tests/",
+        "contracts/schemas/",
+        ".github/workflows/",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Add backward-compatibility CI tests for contract schema MINOR version bumps",
+      "suggested_labels": [
+        "contract-testing",
+        "ci",
+        "contract-versioning",
+        "priority-low"
+      ]
+    },
+    {
+      "work_item_id": "WI-0068",
+      "source_type": "review",
+      "source_id": "2026-03-15-constitution-audit-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "RE-8",
+      "title": "Formalize system-factory as the governance propagation mechanism",
+      "description": "system-factory is described as the repo that scaffolds new engine repos with governance primitives. However, the propagation path for governance updates to existing repos (new contract versions, updated prompts, schema changes) is not specified or implemented. As the constitution evolves, existing engines will drift unless there is a defined update delivery mechanism.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-15",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/governance-enforcement-roadmap.md",
+        "docs/new-repo-checklist.md",
+        "docs/review-actions/2026-03-15-constitution-audit-actions.json"
+      ],
+      "suggested_issue_title": "Define and implement governance update propagation path for existing engine repos",
+      "suggested_labels": [
+        "system-factory",
+        "governance-propagation",
+        "follow-up",
+        "priority-low"
+      ]
+    },
+    {
+      "work_item_id": "WI-0069",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-10",
+      "title": "ADR framework does not cover post-sprint architecture decisions",
+      "description": "Five ADRs cover decisions from the initial build phase (operating model, maturity model, evidence standards, review protocol). The 7-review sprint (2026-03-14 through 2026-03-16) produced significant architecture decisions \u2014 including the governance manifest approach, Phase 1 enforcement strategy, and the policy engine model \u2014 that have not been formalized into ADRs. The decision record ends before the most consequential governance architecture choices.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/adr/ADR-006-governance-manifest-model.md",
+        "docs/adr/ADR-007-phase-1-enforcement-strategy.md",
+        "docs/adr/ADR-008-schema-authority-designation.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0070",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-8",
+      "title": "AGENTS.md is vestigial and provides no value beyond CLAUDE.md and CODEX.md",
+      "description": "AGENTS.md is 35 lines with five high-level rules. CLAUDE.md is 120+ lines with specific responsibilities, task scopes, and interaction models. CODEX.md is similarly comprehensive. AGENTS.md does not reflect the actual agent architecture, does not reference the ecosystem's nine systems, and adds no value over the two agent-specific files. GA-010 (2026-03-14 governance review) identified this and remains unresolved.",
+      "severity": "low",
+      "category": "documentation",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "AGENTS.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0071",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review",
+      "repo": "nicklasorte/spectrum-systems",
+      "finding_id": "F-9",
+      "title": "Eval harness directories for SYS-005 through SYS-009 are absent or incomplete",
+      "description": "eval/test-matrix.md has entries for SYS-001 through SYS-004 only. eval/ has directories for comment-resolution, study-artifacts, and transcript-to-issue. No eval/ directories exist for spectrum-program-advisor, meeting-minutes-engine, working-paper-review-engine, docx-comment-injection-engine, or spectrum-pipeline-engine. GA-011 (2026-03-14 governance review) identified this and remains unresolved.",
+      "severity": "low",
+      "category": "evaluation",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-16",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "eval/spectrum-program-advisor/",
+        "eval/meeting-minutes-engine/",
+        "eval/working-paper-review-engine/",
+        "eval/docx-comment-injection-engine/",
+        "eval/spectrum-pipeline-engine/",
+        "eval/test-matrix.md",
+        "design-reviews/2026-03-16-governance-constitution-deep-review.actions.json"
+      ]
+    },
+    {
+      "work_item_id": "WI-0072",
+      "source_type": "review",
+      "source_id": "2026-03-16-governance-constitution-deep-review-actions",
+      "repo": "spectrum-systems",
+      "finding_id": "A-7",
+      "title": "Create ADRs for post-sprint governance architecture decisions",
+      "description": "File ADR-006 through ADR-008 for governance manifest model, Phase 1 enforcement strategy, and schema authority designation.",
+      "severity": "low",
+      "category": "other",
+      "status": "open",
+      "priority_score": 30,
+      "blocking": false,
+      "created_at": "2026-03-17",
+      "updated_at": "2026-03-17",
+      "related_artifacts": [
+        "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json"
+      ]
+    }
+  ]
+}
