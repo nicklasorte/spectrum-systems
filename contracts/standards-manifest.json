@@ -304,6 +304,37 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/evaluation_manifest.json",
       "notes": "Canonical evaluation manifest linking a run or artifact set to its evidence bundle, evaluation results, and readiness status. Part of the Prompt J evaluation spine."
+    },
+    {
+      "artifact_type": "slide_deck",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "slide-intelligence-engine",
+        "working-paper-review-engine",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Governed input artifact for slide decks submitted to spectrum study working groups. Slides are treated as structured technical artifacts, not transcript text."
+    },
+    {
+      "artifact_type": "slide_intelligence_packet",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "working-paper-review-engine",
+        "assumptions-registry-engine",
+        "knowledge-graph-engine",
+        "spectrum-program-advisor"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
     }
   ]
 }

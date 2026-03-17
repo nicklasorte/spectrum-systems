@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "slide-intelligence-engine",
+  "repo_name": "slide-intelligence-engine",
+  "repo_type": "operational_engine",
+  "layer": "Layer 3",
+  "status": "planned",
+  "description": "Operational engine that processes slide deck artifacts into structured intelligence packets for working-paper generation and knowledge graph seeding."
+}

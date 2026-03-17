@@ -1,8 +1,25 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T17:30:21Z",
+  "generated_at": "2026-03-17T20:24:19Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
+    {
+      "repo_name": "assumptions-registry-engine",
+      "repo_type": "operational_engine",
+      "system_id": "assumptions-registry-engine",
+      "contracts_consumed": [
+        {
+          "contract": "slide_intelligence_packet",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
     {
       "repo_name": "comment-resolution-engine",
       "repo_type": "operational_engine",
@@ -74,6 +91,23 @@
       "warnings": []
     },
     {
+      "repo_name": "knowledge-graph-engine",
+      "repo_type": "operational_engine",
+      "system_id": "knowledge-graph-engine",
+      "contracts_consumed": [
+        {
+          "contract": "slide_intelligence_packet",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
       "repo_name": "meeting-minutes-engine",
       "repo_type": "operational_engine",
       "system_id": "meeting-minutes-engine",
@@ -92,6 +126,29 @@
         },
         {
           "contract": "meeting_minutes_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "slide-intelligence-engine",
+      "repo_type": "operational_engine",
+      "system_id": "slide-intelligence-engine",
+      "contracts_consumed": [
+        {
+          "contract": "slide_deck",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "slide_intelligence_packet",
           "pinned_version": "1.0.0",
           "canonical_version": "1.0.0",
           "drift": false
@@ -184,6 +241,13 @@
           "contract": "evaluation_manifest",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "spectrum-pipeline-engine",
+          "system_id": "spectrum-pipeline-engine",
+          "contract": "slide_deck",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest"
         }
       ]
     },
@@ -257,6 +321,13 @@
           "contract": "evaluation_manifest",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "spectrum-program-advisor",
+          "system_id": "spectrum-program-advisor",
+          "contract": "slide_intelligence_packet",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'slide_intelligence_packet' (canonical v1.0.0) but does not declare it in its governance manifest"
         }
       ]
     },
@@ -441,9 +512,24 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "pass",
+      "validation_status": "warning",
       "failures": [],
-      "warnings": []
+      "warnings": [
+        {
+          "repo": "working-paper-review-engine",
+          "system_id": "working-paper-review-engine",
+          "contract": "slide_deck",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "working-paper-review-engine",
+          "system_id": "working-paper-review-engine",
+          "contract": "slide_intelligence_packet",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'slide_intelligence_packet' (canonical v1.0.0) but does not declare it in its governance manifest"
+        }
+      ]
     }
   ],
   "contract_index": {
@@ -582,6 +668,22 @@
         "spectrum-pipeline-engine",
         "spectrum-program-advisor",
         "system-factory"
+      ]
+    },
+    "slide_deck": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "slide-intelligence-engine"
+      ]
+    },
+    "slide_intelligence_packet": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "assumptions-registry-engine",
+        "knowledge-graph-engine",
+        "slide-intelligence-engine"
       ]
     },
     "standards_manifest": {

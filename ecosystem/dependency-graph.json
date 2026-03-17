@@ -436,6 +436,20 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "slide_deck",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `slide_deck`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "slide_intelligence_packet",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `slide_intelligence_packet`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "standards_manifest",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `standards_manifest`.",
@@ -688,6 +702,31 @@
       ]
     },
     {
+      "contract_name": "slide_deck",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "slide-intelligence-engine",
+        "spectrum-pipeline-engine",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "slide_deck"
+      ]
+    },
+    {
+      "contract_name": "slide_intelligence_packet",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "assumptions-registry-engine",
+        "knowledge-graph-engine",
+        "spectrum-program-advisor",
+        "working-paper-review-engine"
+      ],
+      "related_artifact_types": [
+        "slide_intelligence_packet"
+      ]
+    },
+    {
       "contract_name": "standards_manifest",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -836,6 +875,20 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "slide_deck",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "slide_deck"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "slide_intelligence_packet",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "slide_intelligence_packet"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "standards_manifest",
       "relation": "governed_by",
       "to_type": "contract",
@@ -966,6 +1019,20 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "risk_register"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "slide_deck",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "slide_deck"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "slide_intelligence_packet",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "slide_intelligence_packet"
     },
     {
       "from_type": "contract",

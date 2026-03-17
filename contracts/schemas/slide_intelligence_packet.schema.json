@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slide_intelligence_packet.schema.json",
+  "title": "Slide Intelligence Packet",
+  "description": "Governed derived artifact produced by the Slide Intelligence Layer. Carries structured outputs from slide analysis including paper candidates, extracted claims, assumptions, knowledge graph edges, gaps, and traceability for downstream consumption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "source_artifact_id",
+    "slide_to_paper_candidates",
+    "extracted_claims",
+    "assumptions_registry_entries",
+    "knowledge_graph_edges",
+    "analysis_gaps",
+    "validation_status",
+    "recommended_agency_questions",
+    "suggested_exhibits",
+    "signal_scores",
+    "traceability_index"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "slide_intelligence_packet",
+      "description": "Canonical artifact type identifier."
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "description": "Artifact ID of the slide_deck that produced this packet."
+    },
+    "slide_to_paper_candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/paper_candidate"
+      },
+      "description": "Per-slide paper-ready rewrite candidates with traceability."
+    },
+    "extracted_claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      },
+      "description": "Declarative technical assertions extracted across all slides."
+    },
+    "assumptions_registry_entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/assumption_entry"
+      },
+      "description": "Structured assumption entries extracted from slides."
+    },
+    "knowledge_graph_edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/kg_edge"
+      },
+      "description": "Directed relationship edges seeding the knowledge graph."
+    },
+    "analysis_gaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gap"
+      },
+      "description": "Detected negative-space gaps in the technical content."
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["needs_review", "provisional", "informational"],
+      "description": "Aggregate validation status for the packet."
+    },
+    "recommended_agency_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/agency_question"
+      },
+      "description": "Questions surfaced from slide content for agency review."
+    },
+    "suggested_exhibits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exhibit_suggestion"
+      },
+      "description": "Slides recommended for inclusion as working-paper exhibits."
+    },
+    "signal_scores": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/signal_score"
+      },
+      "description": "Signal richness scores per slide."
+    },
+    "traceability_index": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/traceability_entry"
+      },
+      "description": "Per-slide traceability summary linking slide to derived outputs."
+    }
+  },
+  "$defs": {
+    "paper_candidate": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slide_id", "section", "integration_role", "proposed_text"],
+      "properties": {
+        "slide_id": { "type": "string" },
+        "section": { "type": "string" },
+        "integration_role": {
+          "type": "string",
+          "enum": ["source_text", "source_claim", "source_question", "source_exhibit"]
+        },
+        "technical_tags": { "type": "array", "items": { "type": "string" } },
+        "proposed_text": { "type": "string" },
+        "style_mode": { "type": "string" },
+        "caution_flags": { "type": "array", "items": { "type": "string" } },
+        "confidence": { "type": "string" },
+        "traceability": { "type": "object" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["claim_id", "claim_text", "confidence", "source_slide_id"],
+      "properties": {
+        "claim_id": { "type": "string" },
+        "claim_text": { "type": "string" },
+        "related_entities": { "type": "array", "items": { "type": "string" } },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "source_slide_id": { "type": "string" }
+      }
+    },
+    "assumption_entry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["assumption_id", "type", "applies_to", "source_slide_id"],
+      "properties": {
+        "assumption_id": { "type": "string" },
+        "type": { "type": "string" },
+        "value": { "type": ["string", "null"] },
+        "applies_to": { "type": "string" },
+        "source_slide_id": { "type": "string" },
+        "source_artifact_id": { "type": ["string", "null"] }
+      }
+    },
+    "kg_edge": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["edge_id", "source", "relation", "target"],
+      "properties": {
+        "edge_id": { "type": "string" },
+        "source": { "type": "string" },
+        "relation": { "type": "string" },
+        "target": { "type": "string" },
+        "source_slide_id": { "type": ["string", "null"] },
+        "source_artifact_id": { "type": ["string", "null"] }
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["gap_id", "description", "severity", "source_slide_id"],
+      "properties": {
+        "gap_id": { "type": "string" },
+        "description": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "related_claim_ids": { "type": "array", "items": { "type": "string" } },
+        "source_slide_id": { "type": "string" }
+      }
+    },
+    "agency_question": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slide_id", "question_text"],
+      "properties": {
+        "slide_id": { "type": "string" },
+        "question_text": { "type": "string" },
+        "source_artifact_id": { "type": ["string", "null"] }
+      }
+    },
+    "exhibit_suggestion": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slide_id", "suggested_section"],
+      "properties": {
+        "slide_id": { "type": "string" },
+        "title": { "type": ["string", "null"] },
+        "suggested_section": { "type": "string" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "signal_score": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slide_id", "signal_score"],
+      "properties": {
+        "slide_id": { "type": "string" },
+        "signal_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "reasoning": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "traceability_entry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slide_id", "slide_number", "section", "integration_role"],
+      "properties": {
+        "slide_id": { "type": "string" },
+        "slide_number": { "type": "integer" },
+        "source_artifact_id": { "type": ["string", "null"] },
+        "section": { "type": "string" },
+        "integration_role": { "type": "string" },
+        "signal_score": { "type": "number" },
+        "claim_count": { "type": "integer" },
+        "assumption_count": { "type": "integer" },
+        "gap_count": { "type": "integer" }
+      }
+    }
+  }
+}

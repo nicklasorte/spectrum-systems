@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "workflow_modules.slide_intelligence",
+  "module_name": "Workflow Module — Slide Intelligence",
+  "module_type": "workflow_module",
+  "owner_layer": "workflow_modules",
+  "description": "Processes uploaded slide decks as first-class governed technical artifacts. Produces structured intelligence including paper-ready prose candidates, extracted claims, assumptions, knowledge graph edges, gap detections, and exhibit recommendations to feed working-paper generation and cross-artifact reasoning.",
+  "status": "planned",
+  "inputs": [
+    "SlideDeck",
+    "TranscriptArtifact",
+    "WorkingPaperArtifact"
+  ],
+  "outputs": [
+    "SlideIntelligencePacket"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "shared.provenance"
+  ],
+  "lifecycle_stages": [
+    "slide_deck_ingested",
+    "slide_units_extracted",
+    "claims_and_assumptions_extracted",
+    "packet_assembled",
+    "packet_reviewed"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage",
+    "ProvenanceRecord from shared.provenance"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Working-paper section authoring beyond prose candidates — that belongs to the working-paper generator module",
+    "Comment resolution logic — that belongs to workflow_modules.comment_resolution",
+    "Storing domain allocation or regulatory data — that belongs to domain_modules",
+    "Lifecycle enforcement and governance — that belongs to the control_plane",
+    "LLM or embedding-based inference — all logic must remain deterministic heuristics"
+  ]
+}

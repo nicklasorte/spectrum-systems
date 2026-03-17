@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "knowledge-graph-engine",
+  "repo_name": "knowledge-graph-engine",
+  "repo_type": "operational_engine",
+  "layer": "Layer 3",
+  "status": "planned",
+  "description": "Operational engine that ingests knowledge graph edges from slide intelligence packets to build the Spectrum Intelligence Map."
+}

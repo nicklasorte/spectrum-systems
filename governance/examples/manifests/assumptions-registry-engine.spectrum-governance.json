@@ -1,0 +1,10 @@
+{
+  "system_id": "assumptions-registry-engine",
+  "repo_name": "assumptions-registry-engine",
+  "repo_type": "operational_engine",
+  "governance_repo": "spectrum-systems",
+  "governance_version": "1.0.0",
+  "contracts": {
+    "slide_intelligence_packet": "1.0.0"
+  }
+}
