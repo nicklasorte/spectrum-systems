@@ -9,8 +9,21 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "ecosystem" / "ecosystem-registry.json"
 STANDARDS_MANIFEST_PATH = REPO_ROOT / "contracts" / "standards-manifest.json"
+DESIGN_PACKAGES_DIR = REPO_ROOT / "design-packages"
 REQUIRED_FIELDS = ("repo_name", "repo_type", "status", "layer", "contracts")
-REPO_NAME_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+REPO_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+REPO_URL_PATTERN = re.compile(
+    r"^https://github\.com/(?P<org>[A-Za-z0-9_.-]+)/(?P<slug>[A-Za-z0-9_.-]+)/?$"
+)
+
+# Expected layer for each repo_type.
+EXPECTED_LAYER: dict[str, str] = {
+    "governance": "Layer 2",
+    "factory": "Layer 1",
+    "operational_engine": "Layer 3",
+    "pipeline": "Layer 4",
+    "advisory": "Layer 5",
+}
 
 
 def _load_registry() -> Tuple[Mapping[str, object], Iterable[Mapping[str, object]]]:
@@ -81,3 +94,77 @@ def test_repo_names_are_unique() -> None:
     names = [entry.get("repo_name") for entry in entries if isinstance(entry, dict)]
     duplicates = sorted(name for name in set(names) if names.count(name) > 1)
     assert not duplicates, f"Duplicate repo_name values found: {duplicates}"
+
+
+def test_repo_url_structure() -> None:
+    """repo_url must follow https://github.com/<org>/<repo_name> with a slug matching repo_name."""
+    _, entries = _load_registry()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("repo_name", "")
+        url = entry.get("repo_url", "")
+        m = REPO_URL_PATTERN.match(url)
+        assert m, (
+            f"[{name}] repo_url '{url}' does not match the required GitHub URL pattern "
+            f"'https://github.com/<org>/<repo>'."
+        )
+        url_slug = m.group("slug").rstrip("/")
+        assert url_slug == name, (
+            f"[{name}] URL slug '{url_slug}' does not match repo_name '{name}'."
+        )
+
+
+def test_system_id_matches_repo_name() -> None:
+    """When system_id is present it must equal repo_name."""
+    _, entries = _load_registry()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("repo_name", "")
+        system_id = entry.get("system_id")
+        if system_id is not None:
+            assert system_id == name, (
+                f"[{name}] system_id '{system_id}' does not match repo_name '{name}'."
+            )
+
+
+def test_system_id_has_design_package() -> None:
+    """Every registry entry with a system_id must have a corresponding design package file."""
+    _, entries = _load_registry()
+    missing: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        system_id = entry.get("system_id")
+        if system_id is None:
+            continue
+        expected_path = DESIGN_PACKAGES_DIR / f"{system_id}.design-package.json"
+        if not expected_path.is_file():
+            missing.append(
+                f"{entry.get('repo_name')}: missing design-packages/{system_id}.design-package.json"
+            )
+    assert not missing, (
+        "The following systems lack a design package:\n" + "\n".join(f"  {m}" for m in missing)
+    )
+
+
+def test_layer_classification_matches_repo_type() -> None:
+    """Each repo's layer must match the expected layer for its repo_type."""
+    _, entries = _load_registry()
+    errors: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("repo_name", "")
+        repo_type = entry.get("repo_type", "")
+        layer = entry.get("layer", "")
+        expected = EXPECTED_LAYER.get(repo_type)
+        if expected is not None and layer != expected:
+            errors.append(
+                f"[{name}] repo_type '{repo_type}' expects layer '{expected}' "
+                f"but registry declares layer '{layer}'."
+            )
+    assert not errors, (
+        "Layer classification mismatches detected:\n" + "\n".join(f"  {e}" for e in errors)
+    )

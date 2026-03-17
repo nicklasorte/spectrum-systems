@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "docx-comment-injection-engine",
+  "repo_name": "docx-comment-injection-engine",
+  "repo_type": "operational_engine",
+  "layer": "Layer 3",
+  "status": "active",
+  "description": "Operational engine that injects anchored comments into DOCX outputs with provenance."
+}

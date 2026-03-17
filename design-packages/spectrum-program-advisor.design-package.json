@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "spectrum-program-advisor",
+  "repo_name": "spectrum-program-advisor",
+  "repo_type": "advisory",
+  "layer": "Layer 5",
+  "status": "experimental",
+  "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
+}
