@@ -12,6 +12,7 @@ on:
       - "contracts/**"
       - "schemas/**"
       - "ecosystem/**"
+      - "scripts/**"
       - ".github/workflows/cross-repo-compliance.yml"
 
 permissions:
@@ -323,5 +324,120 @@ jobs:
                   "See details above."
               )
           print("Contract enforcement gate passed — no failing repos detected.")
+          PYCODE
+
+  observability-reports:
+    runs-on: ubuntu-latest
+    needs:
+      - contract-enforcement
+      - policy-engine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Regenerate contract enforcement graph (prerequisite)
+        run: python scripts/run_contract_enforcement.py
+
+      - name: Run governance policy engine (prerequisite)
+        run: python governance/policies/run-policy-engine.py
+
+      - name: Generate ecosystem health report
+        run: python scripts/generate_ecosystem_health_report.py
+
+      - name: Generate ecosystem architecture graph
+        run: python scripts/generate_ecosystem_architecture_graph.py
+
+      - name: Print observability summary
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          health_path = Path("governance/reports/ecosystem-health.json")
+          if not health_path.exists():
+              print("ecosystem-health.json not found — observability generation may have failed.")
+              raise SystemExit(1)
+
+          report = json.loads(health_path.read_text(encoding="utf-8"))
+          summary = report.get("summary", {})
+
+          print("")
+          print("=== Ecosystem Observability Summary ===")
+          print(f"Overall Health       : {summary.get('overall_health', 'unknown').upper()}")
+          print(f"Total Repos          : {summary.get('total_repos', 0)}")
+          print("")
+
+          gc = summary.get("governance_compliance", {})
+          print("Governance Compliance:")
+          for status, count in sorted(gc.items()):
+              print(f"  {status:<22}: {count}")
+
+          ca = summary.get("contract_alignment", {})
+          print("Contract Alignment:")
+          for status, count in sorted(ca.items()):
+              print(f"  {status:<22}: {count}")
+
+          print("")
+          missing = summary.get("repos_missing_required_artifacts", [])
+          if missing:
+              print("Repos missing required governance artifacts:")
+              for r in missing:
+                  print(f"  - {r}")
+          else:
+              print("All repos have required governance artifacts.")
+
+          nye = summary.get("repos_not_yet_enforceable", [])
+          if nye:
+              print("Repos not yet enforceable (deferred — will not fail CI):")
+              for r in nye:
+                  print(f"  [DEFERRED] {r}")
+          PYCODE
+
+      - name: Upload ecosystem observability reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecosystem-observability-reports
+          path: |
+            governance/reports/ecosystem-health.json
+            governance/reports/ecosystem-architecture-graph.json
+            governance/reports/ecosystem-architecture-graph.mmd
+            docs/governance-reports/ecosystem-health-report.md
+            docs/governance-reports/ecosystem-dashboard.md
+
+      - name: Fail only on true governance health failures
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          health_path = Path("governance/reports/ecosystem-health.json")
+          report = json.loads(health_path.read_text(encoding="utf-8"))
+          overall = report.get("summary", {}).get("overall_health", "healthy")
+
+          # Only "failing" blocks CI. "warning" and "healthy" pass.
+          if overall == "failing":
+              print("")
+              print("=== OBSERVABILITY GATE FAILED ===")
+              for rec in report.get("repos", []):
+                  gs = rec.get("governance_status", "")
+                  cs = rec.get("contract_status", "")
+                  if gs == "fail" or cs == "fail":
+                      print(
+                          f"[ecosystem-health] repo={rec['repo_name']} "
+                          f"governance={gs} contract={cs}"
+                      )
+              raise SystemExit(
+                  f"\nEcosystem health is FAILING — see details above. "
+                  "Warnings and not-yet-enforceable states do NOT block CI."
+              )
+          print(f"Observability gate passed — overall health: {overall.upper()}.")
           PYCODE
 

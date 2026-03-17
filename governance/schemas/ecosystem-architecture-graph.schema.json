@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ecosystem-architecture-graph.schema.json",
+  "title": "Ecosystem Architecture Graph",
+  "description": "Machine-readable architecture and dependency graph produced by generate_ecosystem_architecture_graph.py.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "nodes": {
+      "type": "object",
+      "required": ["repositories", "contracts"],
+      "additionalProperties": false,
+      "properties": {
+        "repositories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "node_type"],
+            "properties": {
+              "id": {"type": "string"},
+              "node_type": {"type": "string", "enum": ["repository"]},
+              "repo_type": {"type": "string"},
+              "architecture_layer": {"type": "string"},
+              "system_id": {"type": "string"},
+              "status": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "contracts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "node_type"],
+            "properties": {
+              "id": {"type": "string"},
+              "node_type": {"type": "string", "enum": ["contract"]},
+              "schema_version": {"type": "string"},
+              "stability": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "from_type", "to", "to_type", "relationship"],
+        "properties": {
+          "from": {"type": "string"},
+          "from_type": {"type": "string", "enum": ["repository", "contract"]},
+          "to": {"type": "string"},
+          "to_type": {"type": "string", "enum": ["repository", "contract"]},
+          "relationship": {
+            "type": "string",
+            "enum": ["consumes", "produces", "layer_depends_on"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
