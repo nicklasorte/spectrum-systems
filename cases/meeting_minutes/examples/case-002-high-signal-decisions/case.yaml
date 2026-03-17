@@ -1,0 +1,60 @@
+case_schema_version: "1.0.0"
+case_id: CASE-MM-002
+case_name: High-Signal Decision Session
+case_type: standard
+scenario: >
+  Decision-dense session with three formal decisions, multiple action items,
+  and two risks. Strong traceability signals throughout. Tests the engine's
+  ability to distinguish and correctly classify multiple concurrent signals.
+description: >
+  Exercises signal disambiguation when decisions, action items, and risks appear
+  in close proximity. The engine must correctly separate three distinct decisions
+  from three action items and two risks, attach accurate traceability to each,
+  and produce an executive summary that covers the highest-impact outcomes.
+  Ensures the engine does not collapse multiple decisions into one or fabricate
+  ownership for ambiguous action items.
+
+transcript:
+  source_file: transcript.txt
+  format: timestamped
+  has_timestamps: true
+  has_speaker_labels: true
+  language: en
+
+expected_signals:
+  decisions_count: 3
+  action_items_count: 3
+  risks_count: 2
+  decisions:
+    - decision_text: Approve the 7 GHz band plan revision for submission to the program office
+      owner: Policy Lead
+    - decision_text: Extend the comment period by two weeks to allow additional stakeholder input
+      owner: Program Manager
+    - decision_text: Adopt the revised interference threshold of minus 6 dB as the operational limit
+      owner: Systems Engineer
+  action_items:
+    - task: Submit the revised 7 GHz band plan to the program office
+      owner: Policy Lead
+      due_date: "2026-03-24"
+    - task: Issue the extended comment period notice to all stakeholders
+      owner: Program Manager
+      due_date: "2026-03-20"
+    - task: Update the test plan to reflect the revised interference threshold
+      owner: Systems Engineer
+      due_date: "2026-03-27"
+  risks:
+    - description: Extended comment period may delay the gate review if responses arrive late
+    - description: Interference threshold change requires re-validation of prior lab results
+
+validation_expectations:
+  should_pass: true
+  expected_outcome: valid
+  traceability_required: true
+
+run_config:
+  contract_version: "1.0.0"
+  notes: >
+    Signal disambiguation case. The engine must not collapse the three decisions
+    into fewer entries. Each decision, action item, and risk must have a distinct
+    decision_id / action_id / issue_id. Traceability is mandatory and
+    extraction_confidence must be above 0.70 for all items.

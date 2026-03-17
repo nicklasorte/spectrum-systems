@@ -1,0 +1,48 @@
+case_schema_version: "1.0.0"
+case_id: CASE-MM-001
+case_name: Standard Working Session
+case_type: standard
+scenario: >
+  Full working session with timestamped transcript, speaker labels, one decision,
+  two action items, and one risk. All traceability fields must be populated.
+description: >
+  Exercises the core happy-path behavior of the Meeting Minutes Engine.
+  The transcript includes timestamps and speaker labels, enabling full traceability.
+  The engine must extract exactly one decision, two action items, and one open risk,
+  map them to the canonical contract fields, and attach traceability anchors to each.
+
+transcript:
+  source_file: transcript.txt
+  format: timestamped
+  has_timestamps: true
+  has_speaker_labels: true
+  language: en
+
+expected_signals:
+  decisions_count: 1
+  action_items_count: 2
+  risks_count: 1
+  decisions:
+    - decision_text: Proceed with the updated antenna configuration for the urban sensitivity run
+      owner: Ops Lead
+  action_items:
+    - task: Run interference margin sensitivity test with updated antenna configuration
+      owner: Ops Lead
+      due_date: "2026-03-26"
+    - task: Confirm alternate vendor lead time for antenna delivery
+      owner: Program Manager
+      due_date: "2026-03-21"
+  risks:
+    - description: Potential schedule slip if antenna delivery is delayed
+
+validation_expectations:
+  should_pass: true
+  expected_outcome: valid
+  traceability_required: true
+
+run_config:
+  contract_version: "1.0.0"
+  notes: >
+    Baseline case. All required sections of meeting_minutes_contract.yaml
+    must be present with no additional properties. Traceability anchors are
+    mandatory because the transcript provides timestamps and speaker labels.

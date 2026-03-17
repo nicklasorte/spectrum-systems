@@ -1,0 +1,200 @@
+# Structured Signal Extraction Specification
+# Meeting Minutes Engine — SYS-006
+# Version: 1.0.0
+#
+# This file defines the signal types the Meeting Minutes Engine must extract,
+# the classification rules for each signal, and the traceability requirements
+# that downstream evaluation harnesses use to score extraction quality.
+#
+# This is the initial specification (v1.0.0). Extensions require an update
+# to this file and a corresponding update to case-input-contract.yaml and
+# case-input.schema.json.
+
+spec_version: "1.0.0"
+system: "SYS-006 Meeting Minutes Engine"
+contract_anchor: "contracts/meeting_minutes_contract.yaml"
+
+# ─── Signal Types ─────────────────────────────────────────────────────────────
+# Each signal type maps to a top-level section in meeting_minutes_contract.yaml.
+# The `extraction_rules` describe the linguistic and structural cues the engine
+# must recognize. The `traceability` block defines the provenance fields that
+# must accompany every extracted instance.
+
+signal_types:
+
+  - signal_id: SIG-001
+    name: decision
+    contract_field: decisions_made
+    description: >
+      A conclusion or commitment reached by the group during the meeting
+      that affects future work, direction, or scope.
+    extraction_rules:
+      - 'Explicit statements of agreement: "we will", "we agreed", "the group decided".'
+      - 'Formal motion language: "it was decided", "approved", "confirmed".'
+      - Resolution of a previously open question with a definitive outcome.
+    required_fields:
+      - decision_id
+      - decision
+      - rationale
+      - decision_owner
+      - agenda_item
+      - date_made
+    optional_fields:
+      - revisit_trigger
+    traceability:
+      required_when: has_timestamps is true AND has_speaker_labels is true
+      fields:
+        - timestamp
+        - speaker
+        - agenda_item
+        - extraction_confidence
+    classification_notes: >
+      Distinguish decisions from action items: a decision is a resolved commitment
+      or conclusion; an action item is a future task with an owner and due date.
+      Do not classify tentative proposals ("we might consider") as decisions.
+
+  - signal_id: SIG-002
+    name: action_item
+    contract_field: action_items
+    description: >
+      A discrete task assigned to an individual or role with a defined owner
+      and, where stated, a due date and dependencies.
+    extraction_rules:
+      - 'Ownership language: "X will", "X is responsible for", "assigned to X".'
+      - 'Due-date language: "by next week", "before the next meeting", "by <date>".'
+      - Carry-forward items from a prior action walkthrough that remain open.
+    required_fields:
+      - action_id
+      - task
+      - owner
+      - due_date
+      - status
+    optional_fields:
+      - dependencies
+    traceability:
+      required_when: has_timestamps is true AND has_speaker_labels is true
+      fields:
+        - timestamp
+        - speaker
+        - agenda_item
+        - extraction_confidence
+    classification_notes: >
+      An action item must have an identified owner. If ownership is ambiguous,
+      populate the owner field with the closest identifiable party and flag
+      extraction_confidence below 0.7. Do not fabricate due dates; leave null
+      if none is stated.
+
+  - signal_id: SIG-003
+    name: risk_or_open_question
+    contract_field: risks_or_open_questions
+    description: >
+      An unresolved concern, uncertainty, dependency, or open question raised
+      during the meeting that requires monitoring or follow-up.
+    extraction_rules:
+      - 'Explicit risk language: "risk", "concern", "blocker", "dependency".'
+      - 'Uncertainty language: "we are not sure", "TBD", "pending confirmation".'
+      - 'Open questions: "does anyone know", "we need to find out".'
+    required_fields:
+      - issue_id
+      - description
+      - impact
+      - owner
+      - target_resolution_date
+    optional_fields: []
+    traceability:
+      required_when: has_timestamps is true AND has_speaker_labels is true
+      fields:
+        - timestamp
+        - speaker
+        - agenda_item
+        - extraction_confidence
+    classification_notes: >
+      A risk or open question is not yet resolved. If a concern was raised
+      and immediately resolved in the same meeting, classify it as a decision
+      (SIG-001) rather than a risk.
+
+  - signal_id: SIG-004
+    name: executive_summary_point
+    contract_field: executive_summary.key_points
+    description: >
+      A top-level synthesis point that captures the most significant outcome,
+      direction change, or blocker from the meeting for rapid stakeholder review.
+    extraction_rules:
+      - Derive from decisions (SIG-001), action items (SIG-002), and risks (SIG-003).
+      - Limit to 3–5 bullet points representing the highest-impact signals.
+      - Do not introduce information not evidenced in the transcript.
+    required_fields:
+      - (each key_point is a string in the key_points list)
+    optional_fields: []
+    traceability:
+      required_when: false
+      fields: []
+    classification_notes: >
+      Executive summary points are syntheses, not direct quotes. They must
+      be grounded in extracted signals and must not speculate beyond the transcript.
+
+  - signal_id: SIG-005
+    name: next_meeting_detail
+    contract_field: next_meeting
+    description: >
+      Logistics and tentative topics for the next scheduled meeting.
+    extraction_rules:
+      - 'Explicit scheduling language: "next meeting is", "we will meet on", "the next session".'
+      - 'Tentative topic statements: "we will cover", "topics for next time".'
+    required_fields:
+      - date
+      - time
+      - location
+      - tentative_topics
+    optional_fields: []
+    traceability:
+      required_when: false
+      fields: []
+    classification_notes: >
+      If no next meeting is scheduled in the transcript, leave the next_meeting
+      fields null. Do not fabricate logistics.
+
+# ─── Extraction Quality Thresholds ────────────────────────────────────────────
+# These thresholds apply to the extraction_confidence field in traceability.
+# Downstream harnesses must enforce these when scoring cases.
+
+quality_thresholds:
+  high_confidence: 0.85
+  acceptable_confidence: 0.70
+  low_confidence_flag_threshold: 0.70    # items below this threshold must be flagged for human review
+  blocking_confidence_threshold: 0.50    # items below this threshold block publication
+
+# ─── Traceability Requirements ────────────────────────────────────────────────
+# These requirements apply when the transcript includes timestamps and speaker labels.
+# Cases with has_timestamps: true AND has_speaker_labels: true must satisfy all.
+
+traceability_requirements:
+  - All SIG-001, SIG-002, and SIG-003 instances must carry a traceability entry.
+  - Each traceability entry must include timestamp, speaker, and agenda_item.
+  - extraction_confidence must be numeric (0.0–1.0) and present on every entry.
+  - Items with extraction_confidence below low_confidence_flag_threshold must appear
+    in the validation_report.json human review queue.
+
+# ─── Blocking Extraction Failures ─────────────────────────────────────────────
+# These failures cause the validation_report to block publication.
+
+blocking_failures:
+  - code: MISSING_REQUIRED_SIGNAL
+    description: A required signal section is absent from the output when the transcript contains evidence of that signal type.
+  - code: EXTRA_FIELDS
+    description: The output JSON includes fields not defined in meeting_minutes_contract.yaml.
+  - code: TRACEABILITY_ABSENT
+    description: A SIG-001, SIG-002, or SIG-003 instance lacks traceability when the transcript provides timestamps and speakers.
+  - code: CONFIDENCE_BELOW_BLOCKING_THRESHOLD
+    description: One or more signal instances have extraction_confidence below the blocking threshold.
+  - code: FABRICATED_CONTENT
+    description: An extracted signal contains information not evidenced in the transcript.
+
+# ─── Relationship to Evaluation Harness ───────────────────────────────────────
+# Evaluation harnesses in downstream engine repos must:
+# 1. Load the case.yaml from cases/meeting_minutes/examples/<case>/.
+# 2. Run the engine against the transcript with pinned configuration.
+# 3. Score extracted signals against expected_signals counts and patterns.
+# 4. Assert extraction_confidence values against quality_thresholds defined here.
+# 5. Report any blocking_failures found in the validation_report.json.
+# 6. Record the spec_version of this file in the run manifest so evaluations are reproducible.

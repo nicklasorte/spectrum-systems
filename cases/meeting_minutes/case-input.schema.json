@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/cases/meeting-minutes/case-input/1.0.0",
+  "title": "Meeting Minutes Case Input",
+  "description": "Validates a meeting_minutes case.yaml file against the canonical case input contract.",
+  "type": "object",
+  "required": [
+    "case_schema_version",
+    "case_id",
+    "case_name",
+    "case_type",
+    "scenario",
+    "description",
+    "transcript",
+    "expected_signals",
+    "validation_expectations",
+    "run_config"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "case_schema_version": {
+      "type": "string",
+      "description": "Version of the case-input-contract.yaml schema this case conforms to.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "case_id": {
+      "type": "string",
+      "description": "Unique case identifier.",
+      "pattern": "^CASE-MM-\\d{3,}$"
+    },
+    "case_name": {
+      "type": "string",
+      "description": "Human-readable name for the case.",
+      "minLength": 1
+    },
+    "case_type": {
+      "type": "string",
+      "description": "Category of the case.",
+      "enum": ["standard", "edge", "regression", "adversarial"]
+    },
+    "scenario": {
+      "type": "string",
+      "description": "One-sentence description of what the case is testing.",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "Extended description of case purpose and coverage.",
+      "minLength": 1
+    },
+    "transcript": {
+      "type": "object",
+      "description": "Transcript input — provide source_file OR content, not both.",
+      "required": ["format", "has_timestamps", "has_speaker_labels"],
+      "additionalProperties": false,
+      "properties": {
+        "source_file": {
+          "type": "string",
+          "description": "Path to transcript file relative to this case directory."
+        },
+        "content": {
+          "type": "string",
+          "description": "Inline transcript text."
+        },
+        "format": {
+          "type": "string",
+          "enum": ["text", "timestamped", "structured"]
+        },
+        "has_timestamps": {
+          "type": "boolean"
+        },
+        "has_speaker_labels": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string",
+          "default": "en"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Optional context artifacts.",
+      "additionalProperties": false,
+      "properties": {
+        "prior_minutes": {
+          "type": "string",
+          "description": "Path to prior meeting_minutes.json."
+        },
+        "agenda": {
+          "type": "string",
+          "description": "Path to meeting_agenda_contract.json."
+        },
+        "resolution_matrices": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "supporting_docs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "expected_signals": {
+      "type": "object",
+      "description": "Expected extraction signal counts and patterns.",
+      "required": ["decisions_count", "action_items_count", "risks_count"],
+      "additionalProperties": false,
+      "properties": {
+        "decisions_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "action_items_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risks_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["decision_text"],
+            "additionalProperties": false,
+            "properties": {
+              "decision_text": { "type": "string" },
+              "owner": { "type": "string" }
+            }
+          }
+        },
+        "action_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["task"],
+            "additionalProperties": false,
+            "properties": {
+              "task": { "type": "string" },
+              "owner": { "type": "string" },
+              "due_date": { "type": "string", "format": "date" }
+            }
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description"],
+            "additionalProperties": false,
+            "properties": {
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "validation_expectations": {
+      "type": "object",
+      "description": "Expected validation outcome for this case.",
+      "required": ["should_pass", "expected_outcome", "traceability_required"],
+      "additionalProperties": false,
+      "properties": {
+        "should_pass": {
+          "type": "boolean"
+        },
+        "expected_outcome": {
+          "type": "string",
+          "enum": ["valid", "schema_error", "validation_error", "traceability_warning"]
+        },
+        "traceability_required": {
+          "type": "boolean"
+        },
+        "blocking_failures": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "run_config": {
+      "type": "object",
+      "description": "Run configuration metadata.",
+      "required": ["contract_version"],
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "type": "string",
+          "description": "Version of meeting_minutes_contract.yaml to validate against.",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

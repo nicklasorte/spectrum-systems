@@ -1,0 +1,13 @@
+Meeting Title: Coastal Site Interference Analysis Kickoff
+Date: 2026-03-19
+Participants: Engineering Lead, Policy Advisor, Operations Coordinator
+
+The group discussed the need for an interference analysis covering coastal deployment sites. Engineering Lead explained that the current test plan does not include coastal scenarios and that the scope of such an analysis is not yet defined.
+
+Policy Advisor raised a concern that the coastal analysis scope could expand significantly once investigation begins, particularly if propagation models for maritime environments are different from the land-based models already validated.
+
+The group agreed to defer the coastal site interference analysis to the next sprint. Engineering Lead will draft a scope document for the coastal analysis before the next meeting so that the team can assess the effort before committing.
+
+The open risk is that the coastal site analysis scope is undefined and may grow once investigation begins, which could affect the overall schedule.
+
+No next meeting date was set during this session.
