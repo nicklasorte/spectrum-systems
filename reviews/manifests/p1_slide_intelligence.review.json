@@ -1,0 +1,48 @@
+{
+  "scope_id": "p1_slide_intelligence",
+  "title": "P+1: Slide Intelligence Subsystem",
+  "purpose": "Extract structured technical claims, methods, entities, and alignment signals from PDF/image slide decks.",
+  "golden_path_role": "Produces slide intelligence packets that feed gap detection and working paper enrichment. Poor extraction here silently degrades all downstream reasoning.",
+  "in_scope_files": [
+    "spectrum_systems/modules/slide_intelligence.py",
+    "contracts/schemas/slide_deck.schema.json",
+    "contracts/schemas/slide_intelligence_packet.schema.json",
+    "tests/fixtures/slide_deck_fixture.json"
+  ],
+  "related_contracts": [
+    "contracts/schemas/slide_deck.schema.json",
+    "contracts/schemas/slide_intelligence_packet.schema.json"
+  ],
+  "related_tests": [
+    "tests/test_slide_intelligence.py"
+  ],
+  "related_design_docs": [
+    "systems/spectrum-study-compiler/design.md",
+    "systems/spectrum-study-compiler/interface.md",
+    "workflows/spectrum-study-compiler.md"
+  ],
+  "upstream_dependencies": [
+    "TODO: PDF extraction pipeline (external to this repo)"
+  ],
+  "downstream_consumers": [
+    "spectrum_systems/modules/working_paper_generator.py",
+    "working_paper_generator/argument_builder.py"
+  ],
+  "invariants": [
+    "Every slide unit must have a non-empty title or content field.",
+    "Extracted claims must include a confidence score between 0.0 and 1.0.",
+    "Entity extraction must not produce duplicate entity names within the same slide unit.",
+    "Method names must be normalized to lowercase for consistent downstream matching."
+  ],
+  "known_edge_cases": [
+    "Slides with only images and no text produce empty extraction (valid; must emit empty arrays, not null).",
+    "Slides with identical titles in different sections must be deduped by content hash.",
+    "Multi-column slide layouts may produce interleaved text requiring layout-aware parsing."
+  ],
+  "known_failure_modes": [
+    "poor_pdf_extraction",
+    "false_alignment",
+    "schema_valid_but_semantically_empty",
+    "silent_optional_input_fallback"
+  ]
+}

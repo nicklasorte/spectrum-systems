@@ -1,0 +1,37 @@
+{
+  "review_id": "rev-<scope_id>-<YYYY-MM-DD>",
+  "scope_id": "<scope_id>",
+  "review_type": "architecture",
+  "reviewed_at": "<ISO 8601 datetime, e.g. 2026-03-17T21:00:00Z>",
+  "verdict": "GO_WITH_FIXES",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "high",
+      "category": "traceability",
+      "title": "<Short descriptive title>",
+      "evidence": [
+        "<file_path_or_contract_id>",
+        "<test_name_or_doc_section>"
+      ],
+      "why_it_matters": "<Explanation of impact on the system or downstream consumers>",
+      "recommended_fix": "<Concrete remediation action>",
+      "fix_type": "patch",
+      "downstream_risk": "<Risk description if this finding is left unaddressed>",
+      "priority_rank": 1
+    }
+  ],
+  "failure_scenarios": [
+    {
+      "scenario_id": "FS-001",
+      "description": "<Failure scenario description>",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "<Mitigation strategy>"
+    }
+  ],
+  "priority_fix_stack": [
+    "F-001"
+  ],
+  "minimum_bar_to_proceed": "<Minimum criteria that must be met before proceeding to the next roadmap slice>"
+}

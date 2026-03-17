@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/standards/review-contract.schema.json",
+  "title": "Review Contract",
+  "description": "Canonical schema for scoped infrastructure-aware Claude reviews. Covers verdict, structured findings, failure scenarios, and a prioritized fix stack.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_id",
+    "scope_id",
+    "review_type",
+    "reviewed_at",
+    "verdict",
+    "findings"
+  ],
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this review instance (e.g. 'rev-p-gap-detection-2026-03-17')."
+    },
+    "scope_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the review manifest / subsystem that was reviewed (e.g. 'p_gap_detection')."
+    },
+    "review_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Classification of the review (e.g. 'architecture', 'contract', 'roadmap-slice', 'golden-path')."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when the review was produced."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["GO", "GO_WITH_FIXES", "NO_GO"],
+      "description": "Overall gate verdict for this review."
+    },
+    "findings": {
+      "type": "array",
+      "description": "Ordered list of structured findings from the review.",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "failure_scenarios": {
+      "type": "array",
+      "description": "Anticipated failure scenarios that could affect the reviewed subsystem.",
+      "items": {
+        "$ref": "#/$defs/failure_scenario"
+      }
+    },
+    "priority_fix_stack": {
+      "type": "array",
+      "description": "Ordered stack of fixes to apply before this review can be upgraded to GO. Items are finding_ids.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "minimum_bar_to_proceed": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable statement of the minimum criteria required to proceed (overrides verdict when present)."
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "severity",
+        "category",
+        "title",
+        "why_it_matters",
+        "recommended_fix",
+        "fix_type",
+        "downstream_risk",
+        "priority_rank"
+      ],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier for this finding (e.g. 'F-001')."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Impact classification."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "architecture",
+            "contract",
+            "validation",
+            "alignment",
+            "extraction-quality",
+            "silent-failure",
+            "golden-path",
+            "traceability",
+            "test"
+          ],
+          "description": "Thematic category for the finding."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short, descriptive title for the finding."
+        },
+        "evidence": {
+          "type": "array",
+          "description": "File paths, contract IDs, test names, or doc sections that support the finding.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "why_it_matters": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explanation of the impact of this finding on the system or downstream consumers."
+        },
+        "recommended_fix": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concrete recommended remediation action."
+        },
+        "fix_type": {
+          "type": "string",
+          "enum": ["patch", "refactor", "redesign"],
+          "description": "Scope of effort required to fix the finding."
+        },
+        "downstream_risk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description of downstream risk if this finding is left unaddressed."
+        },
+        "priority_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Relative priority rank among all findings (1 = highest priority)."
+        }
+      }
+    },
+    "failure_scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario_id", "description", "likelihood", "impact"],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier for this failure scenario (e.g. 'FS-001')."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description of the failure scenario."
+        },
+        "likelihood": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Estimated likelihood of this failure scenario occurring."
+        },
+        "impact": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Estimated impact if this failure scenario occurs."
+        },
+        "mitigation": {
+          "type": "string",
+          "description": "Optional mitigation strategy for this failure scenario."
+        }
+      }
+    }
+  }
+}

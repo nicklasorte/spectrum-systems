@@ -1,0 +1,69 @@
+{
+  "scope_id": "q_working_paper",
+  "title": "Q: Working Paper Generator",
+  "purpose": "Compose a structured, traceability-grounded working paper from meeting transcripts, slide intelligence, and gap analysis outputs.",
+  "golden_path_role": "Produces the primary deliverable artifact for regulatory submissions and internal review cycles. Must correctly represent the strongest technical argument without hallucinating unsupported claims.",
+  "in_scope_files": [
+    "spectrum_systems/modules/working_paper_generator.py",
+    "working_paper_generator/__init__.py",
+    "working_paper_generator/argument_builder.py",
+    "working_paper_generator/draft_writer.py",
+    "working_paper_generator/meeting_delta_engine.py",
+    "working_paper_generator/paper_state_reader.py",
+    "working_paper_generator/patch_generator.py",
+    "working_paper_generator/question_engine.py",
+    "working_paper_generator/readiness_scorer.py",
+    "working_paper_generator/schemas.py",
+    "working_paper_generator/transcript_parser.py",
+    "contracts/schemas/working_paper.schema.json",
+    "contracts/schemas/working_paper_input.schema.json",
+    "contracts/examples/working_paper.json"
+  ],
+  "related_contracts": [
+    "contracts/schemas/working_paper.schema.json",
+    "contracts/schemas/working_paper_input.schema.json",
+    "contracts/schemas/slide_intelligence_packet.schema.json",
+    "contracts/schemas/meeting_minutes_record.schema.json"
+  ],
+  "related_tests": [
+    "tests/test_working_paper_generator.py",
+    "tests/test_working_paper_generator_module.py"
+  ],
+  "related_design_docs": [
+    "systems/working-paper-review-engine/design.md",
+    "systems/working-paper-review-engine/evaluation.md",
+    "systems/working-paper-review-engine/interface.md",
+    "systems/working-paper-review-engine/overview.md",
+    "workflows/working-paper-review-engine.md"
+  ],
+  "upstream_dependencies": [
+    "spectrum_systems/modules/slide_intelligence.py",
+    "spectrum_systems/modules/meeting_minutes_pipeline.py",
+    "spectrum_systems/modules/working_paper_generator.py"
+  ],
+  "downstream_consumers": [
+    "spectrum_systems/study_runner/pipeline.py",
+    "spectrum_systems/modules/artifact_packager.py",
+    "TODO: program_advisor consumption pipeline"
+  ],
+  "invariants": [
+    "Generated working paper must include executive_summary, purpose_and_scope, technical_analysis, and key_findings sections.",
+    "Every key finding must trace back to a source in structured_transcript, slide_signals, or gap_analysis.",
+    "The appendix source_traceability array must not be empty when input contains claims.",
+    "validate_working_paper must return True for any document produced by generate_working_paper.",
+    "Open questions must be generated when action items or risks are present in the transcript."
+  ],
+  "known_edge_cases": [
+    "Transcript with only decisions and no risks produces a paper with empty risks_and_uncertainties (valid).",
+    "Slide signals with no claims produce a paper with no slide alignment summary entries.",
+    "Empty transcript text with non-empty action items must still produce a structurally valid paper."
+  ],
+  "known_failure_modes": [
+    "decorative_gap_analysis",
+    "false_alignment",
+    "schema_valid_but_semantically_empty",
+    "overmerged_conflict",
+    "missing_traceability",
+    "brittle_frequency_extraction"
+  ]
+}

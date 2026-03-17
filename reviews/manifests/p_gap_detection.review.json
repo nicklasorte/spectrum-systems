@@ -1,0 +1,53 @@
+{
+  "scope_id": "p_gap_detection",
+  "title": "P: Gap Detection Subsystem",
+  "purpose": "Detect substantive spectral and regulatory gaps between meeting transcripts, slide analysis, and prior working paper drafts.",
+  "golden_path_role": "Identifies missing evidence before a working paper draft is written, preventing decorative gap analysis and ensuring downstream traceability.",
+  "in_scope_files": [
+    "spectrum_systems/modules/working_paper_generator.py",
+    "working_paper_generator/question_engine.py",
+    "working_paper_generator/readiness_scorer.py",
+    "working_paper_generator/patch_generator.py",
+    "contracts/schemas/working_paper.schema.json",
+    "contracts/schemas/working_paper_input.schema.json"
+  ],
+  "related_contracts": [
+    "contracts/schemas/working_paper.schema.json",
+    "contracts/schemas/working_paper_input.schema.json",
+    "contracts/schemas/slide_intelligence_packet.schema.json"
+  ],
+  "related_tests": [
+    "tests/test_working_paper_generator.py",
+    "tests/test_working_paper_generator_module.py"
+  ],
+  "related_design_docs": [
+    "systems/working-paper-review-engine/design.md",
+    "systems/working-paper-review-engine/interface.md",
+    "workflows/working-paper-review-engine.md"
+  ],
+  "upstream_dependencies": [
+    "spectrum_systems/modules/slide_intelligence.py",
+    "spectrum_systems/modules/meeting_minutes_pipeline.py"
+  ],
+  "downstream_consumers": [
+    "working_paper_generator/draft_writer.py",
+    "spectrum_systems/study_runner/pipeline.py"
+  ],
+  "invariants": [
+    "Gap detection must reference at least one source transcript or slide signals document.",
+    "Every identified gap must include a traceability link to its originating evidence.",
+    "Readiness scorer must emit a numeric score between 0.0 and 1.0.",
+    "Patch generator must not silently discard gaps with empty evidence arrays."
+  ],
+  "known_edge_cases": [
+    "Transcript with no action items produces an empty gap list (valid but must not crash).",
+    "Slide signals with only decorative titles yield zero substantive gaps.",
+    "Conflicting evidence from two slides must surface as an explicit conflict gap, not silently merged."
+  ],
+  "known_failure_modes": [
+    "decorative_gap_analysis",
+    "false_alignment",
+    "schema_valid_but_semantically_empty",
+    "missing_traceability"
+  ]
+}
