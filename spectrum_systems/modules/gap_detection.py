@@ -569,30 +569,37 @@ def detect_cross_slide_contradictions(
             nums_b = _extract_numerics(claim_b["claim_text"])
             if not nums_b:
                 continue
-            # Find same-unit pairs with different values
+            # Find the first same-unit pair with a meaningfully different value.
+            # We stop after the first qualifying conflict per claim pair to avoid
+            # emitting multiple overlapping contradiction records.
+            found_conflict = False
             for val_a, unit_a in nums_a:
+                if found_conflict:
+                    break
                 for val_b, unit_b in nums_b:
-                    if unit_a == unit_b and val_a != val_b:
-                        # Conservative: only flag when the difference is ≥10%
-                        if max(abs(val_a), abs(val_b)) > 0:
-                            pct_diff = abs(val_a - val_b) / max(abs(val_a), abs(val_b))
-                            if pct_diff >= 0.10:
-                                _add_contradiction(
-                                    claim_a,
-                                    claim_b,
-                                    (
-                                        f"Quantitative conflict between slides "
-                                        f"{claim_a['source_slide_id']!r} and "
-                                        f"{claim_b['source_slide_id']!r}: "
-                                        f"conflicting {unit_a} values "
-                                        f"({val_a} vs {val_b}) on same topic."
-                                    ),
-                                    "high",
-                                )
+                    if unit_a != unit_b or val_a == val_b:
+                        continue
+                    # Conservative: only flag differences ≥10%.
+                    # Uses max of the two magnitudes as the denominator so that
+                    # the threshold is relative to the larger value.  This avoids
+                    # over-flagging near-zero comparisons and stays symmetric.
+                    if max(abs(val_a), abs(val_b)) > 0:
+                        pct_diff = abs(val_a - val_b) / max(abs(val_a), abs(val_b))
+                        if pct_diff >= 0.10:
+                            _add_contradiction(
+                                claim_a,
+                                claim_b,
+                                (
+                                    f"Quantitative conflict between slides "
+                                    f"{claim_a['source_slide_id']!r} and "
+                                    f"{claim_b['source_slide_id']!r}: "
+                                    f"conflicting {unit_a} values "
+                                    f"({val_a} vs {val_b}) on same topic."
+                                ),
+                                "high",
+                            )
+                            found_conflict = True
                             break
-                else:
-                    continue
-                break  # one numeric conflict per pair is enough
 
     return gaps
 
