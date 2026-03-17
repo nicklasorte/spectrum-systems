@@ -1725,6 +1725,7 @@ class TestGapCautionFlagPropagation:
 
     def test_gap_propagates_to_caution_flags_for_source_slide(self):
         """A detected gap on SLIDE-X must add a caution flag to that slide's candidate."""
+        # Interference claim with NO propagation model — guarantees Rule 1 fires.
         deck = {
             "artifact_id": "TEST-DECK-001",
             "artifact_type": "slide_deck",
@@ -1745,18 +1746,22 @@ class TestGapCautionFlagPropagation:
         packet = build_slide_intelligence_packet(deck)
         candidate = packet["slide_to_paper_candidates"][0]
         slide_id = candidate["slide_id"]
-        # Find gaps for this slide
+        # Explicitly assert that this fixture produces at least one gap — the test
+        # must not silently pass when no gaps are emitted.
         gaps_for_slide = [
             g for g in packet["analysis_gaps"]
             if g["source_slide_id"] == slide_id
         ]
-        if gaps_for_slide:
-            flags = candidate["caution_flags"]
-            assert len(flags) >= 1, "Expected at least one caution flag from detected gap"
-            gap_desc = gaps_for_slide[0]["description"]
-            assert any(gap_desc in f for f in flags), (
-                f"Gap description '{gap_desc}' not found in caution_flags: {flags}"
-            )
+        assert len(gaps_for_slide) >= 1, (
+            "Expected at least one gap for the interference slide (no propagation model present); "
+            "check that detect_gaps Rule 1 is firing correctly."
+        )
+        flags = candidate["caution_flags"]
+        assert len(flags) >= 1, "Expected at least one caution flag from detected gap"
+        gap_desc = gaps_for_slide[0]["description"]
+        assert any(gap_desc in f for f in flags), (
+            f"Gap description '{gap_desc}' not found in caution_flags: {flags}"
+        )
 
 
 class TestInertReconciliationValidation:
@@ -1806,3 +1811,183 @@ class TestInertReconciliationValidation:
              "slide_only_content": [], "discussion_only_content": []},
         )
         assert "reconciliation_status" in result
+
+
+# ---------------------------------------------------------------------------
+# P2 Remediation — P-fix-2A hardening tests
+# ---------------------------------------------------------------------------
+
+class TestUndiscussedSlidesFromQuestion:
+    """Undiscussed slides can be populated from an open question on a slide."""
+
+    def test_slide_question_appears_in_undiscussed_slides(self):
+        """A slide open-question not mentioned in the transcript must show up in
+        slide_only_content (and therefore undiscussed_slides in the gap output)."""
+        from spectrum_systems.modules.slide_intelligence import (
+            normalize_slides, align_slides_to_transcript,
+            extract_slide_signals, merge_slide_transcript_outputs,
+            compute_slide_transcript_gaps,
+        )
+        # Slide contains an open question only — no claim or proposal
+        raw_slide = [{
+            "slide_number": 1,
+            "title": "Open Issues",
+            "bullet_points": [
+                "What guard band is required for 5G NR near radar bands?"
+            ],
+            "full_text": "What guard band is required for 5G NR near radar bands?",
+        }]
+        slides = normalize_slides(raw_slide)
+        # Transcript covers something completely different
+        segments = [{"text": "Action item: review satellite coordination agreements"}]
+        alignment = align_slides_to_transcript(slides, segments)
+        signals = extract_slide_signals(slides)
+        structured = {
+            "decisions": [],
+            "action_items": [
+                {"description": "Review satellite coordination agreements"}
+            ],
+            "open_questions": [],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        # The open question from the slide must appear in slide_only_content
+        slide_only = enriched["slide_only_content"]
+        assert len(slide_only) >= 1, (
+            "Expected the slide open-question to appear in slide_only_content"
+        )
+        keyword = "guard band"
+        assert any(keyword in item.lower() for item in slide_only), (
+            f"Expected 'guard band' to appear in slide_only_content: {slide_only}"
+        )
+        # Confirm it flows through to undiscussed_slides in the gap report
+        gap_result = compute_slide_transcript_gaps(enriched, slides_present=True)
+        undiscussed = gap_result["undiscussed_slides"]
+        assert any(keyword in item.lower() for item in undiscussed), (
+            f"Expected 'guard band' in undiscussed_slides: {undiscussed}"
+        )
+
+
+class TestDeckAssumptionIndexTitleAndNotes:
+    """Deck-level assumption index must scan slide title and notes fields."""
+
+    def _make_unit(self, slide_id, title="", notes="", raw_text="", bullets=None):
+        return {
+            "slide_id": slide_id,
+            "title": title,
+            "notes": notes,
+            "raw_text": raw_text,
+            "bullets": bullets or [],
+        }
+
+    def test_propagation_model_in_title_suppresses_rule1_false_positive(self):
+        """Rule 1 must be suppressed when the propagation model appears only in
+        the title of a methodology slide (not in raw_text or bullets)."""
+        # Methodology slide: propagation model is in the title only
+        method_slide = self._make_unit(
+            "SLIDE-1",
+            title="ITM Propagation Model: Analysis Setup",
+            raw_text="",
+            bullets=[],
+        )
+        # Results slide: claims interference but never re-states the model
+        result_slide = self._make_unit(
+            "SLIDE-2",
+            raw_text="5G NR may interfere with radar systems.",
+            bullets=[],
+        )
+        deck_index = _build_deck_assumption_index([method_slide, result_slide])
+        assert deck_index["has_propagation_model"] is True, (
+            "Deck index must detect 'itm' keyword from slide title"
+        )
+        claims2 = extract_claims(result_slide)
+        gaps2 = detect_gaps(result_slide, claims2, [], deck_assumption_index=deck_index)
+        rule1_gaps = [g for g in gaps2 if "propagation" in g["description"].lower()]
+        assert rule1_gaps == [], (
+            "Rule 1 false positive must be suppressed when propagation model "
+            "appears only in the title of a methodology slide"
+        )
+
+    def test_propagation_model_in_notes_suppresses_rule1_false_positive(self):
+        """Rule 1 must be suppressed when the propagation model appears only in
+        the speaker notes of a methodology slide."""
+        method_slide = self._make_unit(
+            "SLIDE-1",
+            notes="Analysis uses the Longley-Rice terrain model throughout.",
+            raw_text="",
+        )
+        result_slide = self._make_unit(
+            "SLIDE-2",
+            raw_text="5G NR may interfere with radar systems.",
+        )
+        deck_index = _build_deck_assumption_index([method_slide, result_slide])
+        assert deck_index["has_propagation_model"] is True, (
+            "Deck index must detect propagation model keyword from slide notes"
+        )
+        claims2 = extract_claims(result_slide)
+        gaps2 = detect_gaps(result_slide, claims2, [], deck_assumption_index=deck_index)
+        rule1_gaps = [g for g in gaps2 if "propagation" in g["description"].lower()]
+        assert rule1_gaps == [], (
+            "Rule 1 false positive must be suppressed when propagation model "
+            "appears only in the speaker notes of a methodology slide"
+        )
+
+
+class TestWeakAlignmentMissingSlideSupport:
+    """Missing slide_support field must be treated as unsupported (not silently suppressed)."""
+
+    def test_missing_slide_support_produces_weak_alignment_area(self):
+        """An item without a slide_support key must appear in weak_alignment_areas."""
+        enriched = {
+            # Decision has no slide_support field at all (missing key)
+            "decisions": [
+                {"decision_id": "D-001", "description": "Deploy 5G NR in 3.5 GHz band"}
+            ],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": [],
+        }
+        result = compute_slide_transcript_gaps(enriched, slides_present=True)
+        weak = result["weak_alignment_areas"]
+        assert len(weak) >= 1, (
+            "A decision with no slide_support key must appear in weak_alignment_areas; "
+            "missing slide_support must be treated as unsupported, not silently suppressed."
+        )
+        assert any("5g nr" in w.lower() or "3.5 ghz" in w.lower() for w in weak), (
+            f"Expected decision text in weak_alignment_areas: {weak}"
+        )
+
+    def test_explicit_slide_support_true_does_not_produce_weak_area(self):
+        """An item with slide_support=True must NOT appear in weak_alignment_areas."""
+        enriched = {
+            "decisions": [
+                {"decision_id": "D-001", "description": "Deploy 5G NR in 3.5 GHz band",
+                 "slide_support": True}
+            ],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": [],
+        }
+        result = compute_slide_transcript_gaps(enriched, slides_present=False)
+        assert result["weak_alignment_areas"] == [], (
+            "An item with slide_support=True must not appear in weak_alignment_areas"
+        )
+
+    def test_explicit_slide_support_false_produces_weak_area(self):
+        """An item with slide_support=False must appear in weak_alignment_areas."""
+        enriched = {
+            "decisions": [
+                {"decision_id": "D-001", "description": "Deploy 5G NR in 3.5 GHz band",
+                 "slide_support": False}
+            ],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": [],
+        }
+        result = compute_slide_transcript_gaps(enriched)
+        weak = result["weak_alignment_areas"]
+        assert len(weak) >= 1, (
+            "An item with explicit slide_support=False must appear in weak_alignment_areas"
+        )

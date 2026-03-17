@@ -224,8 +224,14 @@ def _build_deck_assumption_index(slide_units: list[dict]) -> dict:
     has_propagation = False
     has_method = False
     for unit in slide_units:
+        # Include title and notes so methodology slides that only mention the
+        # propagation/method model in their heading or speaker notes are caught.
         text = (
-            (unit.get("raw_text") or "")
+            (unit.get("title") or "")
+            + " "
+            + (unit.get("notes") or "")
+            + " "
+            + (unit.get("raw_text") or "")
             + " "
             + " ".join(unit.get("bullets") or [])
         ).lower()
@@ -2081,17 +2087,22 @@ def merge_slide_transcript_outputs(
         for key in ("decisions", "action_items", "open_questions")
         for item in transcript_structured.get(key, [])
     )
-    transcript_tokens = set(re.findall(r"\b[a-z]{3,}\b", all_transcript_text))
-
     # Extract stopword-filtered tokens once for transcript (reused across the loop below).
     transcript_sig_tokens = _extract_tokens(all_transcript_text)
 
+    # Scan all signal types; deduplicate to avoid repeated entries when the
+    # same text appears across multiple signal categories.
     slide_only: list[str] = []
-    for sig_key in ("claims", "proposals"):
+    _slide_only_seen: set[str] = set()
+    for sig_key in ("claims", "proposals", "open_questions", "metrics"):
         for text in slide_signals.get(sig_key, []):
             sig_tokens = _extract_tokens(text)
-            if len(sig_tokens & transcript_sig_tokens) < _MIN_SUPPORT_TOKENS:
+            if (
+                len(sig_tokens & transcript_sig_tokens) < _MIN_SUPPORT_TOKENS
+                and text not in _slide_only_seen
+            ):
                 slide_only.append(text)
+                _slide_only_seen.add(text)
 
     # Identify discussion-only content (not backed by any slide)
     discussion_only: list[str] = []
@@ -2141,7 +2152,7 @@ def compute_slide_transcript_gaps(
     weak_areas: list[str] = []
     for key in ("decisions", "action_items", "open_questions"):
         for item in enriched_record.get(key, []):
-            if isinstance(item, dict) and not item.get("slide_support", True):
+            if isinstance(item, dict) and not item.get("slide_support", False):
                 text = item.get("description") or item.get("text") or str(item)
                 if text and text not in weak_areas:
                     weak_areas.append(text)
