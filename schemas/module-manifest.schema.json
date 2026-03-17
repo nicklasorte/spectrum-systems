@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "module-manifest.schema.json",
+  "title": "Module Manifest",
+  "description": "Canonical contract definition for a module inside the spectrum-systems platform. Each module must declare its identity, boundaries, dependencies, and forbidden responsibilities.",
+  "type": "object",
+  "required": [
+    "module_id",
+    "module_name",
+    "module_type",
+    "owner_layer",
+    "inputs",
+    "outputs",
+    "dependencies",
+    "lifecycle_stages",
+    "authoritative_imports",
+    "forbidden_responsibilities",
+    "status",
+    "description"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "module_id": {
+      "type": "string",
+      "description": "Unique stable identifier for this module, using snake_case dot-path notation (e.g., shared.artifact_models).",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+    },
+    "module_name": {
+      "type": "string",
+      "description": "Human-readable display name for the module.",
+      "minLength": 1
+    },
+    "module_type": {
+      "type": "string",
+      "description": "Architectural layer this module belongs to.",
+      "enum": [
+        "control_plane",
+        "workflow_module",
+        "domain_module",
+        "orchestration",
+        "shared"
+      ]
+    },
+    "owner_layer": {
+      "type": "string",
+      "description": "Top-level directory path within spectrum_systems/ that owns this module (e.g., shared, control_plane).",
+      "minLength": 1
+    },
+    "inputs": {
+      "type": "array",
+      "description": "Canonical artifact or data model names consumed by this module.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "description": "Canonical artifact or data model names produced by this module.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "module_id values of other modules this module directly depends on.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      }
+    },
+    "lifecycle_stages": {
+      "type": "array",
+      "description": "Lifecycle stages this module participates in (e.g., draft, active, deprecated).",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "authoritative_imports": {
+      "type": "array",
+      "description": "Shared structures or contracts this module is expected to import from the shared layer rather than define locally.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "forbidden_responsibilities": {
+      "type": "array",
+      "description": "Explicit list of responsibilities this module does NOT own and must not implement. Must be non-empty.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "status": {
+      "type": "string",
+      "description": "Current implementation status of this module.",
+      "enum": [
+        "planned",
+        "in_progress",
+        "active",
+        "deprecated"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Concise statement of what this module does and its purpose within the platform.",
+      "minLength": 10
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the module-manifest schema used by this manifest.",
+      "default": "1.0.0"
+    }
+  }
+}

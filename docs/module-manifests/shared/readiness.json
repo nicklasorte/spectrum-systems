@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "shared.readiness",
+  "module_name": "Shared Readiness",
+  "module_type": "shared",
+  "owner_layer": "shared",
+  "description": "Defines and exports canonical readiness state primitives used across the platform. Readiness states classify whether an artifact, module, or workflow step is ready to advance through a lifecycle gate. This is the single authoritative source for readiness primitives.",
+  "status": "active",
+  "inputs": [],
+  "outputs": [
+    "ReadinessState",
+    "ReadinessAssessment"
+  ],
+  "dependencies": [
+    "shared.ids"
+  ],
+  "lifecycle_stages": [
+    "active"
+  ],
+  "authoritative_imports": [
+    "ArtifactID from shared.ids"
+  ],
+  "forbidden_responsibilities": [
+    "Artifact model schemas — those are owned by shared.artifact_models",
+    "Lineage records — those are owned by shared.lineage",
+    "Provenance records — those are owned by shared.provenance",
+    "Evaluation result logic — that belongs to control_plane.evaluation",
+    "Any domain-specific readiness criteria — those belong to the relevant domain_module or workflow_module"
+  ]
+}

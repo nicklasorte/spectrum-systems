@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "workflow_modules.meeting_intelligence",
+  "module_name": "Workflow Module — Meeting Intelligence",
+  "module_type": "workflow_module",
+  "owner_layer": "workflow_modules",
+  "description": "Processes meeting transcripts and raw meeting content to produce structured meeting minutes artifacts. Handles transcript ingestion, speaker identification, action item extraction, and canonical minutes record generation.",
+  "status": "planned",
+  "inputs": [
+    "MeetingTranscript",
+    "MeetingAgendaContract"
+  ],
+  "outputs": [
+    "MeetingMinutesRecord",
+    "ActionItemList"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "shared.provenance"
+  ],
+  "lifecycle_stages": [
+    "transcript_ingested",
+    "minutes_drafted",
+    "minutes_reviewed",
+    "minutes_final"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage",
+    "ProvenanceRecord from shared.provenance"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Comment resolution logic — that belongs to workflow_modules.comment_resolution",
+    "Storing domain allocation or regulatory data — that belongs to domain_modules",
+    "Lifecycle enforcement and governance — that belongs to the control_plane"
+  ]
+}

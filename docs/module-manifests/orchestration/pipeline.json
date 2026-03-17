@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "orchestration.pipeline",
+  "module_name": "Orchestration — Pipeline",
+  "module_type": "orchestration",
+  "owner_layer": "orchestration",
+  "description": "Sequences module execution, coordinates artifact handoffs between modules, and enforces the canonical workflow order. The pipeline is the runtime backbone of the platform's golden paths.",
+  "status": "planned",
+  "inputs": [
+    "PipelineRunRequest",
+    "ArtifactEnvelope"
+  ],
+  "outputs": [
+    "PipelineRunManifest",
+    "PipelineRunResult"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "control_plane.evaluation"
+  ],
+  "lifecycle_stages": [
+    "queued",
+    "running",
+    "complete",
+    "failed"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models — those are owned by shared.artifact_models",
+    "Running domain-specific logic — that belongs to the relevant domain_module or workflow_module",
+    "Defining evaluation result schemas — those are owned by control_plane.evaluation",
+    "Managing work item lifecycle — that belongs to control_plane.work_items",
+    "Storing governance records — those are managed by the control_plane governance module"
+  ]
+}

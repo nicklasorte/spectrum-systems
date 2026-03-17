@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "shared.ids",
+  "module_name": "Shared IDs",
+  "module_type": "shared",
+  "owner_layer": "shared",
+  "description": "Defines and manages all canonical identifier schemes used across the platform. All module-scoped and artifact-scoped identifiers are issued and validated through this module. No other module may define its own identifier primitives.",
+  "status": "active",
+  "inputs": [],
+  "outputs": [
+    "ArtifactID",
+    "ModuleID",
+    "RunID",
+    "SystemID"
+  ],
+  "dependencies": [],
+  "lifecycle_stages": [
+    "active"
+  ],
+  "authoritative_imports": [],
+  "forbidden_responsibilities": [
+    "Artifact model schemas — those are owned by shared.artifact_models",
+    "Lineage records — those are owned by shared.lineage",
+    "Provenance records — those are owned by shared.provenance",
+    "Evaluation logic — that belongs to control_plane.evaluation",
+    "Any domain-specific logic"
+  ]
+}

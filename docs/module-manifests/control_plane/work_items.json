@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "control_plane.work_items",
+  "module_name": "Control Plane — Work Items",
+  "module_type": "control_plane",
+  "owner_layer": "control_plane",
+  "description": "Manages the creation, tracking, and resolution of work items triggered by evaluation results, review findings, and lifecycle events. Work items are the primary mechanism for surfacing required human action.",
+  "status": "in_progress",
+  "inputs": [
+    "EvaluationResult",
+    "ReviewFinding",
+    "LifecycleEvent"
+  ],
+  "outputs": [
+    "WorkItem",
+    "WorkItemStatusUpdate"
+  ],
+  "dependencies": [
+    "shared.ids",
+    "shared.artifact_models",
+    "control_plane.evaluation"
+  ],
+  "lifecycle_stages": [
+    "open",
+    "in_progress",
+    "resolved",
+    "deferred"
+  ],
+  "authoritative_imports": [
+    "ArtifactID from shared.ids",
+    "ArtifactEnvelope from shared.artifact_models"
+  ],
+  "forbidden_responsibilities": [
+    "Running evaluations — that belongs to control_plane.evaluation",
+    "Defining artifact models — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Workflow orchestration — that belongs to orchestration.pipeline",
+    "Storing domain-specific data — that belongs to the relevant domain_module"
+  ]
+}
