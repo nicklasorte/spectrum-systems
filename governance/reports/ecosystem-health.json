@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T13:46:17Z",
+  "generated_at": "2026-03-17T14:09:49Z",
   "summary": {
     "overall_health": "warning",
     "total_repos": 10,
@@ -11,8 +11,8 @@
       "partial": 0
     },
     "contract_alignment": {
-      "pass": 6,
-      "warning": 3,
+      "pass": 7,
+      "warning": 2,
       "governance-repo": 1
     },
     "schema_integrity": {
@@ -84,22 +84,22 @@
       "architecture_layer": "Layer 3",
       "status": "active",
       "governance_status": "compliant",
-      "contract_status": "warning",
+      "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
       "maturity_score": {
-        "raw": 16,
+        "raw": 18,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "partial",
+          "contract_compliance": "compliant",
           "schema_alignment": "compliant",
           "ci_enforcement": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 8,
+      "maturity_level": 9,
       "notes": ""
     },
     {

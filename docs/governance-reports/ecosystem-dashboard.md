@@ -1,6 +1,6 @@
 # Ecosystem Dashboard
 
-Generated: 2026-03-17T13:46:17Z
+Generated: 2026-03-17T14:09:49Z
 
 Quick visibility into ecosystem health. Full detail: [ecosystem-health-report.md](ecosystem-health-report.md)
 
@@ -8,7 +8,7 @@ Quick visibility into ecosystem health. Full detail: [ecosystem-health-report.md
 |------|-------|-----------|-----------|---------|---------|
 | `comment-resolution-engine` | Layer 3 | comment-resolution-engine | ✅ compliant | ✅ pass | L10 |
 | `docx-comment-injection-engine` | Layer 3 | docx-comment-injection-engine | ✅ compliant | ✅ pass | L10 |
-| `meeting-minutes-engine` | Layer 3 | meeting-minutes-engine | ✅ compliant | ⚠️ warning | L8 |
+| `meeting-minutes-engine` | Layer 3 | meeting-minutes-engine | ✅ compliant | ✅ pass | L9 |
 | `spectrum-pipeline-engine` | Layer 4 | spectrum-pipeline-engine | ✅ compliant | ⚠️ warning | L7 |
 | `spectrum-program-advisor` | Layer 5 | spectrum-program-advisor | ✅ compliant | ⚠️ warning | L8 |
 | `spectrum-study-compiler` | Layer 3 | spectrum-study-compiler | ✅ compliant | ✅ pass | L7 |

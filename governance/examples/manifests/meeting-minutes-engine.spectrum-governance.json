@@ -6,6 +6,7 @@
   "governance_version": "1.0.0",
   "contracts": {
     "meeting_agenda_contract": "1.0.0",
-    "meeting_minutes": "1.0.0"
+    "meeting_minutes": "1.0.0",
+    "meeting_minutes_record": "1.0.0"
   }
 }

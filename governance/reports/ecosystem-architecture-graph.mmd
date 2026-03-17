@@ -54,6 +54,7 @@ graph LR
   docx_comment_injection_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
   meeting_minutes_engine -->|consumes| meeting_agenda_contract
   meeting_minutes_engine -->|consumes| meeting_minutes
+  meeting_minutes_engine -->|consumes| meeting_minutes_record
   spectrum_pipeline_engine -->|consumes| assumption_register
   spectrum_pipeline_engine -->|consumes| comment_resolution_matrix_spreadsheet_contract
   spectrum_pipeline_engine -->|consumes| decision_log
@@ -66,6 +67,7 @@ graph LR
   spectrum_program_advisor -->|consumes| assumption_register
   spectrum_program_advisor -->|consumes| decision_log
   spectrum_program_advisor -->|consumes| meeting_minutes
+  spectrum_program_advisor -->|consumes| meeting_minutes_record
   spectrum_program_advisor -->|consumes| milestone_plan
   spectrum_program_advisor -->|consumes| next_best_action_memo
   spectrum_program_advisor -->|consumes| program_brief

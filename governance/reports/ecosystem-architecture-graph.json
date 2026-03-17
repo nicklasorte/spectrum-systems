@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T13:46:17Z",
+  "generated_at": "2026-03-17T14:09:49Z",
   "nodes": {
     "repositories": [
       {
@@ -289,6 +289,13 @@
     {
       "from": "meeting-minutes-engine",
       "from_type": "repository",
+      "to": "meeting_minutes_record",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "meeting-minutes-engine",
+      "from_type": "repository",
       "to": "spectrum-systems",
       "to_type": "repository",
       "relationship": "layer_depends_on"
@@ -430,6 +437,13 @@
       "from": "spectrum-program-advisor",
       "from_type": "repository",
       "to": "meeting_minutes",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "spectrum-program-advisor",
+      "from_type": "repository",
+      "to": "meeting_minutes_record",
       "to_type": "contract",
       "relationship": "consumes"
     },
