@@ -1,0 +1,70 @@
+{
+  "title": "Working Paper: Spectrum Sharing in the 3550–3700 MHz Band",
+  "executive_summary": "This working paper summarizes technical findings and meeting discussions regarding spectrum sharing and protection in 3550–3700 MHz. The central tension in the discussions involves balancing spectrum sharing with the competing operational requirements of federal and non-federal systems. A key finding from the meeting is that interference threshold values require further validation against incumbent federal system parameters. The group also noted that protection zones must be established before commercial deployments proceed. One significant unresolved issue remains: the coordination protocol between DoD and commercial operators has not been finalized.",
+  "purpose_and_scope": "The purpose of this working paper is to document and synthesize the technical analysis, key findings, and open questions arising from coordinated engineering discussions on spectrum allocation and sharing in 3550–3700 MHz. The scope encompasses both in-band and adjacent-band interference scenarios.",
+  "system_description": "Federal systems discussed include P2P links and radar systems operating as incumbents in the 3550–3700 MHz band. Non-federal systems discussed include CBRS base stations and 5G NR commercial deployments seeking access to the band under the three-tier sharing framework.",
+  "technical_analysis": "Assumptions: Antenna heights of 30 m for federal P2P links and 10 m for commercial base stations are assumed; propagation conditions follow ITM model defaults; EIRP levels are taken from FCC Part 96 limits. Methods: Link budget analysis was performed for representative federal-to-commercial and commercial-to-federal interference paths; path loss was computed using the Longley-Rice ITM model at 3625 MHz center frequency. Limitations: Field measurement validation has not yet been completed; aggregate interference from dense deployments was not modeled.",
+  "key_findings": [
+    "Interference margins for P2P links are met when commercial EIRP is limited to 30 dBm/10 MHz.",
+    "Protection zone radii range from 40 km to 150 km depending on federal system sensitivity and deployment density.",
+    "CBRS SAS coordination is expected to manage most co-channel interference scenarios.",
+    "Radar systems require additional exclusion zone analysis not yet completed."
+  ],
+  "risks_and_uncertainties": [
+    "Model uncertainty: ITM propagation model may not accurately represent all terrain types in the study area.",
+    "Deployment assumptions: actual commercial antenna densities may exceed modeled values in urban zones.",
+    "Coordination challenges: inter-agency coordination timelines have not been established.",
+    "Radar exclusion zone parameters have not been validated with operational data."
+  ],
+  "decisions_and_recommendations": [
+    "Proceed with SAS-based coordination as the primary interference management mechanism.",
+    "Commission field measurement campaign to validate ITM model assumptions.",
+    "Establish inter-agency working group to finalize coordination protocols.",
+    "Document all modeling assumptions and circulate for agency review."
+  ],
+  "open_questions_for_agencies": [
+    "How would NTIA validate that the proposed interference threshold of 30 dBm/10 MHz EIRP is appropriate for all federal P2P link configurations?",
+    "What assumptions support the risk assessment that actual deployment densities may exceed modeled values?",
+    "What would it take to implement the SAS coordination requirement without causing interference to radar incumbents?",
+    "What additional field measurement data is needed to validate the ITM propagation model for this band?",
+    "How should coordination zones be updated if radar system sensitivity parameters differ from values used in the analysis?",
+    "What is the feasible timeline for standing up the inter-agency working group?",
+    "How should aggregate interference from multiple SAS-coordinated deployments be evaluated?",
+    "What would it take to ensure that adjacent-band interference from commercial deployments does not affect federal systems below 3550 MHz?"
+  ],
+  "appendix": {
+    "source_traceability": [
+      {
+        "claim": "Interference margins for P2P links are met when commercial EIRP is limited to 30 dBm/10 MHz",
+        "source": "transcript",
+        "confidence": 0.85
+      },
+      {
+        "claim": "Protection zone radii range from 40 km to 150 km",
+        "source": "slide",
+        "confidence": 0.80
+      },
+      {
+        "claim": "ITM propagation model may not accurately represent all terrain types",
+        "source": "transcript",
+        "confidence": 0.70
+      }
+    ],
+    "slide_alignment_summary": [
+      {
+        "slide_claim": "Protection zone radii range from 40 km to 150 km depending on deployment density",
+        "section": "key_findings",
+        "confidence": 0.80
+      },
+      {
+        "slide_claim": "Link budget analysis using ITM at 3625 MHz",
+        "section": "technical_analysis",
+        "confidence": 0.85
+      }
+    ],
+    "discussion_gaps": [
+      "Slide deck presented radar exclusion zone analysis but meeting discussion did not address it.",
+      "Slide showed aggregate interference model; no corresponding discussion was captured in transcript."
+    ]
+  }
+}

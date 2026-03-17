@@ -3,7 +3,7 @@ Meeting Minutes Pipeline — spectrum_systems/modules/meeting_minutes_pipeline.p
 
 Implements the canonical meeting-minutes processing pipeline:
 
-    load → extract → signals → build_study_state → package
+    load → extract → signals → build_study_state → package → working_paper
 
 Each stage is a pure function that accepts structured inputs and returns
 structured outputs.  The pipeline is designed for deterministic, reproducible
@@ -35,6 +35,7 @@ from typing import Any, Dict, Optional
 from .artifact_packager import package_artifacts
 from .slide_intelligence import build_slide_intelligence_packet
 from .study_state import build_study_state
+from .working_paper_generator import generate_working_paper
 
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
@@ -226,6 +227,7 @@ def run_pipeline(
     docx_bytes: Optional[bytes] = None,
     execution_metadata: Optional[Dict[str, Any]] = None,
     slide_deck: Optional[Dict[str, Any]] = None,
+    gap_analysis: Optional[Dict[str, Any]] = None,
     logger: Optional[logging.Logger] = None,
 ) -> Dict[str, Any]:
     """
@@ -238,6 +240,7 @@ def run_pipeline(
         4. build_study_state — construct study_state document
         5. slide_intelligence — (optional) process slide deck artifact
         6. package           — write canonical artifact package
+        7. working_paper     — generate structured working paper from all inputs
 
     Parameters
     ----------
@@ -260,6 +263,10 @@ def run_pipeline(
         intelligence layer is run and its output is attached to the package
         result under the ``slide_intelligence`` key.  The pipeline does **not**
         fail if this argument is absent or ``None``.
+    gap_analysis:
+        Optional gap analysis document.  When provided it is passed to the
+        working paper generator to enrich risks, questions, and gap sections.
+        The pipeline does **not** fail if this argument is absent or ``None``.
     logger:
         Optional logger instance.  A default logger is created if not provided.
 
@@ -267,7 +274,8 @@ def run_pipeline(
     -------
     dict
         Package summary from stage_package: run_id, package_dir, files,
-        validation, and (if slides present) slide_intelligence.
+        validation, and (if slides present) slide_intelligence, and
+        always a ``working_paper`` key with the structured working paper.
     """
     if logger is None:
         logger = _get_logger()
@@ -287,6 +295,7 @@ def run_pipeline(
     )
 
     # Optional slide intelligence stage — does not fail if slide_deck is absent.
+    slide_signals: Optional[Dict[str, Any]] = None
     if slide_deck is not None:
         try:
             transcript_artifact = {"text": transcript_text}
@@ -305,6 +314,7 @@ def run_pipeline(
                 )
             )
             package_result["slide_intelligence"] = slide_packet
+            slide_signals = slide_packet
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 json.dumps(
@@ -315,5 +325,37 @@ def run_pipeline(
                     }
                 )
             )
+
+    # Working paper generation stage — always runs; gracefully handles missing inputs.
+    try:
+        working_paper = generate_working_paper(
+            structured_extraction,
+            slide_signals=slide_signals,
+            gap_analysis=gap_analysis,
+        )
+        logger.info(
+            json.dumps(
+                {
+                    "event": "pipeline.working_paper",
+                    "run_id": effective_run_id,
+                    "key_findings": len(working_paper.get("key_findings", [])),
+                    "questions": len(working_paper.get("open_questions_for_agencies", [])),
+                    "traceability_entries": len(
+                        working_paper.get("appendix", {}).get("source_traceability", [])
+                    ),
+                }
+            )
+        )
+        package_result["working_paper"] = working_paper
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            json.dumps(
+                {
+                    "event": "pipeline.working_paper.error",
+                    "run_id": effective_run_id,
+                    "error": str(exc),
+                }
+            )
+        )
 
     return package_result

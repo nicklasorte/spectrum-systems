@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/working_paper.schema.json",
+  "title": "Working Paper",
+  "description": "Output schema for a structured, report-ready working paper generated from meeting transcripts, slide intelligence, and gap analysis.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "executive_summary",
+    "purpose_and_scope",
+    "system_description",
+    "technical_analysis",
+    "key_findings",
+    "risks_and_uncertainties",
+    "decisions_and_recommendations",
+    "open_questions_for_agencies",
+    "appendix"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Title of the working paper."
+    },
+    "executive_summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "5–8 sentence summary covering what was studied, key tensions, main findings, and at least one unresolved issue."
+    },
+    "purpose_and_scope": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Narrative describing the purpose of the paper, the band ranges under analysis, and whether the focus is in-band, adjacent-band, or both."
+    },
+    "system_description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Summary of federal and non-federal systems discussed, drawn from transcript entities and slide content."
+    },
+    "technical_analysis": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Technical analysis narrative organized into assumptions, methods, and limitations. May include gap-augmented subsections."
+    },
+    "key_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Atomic bullet findings derived from decisions and strong technical claims."
+    },
+    "risks_and_uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Risks derived from transcript open questions and gap analysis, including model uncertainty, deployment assumptions, and coordination challenges."
+    },
+    "decisions_and_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Normalized recommendations derived from decisions_made and action items in the transcript. Implied recommendations added when none are present."
+    },
+    "open_questions_for_agencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 5,
+      "description": "Calibrated, open-ended questions for agency follow-up. Minimum 5 questions required. Covers validation, missing data, conflicting claims, and implementation feasibility."
+    },
+    "appendix": {
+      "$ref": "#/$defs/appendix",
+      "description": "Traceability and alignment metadata required for FCC/NTIA defensibility."
+    }
+  },
+  "$defs": {
+    "appendix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_traceability",
+        "slide_alignment_summary",
+        "discussion_gaps"
+      ],
+      "properties": {
+        "source_traceability": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/traceability_entry"
+          },
+          "description": "Traceability records linking each claim to its source artifact and confidence score."
+        },
+        "slide_alignment_summary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slide_alignment_entry"
+          },
+          "description": "Summary of slide claims aligned to working paper sections."
+        },
+        "discussion_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Conflicts or discrepancies identified between slide content and meeting discussion."
+        }
+      }
+    },
+    "traceability_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "source",
+        "confidence"
+      ],
+      "properties": {
+        "claim": {
+          "type": "string",
+          "description": "The claim or finding being traced."
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "transcript",
+            "slide",
+            "gap_analysis",
+            "derived"
+          ],
+          "description": "Origin of the claim."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Confidence score in [0, 1] for the claim."
+        }
+      }
+    },
+    "slide_alignment_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slide_claim",
+        "section",
+        "confidence"
+      ],
+      "properties": {
+        "slide_claim": {
+          "type": "string",
+          "description": "Claim extracted from a slide."
+        },
+        "section": {
+          "type": "string",
+          "description": "Working paper section the claim maps to."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Alignment confidence score."
+        }
+      }
+    }
+  }
+}
