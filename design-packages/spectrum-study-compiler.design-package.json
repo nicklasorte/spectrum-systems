@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "spectrum-study-compiler",
+  "repo_name": "spectrum-study-compiler",
+  "repo_type": "operational_engine",
+  "layer": "Layer 3",
+  "status": "planned",
+  "description": "Compiler that packages validated study artifacts into governed bundles."
+}

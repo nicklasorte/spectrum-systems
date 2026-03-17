@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "study-artifact-generator",
+  "repo_name": "study-artifact-generator",
+  "repo_type": "operational_engine",
+  "layer": "Layer 3",
+  "status": "active",
+  "description": "Operational engine that turns simulation outputs into governed study artifacts with provenance."
+}

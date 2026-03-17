@@ -1,0 +1,48 @@
+name: Ecosystem Registry Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ecosystem/ecosystem-registry.json"
+      - "ecosystem/ecosystem-registry.schema.json"
+      - "contracts/standards-manifest.json"
+      - "design-packages/**"
+      - "scripts/validate_ecosystem_registry.py"
+      - "tests/test_ecosystem_registry.py"
+      - ".github/workflows/ecosystem-registry-validation.yml"
+  pull_request:
+    paths:
+      - "ecosystem/ecosystem-registry.json"
+      - "ecosystem/ecosystem-registry.schema.json"
+      - "contracts/standards-manifest.json"
+      - "design-packages/**"
+      - "scripts/validate_ecosystem_registry.py"
+      - "tests/test_ecosystem_registry.py"
+      - ".github/workflows/ecosystem-registry-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-ecosystem-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run ecosystem registry validation script
+        run: python scripts/validate_ecosystem_registry.py
+
+      - name: Run ecosystem registry pytest suite
+        run: python -m pytest tests/test_ecosystem_registry.py -v
