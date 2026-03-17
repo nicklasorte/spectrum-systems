@@ -304,6 +304,78 @@ def evaluate_gov_008(policy: dict, repo_root: Path) -> List[dict]:
     ]
 
 
+def evaluate_gov_009(policy: dict, manifests: Dict[str, dict], standards_contracts: Dict[str, dict]) -> List[dict]:
+    """Pinned contract versions must match canonical standards manifest versions."""
+    results = []
+    for repo_name in sorted(manifests):
+        manifest = manifests[repo_name]
+        contracts = manifest.get("contracts", {}) or {}
+        drift = []
+        for artifact_type, pinned_version in sorted(contracts.items()):
+            standard = standards_contracts.get(artifact_type)
+            if standard is None:
+                continue  # already flagged by GOV-004
+            canonical = standard.get("schema_version")
+            if pinned_version != canonical:
+                drift.append(f"{artifact_type}: pinned={pinned_version} canonical={canonical}")
+        if drift:
+            results.append(
+                make_result(
+                    policy,
+                    repo_name,
+                    "fail",
+                    "Governance manifest has contract version pins that differ from the canonical standards manifest.",
+                    drift,
+                )
+            )
+        else:
+            results.append(
+                make_result(
+                    policy,
+                    repo_name,
+                    "pass",
+                    "All contract version pins match the canonical standards manifest.",
+                )
+            )
+    return results
+
+
+def evaluate_gov_010(policy: dict, manifests: Dict[str, dict], standards_contracts: Dict[str, dict]) -> List[dict]:
+    """Intended consumers should declare the contract in their governance manifest."""
+    results = []
+    for artifact_type in sorted(standards_contracts):
+        contract_entry = standards_contracts[artifact_type]
+        intended_consumers = contract_entry.get("intended_consumers") or []
+        gaps = []
+        for consumer in sorted(intended_consumers):
+            manifest = manifests.get(consumer)
+            if manifest is None:
+                continue  # no manifest present — not_yet_enforceable, skip
+            consumer_contracts = manifest.get("contracts") or {}
+            if artifact_type not in consumer_contracts:
+                gaps.append(consumer)
+        if gaps:
+            results.append(
+                make_result(
+                    policy,
+                    artifact_type,
+                    "warning",
+                    "One or more intended consumers do not declare this contract in their governance manifest.",
+                    gaps,
+                )
+            )
+        else:
+            results.append(
+                make_result(
+                    policy,
+                    artifact_type,
+                    "pass",
+                    "All governed intended consumers declare this contract.",
+                )
+            )
+    return results
+
+
 def evaluate_policies(policies: List[dict]) -> dict:
     ecosystem_registry = load_json(ECOSYSTEM_REGISTRY_PATH) or {}
     standards_manifest = load_json(STANDARDS_MANIFEST_PATH) or {}
@@ -332,6 +404,10 @@ def evaluate_policies(policies: List[dict]) -> dict:
             results.extend(evaluate_gov_007(policy, dependency_graph, system_map))
         elif pid == "GOV-008":
             results.extend(evaluate_gov_008(policy, REPO_ROOT))
+        elif pid == "GOV-009":
+            results.extend(evaluate_gov_009(policy, manifests, standards_contracts))
+        elif pid == "GOV-010":
+            results.extend(evaluate_gov_010(policy, manifests, standards_contracts))
 
     results.sort(key=lambda r: (r["policy_id"], r["subject"]))
 

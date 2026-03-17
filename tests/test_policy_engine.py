@@ -7,7 +7,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "governance" / "policies" / "run-policy-engine.py"
 REPORT_PATH = REPO_ROOT / "artifacts" / "policy-engine-report.json"
 SUMMARY_PATH = REPO_ROOT / "artifacts" / "policy-engine-summary.md"
-SEEDED_POLICIES = {f"GOV-00{i}" for i in range(1, 9)}
+SEEDED_POLICIES = {f"GOV-{i:03d}" for i in range(1, 11)}
 VALID_STATUSES = {"pass", "fail", "warning"}
 
 

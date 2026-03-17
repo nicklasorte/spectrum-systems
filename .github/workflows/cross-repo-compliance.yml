@@ -229,3 +229,99 @@ jobs:
             artifacts/ecosystem-dependency-graph.json
             artifacts/ecosystem-dependency-graph.mmd
 
+  contract-enforcement:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run cross-repo contract enforcement
+        run: python scripts/run_contract_enforcement.py
+
+      - name: Print enforcement summary
+        if: always()
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          graph_path = Path("governance/reports/contract-dependency-graph.json")
+          if not graph_path.exists():
+              print("Contract dependency graph not found — enforcement may have failed before writing outputs.")
+              raise SystemExit(0)
+
+          graph = json.loads(graph_path.read_text(encoding="utf-8"))
+          repos = graph.get("repos", [])
+          by_status = {}
+          for r in repos:
+              s = r["validation_status"]
+              by_status.setdefault(s, []).append(r["repo_name"])
+
+          print("")
+          print("=== Contract Enforcement Results ===")
+          print(f"Repos inspected         : {len(repos)}")
+          print(f"  PASS                  : {len(by_status.get('pass', []))}")
+          print(f"  FAIL                  : {len(by_status.get('fail', []))}")
+          print(f"  WARNING               : {len(by_status.get('warning', []))}")
+          print(f"  NOT YET ENFORCEABLE   : {len(by_status.get('not_yet_enforceable', []))}")
+          print(f"  GOVERNANCE REPO       : {len(by_status.get('governance-repo', []))}")
+          print("")
+
+          for repo in repos:
+              if repo["validation_status"] in ("fail", "warning"):
+                  tag = "FAIL" if repo["validation_status"] == "fail" else "WARN"
+                  print(f"  [{tag}] {repo['repo_name']}")
+                  for f in repo.get("failures", []):
+                      print(f"       [contract-enforcement] repo={f['repo']} system_id={f['system_id']} contract={f['contract']} rule={f['rule']} error={f['error']}")
+                  for w in repo.get("warnings", []):
+                      print(f"       [contract-enforcement] repo={w['repo']} system_id={w['system_id']} contract={w['contract']} rule={w['rule']} error={w.get('message', '')}")
+
+          if by_status.get("not_yet_enforceable"):
+              print("")
+              print("  Not yet enforceable (no governance manifest):")
+              for r in by_status["not_yet_enforceable"]:
+                  print(f"    [DEFERRED] {r}")
+          PYCODE
+
+      - name: Upload contract enforcement artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-enforcement-report
+          path: |
+            governance/reports/contract-dependency-graph.json
+            docs/governance-reports/contract-enforcement-report.md
+
+      - name: Fail on real contract enforcement violations
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          graph_path = Path("governance/reports/contract-dependency-graph.json")
+          graph = json.loads(graph_path.read_text(encoding="utf-8"))
+          failed = [r for r in graph.get("repos", []) if r["validation_status"] == "fail"]
+          if failed:
+              print("")
+              print("=== CONTRACT ENFORCEMENT GATE FAILED ===")
+              for repo in failed:
+                  sid = repo.get("system_id", "")
+                  for f in repo.get("failures", []):
+                      print(
+                          f"[contract-enforcement] repo={f['repo']} system_id={sid} "
+                          f"contract={f['contract']} rule={f['rule']} error={f['error']}"
+                      )
+              raise SystemExit(
+                  f"\n{len(failed)} repo(s) have contract enforcement failures. "
+                  "See details above."
+              )
+          print("Contract enforcement gate passed — no failing repos detected.")
+          PYCODE
+

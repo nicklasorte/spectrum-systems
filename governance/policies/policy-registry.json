@@ -103,6 +103,32 @@
         "repository filesystem"
       ],
       "expected_check": "Governance repo tree lacks implementation-heavy directories such as src/, package/, spectrum_systems/, app/, or service/."
+    },
+    {
+      "policy_id": "GOV-009",
+      "title": "Pinned contract versions must match canonical standards manifest versions",
+      "description": "Every contract version pinned in a governance manifest must exactly match the schema_version declared in contracts/standards-manifest.json. Version drift indicates that a repo is out of sync with the canonical contract definition.",
+      "severity": "error",
+      "enabled": true,
+      "scope": "contract",
+      "input_artifacts": [
+        "governance/examples/manifests/*.json",
+        "contracts/standards-manifest.json"
+      ],
+      "expected_check": "Each contract pin in a manifest equals the schema_version in the standards manifest for that artifact_type."
+    },
+    {
+      "policy_id": "GOV-010",
+      "title": "Intended consumers should declare the contract in their governance manifest",
+      "description": "Repos listed as intended_consumers of a contract in the standards manifest are expected to pin that contract in their governance manifest. Gaps indicate that a repo has not yet adopted a contract it is expected to consume.",
+      "severity": "warning",
+      "enabled": true,
+      "scope": "contract",
+      "input_artifacts": [
+        "contracts/standards-manifest.json",
+        "governance/examples/manifests/*.json"
+      ],
+      "expected_check": "Each intended_consumer in the standards manifest has a matching contract pin in its governance manifest."
     }
   ]
 }
