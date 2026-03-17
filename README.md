@@ -114,6 +114,9 @@ The ecosystem maintains a maturity model, a playbook, and a canonical 100-step r
 - Prompts and evaluations: `docs/prompt-standard.md`, `prompts/README.md`, `eval/README.md`, `eval/test-matrix.md`, `evals/evals-framework.md`.
 - Compliance: `VALIDATION.md`, `docs/governance-conformance-checklist.md`, `docs/cross-repo-compliance.md`, `docs/implementation-boundary.md`.
 - Vision and philosophy: `docs/vision.md`, `docs/system-philosophy.md`.
+- Operating model and reliability: `docs/ai_operational_model.md`, `docs/sre_principles.md`, `docs/error_budget_policy.md`, `docs/incident_response.md`.
+- Automation and AI engineering: `docs/automation_maturity_model.md`, `docs/toil_elimination_framework.md`, `docs/ai_assisted_engineering.md`.
+- Architecture guidance: `docs/system_architecture_philosophy.md`.
 
 ## Testing
 - `pytest` validates governance artifacts, schemas, registries, and review action examples.
