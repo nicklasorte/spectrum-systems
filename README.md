@@ -55,6 +55,32 @@ This repository defines the canonical development environment for the ecosystem 
 - **Rule packs and guidance**: governed rule sets under `rules/` with supporting governance docs in `docs/`.
 - **Compliance automation**: conformance guidance in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; cross-repo scanning in `docs/cross-repo-compliance.md` and `governance/compliance-scans/`; CI workflows in `.github/workflows/` with supporting scripts in `scripts/`.
 
+## Architecture and Study-State Model
+
+The meeting-minutes pipeline and study state model form the primary data backbone for all spectrum engineering studies.
+
+- **Study State Model** (`docs/architecture/study_state_model.md`) — defines the canonical `study_state.json` schema, all object types (action items, risks, decisions, questions, assumptions, issues, evidence, data needs, stakeholder positions), their relationships, and the document lifecycle.
+- **Signal Extraction Model** (`docs/architecture/signal_extraction_model.md`) — defines the five signal types extracted from meeting transcripts (decisions, action items, risks, executive summary points, next-meeting details), the extraction philosophy, and confidence handling.
+- **Action Item Continuity** (`docs/architecture/action_item_continuity.md`) — defines the four action item classification types (engineering, coordination, decision-enabling, carry-forward), propagation rules into the working paper, and validation expectations.
+- **System Philosophy** (`docs/architecture/system_philosophy.md`) — governs all module and pipeline design: module-first rule, golden path, study-state-first architecture, reliability-first rule, no-dropped-signal rule, and always-emit-all-files rule.
+
+### Artifact Package Structure
+
+Every meeting-minutes pipeline run produces a canonical artifact package:
+
+```
+artifacts/<run_id>/meeting_minutes/
+    meeting_minutes.docx          (stub marker if not produced)
+    structured_extraction.json
+    signals.json
+    study_state.json
+    recommendations.json          (stub if not produced)
+    validation_report.json
+    execution_metadata.json       (stub if not produced)
+```
+
+All seven files are always emitted.  See `spectrum_systems/modules/artifact_packager.py` and `spectrum_systems/modules/meeting_minutes_pipeline.py`.
+
 ## Architecture Governance
 - The ecosystem uses the Three Horizons planning model (`docs/architecture-horizons.md`) to balance near-term execution, medium-term architecture, and long-term direction.
 - Platform Inflection Points (`docs/platform-inflection-points.md`) mark structural shifts the ecosystem must cross.
