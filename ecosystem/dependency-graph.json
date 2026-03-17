@@ -260,6 +260,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "evaluation_manifest",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `evaluation_manifest`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "external_artifact_manifest",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `external_artifact_manifest`.",
@@ -539,6 +546,18 @@
       ]
     },
     {
+      "contract_name": "evaluation_manifest",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "evaluation_manifest"
+      ]
+    },
+    {
       "contract_name": "external_artifact_manifest",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -733,6 +752,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "evaluation_manifest",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "evaluation_manifest"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "external_artifact_manifest",
       "relation": "governed_by",
       "to_type": "contract",
@@ -856,6 +882,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "decision_log"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "evaluation_manifest",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "evaluation_manifest"
     },
     {
       "from_type": "contract",

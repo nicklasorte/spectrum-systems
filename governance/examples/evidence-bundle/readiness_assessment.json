@@ -1,0 +1,29 @@
+{
+  "run_id": "RUN-2026-03-15-PIPE-001",
+  "system_id": "SYS-009",
+  "evaluated_at": "2026-03-15T18:10:30Z",
+  "readiness_level": "internal-review",
+  "evaluation_summary": {
+    "total_checks": 3,
+    "passed": 1,
+    "failed": 1,
+    "warnings": 1
+  },
+  "blocking_items": [
+    "Readiness score below 0.8 threshold due to missing risk register update",
+    "Two agenda attachments missing from upstream repo"
+  ],
+  "evidence_refs": [
+    {
+      "ref_type": "run_manifest",
+      "ref_id": "RUN-2026-03-15-PIPE-001",
+      "ref_path": "run_manifest.json"
+    },
+    {
+      "ref_type": "evaluation_results",
+      "ref_id": "RUN-2026-03-15-PIPE-001",
+      "ref_path": "evaluation_results.json"
+    }
+  ],
+  "notes": "Partial pipeline run. Advancing to internal-review pending resolution of blocking items."
+}

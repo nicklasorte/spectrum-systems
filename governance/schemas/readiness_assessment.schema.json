@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/governance/readiness_assessment.schema.json",
+  "title": "Readiness Assessment",
+  "description": "Lightweight governance-level readiness assessment recording the readiness level, blocking items, and evidence references for a run or engine output.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "system_id",
+    "evaluated_at",
+    "readiness_level",
+    "evaluation_summary"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Identifier of the run this assessment applies to."
+    },
+    "system_id": {
+      "type": "string",
+      "description": "Registered system identifier aligned to the ecosystem registry."
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this readiness assessment was produced (ISO 8601)."
+    },
+    "readiness_level": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "internal-review",
+        "cross-engine-ready",
+        "governance-ready",
+        "decision-support-ready"
+      ],
+      "description": "Readiness classification for the run or output set."
+    },
+    "evaluation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_checks", "passed", "failed", "warnings"],
+      "properties": {
+        "total_checks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of evaluation checks executed."
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that passed."
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that failed."
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that produced warnings."
+        }
+      },
+      "description": "Aggregated pass/fail/warning counts across all checks."
+    },
+    "blocking_items": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human-readable list of items blocking advancement to the next readiness level."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref_type", "ref_id"],
+        "properties": {
+          "ref_type": {
+            "type": "string",
+            "description": "Category of evidence artifact referenced."
+          },
+          "ref_id": {
+            "type": "string",
+            "description": "Identifier of the referenced evidence artifact."
+          },
+          "ref_path": {
+            "type": "string",
+            "description": "Optional relative path to the evidence artifact."
+          }
+        }
+      },
+      "description": "References to evidence artifacts supporting this assessment."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional freeform context about the readiness assessment."
+    }
+  }
+}
