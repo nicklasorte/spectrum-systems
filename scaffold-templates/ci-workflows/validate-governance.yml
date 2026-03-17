@@ -1,0 +1,152 @@
+name: Governance Compliance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".spectrum-governance.json"
+      - "governance/**"
+      - "contracts/**"
+      - ".github/workflows/validate-governance.yml"
+  pull_request:
+    paths:
+      - ".spectrum-governance.json"
+      - "governance/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-governance-manifest:
+    name: Validate .spectrum-governance.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout spectrum-systems governance tooling
+        uses: actions/checkout@v4
+        with:
+          repository: nicklasorte/spectrum-systems
+          path: spectrum-systems
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: python -m pip install -r spectrum-systems/requirements-dev.txt
+
+      - name: Validate governance manifest
+        run: |
+          python spectrum-systems/scripts/validate_governance_manifest.py \
+            .spectrum-governance.json
+
+  validate-governance-declaration:
+    name: Validate governance/governance-declaration.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check governance declaration exists
+        run: |
+          if [ ! -f governance/governance-declaration.json ]; then
+            echo "ERROR: governance/governance-declaration.json is missing"
+            exit 1
+          fi
+          echo "governance/governance-declaration.json found"
+
+      - name: Validate JSON syntax
+        run: python -c "import json; json.load(open('governance/governance-declaration.json'))"
+
+      - name: Check required fields
+        run: |
+          python - <<'PYCODE'
+          import json, sys
+          with open("governance/governance-declaration.json") as f:
+              decl = json.load(f)
+          required = [
+              "governance_declaration_version",
+              "architecture_source",
+              "standards_manifest_version",
+              "system_id",
+              "implementation_repo",
+              "declared_at",
+              "contract_pins",
+              "schema_pins",
+              "evaluation_manifest_path",
+              "external_storage_policy",
+          ]
+          missing = [k for k in required if k not in decl]
+          if missing:
+              print(f"ERROR: governance-declaration.json is missing required fields: {missing}")
+              sys.exit(1)
+          print("All required fields present in governance-declaration.json")
+          PYCODE
+
+  validate-contract-examples:
+    name: Validate contract examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout spectrum-systems governance tooling
+        uses: actions/checkout@v4
+        with:
+          repository: nicklasorte/spectrum-systems
+          path: spectrum-systems
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: python -m pip install -r spectrum-systems/requirements-dev.txt
+
+      - name: Validate contract examples against schemas
+        run: |
+          if [ -d contracts/examples ]; then
+            python - <<'PYCODE'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          examples_dir = Path("contracts/examples")
+          schemas_dir = Path("spectrum-systems/contracts/schemas")
+
+          for example_file in sorted(examples_dir.glob("*.json")):
+              artifact_type = None
+              try:
+                  data = json.loads(example_file.read_text(encoding="utf-8"))
+                  artifact_type = data.get("artifact_type")
+              except Exception as e:
+                  print(f"  SKIP  {example_file.name}: could not parse ({e})")
+                  continue
+
+              if artifact_type is None:
+                  print(f"  SKIP  {example_file.name}: no artifact_type field")
+                  continue
+
+              schema_file = schemas_dir / f"{artifact_type}.schema.json"
+              if not schema_file.is_file():
+                  print(f"  SKIP  {example_file.name}: no schema found for {artifact_type}")
+                  continue
+
+              schema = json.loads(schema_file.read_text(encoding="utf-8"))
+              validator = Draft202012Validator(schema)
+              errors = list(validator.iter_errors(data))
+              if errors:
+                  for err in errors:
+                      print(f"  FAIL  {example_file.name}: {err.message}")
+                  raise SystemExit(1)
+              print(f"  PASS  {example_file.name}")
+          PYCODE
+          else
+            echo "No contracts/examples directory found — skipping example validation"
+          fi

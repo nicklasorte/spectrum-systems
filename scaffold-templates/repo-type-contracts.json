@@ -1,0 +1,100 @@
+{
+  "_instructions": "Maps each governed repo_type to the baseline set of contracts consumed by that type. Contract versions are resolved at scaffold time from contracts/standards-manifest.json. Only list contract names here; do not pin versions in this file.",
+  "operational_engine": {
+    "repo_type": "operational_engine",
+    "layer": "Layer 3",
+    "contracts": [
+      "provenance_record",
+      "standards_manifest"
+    ],
+    "schema_pins": [
+      "schemas/provenance-schema.json",
+      "contracts/schemas/provenance_record.schema.json"
+    ],
+    "description": "Operational engine that consumes and emits governed artifacts with provenance."
+  },
+  "pipeline": {
+    "repo_type": "pipeline",
+    "layer": "Layer 4",
+    "contracts": [
+      "assumption_register",
+      "comment_resolution_matrix_spreadsheet_contract",
+      "decision_log",
+      "external_artifact_manifest",
+      "meeting_agenda_contract",
+      "meeting_minutes",
+      "milestone_plan",
+      "next_best_action_memo",
+      "program_brief",
+      "provenance_record",
+      "risk_register",
+      "standards_manifest",
+      "study_readiness_assessment"
+    ],
+    "schema_pins": [
+      "schemas/provenance-schema.json",
+      "contracts/schemas/provenance_record.schema.json"
+    ],
+    "description": "Orchestration layer that sequences governed artifacts through downstream engines."
+  },
+  "advisory": {
+    "repo_type": "advisory",
+    "layer": "Layer 5",
+    "contracts": [
+      "assumption_register",
+      "decision_log",
+      "meeting_minutes",
+      "milestone_plan",
+      "next_best_action_memo",
+      "program_brief",
+      "provenance_record",
+      "risk_register",
+      "standards_manifest",
+      "study_readiness_assessment"
+    ],
+    "schema_pins": [
+      "schemas/provenance-schema.json",
+      "contracts/schemas/provenance_record.schema.json"
+    ],
+    "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
+  },
+  "factory": {
+    "repo_type": "factory",
+    "layer": "Layer 1",
+    "contracts": [
+      "assumption_register",
+      "comment_resolution_matrix",
+      "comment_resolution_matrix_spreadsheet_contract",
+      "decision_log",
+      "meeting_agenda_contract",
+      "meeting_minutes",
+      "milestone_plan",
+      "next_best_action_memo",
+      "pdf_anchored_docx_comment_injection_contract",
+      "program_brief",
+      "provenance_record",
+      "reviewer_comment_set",
+      "risk_register",
+      "standards_manifest",
+      "study_readiness_assessment",
+      "working_paper_input"
+    ],
+    "schema_pins": [
+      "schemas/provenance-schema.json",
+      "contracts/schemas/provenance_record.schema.json",
+      "contracts/schemas/standards_manifest.schema.json"
+    ],
+    "description": "Scaffolding repo that generates governed system repositories with pinned contracts."
+  },
+  "governance": {
+    "repo_type": "governance",
+    "layer": "Layer 2",
+    "contracts": [
+      "standards_manifest"
+    ],
+    "schema_pins": [
+      "contracts/schemas/standards_manifest.schema.json"
+    ],
+    "description": "Governance/control-plane repository that owns contracts, schemas, and standards."
+  }
+}
