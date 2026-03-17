@@ -1,0 +1,44 @@
+Meeting Title: 7 GHz Band Plan Review — Decision Session
+Date: 2026-03-20
+Chair: Program Manager
+Recorder: Policy Lead
+Attendees: Program Manager, Systems Engineer, Ops Lead, Policy Lead, Standards Coordinator
+Absent: None
+
+[00:00:00] Program Manager: Let's get started. We have three items that need formal decisions today — the band plan revision, the comment period extension, and the interference threshold update.
+
+[00:01:30] Policy Lead: The revised 7 GHz band plan is ready. We incorporated all feedback from the last review cycle. I recommend we approve it for submission to the program office.
+
+[00:03:00] Standards Coordinator: I reviewed the latest version this morning. The changes are consistent with the ITU alignment requirements. I support approval.
+
+[00:04:15] Program Manager: Any objections? Hearing none — decision: we approve the 7 GHz band plan revision for submission to the program office. Policy Lead, please submit it by March 24.
+
+[00:05:00] Policy Lead: Understood. I will submit by March 24.
+
+[00:06:10] Systems Engineer: Before we move on — I want to flag a risk. The threshold change I'm proposing requires re-validation of some prior lab results. That work is not in the current sprint plan.
+
+[00:07:45] Program Manager: Noted. We'll capture that as a risk. Systems Engineer, please provide an estimate of the re-validation scope by end of this week.
+
+[00:08:20] Systems Engineer: Will do.
+
+[00:09:00] Ops Lead: On the comment period — we received a formal request from two external agencies for additional time to respond to the draft. I recommend extending by two weeks.
+
+[00:10:30] Program Manager: Agreed. Decision: we extend the comment period by two weeks to allow additional stakeholder input. Program Manager will issue the notice to all stakeholders by March 20.
+
+[00:11:45] Policy Lead: One risk to flag — if responses come in late, that will compress the gate review preparation window.
+
+[00:12:20] Program Manager: Good point. Risk recorded: extended comment period may delay the gate review if responses arrive late. I own it. Target resolution when we see response timing by March 27.
+
+[00:13:40] Systems Engineer: On the interference threshold — we have consensus from the technical team that minus 6 dB is the correct operational limit. I recommend we adopt it formally today.
+
+[00:15:00] Ops Lead: Agreed. The urban test results support that value.
+
+[00:15:30] Standards Coordinator: Consistent with the current draft standard as well.
+
+[00:16:00] Program Manager: Decision: we adopt the revised interference threshold of minus 6 dB as the operational limit. Systems Engineer, please update the test plan to reflect this. Target March 27.
+
+[00:16:45] Systems Engineer: Confirmed. I will update the test plan by March 27.
+
+[00:17:30] Program Manager: Let's close. Summary: three decisions today, three action items assigned, two risks open. Next meeting is March 27 at 10:00 AM. We'll review response timing and the re-validation scope estimate.
+
+[00:18:00] — Meeting adjourned —

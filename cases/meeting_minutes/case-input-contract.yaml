@@ -1,0 +1,69 @@
+# Meeting Minutes Case Input Contract
+# Version: 1.0.0
+#
+# This file defines the canonical structure for a meeting minutes evaluation case.
+# Every case.yaml under examples/ must conform to this template.
+# Required fields must be present; optional fields may be omitted.
+# Validated by: cases/meeting_minutes/case-input.schema.json
+
+case_schema_version: "1.0.0"     # required — version of this contract (pin to exact value)
+case_id:                           # required — unique identifier, e.g. CASE-MM-001
+case_name:                         # required — human-readable name
+case_type:                         # required — standard | edge | regression | adversarial
+scenario:                          # required — one-sentence description of what is being tested
+description:                       # required — extended description of case purpose and coverage
+
+# ─── Transcript ──────────────────────────────────────────────────────────────
+# Provide exactly one of: inline content via `transcript.content` or an
+# external file path via `transcript.source_file`.
+transcript:
+  source_file:                     # optional — path relative to this case directory
+  content: |                       # optional — inline transcript text (use source_file for long transcripts)
+  format:                          # required — text | timestamped | structured
+  has_timestamps:                  # required — true | false
+  has_speaker_labels:              # required — true | false
+  language:                        # optional — default "en"
+
+# ─── Context Artifacts (optional) ─────────────────────────────────────────────
+context:
+  prior_minutes:                   # optional — path to prior meeting_minutes.json
+  agenda:                          # optional — path to meeting_agenda_contract.json
+  resolution_matrices:             # optional — list of paths to resolution matrix files
+    - ~
+  supporting_docs:                 # optional — list of supplemental document paths
+    - ~
+
+# ─── Expected Signals ─────────────────────────────────────────────────────────
+# Declare the signals this case expects the engine to extract.
+# Counts are used for precision/recall scoring. Text patterns are optional
+# and used for content fidelity checks.
+expected_signals:
+  decisions_count:                 # required — expected number of decisions
+  action_items_count:              # required — expected number of action items
+  risks_count:                     # required — expected number of risks or open questions
+
+  decisions:                       # optional — list of expected decision patterns
+    - decision_text:               # expected decision text or regexp pattern
+      owner:                       # expected decision owner (name or role)
+
+  action_items:                    # optional — list of expected action item patterns
+    - task:                        # expected task description or regexp pattern
+      owner:                       # expected owner
+      due_date:                    # expected due date (ISO 8601)
+
+  risks:                           # optional — list of expected risk/open-question patterns
+    - description:                 # expected description or regexp pattern
+
+# ─── Validation Expectations ──────────────────────────────────────────────────
+# Declare whether this case should produce a valid output or a specific error.
+validation_expectations:
+  should_pass:                     # required — true | false
+  expected_outcome:                # required — valid | schema_error | validation_error | traceability_warning
+  traceability_required:           # required — true | false
+  blocking_failures:               # optional — list of expected blocking failure codes when should_pass is false
+    - ~
+
+# ─── Run Configuration ────────────────────────────────────────────────────────
+run_config:
+  contract_version:                # required — version of meeting_minutes_contract.yaml to validate against
+  notes:                           # optional — additional notes for evaluators

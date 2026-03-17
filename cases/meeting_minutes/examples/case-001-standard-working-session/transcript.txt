@@ -1,0 +1,38 @@
+Meeting Title: Spectrum Coordination Working Group — Sprint Review
+Date: 2026-03-19
+Chair: Program Manager
+Recorder: Systems Engineer
+Attendees: Program Manager, Systems Engineer, Ops Lead, Policy Lead
+Absent: Test Lead
+
+[00:00:00] Program Manager: Good morning everyone. Let's get started. Today we're reviewing the interference test plan updates and walking through open action items from last session.
+
+[00:01:15] Ops Lead: I've updated the antenna configuration to cover the dense urban and suburban scenarios. The previous config was missing edge cases that reflect actual deployment conditions.
+
+[00:03:40] Systems Engineer: That aligns with the lab data from the 28 GHz urban run. We should also capture spectrum analyzer screenshots for the report appendix.
+
+[00:05:02] Program Manager: Agreed. Let's also make sure we're covering the suburban scenario in this run.
+
+[00:06:45] Ops Lead: Confirmed. I'll run the interference margin sensitivity test with the updated configuration this week. Target is end of day March 26.
+
+[00:08:10] Program Manager: Good. That's our first action item. Ops Lead owns the sensitivity run by March 26.
+
+[00:09:33] Policy Lead: What is our fallback if the antenna delivery slips? We have a one-week buffer built in, but I want to make sure we have a secondary vendor identified.
+
+[00:10:55] Program Manager: Good point. I'll reach out to the alternate vendor today and confirm their lead time. I'll have an answer by March 21.
+
+[00:12:20] Policy Lead: That works. Let's track that as a risk until we hear back.
+
+[00:13:05] Program Manager: Agreed. Open risk: schedule slip if antenna delivery is delayed. Impact is medium. I own it with a target resolution of March 21 when I confirm the alternate vendor lead time.
+
+[00:14:40] Systems Engineer: One open question from last time — do we need a rural scenario run before the gate review?
+
+[00:15:50] Ops Lead: The program office hasn't mandated it yet. Let's add it to the next meeting agenda as a tentative topic.
+
+[00:16:30] Program Manager: Good. Before we close, let's confirm the decision: we're proceeding with the updated antenna configuration for the urban sensitivity run.
+
+[00:17:00] Ops Lead: Confirmed.
+
+[00:17:15] Program Manager: Decision recorded. Next meeting is March 26 at 10:00 AM. Topics will include lab results review and the rural scenario question. Thanks everyone.
+
+[00:17:45] — Meeting adjourned —

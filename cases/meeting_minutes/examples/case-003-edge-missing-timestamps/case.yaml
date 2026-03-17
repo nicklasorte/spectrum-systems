@@ -1,0 +1,48 @@
+case_schema_version: "1.0.0"
+case_id: CASE-MM-003
+case_name: Edge — Missing Timestamps
+case_type: edge
+scenario: >
+  Transcript without timestamps or speaker labels. The engine must extract
+  signals where the content allows but must not fabricate traceability fields.
+  Validation should pass with a traceability_warning rather than fail outright.
+description: >
+  Exercises the engine's handling of a minimally structured transcript that lacks
+  timestamps and speaker labels. The engine must still extract one decision, one
+  action item, and one risk from the narrative content. Traceability anchors
+  (timestamp, speaker, extraction_confidence) must not be fabricated — the
+  traceability section should reflect that source data is unavailable. The
+  validation report must emit a traceability_warning rather than blocking the output.
+
+transcript:
+  source_file: transcript.txt
+  format: text
+  has_timestamps: false
+  has_speaker_labels: false
+  language: en
+
+expected_signals:
+  decisions_count: 1
+  action_items_count: 1
+  risks_count: 1
+  decisions:
+    - decision_text: Defer the coastal site interference analysis to the next sprint
+  action_items:
+    - task: Draft the coastal site interference analysis scope document
+      owner: Engineering Lead
+  risks:
+    - description: Coastal site analysis scope is undefined and may grow once investigation begins
+
+validation_expectations:
+  should_pass: true
+  expected_outcome: traceability_warning
+  traceability_required: false
+  blocking_failures: []
+
+run_config:
+  contract_version: "1.0.0"
+  notes: >
+    Edge case for missing traceability source data. The engine must not fail;
+    it must emit a validation_report.json with a non-blocking traceability_warning.
+    Traceability fields (timestamp, speaker) must be null or absent — not fabricated.
+    This case validates that the engine degrades gracefully under partial inputs.
