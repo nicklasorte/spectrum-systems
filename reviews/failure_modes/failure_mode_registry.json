@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Registry of known failure modes for transcript/slide/gap/working-paper systems. Used to seed review manifests and guide Claude review analysis.",
+  "failure_modes": [
+    {
+      "id": "poor_pdf_extraction",
+      "title": "Poor PDF Extraction",
+      "description": "PDF-to-text conversion produces garbled, incomplete, or layout-corrupted text. Common with multi-column layouts, image-heavy slides, or scanned documents without OCR.",
+      "affected_layers": ["slide_intelligence", "transcript_parsing"],
+      "detection_signals": [
+        "Extracted slide units have empty or single-character content fields",
+        "Entity names contain special characters or line-break artifacts",
+        "Claim confidence scores cluster near 0.0 for an entire slide deck",
+        "slide_intelligence_packet has zero extracted claims from a non-trivial slide deck"
+      ],
+      "likely_downstream_impact": "Gap detection operates on corrupted input, producing spurious gaps or missing real gaps. Working paper incorporates garbled claims without attribution errors."
+    },
+    {
+      "id": "false_alignment",
+      "title": "False Alignment",
+      "description": "A slide claim or transcript statement is incorrectly matched to a working paper section or gap category based on superficial keyword overlap rather than semantic equivalence.",
+      "affected_layers": ["gap_detection", "working_paper_generator", "slide_intelligence"],
+      "detection_signals": [
+        "Alignment confidence scores are high (>0.8) but aligned content is semantically unrelated",
+        "Multiple claims map to the same gap ID despite covering distinct topics",
+        "Traceability entries reference source documents that do not contain the attributed claim"
+      ],
+      "likely_downstream_impact": "Working paper makes incorrect assertions about consensus or evidence. Regulatory submissions cite misattributed evidence."
+    },
+    {
+      "id": "decorative_gap_analysis",
+      "title": "Decorative Gap Analysis",
+      "description": "Gap detection produces output that is structurally valid but lacks substantive content. Gaps are listed as generic categories without specific evidence anchors.",
+      "affected_layers": ["gap_detection", "working_paper_generator"],
+      "detection_signals": [
+        "All identified gaps have empty evidence arrays",
+        "Gap descriptions are template-like with no document-specific content",
+        "Readiness score is high despite absent or minimal evidence",
+        "Gap count is identical across multiple different transcripts"
+      ],
+      "likely_downstream_impact": "Working paper silently omits analysis depth. Review cycles miss real technical gaps. Regulatory arguments lack substantive backing."
+    },
+    {
+      "id": "schema_valid_but_semantically_empty",
+      "title": "Schema Valid but Semantically Empty",
+      "description": "An output document passes JSON schema validation but contains placeholder content, empty arrays where data is expected, or template strings instead of actual analysis.",
+      "affected_layers": ["working_paper_generator", "slide_intelligence", "gap_detection", "artifact_packager"],
+      "detection_signals": [
+        "Key fields contain the string 'TODO' or 'N/A' in production output",
+        "Required list fields (key_findings, risks, decisions) are empty arrays",
+        "Numeric scores (confidence, readiness) are exactly 0.0 or 1.0 without explanation",
+        "Schema validation passes but downstream consumers raise KeyError or produce empty output"
+      ],
+      "likely_downstream_impact": "Silent degradation propagates through the pipeline. Consumers receive structurally valid but analytically worthless data."
+    },
+    {
+      "id": "overmerged_conflict",
+      "title": "Overmerged Conflict",
+      "description": "Conflicting claims from different sources are silently merged into a single statement that misrepresents the nature of the disagreement.",
+      "affected_layers": ["working_paper_generator", "gap_detection"],
+      "detection_signals": [
+        "Multiple source documents with contradictory values map to a single working paper claim",
+        "Conflict markers are absent in traceability appendix despite known disagreements",
+        "Patch generator applies conflicting patches without emitting a conflict flag"
+      ],
+      "likely_downstream_impact": "Working paper asserts false consensus. Reviewers and agencies receive a misleading summary of the technical state."
+    },
+    {
+      "id": "missing_traceability",
+      "title": "Missing Traceability",
+      "description": "Claims, findings, or decisions in the working paper are not linked back to their originating source documents, transcripts, or slide signals.",
+      "affected_layers": ["working_paper_generator", "artifact_packager", "gap_detection"],
+      "detection_signals": [
+        "source_traceability array in working paper appendix is empty or missing",
+        "Key findings list no supporting evidence references",
+        "Decisions and recommendations do not cite the meeting or document where they were established"
+      ],
+      "likely_downstream_impact": "Regulatory submissions cannot be audited. Review cycles cannot verify claims. Downstream systems cannot determine the provenance of assertions."
+    },
+    {
+      "id": "silent_optional_input_fallback",
+      "title": "Silent Optional Input Fallback",
+      "description": "A module silently falls back to stub or default behavior when an optional input is absent, without emitting a warning or marking the output as degraded.",
+      "affected_layers": ["working_paper_generator", "artifact_packager", "slide_intelligence"],
+      "detection_signals": [
+        "Output contains stub sentinel fields (stub: true) in production artifacts",
+        "Pipeline completes successfully but output quality metrics are below baseline",
+        "Downstream consumer receives None or empty dict for an expected enrichment field"
+      ],
+      "likely_downstream_impact": "Pipeline appears healthy while producing degraded artifacts. Quality issues go undetected until manual review or downstream failure."
+    },
+    {
+      "id": "brittle_frequency_extraction",
+      "title": "Brittle Frequency Extraction",
+      "description": "Frequency values are extracted using fragile regex patterns that miss alternative notations (MHz vs GHz, ranges vs center frequencies, hyphenated vs en-dash ranges).",
+      "affected_layers": ["slide_intelligence", "transcript_parsing", "working_paper_generator"],
+      "detection_signals": [
+        "Frequency entity count is zero despite frequency-heavy input documents",
+        "Extracted frequencies are missing GHz values when only MHz regex is applied",
+        "Range notation '3550-3700 MHz' is extracted as two separate entities rather than one range",
+        "Frequency entities extracted from slide titles but not from body text"
+      ],
+      "likely_downstream_impact": "Gap detection misses spectrum-specific gaps. Working paper omits key frequency coordination data. Regulatory arguments are incomplete."
+    }
+  ]
+}

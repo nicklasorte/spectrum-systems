@@ -1,0 +1,60 @@
+{
+  "review_id": "rev-p-gap-detection-2026-03-17",
+  "scope_id": "p_gap_detection",
+  "review_type": "architecture",
+  "reviewed_at": "2026-03-17T21:00:00Z",
+  "verdict": "GO_WITH_FIXES",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "high",
+      "category": "traceability",
+      "title": "Gap evidence arrays are not validated for emptiness",
+      "evidence": [
+        "spectrum_systems/modules/working_paper_generator.py",
+        "tests/test_working_paper_generator_module.py"
+      ],
+      "why_it_matters": "Gaps with empty evidence arrays produce decorative analysis that passes schema validation but provides no actionable signal to reviewers or downstream consumers.",
+      "recommended_fix": "Add a validation step in the gap detection stage that rejects or flags any gap entry whose evidence array is empty.",
+      "fix_type": "patch",
+      "downstream_risk": "Working paper includes unsupported gap claims that survive schema validation, misleading regulatory reviewers.",
+      "priority_rank": 1
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "medium",
+      "category": "validation",
+      "title": "Readiness scorer does not penalise gaps with missing source references",
+      "evidence": [
+        "working_paper_generator/readiness_scorer.py",
+        "contracts/schemas/working_paper_input.schema.json"
+      ],
+      "why_it_matters": "The readiness score may be artificially high when gap analysis is present but untraced, giving a false signal that the working paper is ready to proceed.",
+      "recommended_fix": "Weight readiness score down proportionally to the fraction of gaps lacking evidence references.",
+      "fix_type": "patch",
+      "downstream_risk": "Working paper proceeds to draft stage with insufficient evidence, requiring rework downstream.",
+      "priority_rank": 2
+    }
+  ],
+  "failure_scenarios": [
+    {
+      "scenario_id": "FS-001",
+      "description": "Transcript with only decorative section headers produces an empty gap list that passes validation, preventing reviewers from detecting missing evidence.",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Add a minimum substantive content check before gap detection runs; warn when input has fewer than N sentences of technical content."
+    },
+    {
+      "scenario_id": "FS-002",
+      "description": "Two slide claims covering the same frequency band but different modulation schemes are merged into one gap, losing the distinction.",
+      "likelihood": "low",
+      "impact": "medium",
+      "mitigation": "Require conflict markers when merging claims with differing technical parameters."
+    }
+  ],
+  "priority_fix_stack": [
+    "F-001",
+    "F-002"
+  ],
+  "minimum_bar_to_proceed": "F-001 must be resolved before this subsystem is considered production-ready. F-002 should be addressed before the first regulatory submission."
+}
