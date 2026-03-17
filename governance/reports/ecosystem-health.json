@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T12:58:22Z",
+  "generated_at": "2026-03-17T13:05:33Z",
   "summary": {
     "overall_health": "warning",
     "total_repos": 10,
     "governance_compliance": {
-      "compliant": 10,
-      "warning": 0,
+      "compliant": 9,
+      "warning": 1,
       "fail": 0,
       "partial": 0
     },
@@ -183,7 +183,7 @@
       "repo_type": "governance",
       "architecture_layer": "Layer 2",
       "status": "active",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "governance-repo",
       "schema_status": "compliant",
       "ci_status": "compliant",

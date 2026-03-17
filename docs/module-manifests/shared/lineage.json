@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "shared.lineage",
+  "module_name": "Shared Lineage",
+  "module_type": "shared",
+  "owner_layer": "shared",
+  "description": "Defines and exports all canonical lineage structures used across the platform. Lineage records trace artifact derivation — what produced each artifact, which module produced it, when, and what inputs it consumed. This is the single authoritative source for lineage primitives.",
+  "status": "active",
+  "inputs": [],
+  "outputs": [
+    "LineageRecord",
+    "ArtifactLineageChain"
+  ],
+  "dependencies": [
+    "shared.ids"
+  ],
+  "lifecycle_stages": [
+    "active"
+  ],
+  "authoritative_imports": [
+    "ArtifactID from shared.ids"
+  ],
+  "forbidden_responsibilities": [
+    "Artifact model schemas — those are owned by shared.artifact_models",
+    "Provenance records — those are owned by shared.provenance",
+    "Readiness state definitions — those are owned by shared.readiness",
+    "Evaluation logic — that belongs to control_plane.evaluation",
+    "Any domain-specific logic"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "control_plane.evaluation",
+  "module_name": "Control Plane — Evaluation",
+  "module_type": "control_plane",
+  "owner_layer": "control_plane",
+  "description": "Manages evaluation runs, records evaluation results, and links results to work items. Defines the canonical evaluation result envelope used across the platform.",
+  "status": "in_progress",
+  "inputs": [
+    "ArtifactEnvelope",
+    "EvaluationRequest"
+  ],
+  "outputs": [
+    "EvaluationResult",
+    "EvaluationResultEnvelope"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage"
+  ],
+  "lifecycle_stages": [
+    "submitted",
+    "running",
+    "complete",
+    "failed"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Workflow execution — that belongs to orchestration.pipeline",
+    "Domain-specific evaluation logic — that belongs to the relevant domain_module",
+    "Readiness state definitions — those are owned by shared.readiness"
+  ]
+}

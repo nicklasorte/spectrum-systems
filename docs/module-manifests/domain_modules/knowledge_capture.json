@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "domain_modules.knowledge_capture",
+  "module_name": "Domain Module — Knowledge Capture",
+  "module_type": "domain_module",
+  "owner_layer": "domain_modules",
+  "description": "Captures, structures, and indexes domain knowledge artifacts including decisions, precedents, rationale records, and institutional memory entries. Provides queryable domain knowledge to other modules and workflow consumers.",
+  "status": "planned",
+  "inputs": [
+    "DecisionRecord",
+    "PrecedentEntry",
+    "RationaleNote",
+    "ReviewFinding"
+  ],
+  "outputs": [
+    "KnowledgeArtifact",
+    "InstitutionalMemoryEntry",
+    "KnowledgeQueryResponse"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "shared.provenance"
+  ],
+  "lifecycle_stages": [
+    "captured",
+    "indexed",
+    "reviewed",
+    "active",
+    "superseded"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage",
+    "ProvenanceRecord from shared.provenance"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Frequency allocation data and band metadata — that belongs to domain_modules.allocation_intelligence",
+    "Interference study logic — that belongs to domain_modules.interference_assistant",
+    "Lifecycle enforcement — that belongs to the control_plane",
+    "Workflow orchestration — that belongs to orchestration.pipeline"
+  ]
+}

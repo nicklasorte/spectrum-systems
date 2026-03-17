@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "workflow_modules.comment_resolution",
+  "module_name": "Workflow Module — Comment Resolution",
+  "module_type": "workflow_module",
+  "owner_layer": "workflow_modules",
+  "description": "Extracts reviewer comments from annotated documents, resolves comment context, applies dispositions, and produces a canonical comment resolution matrix. Supports the full comment lifecycle from extraction through final disposition.",
+  "status": "planned",
+  "inputs": [
+    "ReviewerCommentSet",
+    "WorkingPaperArtifact"
+  ],
+  "outputs": [
+    "CommentResolutionMatrix",
+    "CommentDispositionRecord"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage"
+  ],
+  "lifecycle_stages": [
+    "comments_extracted",
+    "context_resolved",
+    "disposition_applied",
+    "matrix_finalized"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Meeting minutes processing — that belongs to workflow_modules.meeting_intelligence",
+    "Domain-specific regulatory reasoning — that belongs to domain_modules",
+    "Work item creation and lifecycle tracking — that belongs to control_plane.work_items"
+  ]
+}

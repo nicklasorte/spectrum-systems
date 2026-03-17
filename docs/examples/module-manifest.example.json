@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "shared.artifact_models",
+  "module_name": "Shared Artifact Models",
+  "module_type": "shared",
+  "owner_layer": "shared",
+  "description": "Defines and exports all canonical artifact model schemas used across the platform. This is the single authoritative source for artifact envelopes, structured artifact types, and artifact identity primitives.",
+  "status": "active",
+  "inputs": [],
+  "outputs": [
+    "ArtifactEnvelope",
+    "ArtifactBundle",
+    "ArtifactMetadata"
+  ],
+  "dependencies": [
+    "shared.ids",
+    "shared.provenance"
+  ],
+  "lifecycle_stages": [
+    "draft",
+    "active",
+    "deprecated"
+  ],
+  "authoritative_imports": [],
+  "forbidden_responsibilities": [
+    "Domain-specific artifact logic (e.g., frequency allocation schemas, meeting minutes structure)",
+    "Lifecycle state management — that belongs to control_plane.lifecycle",
+    "Evaluation result envelopes — those are defined in control_plane.evaluation",
+    "Workflow orchestration — that belongs to orchestration.pipeline",
+    "Any consumer-specific transformation of artifact data"
+  ]
+}

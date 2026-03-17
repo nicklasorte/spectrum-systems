@@ -133,6 +133,21 @@ The `control_plane` is built first. Workflow and domain modules are built on top
 
 ---
 
+## Enforcement Artifacts
+
+The module-first architecture is enforced through canonical artifacts that accompany this roadmap.
+
+| Artifact | Path | Purpose |
+| --- | --- | --- |
+| Module manifest schema | `schemas/module-manifest.schema.json` | JSON Schema for all module manifests |
+| Module manifest example | `docs/examples/module-manifest.example.json` | Annotated example manifest |
+| Module manifests | `docs/module-manifests/` | Per-module boundary contracts |
+| Shared-layer authority | `docs/architecture/shared-authority.md` | Binding rules for the shared layer |
+| Validation script | `scripts/validate_module_architecture.py` | Deterministic repo-local enforcement |
+| CI gate | `.github/workflows/artifact-boundary.yml` | Runs validator on every PR and push |
+
+---
+
 ## Explicit Control Mechanisms
 
 The system enforces behavior through four categories of control.
