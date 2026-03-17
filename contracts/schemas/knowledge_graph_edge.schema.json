@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/knowledge_graph_edge.schema.json",
+  "title": "Knowledge Graph Edge",
+  "description": "A directed relationship edge between two entities in the spectrum knowledge graph. Serves as the seed record for cross-artifact entity relationship tracking.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "edge_id",
+    "source",
+    "relation",
+    "target"
+  ],
+  "properties": {
+    "edge_id": {
+      "type": "string",
+      "description": "Stable identifier for this edge instance."
+    },
+    "source": {
+      "type": "string",
+      "description": "Source entity name or identifier."
+    },
+    "relation": {
+      "type": "string",
+      "enum": [
+        "interferes_with",
+        "protected_by",
+        "depends_on",
+        "mitigated_by",
+        "assumes",
+        "evaluated_with",
+        "applies_to"
+      ],
+      "description": "Directed relationship type."
+    },
+    "target": {
+      "type": "string",
+      "description": "Target entity name or identifier."
+    },
+    "source_slide_id": {
+      "type": ["string", "null"],
+      "description": "Slide that produced this edge, for traceability."
+    },
+    "source_artifact_id": {
+      "type": ["string", "null"],
+      "description": "Artifact that produced this edge, for traceability."
+    },
+    "confidence": {
+      "type": ["string", "null"],
+      "enum": ["low", "medium", "high", null],
+      "description": "Extraction confidence level."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional annotation on the relationship."
+    }
+  }
+}

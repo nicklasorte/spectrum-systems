@@ -169,6 +169,46 @@
         "study_readiness_assessment"
       ],
       "description": "Advisory outputs and briefs derived from readiness bundles and governed artifacts."
+    },
+    {
+      "repo_name": "slide-intelligence-engine",
+      "repo_url": "https://github.com/nicklasorte/slide-intelligence-engine",
+      "repo_type": "operational_engine",
+      "status": "planned",
+      "layer": "Layer 3",
+      "system_id": "slide-intelligence-engine",
+      "manifest_required": true,
+      "contracts": [
+        "slide_deck",
+        "slide_intelligence_packet"
+      ],
+      "description": "Operational engine that processes slide deck artifacts into structured intelligence packets for working-paper generation and knowledge graph seeding."
+    },
+    {
+      "repo_name": "assumptions-registry-engine",
+      "repo_url": "https://github.com/nicklasorte/assumptions-registry-engine",
+      "repo_type": "operational_engine",
+      "status": "planned",
+      "layer": "Layer 3",
+      "system_id": "assumptions-registry-engine",
+      "manifest_required": true,
+      "contracts": [
+        "slide_intelligence_packet"
+      ],
+      "description": "Operational engine that consolidates assumption registry entries from slide intelligence packets and other sources across meetings and studies."
+    },
+    {
+      "repo_name": "knowledge-graph-engine",
+      "repo_url": "https://github.com/nicklasorte/knowledge-graph-engine",
+      "repo_type": "operational_engine",
+      "status": "planned",
+      "layer": "Layer 3",
+      "system_id": "knowledge-graph-engine",
+      "manifest_required": true,
+      "contracts": [
+        "slide_intelligence_packet"
+      ],
+      "description": "Operational engine that ingests knowledge graph edges from slide intelligence packets to build the Spectrum Intelligence Map."
     }
   ]
 }

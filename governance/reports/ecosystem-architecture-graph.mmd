@@ -9,9 +9,12 @@ graph LR
   end
 
   subgraph Layer 3["Layer 3 — Operational Engines"]
+    assumptions_registry_engine["assumptions-registry-engine"]
     comment_resolution_engine["comment-resolution-engine"]
     docx_comment_injection_engine["docx-comment-injection-engine"]
+    knowledge_graph_engine["knowledge-graph-engine"]
     meeting_minutes_engine["meeting-minutes-engine"]
+    slide_intelligence_engine["slide-intelligence-engine"]
     spectrum_study_compiler["spectrum-study-compiler"]
     study_artifact_generator["study-artifact-generator"]
     working_paper_review_engine["working-paper-review-engine"]
@@ -41,7 +44,7 @@ graph LR
     program_brief(["program_brief"])
     provenance_record(["provenance_record"])
     reviewer_comment_set(["reviewer_comment_set"])
-    more_contracts["... and 4 more"]
+    more_contracts["... and 6 more"]
   end
 
   comment_resolution_engine -->|consumes| comment_resolution_matrix

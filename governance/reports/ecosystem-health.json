@@ -1,32 +1,57 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T20:09:50Z",
+  "generated_at": "2026-03-17T20:24:20Z",
   "summary": {
     "overall_health": "warning",
-    "total_repos": 10,
+    "total_repos": 13,
     "governance_compliance": {
       "compliant": 10,
-      "warning": 0,
+      "warning": 3,
       "fail": 0,
       "partial": 0
     },
     "contract_alignment": {
-      "pass": 7,
-      "warning": 2,
+      "pass": 9,
+      "warning": 3,
       "governance-repo": 1
     },
     "schema_integrity": {
-      "compliant": 10
+      "compliant": 13
     },
     "ci_enforcement": {
+      "missing": 5,
       "compliant": 7,
-      "missing": 2,
       "partial": 1
     },
     "repos_missing_required_artifacts": [],
     "repos_not_yet_enforceable": []
   },
   "repos": [
+    {
+      "repo_name": "assumptions-registry-engine",
+      "system_id": "assumptions-registry-engine",
+      "repo_type": "operational_engine",
+      "architecture_layer": "Layer 3",
+      "status": "planned",
+      "governance_status": "compliant",
+      "contract_status": "pass",
+      "schema_status": "compliant",
+      "ci_status": "missing",
+      "maturity_score": {
+        "raw": 12,
+        "max": 20,
+        "categories": {
+          "governance_artifacts": "compliant",
+          "contract_compliance": "compliant",
+          "schema_alignment": "compliant",
+          "ci_enforcement": "missing",
+          "evaluation_evidence": "missing",
+          "documentation": "compliant"
+        }
+      },
+      "maturity_level": 6,
+      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+    },
     {
       "repo_name": "comment-resolution-engine",
       "system_id": "comment-resolution-engine",
@@ -78,12 +103,37 @@
       "notes": ""
     },
     {
+      "repo_name": "knowledge-graph-engine",
+      "system_id": "knowledge-graph-engine",
+      "repo_type": "operational_engine",
+      "architecture_layer": "Layer 3",
+      "status": "planned",
+      "governance_status": "compliant",
+      "contract_status": "pass",
+      "schema_status": "compliant",
+      "ci_status": "missing",
+      "maturity_score": {
+        "raw": 12,
+        "max": 20,
+        "categories": {
+          "governance_artifacts": "compliant",
+          "contract_compliance": "compliant",
+          "schema_alignment": "compliant",
+          "ci_enforcement": "missing",
+          "evaluation_evidence": "missing",
+          "documentation": "compliant"
+        }
+      },
+      "maturity_level": 6,
+      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+    },
+    {
       "repo_name": "meeting-minutes-engine",
       "system_id": "meeting-minutes-engine",
       "repo_type": "operational_engine",
       "architecture_layer": "Layer 3",
       "status": "active",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -101,6 +151,31 @@
       },
       "maturity_level": 9,
       "notes": ""
+    },
+    {
+      "repo_name": "slide-intelligence-engine",
+      "system_id": "slide-intelligence-engine",
+      "repo_type": "operational_engine",
+      "architecture_layer": "Layer 3",
+      "status": "planned",
+      "governance_status": "compliant",
+      "contract_status": "pass",
+      "schema_status": "compliant",
+      "ci_status": "missing",
+      "maturity_score": {
+        "raw": 12,
+        "max": 20,
+        "categories": {
+          "governance_artifacts": "compliant",
+          "contract_compliance": "compliant",
+          "schema_alignment": "compliant",
+          "ci_enforcement": "missing",
+          "evaluation_evidence": "missing",
+          "documentation": "compliant"
+        }
+      },
+      "maturity_level": 6,
+      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
     },
     {
       "repo_name": "spectrum-pipeline-engine",
@@ -133,7 +208,7 @@
       "repo_type": "advisory",
       "architecture_layer": "Layer 5",
       "status": "experimental",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "partial",
@@ -183,7 +258,7 @@
       "repo_type": "governance",
       "architecture_layer": "Layer 2",
       "status": "active",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "governance-repo",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -259,22 +334,22 @@
       "architecture_layer": "Layer 3",
       "status": "active",
       "governance_status": "compliant",
-      "contract_status": "pass",
+      "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "compliant",
       "maturity_score": {
-        "raw": 20,
+        "raw": 18,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "compliant",
+          "contract_compliance": "partial",
           "schema_alignment": "compliant",
           "ci_enforcement": "compliant",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 10,
+      "maturity_level": 9,
       "notes": ""
     }
   ]

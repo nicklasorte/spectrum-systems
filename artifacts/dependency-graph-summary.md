@@ -40,6 +40,8 @@
 - reviewer_comment_set [review] producers: working-paper-review-engine; consumers: comment-resolution-engine, spectrum-data-lake; Governed artifact for contract `reviewer_comment_set`.
 - risk_register [coordination] producers: spectrum-program-advisor; consumers: —; Governed artifact for contract `risk_register`.
 - scaffolded_repository_manifest [coordination] producers: system-factory; consumers: —; Manifest describing the generated repository from system-factory.
+- slide_deck [work] producers: —; consumers: —; Governed artifact for contract `slide_deck`.
+- slide_intelligence_packet [work] producers: —; consumers: —; Governed artifact for contract `slide_intelligence_packet`.
 - standards_manifest [coordination] producers: spectrum-systems, system-factory; consumers: spectrum-pipeline-engine, spectrum-systems, system-factory; Governed artifact for contract `standards_manifest`.
 - study_readiness_assessment [coordination] producers: spectrum-pipeline-engine; consumers: spectrum-program-advisor; Governed artifact for contract `study_readiness_assessment`.
 - transcript [coordination] producers: —; consumers: meeting-minutes-engine; Raw meeting transcript captured before governance processing.
@@ -64,6 +66,8 @@
 - provenance_record [coordination] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: provenance_record
 - reviewer_comment_set [review] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: reviewer_comment_set
 - risk_register [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: risk_register
+- slide_deck [work] intended consumers: slide-intelligence-engine, spectrum-pipeline-engine, working-paper-review-engine; artifacts: slide_deck
+- slide_intelligence_packet [work] intended consumers: assumptions-registry-engine, knowledge-graph-engine, spectrum-program-advisor, working-paper-review-engine; artifacts: slide_intelligence_packet
 - standards_manifest [coordination] intended consumers: downstream schema loaders, system-factory; artifacts: standards_manifest
 - study_readiness_assessment [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: study_readiness_assessment
 - working_paper_input [work] intended consumers: system-factory, working-paper-review-engine; artifacts: working_paper_input

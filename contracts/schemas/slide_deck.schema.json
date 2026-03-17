@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slide_deck.schema.json",
+  "title": "Slide Deck",
+  "description": "Governed input artifact representing a presentation slide deck submitted to a spectrum study working group. Slides are treated as structured technical artifacts, not transcript-like text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "slides"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Stable identifier for this slide deck artifact instance."
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "slide_deck",
+      "description": "Canonical artifact type identifier."
+    },
+    "presenting_org": {
+      "type": ["string", "null"],
+      "description": "Organization or agency that presented the slide deck."
+    },
+    "meeting_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the meeting session where the deck was presented."
+    },
+    "study_id": {
+      "type": ["string", "null"],
+      "description": "Study identifier this slide deck contributes to."
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/$defs/slide"
+      },
+      "description": "Ordered list of slide records."
+    }
+  },
+  "$defs": {
+    "slide": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "slide_number"
+      ],
+      "properties": {
+        "slide_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Position of the slide within the deck (1-indexed)."
+        },
+        "slide_id": {
+          "type": ["string", "null"],
+          "description": "Optional explicit identifier for this slide."
+        },
+        "title": {
+          "type": ["string", "null"],
+          "description": "Slide title. If absent, first non-empty line of raw_text is used."
+        },
+        "bullets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ordered bullet points on the slide."
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative content list when bullets is not present."
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "description": "Speaker notes or supplemental text for this slide."
+        },
+        "raw_text": {
+          "type": ["string", "null"],
+          "description": "Full raw text blob for the slide, preserving original layout."
+        },
+        "has_figure": {
+          "type": ["boolean", "null"],
+          "description": "Explicit flag indicating the slide contains a figure or diagram."
+        },
+        "has_table": {
+          "type": ["boolean", "null"],
+          "description": "Explicit flag indicating the slide contains a table."
+        },
+        "type": {
+          "type": ["string", "null"],
+          "enum": ["text", "figure", "table", "diagram", "chart", "image", null],
+          "description": "Content type hint for the slide."
+        }
+      }
+    }
+  }
+}

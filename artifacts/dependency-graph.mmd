@@ -36,6 +36,8 @@ flowchart TD
   art_reviewer_comment_set["reviewer_comment_set\nreview"]
   art_risk_register["risk_register\ncoordination"]
   art_scaffolded_repository_manifest["scaffolded_repository_manifest\ncoordination"]
+  art_slide_deck["slide_deck\nwork"]
+  art_slide_intelligence_packet["slide_intelligence_packet\nwork"]
   art_standards_manifest["standards_manifest\ncoordination"]
   art_study_readiness_assessment["study_readiness_assessment\ncoordination"]
   art_transcript["transcript\ncoordination"]
@@ -58,6 +60,8 @@ flowchart TD
   con_provenance_record["provenance_record\ncontract"]
   con_reviewer_comment_set["reviewer_comment_set\ncontract"]
   con_risk_register["risk_register\ncontract"]
+  con_slide_deck["slide_deck\ncontract"]
+  con_slide_intelligence_packet["slide_intelligence_packet\ncontract"]
   con_standards_manifest["standards_manifest\ncontract"]
   con_study_readiness_assessment["study_readiness_assessment\ncontract"]
   con_working_paper_input["working_paper_input\ncontract"]
@@ -77,6 +81,8 @@ flowchart TD
   art_provenance_record -. governed_by .-> con_provenance_record
   art_reviewer_comment_set -. governed_by .-> con_reviewer_comment_set
   art_risk_register -. governed_by .-> con_risk_register
+  art_slide_deck -. governed_by .-> con_slide_deck
+  art_slide_intelligence_packet -. governed_by .-> con_slide_intelligence_packet
   art_standards_manifest -. governed_by .-> con_standards_manifest
   art_study_readiness_assessment -. governed_by .-> con_study_readiness_assessment
   art_working_paper_input -. governed_by .-> con_working_paper_input
@@ -96,6 +102,8 @@ flowchart TD
   con_provenance_record -->|validates| art_provenance_record
   con_reviewer_comment_set -->|validates| art_reviewer_comment_set
   con_risk_register -->|validates| art_risk_register
+  con_slide_deck -->|validates| art_slide_deck
+  con_slide_intelligence_packet -->|validates| art_slide_intelligence_packet
   con_standards_manifest -->|validates| art_standards_manifest
   con_study_readiness_assessment -->|validates| art_study_readiness_assessment
   con_working_paper_input -->|validates| art_working_paper_input

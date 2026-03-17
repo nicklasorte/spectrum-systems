@@ -1,0 +1,78 @@
+{
+  "artifact_id": "SLIDE-DECK-TEST-001",
+  "artifact_type": "slide_deck",
+  "presenting_org": "FCC Office of Engineering and Technology",
+  "meeting_id": "MTG-2026-03-001",
+  "slides": [
+    {
+      "slide_number": 1,
+      "title": "Study Objectives and Scope",
+      "bullets": [
+        "Evaluate interference potential from 5G NR into federal radar systems in the 3.5 GHz band",
+        "Assess coexistence feasibility under ITU-R propagation models",
+        "Determine minimum frequency separation and guard band requirements"
+      ],
+      "notes": "Opening slide — provides context for the full analysis.",
+      "raw_text": "Study Objectives and Scope\nEvaluate interference potential from 5G NR into federal radar systems in the 3.5 GHz band\nAssess coexistence feasibility under ITU-R propagation models\nDetermine minimum frequency separation and guard band requirements",
+      "has_figure": false,
+      "has_table": false,
+      "type": "text"
+    },
+    {
+      "slide_number": 2,
+      "title": "Analytical Assumptions",
+      "bullets": [
+        "5G NR EIRP: 46 dBm per sector, per 3GPP TS 38.104",
+        "OOBE level: -13 dBm/MHz at band edge",
+        "Propagation model: ITM (Longley-Rice) for terrain-sensitive paths",
+        "Receiver threshold: -107 dBm for radar protection criterion",
+        "Deployment density: 4 base stations per km\u00b2 in suburban areas",
+        "Guard band: 10 MHz assumed between licensed allocations"
+      ],
+      "notes": "These assumptions are preliminary and subject to agency review.",
+      "raw_text": "Analytical Assumptions\n5G NR EIRP: 46 dBm per sector, per 3GPP TS 38.104\nOOBE level: -13 dBm/MHz at band edge\nPropagation model: ITM (Longley-Rice) for terrain-sensitive paths\nReceiver threshold: -107 dBm for radar protection criterion\nDeployment density: 4 base stations per km\u00b2 in suburban areas\nGuard band: 10 MHz assumed between licensed allocations",
+      "has_figure": false,
+      "has_table": false,
+      "type": "text"
+    },
+    {
+      "slide_number": 3,
+      "title": "Interference Analysis Results",
+      "bullets": [
+        "5G NR base stations may interfere with federal radar receivers within 5 km",
+        "Aggregate interference exceeds the -107 dBm threshold under dense deployment",
+        "Guard band of 10 MHz reduces interference by 18 dB",
+        "Coexistence is manageable with coordination zones and power control"
+      ],
+      "notes": "Preliminary findings — simulation runs still in progress.",
+      "raw_text": "Interference Analysis Results\n5G NR base stations may interfere with federal radar receivers within 5 km\nAggregate interference exceeds the -107 dBm threshold under dense deployment\nGuard band of 10 MHz reduces interference by 18 dB\nCoexistence is manageable with coordination zones and power control",
+      "has_figure": false,
+      "has_table": true,
+      "type": "text"
+    },
+    {
+      "slide_number": 4,
+      "title": "Path Loss vs. Distance (Figure 3)",
+      "bullets": [],
+      "notes": "Figure 3 — path loss curves for ITM model at 3.5 GHz over flat and hilly terrain.",
+      "raw_text": "Path Loss vs. Distance (Figure 3)\nFigure 3 — path loss curves for ITM model at 3.5 GHz over flat and hilly terrain.",
+      "has_figure": true,
+      "has_table": false,
+      "type": "figure"
+    },
+    {
+      "slide_number": 5,
+      "title": "Open Issues and Questions for Agency Review",
+      "bullets": [
+        "What is the DoD radar receiver threshold under worst-case multipath conditions?",
+        "Are coordination zone boundaries aligned with existing federal frequency assignments?",
+        "TBD: clutter model for coastal/maritime deployment scenarios"
+      ],
+      "notes": "Items require resolution before the working paper advances.",
+      "raw_text": "Open Issues and Questions for Agency Review\nWhat is the DoD radar receiver threshold under worst-case multipath conditions?\nAre coordination zone boundaries aligned with existing federal frequency assignments?\nTBD: clutter model for coastal/maritime deployment scenarios",
+      "has_figure": false,
+      "has_table": false,
+      "type": "text"
+    }
+  ]
+}

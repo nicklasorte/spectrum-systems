@@ -1,8 +1,16 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T20:09:50Z",
+  "generated_at": "2026-03-17T20:24:20Z",
   "nodes": {
     "repositories": [
+      {
+        "id": "assumptions-registry-engine",
+        "node_type": "repository",
+        "repo_type": "operational_engine",
+        "architecture_layer": "Layer 3",
+        "system_id": "assumptions-registry-engine",
+        "status": "planned"
+      },
       {
         "id": "comment-resolution-engine",
         "node_type": "repository",
@@ -20,12 +28,28 @@
         "status": "active"
       },
       {
+        "id": "knowledge-graph-engine",
+        "node_type": "repository",
+        "repo_type": "operational_engine",
+        "architecture_layer": "Layer 3",
+        "system_id": "knowledge-graph-engine",
+        "status": "planned"
+      },
+      {
         "id": "meeting-minutes-engine",
         "node_type": "repository",
         "repo_type": "operational_engine",
         "architecture_layer": "Layer 3",
         "system_id": "meeting-minutes-engine",
         "status": "active"
+      },
+      {
+        "id": "slide-intelligence-engine",
+        "node_type": "repository",
+        "repo_type": "operational_engine",
+        "architecture_layer": "Layer 3",
+        "system_id": "slide-intelligence-engine",
+        "status": "planned"
       },
       {
         "id": "spectrum-pipeline-engine",
@@ -182,6 +206,18 @@
         "stability": ""
       },
       {
+        "id": "slide_deck",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "slide_intelligence_packet",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "standards_manifest",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -202,6 +238,20 @@
     ]
   },
   "edges": [
+    {
+      "from": "assumptions-registry-engine",
+      "from_type": "repository",
+      "to": "slide_intelligence_packet",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "assumptions-registry-engine",
+      "from_type": "repository",
+      "to": "spectrum-systems",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
+    },
     {
       "from": "comment-resolution-engine",
       "from_type": "repository",
@@ -273,6 +323,20 @@
       "relationship": "layer_depends_on"
     },
     {
+      "from": "knowledge-graph-engine",
+      "from_type": "repository",
+      "to": "slide_intelligence_packet",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "knowledge-graph-engine",
+      "from_type": "repository",
+      "to": "spectrum-systems",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
+    },
+    {
       "from": "meeting-minutes-engine",
       "from_type": "repository",
       "to": "meeting_agenda_contract",
@@ -301,11 +365,39 @@
       "relationship": "layer_depends_on"
     },
     {
+      "from": "slide-intelligence-engine",
+      "from_type": "repository",
+      "to": "slide_deck",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "slide-intelligence-engine",
+      "from_type": "repository",
+      "to": "slide_intelligence_packet",
+      "to_type": "contract",
+      "relationship": "consumes"
+    },
+    {
+      "from": "slide-intelligence-engine",
+      "from_type": "repository",
+      "to": "spectrum-systems",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
+    },
+    {
       "from": "spectrum-pipeline-engine",
       "from_type": "repository",
       "to": "assumption_register",
       "to_type": "contract",
       "relationship": "consumes"
+    },
+    {
+      "from": "spectrum-pipeline-engine",
+      "from_type": "repository",
+      "to": "assumptions-registry-engine",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
     },
     {
       "from": "spectrum-pipeline-engine",
@@ -341,6 +433,13 @@
       "to": "external_artifact_manifest",
       "to_type": "contract",
       "relationship": "consumes"
+    },
+    {
+      "from": "spectrum-pipeline-engine",
+      "from_type": "repository",
+      "to": "knowledge-graph-engine",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
     },
     {
       "from": "spectrum-pipeline-engine",
@@ -390,6 +489,13 @@
       "to": "risk_register",
       "to_type": "contract",
       "relationship": "consumes"
+    },
+    {
+      "from": "spectrum-pipeline-engine",
+      "from_type": "repository",
+      "to": "slide-intelligence-engine",
+      "to_type": "repository",
+      "relationship": "layer_depends_on"
     },
     {
       "from": "spectrum-pipeline-engine",
