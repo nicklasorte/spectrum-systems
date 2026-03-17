@@ -27,8 +27,11 @@ Functions (A–K):
 
 from __future__ import annotations
 
+import json
+import math
 import re
 import uuid
+from pathlib import Path
 from typing import Any
 
 # ---------------------------------------------------------------------------
@@ -151,6 +154,10 @@ _TECH_TAG_STYLE_MAP: dict[str, str] = {
     "recommendation": "findings_text",
     "open_issue": "issue_statement",
 }
+
+# Placeholder slide ID used in merge_slide_transcript_outputs when a match
+# is found via direct text overlap rather than the alignment map.
+_SLIDE_DIRECT_MATCH_ID = "slide_direct_match"
 
 
 # ---------------------------------------------------------------------------
@@ -1475,4 +1482,534 @@ def build_slide_intelligence_packet(
         "suggested_exhibits": suggested_exhibits,
         "signal_scores": signal_scores,
         "traceability_index": traceability_index,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Pipeline-oriented API (L. ingest → normalize → align → signals → merge → gaps)
+# ---------------------------------------------------------------------------
+
+# Regex helpers for signal extraction
+_VERB_START = re.compile(
+    r"^(implement|develop|create|update|adopt|replace|deploy|define|establish|"
+    r"recommend|propose|use|apply|evaluate|assess|revise|ensure|require|allow|"
+    r"consider|provide|present|demonstrate|verify|validate|confirm|review|"
+    r"add|remove|increase|decrease|adjust|align|integrate|enable|support)\b",
+    re.IGNORECASE,
+)
+_NUMBER_PCT = re.compile(r"\b\d[\d.,]*\s*(%|dB|dBm|MHz|GHz|km|W|m|ms|us|Hz|bps)\b", re.IGNORECASE)
+_UNCERTAIN = re.compile(
+    r"\b(tbd|unknown|unclear|uncertain|may|might|could|possibly|approximately|"
+    r"pending|assumed|assumed to be|estimate|if|unless|depending|subject to|"
+    r"not yet|to be determined)\b",
+    re.IGNORECASE,
+)
+_QUESTION_MARK = re.compile(r"\?")
+
+
+def ingest_slides(pdf_path: str | Path) -> list[dict]:
+    """
+    Ingest a slide file and return raw per-slide objects.
+
+    Supports:
+    - JSON fixture files (``*.json``) — used in tests and CI pipelines.
+    - PDF files (``*.pdf``) — parsed with ``pdfplumber`` when available.
+
+    Parameters
+    ----------
+    pdf_path:
+        Path to a ``.pdf`` or ``.json`` slide file.
+
+    Returns
+    -------
+    list[dict]
+        Raw slide objects with at minimum:
+        ``slide_number``, ``title``, ``bullet_points``, ``full_text``.
+    """
+    path = Path(pdf_path)
+    suffix = path.suffix.lower()
+
+    if suffix == ".json":
+        data = json.loads(path.read_text(encoding="utf-8"))
+        # Accept both a list of raw slides and a governed slide-deck artifact.
+        if isinstance(data, list):
+            raw = data
+        else:
+            raw = data.get("slides", [])
+        result = []
+        for i, slide in enumerate(raw, start=1):
+            full_text = slide.get("raw_text") or slide.get("full_text") or ""
+            if not full_text:
+                parts = []
+                if slide.get("title"):
+                    parts.append(slide["title"])
+                parts.extend(slide.get("bullets") or slide.get("bullet_points") or [])
+                full_text = "\n".join(str(p) for p in parts)
+            bullets = (
+                slide.get("bullet_points")
+                or slide.get("bullets")
+                or slide.get("content")
+                or []
+            )
+            result.append({
+                "slide_number": slide.get("slide_number", i),
+                "title": slide.get("title") or "",
+                "bullet_points": bullets,
+                "full_text": full_text,
+            })
+        return result
+
+    if suffix == ".pdf":
+        try:
+            import pdfplumber  # type: ignore[import]
+        except ImportError:
+            try:
+                import pypdf as _pypdf  # type: ignore[import]
+
+                result = []
+                with _pypdf.PdfReader(str(path)) as reader:
+                    for i, page in enumerate(reader.pages, start=1):
+                        text = page.extract_text() or ""
+                        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+                        title = lines[0] if lines else ""
+                        bullets = lines[1:] if len(lines) > 1 else []
+                        result.append({
+                            "slide_number": i,
+                            "title": title,
+                            "bullet_points": bullets,
+                            "full_text": text,
+                        })
+                return result
+            except ImportError:
+                pass
+            # No PDF library available — return a single stub slide so the
+            # pipeline does not fail hard.
+            return [{
+                "slide_number": 1,
+                "title": "",
+                "bullet_points": [],
+                "full_text": "",
+            }]
+
+        result = []
+        with pdfplumber.open(str(path)) as pdf:
+            for i, page in enumerate(pdf.pages, start=1):
+                text = page.extract_text() or ""
+                lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+                title = lines[0] if lines else ""
+                bullets = lines[1:] if len(lines) > 1 else []
+                result.append({
+                    "slide_number": i,
+                    "title": title,
+                    "bullet_points": bullets,
+                    "full_text": text,
+                })
+        return result
+
+    raise ValueError(f"Unsupported slide file format: {suffix!r}. Expected .json or .pdf")
+
+
+def normalize_slides(raw_slide_objects: list[dict]) -> list[dict]:
+    """
+    Normalize raw slide objects into the canonical slide schema.
+
+    Parameters
+    ----------
+    raw_slide_objects:
+        Output of :func:`ingest_slides`.
+
+    Returns
+    -------
+    list[dict]
+        Normalized slides, each with keys:
+        ``slide_id``, ``title``, ``bullets``, ``raw_text``, ``keywords``.
+    """
+
+    def _extract_keywords(text: str) -> list[str]:
+        """Simple noun-heavy token extraction without NLP libraries."""
+        tokens = re.findall(r"\b[A-Za-z][A-Za-z0-9_/-]{2,}\b", text)
+        stop = {
+            "the", "and", "for", "that", "this", "with", "are", "was", "been",
+            "from", "have", "not", "its", "but", "can", "all", "has", "also",
+            "will", "use", "used", "using", "each", "more", "than", "when",
+            "which", "into", "over", "both", "their", "any", "our", "they",
+            "such", "may", "new", "would", "should", "must", "other", "where",
+        }
+        seen: set[str] = set()
+        keywords = []
+        for tok in tokens:
+            lower = tok.lower()
+            if lower in stop:
+                continue
+            # Prefer capitalised tokens, technical acronyms, or matched keywords
+            if tok not in seen:
+                seen.add(tok)
+                # Boost technical terms
+                is_tech = any(kw.lower() in lower for kw in _TECH_PARAM_KEYWORDS + _MODEL_KEYWORDS)
+                is_upper = tok[0].isupper()
+                if is_tech or is_upper or tok.isupper():
+                    keywords.append(tok)
+        return keywords[:15]
+
+    normalized = []
+    for i, slide in enumerate(raw_slide_objects, start=1):
+        raw_text = slide.get("full_text") or slide.get("raw_text") or ""
+        title = slide.get("title") or ""
+        if not title and raw_text:
+            title = raw_text.splitlines()[0].strip()
+        bullets = slide.get("bullet_points") or slide.get("bullets") or []
+        if not raw_text:
+            parts = [title] + list(bullets)
+            raw_text = "\n".join(p for p in parts if p)
+        normalized.append({
+            "slide_id": f"slide_{i:02d}",
+            "title": title,
+            "bullets": [str(b) for b in bullets],
+            "raw_text": raw_text,
+            "keywords": _extract_keywords(raw_text),
+        })
+    return normalized
+
+
+def align_slides_to_transcript(
+    slides: list[dict],
+    transcript_segments: list[dict | str],
+) -> list[dict]:
+    """
+    Align each slide to the best-matching transcript segments.
+
+    Uses keyword overlap and TF-IDF cosine similarity (no external libraries).
+
+    Parameters
+    ----------
+    slides:
+        Normalized slides from :func:`normalize_slides`.
+    transcript_segments:
+        List of transcript segments. Each segment may be a dict with a
+        ``text`` / ``content`` key or a plain string.
+
+    Returns
+    -------
+    list[dict]
+        One entry per slide:
+        ``{"slide_id": ..., "matched_segments": [...], "confidence": float}``.
+    """
+
+    def _seg_text(seg: dict | str) -> str:
+        if isinstance(seg, str):
+            return seg
+        return str(seg.get("text") or seg.get("content") or seg.get("body") or "")
+
+    def _tokenize(text: str) -> list[str]:
+        return re.findall(r"\b[a-z]{2,}\b", text.lower())
+
+    seg_texts = [_seg_text(s) for s in transcript_segments]
+
+    # Build a simple TF-IDF representation.
+    all_docs = [s.get("raw_text", "") for s in slides] + seg_texts
+    # Document frequency per term
+    df: dict[str, int] = {}
+    tokenized_docs = [_tokenize(d) for d in all_docs]
+    for tok_list in tokenized_docs:
+        for tok in set(tok_list):
+            df[tok] = df.get(tok, 0) + 1
+    n_docs = max(len(all_docs), 1)
+
+    def _tfidf(tokens: list[str]) -> dict[str, float]:
+        tf: dict[str, int] = {}
+        for t in tokens:
+            tf[t] = tf.get(t, 0) + 1
+        vec: dict[str, float] = {}
+        for t, count in tf.items():
+            idf = math.log((n_docs + 1) / (df.get(t, 0) + 1)) + 1.0
+            vec[t] = (count / max(len(tokens), 1)) * idf
+        return vec
+
+    def _cosine(v1: dict[str, float], v2: dict[str, float]) -> float:
+        common = set(v1) & set(v2)
+        if not common:
+            return 0.0
+        dot = sum(v1[t] * v2[t] for t in common)
+        mag1 = math.sqrt(sum(x * x for x in v1.values()))
+        mag2 = math.sqrt(sum(x * x for x in v2.values()))
+        if mag1 == 0 or mag2 == 0:
+            return 0.0
+        return dot / (mag1 * mag2)
+
+    # Pre-compute TF-IDF for each segment
+    seg_vecs = [_tfidf(_tokenize(t)) for t in seg_texts]
+
+    result = []
+    for slide in slides:
+        slide_id = slide.get("slide_id", "unknown")
+        slide_vec = _tfidf(_tokenize(slide.get("raw_text", "")))
+        slide_keywords = {k.lower() for k in slide.get("keywords", [])}
+
+        scores: list[tuple[int, float]] = []
+        for idx, seg_text in enumerate(seg_texts):
+            cos_sim = _cosine(slide_vec, seg_vecs[idx])
+            seg_tokens = set(_tokenize(seg_text))
+            overlap = len(slide_keywords & seg_tokens) / max(len(slide_keywords), 1)
+            combined = 0.6 * cos_sim + 0.4 * overlap
+            scores.append((idx, combined))
+
+        scores.sort(key=lambda x: x[1], reverse=True)
+
+        # Keep segments above threshold or the top-1 (if any exist)
+        threshold = 0.05
+        matched_indices = [idx for idx, sc in scores if sc >= threshold]
+        if not matched_indices and scores:
+            matched_indices = [scores[0][0]]
+
+        matched_segments = []
+        confidence = 0.0
+        if matched_indices:
+            matched_segments = [_seg_text(transcript_segments[i]) for i in matched_indices]
+            confidence = round(
+                sum(sc for _, sc in scores if sc >= threshold) / max(len(matched_indices), 1),
+                4,
+            )
+            confidence = min(1.0, confidence)
+
+        result.append({
+            "slide_id": slide_id,
+            "matched_segments": matched_segments,
+            "confidence": confidence,
+        })
+
+    return result
+
+
+def extract_slide_signals(slides: list[dict]) -> dict:
+    """
+    Extract structured signals from a list of normalized slides.
+
+    Rules (deterministic, no LLM):
+    - Bullets starting with action verbs → ``proposals``
+    - Bullets containing numbers/units → ``metrics``
+    - Bullets with uncertainty language → ``assumptions``
+    - Bullets with ``?`` or TBD-style language → ``open_questions``
+    - Bullets matching claim patterns → ``claims``
+
+    Parameters
+    ----------
+    slides:
+        Normalized slides from :func:`normalize_slides`.
+
+    Returns
+    -------
+    dict
+        Keys: ``claims``, ``assumptions``, ``proposals``, ``metrics``,
+        ``open_questions``.
+    """
+    claims: list[str] = []
+    assumptions: list[str] = []
+    proposals: list[str] = []
+    metrics: list[str] = []
+    open_questions: list[str] = []
+
+    for slide in slides:
+        bullets = slide.get("bullets") or []
+        raw_text = slide.get("raw_text") or ""
+
+        # Also process full raw_text lines as fallback when bullets list is empty
+        lines = bullets if bullets else [
+            ln.strip() for ln in raw_text.splitlines() if ln.strip()
+        ]
+
+        for line in lines:
+            text = str(line).strip()
+            if not text:
+                continue
+
+            is_claim = any(re.search(pat, text, re.IGNORECASE) for pat in _CLAIM_PATTERNS)
+            is_verb_start = bool(_VERB_START.match(text))
+            is_metric = bool(_NUMBER_PCT.search(text))
+            is_uncertain = bool(_UNCERTAIN.search(text))
+            is_question = bool(_QUESTION_MARK.search(text))
+
+            if is_question or (is_uncertain and not is_claim):
+                open_questions.append(text)
+            elif is_uncertain:
+                assumptions.append(text)
+            elif is_verb_start:
+                proposals.append(text)
+            elif is_claim:
+                claims.append(text)
+
+            # Metrics are collected independently — a bullet can be both a
+            # claim/proposal and a metric (e.g. "EIRP exceeds 46 dBm").
+            if is_metric and text not in metrics:
+                metrics.append(text)
+
+    return {
+        "claims": claims,
+        "assumptions": assumptions,
+        "proposals": proposals,
+        "metrics": metrics,
+        "open_questions": open_questions,
+    }
+
+
+def merge_slide_transcript_outputs(
+    transcript_structured: dict,
+    slide_signals: dict,
+    alignment_map: list[dict],
+) -> dict:
+    """
+    Merge slide-extracted signals with structured transcript output.
+
+    For each decision, action item, and open question in
+    ``transcript_structured``, determine whether a matching slide provides
+    evidence.  Adds ``slide_support`` (bool) and ``source_slide_ids`` (list)
+    to each item.
+
+    Also identifies:
+    - ``slide_only_content``: bullets/claims from slides with no match in
+      the transcript.
+    - ``discussion_only_content``: items from the transcript with no slide
+      backing.
+
+    Parameters
+    ----------
+    transcript_structured:
+        Structured extraction dict (decisions, action_items, open_questions).
+    slide_signals:
+        Output of :func:`extract_slide_signals`.
+    alignment_map:
+        Output of :func:`align_slides_to_transcript`.
+
+    Returns
+    -------
+    dict
+        Enriched record with all original fields plus slide support metadata.
+    """
+
+    def _text_of(item: dict | str) -> str:
+        if isinstance(item, str):
+            return item.lower()
+        for key in ("description", "text", "content", "summary", "body"):
+            if key in item:
+                return str(item[key]).lower()
+        return str(item).lower()
+
+    # Build a set of all slide signal texts (lowercased) for quick lookup
+    slide_texts: list[str] = []
+    for key in ("claims", "assumptions", "proposals", "metrics", "open_questions"):
+        slide_texts.extend(s.lower() for s in slide_signals.get(key, []))
+
+    # Map of slide_id → matched segment texts
+    alignment_lookup: dict[str, list[str]] = {
+        entry["slide_id"]: [s.lower() for s in entry.get("matched_segments", [])]
+        for entry in alignment_map
+    }
+
+    def _has_slide_support(item_text: str) -> tuple[bool, list[str]]:
+        """Return (has_support, list_of_matching_slide_ids)."""
+        item_lower = item_text.lower()
+        tokens = set(re.findall(r"\b[a-z]{3,}\b", item_lower))
+        supporting_slides: list[str] = []
+        for slide_id, seg_texts in alignment_lookup.items():
+            seg_combined = " ".join(seg_texts)
+            seg_tokens = set(re.findall(r"\b[a-z]{3,}\b", seg_combined))
+            if len(tokens & seg_tokens) > 0:
+                supporting_slides.append(slide_id)
+        # Also check direct overlap with slide_texts
+        if not supporting_slides:
+            for st in slide_texts:
+                st_tokens = set(re.findall(r"\b[a-z]{3,}\b", st))
+                if len(tokens & st_tokens) >= 2:
+                    supporting_slides.append(_SLIDE_DIRECT_MATCH_ID)
+                    break
+        return (len(supporting_slides) > 0, supporting_slides)
+
+    def _enrich_list(items: list) -> list:
+        enriched = []
+        for item in items:
+            item_copy = dict(item) if isinstance(item, dict) else {"text": item}
+            support, slide_ids = _has_slide_support(_text_of(item_copy))
+            item_copy["slide_support"] = support
+            item_copy["source_slide_ids"] = list(set(slide_ids))
+            enriched.append(item_copy)
+        return enriched
+
+    enriched = dict(transcript_structured)
+    enriched["decisions"] = _enrich_list(transcript_structured.get("decisions", []))
+    enriched["action_items"] = _enrich_list(transcript_structured.get("action_items", []))
+    enriched["open_questions"] = _enrich_list(transcript_structured.get("open_questions", []))
+
+    # Identify slide-only content (not mentioned in transcript)
+    all_transcript_text = " ".join(
+        _text_of(item)
+        for key in ("decisions", "action_items", "open_questions")
+        for item in transcript_structured.get(key, [])
+    )
+    transcript_tokens = set(re.findall(r"\b[a-z]{3,}\b", all_transcript_text))
+
+    slide_only: list[str] = []
+    for sig_key in ("claims", "proposals"):
+        for text in slide_signals.get(sig_key, []):
+            sig_tokens = set(re.findall(r"\b[a-z]{3,}\b", text.lower()))
+            if len(sig_tokens & transcript_tokens) == 0:
+                slide_only.append(text)
+
+    # Identify discussion-only content (not backed by any slide)
+    discussion_only: list[str] = []
+    for key in ("decisions", "action_items", "open_questions"):
+        for item in transcript_structured.get(key, []):
+            support, _ = _has_slide_support(_text_of(item))
+            if not support:
+                discussion_only.append(_text_of(item))
+
+    enriched["slide_only_content"] = slide_only
+    enriched["discussion_only_content"] = discussion_only
+
+    return enriched
+
+
+def compute_slide_transcript_gaps(enriched_record: dict) -> dict:
+    """
+    Compute the gap analysis between slide content and meeting discussion.
+
+    Parameters
+    ----------
+    enriched_record:
+        Output of :func:`merge_slide_transcript_outputs`.
+
+    Returns
+    -------
+    dict
+        Keys:
+        ``unpresented_discussions``, ``undiscussed_slides``,
+        ``weak_alignment_areas``, ``recommended_followups``.
+    """
+    unpresented = list(enriched_record.get("discussion_only_content", []))
+    undiscussed = list(enriched_record.get("slide_only_content", []))
+
+    # Weak alignment: items that have slide_support=False across all enriched lists
+    weak_areas: list[str] = []
+    for key in ("decisions", "action_items", "open_questions"):
+        for item in enriched_record.get(key, []):
+            if isinstance(item, dict) and not item.get("slide_support", True):
+                text = item.get("description") or item.get("text") or str(item)
+                if text and text not in weak_areas:
+                    weak_areas.append(text)
+
+    # Recommended follow-ups based on gaps
+    followups: list[str] = []
+    for text in undiscussed[:5]:
+        snippet = text[:80].rstrip()
+        followups.append(f"Discuss in next meeting: {snippet}")
+    for text in unpresented[:5]:
+        snippet = text[:80].rstrip()
+        followups.append(f"Add slide evidence for: {snippet}")
+    for text in weak_areas[:3]:
+        snippet = text[:80].rstrip()
+        followups.append(f"Clarify alignment for: {snippet}")
+
+    return {
+        "unpresented_discussions": unpresented,
+        "undiscussed_slides": undiscussed,
+        "weak_alignment_areas": weak_areas,
+        "recommended_followups": followups,
     }

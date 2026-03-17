@@ -162,6 +162,49 @@
           "description": "Path or URI to the transcript input used for generation."
         }
       }
+    },
+    "slides_present": {
+      "type": "boolean",
+      "description": "Whether slide artifacts were provided and processed by the slide intelligence layer."
+    },
+    "slide_alignment": {
+      "type": "object",
+      "description": "Slide-to-transcript alignment map produced by the slide intelligence layer. Keys are slide_ids; values contain matched_segments and confidence.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "matched_segments": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    },
+    "slide_signals": {
+      "type": "object",
+      "description": "Structured signals extracted from slide content (claims, assumptions, proposals, metrics, open questions).",
+      "properties": {
+        "claims": { "type": "array", "items": { "type": "object" } },
+        "assumptions": { "type": "array", "items": { "type": "object" } },
+        "proposals": { "type": "array", "items": { "type": "string" } },
+        "metrics": { "type": "array", "items": { "type": "string" } },
+        "open_questions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "gap_analysis": {
+      "type": "object",
+      "description": "Gap analysis between slide content and meeting discussion.",
+      "properties": {
+        "unpresented_discussions": { "type": "array", "items": { "type": "string" } },
+        "undiscussed_slides": { "type": "array", "items": { "type": "string" } },
+        "weak_alignment_areas": { "type": "array", "items": { "type": "string" } },
+        "recommended_followups": { "type": "array", "items": { "type": "string" } }
+      }
     }
   },
   "$defs": {
