@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "flow_id": "FLOW-MEETING-TO-EVAL-001",
+  "name": "Meeting Intelligence → Evaluation Flow",
+  "description": "Canonical orchestration flow for routing a finalized MeetingMinutesRecord from the meeting intelligence module through evaluation and into the work item control loop when action is required.",
+  "status": "planned",
+  "source_modules": [
+    "workflow_modules.meeting_intelligence"
+  ],
+  "target_modules": [
+    "control_plane.evaluation",
+    "control_plane.work_items"
+  ],
+  "artifact_types": [
+    "ArtifactEnvelope",
+    "EvaluationResult",
+    "WorkItem"
+  ],
+  "required_validations": [
+    "artifact_bus_message_schema",
+    "source_module_manifest_exists",
+    "target_module_manifest_exists",
+    "artifact_type_declared_in_target_inputs",
+    "lifecycle_state_valid"
+  ],
+  "allowed_lifecycle_states": [
+    "transformed",
+    "evaluated",
+    "action_required"
+  ],
+  "stages": [
+    {
+      "stage_id": "STG-MEET-EVAL-001",
+      "name": "Minutes to Evaluation",
+      "description": "Transfer the finalized MeetingMinutesRecord from meeting_intelligence to control_plane.evaluation for structured outcome assessment.",
+      "source_module": "workflow_modules.meeting_intelligence",
+      "target_module": "control_plane.evaluation",
+      "artifact_type": "ArtifactEnvelope",
+      "lifecycle_state_at_handoff": "transformed",
+      "required_validations": [
+        "artifact_bus_message_schema",
+        "lineage_ref_present",
+        "source_module_manifest_exists",
+        "target_module_manifest_exists",
+        "artifact_type_declared_in_target_inputs"
+      ]
+    },
+    {
+      "stage_id": "STG-MEET-EVAL-002",
+      "name": "Evaluation to Work Item (conditional)",
+      "description": "When evaluation sets action_required=true, route the EvaluationResult to control_plane.work_items to open a work item. This stage is skipped when action_required is false.",
+      "source_module": "control_plane.evaluation",
+      "target_module": "control_plane.work_items",
+      "artifact_type": "EvaluationResult",
+      "lifecycle_state_at_handoff": "action_required",
+      "required_validations": [
+        "artifact_bus_message_schema",
+        "lineage_ref_present",
+        "evaluation_ref_present",
+        "target_module_manifest_exists",
+        "artifact_type_declared_in_target_inputs"
+      ],
+      "optional": true
+    }
+  ],
+  "notes": "This flow covers the canonical meeting intelligence → evaluation → work item path. The second stage is conditional on the evaluation outcome. This is the reference implementation of the platform control loop."
+}

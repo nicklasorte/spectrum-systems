@@ -36,6 +36,9 @@ See `CONTRACTS.md` for the canonical schema authority declaration and `docs/adr/
 | data-lake/source-document-registry.json | 1.0.0 | Registered source documents and revisions | Provenance, trust metadata |
 | data-lake/study-artifact-metadata.json | 1.0.0 | Metadata for stored study artifacts | Provenance, assumptions, code version |
 | data-lake/transcript-output.json | 1.0.0 | Transcript-derived issues persisted in the lake | Provenance, speaker/time |
+| module-manifest.schema.json | 1.0.0 | Module capability declaration schema for all modules in the platform | — |
+| artifact-bus-message.schema.json | 1.0.0 | Canonical schema for cross-module artifact bus messages; owned by orchestration | lineage_ref, run_id, source/target module manifests |
+| orchestration-flow.schema.json | 1.0.0 | Canonical schema for orchestration flow manifests defining staged module execution | stage module manifests, artifact_type declarations |
 
 ## Related contracts
 - Comment resolution matrix spreadsheet contract (canonical user-facing headers/order for the czar org) lives in `contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json` with companion doc `docs/comment-resolution-matrix-spreadsheet-contract.md`. Downstream producers (e.g., `working-paper-review-engine`) and consumers (`comment-resolution-engine`) must not alter header names or order.
