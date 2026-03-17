@@ -289,6 +289,21 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/external_artifact_manifest.local.json",
       "notes": "Manifest for artifacts stored on local or network storage; GitHub is never a storage_kind."
+    },
+    {
+      "artifact_type": "evaluation_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/evaluation_manifest.json",
+      "notes": "Canonical evaluation manifest linking a run or artifact set to its evidence bundle, evaluation results, and readiness status. Part of the Prompt J evaluation spine."
     }
   ]
 }

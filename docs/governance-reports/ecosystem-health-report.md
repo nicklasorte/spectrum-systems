@@ -1,6 +1,6 @@
 # Ecosystem Health Report
 
-Generated: 2026-03-17T02:33:14Z  
+Generated: 2026-03-17T06:05:06Z  
 Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-dependency-graph.json`, `artifacts/policy-engine-report.json`
 
 **Overall Health**: ⚠️ `WARNING`
@@ -26,8 +26,8 @@ Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-depen
 | Status | Count |
 |--------|-------|
 | 🏛 governance-repo | 1 |
-| ✅ pass | 7 |
-| ⚠️ warning | 2 |
+| ✅ pass | 6 |
+| ⚠️ warning | 3 |
 
 ## Schema Integrity
 
@@ -50,7 +50,7 @@ Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-depen
 | `comment-resolution-engine` | Layer 3 | comment-resolution-engine | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L10 |
 | `docx-comment-injection-engine` | Layer 3 | docx-comment-injection-engine | ✅ compliant | ✅ pass | ✅ compliant | ✅ compliant | L10 |
 | `meeting-minutes-engine` | Layer 3 | meeting-minutes-engine | ✅ compliant | ⚠️ warning | ✅ compliant | ✅ compliant | L8 |
-| `spectrum-pipeline-engine` | Layer 4 | spectrum-pipeline-engine | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L8 |
+| `spectrum-pipeline-engine` | Layer 4 | spectrum-pipeline-engine | ✅ compliant | ⚠️ warning | ✅ compliant | ❌ missing | L7 |
 | `spectrum-program-advisor` | Layer 5 | spectrum-program-advisor | ✅ compliant | ⚠️ warning | ✅ compliant | ⚠️ partial | L8 |
 | `spectrum-study-compiler` | Layer 3 | spectrum-study-compiler | ✅ compliant | ✅ pass | ✅ compliant | ❌ missing | L7 |
 | `spectrum-systems` | Layer 2 | — | ⚠️ warning | 🏛 governance-repo | ✅ compliant | ✅ compliant | L8 |

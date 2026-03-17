@@ -21,6 +21,7 @@
 - cross_loop [coordination] producers: —; consumers: —; Marker node for systems that orchestrate or advise across loops.
 - decision_log [coordination] producers: —; consumers: —; Governed artifact for contract `decision_log`.
 - document_production_loop [work] producers: —; consumers: —; Marker node for systems participating in the document production loop.
+- evaluation_manifest [coordination] producers: —; consumers: —; Governed artifact for contract `evaluation_manifest`.
 - external_artifact_manifest [coordination] producers: spectrum-data-lake; consumers: —; Governed artifact for contract `external_artifact_manifest`.
 - governance_guidance [coordination] producers: spectrum-systems; consumers: —; Narrative governance instructions emitted by spectrum-systems.
 - governance_loop [coordination] producers: —; consumers: —; Marker node for control-plane and governance functions.
@@ -51,6 +52,7 @@
 - comment_resolution_matrix [review] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: comment_resolution_matrix
 - comment_resolution_matrix_spreadsheet_contract [review] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, system-factory; artifacts: comment_resolution_matrix_spreadsheet_contract
 - decision_log [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: decision_log
+- evaluation_manifest [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor, spectrum-systems; artifacts: evaluation_manifest
 - external_artifact_manifest [coordination] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, study-artifact-generator; artifacts: external_artifact_manifest
 - meeting_agenda_contract [coordination] intended consumers: comment-resolution-engine, meeting-minutes-engine, spectrum-pipeline-engine, system-factory; artifacts: meeting_agenda_contract
 - meeting_minutes [coordination] intended consumers: meeting-minutes-engine, spectrum-pipeline-engine, spectrum-program-advisor, system-factory; artifacts: meeting_minutes

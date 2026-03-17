@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T02:33:14Z",
+  "generated_at": "2026-03-17T06:05:06Z",
   "summary": {
     "overall_health": "warning",
     "total_repos": 10,
@@ -11,8 +11,8 @@
       "partial": 0
     },
     "contract_alignment": {
-      "pass": 7,
-      "warning": 2,
+      "pass": 6,
+      "warning": 3,
       "governance-repo": 1
     },
     "schema_integrity": {
@@ -109,22 +109,22 @@
       "architecture_layer": "Layer 4",
       "status": "planned",
       "governance_status": "compliant",
-      "contract_status": "pass",
+      "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "missing",
       "maturity_score": {
-        "raw": 16,
+        "raw": 14,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "compliant",
+          "contract_compliance": "partial",
           "schema_alignment": "compliant",
           "ci_enforcement": "missing",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 8,
+      "maturity_level": 7,
       "notes": "repo is planned; ci_enforcement missing"
     },
     {

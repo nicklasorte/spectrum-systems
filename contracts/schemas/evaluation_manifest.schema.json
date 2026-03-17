@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_manifest.schema.json",
+  "title": "Evaluation Manifest",
+  "description": "Canonical evaluation manifest linking a pipeline run, engine output, review artifact, or advisor output to its evaluation results, evidence artifacts, and readiness status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "run_id",
+    "created_at",
+    "created_by",
+    "source_repo",
+    "source_repo_version",
+    "system_id",
+    "evaluation_type",
+    "evaluation_date",
+    "evaluator",
+    "criteria_applied",
+    "artifact_set",
+    "results_summary",
+    "status",
+    "readiness_level",
+    "evidence_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "evaluation_manifest",
+      "description": "Canonical artifact type identifier."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^EVAL-[A-Z0-9._-]+$",
+      "description": "Stable identifier for this evaluation manifest instance."
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this artifact instance for diffing and rollback."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of the evaluation_manifest schema."
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "2026.03.0",
+      "description": "Standards release version from contracts/standards-manifest.json."
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^REC-[A-Z0-9._-]+$",
+      "description": "Record identifier used for provenance and diffing."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-[A-Za-z0-9._-]+$",
+      "description": "Deterministic run identifier for the workflow that produced this evaluation."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this evaluation manifest was generated (ISO 8601)."
+    },
+    "created_by": {
+      "$ref": "#/$defs/agent",
+      "description": "Agent that authored this evaluation manifest."
+    },
+    "source_repo": {
+      "type": "string",
+      "description": "Repository URL or slug where the evaluated run was produced."
+    },
+    "source_repo_version": {
+      "type": "string",
+      "description": "Git ref or version of the source repo at evaluation time."
+    },
+    "system_id": {
+      "type": "string",
+      "description": "Registered system identifier aligned to the ecosystem registry."
+    },
+    "evaluation_type": {
+      "type": "string",
+      "enum": ["pipeline_run", "engine_output", "review_artifact", "advisor_output"],
+      "description": "Category of artifact set being evaluated."
+    },
+    "evaluation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time the evaluation was performed (ISO 8601)."
+    },
+    "evaluator": {
+      "$ref": "#/$defs/agent",
+      "description": "Agent that performed the evaluation."
+    },
+    "criteria_applied": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "List of evaluation criteria or check names applied during this evaluation."
+    },
+    "artifact_set": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact_ref" },
+      "description": "Set of artifacts evaluated in this manifest."
+    },
+    "results_summary": {
+      "$ref": "#/$defs/results_summary",
+      "description": "Aggregated pass/fail/warning counts across all checks."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail", "warning", "not-yet-evaluable"],
+      "description": "Overall evaluation outcome. 'not-yet-evaluable' means required evidence is not yet available."
+    },
+    "readiness_level": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "internal-review",
+        "cross-engine-ready",
+        "governance-ready",
+        "decision-support-ready"
+      ],
+      "description": "Readiness classification for the evaluated artifact set."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence_ref" },
+      "description": "References to evidence artifacts supporting this evaluation."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional freeform context about anomalies, partial coverage, or caveats."
+    }
+  },
+  "$defs": {
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "role", "agent_type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the agent."
+        },
+        "role": {
+          "type": "string",
+          "description": "Functional role of the agent in this context."
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["human", "ai_assistant", "workflow", "automated_validator"],
+          "description": "Category of agent."
+        },
+        "organization": {
+          "type": "string",
+          "description": "Organization the agent belongs to."
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact information for the agent."
+        }
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "artifact_type"],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "description": "Identifier of the artifact."
+        },
+        "artifact_type": {
+          "type": "string",
+          "description": "Type classification of the artifact."
+        },
+        "artifact_path": {
+          "type": "string",
+          "description": "Relative or absolute path where the artifact is stored."
+        }
+      }
+    },
+    "results_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_checks", "passed", "failed", "warnings"],
+      "properties": {
+        "total_checks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of checks executed."
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that passed."
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that failed."
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of checks that produced warnings."
+        }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_type", "ref_id"],
+      "properties": {
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "run_manifest",
+            "evaluation_results",
+            "provenance",
+            "contract_validation_report",
+            "readiness_assessment",
+            "external"
+          ],
+          "description": "Category of evidence artifact referenced."
+        },
+        "ref_id": {
+          "type": "string",
+          "description": "Identifier of the referenced evidence artifact."
+        },
+        "ref_path": {
+          "type": "string",
+          "description": "Optional relative path to the evidence artifact within the evidence bundle."
+        }
+      }
+    }
+  }
+}

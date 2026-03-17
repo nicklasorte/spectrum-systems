@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T02:33:13Z",
+  "generated_at": "2026-03-17T06:05:05Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -177,9 +177,17 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "pass",
+      "validation_status": "warning",
       "failures": [],
-      "warnings": []
+      "warnings": [
+        {
+          "repo": "spectrum-pipeline-engine",
+          "system_id": "spectrum-pipeline-engine",
+          "contract": "evaluation_manifest",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
+        }
+      ]
     },
     {
       "repo_name": "spectrum-program-advisor",
@@ -239,6 +247,13 @@
       "validation_status": "warning",
       "failures": [],
       "warnings": [
+        {
+          "repo": "spectrum-program-advisor",
+          "system_id": "spectrum-program-advisor",
+          "contract": "evaluation_manifest",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
         {
           "repo": "spectrum-program-advisor",
           "system_id": "spectrum-program-advisor",

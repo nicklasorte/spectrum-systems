@@ -17,6 +17,7 @@ flowchart TD
   art_cross_loop["cross_loop\ncoordination"]
   art_decision_log["decision_log\ncoordination"]
   art_document_production_loop["document_production_loop\nwork"]
+  art_evaluation_manifest["evaluation_manifest\ncoordination"]
   art_external_artifact_manifest["external_artifact_manifest\ncoordination"]
   art_governance_guidance["governance_guidance\ncoordination"]
   art_governance_loop["governance_loop\ncoordination"]
@@ -45,6 +46,7 @@ flowchart TD
   con_comment_resolution_matrix["comment_resolution_matrix\ncontract"]
   con_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\ncontract"]
   con_decision_log["decision_log\ncontract"]
+  con_evaluation_manifest["evaluation_manifest\ncontract"]
   con_external_artifact_manifest["external_artifact_manifest\ncontract"]
   con_meeting_agenda_contract["meeting_agenda_contract\ncontract"]
   con_meeting_minutes["meeting_minutes\ncontract"]
@@ -63,6 +65,7 @@ flowchart TD
   art_comment_resolution_matrix -. governed_by .-> con_comment_resolution_matrix
   art_comment_resolution_matrix_spreadsheet_contract -. governed_by .-> con_comment_resolution_matrix_spreadsheet_contract
   art_decision_log -. governed_by .-> con_decision_log
+  art_evaluation_manifest -. governed_by .-> con_evaluation_manifest
   art_external_artifact_manifest -. governed_by .-> con_external_artifact_manifest
   art_meeting_agenda_contract -. governed_by .-> con_meeting_agenda_contract
   art_meeting_minutes -. governed_by .-> con_meeting_minutes
@@ -81,6 +84,7 @@ flowchart TD
   con_comment_resolution_matrix -->|validates| art_comment_resolution_matrix
   con_comment_resolution_matrix_spreadsheet_contract -->|validates| art_comment_resolution_matrix_spreadsheet_contract
   con_decision_log -->|validates| art_decision_log
+  con_evaluation_manifest -->|validates| art_evaluation_manifest
   con_external_artifact_manifest -->|validates| art_external_artifact_manifest
   con_meeting_agenda_contract -->|validates| art_meeting_agenda_contract
   con_meeting_minutes -->|validates| art_meeting_minutes

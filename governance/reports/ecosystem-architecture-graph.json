@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T02:33:14Z",
+  "generated_at": "2026-03-17T06:05:06Z",
   "nodes": {
     "repositories": [
       {
@@ -105,6 +105,12 @@
       },
       {
         "id": "decision_log",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "evaluation_manifest",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
