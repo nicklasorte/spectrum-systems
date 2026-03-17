@@ -217,6 +217,7 @@ Compliance scanning configuration and policy schemas.
 - `policies/` — Governance policy definitions.
 - `examples/` — Example compliance scan configurations.
 - `schemas/` — Schemas for governance artifacts.
+- `work-items/` — Canonical work items generated from review artifacts (Prompt K). Contains `work-items.json` (machine-readable) and `work-items-summary.md` (human-readable).
 - `repo-compliance.schema.json` — Schema for repo compliance reports.
 - `scan-config.example.json` — Example scan configuration.
 
@@ -240,6 +241,7 @@ Generated or reference artifacts used in governance and evaluation.
 Validation and automation helpers used by CI workflows.
 - `check_artifact_boundary.py` — Validates no production code crosses into this repo.
 - `check_review_registry.py` — Checks review registry completeness.
+- `generate_work_items.py` — Generates canonical work items from review artifacts (Prompt K).
 - `validate_governance_manifest.py` — Validates `contracts/standards-manifest.json`.
 - `validate_review_alignment.py` — Validates review-to-action alignment.
 - `validate_review_artifacts.js` — JS validator for review artifact schema.

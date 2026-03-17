@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/schemas/work-item.schema.json",
+  "title": "Spectrum Systems Work Item",
+  "description": "Canonical work item produced by the review-to-work automation (Prompt K). Converts governance reviews, evaluation outputs, and observability findings into structured, prioritized, and trackable work items.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "work_item_id",
+    "source_type",
+    "source_id",
+    "title",
+    "description",
+    "severity",
+    "category",
+    "status",
+    "priority_score",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "work_item_id": {
+      "type": "string",
+      "pattern": "^WI-[0-9]{4}$",
+      "description": "Stable deterministic identifier for the work item (e.g. WI-0001)."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["review", "evaluation", "observability"],
+      "description": "Origin category that produced this work item."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Review ID, evaluation run ID, or observability scan ID from which this item originates."
+    },
+    "system_id": {
+      "type": "string",
+      "description": "Affected system identifier (e.g. SYS-001).",
+      "minLength": 1
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository that owns or should act on this work item (owner/name or short name).",
+      "minLength": 1
+    },
+    "finding_id": {
+      "type": "string",
+      "description": "Original finding identifier from the source artifact (e.g. F-1, RC-1, A-3). Preserved for traceability.",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "description": "Short, descriptive title for the work item."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Full description of the finding, context, and expected resolution."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Impact severity of the work item."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "governance",
+        "contract",
+        "schema",
+        "pipeline",
+        "documentation",
+        "ci-enforcement",
+        "boundary-enforcement",
+        "architecture-boundary",
+        "ecosystem-registry",
+        "governance-enforcement",
+        "governance-coverage",
+        "contract-stability",
+        "evaluation",
+        "observability",
+        "other"
+      ],
+      "description": "Functional category for routing and filtering."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "in-progress", "resolved", "deferred"],
+      "description": "Current lifecycle status of the work item."
+    },
+    "priority_score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Numeric priority score (1=lowest, 100=highest). Derived from severity and blocking status."
+    },
+    "blocking": {
+      "type": "boolean",
+      "description": "True when this item blocks downstream work or CI gates.",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date this work item was created (YYYY-MM-DD)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date this work item was last updated (YYYY-MM-DD)."
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional target resolution date (YYYY-MM-DD)."
+    },
+    "related_artifacts": {
+      "type": "array",
+      "description": "Relative paths or references to related files, schemas, or artifacts.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "suggested_issue_title": {
+      "type": "string",
+      "description": "Draft GitHub issue title for human filing.",
+      "minLength": 5
+    },
+    "suggested_labels": {
+      "type": "array",
+      "description": "GitHub label suggestions.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "carried_forward_from": {
+      "type": "string",
+      "description": "Source review ID if this finding is carried forward from a prior review."
+    },
+    "resolution_note": {
+      "type": "string",
+      "description": "Free-text note explaining why the item was resolved or deferred."
+    }
+  }
+}
