@@ -14,19 +14,19 @@ See `docs/reviews/README.md` for the review protocol and `ADR-005-review-protoco
 | [2026-03-15-cross-repo-ecosystem-architecture-review](2026-03-15-cross-repo-ecosystem-architecture-review.md) | 2026-03-15 | Cross-repo ecosystem architecture review | Ecosystem (all 8 repos) | Claude (Principal Systems Architect — cross-repo ecosystem audit) | Open | 2/5 — Structured | When REC-1 through REC-4 are completed; re-audit ecosystem maturity |
 | [2026-03-15-governance-architecture-audit](2026-03-15-governance-architecture-audit.md) | 2026-03-15 | Governance architecture audit | spectrum-systems | Claude (Principal Systems Architect — Opus 4.6) | Open | 2.5/5 — Structured, approaching Governed | When A-1 (production code removal) is completed; when A-3 (Phase 1 enforcement) is operational |
 | [2026-03-16-operational-ai-systems-roadmap-review](2026-03-16-operational-ai-systems-roadmap-review.md) | 2026-03-16 | Systems architecture review of strategic roadmap | spectrum-systems | Claude (Principal Systems Architect — Opus 4.6) | Open | — | When RM-001 through RM-003 are completed; or when first Layer 2 system begins design |
-| [2026-03-16-governance-constitution-deep-review](2026-03-16-governance-constitution-deep-review.md) | 2026-03-16 | Deep governance and constitutional architecture review | spectrum-systems | Claude (Principal Systems Architect — Governance Constitutional Review) | Open | 2/5 — Structured (approaching Governed) | When A-1 (governance-declaration.template.json) is merged and Phase 1 transitions to Active; when boundary CI (A-3) flags spectrum_systems/ |
+| [2026-03-16-governance-constitution-deep-review](2026-03-16-governance-constitution-deep-review.md) | 2026-03-16 | Deep governance and constitutional architecture review | spectrum-systems | Claude (Principal Systems Architect — Governance Constitutional Review) | In Progress | 2/5 — Structured (approaching Governed) | When boundary CI (A-3) flags spectrum_systems/ and F-2/RC-2 are resolved; re-audit for maturity advancement. Closure report: [2026-03-16-governance-constitution-deep-review.closure.md](2026-03-16-governance-constitution-deep-review.closure.md) |
 
-## Carried-Forward Findings (as of 2026-03-16)
+## Carried-Forward Findings (as of 2026-03-17 closure verification)
 
 The following findings from prior reviews remain unresolved and are tracked in the `2026-03-16-governance-constitution-deep-review` registry entry. See `review-registry.json` for full `carried_forward_findings` detail.
 
 | Finding ID | Source Review | Description | Status |
 | --- | --- | --- | --- |
-| RC-1 | 2026-03-15-ecosystem-constitution-audit | Production Python package (`spectrum_systems/study_runner/`) and `run_study.py` violate the architecture boundary. Currently designated an evaluation scaffold pending relocation. | Open |
-| RC-2 | 2026-03-15-ecosystem-constitution-audit | Artifact boundary CI enforces data artifact rules only; does not flag implementation code. | Open |
+| RC-1 | 2026-03-15-ecosystem-constitution-audit | Production Python package (`spectrum_systems/study_runner/`) and `run_study.py` violate the architecture boundary. Designated evaluation scaffold pending relocation. Formally documented in `docs/implementation-boundary.md` and `DECISIONS.md` Decision 5. | Deferred |
+| RC-2 | 2026-03-15-ecosystem-constitution-audit | Artifact boundary CI enforces data artifact rules only; does not flag implementation code. Boundary CI extension (A-3) required. | Open |
 | GA-007 | 2026-03-14-governance-architecture-review | `contracts/governance-declaration.template.json` did not exist; no machine-readable format for governance declarations. | Resolved (2026-03-16) |
-| GA-008 | 2026-03-14-governance-architecture-review | Production implementation code in `spectrum_systems/` constitutes a self-governance failure. | Open |
-| F-2 | 2026-03-16-governance-constitution-deep-review | Artifact boundary CI does not enforce the implementation code boundary. | Open |
+| GA-008 | 2026-03-14-governance-architecture-review | Production implementation code in `spectrum_systems/` constitutes a self-governance failure. Designated evaluation scaffold with governance exemption documented. | Deferred |
+| F-2 | 2026-03-16-governance-constitution-deep-review | Artifact boundary CI does not enforce the implementation code boundary. Same root cause as RC-2; A-3 required. | Open |
 
 ## Notes
 

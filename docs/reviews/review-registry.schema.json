@@ -90,6 +90,16 @@
         "type": "string",
         "description": "Summary of actions taken to resolve findings from this review, or explanation of why findings remain open."
       },
+      "closure_verification_date": {
+        "type": "string",
+        "format": "date",
+        "description": "ISO 8601 date when the formal closure verification was performed for this review."
+      },
+      "closure_report_path": {
+        "type": "string",
+        "description": "Repo-relative path to the closure verification report document.",
+        "pattern": "^docs/reviews/.+\\.[A-Za-z0-9]+$"
+      },
       "carried_forward_findings": {
         "type": "array",
         "description": "Structured tracking of individual findings carried forward from this or prior reviews, with per-finding resolution status.",
