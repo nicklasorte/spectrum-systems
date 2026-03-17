@@ -159,6 +159,87 @@ _TECH_TAG_STYLE_MAP: dict[str, str] = {
 # is found via direct text overlap rather than the alignment map.
 _SLIDE_DIRECT_MATCH_ID = "slide_direct_match"
 
+# ---------------------------------------------------------------------------
+# Reconciliation helpers — deterministic, no external deps
+# ---------------------------------------------------------------------------
+
+# Common English filler / function words that provide no meaningful evidence
+# of topical overlap between a transcript item and a slide.
+_STOPWORDS: frozenset[str] = frozenset({
+    "a", "an", "the", "and", "or", "but", "nor", "so", "yet", "for",
+    "in", "on", "at", "by", "to", "of", "up", "as", "is", "are", "was",
+    "were", "be", "been", "being", "have", "has", "had", "do", "does",
+    "did", "will", "would", "shall", "should", "may", "might", "must",
+    "can", "could", "not", "no", "nor", "from", "with", "about", "into",
+    "than", "then", "that", "this", "these", "those", "it", "its",
+    "we", "our", "us", "i", "my", "me", "he", "she", "they", "them",
+    "his", "her", "their", "who", "which", "what", "when", "where",
+    "how", "all", "any", "each", "both", "few", "more", "most", "other",
+    "some", "such", "if", "while", "although", "because", "since",
+    "during", "after", "before", "also", "just", "only", "even", "also",
+    "very", "too", "here", "there", "per", "via", "over", "under",
+    "new", "use", "used", "using",
+})
+
+# Minimum number of shared meaningful (non-stopword) tokens to count as support.
+_MIN_SUPPORT_TOKENS = 2
+
+# Minimum combined cosine+overlap score to count as a real alignment match.
+_ALIGNMENT_THRESHOLD = 0.15
+
+
+def _extract_tokens(text: str) -> set[str]:
+    """Return lowercase, non-stopword word-tokens of ≥3 chars from *text*.
+
+    Reused by all reconciliation logic to ensure consistent token extraction.
+    Deterministic and regex-based; no external dependencies.
+    """
+    raw = re.findall(r"\b[a-z]{3,}\b", text.lower())
+    return {t for t in raw if t not in _STOPWORDS}
+
+
+# ---------------------------------------------------------------------------
+# Deck-level assumption index — for Rule 1 false-positive suppression
+# ---------------------------------------------------------------------------
+
+def _build_deck_assumption_index(slide_units: list[dict]) -> dict:
+    """Build a lightweight index of propagation/method keywords present anywhere
+    in the slide deck.  Used by ``detect_gaps`` to avoid firing Rule 1 on a
+    result slide simply because *that slide* does not mention the model while
+    another slide in the same deck already does.
+
+    Returns a dict with boolean flags:
+        ``has_propagation_model`` — any propagation-model keyword found in the deck
+        ``has_method_context``    — any methodology/analysis keyword found in the deck
+    """
+    propagation_kws = {
+        "propagation model", "path loss model", "itm", "longley-rice", "p.452",
+        "p.1546", "p.528", "okumura", "hata", "cost 231", "ray tracing",
+        "ray-tracing", "monte carlo", "terrain model", "clutter model",
+    }
+    method_kws = {
+        "methodology", "method", "approach", "simulation", "analysis",
+        "monte carlo", "computed", "modeled", "calculated",
+    }
+    has_propagation = False
+    has_method = False
+    for unit in slide_units:
+        text = (
+            (unit.get("raw_text") or "")
+            + " "
+            + " ".join(unit.get("bullets") or [])
+        ).lower()
+        if not has_propagation and any(kw in text for kw in propagation_kws):
+            has_propagation = True
+        if not has_method and any(kw in text for kw in method_kws):
+            has_method = True
+        if has_propagation and has_method:
+            break
+    return {
+        "has_propagation_model": has_propagation,
+        "has_method_context": has_method,
+    }
+
 
 # ---------------------------------------------------------------------------
 # A. Slide structuring
@@ -785,6 +866,8 @@ def detect_gaps(
     slide_unit: dict,
     claims: list[dict],
     assumptions: list[dict],
+    *,
+    deck_assumption_index: dict | None = None,
 ) -> list[dict]:
     """
     Detect negative space (gaps) in a slide unit's technical content.
@@ -804,12 +887,20 @@ def detect_gaps(
         Output of :func:`extract_claims` for this slide.
     assumptions:
         Output of :func:`extract_assumptions` for this slide.
+    deck_assumption_index:
+        Optional dict from :func:`_build_deck_assumption_index`.  When
+        provided, Rule 1 uses deck-level context so it does not fire on a
+        result slide merely because *that slide* lacks the model keywords
+        while another slide in the same deck already contains them.
 
     Returns
     -------
     list[dict]
         Each item: ``{gap_id, description, severity, related_claim_ids,
         source_slide_id}``
+
+    TODO (second pass): extract into standalone ``gap_detection.py``,
+    unify gap schema, add contradiction detection, and structured followups.
     """
     slide_id: str = slide_unit.get("slide_id", "unknown")
     full_text: str = (
@@ -833,7 +924,11 @@ def detect_gaps(
             "source_slide_id": slide_id,
         })
 
-    # Rule 1: interference claim present but no propagation model assumption
+    # Rule 1: interference claim present but no propagation model assumption.
+    # Uses deck-level context (when available) so that a result slide that
+    # references a model defined on another slide does not trigger a false
+    # positive.  Rule fires only when propagation/model context is absent from
+    # the *entire deck*, not merely absent from this one slide.
     has_interference_claim = any(
         re.search(r"interfere|coexist|compatibility|harmful", c["claim_text"], re.IGNORECASE)
         for c in claims
@@ -843,7 +938,18 @@ def detect_gaps(
         kw in full_text
         for kw in ["propagation model", "path loss model", "itm", "longley-rice", "p.452"]
     )
-    if has_interference_claim and not has_propagation_assumption and not has_propagation_text:
+    # Deck-level suppression: if the deck index shows the deck contains a
+    # propagation model somewhere, do not re-flag on this slide.
+    deck_has_propagation = (
+        deck_assumption_index is not None
+        and deck_assumption_index.get("has_propagation_model", False)
+    )
+    if (
+        has_interference_claim
+        and not has_propagation_assumption
+        and not has_propagation_text
+        and not deck_has_propagation
+    ):
         related = [
             c["claim_id"] for c in claims
             if re.search(r"interfere|coexist|compatibility", c["claim_text"], re.IGNORECASE)
@@ -1354,6 +1460,14 @@ def build_slide_intelligence_packet(
 
     all_slide_outputs: list[dict] = []
 
+    # Build deck-level assumption index before per-slide analysis so Rule 1
+    # can suppress false positives when propagation context exists elsewhere
+    # in the deck.
+    deck_assumption_index = _build_deck_assumption_index(slide_units)
+
+    # Map of slide_id → paper-candidate index for gap→caution propagation
+    _candidate_by_slide: dict[str, int] = {}
+
     for unit in slide_units:
         slide_id = unit["slide_id"]
 
@@ -1363,7 +1477,7 @@ def build_slide_intelligence_packet(
         claims = extract_claims(unit)
         assumptions = extract_assumptions(unit)
         entities_rels = extract_entities_and_relationships(unit)
-        gaps = detect_gaps(unit, claims, assumptions)
+        gaps = detect_gaps(unit, claims, assumptions, deck_assumption_index=deck_assumption_index)
         section = map_to_working_paper_section(unit, role)
         rewrite = rewrite_for_working_paper(unit, role, section)
 
@@ -1374,6 +1488,8 @@ def build_slide_intelligence_packet(
             "reasoning": score["reasoning"],
         })
 
+        candidate_idx = len(slide_to_paper_candidates)
+        _candidate_by_slide[slide_id] = candidate_idx
         slide_to_paper_candidates.append({
             "slide_id": slide_id,
             "section": section,
@@ -1381,7 +1497,7 @@ def build_slide_intelligence_packet(
             "technical_tags": role["technical_tags"],
             "proposed_text": rewrite["proposed_text"],
             "style_mode": rewrite["style_mode"],
-            "caution_flags": rewrite["caution_flags"],
+            "caution_flags": list(rewrite["caution_flags"]),  # mutable copy
             "confidence": rewrite["confidence"],
             "traceability": rewrite["traceability"],
         })
@@ -1436,6 +1552,22 @@ def build_slide_intelligence_packet(
             "claim_text": rewrite["proposed_text"],
             "source_slide_id": slide_id,
         }])
+
+    # --- Step 1b: Propagate gaps into paper candidate caution_flags ---
+    # For each detected gap with a source_slide_id, append a human-readable
+    # caution to the corresponding paper candidate.  Existing flags are
+    # preserved and duplicates are suppressed.
+    for gap in analysis_gaps:
+        src = gap.get("source_slide_id")
+        if src and src in _candidate_by_slide:
+            candidate = slide_to_paper_candidates[_candidate_by_slide[src]]
+            severity = gap.get("severity", "")
+            desc = gap.get("description", "")
+            sev_prefix = f"[{severity.upper()}] " if severity else ""
+            caution_text = f"{sev_prefix}{desc}"
+            flags: list[str] = candidate["caution_flags"]
+            if caution_text not in flags:
+                flags.append(caution_text)
 
     # --- Step 2: Cross-artifact comparison ---
     comparison = compare_with_transcript_and_paper(
@@ -1755,8 +1887,9 @@ def align_slides_to_transcript(
 
         scores.sort(key=lambda x: x[1], reverse=True)
 
-        # Keep segments above threshold or the top-1 (if any exist)
-        threshold = 0.05
+        # Keep segments above threshold or the top-1 (if any exist).
+        # Threshold raised from 0.05 to 0.15 to reduce weak false-positive matches.
+        threshold = _ALIGNMENT_THRESHOLD
         matched_indices = [idx for idx, sc in scores if sc >= threshold]
         if not matched_indices and scores:
             matched_indices = [scores[0][0]]
@@ -1905,20 +2038,24 @@ def merge_slide_transcript_outputs(
     }
 
     def _has_slide_support(item_text: str) -> tuple[bool, list[str]]:
-        """Return (has_support, list_of_matching_slide_ids)."""
-        item_lower = item_text.lower()
-        tokens = set(re.findall(r"\b[a-z]{3,}\b", item_lower))
+        """Return (has_support, list_of_matching_slide_ids).
+
+        Support requires at least ``_MIN_SUPPORT_TOKENS`` shared meaningful
+        (non-stopword) tokens between the transcript item and the slide/segment
+        text.  Common filler words do not count as evidence.
+        """
+        item_tokens = _extract_tokens(item_text)
         supporting_slides: list[str] = []
         for slide_id, seg_texts in alignment_lookup.items():
             seg_combined = " ".join(seg_texts)
-            seg_tokens = set(re.findall(r"\b[a-z]{3,}\b", seg_combined))
-            if len(tokens & seg_tokens) > 0:
+            seg_tokens = _extract_tokens(seg_combined)
+            if len(item_tokens & seg_tokens) >= _MIN_SUPPORT_TOKENS:
                 supporting_slides.append(slide_id)
         # Also check direct overlap with slide_texts
         if not supporting_slides:
             for st in slide_texts:
-                st_tokens = set(re.findall(r"\b[a-z]{3,}\b", st))
-                if len(tokens & st_tokens) >= 2:
+                st_tokens = _extract_tokens(st)
+                if len(item_tokens & st_tokens) >= _MIN_SUPPORT_TOKENS:
                     supporting_slides.append(_SLIDE_DIRECT_MATCH_ID)
                     break
         return (len(supporting_slides) > 0, supporting_slides)
@@ -1946,11 +2083,14 @@ def merge_slide_transcript_outputs(
     )
     transcript_tokens = set(re.findall(r"\b[a-z]{3,}\b", all_transcript_text))
 
+    # Extract stopword-filtered tokens once for transcript (reused across the loop below).
+    transcript_sig_tokens = _extract_tokens(all_transcript_text)
+
     slide_only: list[str] = []
     for sig_key in ("claims", "proposals"):
         for text in slide_signals.get(sig_key, []):
-            sig_tokens = set(re.findall(r"\b[a-z]{3,}\b", text.lower()))
-            if len(sig_tokens & transcript_tokens) == 0:
+            sig_tokens = _extract_tokens(text)
+            if len(sig_tokens & transcript_sig_tokens) < _MIN_SUPPORT_TOKENS:
                 slide_only.append(text)
 
     # Identify discussion-only content (not backed by any slide)
@@ -1967,7 +2107,11 @@ def merge_slide_transcript_outputs(
     return enriched
 
 
-def compute_slide_transcript_gaps(enriched_record: dict) -> dict:
+def compute_slide_transcript_gaps(
+    enriched_record: dict,
+    *,
+    slides_present: bool = False,
+) -> dict:
     """
     Compute the gap analysis between slide content and meeting discussion.
 
@@ -1975,13 +2119,20 @@ def compute_slide_transcript_gaps(enriched_record: dict) -> dict:
     ----------
     enriched_record:
         Output of :func:`merge_slide_transcript_outputs`.
+    slides_present:
+        Set to ``True`` when a slide deck was supplied as input.  When
+        ``True`` and all four output arrays are empty the result includes
+        ``reconciliation_status = "inert_review_required"`` so that
+        downstream consumers can surface the condition instead of silently
+        passing.
 
     Returns
     -------
     dict
         Keys:
         ``unpresented_discussions``, ``undiscussed_slides``,
-        ``weak_alignment_areas``, ``recommended_followups``.
+        ``weak_alignment_areas``, ``recommended_followups``,
+        ``reconciliation_status``.
     """
     unpresented = list(enriched_record.get("discussion_only_content", []))
     undiscussed = list(enriched_record.get("slide_only_content", []))
@@ -2007,9 +2158,21 @@ def compute_slide_transcript_gaps(enriched_record: dict) -> dict:
         snippet = text[:80].rstrip()
         followups.append(f"Clarify alignment for: {snippet}")
 
+    # Validation: detect inert reconciliation when slides were supplied but
+    # all four output arrays are empty — flag for human review instead of
+    # silently returning a clean record.
+    all_empty = (
+        not unpresented and not undiscussed and not weak_areas and not followups
+    )
+    if slides_present and all_empty:
+        reconciliation_status = "inert_review_required"
+    else:
+        reconciliation_status = "ok"
+
     return {
         "unpresented_discussions": unpresented,
         "undiscussed_slides": undiscussed,
         "weak_alignment_areas": weak_areas,
         "recommended_followups": followups,
+        "reconciliation_status": reconciliation_status,
     }

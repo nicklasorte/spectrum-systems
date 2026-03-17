@@ -42,6 +42,8 @@ from spectrum_systems.modules.slide_intelligence import (  # noqa: E402
     rewrite_for_working_paper,
     compare_with_transcript_and_paper,
     build_slide_intelligence_packet,
+    _extract_tokens,
+    _build_deck_assumption_index,
 )
 
 
@@ -1540,3 +1542,267 @@ class TestGoldenPath:
             )
         )
         assert r1 == r2
+
+
+# ---------------------------------------------------------------------------
+# P1 Remediation — new focused tests (Prompt P first pass)
+# ---------------------------------------------------------------------------
+
+class TestReconciliationStopwords:
+    """Tests for reconciliation logic hardening (Part A)."""
+
+    def test_stopword_only_overlap_does_not_count_as_support(self):
+        """Transcript item and slide sharing only stopwords → no support."""
+        from spectrum_systems.modules.slide_intelligence import (
+            normalize_slides, align_slides_to_transcript,
+            extract_slide_signals, merge_slide_transcript_outputs,
+        )
+        # Slide contains only common filler; transcript item shares only those words.
+        raw_slide = [{
+            "slide_number": 1,
+            "title": "Overview",
+            "bullet_points": ["The and or in on at"],
+            "full_text": "The and or in on at",
+        }]
+        slides = normalize_slides(raw_slide)
+        segments = [{"text": "the and or in on at by"}]
+        alignment = align_slides_to_transcript(slides, segments)
+        signals = extract_slide_signals(slides)
+        structured = {
+            "decisions": [{"decision_id": "D-001", "description": "the and or in on at"}],
+            "action_items": [],
+            "open_questions": [],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        # The decision shares only stopwords — must NOT get slide_support=True
+        assert enriched["decisions"][0]["slide_support"] is False
+
+    def test_two_meaningful_tokens_counts_as_support(self):
+        """Transcript item and slide sharing ≥2 non-stopword tokens → support."""
+        from spectrum_systems.modules.slide_intelligence import (
+            normalize_slides, align_slides_to_transcript,
+            extract_slide_signals, merge_slide_transcript_outputs,
+        )
+        shared_text = "interference coexistence radar band"
+        raw_slide = [{
+            "slide_number": 1,
+            "title": "Interference",
+            "bullet_points": [shared_text],
+            "full_text": shared_text,
+        }]
+        slides = normalize_slides(raw_slide)
+        segments = [{"text": shared_text}]
+        alignment = align_slides_to_transcript(slides, segments)
+        signals = extract_slide_signals(slides)
+        structured = {
+            "decisions": [{"decision_id": "D-001", "description": shared_text}],
+            "action_items": [],
+            "open_questions": [],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        assert enriched["decisions"][0]["slide_support"] is True
+
+    def test_discussion_only_content_emitted_on_realistic_input(self):
+        """Transcript item with no meaningful slide backing appears in discussion_only."""
+        from spectrum_systems.modules.slide_intelligence import (
+            normalize_slides, align_slides_to_transcript,
+            extract_slide_signals, merge_slide_transcript_outputs,
+        )
+        raw_slide = [{
+            "slide_number": 1,
+            "title": "Methodology",
+            "bullet_points": ["ITM propagation model used for path loss computation"],
+            "full_text": "ITM propagation model used for path loss computation",
+        }]
+        slides = normalize_slides(raw_slide)
+        segments = [{"text": "ITM propagation model used"}]
+        alignment = align_slides_to_transcript(slides, segments)
+        signals = extract_slide_signals(slides)
+        # This decision has NO overlap with the slide content
+        structured = {
+            "decisions": [
+                {"decision_id": "D-001",
+                 "description": "Allocate spectrum for satellite uplinks in tropical regions"},
+            ],
+            "action_items": [],
+            "open_questions": [],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        disc_only = enriched["discussion_only_content"]
+        assert len(disc_only) >= 1
+        expected_snippet = "allocate spectrum for satellite uplinks in tropical regions"
+        assert any(expected_snippet in item.lower() for item in disc_only), (
+            f"Expected decision text not found in discussion_only_content: {disc_only}"
+        )
+
+    def test_slide_only_content_emitted_on_realistic_input(self):
+        """Slide signal not mentioned in transcript appears in slide_only_content."""
+        from spectrum_systems.modules.slide_intelligence import (
+            normalize_slides, align_slides_to_transcript,
+            extract_slide_signals, merge_slide_transcript_outputs,
+        )
+        raw_slide = [{
+            "slide_number": 1,
+            "title": "Spectrum Proposal",
+            "bullet_points": [
+                "Recommend deploying 5G NR base stations with EIRP limit"
+            ],
+            "full_text": "Recommend deploying 5G NR base stations with EIRP limit",
+        }]
+        slides = normalize_slides(raw_slide)
+        # Transcript segment is completely different
+        segments = [{"text": "Satellite uplink allocation reviewed"}]
+        alignment = align_slides_to_transcript(slides, segments)
+        signals = extract_slide_signals(slides)
+        structured = {
+            "decisions": [
+                {"decision_id": "D-001",
+                 "description": "Satellite uplink allocation reviewed"},
+            ],
+            "action_items": [],
+            "open_questions": [],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        slide_only = enriched["slide_only_content"]
+        assert len(slide_only) >= 1
+        expected_snippet = "5g nr base stations"
+        assert any(expected_snippet in item.lower() for item in slide_only), (
+            f"Expected slide signal text not found in slide_only_content: {slide_only}"
+        )
+
+
+class TestDetectGapsDeckLevel:
+    """Tests for deck-level Rule 1 false-positive suppression (Part B)."""
+
+    def _make_unit(self, slide_id, raw_text="", bullets=None):
+        return {
+            "slide_id": slide_id,
+            "title": slide_id,
+            "bullets": bullets or [],
+            "raw_text": raw_text,
+            "notes": "",
+        }
+
+    def test_rule1_suppressed_when_propagation_present_elsewhere_in_deck(self):
+        """Rule 1 must NOT fire on slide 3 if slide 2 already states the model."""
+        slide2 = self._make_unit(
+            "SLIDE-2",
+            raw_text="Propagation model: ITM Longley-Rice applied throughout analysis.",
+        )
+        slide3 = self._make_unit(
+            "SLIDE-3",
+            raw_text="5G NR may interfere with radar at 3.5 GHz.",
+        )
+        deck_index = _build_deck_assumption_index([slide2, slide3])
+        claims3 = extract_claims(slide3)
+        gaps3 = detect_gaps(slide3, claims3, [], deck_assumption_index=deck_index)
+        rule1_gaps = [g for g in gaps3 if "propagation" in g["description"].lower()]
+        assert rule1_gaps == [], (
+            "Rule 1 should be suppressed when deck-level propagation model evidence is present"
+        )
+
+    def test_rule1_fires_when_propagation_absent_from_entire_deck(self):
+        """Rule 1 must fire when NO slide in the deck mentions a propagation model."""
+        slide1 = self._make_unit(
+            "SLIDE-1",
+            raw_text="Overview of 5G NR coexistence study.",
+        )
+        slide2 = self._make_unit(
+            "SLIDE-2",
+            raw_text="5G NR may interfere with radar systems.",
+        )
+        deck_index = _build_deck_assumption_index([slide1, slide2])
+        claims2 = extract_claims(slide2)
+        gaps2 = detect_gaps(slide2, claims2, [], deck_assumption_index=deck_index)
+        rule1_gaps = [g for g in gaps2 if "propagation" in g["description"].lower()]
+        assert len(rule1_gaps) >= 1, (
+            "Rule 1 should fire when no propagation model evidence exists anywhere in the deck"
+        )
+
+
+class TestGapCautionFlagPropagation:
+    """Tests for gap → caution_flags wiring (Part C)."""
+
+    def test_gap_propagates_to_caution_flags_for_source_slide(self):
+        """A detected gap on SLIDE-X must add a caution flag to that slide's candidate."""
+        deck = {
+            "artifact_id": "TEST-DECK-001",
+            "artifact_type": "slide_deck",
+            "presenting_org": "Test Org",
+            "slides": [
+                {
+                    "slide_number": 1,
+                    "title": "Interference Results",
+                    "bullets": ["5G NR may interfere with radar"],
+                    "notes": "",
+                    "raw_text": "5G NR may interfere with radar",
+                    "has_figure": False,
+                    "has_table": False,
+                    "type": "text",
+                }
+            ],
+        }
+        packet = build_slide_intelligence_packet(deck)
+        candidate = packet["slide_to_paper_candidates"][0]
+        slide_id = candidate["slide_id"]
+        # Find gaps for this slide
+        gaps_for_slide = [
+            g for g in packet["analysis_gaps"]
+            if g["source_slide_id"] == slide_id
+        ]
+        if gaps_for_slide:
+            flags = candidate["caution_flags"]
+            assert len(flags) >= 1, "Expected at least one caution flag from detected gap"
+            gap_desc = gaps_for_slide[0]["description"]
+            assert any(gap_desc in f for f in flags), (
+                f"Gap description '{gap_desc}' not found in caution_flags: {flags}"
+            )
+
+
+class TestInertReconciliationValidation:
+    """Tests for inert reconciliation detection (Part D)."""
+
+    def test_all_empty_arrays_with_slides_present_flags_review(self):
+        """When slides exist but all reconciliation outputs are empty, status must be flagged."""
+        enriched = {
+            "decisions": [],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": [],
+        }
+        result = compute_slide_transcript_gaps(enriched, slides_present=True)
+        assert result["reconciliation_status"] == "inert_review_required"
+
+    def test_nonempty_output_gives_ok_status(self):
+        """When at least one output array is non-empty, status should be ok."""
+        enriched = {
+            "decisions": [{"decision_id": "D-001", "description": "Use ITM model",
+                           "slide_support": False}],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": ["ITM propagation model missing from transcript"],
+        }
+        result = compute_slide_transcript_gaps(enriched, slides_present=True)
+        assert result["reconciliation_status"] == "ok"
+
+    def test_no_slides_present_does_not_flag_empty_as_inert(self):
+        """When slides_present=False, empty arrays should not produce inert_review_required."""
+        enriched = {
+            "decisions": [],
+            "action_items": [],
+            "open_questions": [],
+            "slide_only_content": [],
+            "discussion_only_content": [],
+        }
+        result = compute_slide_transcript_gaps(enriched, slides_present=False)
+        assert result["reconciliation_status"] == "ok"
+
+    def test_reconciliation_status_key_always_present(self):
+        """reconciliation_status must be present in the output regardless of inputs."""
+        result = compute_slide_transcript_gaps(
+            {"decisions": [], "action_items": [], "open_questions": [],
+             "slide_only_content": [], "discussion_only_content": []},
+        )
+        assert "reconciliation_status" in result
