@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-17T13:46:16Z",
+  "generated_at": "2026-03-17T14:09:48Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -89,20 +89,18 @@
           "pinned_version": "1.0.0",
           "canonical_version": "1.0.0",
           "drift": false
+        },
+        {
+          "contract": "meeting_minutes_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
         }
       ],
       "contracts_produced": [],
-      "validation_status": "warning",
+      "validation_status": "pass",
       "failures": [],
-      "warnings": [
-        {
-          "repo": "meeting-minutes-engine",
-          "system_id": "meeting-minutes-engine",
-          "contract": "meeting_minutes_record",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'meeting_minutes_record' (canonical v1.0.0) but does not declare it in its governance manifest"
-        }
-      ]
+      "warnings": []
     },
     {
       "repo_name": "spectrum-pipeline-engine",
@@ -213,6 +211,12 @@
           "drift": false
         },
         {
+          "contract": "meeting_minutes_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
           "contract": "milestone_plan",
           "pinned_version": "1.0.0",
           "canonical_version": "1.0.0",
@@ -253,13 +257,6 @@
           "contract": "evaluation_manifest",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-program-advisor",
-          "system_id": "spectrum-program-advisor",
-          "contract": "meeting_minutes_record",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'meeting_minutes_record' (canonical v1.0.0) but does not declare it in its governance manifest"
         }
       ]
     },
@@ -513,6 +510,14 @@
         "spectrum-pipeline-engine",
         "spectrum-program-advisor",
         "system-factory"
+      ]
+    },
+    "meeting_minutes_record": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "meeting-minutes-engine",
+        "spectrum-program-advisor"
       ]
     },
     "milestone_plan": {
