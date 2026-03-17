@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .artifact_packager import package_artifacts
+from .slide_intelligence import build_slide_intelligence_packet
 from .study_state import build_study_state
 
 
@@ -224,6 +225,7 @@ def run_pipeline(
     artifacts_root: Path = Path("artifacts"),
     docx_bytes: Optional[bytes] = None,
     execution_metadata: Optional[Dict[str, Any]] = None,
+    slide_deck: Optional[Dict[str, Any]] = None,
     logger: Optional[logging.Logger] = None,
 ) -> Dict[str, Any]:
     """
@@ -234,7 +236,8 @@ def run_pipeline(
         2. extract           — normalize structured_extraction
         3. signals           — normalize signals
         4. build_study_state — construct study_state document
-        5. package           — write canonical artifact package
+        5. slide_intelligence — (optional) process slide deck artifact
+        6. package           — write canonical artifact package
 
     Parameters
     ----------
@@ -252,13 +255,19 @@ def run_pipeline(
         Optional raw DOCX bytes.  A stub marker is written if not provided.
     execution_metadata:
         Optional execution metadata dict.  A stub is written if not provided.
+    slide_deck:
+        Optional governed slide-deck artifact dict.  When provided the slide
+        intelligence layer is run and its output is attached to the package
+        result under the ``slide_intelligence`` key.  The pipeline does **not**
+        fail if this argument is absent or ``None``.
     logger:
         Optional logger instance.  A default logger is created if not provided.
 
     Returns
     -------
     dict
-        Package summary from stage_package: run_id, package_dir, files, validation.
+        Package summary from stage_package: run_id, package_dir, files,
+        validation, and (if slides present) slide_intelligence.
     """
     if logger is None:
         logger = _get_logger()
@@ -276,5 +285,35 @@ def run_pipeline(
         execution_metadata=execution_metadata,
         logger=logger,
     )
+
+    # Optional slide intelligence stage — does not fail if slide_deck is absent.
+    if slide_deck is not None:
+        try:
+            transcript_artifact = {"text": transcript_text}
+            slide_packet = build_slide_intelligence_packet(
+                slide_deck,
+                transcript_artifact=transcript_artifact,
+            )
+            logger.info(
+                json.dumps(
+                    {
+                        "event": "pipeline.slide_intelligence",
+                        "run_id": effective_run_id,
+                        "slides": len(slide_deck.get("slides", [])),
+                        "validation_status": slide_packet.get("validation_status"),
+                    }
+                )
+            )
+            package_result["slide_intelligence"] = slide_packet
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                json.dumps(
+                    {
+                        "event": "pipeline.slide_intelligence.error",
+                        "run_id": effective_run_id,
+                        "error": str(exc),
+                    }
+                )
+            )
 
     return package_result

@@ -1048,3 +1048,495 @@ class TestArtifactTypeRegistration:
             / "slide_intelligence.json"
         )
         assert manifest_path.exists(), "slide_intelligence module manifest must exist"
+
+
+# ---------------------------------------------------------------------------
+# N. Pipeline-oriented API (ingest → normalize → align → signals → merge → gaps)
+# ---------------------------------------------------------------------------
+
+from spectrum_systems.modules.slide_intelligence import (  # noqa: E402
+    ingest_slides,
+    normalize_slides,
+    align_slides_to_transcript,
+    extract_slide_signals,
+    merge_slide_transcript_outputs,
+    compute_slide_transcript_gaps,
+)
+
+
+class TestIngestSlides:
+    def test_ingest_json_fixture_returns_list(self):
+        slides = ingest_slides(FIXTURE_PATH)
+        assert isinstance(slides, list)
+        assert len(slides) == 5
+
+    def test_ingest_json_required_fields(self):
+        slides = ingest_slides(FIXTURE_PATH)
+        for s in slides:
+            assert "slide_number" in s
+            assert "title" in s
+            assert "bullet_points" in s
+            assert "full_text" in s
+
+    def test_ingest_json_preserves_order(self):
+        slides = ingest_slides(FIXTURE_PATH)
+        numbers = [s["slide_number"] for s in slides]
+        assert numbers == sorted(numbers)
+
+    def test_ingest_unsupported_format_raises(self, tmp_path):
+        bad = tmp_path / "deck.pptx"
+        bad.write_text("dummy")
+        with pytest.raises(ValueError, match="Unsupported"):
+            ingest_slides(bad)
+
+
+class TestNormalizeSlides:
+    def _raw(self):
+        return ingest_slides(FIXTURE_PATH)
+
+    def test_normalize_returns_list(self):
+        normalized = normalize_slides(self._raw())
+        assert isinstance(normalized, list)
+        assert len(normalized) == 5
+
+    def test_normalized_required_fields(self):
+        for slide in normalize_slides(self._raw()):
+            assert "slide_id" in slide
+            assert "title" in slide
+            assert "bullets" in slide
+            assert "raw_text" in slide
+            assert "keywords" in slide
+
+    def test_slide_ids_sequential(self):
+        ids = [s["slide_id"] for s in normalize_slides(self._raw())]
+        assert ids == [f"slide_{i:02d}" for i in range(1, 6)]
+
+    def test_keywords_is_list(self):
+        for slide in normalize_slides(self._raw()):
+            assert isinstance(slide["keywords"], list)
+
+    def test_title_extracted(self):
+        normalized = normalize_slides(self._raw())
+        # All fixture slides have explicit titles
+        for slide in normalized:
+            assert slide["title"] != ""
+
+    def test_empty_input_returns_empty(self):
+        assert normalize_slides([]) == []
+
+
+class TestAlignSlidesToTranscript:
+    def _slides(self):
+        return normalize_slides(ingest_slides(FIXTURE_PATH))
+
+    def _segments(self):
+        return [
+            {"text": "We discussed the interference potential from 5G NR into radar systems."},
+            {"text": "The propagation model used is the ITM Longley-Rice model."},
+            {"text": "Coexistence requires a 10 MHz guard band minimum."},
+            {"text": "Action item: confirm EIRP assumptions with 3GPP standards body."},
+            {"text": "Open question: what clutter model should we use for suburban areas?"},
+        ]
+
+    def test_returns_one_entry_per_slide(self):
+        result = align_slides_to_transcript(self._slides(), self._segments())
+        assert len(result) == 5
+
+    def test_required_fields_in_entry(self):
+        result = align_slides_to_transcript(self._slides(), self._segments())
+        for entry in result:
+            assert "slide_id" in entry
+            assert "matched_segments" in entry
+            assert "confidence" in entry
+
+    def test_confidence_between_0_and_1(self):
+        result = align_slides_to_transcript(self._slides(), self._segments())
+        for entry in result:
+            assert 0.0 <= entry["confidence"] <= 1.0
+
+    def test_matched_segments_are_strings(self):
+        result = align_slides_to_transcript(self._slides(), self._segments())
+        for entry in result:
+            for seg in entry["matched_segments"]:
+                assert isinstance(seg, str)
+
+    def test_empty_segments_returns_zero_confidence(self):
+        result = align_slides_to_transcript(self._slides(), [])
+        for entry in result:
+            assert entry["confidence"] == 0.0
+            assert entry["matched_segments"] == []
+
+    def test_slide_ids_preserved(self):
+        slides = self._slides()
+        result = align_slides_to_transcript(slides, self._segments())
+        expected_ids = {s["slide_id"] for s in slides}
+        actual_ids = {e["slide_id"] for e in result}
+        assert expected_ids == actual_ids
+
+
+class TestExtractSlideSignals:
+    def _slides(self):
+        return normalize_slides(ingest_slides(FIXTURE_PATH))
+
+    def test_returns_required_keys(self):
+        sigs = extract_slide_signals(self._slides())
+        for key in ("claims", "assumptions", "proposals", "metrics", "open_questions"):
+            assert key in sigs
+
+    def test_values_are_lists(self):
+        sigs = extract_slide_signals(self._slides())
+        for key in ("claims", "assumptions", "proposals", "metrics", "open_questions"):
+            assert isinstance(sigs[key], list)
+
+    def test_metrics_detected_for_dBm_values(self):
+        slides = [{"slide_id": "s01", "bullets": ["EIRP 46 dBm per sector"], "raw_text": "EIRP 46 dBm per sector", "keywords": []}]
+        sigs = extract_slide_signals(slides)
+        assert len(sigs["metrics"]) >= 1
+
+    def test_proposals_detected_for_verb_start(self):
+        slides = [{"slide_id": "s01", "bullets": ["Implement a 10 MHz guard band"], "raw_text": "", "keywords": []}]
+        sigs = extract_slide_signals(slides)
+        assert len(sigs["proposals"]) >= 1
+
+    def test_open_questions_detected(self):
+        slides = [{"slide_id": "s01", "bullets": ["TBD — propagation model not selected?"], "raw_text": "", "keywords": []}]
+        sigs = extract_slide_signals(slides)
+        assert len(sigs["open_questions"]) >= 1
+
+    def test_empty_slides_returns_empty_signals(self):
+        sigs = extract_slide_signals([])
+        for key in ("claims", "assumptions", "proposals", "metrics", "open_questions"):
+            assert sigs[key] == []
+
+
+class TestMergeSlideTranscriptOutputs:
+    def _slides(self):
+        return normalize_slides(ingest_slides(FIXTURE_PATH))
+
+    def _alignment(self):
+        segs = [
+            {"text": "interference from 5G NR base stations into federal radar"},
+            {"text": "guard band of 10 MHz between allocations"},
+        ]
+        return align_slides_to_transcript(self._slides(), segs)
+
+    def _signals(self):
+        return extract_slide_signals(self._slides())
+
+    def _structured(self):
+        return {
+            "decisions": [{"decision_id": "D-001", "description": "Adopt ITM propagation model"}],
+            "action_items": [{"action_id": "AI-001", "description": "Confirm EIRP with 3GPP"}],
+            "open_questions": [{"question_id": "Q-001", "description": "Guard band requirements TBD"}],
+        }
+
+    def test_returns_dict(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        assert isinstance(result, dict)
+
+    def test_decisions_enriched_with_slide_support(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        for d in result["decisions"]:
+            assert "slide_support" in d
+            assert "source_slide_ids" in d
+
+    def test_action_items_enriched(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        for ai in result["action_items"]:
+            assert "slide_support" in ai
+
+    def test_open_questions_enriched(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        for q in result["open_questions"]:
+            assert "slide_support" in q
+
+    def test_slide_only_content_present(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        assert "slide_only_content" in result
+        assert isinstance(result["slide_only_content"], list)
+
+    def test_discussion_only_content_present(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        assert "discussion_only_content" in result
+        assert isinstance(result["discussion_only_content"], list)
+
+    def test_slide_support_boolean(self):
+        result = merge_slide_transcript_outputs(self._structured(), self._signals(), self._alignment())
+        for key in ("decisions", "action_items", "open_questions"):
+            for item in result[key]:
+                assert isinstance(item["slide_support"], bool)
+
+
+class TestComputeSlideTranscriptGaps:
+    def _enriched(self):
+        slides = normalize_slides(ingest_slides(FIXTURE_PATH))
+        segs = [
+            {"text": "We confirmed interference from 5G NR base stations in the 3.5 GHz band."},
+            {"text": "Guard band of 10 MHz is sufficient."},
+        ]
+        alignment = align_slides_to_transcript(slides, segs)
+        signals = extract_slide_signals(slides)
+        structured = {
+            "decisions": [{"decision_id": "D-001", "description": "Use ITM propagation model"}],
+            "action_items": [{"action_id": "AI-001", "description": "Verify EIRP assumptions"}],
+            "open_questions": [{"question_id": "Q-001", "description": "Clutter model TBD"}],
+        }
+        return merge_slide_transcript_outputs(structured, signals, alignment)
+
+    def test_returns_required_keys(self):
+        gaps = compute_slide_transcript_gaps(self._enriched())
+        for key in ("unpresented_discussions", "undiscussed_slides", "weak_alignment_areas", "recommended_followups"):
+            assert key in gaps
+
+    def test_values_are_lists(self):
+        gaps = compute_slide_transcript_gaps(self._enriched())
+        for key in ("unpresented_discussions", "undiscussed_slides", "weak_alignment_areas", "recommended_followups"):
+            assert isinstance(gaps[key], list)
+
+    def test_deterministic_output(self):
+        enriched = self._enriched()
+        g1 = compute_slide_transcript_gaps(enriched)
+        g2 = compute_slide_transcript_gaps(enriched)
+        assert g1 == g2
+
+
+# ---------------------------------------------------------------------------
+# O. Pipeline integration — optional slides
+# ---------------------------------------------------------------------------
+
+from spectrum_systems.modules.meeting_minutes_pipeline import run_pipeline  # noqa: E402
+
+
+class TestPipelineSlideIntegration:
+    _TRANSCRIPT = (
+        "Alice: We need to confirm the interference model for the 3.5 GHz coexistence study.\n"
+        "Bob: Agreed. Let us use the ITM Longley-Rice model.\n"
+        "Alice: Action item — Bob will validate EIRP assumptions against 3GPP specs.\n"
+        "Bob: Any open questions on guard band?\n"
+        "Alice: TBD — we need agency input."
+    )
+    _EXTRACTION = {
+        "decisions_made": [{"id": "D-001", "description": "Use ITM model"}],
+        "action_items": [{"id": "AI-001", "description": "Bob validates EIRP"}],
+        "questions_raised": [],
+    }
+    _SIGNALS = {
+        "risks_or_open_questions": [],
+        "decisions_made": [{"id": "D-001", "description": "Use ITM model"}],
+    }
+
+    def test_pipeline_without_slides_succeeds(self, tmp_path):
+        result = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=tmp_path,
+        )
+        assert result is not None
+        assert "slide_intelligence" not in result
+
+    def test_pipeline_with_slides_adds_slide_intelligence(self, tmp_path):
+        deck = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+        result = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=tmp_path,
+            slide_deck=deck,
+        )
+        assert "slide_intelligence" in result
+        packet = result["slide_intelligence"]
+        assert packet["artifact_type"] == "slide_intelligence_packet"
+
+    def test_pipeline_slides_does_not_break_validation(self, tmp_path):
+        deck = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+        result = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=tmp_path,
+            slide_deck=deck,
+        )
+        assert result["validation"]["passed"] is True
+
+    def test_pipeline_slides_deterministic(self, tmp_path):
+        import shutil
+        deck = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+        d1 = tmp_path / "run1"
+        d2 = tmp_path / "run2"
+        r1 = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=d1,
+            slide_deck=deck,
+        )
+        r2 = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=d2,
+            slide_deck=deck,
+        )
+        assert (
+            r1["slide_intelligence"]["validation_status"]
+            == r2["slide_intelligence"]["validation_status"]
+        )
+
+    def test_pipeline_bad_slides_does_not_crash(self, tmp_path):
+        """Pipeline must not raise if slide_deck is malformed."""
+        result = run_pipeline(
+            transcript_text=self._TRANSCRIPT,
+            structured_extraction=self._EXTRACTION,
+            signals=self._SIGNALS,
+            artifacts_root=tmp_path,
+            slide_deck={"artifact_id": "BAD", "slides": []},
+        )
+        assert result is not None
+
+
+# ---------------------------------------------------------------------------
+# P. Contract integration — meeting_minutes_record slide fields
+# ---------------------------------------------------------------------------
+
+class TestMeetingMinutesRecordSlideFields:
+    """The meeting_minutes_record schema must accept optional slide fields."""
+
+    _SCHEMA_PATH = REPO_ROOT / "contracts" / "schemas" / "meeting_minutes_record.schema.json"
+
+    def _schema(self):
+        return json.loads(self._SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    def test_slides_present_field_defined(self):
+        schema = self._schema()
+        assert "slides_present" in schema["properties"]
+
+    def test_slide_alignment_field_defined(self):
+        schema = self._schema()
+        assert "slide_alignment" in schema["properties"]
+
+    def test_slide_signals_field_defined(self):
+        schema = self._schema()
+        assert "slide_signals" in schema["properties"]
+
+    def test_gap_analysis_field_defined(self):
+        schema = self._schema()
+        assert "gap_analysis" in schema["properties"]
+
+    def test_slide_fields_not_required(self):
+        schema = self._schema()
+        for field in ("slides_present", "slide_alignment", "slide_signals", "gap_analysis"):
+            assert field not in schema["required"]
+
+    def test_slides_present_is_boolean_type(self):
+        schema = self._schema()
+        assert schema["properties"]["slides_present"]["type"] == "boolean"
+
+
+# ---------------------------------------------------------------------------
+# Q. Documentation — slide-intelligence-layer.md
+# ---------------------------------------------------------------------------
+
+class TestSlideIntelligenceDocumentation:
+    def test_design_doc_exists(self):
+        doc_path = REPO_ROOT / "docs" / "design" / "slide-intelligence-layer.md"
+        assert doc_path.exists(), "docs/design/slide-intelligence-layer.md must exist"
+
+    def test_design_doc_has_required_sections(self):
+        doc_path = REPO_ROOT / "docs" / "design" / "slide-intelligence-layer.md"
+        content = doc_path.read_text(encoding="utf-8")
+        for section in ("Purpose", "Architecture", "Data Flow", "Known Limitations"):
+            assert section in content, f"Missing section: {section}"
+
+    def test_design_doc_mentions_lllm_future(self):
+        doc_path = REPO_ROOT / "docs" / "design" / "slide-intelligence-layer.md"
+        content = doc_path.read_text(encoding="utf-8")
+        assert "LLM" in content
+
+
+# ---------------------------------------------------------------------------
+# R. Golden path — end-to-end enrichment with transcript + slides
+# ---------------------------------------------------------------------------
+
+class TestGoldenPath:
+    """End-to-end golden path: fixture deck through full pipeline API."""
+
+    def test_golden_path_ingest_to_gaps(self):
+        """Full pipeline: ingest → normalize → align → signals → merge → gaps."""
+        # 1. Ingest
+        raw = ingest_slides(FIXTURE_PATH)
+        assert len(raw) == 5
+
+        # 2. Normalize
+        slides = normalize_slides(raw)
+        assert len(slides) == 5
+        for s in slides:
+            assert s["slide_id"].startswith("slide_")
+
+        # 3. Align
+        segments = [
+            {"text": "We confirmed interference from 5G NR base stations into federal radar in the 3.5 GHz band."},
+            {"text": "The ITM Longley-Rice propagation model was agreed as the baseline."},
+            {"text": "Action item: validate EIRP of 46 dBm against 3GPP TS 38.104."},
+            {"text": "Guard band of 10 MHz proposed — needs agency confirmation."},
+            {"text": "Open question: what clutter model applies to suburban deployment areas?"},
+        ]
+        alignment = align_slides_to_transcript(slides, segments)
+        assert len(alignment) == 5
+        for entry in alignment:
+            assert 0.0 <= entry["confidence"] <= 1.0
+
+        # 4. Signals
+        signals = extract_slide_signals(slides)
+        assert isinstance(signals["claims"], list)
+        assert isinstance(signals["assumptions"], list)
+        assert len(signals["metrics"]) >= 1  # dBm values in fixture
+
+        # 5. Merge
+        structured = {
+            "decisions": [{"decision_id": "D-001", "description": "Use ITM propagation model for terrain-sensitive paths"}],
+            "action_items": [{"action_id": "AI-001", "description": "Validate EIRP assumptions against 3GPP TS 38.104"}],
+            "open_questions": [{"question_id": "Q-001", "description": "Which clutter model applies to suburban deployments?"}],
+        }
+        enriched = merge_slide_transcript_outputs(structured, signals, alignment)
+        for d in enriched["decisions"]:
+            assert "slide_support" in d
+        for ai in enriched["action_items"]:
+            assert "slide_support" in ai
+
+        # 6. Gaps
+        gaps = compute_slide_transcript_gaps(enriched)
+        for key in ("unpresented_discussions", "undiscussed_slides", "weak_alignment_areas", "recommended_followups"):
+            assert isinstance(gaps[key], list)
+
+        # 7. No schema violations (slide_intelligence_packet)
+        packet = build_slide_intelligence_packet(
+            _load_fixture(),
+            transcript_artifact={"text": " ".join(s["text"] for s in segments)},
+        )
+        assert packet["artifact_type"] == "slide_intelligence_packet"
+        assert packet["validation_status"] in {"needs_review", "provisional", "informational"}
+
+    def test_golden_path_deterministic(self):
+        raw = ingest_slides(FIXTURE_PATH)
+        r1 = compute_slide_transcript_gaps(
+            merge_slide_transcript_outputs(
+                {"decisions": [], "action_items": [], "open_questions": []},
+                extract_slide_signals(normalize_slides(raw)),
+                align_slides_to_transcript(
+                    normalize_slides(raw),
+                    [{"text": "5G NR interference with radar coexistence study at 3.5 GHz."}],
+                ),
+            )
+        )
+        r2 = compute_slide_transcript_gaps(
+            merge_slide_transcript_outputs(
+                {"decisions": [], "action_items": [], "open_questions": []},
+                extract_slide_signals(normalize_slides(raw)),
+                align_slides_to_transcript(
+                    normalize_slides(raw),
+                    [{"text": "5G NR interference with radar coexistence study at 3.5 GHz."}],
+                ),
+            )
+        )
+        assert r1 == r2
