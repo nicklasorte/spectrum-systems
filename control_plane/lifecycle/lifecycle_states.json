@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "description": "Canonical lifecycle state definitions for governed artifacts in the spectrum-systems ecosystem.",
+  "states": [
+    {
+      "state": "input",
+      "label": "Input",
+      "description": "Raw or upstream artifact consumed by a governed engine or pipeline. Has not yet been transformed.",
+      "terminal": false
+    },
+    {
+      "state": "transformed",
+      "label": "Transformed",
+      "description": "A governed engine has processed the input and produced a structured output artifact.",
+      "terminal": false
+    },
+    {
+      "state": "evaluated",
+      "label": "Evaluated",
+      "description": "The artifact has been evaluated against governed criteria. action_required has been set.",
+      "terminal": false
+    },
+    {
+      "state": "action_required",
+      "label": "Action Required",
+      "description": "Evaluation determined that a follow-up work item is required. A work item must exist.",
+      "terminal": false
+    },
+    {
+      "state": "in_progress",
+      "label": "In Progress",
+      "description": "A work item has been accepted and active remediation is underway.",
+      "terminal": false
+    },
+    {
+      "state": "resolved",
+      "label": "Resolved",
+      "description": "The work item has been completed and the artifact has been remediated.",
+      "terminal": false
+    },
+    {
+      "state": "re_evaluated",
+      "label": "Re-evaluated",
+      "description": "The artifact has been evaluated again after resolution. May loop back to action_required or close.",
+      "terminal": false
+    },
+    {
+      "state": "closed",
+      "label": "Closed",
+      "description": "No action required and evaluation is complete, or re-evaluation confirmed resolution.",
+      "terminal": true
+    }
+  ]
+}

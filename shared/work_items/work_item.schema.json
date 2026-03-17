@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/shared/work_items/work_item.schema.json",
+  "title": "Work Item (Data Backbone)",
+  "description": "Lightweight canonical work item record used by the artifact_emitter helper and the data backbone. Separate from the full governance work-item schema in schemas/work-item.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "work_item_id",
+    "source_artifact_id",
+    "status",
+    "priority",
+    "created_at"
+  ],
+  "properties": {
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the work item."
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "artifact_id of the evaluation result that triggered this work item."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "in_progress", "resolved", "deferred"],
+      "description": "Current status of the work item."
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Priority level of the work item."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this work item was created."
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Free-text notes explaining resolution. Required when status=resolved."
+    }
+  }
+}

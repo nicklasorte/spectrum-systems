@@ -1,0 +1,44 @@
+name: lifecycle-enforcement
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'codex/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-lifecycle-definitions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Validate lifecycle definitions and data backbone
+        run: python scripts/validate_lifecycle_data.py
+
+  run-lifecycle-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run lifecycle and data backbone tests
+        run: pytest tests/test_lifecycle_enforcer.py -v

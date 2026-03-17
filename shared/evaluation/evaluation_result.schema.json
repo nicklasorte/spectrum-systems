@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/shared/evaluation/evaluation_result.schema.json",
+  "title": "Evaluation Result",
+  "description": "Simplified canonical evaluation result record used by the artifact_emitter helper. Complements the full evaluation_manifest contract with a lightweight data-backbone record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evaluation_id",
+    "artifact_id",
+    "status",
+    "action_required",
+    "rationale"
+  ],
+  "properties": {
+    "evaluation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this evaluation result."
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the artifact that was evaluated."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail", "partial"],
+      "description": "Outcome of the evaluation."
+    },
+    "action_required": {
+      "type": "boolean",
+      "description": "Whether this evaluation requires a follow-up work item."
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Explanation of the evaluation outcome. Required in all cases."
+    },
+    "linked_work_item_id": {
+      "type": ["string", "null"],
+      "description": "ID of the work item created from this evaluation. Required (non-null) when action_required=true."
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "description": "Valid lifecycle state transitions for governed artifacts. Any transition not listed here is rejected by the lifecycle enforcer.",
+  "transitions": [
+    {
+      "from": "input",
+      "to": "transformed",
+      "description": "Input artifact validated and processed by a governed engine.",
+      "required_fields": ["artifact_id", "artifact_type", "module_origin", "run_id"]
+    },
+    {
+      "from": "transformed",
+      "to": "evaluated",
+      "description": "Transformed artifact submitted for evaluation against governed criteria.",
+      "required_fields": ["artifact_id", "artifact_type", "run_id"]
+    },
+    {
+      "from": "evaluated",
+      "to": "action_required",
+      "description": "Evaluation found issues requiring follow-up. action_required=true and work item must exist.",
+      "required_fields": ["evaluation_id", "action_required", "linked_work_item_id"]
+    },
+    {
+      "from": "evaluated",
+      "to": "closed",
+      "description": "Evaluation found no issues. action_required=false and rationale documented.",
+      "required_fields": ["evaluation_id", "action_required", "rationale"]
+    },
+    {
+      "from": "action_required",
+      "to": "in_progress",
+      "description": "Work item accepted and active remediation has begun.",
+      "required_fields": ["work_item_id", "source_artifact_id"]
+    },
+    {
+      "from": "in_progress",
+      "to": "resolved",
+      "description": "Remediation completed. Work item resolved with resolution notes.",
+      "required_fields": ["work_item_id", "resolution_notes"]
+    },
+    {
+      "from": "resolved",
+      "to": "re_evaluated",
+      "description": "Resolved artifact submitted for re-evaluation to confirm remediation.",
+      "required_fields": ["artifact_id", "artifact_type", "run_id"]
+    },
+    {
+      "from": "re_evaluated",
+      "to": "action_required",
+      "description": "Re-evaluation found remaining or new issues. New work item required.",
+      "required_fields": ["evaluation_id", "action_required", "linked_work_item_id"]
+    },
+    {
+      "from": "re_evaluated",
+      "to": "closed",
+      "description": "Re-evaluation confirmed resolution. Artifact lifecycle complete.",
+      "required_fields": ["evaluation_id", "action_required", "rationale"]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/shared/artifact_models/artifact_metadata.schema.json",
+  "title": "Artifact Metadata",
+  "description": "Canonical metadata record that every governed artifact must carry. Emitted by the artifact_emitter helper and stored alongside the artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "module_origin",
+    "created_at",
+    "lifecycle_state",
+    "contract_version",
+    "schema_version"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique identifier for the artifact instance."
+    },
+    "artifact_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical artifact type name (e.g. evaluation_manifest, work_item, run_manifest)."
+    },
+    "module_origin": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Module or engine that produced this artifact (e.g. spectrum-pipeline-engine)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this artifact was created."
+    },
+    "lifecycle_state": {
+      "type": "string",
+      "enum": ["input", "transformed", "evaluated", "action_required", "in_progress", "resolved", "re_evaluated", "closed"],
+      "description": "Current lifecycle state of the artifact."
+    },
+    "contract_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of the contract governing this artifact type."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of this metadata schema."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Optional run identifier correlating this artifact to a pipeline run."
+    }
+  }
+}

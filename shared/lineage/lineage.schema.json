@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/shared/lineage/lineage.schema.json",
+  "title": "Lineage Record",
+  "description": "Canonical lineage record capturing the provenance chain of a governed artifact. Emitted by the artifact_emitter helper alongside every artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "parent_artifacts",
+    "producing_module",
+    "run_id",
+    "timestamp"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the artifact whose lineage this record describes."
+    },
+    "parent_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "List of artifact_ids that this artifact was derived from. Empty list for root/input artifacts."
+    },
+    "producing_module": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Module or engine that produced this artifact."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic run identifier that produced this artifact."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this lineage record was emitted."
+    }
+  }
+}
