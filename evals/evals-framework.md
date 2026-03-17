@@ -1,5 +1,7 @@
 # Evaluation Datasets Framework
 
+> **DEPRECATED:** This directory (`evals/`) is superseded by `eval/` as the canonical evaluation home. The framework guidance, fixtures, and rubrics here remain for historical reference but should not be extended. All new evaluation work belongs in `eval/<system>/`. See `eval/README.md` for the current structure.
+
 Governance guide for evaluation datasets that exercise text-producing engines (prompted models, templating pipelines, and rule-based generators). The goal is to create deterministic, repeatable checks that catch regressions whenever prompts, models, or post-processing logic change.
 
 ## Purpose

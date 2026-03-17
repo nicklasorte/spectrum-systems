@@ -116,8 +116,8 @@
     },
     "status": {
       "type": "string",
-      "enum": ["pass", "fail", "warning", "not-yet-evaluable"],
-      "description": "Overall evaluation outcome. 'not-yet-evaluable' means required evidence is not yet available."
+      "enum": ["pass", "fail", "partial", "warning", "not-yet-evaluable"],
+      "description": "Overall evaluation outcome. 'partial' means some criteria passed and some failed. 'not-yet-evaluable' means required evidence is not yet available."
     },
     "readiness_level": {
       "type": "string",
@@ -138,6 +138,19 @@
     "notes": {
       "type": "string",
       "description": "Optional freeform context about anomalies, partial coverage, or caveats."
+    },
+    "action_required": {
+      "type": "boolean",
+      "description": "Whether this evaluation result requires a follow-up work item. True if one or more findings demand action; false if the evaluation is closed with no action needed."
+    },
+    "linked_work_item_id": {
+      "type": ["string", "null"],
+      "description": "ID of the work item generated from this evaluation (e.g. WI-0001). Required when action_required is true; null when no action is needed."
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Explanation for the evaluation outcome. Required when action_required is false to document why no action was taken."
     }
   },
   "$defs": {

@@ -71,5 +71,7 @@
       "ref_path": "contract_validation_report.json"
     }
   ],
-  "notes": "Readiness gate failed due to missing risk register update. Partial run; two agenda attachments pending from upstream repo."
+  "notes": "Readiness gate failed due to missing risk register update. Partial run; two agenda attachments pending from upstream repo.",
+  "action_required": true,
+  "linked_work_item_id": "WI-0042"
 }

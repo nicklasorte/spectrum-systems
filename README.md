@@ -7,6 +7,20 @@ Constitutional governance/control-plane for the czar repo org. This repo defines
 - The bridge is **Engineering Tasks** and **Engineering Outputs**, flowing between coordination and document production.
 - See `docs/spectrum-study-operating-model.md` for the canonical operating model and ASCII loop diagram.
 
+## Control Loop
+
+The ecosystem enforces a tightly governed **evaluation → work item** control loop:
+
+1. **Every evaluation produces an outcome contract** — evaluations must set `action_required` (true/false). When true, a linked work item ID is mandatory; when false, a written rationale is required.
+2. **Evaluations drive work items** — `scripts/generate_work_items.py` converts evaluation results and review findings into structured, prioritized work items tracked in `governance/work-items/`.
+3. **Reviews use a canonical artifact** — all review outputs (Claude, system, human) conform to `schemas/review-artifact.schema.json` and can be mapped to work items.
+4. **Lifecycle is explicit** — the full input → transformation → evaluation → work item → resolution → re-evaluation lifecycle is documented in `docs/artifact-lifecycle.md`.
+
+Validation scripts enforce the control loop at CI time:
+- `scripts/validate_evaluation_manifest.py` — JSON Schema + evidence-ref checks
+- `scripts/validate_evaluation_contract.py` — enforces action_required linkage rules
+- `scripts/validate_review_artifacts.py` — validates review artifact conformance
+
 ## Overview
 - Publishes authoritative governance for system-factory scaffolds and downstream engines.
 - Maintains contracts, schemas, prompts, evaluation guidance, design reviews, ADRs, and compliance automation.
@@ -34,7 +48,9 @@ This repository defines the canonical development environment for the ecosystem 
 - **Architecture decisions**: ADRs live in `docs/adr/` using `docs/adr/ADR-TEMPLATE.md` (legacy ADRs remain in `architecture-decisions/`).
 - **Artifact contracts and schema registry**: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`, `contracts/schemas/`, and `schemas/README.md` define canonical inputs/outputs and compatibility.
 - **Prompt governance**: `prompts/` with standards in `docs/prompt-standard.md` and `prompts/prompt-governance.md`.
-- **Evaluation framework**: per-system assets in `eval/` (coverage in `eval/test-matrix.md`) and shared guidance in `evals/`.
+- **Evaluation framework**: per-system assets in `eval/` (coverage in `eval/test-matrix.md`); shared rubrics and fixtures in `evals/` (deprecated — extend `eval/` instead); evaluation output contract enforced by `scripts/validate_evaluation_contract.py`.
+- **Review artifacts**: canonical review schema at `schemas/review-artifact.schema.json`; validation via `scripts/validate_review_artifacts.py`; reviews may live in `docs/reviews/`, `design-reviews/`, or `docs/review-actions/`.
+- **Artifact lifecycle**: the full input → evaluation → work item → resolution cycle is defined in `docs/artifact-lifecycle.md`.
 - **Ecosystem registry**: machine-readable registry in `ecosystem/ecosystem-registry.json` and schema; status and maps in `SYSTEMS.md`, `docs/system-map.md`, and `docs/system-status-registry.md`.
 - **Rule packs and guidance**: governed rule sets under `rules/` with supporting governance docs in `docs/`.
 - **Compliance automation**: conformance guidance in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; cross-repo scanning in `docs/cross-repo-compliance.md` and `governance/compliance-scans/`; CI workflows in `.github/workflows/` with supporting scripts in `scripts/`.
@@ -74,8 +90,8 @@ The ecosystem maintains a maturity model, a playbook, and a canonical 100-step r
 | contracts/ | Artifact contracts, schema examples, and the standards manifest. |
 | schemas/ | Canonical schema registry for governed artifacts. |
 | prompts/ | Prompt catalog and governance notes. |
-| eval/ | Evaluation harnesses per system and the coverage matrix. |
-| evals/ | Shared evaluation dataset guidance, fixtures, and rubrics. |
+| eval/ | **Canonical** evaluation harnesses per system and the coverage matrix. |
+| evals/ | Shared evaluation dataset guidance, fixtures, and rubrics (**deprecated** — see `eval/`). |
 | ecosystem/ | Machine-readable ecosystem registry and schema. |
 | governance/ | Compliance scan configs and schemas (`governance/compliance-scans/`). |
 | systems/ | Per-system overviews and interfaces; index in `SYSTEMS.md`. |
