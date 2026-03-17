@@ -1,0 +1,592 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-17T02:14:52Z",
+  "source_manifest": "contracts/standards-manifest.json",
+  "repos": [
+    {
+      "repo_name": "comment-resolution-engine",
+      "repo_type": "operational_engine",
+      "system_id": "comment-resolution-engine",
+      "contracts_consumed": [
+        {
+          "contract": "comment_resolution_matrix",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "comment_resolution_matrix_spreadsheet_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "external_artifact_manifest",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_agenda_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "pdf_anchored_docx_comment_injection_contract",
+          "pinned_version": "1.0.1",
+          "canonical_version": "1.0.1",
+          "drift": false
+        },
+        {
+          "contract": "provenance_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "reviewer_comment_set",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "docx-comment-injection-engine",
+      "repo_type": "operational_engine",
+      "system_id": "docx-comment-injection-engine",
+      "contracts_consumed": [
+        {
+          "contract": "pdf_anchored_docx_comment_injection_contract",
+          "pinned_version": "1.0.1",
+          "canonical_version": "1.0.1",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "meeting-minutes-engine",
+      "repo_type": "operational_engine",
+      "system_id": "meeting-minutes-engine",
+      "contracts_consumed": [
+        {
+          "contract": "meeting_agenda_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_minutes",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "warning",
+      "failures": [],
+      "warnings": [
+        {
+          "repo": "meeting-minutes-engine",
+          "system_id": "meeting-minutes-engine",
+          "contract": "meeting_minutes_record",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'meeting_minutes_record' (canonical v1.0.0) but does not declare it in its governance manifest"
+        }
+      ]
+    },
+    {
+      "repo_name": "spectrum-pipeline-engine",
+      "repo_type": "pipeline",
+      "system_id": "spectrum-pipeline-engine",
+      "contracts_consumed": [
+        {
+          "contract": "assumption_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "comment_resolution_matrix_spreadsheet_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "decision_log",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "external_artifact_manifest",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_agenda_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_minutes",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "milestone_plan",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "next_best_action_memo",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "program_brief",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "risk_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "study_readiness_assessment",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "spectrum-program-advisor",
+      "repo_type": "advisory",
+      "system_id": "spectrum-program-advisor",
+      "contracts_consumed": [
+        {
+          "contract": "assumption_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "decision_log",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_minutes",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "milestone_plan",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "next_best_action_memo",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "program_brief",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "risk_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "study_readiness_assessment",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "warning",
+      "failures": [],
+      "warnings": [
+        {
+          "repo": "spectrum-program-advisor",
+          "system_id": "spectrum-program-advisor",
+          "contract": "meeting_minutes_record",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'meeting_minutes_record' (canonical v1.0.0) but does not declare it in its governance manifest"
+        }
+      ]
+    },
+    {
+      "repo_name": "spectrum-study-compiler",
+      "repo_type": "operational_engine",
+      "system_id": "spectrum-study-compiler",
+      "contracts_consumed": [],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "spectrum-systems",
+      "repo_type": "governance",
+      "system_id": "",
+      "contracts_consumed": [],
+      "contracts_produced": [],
+      "validation_status": "governance-repo",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "study-artifact-generator",
+      "repo_type": "operational_engine",
+      "system_id": "study-artifact-generator",
+      "contracts_consumed": [
+        {
+          "contract": "external_artifact_manifest",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "system-factory",
+      "repo_type": "factory",
+      "system_id": "system-factory",
+      "contracts_consumed": [
+        {
+          "contract": "assumption_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "comment_resolution_matrix",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "comment_resolution_matrix_spreadsheet_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "decision_log",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_agenda_contract",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "meeting_minutes",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "milestone_plan",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "next_best_action_memo",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "pdf_anchored_docx_comment_injection_contract",
+          "pinned_version": "1.0.1",
+          "canonical_version": "1.0.1",
+          "drift": false
+        },
+        {
+          "contract": "program_brief",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "provenance_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "reviewer_comment_set",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "risk_register",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "standards_manifest",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "study_readiness_assessment",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "working_paper_input",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "working-paper-review-engine",
+      "repo_type": "operational_engine",
+      "system_id": "working-paper-review-engine",
+      "contracts_consumed": [
+        {
+          "contract": "comment_resolution_matrix",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "pdf_anchored_docx_comment_injection_contract",
+          "pinned_version": "1.0.1",
+          "canonical_version": "1.0.1",
+          "drift": false
+        },
+        {
+          "contract": "provenance_record",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "reviewer_comment_set",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        },
+        {
+          "contract": "working_paper_input",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    }
+  ],
+  "contract_index": {
+    "assumption_register": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "comment_resolution_matrix": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ]
+    },
+    "comment_resolution_matrix_spreadsheet_contract": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ]
+    },
+    "decision_log": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "external_artifact_manifest": {
+      "canonical_version": "1.0.0",
+      "status": "draft",
+      "consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "study-artifact-generator"
+      ]
+    },
+    "meeting_agenda_contract": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ]
+    },
+    "meeting_minutes": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "meeting-minutes-engine",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "milestone_plan": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "next_best_action_memo": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "pdf_anchored_docx_comment_injection_contract": {
+      "canonical_version": "1.0.1",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "docx-comment-injection-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ]
+    },
+    "program_brief": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "provenance_record": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ]
+    },
+    "reviewer_comment_set": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "comment-resolution-engine",
+        "system-factory",
+        "working-paper-review-engine"
+      ]
+    },
+    "risk_register": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "standards_manifest": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "system-factory"
+      ]
+    },
+    "study_readiness_assessment": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "system-factory"
+      ]
+    },
+    "working_paper_input": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "system-factory",
+        "working-paper-review-engine"
+      ]
+    }
+  }
+}
