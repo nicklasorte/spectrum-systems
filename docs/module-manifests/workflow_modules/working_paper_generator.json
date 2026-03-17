@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "workflow_modules.working_paper_generator",
+  "module_name": "Workflow Module — Working Paper Generator",
+  "module_type": "workflow_module",
+  "owner_layer": "workflow_modules",
+  "description": "Converts meeting transcripts, meeting minutes, and optional existing working paper drafts into structured working-paper artifacts. Handles transcript parsing, meeting delta computation, argument extraction, open question identification, section readiness scoring, patch generation, and draft assembly.",
+  "status": "planned",
+  "inputs": [
+    "MeetingTranscript",
+    "MeetingMinutesRecord",
+    "WorkingPaperDraft"
+  ],
+  "outputs": [
+    "WorkingPaperDraft",
+    "OpenQuestionRegister",
+    "ArgumentRegistry",
+    "ReadinessReport"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "shared.provenance",
+    "workflow_modules.meeting_intelligence"
+  ],
+  "lifecycle_stages": [
+    "transcript_parsed",
+    "delta_computed",
+    "arguments_extracted",
+    "questions_extracted",
+    "readiness_scored",
+    "patch_generated",
+    "draft_assembled"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage",
+    "ProvenanceRecord from shared.provenance"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Comment resolution logic — that belongs to workflow_modules.comment_resolution",
+    "Lifecycle enforcement and governance — that belongs to the control_plane",
+    "Storing or querying domain regulatory or allocation data — that belongs to domain_modules",
+    "Producing meeting minutes from raw transcripts — that belongs to workflow_modules.meeting_intelligence"
+  ]
+}
