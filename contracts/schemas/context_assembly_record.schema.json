@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_assembly_record.schema.json",
+  "title": "Context Assembly Record",
+  "description": "Traceability record produced alongside every context bundle. Captures which sections were included or excluded, token budget and usage, overflow actions taken, and retrieval status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context_id",
+    "task_type",
+    "source_artifact_ids",
+    "included_sections",
+    "excluded_sections",
+    "token_budget",
+    "token_usage",
+    "overflow_actions_taken",
+    "retrieval_status",
+    "warnings",
+    "timestamp"
+  ],
+  "properties": {
+    "context_id": {
+      "type": "string",
+      "description": "Matches the context_id of the assembled context bundle."
+    },
+    "task_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "AI task type for which the context bundle was assembled."
+    },
+    "source_artifact_ids": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Identifiers of all source artifacts that contributed to the bundle."
+    },
+    "included_sections": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Context sections that are populated and included in the bundle."
+    },
+    "excluded_sections": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Context sections that are absent or empty in the bundle."
+    },
+    "token_budget": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Total token budget configured in the policy. Null when no policy was applied."
+    },
+    "token_usage": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Estimated total token count of the assembled bundle."
+    },
+    "overflow_actions_taken": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of overflow or truncation actions that were applied during assembly."
+    },
+    "retrieval_status": {
+      "type": "string",
+      "enum": ["available", "unavailable"],
+      "description": "Whether the retrieval system was available and returned results."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Non-fatal warnings raised during assembly (e.g., retrieval unavailable, truncation occurred)."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this assembly record was produced."
+    }
+  }
+}
