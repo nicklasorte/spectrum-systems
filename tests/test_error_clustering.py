@@ -645,6 +645,7 @@ class TestCLISmokeTest:
         result = subprocess.run(
             [
                 sys.executable, str(script), "--all",
+                "--store-dir", str(tmp_path),
             ],
             capture_output=True,
             text=True,

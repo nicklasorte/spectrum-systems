@@ -43,8 +43,10 @@ _OUTPUTS_DIR = _ROOT / "outputs"
 def _load_records(
     all_records: bool,
     case_id: str | None,
+    store_dir: Path | None = None,
 ) -> list[ErrorClassificationRecord]:
-    records = ErrorClassificationRecord.list_all(_STORE_DIR)
+    target_dir = store_dir if store_dir is not None else _STORE_DIR
+    records = ErrorClassificationRecord.list_all(target_dir)
     if case_id:
         records = [r for r in records if r.context.get("case_id") == case_id]
     return records
@@ -65,11 +67,18 @@ def main() -> None:
     group.add_argument(
         "--case", metavar="CASE_ID", help="Filter to a specific case ID."
     )
+    parser.add_argument(
+        "--store-dir",
+        metavar="PATH",
+        default=None,
+        help="Override the error classification store directory (default: data/error_classifications/).",
+    )
     args = parser.parse_args()
 
     case_id = args.case if args.case else None
+    store_dir = Path(args.store_dir) if args.store_dir else None
 
-    records = _load_records(all_records=args.all, case_id=case_id)
+    records = _load_records(all_records=args.all, case_id=case_id, store_dir=store_dir)
 
     if not records:
         filter_desc = f" for case '{case_id}'" if case_id else ""
