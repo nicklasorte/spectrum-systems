@@ -43,6 +43,10 @@ _WARN_REGRESSION_THRESHOLD: float = -0.03
 # Minimum targeted metric improvement to recommend promotion.
 _MIN_IMPROVEMENT_FOR_PROMOTE: float = 0.01
 
+# Latency regression thresholds (ms increase = bad).
+_HARD_LATENCY_REGRESSION_MS: float = 50.0
+_WARN_LATENCY_REGRESSION_MS: float = 20.0
+
 # ---------------------------------------------------------------------------
 # Metric target mappings per action_type
 # ---------------------------------------------------------------------------
@@ -200,6 +204,15 @@ def check_regression(
         elif delta < warn_threshold:
             warnings += 1
 
+    # Check latency regression (an increase in latency_ms is a regression).
+    b_latency = float(baseline_summary.get("latency_ms", 0.0))
+    c_latency = float(candidate_summary.get("latency_ms", 0.0))
+    latency_delta = c_latency - b_latency
+    if latency_delta > _HARD_LATENCY_REGRESSION_MS:
+        hard_failures += 1
+    elif latency_delta > _WARN_LATENCY_REGRESSION_MS:
+        warnings += 1
+
     return {
         "overall_pass": hard_failures == 0,
         "hard_failures": hard_failures,
@@ -266,6 +279,12 @@ def determine_promotion_recommendation(
     # Promote conditions
     if simulation_fidelity in ("high", "medium"):
         if observed_direction == expected_direction and hard_failures == 0:
+            # Require a minimum meaningful improvement to justify promotion.
+            target_metric = targeted_effect.get("target_metric", "structural_score")
+            delta_key = f"{target_metric}_delta"
+            delta_magnitude = abs(float(deltas.get(delta_key, 0.0)))
+            if delta_magnitude < _MIN_IMPROVEMENT_FOR_PROMOTE:
+                return "hold"
             if warnings == 0:
                 return "promote"
             else:
