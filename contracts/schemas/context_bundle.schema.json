@@ -22,7 +22,7 @@
     "context_id": {
       "type": "string",
       "pattern": "^ctx-[a-f0-9]{16}$",
-      "description": "Deterministic identifier derived from task_type and primary_input."
+      "description": "Deterministic identifier derived from task_type, primary_input, source artifact IDs, policy_constraints, glossary_terms, and unresolved_questions. Uniquely identifies the full assembled bundle."
     },
     "task_type": {
       "type": "string",
@@ -97,8 +97,8 @@
         },
         "retrieval_status": {
           "type": "string",
-          "enum": ["available", "unavailable"],
-          "description": "Indicates whether retrieved_context was populated from a retrieval system."
+          "enum": ["available", "empty", "unavailable"],
+          "description": "Indicates whether retrieved_context was populated from a retrieval system. 'available' = retrieval ran and returned results; 'empty' = retrieval ran but returned no results; 'unavailable' = retrieval was not called or not yet implemented."
         },
         "source_artifact_ids": {
           "type": "array",

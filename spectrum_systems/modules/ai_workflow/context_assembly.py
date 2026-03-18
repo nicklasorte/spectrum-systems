@@ -258,11 +258,56 @@ def apply_context_budget(
     ) -> Any:
         """Truncate *content* to approximately *reservation_tokens* tokens.
 
-        Truncation is performed on the serialised text representation.  The
-        original type is preserved (str → str; anything else → str of truncated
-        JSON).  A truncation log entry is always appended when truncation occurs.
+        For string and dict content, truncation is performed on the serialised
+        text representation.  For list content (e.g. ``retrieved_context``),
+        items are removed from the end one by one until the serialised
+        representation fits within the budget; this preserves the list type and
+        ensures schema compliance.  A truncation log entry is always appended
+        when truncation occurs.
         """
         import json as _json
+
+        if isinstance(content, list):
+            text = _json.dumps(content, ensure_ascii=False)
+            current_tokens = estimate_tokens(text)
+            if current_tokens <= reservation_tokens:
+                return content  # nothing to do
+
+            # Remove items from the end until within budget.  Compute per-item
+            # token costs upfront to avoid O(n²) re-serializations on large lists.
+            # The per-item estimates are approximate (they exclude JSON delimiters)
+            # so we do one final serialization at the end to verify the result.
+            item_tokens = [
+                estimate_tokens(_json.dumps(item, ensure_ascii=False))
+                for item in content
+            ]
+            running = current_tokens
+            truncated = list(content)
+            item_costs = list(item_tokens)
+            while truncated and running > reservation_tokens:
+                removed_tokens = item_costs.pop()
+                truncated.pop()
+                running -= removed_tokens
+
+            # One verification pass with a true serialization to handle delimiter
+            # overhead that the per-item estimates did not account for.
+            while truncated and estimate_tokens(
+                _json.dumps(truncated, ensure_ascii=False)
+            ) > reservation_tokens:
+                truncated.pop()
+
+            final_text = _json.dumps(truncated, ensure_ascii=False)
+            chars_removed = len(text) - len(final_text)
+            truncation_log.append(
+                {
+                    "section": section_key,
+                    "original_tokens": current_tokens,
+                    "allowed_tokens": reservation_tokens,
+                    "chars_removed": chars_removed,
+                    "action": "truncated",
+                }
+            )
+            return truncated
 
         if isinstance(content, str):
             text = content
@@ -291,8 +336,9 @@ def apply_context_budget(
         if isinstance(content, str):
             return truncated_text
 
-        # Best-effort: return the truncated text as a string so downstream
-        # consumers can still use the data even if JSON is no longer valid.
+        # For dict content, return the truncated serialisation as a string.
+        # This is a best-effort fallback; callers should keep dict content
+        # within budget to avoid this path.
         return truncated_text
 
     # Apply reservations to bounded sections.
@@ -479,6 +525,10 @@ def build_context_bundle(
             Domain glossary entries (list of strings or dicts).
         ``unresolved_questions``
             Open questions to be provided as context (list of strings).
+        ``retrieval_query``
+            Explicit retrieval query string.  When absent, ``task_type`` is
+            used as a placeholder query; callers should supply an explicit
+            query once real retrieval is implemented.
 
     Returns
     -------
@@ -501,10 +551,15 @@ def build_context_bundle(
     cfg = config or {}
     artifacts = source_artifacts or []
 
-    context_id = _make_context_id(task_type, input_payload)
+    context_id = _make_context_id(task_type, input_payload, source_artifacts=artifacts, config=cfg)
 
     # Build retrieval context (stub always returns []).
-    retrieved = retrieve_context(query=task_type, task_type=task_type)
+    # NOTE: task_type is used as a placeholder retrieval query.  When real
+    # retrieval is implemented, the caller should pass an explicit query via
+    # config (e.g. config["retrieval_query"]) so that the query reflects the
+    # actual content of the task rather than the task-type label.
+    retrieval_query = cfg.get("retrieval_query") or task_type
+    retrieved = retrieve_context(query=retrieval_query, task_type=task_type)
     retrieval_status = "unavailable" if not retrieved else "available"
 
     bundle: Dict[str, Any] = {
@@ -634,15 +689,49 @@ def _utc_now() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
 
 
-def _make_context_id(task_type: str, input_payload: Dict[str, Any]) -> str:
-    """Derive a deterministic context_id from task_type and input_payload.
+def _make_context_id(
+    task_type: str,
+    input_payload: Dict[str, Any],
+    source_artifacts: Optional[List[Dict[str, Any]]] = None,
+    config: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Derive a deterministic context_id from all bundle-contributing inputs.
 
-    Uses a SHA-256 digest of the canonical JSON representation.
+    Uses a SHA-256 digest of the canonical JSON representation of every
+    input that shapes the assembled bundle: ``task_type``, ``input_payload``,
+    sorted source artifact IDs, ``policy_constraints``, ``glossary_terms``,
+    and ``unresolved_questions``.  Two bundles that differ in any of these
+    fields will always receive different ``context_id`` values.
+
+    Notes
+    -----
+    *   Artifacts that lack an ``artifact_id`` key contribute an empty string
+        to the sorted ID list.  This is intentional: it is consistent with how
+        ``source_artifact_ids`` are recorded in the bundle metadata, and means
+        a missing ``artifact_id`` is treated the same way throughout the module.
+        Callers are encouraged to ensure every artifact carries a unique
+        ``artifact_id`` to avoid ambiguity.
+    *   The config values are normalised with the same ``or``-defaults used in
+        ``build_context_bundle`` so the hash always reflects the actual bundle
+        content rather than raw caller inputs.
     """
     import json as _json
 
+    cfg = config or {}
+    artifact_ids = sorted(
+        a.get("artifact_id", "") for a in (source_artifacts or [])
+    )
+    # Mirror the same normalization applied in build_context_bundle so the hash
+    # reflects actual bundle content.
     canonical = _json.dumps(
-        {"task_type": task_type, "input_payload": input_payload},
+        {
+            "task_type": task_type,
+            "input_payload": input_payload,
+            "source_artifact_ids": artifact_ids,
+            "policy_constraints": cfg.get("policy_constraints") or {},
+            "glossary_terms": cfg.get("glossary_terms") or [],
+            "unresolved_questions": cfg.get("unresolved_questions") or [],
+        },
         sort_keys=True,
         ensure_ascii=False,
     )

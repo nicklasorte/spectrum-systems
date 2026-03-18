@@ -545,3 +545,95 @@ class TestEdgeCases:
         with pytest.raises(ValueError, match="Sum of reservations"):
             build_context_bundle("meeting_minutes", MINIMAL_INPUT,
                                  config={"budget_policy": policy})
+
+
+# ---------------------------------------------------------------------------
+# context_id covers all bundle-contributing inputs (Fix 1)
+# ---------------------------------------------------------------------------
+
+class TestContextIdFullCoverage:
+    def test_context_id_differs_with_different_source_artifacts(self):
+        """Bundles with different source artifacts must have different context_ids."""
+        b1 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            source_artifacts=[{"artifact_id": "ART-001"}],
+        )
+        b2 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            source_artifacts=[{"artifact_id": "ART-002"}],
+        )
+        assert b1["context_id"] != b2["context_id"]
+
+    def test_context_id_differs_with_different_policy_constraints(self):
+        """Different policy_constraints must produce different context_ids."""
+        b1 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            config={"policy_constraints": "rule A"},
+        )
+        b2 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            config={"policy_constraints": "rule B"},
+        )
+        assert b1["context_id"] != b2["context_id"]
+
+    def test_context_id_differs_with_different_glossary(self):
+        """Different glossary_terms must produce different context_ids."""
+        b1 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            config={"glossary_terms": ["EIRP"]},
+        )
+        b2 = build_context_bundle(
+            "meeting_minutes", MINIMAL_INPUT,
+            config={"glossary_terms": ["path loss"]},
+        )
+        assert b1["context_id"] != b2["context_id"]
+
+    def test_context_id_stable_with_same_full_inputs(self):
+        """Identical full inputs must always produce the same context_id."""
+        artifacts = [{"artifact_id": "ART-X"}]
+        cfg = {"policy_constraints": "rule C", "glossary_terms": ["EIRP"]}
+        b1 = build_context_bundle("meeting_minutes", MINIMAL_INPUT,
+                                  source_artifacts=artifacts, config=cfg)
+        b2 = build_context_bundle("meeting_minutes", MINIMAL_INPUT,
+                                  source_artifacts=artifacts, config=cfg)
+        assert b1["context_id"] == b2["context_id"]
+
+
+# ---------------------------------------------------------------------------
+# _truncate_section preserves list type for retrieved_context (Fix 2)
+# ---------------------------------------------------------------------------
+
+class TestTruncateSectionListType:
+    def _oversized_retrieved_bundle(self) -> dict:
+        large_content = "C" * 5000
+        bundle = build_context_bundle("meeting_minutes", MINIMAL_INPUT)
+        bundle["retrieved_context"] = [
+            {"artifact_id": f"ART-{i}", "content": large_content,
+             "relevance_score": 0.9, "provenance": {}}
+            for i in range(3)
+        ]
+        return bundle
+
+    def test_retrieved_context_remains_list_after_truncation(self):
+        """retrieved_context must remain a list (not a string) after truncation."""
+        bundle = self._oversized_retrieved_bundle()
+        policy = _make_policy(retrieval_res=5)
+        result = apply_context_budget(bundle, policy)
+        assert isinstance(result["retrieved_context"], list), (
+            "retrieved_context must remain a list after truncation"
+        )
+
+    def test_truncated_retrieved_context_passes_schema_validation(self):
+        """Bundle with truncated retrieved_context must still validate against schema."""
+        schema = _load_schema("context_bundle.schema.json")
+        bundle = self._oversized_retrieved_bundle()
+        policy = _make_policy(retrieval_res=5)
+        result = apply_context_budget(bundle, policy)
+        _validate(result, schema)
+
+    def test_truncation_log_entry_present_for_list_truncation(self):
+        """A truncation log entry must be present when list items are removed."""
+        bundle = self._oversized_retrieved_bundle()
+        policy = _make_policy(retrieval_res=5)
+        result = apply_context_budget(bundle, policy)
+        assert any(e["section"] == "retrieved_context" for e in result["truncation_log"])
