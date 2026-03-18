@@ -8,14 +8,14 @@
 
 | ID | Action Item | Owner | Status | Blocking Dependencies | Notes |
 | --- | --- | --- | --- | --- | --- |
-| RI-001 | Add deprecation notice to `docs/roadmap.md` pointing to `docs/roadmaps/codex-prompt-roadmap.md` as the replacement | TBD | Open | None | Removes the vestigial three-phase sketch that has no alignment to the current module-first architecture; prevents Codex agents from forming an incorrect mental model of the build sequence |
-| RI-002 | Update `Status:` field in `docs/architecture/module-pivot-roadmap.md` from `Active` to `Reference` and add a navigation note pointing to `docs/roadmaps/codex-prompt-roadmap.md` for Codex prompt sequencing | TBD | Open | None | Resolves the dual-Active conflict; `module-pivot-roadmap.md` retains authority over module structure, Level-16 criteria, and Definition of Done but yields execution sequencing authority |
+| RI-001 | Add deprecation notice to `docs/roadmap.md` pointing to `docs/roadmaps/codex-prompt-roadmap.md` as the replacement | Copilot | Resolved (2026-03-18) | None | `docs/roadmap.md` now opens with `⚠️ DEPRECATED` header, names the replacement, and instructs agents not to execute from it. |
+| RI-002 | Update `Status:` field in `docs/architecture/module-pivot-roadmap.md` from `Active` to `Reference` and add a navigation note pointing to `docs/roadmaps/codex-prompt-roadmap.md` for Codex prompt sequencing | Copilot | Resolved (2026-03-18) | None | `module-pivot-roadmap.md` now opens with `📘 REFERENCE` header and `Status: Reference`; directs readers to `codex-prompt-roadmap.md` for execution. |
 
 ## High-Priority Items
 
 | ID | Action Item | Owner | Status | Blocking Dependencies | Notes |
 | --- | --- | --- | --- | --- | --- |
-| RI-003 | Add a "Single ACTIVE Roadmap" note to `AGENTS.md` or `CODEX.md` explicitly naming `docs/roadmaps/codex-prompt-roadmap.md` as the sole Codex execution driver | TBD | Open | RI-001, RI-002 | Prevents ambiguity for any agent that reads root governance files before roadmap documents |
+| RI-003 | Add a "Single ACTIVE Roadmap" note to `AGENTS.md` or `CODEX.md` explicitly naming `docs/roadmaps/codex-prompt-roadmap.md` as the sole Codex execution driver | Copilot | Resolved (2026-03-18) | RI-001, RI-002 | Both `AGENTS.md` and `CODEX.md` now contain a "Roadmap Execution Rule" section naming `codex-prompt-roadmap.md` as the sole ACTIVE roadmap and stating REFERENCE/DEPRECATED documents must not drive execution. |
 
 ## Medium-Priority Items
 
@@ -31,8 +31,8 @@
 
 ## Blocking Items
 
-- **RI-001 and RI-002** must be resolved before `docs/roadmaps/codex-prompt-roadmap.md` can be treated as unambiguously ACTIVE by all agents. Until then, the dual-Active state and vestigial `docs/roadmap.md` create latent confusion.
-- **RM-002 (Canonical ID Standard)** from `docs/review-actions/2026-03-16-roadmap-review-actions.md` blocks any Layer 2 module work (S–W in codex-prompt-roadmap.md).
+- **RI-001, RI-002, and RI-003** are all Resolved as of 2026-03-18. `docs/roadmaps/codex-prompt-roadmap.md` is now unambiguously the single ACTIVE execution roadmap for all agents.
+- **RM-002 (Canonical ID Standard)** from `docs/review-actions/2026-03-16-roadmap-review-actions.md` still blocks any Layer 2 module work (S–W in codex-prompt-roadmap.md).
 
 ## Deferred Items
 
