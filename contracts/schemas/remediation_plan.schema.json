@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/remediation_plan.schema.json",
+  "title": "Remediation Plan",
+  "description": "A governed, auditable remediation plan produced by the AW1 Remediation Mapping Engine from a validated failure cluster. Proposes candidate fixes without applying them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "remediation_id",
+    "cluster_id",
+    "cluster_signature",
+    "taxonomy_version",
+    "created_at",
+    "mapping_status",
+    "mapping_reasons",
+    "dominant_error_codes",
+    "remediation_targets",
+    "proposed_actions",
+    "primary_proposal_index",
+    "evidence_summary"
+  ],
+  "properties": {
+    "remediation_id": {
+      "type": "string",
+      "description": "Unique identifier for this remediation plan."
+    },
+    "cluster_id": {
+      "type": "string",
+      "description": "ID of the source ValidatedCluster."
+    },
+    "cluster_signature": {
+      "type": "string",
+      "description": "Primary error code string that identifies the source cluster."
+    },
+    "taxonomy_version": {
+      "type": "string",
+      "description": "Version of the error taxonomy catalog used when mapping."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp when this remediation plan was created."
+    },
+    "mapping_status": {
+      "type": "string",
+      "enum": ["mapped", "ambiguous", "rejected"],
+      "description": "Outcome of the mapping run. 'mapped' = a clear remediation target was found; 'ambiguous' = signal is mixed; 'rejected' = cluster failed validation gate."
+    },
+    "mapping_reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Auditable reasons explaining every mapping decision."
+    },
+    "dominant_error_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Error codes that dominated the mapping signal for this cluster."
+    },
+    "remediation_targets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Canonical target components identified for remediation."
+    },
+    "proposed_actions": {
+      "type": "array",
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/proposed_action" },
+      "description": "Candidate remediation actions (max 2). Not applied automatically."
+    },
+    "primary_proposal_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Index into proposed_actions identifying the top-ranked proposal."
+    },
+    "evidence_summary": {
+      "$ref": "#/$defs/evidence_summary",
+      "description": "Aggregate evidence metrics supporting the mapping decision."
+    }
+  },
+  "$defs": {
+    "proposed_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_id",
+        "action_type",
+        "target_component",
+        "rationale",
+        "expected_benefit",
+        "risk_level",
+        "confidence_score"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "description": "Unique identifier for this proposed action."
+        },
+        "action_type": {
+          "type": "string",
+          "enum": [
+            "prompt_change",
+            "schema_change",
+            "grounding_rule_change",
+            "input_quality_rule_change",
+            "retrieval_change",
+            "observability_change",
+            "no_action"
+          ],
+          "description": "Type of remediation action proposed."
+        },
+        "target_component": {
+          "type": "string",
+          "description": "Canonical name of the component targeted for change."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Explicit, auditable rationale for why this action is proposed."
+        },
+        "expected_benefit": {
+          "type": "string",
+          "description": "Expected benefit if this action is applied."
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Risk level associated with applying this change."
+        },
+        "confidence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Deterministic confidence score (0–1) for this proposed action."
+        }
+      }
+    },
+    "evidence_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_count",
+        "avg_cluster_confidence",
+        "weighted_severity_score",
+        "pass_types"
+      ],
+      "properties": {
+        "record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of classification records in the source cluster."
+        },
+        "avg_cluster_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Average classification confidence across records in the cluster."
+        },
+        "weighted_severity_score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Weighted severity score from the source cluster metrics."
+        },
+        "pass_types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Distinct pass types present in the source cluster."
+        }
+      }
+    }
+  }
+}
