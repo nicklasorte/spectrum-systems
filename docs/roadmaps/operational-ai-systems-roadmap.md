@@ -1,3 +1,10 @@
+# 📘 REFERENCE
+
+This document is for context and design history only.
+It is not used for execution.
+
+---
+
 # Operational AI Systems Roadmap
 
 ## Purpose
