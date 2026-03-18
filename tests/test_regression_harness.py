@@ -992,7 +992,7 @@ def test_cli_compare_identical_baseline(tmp_path: Path) -> None:
         "--output", str(output_path),
         "--baselines-dir", str(baselines_dir),
     ])
-    assert exit_code in (0, 1)
+    assert exit_code == 0
     assert output_path.exists()
     report = json.loads(output_path.read_text(encoding="utf-8"))
     assert "summary" in report

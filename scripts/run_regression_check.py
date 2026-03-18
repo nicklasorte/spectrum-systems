@@ -43,6 +43,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 # Ensure repo root on sys.path when invoked directly
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -74,7 +75,7 @@ _DEFAULT_OUTPUT = _REPO_ROOT / "outputs" / "regression_report.json"
 # ---------------------------------------------------------------------------
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
 

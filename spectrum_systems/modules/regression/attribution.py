@@ -68,9 +68,10 @@ def attribute_regressions_to_passes(
     # Index candidate records by (pass_type, case_id)
     cand_index: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
     for rec in candidate_records:
+        case_id_val = rec.get("case_id")
         key = (
             rec.get("pass_type", "unknown"),
-            rec.get("case_id") or rec.get("artifact_id", ""),
+            case_id_val if case_id_val is not None else rec.get("artifact_id", ""),
         )
         cand_index[key].append(rec)
 
@@ -79,7 +80,8 @@ def attribute_regressions_to_passes(
 
     for base_rec in baseline_records:
         pass_type = base_rec.get("pass_type", "unknown")
-        case_key = base_rec.get("case_id") or base_rec.get("artifact_id", "")
+        base_case_id = base_rec.get("case_id")
+        case_key = base_case_id if base_case_id is not None else base_rec.get("artifact_id", "")
         key = (pass_type, case_key)
         cands = cand_index.get(key, [])
         if not cands:
@@ -102,16 +104,18 @@ def attribute_regressions_to_passes(
             })
 
     # Count unmatched candidate records
-    base_keys = {
-        (r.get("pass_type", "unknown"), r.get("case_id") or r.get("artifact_id", ""))
-        for r in baseline_records
-    }
-    unmatched_candidate = sum(
-        1
-        for rec in candidate_records
-        if (rec.get("pass_type", "unknown"), rec.get("case_id") or rec.get("artifact_id", ""))
-        not in base_keys
-    )
+    base_keys = set()
+    for r in baseline_records:
+        r_case_id = r.get("case_id")
+        r_key = r_case_id if r_case_id is not None else r.get("artifact_id", "")
+        base_keys.add((r.get("pass_type", "unknown"), r_key))
+
+    unmatched_candidate = 0
+    for rec in candidate_records:
+        rec_case_id = rec.get("case_id")
+        rec_key = rec_case_id if rec_case_id is not None else rec.get("artifact_id", "")
+        if (rec.get("pass_type", "unknown"), rec_key) not in base_keys:
+            unmatched_candidate += 1
 
     partial = unmatched_baseline > 0 or unmatched_candidate > 0
 

@@ -201,6 +201,10 @@ def evaluate_policy_gates(
     hd_data = comparison.get("human_disagreement_rate", {})
     hd_baseline = float(hd_data.get("baseline", 0.0))
     hd_candidate = float(hd_data.get("candidate", 0.0))
+    # Human disagreement data defaults to insufficient_data=True because it
+    # requires human feedback records, which are not always available for
+    # every candidate run.  The caller can explicitly set
+    # insufficient_data=False when feedback-backed data is confirmed present.
     hd_insufficient = bool(hd_data.get("insufficient_data", True))
     if hd_baseline > 0:
         hd_pct_delta = ((hd_candidate - hd_baseline) / hd_baseline) * 100.0
