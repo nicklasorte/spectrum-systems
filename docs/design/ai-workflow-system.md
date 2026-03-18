@@ -551,3 +551,112 @@ python scripts/run_eval.py --all --config config/eval_config.yaml --output outpu
 - Evaluation must be reproducible: use `deterministic=true` for CI runs.
 - System must fail loudly, not degrade quietly.
 - No external dependencies beyond the Python standard library.
+
+---
+
+## Human Feedback Capture Layer (Prompt AO)
+
+### Overview
+
+The Human Feedback Capture Layer provides a governed, structured mechanism for expert reviewers to evaluate AI-generated outputs at the claim, section, or artifact level.  Feedback is a **first-class artifact** — schema-validated, uniquely identified, and stored alongside the outputs it references.
+
+### Feedback lifecycle
+
+```
+AI Output (pass_chain_record / working_paper / slide_intelligence)
+    │
+    ▼
+extract_claims()          — segment into reviewable claim units
+    │
+    ▼
+ReviewSession             — iterate claims, collect structured feedback
+    │
+    ▼
+HumanFeedbackRecord       — schema-validated, persisted to data/human_feedback/
+    │
+    ├──▶ FeedbackStore     — JSON storage + artifact index
+    │
+    ├──▶ feedback_mapping  — maps failure_type → ErrorType (AU bridge)
+    │
+    └──▶ EvalRunner.apply_feedback_overrides() — injects overrides into EvalResult
+```
+
+### Schema: human_feedback_record
+
+Contract: `contracts/schemas/human_feedback_record.schema.json`
+
+| Field | Type | Description |
+|---|---|---|
+| `feedback_id` | string | Unique UUID |
+| `artifact_id` | string | Reviewed artifact ID |
+| `artifact_type` | enum | `meeting_minutes`, `working_paper`, `slide_intelligence`, etc. |
+| `target_level` | enum | `artifact` \| `section` \| `claim` |
+| `target_id` | string | ID of reviewed section or claim |
+| `reviewer.reviewer_id` | string | Reviewer identifier |
+| `reviewer.reviewer_role` | enum | `engineer` \| `policy` \| `legal` \| `leadership` |
+| `action` | enum | `accept` \| `minor_edit` \| `major_edit` \| `reject` \| `rewrite` \| `needs_support` |
+| `original_text` | string | Always preserved — never overwritten |
+| `edited_text` | string\|null | Required for edit/rewrite actions |
+| `rationale` | string | Reviewer explanation |
+| `source_of_truth` | enum | `transcript` \| `slides` \| `statute` \| `policy` \| `engineering_analysis` \| `external_reference` |
+| `failure_type` | enum | AU-aligned: `extraction_error` \| `reasoning_error` \| `grounding_failure` \| `hallucination` \| `schema_violation` \| `unclear` |
+| `severity` | enum | `low` \| `medium` \| `high` \| `critical` |
+| `should_update.golden_dataset` | bool | Trigger golden dataset update |
+| `should_update.prompts` | bool | Trigger prompt update |
+| `should_update.retrieval_memory` | bool | Trigger retrieval memory update |
+| `timestamp` | ISO-8601 datetime | Record creation time |
+
+### Module structure
+
+| Module | Path | Purpose |
+|---|---|---|
+| `HumanFeedbackRecord` | `spectrum_systems/modules/feedback/human_feedback.py` | Data model + schema validation |
+| `FeedbackStore` | `spectrum_systems/modules/feedback/human_feedback.py` | Persist, load, list, index |
+| `create_feedback_from_review` | `spectrum_systems/modules/feedback/feedback_ingest.py` | Build + validate + persist from raw reviewer input |
+| `extract_claims` | `spectrum_systems/modules/feedback/claim_extraction.py` | Segment documents into reviewable units |
+| `ReviewSession` | `spectrum_systems/modules/feedback/review_session.py` | Multi-claim iterative review session |
+| `map_feedback_to_error_type` | `spectrum_systems/modules/feedback/feedback_mapping.py` | Bridge to AU error taxonomy |
+
+### Integration with EvalRunner (AN)
+
+After a `run_case()` call, human feedback can be injected via:
+
+```python
+updated_result = runner.apply_feedback_overrides(eval_result, feedback_records)
+```
+
+- Original `EvalResult` is **never mutated** (returns a new dataclass copy).
+- Overrides are stored in `EvalResult.human_feedback_overrides`.
+- Each override includes a `human_disagrees_with_system` flag.
+- `to_dict()` includes the overrides for serialization into eval reports.
+
+### CLI usage
+
+```bash
+python scripts/run_feedback_session.py --artifact ARTIFACT_ID --reviewer USER_ID
+
+# With all options
+python scripts/run_feedback_session.py \
+  --artifact wp-section-001 \
+  --reviewer eng-alice \
+  --role engineer \
+  --artifact-type working_paper \
+  --artifact-file path/to/artifact.json \
+  --output outputs/session_summary.json
+```
+
+### How feedback feeds downstream systems
+
+| Downstream system | How it uses feedback |
+|---|---|
+| **AU — Error taxonomy** | `map_feedback_to_error_type()` maps every feedback record to a typed `ErrorType`, enabling failure pattern analysis |
+| **AV — Clustering** | `failure_type` + `severity` fields enable clustering of feedback by failure mode |
+| **AW — Prompt improvement** | `should_update.prompts` flag + `original_text` / `edited_text` pairs provide training signal |
+| **AZ — Data flywheel** | `should_update.golden_dataset` flag identifies cases for golden dataset expansion |
+
+### Strict rules
+
+- No unstructured-only feedback: all feedback must pass schema validation before persistence.
+- Feedback must map to a specific `artifact_id` + `target_id`.
+- No silent overwriting: `original_text` is always preserved alongside `edited_text`.
+- Feedback is additive: artifacts are never mutated by the feedback system.
