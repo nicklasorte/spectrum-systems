@@ -53,6 +53,15 @@ from spectrum_systems.modules.error_taxonomy.cluster_pipeline import (
     build_clusters_from_classifications,
     enrich_clusters_with_catalog,
     rank_and_filter_clusters,
+    validate_clusters,
+)
+from spectrum_systems.modules.error_taxonomy.cluster_validation import (
+    ValidatedCluster,
+    ClusterValidator,
+)
+from spectrum_systems.modules.error_taxonomy.validated_cluster_store import (
+    save_validated_cluster,
+    load_validated_clusters,
 )
 
 __all__ = [
@@ -93,8 +102,15 @@ __all__ = [
     "save_cluster",
     "load_cluster",
     "list_clusters",
-    # cluster pipeline (AV)
+    # cluster pipeline (AV + AW0)
     "build_clusters_from_classifications",
     "enrich_clusters_with_catalog",
     "rank_and_filter_clusters",
+    "validate_clusters",
+    # cluster validation (AW0)
+    "ValidatedCluster",
+    "ClusterValidator",
+    # validated cluster store (AW0)
+    "save_validated_cluster",
+    "load_validated_clusters",
 ]

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/validated_cluster.schema.json",
+  "title": "Validated Cluster",
+  "description": "A governed, validated failure pattern cluster that has passed the AW0 Cluster Validation Layer. Only valid clusters are forwarded to the AW prompt improvement loop.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cluster_id",
+    "cluster_signature",
+    "record_count",
+    "error_codes",
+    "pass_types",
+    "remediation_targets",
+    "validation_status",
+    "validation_reasons",
+    "stability_score",
+    "cohesion_score",
+    "actionability_score",
+    "created_at"
+  ],
+  "properties": {
+    "cluster_id": {
+      "type": "string",
+      "description": "Unique identifier for the source ErrorCluster."
+    },
+    "cluster_signature": {
+      "type": "string",
+      "description": "Canonical signature string identifying the failure pattern (primary_error_code)."
+    },
+    "record_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of classification records in the cluster."
+    },
+    "error_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "All error codes present in the cluster (primary and secondary)."
+    },
+    "pass_types": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Distinct pass types represented in the cluster."
+    },
+    "remediation_targets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unique remediation targets derived from the cluster."
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["valid", "invalid"],
+      "description": "Outcome of the validation run."
+    },
+    "validation_reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit reasons explaining why the cluster passed or failed each check."
+    },
+    "stability_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score (0–1) measuring consistency of the cluster signature across records."
+    },
+    "cohesion_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score (0–1) measuring how tightly the cluster is dominated by a single error code."
+    },
+    "actionability_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score (0–1) measuring how actionable the cluster is (inverse of number of remediation targets)."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp when this validated cluster record was created."
+    }
+  }
+}

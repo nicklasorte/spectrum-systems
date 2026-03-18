@@ -1,12 +1,13 @@
 """
 Cluster Pipeline — spectrum_systems/modules/error_taxonomy/cluster_pipeline.py
 
-Orchestrates the full AV Auto-Failure Clustering pipeline:
+Orchestrates the full AV → AW0 pipeline:
 
   1. Load ErrorClassificationRecord objects from AU.
   2. Cluster them deterministically via ErrorClusterer.
   3. Enrich cluster metrics with catalog-derived impact scores.
   4. Rank and filter clusters by impact.
+  5. Validate clusters via ClusterValidator (AW0 gate).
 
 Public API
 ----------
@@ -20,12 +21,19 @@ enrich_clusters_with_catalog(clusters, catalog) -> List[ErrorCluster]
 
 rank_and_filter_clusters(clusters, min_size) -> List[ErrorCluster]
     Rank by impact and drop clusters below min_size.
+
+validate_clusters(clusters, classification_records, valid_only) -> List[ValidatedCluster]
+    Validate clusters through the AW0 Cluster Validation Layer.
 """
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from spectrum_systems.modules.error_taxonomy.clustering import ErrorCluster, ErrorClusterer
+from spectrum_systems.modules.error_taxonomy.cluster_validation import (
+    ClusterValidator,
+    ValidatedCluster,
+)
 from spectrum_systems.modules.error_taxonomy.impact import rank_clusters
 
 if TYPE_CHECKING:
@@ -144,3 +152,52 @@ def rank_and_filter_clusters(
     """
     filtered = [c for c in clusters if c.metrics["record_count"] >= min_size]
     return rank_clusters(filtered)
+
+
+def validate_clusters(
+    clusters: List[ErrorCluster],
+    classification_records: List["ErrorClassificationRecord"],
+    *,
+    valid_only: bool = False,
+) -> List[ValidatedCluster]:
+    """Validate clusters through the AW0 Cluster Validation Layer.
+
+    Parameters
+    ----------
+    clusters:
+        List of ``ErrorCluster`` objects produced by ``build_clusters_from_classifications``.
+    classification_records:
+        All ``ErrorClassificationRecord`` objects used to build the clusters.
+        Used for signature recomputation and per-record confidence checks.
+    valid_only:
+        If ``True``, return only clusters whose ``validation_status == "valid"``.
+        Default: ``False`` (return all validated results).
+
+    Returns
+    -------
+    List[ValidatedCluster]
+        Validated cluster objects in the same order as the input clusters.
+    """
+    validator = ClusterValidator()
+
+    # Build an index from cluster_id → records for efficient lookup
+    record_index: Dict[str, List["ErrorClassificationRecord"]] = {}
+    for cluster in clusters:
+        # Match records by cluster record_ids if available
+        if cluster.record_ids:
+            id_set = set(cluster.record_ids)
+            record_index[cluster.cluster_id] = [
+                r for r in classification_records if r.classification_id in id_set
+            ]
+        else:
+            record_index[cluster.cluster_id] = []
+
+    validated: List[ValidatedCluster] = []
+    for cluster in clusters:
+        records = record_index.get(cluster.cluster_id, [])
+        result = validator.validate_cluster(cluster, records)
+        validated.append(result)
+
+    if valid_only:
+        return [v for v in validated if v.validation_status == "valid"]
+    return validated
