@@ -114,6 +114,7 @@ class EvalResult:
     schema_valid: bool = True
     regression_detected: bool = False
     evaluated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    human_feedback_overrides: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialise to a JSON-compatible dict."""
@@ -140,6 +141,7 @@ class EvalResult:
             "schema_valid": self.schema_valid,
             "regression_detected": self.regression_detected,
             "evaluated_at": self.evaluated_at,
+            "human_feedback_overrides": self.human_feedback_overrides,
         }
 
 
@@ -433,6 +435,62 @@ class EvalRunner:
         }
         output_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
         return output_path
+
+    def apply_feedback_overrides(
+        self,
+        eval_result: "EvalResult",
+        feedback_records: List[Dict[str, Any]],
+    ) -> "EvalResult":
+        """Inject human feedback overrides into an existing evaluation result.
+
+        Feedback is recorded additively alongside the automated evaluation
+        result — system outputs are never silently replaced.  The override
+        list in ``EvalResult.human_feedback_overrides`` captures where the
+        human reviewer disagrees with the system, providing a traceable audit
+        trail for downstream learning systems (AU, AV, AW, AZ).
+
+        Parameters
+        ----------
+        eval_result:
+            The ``EvalResult`` produced by ``run_case``.
+        feedback_records:
+            List of feedback record dicts (from ``HumanFeedbackRecord.to_dict()``).
+            Each record must include at least:
+
+            - ``feedback_id`` (str)
+            - ``target_id`` (str) — the claim or section reviewed
+            - ``action`` (str) — reviewer disposition
+            - ``failure_type`` (str) — AU-aligned failure classification
+            - ``severity`` (str)
+            - ``original_text`` (str)
+            - ``edited_text`` (str | None)
+
+        Returns
+        -------
+        EvalResult
+            A new ``EvalResult`` with the ``human_feedback_overrides`` field
+            populated.  All other fields are unchanged.
+
+        Notes
+        -----
+        This method does NOT modify the original ``eval_result`` object.
+        """
+        from dataclasses import replace as _dc_replace
+
+        overrides: List[Dict[str, Any]] = []
+        for fb in feedback_records:
+            overrides.append({
+                "feedback_id": fb.get("feedback_id"),
+                "target_id": fb.get("target_id"),
+                "action": fb.get("action"),
+                "failure_type": fb.get("failure_type"),
+                "severity": fb.get("severity"),
+                "original_text": fb.get("original_text"),
+                "edited_text": fb.get("edited_text"),
+                "human_disagrees_with_system": fb.get("action") not in ("accept",),
+            })
+
+        return _dc_replace(eval_result, human_feedback_overrides=overrides)
 
     # ------------------------------------------------------------------
     # Private helpers

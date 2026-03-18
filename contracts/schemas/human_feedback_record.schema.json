@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/human_feedback_record.schema.json",
+  "title": "Human Feedback Record",
+  "description": "Governed artifact capturing structured expert review of AI-generated outputs at the claim, section, or artifact level. Feeds AU (error taxonomy), AV (clustering), AW (prompt improvement), and AZ (data flywheel).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "feedback_id",
+    "artifact_id",
+    "artifact_type",
+    "target_level",
+    "target_id",
+    "reviewer",
+    "action",
+    "original_text",
+    "rationale",
+    "source_of_truth",
+    "failure_type",
+    "severity",
+    "should_update",
+    "timestamp"
+  ],
+  "properties": {
+    "feedback_id": {
+      "type": "string",
+      "description": "Unique identifier for this feedback record."
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "ID of the artifact this feedback targets (e.g., meeting_minutes_record ID, working_paper_section ID)."
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "meeting_minutes",
+        "working_paper",
+        "slide_intelligence",
+        "pass_result",
+        "pass_chain_record",
+        "context_bundle",
+        "evaluation_result"
+      ],
+      "description": "Type of artifact being reviewed."
+    },
+    "target_level": {
+      "type": "string",
+      "enum": ["artifact", "section", "claim"],
+      "description": "Granularity at which feedback is applied."
+    },
+    "target_id": {
+      "type": "string",
+      "description": "Identifier of the specific section or claim being reviewed. For artifact-level feedback, use the artifact_id."
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer_id", "reviewer_role"],
+      "properties": {
+        "reviewer_id": {
+          "type": "string",
+          "description": "Unique identifier of the reviewer."
+        },
+        "reviewer_role": {
+          "type": "string",
+          "enum": ["engineer", "policy", "legal", "leadership"],
+          "description": "Professional role of the reviewer."
+        }
+      }
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "accept",
+        "minor_edit",
+        "major_edit",
+        "reject",
+        "rewrite",
+        "needs_support"
+      ],
+      "description": "Reviewer disposition on the reviewed unit."
+    },
+    "original_text": {
+      "type": "string",
+      "description": "The original AI-generated text being reviewed. Always preserved."
+    },
+    "edited_text": {
+      "type": ["string", "null"],
+      "description": "Reviewer-provided corrected text. Required when action is minor_edit, major_edit, or rewrite. Null for accept, reject, or needs_support."
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Reviewer's explanation for their action decision."
+    },
+    "source_of_truth": {
+      "type": "string",
+      "enum": [
+        "transcript",
+        "slides",
+        "statute",
+        "policy",
+        "engineering_analysis",
+        "external_reference"
+      ],
+      "description": "Primary authoritative source the reviewer relied on."
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "extraction_error",
+        "reasoning_error",
+        "grounding_failure",
+        "hallucination",
+        "schema_violation",
+        "unclear"
+      ],
+      "description": "Classification of the detected failure, aligned with the AU error taxonomy."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Impact severity of the identified issue."
+    },
+    "should_update": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["golden_dataset", "prompts", "retrieval_memory"],
+      "properties": {
+        "golden_dataset": {
+          "type": "boolean",
+          "description": "Whether this feedback should trigger a golden dataset update."
+        },
+        "prompts": {
+          "type": "boolean",
+          "description": "Whether this feedback should trigger a prompt update."
+        },
+        "retrieval_memory": {
+          "type": "boolean",
+          "description": "Whether this feedback should trigger a retrieval memory update."
+        }
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 datetime when this feedback record was created."
+    }
+  }
+}
