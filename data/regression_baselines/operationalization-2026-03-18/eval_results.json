@@ -1,0 +1,191 @@
+[
+  {
+    "case_id": "case_001",
+    "error_types": [
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt the -114 dBm/MHz interference threshold for the 7125-7250 MHz band', 'made_by': '…",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt the -114 dBm/MHz interference threshold for the 7125-7250 MHz band', 'made_by': '…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Request DOD to submit formal technical justification for 15 MHz guard band by December …",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Request DOD to submit formal technical justification for 15 MHz guard band by December …",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D003', 'text': 'Q1 coordination packages must be submitted to FCC no later than February 14th', 'made_b…",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D003', 'text': 'Q1 coordination packages must be submitted to FCC no later than February 14th', 'made_b…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D004', 'text': 'Schedule joint technical working session to align propagation methodology for the week …",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D004', 'text': 'Schedule joint technical working session to align propagation methodology for the week …",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Ensure all industry coordination packages are submitted to FCC no later than February 14t…",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Ensure all industry coordination packages are submitted to FCC no later than February 14t…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Circulate a draft coordination template to the group', 'owner': 'David Kim', 'due_date': …",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Circulate a draft coordination template to the group', 'owner': 'David Kim', 'due_date': …",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A003', 'text': 'Submit formal technical justification for 15 MHz guard band requirement', 'owner': 'Carol…",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A003', 'text': 'Submit formal technical justification for 15 MHz guard band requirement', 'owner': 'Carol…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A004', 'text': 'Schedule joint propagation methodology working session for the week of December 9th', 'ow…",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A004', 'text': 'Schedule joint propagation methodology working session for the week of December 9th', 'ow…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'Propagation model methodology has not been reconciled between FCC (flat terrain) and DOD (cl…",
+          "pass_type": "gap_detection"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'Propagation model methodology has not been reconciled between FCC (flat terrain) and DOD (cl…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'FCC and DOD use different propagation models (flat terrain vs clutter), producing …",
+          "pass_type": "contradiction_detection"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'FCC and DOD use different propagation models (flat terrain vs clutter), producing …",
+        "pass_id": null
+      }
+    ],
+    "evaluated_at": "2026-03-18T23:52:26.294999+00:00",
+    "grounding_score": 1.0,
+    "human_feedback_overrides": [],
+    "latency_summary": {
+      "budget_violations": [],
+      "per_pass_latency": {},
+      "total_latency_ms": 0
+    },
+    "pass_fail": false,
+    "regression_detected": false,
+    "schema_valid": true,
+    "semantic_score": 0.0,
+    "structural_score": 0.0
+  },
+  {
+    "case_id": "case_002",
+    "error_types": [
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt -96 dBm as the interim coordination trigger threshold pending DOD validation', 'm…",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt -96 dBm as the interim coordination trigger threshold pending DOD validation', 'm…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Protection zone radius decision deferred pending submission of updated propagation anal…",
+          "pass_type": "decision_extraction"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Protection zone radius decision deferred pending submission of updated propagation anal…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Submit updated propagation analyses to NTIA', 'owner': 'All parties', 'due_date': '2025-1…",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Submit updated propagation analyses to NTIA', 'owner': 'All parties', 'due_date': '2025-1…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Confirm or escalate -96 dBm coordination trigger threshold based on detection margin anal…",
+          "pass_type": "transcript_extraction"
+        },
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Confirm or escalate -96 dBm coordination trigger threshold based on detection margin anal…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing gaps item: {'gap_id': 'G002', 'text': 'DOD detection margin analysis against -96 dBm threshold is incomplete', 'severity': 'medium'…",
+          "pass_type": "gap_detection"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G002', 'text': 'DOD detection margin analysis against -96 dBm threshold is incomplete', 'severity': 'medium'…",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'No propagation analyses account for urban canyon effects, which could materially affect the …",
+          "pass_type": "gap_detection"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'No propagation analyses account for urban canyon effects, which could materially affect the …",
+        "pass_id": null
+      },
+      {
+        "details": {
+          "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'Carrier B requires maximum 25 km protection zone radius while DOD requires minimum…",
+          "pass_type": "contradiction_detection"
+        },
+        "error_type": "reasoning_error",
+        "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'Carrier B requires maximum 25 km protection zone radius while DOD requires minimum…",
+        "pass_id": null
+      }
+    ],
+    "evaluated_at": "2026-03-18T23:52:26.295178+00:00",
+    "grounding_score": 1.0,
+    "human_feedback_overrides": [],
+    "latency_summary": {
+      "budget_violations": [],
+      "per_pass_latency": {},
+      "total_latency_ms": 0
+    },
+    "pass_fail": false,
+    "regression_detected": false,
+    "schema_valid": true,
+    "semantic_score": 0.0,
+    "structural_score": 0.0
+  }
+]

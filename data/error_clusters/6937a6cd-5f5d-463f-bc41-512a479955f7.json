@@ -1,0 +1,52 @@
+{
+  "cluster_id": "6937a6cd-5f5d-463f-bc41-512a479955f7",
+  "timestamp": "2026-03-18T23:52:26.299597+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "INPUT.BAD_TRANSCRIPT_QUALITY",
+    "secondary_error_codes": [],
+    "dominant_family": "INPUT"
+  },
+  "metrics": {
+    "record_count": 3,
+    "weighted_severity_score": 7.65,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 3
+    },
+    "pass_types": {
+      "extraction": 3
+    },
+    "source_systems": {
+      "evaluation": 3
+    }
+  },
+  "remediation_targets": [
+    "input_quality"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-input-001",
+      "error_codes": [
+        "INPUT.BAD_TRANSCRIPT_QUALITY"
+      ],
+      "explanation": "Observed INPUT.BAD_TRANSCRIPT_QUALITY error in evaluation run."
+    },
+    {
+      "classification_id": "clf-input-002",
+      "error_codes": [
+        "INPUT.BAD_TRANSCRIPT_QUALITY"
+      ],
+      "explanation": "Observed INPUT.BAD_TRANSCRIPT_QUALITY error in evaluation run."
+    },
+    {
+      "classification_id": "clf-input-003",
+      "error_codes": [
+        "INPUT.BAD_TRANSCRIPT_QUALITY"
+      ],
+      "explanation": "Observed INPUT.BAD_TRANSCRIPT_QUALITY error in evaluation run."
+    }
+  ]
+}

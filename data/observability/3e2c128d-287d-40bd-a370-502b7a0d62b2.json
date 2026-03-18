@@ -1,0 +1,41 @@
+{
+  "record_id": "3e2c128d-287d-40bd-a370-502b7a0d62b2",
+  "timestamp": "2026-03-18T23:52:26.295248+00:00",
+  "context": {
+    "artifact_id": "case_001",
+    "artifact_type": "evaluation_result",
+    "pipeline_stage": "validate",
+    "case_id": "case_001"
+  },
+  "pass_info": {
+    "pass_id": "6649bca2-775b-4409-9a46-7b04ff9ddfbd",
+    "pass_type": "eval_summary"
+  },
+  "metrics": {
+    "structural_score": 0.0,
+    "semantic_score": 0.0,
+    "grounding_score": 1.0,
+    "latency_ms": 0
+  },
+  "flags": {
+    "schema_valid": true,
+    "grounding_passed": true,
+    "regression_passed": true,
+    "human_disagrees": false
+  },
+  "error_summary": {
+    "error_types": [
+      "reasoning_error",
+      "reasoning_error",
+      "reasoning_error",
+      "reasoning_error",
+      "extraction_error",
+      "extraction_error",
+      "extraction_error",
+      "extraction_error",
+      "reasoning_error",
+      "reasoning_error"
+    ],
+    "failure_count": 10
+  }
+}
