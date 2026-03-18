@@ -1,6 +1,16 @@
+# 📘 REFERENCE
+
+This document defines architectural direction and maturity targets (e.g., Level-16 system),
+but is not used for day-to-day Codex execution.
+
+Execution must follow the ACTIVE roadmap:
+docs/roadmaps/codex-prompt-roadmap.md
+
+---
+
 # Module-Pivot Roadmap
 
-**Status:** Active
+**Status:** Reference
 **Date:** 2026-03-17
 **Author:** Architecture Working Group
 **Scope:** Ecosystem-wide — governance, module structure, data strategy, Level-16 roadmap

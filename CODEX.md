@@ -126,3 +126,13 @@ CODEX.md
 These files help AI agents understand how to interact with the repository.
 
 ---------------------------------------------------------------------
+
+## Roadmap Execution Rule
+
+- Only the ACTIVE roadmap may be used for implementation
+- The ACTIVE roadmap is:
+  docs/roadmaps/codex-prompt-roadmap.md
+- REFERENCE documents provide context only and must not drive execution
+- DEPRECATED documents must not be used
+
+---------------------------------------------------------------------

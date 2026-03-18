@@ -101,3 +101,13 @@ Claude review at a checkpoint blocks advancement to the next stage until finding
 | `docs/vision.md` | Core product vision — read before structural changes |
 | `contracts/standards-manifest.json` | Canonical contract version pins |
 | `.codex/skills/` | Reusable Codex skill workflows |
+
+---
+
+## Roadmap Execution Rule
+
+- Only the ACTIVE roadmap may be used for implementation
+- The ACTIVE roadmap is:
+  docs/roadmaps/codex-prompt-roadmap.md
+- REFERENCE documents provide context only and must not drive execution
+- DEPRECATED documents must not be used

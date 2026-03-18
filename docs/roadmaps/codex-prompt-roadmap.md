@@ -1,3 +1,19 @@
+# Roadmap Status
+
+## ACTIVE ROADMAP
+This document is the authoritative execution roadmap for the spectrum-systems repository.
+
+## REFERENCE ROADMAPS
+- docs/architecture/module-pivot-roadmap.md
+- docs/100-step-roadmap.md
+- docs/roadmaps/operational-ai-systems-roadmap.md
+- docs/governance-enforcement-roadmap.md
+
+## DEPRECATED ROADMAPS
+- docs/roadmap.md
+
+---
+
 # Codex Prompt Roadmap — H through AJ
 
 **Status:** Active
