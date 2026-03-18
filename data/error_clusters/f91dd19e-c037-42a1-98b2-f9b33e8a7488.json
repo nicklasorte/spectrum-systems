@@ -1,0 +1,45 @@
+{
+  "cluster_id": "f91dd19e-c037-42a1-98b2-f9b33e8a7488",
+  "timestamp": "2026-03-18T23:52:26.299461+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "EXTRACT.FALSE_EXTRACTION",
+    "secondary_error_codes": [],
+    "dominant_family": "EXTRACT"
+  },
+  "metrics": {
+    "record_count": 2,
+    "weighted_severity_score": 2.4,
+    "avg_confidence": 0.4
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "unknown": 2
+    },
+    "pass_types": {
+      "unknown": 2
+    },
+    "source_systems": {
+      "evaluation": 2
+    }
+  },
+  "remediation_targets": [
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "05cc6582-2433-4783-b608-c59be8dd1540",
+      "error_codes": [
+        "EXTRACT.FALSE_EXTRACTION"
+      ],
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    },
+    {
+      "classification_id": "dbde8ccf-ebfc-485d-8dc5-1ce4d3aee1f3",
+      "error_codes": [
+        "EXTRACT.FALSE_EXTRACTION"
+      ],
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    }
+  ]
+}

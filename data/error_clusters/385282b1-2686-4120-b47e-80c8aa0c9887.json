@@ -1,0 +1,52 @@
+{
+  "cluster_id": "385282b1-2686-4120-b47e-80c8aa0c9887",
+  "timestamp": "2026-03-18T23:52:26.299648+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "SCHEMA.INVALID_OUTPUT",
+    "secondary_error_codes": [],
+    "dominant_family": "SCHEMA"
+  },
+  "metrics": {
+    "record_count": 4,
+    "weighted_severity_score": 17.0,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 4
+    },
+    "pass_types": {
+      "extraction": 4
+    },
+    "source_systems": {
+      "evaluation": 4
+    }
+  },
+  "remediation_targets": [
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-schema-001",
+      "error_codes": [
+        "SCHEMA.INVALID_OUTPUT"
+      ],
+      "explanation": "Observed SCHEMA.INVALID_OUTPUT error in evaluation run."
+    },
+    {
+      "classification_id": "clf-schema-002",
+      "error_codes": [
+        "SCHEMA.INVALID_OUTPUT"
+      ],
+      "explanation": "Observed SCHEMA.INVALID_OUTPUT error in evaluation run."
+    },
+    {
+      "classification_id": "clf-schema-003",
+      "error_codes": [
+        "SCHEMA.INVALID_OUTPUT"
+      ],
+      "explanation": "Observed SCHEMA.INVALID_OUTPUT error in evaluation run."
+    }
+  ]
+}
