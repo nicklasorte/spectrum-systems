@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "regression_policy.schema.json",
+  "title": "RegressionPolicy",
+  "description": "Governed regression policy defining thresholds, hard-fail dimensions, and scope for regression checks.",
+  "type": "object",
+  "required": [
+    "policy_id",
+    "version",
+    "description",
+    "thresholds",
+    "hard_fail_dimensions",
+    "minimum_sample_sizes",
+    "scope",
+    "deterministic_required"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "description": "Unique identifier for this regression policy."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the policy (e.g. 1.0.0)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the policy's purpose and scope."
+    },
+    "thresholds": {
+      "type": "object",
+      "description": "Maximum allowed drops per dimension before a regression is triggered.",
+      "required": [
+        "structural_score_drop_max",
+        "semantic_score_drop_max",
+        "grounding_score_drop_max",
+        "latency_increase_pct_max",
+        "human_disagreement_increase_pct_max"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "structural_score_drop_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Maximum allowable drop in structural score (0.0–1.0)."
+        },
+        "semantic_score_drop_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Maximum allowable drop in semantic score (0.0–1.0)."
+        },
+        "grounding_score_drop_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Maximum allowable drop in grounding score (0.0–1.0)."
+        },
+        "latency_increase_pct_max": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum allowable latency increase as a percentage of baseline (e.g. 20 = 20%)."
+        },
+        "human_disagreement_increase_pct_max": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum allowable increase in human disagreement rate as a percentage of baseline."
+        }
+      }
+    },
+    "hard_fail_dimensions": {
+      "type": "object",
+      "description": "Which dimensions trigger a hard failure (vs. warning) when their threshold is exceeded.",
+      "required": [
+        "structural_score",
+        "semantic_score",
+        "grounding_score",
+        "latency",
+        "human_disagreement"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "structural_score": {
+          "type": "boolean",
+          "description": "When true, a structural score regression beyond threshold is a hard failure."
+        },
+        "semantic_score": {
+          "type": "boolean",
+          "description": "When true, a semantic score regression beyond threshold is a hard failure."
+        },
+        "grounding_score": {
+          "type": "boolean",
+          "description": "When true, a grounding score regression beyond threshold is a hard failure."
+        },
+        "latency": {
+          "type": "boolean",
+          "description": "When true, a latency regression beyond threshold is a hard failure."
+        },
+        "human_disagreement": {
+          "type": "boolean",
+          "description": "When true, a human disagreement regression beyond threshold is a hard failure."
+        }
+      }
+    },
+    "minimum_sample_sizes": {
+      "type": "object",
+      "description": "Minimum required sample sizes for valid regression comparison.",
+      "required": [
+        "cases",
+        "per_pass_records"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cases": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of cases required for a valid aggregate comparison."
+        },
+        "per_pass_records": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of records per pass type for pass-level attribution."
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "description": "Artifact types and pass types in scope for this policy.",
+      "required": [
+        "artifact_types",
+        "pass_types"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact_types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Artifact types included in regression scope."
+        },
+        "pass_types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Pass types included in regression scope."
+        }
+      }
+    },
+    "deterministic_required": {
+      "type": "boolean",
+      "description": "When true, a non-deterministic candidate run is a hard failure."
+    }
+  }
+}
