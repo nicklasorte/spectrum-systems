@@ -38,9 +38,9 @@
     "review_date": "2026-03-15",
     "review_type": "Cross-repo ecosystem architecture review",
     "repo": "Ecosystem (all 8 repos)",
-    "reviewer": "Claude (Principal Systems Architect — cross-repo ecosystem audit)",
+    "reviewer": "Claude (Principal Systems Architect \u2014 cross-repo ecosystem audit)",
     "status": "Open",
-    "maturity_rating": "2/5 — Structured",
+    "maturity_rating": "2/5 \u2014 Structured",
     "artifact_path": "docs/reviews/2026-03-15-cross-repo-ecosystem-architecture-review.md",
     "action_tracker_path": "docs/review-actions/2026-03-15-ecosystem-architecture-audit-actions.json",
     "follow_up_trigger": "When REC-1 through REC-4 are completed (self-governance gap closed, registry complete, boundary CI extended, Phase 1 active); re-audit ecosystem maturity"
@@ -50,9 +50,9 @@
     "review_date": "2026-03-15",
     "review_type": "Governance architecture audit",
     "repo": "spectrum-systems",
-    "reviewer": "Claude (Principal Systems Architect — Opus 4.6)",
+    "reviewer": "Claude (Principal Systems Architect \u2014 Opus 4.6)",
     "status": "Open",
-    "maturity_rating": "2.5/5 — Structured, approaching Governed",
+    "maturity_rating": "2.5/5 \u2014 Structured, approaching Governed",
     "artifact_path": "docs/reviews/2026-03-15-governance-architecture-audit.md",
     "action_tracker_path": "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json",
     "follow_up_trigger": "When A-1 (production code removal) is completed; when A-3 (Phase 1 enforcement) is operational; re-audit to assess advancement to maturity level 3 (Governed)",
@@ -63,7 +63,7 @@
     "review_date": "2026-03-16",
     "review_type": "Systems architecture review of strategic roadmap",
     "repo": "spectrum-systems",
-    "reviewer": "Claude (Principal Systems Architect — Opus 4.6)",
+    "reviewer": "Claude (Principal Systems Architect \u2014 Opus 4.6)",
     "status": "Open",
     "artifact_path": "docs/reviews/2026-03-16-operational-ai-systems-roadmap-review.md",
     "action_tracker_path": "docs/review-actions/2026-03-16-roadmap-review-actions.md",
@@ -75,9 +75,9 @@
     "review_date": "2026-03-16",
     "review_type": "Deep governance and constitutional architecture review",
     "repo": "spectrum-systems",
-    "reviewer": "Claude (Principal Systems Architect — Governance Constitutional Review)",
+    "reviewer": "Claude (Principal Systems Architect \u2014 Governance Constitutional Review)",
     "status": "In Progress",
-    "maturity_rating": "2/5 — Structured (approaching Governed)",
+    "maturity_rating": "2/5 \u2014 Structured (approaching Governed)",
     "artifact_path": "docs/reviews/2026-03-16-governance-constitution-deep-review.md",
     "action_tracker_path": "docs/review-actions/2026-03-16-governance-constitution-deep-review-actions.json",
     "follow_up_trigger": "When A-1 (governance-declaration.template.json) is merged and Phase 1 transitions from Initiated to Active; when boundary CI (A-3) flags spectrum_systems/; re-audit maturity advancement",
@@ -104,7 +104,7 @@
         "source_review_id": "2026-03-15-ecosystem-constitution-audit",
         "description": "Production Python package (spectrum_systems/study_runner/) and root run_study.py script violate the architecture boundary stated in CLAUDE.md. Flagged in RC-1 (2026-03-15 audit), A-1 (2026-03-15 governance audit), and GA-008 (2026-03-14 governance review). spectrum_systems/ is currently an evaluation scaffold; pending relocation to a dedicated implementation repo. See docs/implementation-boundary.md.",
         "status": "Deferred",
-        "resolution_note": "spectrum_systems/ is designated an evaluation scaffold pending relocation. The implementation-boundary.md document has been updated to make this status explicit. Mechanical enforcement via boundary CI extension (A-3) is required to close this finding. Closure verification (2026-03-17): Designated Deferred — spectrum_systems/ formally documented as evaluation scaffold in docs/implementation-boundary.md and DECISIONS.md Decision 5. Full removal gated on relocation to dedicated implementation repo."
+        "resolution_note": "spectrum_systems/ is designated an evaluation scaffold pending relocation. The implementation-boundary.md document has been updated to make this status explicit. Mechanical enforcement via boundary CI extension (A-3) is required to close this finding. Closure verification (2026-03-17): Designated Deferred \u2014 spectrum_systems/ formally documented as evaluation scaffold in docs/implementation-boundary.md and DECISIONS.md Decision 5. Full removal gated on relocation to dedicated implementation repo."
       },
       {
         "finding_id": "RC-2",
@@ -123,9 +123,9 @@
       {
         "finding_id": "GA-008",
         "source_review_id": "2026-03-14-governance-architecture-review",
-        "description": "Production implementation code in spectrum_systems/ constitutes a self-governance failure — the repo states it should not contain production code but does.",
+        "description": "Production implementation code in spectrum_systems/ constitutes a self-governance failure \u2014 the repo states it should not contain production code but does.",
         "status": "Deferred",
-        "resolution_note": "spectrum_systems/ is designated an evaluation scaffold in docs/implementation-boundary.md. Full removal is a follow-up action (A-1) gated on relocation to a dedicated implementation repo. DECISIONS.md updated with Decision 5 documenting the boundary resolution. Closure verification (2026-03-17): Designated Deferred — spectrum_systems/ formally documented as evaluation scaffold in docs/implementation-boundary.md and DECISIONS.md Decision 5. Full removal gated on relocation to dedicated implementation repo."
+        "resolution_note": "spectrum_systems/ is designated an evaluation scaffold in docs/implementation-boundary.md. Full removal is a follow-up action (A-1) gated on relocation to a dedicated implementation repo. DECISIONS.md updated with Decision 5 documenting the boundary resolution. Closure verification (2026-03-17): Designated Deferred \u2014 spectrum_systems/ formally documented as evaluation scaffold in docs/implementation-boundary.md and DECISIONS.md Decision 5. Full removal gated on relocation to dedicated implementation repo."
       },
       {
         "finding_id": "F-2",
@@ -135,7 +135,7 @@
         "resolution_note": "Same root cause as RC-2. Boundary CI extension (action A-3) required. Out of scope for this documentation sprint."
       }
     ],
-    "resolution_notes": "Prompt C (2026-03-16) addressed documentation and ADR gaps: created ADR-006 (governance manifest model), ADR-007 (Phase 1 enforcement strategy), ADR-008 (schema authority designation); updated docs/implementation-boundary.md with production-code boundary resolution and spectrum_systems/ evaluation scaffold status; added Decision 5 to DECISIONS.md; created docs/reviews/review-registry.md markdown table; added carried_forward_findings tracking to this registry entry. Closure verification (2026-03-17): A-1 (governance-declaration.template.json), A-2 (Phase 1 roadmap update), A-4 (schema authority designation), A-5 (policy engine wired to CI), A-6 (conformance checklist expanded), A-7 (ADR-006/007/008 created) are all Resolved. A-3 (boundary CI extension to detect implementation code) remains Open — critical blocker. RC-1/GA-008 (production code in spectrum_systems/) are Deferred with formal governance exemption documented. Review remains In Progress pending A-3 completion.",
+    "resolution_notes": "Prompt C (2026-03-16) addressed documentation and ADR gaps: created ADR-006 (governance manifest model), ADR-007 (Phase 1 enforcement strategy), ADR-008 (schema authority designation); updated docs/implementation-boundary.md with production-code boundary resolution and spectrum_systems/ evaluation scaffold status; added Decision 5 to DECISIONS.md; created docs/reviews/review-registry.md markdown table; added carried_forward_findings tracking to this registry entry. Closure verification (2026-03-17): A-1 (governance-declaration.template.json), A-2 (Phase 1 roadmap update), A-4 (schema authority designation), A-5 (policy engine wired to CI), A-6 (conformance checklist expanded), A-7 (ADR-006/007/008 created) are all Resolved. A-3 (boundary CI extension to detect implementation code) remains Open \u2014 critical blocker. RC-1/GA-008 (production code in spectrum_systems/) are Deferred with formal governance exemption documented. Review remains In Progress pending A-3 completion.",
     "scope": "Deep architecture and governance review: governance completeness, cross-repo constitutional strength, review culture, operational readiness, artifact and contract quality, CI/automation enforcement. 10 findings (2 critical, 3 high, 2 medium, 3 low); 7 actions generated. Artifacts delivered: contracts/governance-declaration.template.json (Phase 1 initiated), docs/governance-enforcement-roadmap.md (Phase 1 marked Initiated), docs/governance-conformance-checklist.md (5 new items), schemas/README.md (schema authority designation), CONTRACTS.md (schema authority cross-reference).",
     "closure_verification_date": "2026-03-17",
     "closure_report_path": "docs/reviews/2026-03-16-governance-constitution-deep-review.closure.md"
@@ -143,11 +143,11 @@
   {
     "review_id": "2026-03-18-roadmap-inventory-review",
     "review_date": "2026-03-18",
-    "review_type": "REVIEW — Roadmap classification and single-source-of-truth identification",
+    "review_type": "REVIEW \u2014 Roadmap classification and single-source-of-truth identification",
     "repo": "spectrum-systems",
     "reviewer": "Copilot (Architecture Agent)",
     "status": "Closed",
-    "maturity_rating": "—",
+    "maturity_rating": "\u2014",
     "artifact_path": "docs/reviews/2026-03-18-roadmap-inventory-review.md",
     "action_tracker_path": "docs/review-actions/2026-03-18-roadmap-inventory-actions.md",
     "follow_up_trigger": "Actions RI-001 through RI-003 resolved 2026-03-18. Verified by docs/reviews/2026-03-18-roadmap-authority-validation.md.",
@@ -156,14 +156,54 @@
   {
     "review_id": "2026-03-18-roadmap-authority-validation",
     "review_date": "2026-03-18",
-    "review_type": "VALIDATE — Post-change roadmap authority cleanup verification",
+    "review_type": "VALIDATE \u2014 Post-change roadmap authority cleanup verification",
     "repo": "spectrum-systems",
     "reviewer": "Copilot (Architecture Agent)",
     "status": "Closed",
-    "maturity_rating": "—",
+    "maturity_rating": "\u2014",
     "artifact_path": "docs/reviews/2026-03-18-roadmap-authority-validation.md",
     "action_tracker_path": "docs/review-actions/2026-03-18-roadmap-authority-validation-actions.md",
     "follow_up_trigger": "No follow-up required. Re-run this validation if new roadmap documents are introduced.",
     "resolution_notes": "All three critical files correctly labeled (ACTIVE / DEPRECATED / REFERENCE). AGENTS.md and CODEX.md both contain the Roadmap Execution Rule. No conflicting active roadmap authority signals. Actions RI-001, RI-002, RI-003 all confirmed Resolved. Verdict: PASS."
+  },
+  {
+    "review_id": "2026-03-18-maturity-review",
+    "review_date": "2026-03-18",
+    "review_type": "REVIEW \u2014 Focused control-loop maturity assessment (AN\u2013AW2 scope)",
+    "repo": "spectrum-systems",
+    "reviewer": "Copilot (Architecture Agent)",
+    "status": "Open",
+    "maturity_rating": "7/20",
+    "artifact_path": "docs/reviews/2026-03-18-maturity-review.md",
+    "action_tracker_path": "docs/review-actions/2026-03-18-maturity-review-actions.md",
+    "scope": "AN Evaluation Framework, AO Human Feedback Capture, AP Observability + Metrics, AR Regression Harness, AU Error Taxonomy, AV Auto-Failure Clustering, AW0 Cluster Validation, AW1 Remediation Mapping, AW2 Fix Simulation Sandbox",
+    "follow_up_trigger": "Re-run after MR-001 through MR-005 are complete (operational AU\u2192AW2 cycle with committed artifacts). Target: advance score from L7 to L9.",
+    "carried_forward_findings": [
+      {
+        "finding_id": "MR-001",
+        "description": "No regression baseline established; data/regression_baselines/ is empty",
+        "status": "Open"
+      },
+      {
+        "finding_id": "MR-002",
+        "description": "Observability records never written; data/observability/ is not populated",
+        "status": "Open"
+      },
+      {
+        "finding_id": "MR-003",
+        "description": "AW0 validated clusters are .gitkeep; pipeline never executed against real data",
+        "status": "Open"
+      },
+      {
+        "finding_id": "MR-004",
+        "description": "AW1 remediation plans are seeded demo data; not derived from real validated clusters",
+        "status": "Open"
+      },
+      {
+        "finding_id": "MR-005",
+        "description": "data/simulation_results/ directory does not exist; AW2 simulation never executed",
+        "status": "Open"
+      }
+    ]
   }
 ]
