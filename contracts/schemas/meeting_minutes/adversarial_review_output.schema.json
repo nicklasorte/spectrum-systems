@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes/adversarial_review_output.schema.json",
+  "title": "Adversarial Review Output",
+  "description": "Structured output of the adversarial_review pass. Challenges the upstream structured outputs to surface weak inferences, unsupported claims, and overstatements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meeting_id", "challenges", "overall_reliability_assessment"],
+  "properties": {
+    "meeting_id": {
+      "type": "string"
+    },
+    "challenges": {
+      "type": "array",
+      "description": "Adversarial challenges raised against upstream pass outputs.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["challenge_id", "description", "target_ref", "challenge_type"],
+        "properties": {
+          "challenge_id":   {"type": "string"},
+          "description":    {"type": "string", "minLength": 1},
+          "target_ref":     {"type": "string", "description": "Reference to the item being challenged."},
+          "challenge_type": {
+            "type": "string",
+            "enum": ["unsupported_claim", "weak_inference", "overstatement", "missing_evidence", "ambiguous_scope"],
+            "description": "Category of adversarial challenge."
+          }
+        }
+      }
+    },
+    "overall_reliability_assessment": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Overall reliability rating of the upstream outputs after adversarial review."
+    }
+  }
+}

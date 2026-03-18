@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes/decisions_output.schema.json",
+  "title": "Decisions Output",
+  "description": "Structured output of the decision_extraction pass. Contains formal decisions recorded during the meeting.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meeting_id", "decisions"],
+  "properties": {
+    "meeting_id": {
+      "type": "string",
+      "description": "Identifier of the meeting."
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Formal decisions extracted from the meeting.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "text", "decision_maker", "rationale"],
+        "properties": {
+          "decision_id":    {"type": "string"},
+          "text":           {"type": "string", "minLength": 1, "description": "The decision statement."},
+          "decision_maker": {"type": ["string", "null"], "description": "Person or role who made the decision."},
+          "rationale":      {"type": ["string", "null"], "description": "Stated rationale, or null if not stated."},
+          "references":     {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Identifiers of transcript facts that support this decision."
+          }
+        }
+      }
+    }
+  }
+}

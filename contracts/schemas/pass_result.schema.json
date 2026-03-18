@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pass_result.schema.json",
+  "title": "Pass Result",
+  "description": "Traceability record for a single executed reasoning pass. Usable standalone or embedded inside a pass_chain_record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pass_id",
+    "pass_type",
+    "pass_order",
+    "prompt_id",
+    "prompt_version",
+    "model_family",
+    "model_name",
+    "input_refs",
+    "output_ref",
+    "schema_validation",
+    "confidence_method",
+    "confidence_score",
+    "status",
+    "latency_ms",
+    "warnings",
+    "started_at",
+    "completed_at"
+  ],
+  "properties": {
+    "pass_id": {
+      "type": "string",
+      "description": "Unique identifier for this pass execution."
+    },
+    "pass_type": {
+      "type": "string",
+      "description": "Type of reasoning pass (e.g., 'transcript_extraction', 'decision_extraction')."
+    },
+    "pass_order": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based position of this pass in the chain sequence."
+    },
+    "prompt_id": {
+      "type": "string",
+      "description": "Identifier of the prompt used for this pass."
+    },
+    "prompt_version": {
+      "type": ["string", "null"],
+      "description": "Pinned prompt version used. Null only if version pinning is not yet available for this prompt."
+    },
+    "model_family": {
+      "type": ["string", "null"],
+      "description": "Model family identifier (e.g., 'gpt-4', 'claude-3')."
+    },
+    "model_name": {
+      "type": ["string", "null"],
+      "description": "Specific model name or version identifier."
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "References to upstream pass IDs or artifact IDs that served as inputs to this pass."
+    },
+    "output_ref": {
+      "type": ["string", "null"],
+      "description": "Reference to the artifact or internal record handle for this pass output. Null if the pass failed before producing output."
+    },
+    "schema_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_id", "status", "errors"],
+      "description": "Result of schema validation applied to the pass output.",
+      "properties": {
+        "schema_id": {
+          "type": ["string", "null"],
+          "description": "Identifier of the schema used for validation."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "skipped"],
+          "description": "Outcome of schema validation."
+        },
+        "errors": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of validation error messages. Empty when status is 'passed' or 'skipped'."
+        }
+      }
+    },
+    "confidence_method": {
+      "type": "string",
+      "enum": ["self_reported", "scoring_pass", "heuristic"],
+      "description": "Method used to derive the confidence score. Reasoning-class passes must use 'scoring_pass'."
+    },
+    "confidence_score": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence score in [0, 1]. Null if confidence could not be determined."
+    },
+    "scoring_pass_ref": {
+      "type": ["string", "null"],
+      "description": "pass_id of the scoring sub-pass that produced this confidence score. Required when confidence_method is 'scoring_pass'."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed", "skipped"],
+      "description": "Execution status of this pass."
+    },
+    "latency_ms": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Wall-clock execution time in milliseconds. Null if the pass did not complete."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Non-fatal warnings raised during this pass execution."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this pass began execution."
+    },
+    "completed_at": {
+      "type": ["string", "null"],
+      "description": "Timestamp when this pass completed or failed. Null if still in progress."
+    }
+  }
+}
