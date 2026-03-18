@@ -15,6 +15,7 @@ Covers:
 - RemediationMapper: valid cluster mapping (HUMAN.NEEDS_SUPPORT + GROUND.WEAK_SUPPORT)
 - RemediationMapper: ambiguous cluster handling (mixed / no dominant signal)
 - RemediationMapper: max 2 proposed actions per cluster
+- RemediationMapper: dominant signal computed from live classification records
 - TargetRegistry: validate_target_component accepts known names
 - TargetRegistry: validate_target_component rejects unknown names
 - Confidence scoring: compute_mapping_confidence
@@ -35,6 +36,7 @@ from typing import Any, Dict, List
 
 import pytest
 
+from spectrum_systems.modules.error_taxonomy.classify import ErrorClassificationRecord
 from spectrum_systems.modules.error_taxonomy.cluster_validation import ValidatedCluster
 from spectrum_systems.modules.improvement.remediation_mapping import (
     RemediationMapper,
@@ -90,6 +92,36 @@ def _make_validated(
         cohesion_score=cohesion_score,
         actionability_score=actionability_score,
         created_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+def _make_classification_record(
+    *,
+    classification_id: str | None = None,
+    error_codes: List[str],
+    pass_type: str = "extraction",
+    confidence: float = 0.85,
+) -> ErrorClassificationRecord:
+    return ErrorClassificationRecord(
+        classification_id=classification_id or str(uuid.uuid4()),
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        context={
+            "source_system": "evaluation",
+            "artifact_id": "artifact-001",
+            "artifact_type": "working_paper",
+            "pass_type": pass_type,
+        },
+        classifications=[
+            {
+                "error_code": code,
+                "confidence": confidence,
+                "evidence_source": "test",
+                "explanation": f"Test entry for {code}",
+            }
+            for code in error_codes
+        ],
+        raw_inputs={"test": True},
+        taxonomy_version="1.0.0",
     )
 
 
@@ -268,6 +300,31 @@ class TestRemediationMapperGrounding:
         plan = mapper.map_validated_cluster(vc, [])
         assert plan.mapping_status == "mapped"
         assert plan.proposed_actions[0]["target_component"] == "synthesis_grounding_rules"
+
+    def test_mapping_with_live_classification_records(
+        self, mapper: RemediationMapper
+    ) -> None:
+        """Verify dominant signal and confidence are derived from live records."""
+        records = [
+            _make_classification_record(
+                error_codes=["GROUND.MISSING_REF"], confidence=0.90
+            )
+            for _ in range(5)
+        ]
+        vc = _make_validated(
+            cluster_signature="GROUND.MISSING_REF",
+            error_codes=["GROUND.MISSING_REF"],
+            cohesion_score=0.9,
+            actionability_score=0.9,
+        )
+        plan = mapper.map_validated_cluster(vc, records)
+        assert plan.mapping_status == "mapped"
+        assert plan.proposed_actions[0]["action_type"] == "grounding_rule_change"
+        # Confidence should reflect the strong live signal
+        assert plan.proposed_actions[0]["confidence_score"] >= 0.7
+        # Evidence summary reflects real record count
+        assert plan.evidence_summary["record_count"] == 5
+        assert plan.evidence_summary["avg_cluster_confidence"] > 0.0
 
 
 # ===========================================================================

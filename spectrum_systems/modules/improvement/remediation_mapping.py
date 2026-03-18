@@ -354,13 +354,19 @@ class RemediationMapper:
         if taxonomy_catalog is not None:
             self._taxonomy_version = getattr(taxonomy_catalog, "version", self._taxonomy_version)
 
-        # Build index: cluster_id → records
+        # Build a reverse index: record_id → cluster_id (O(n) pre-pass)
+        record_id_to_cluster: Dict[str, str] = {}
+        for cluster in validated_clusters:
+            if hasattr(cluster, "record_ids") and cluster.record_ids:
+                for rid in cluster.record_ids:
+                    record_id_to_cluster[rid] = cluster.cluster_id
+
+        # Build index: cluster_id → records (single pass over records)
         record_index: Dict[str, List["ErrorClassificationRecord"]] = {}
         for rec in classification_records:
-            for cluster in validated_clusters:
-                if hasattr(cluster, "record_ids") and cluster.record_ids:
-                    if rec.classification_id in set(cluster.record_ids):
-                        record_index.setdefault(cluster.cluster_id, []).append(rec)
+            cluster_id = record_id_to_cluster.get(rec.classification_id)
+            if cluster_id is not None:
+                record_index.setdefault(cluster_id, []).append(rec)
 
         plans: List[RemediationPlan] = []
         for vc in validated_clusters:
@@ -692,9 +698,13 @@ class RemediationMapper:
                 dominant_code, dominant_count = code_counts.most_common(1)[0]
                 return dominant_code, round(dominant_count / total, 4)
 
-        # Fallback to cluster signature
+        # Fallback to cluster signature when no live records are available.
+        # ``cohesion_score`` is used as a proxy for dominant share because it
+        # is defined as the fraction of all error-code occurrences that belong
+        # to the primary (dominant) code — the same quantity we would compute
+        # from live records.  This fallback is conservative: if cohesion is
+        # low the cluster will correctly resolve to "ambiguous" (Rule G).
         dominant_code = validated_cluster.cluster_signature
-        # Use cohesion_score as a proxy for dominant share
         return dominant_code, validated_cluster.cohesion_score
 
     @staticmethod
