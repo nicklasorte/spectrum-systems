@@ -1,0 +1,24 @@
+{
+  "classification_id": "clf-ground-001",
+  "timestamp": "2026-03-18T22:09:43.380818+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "artifact-clf-grou",
+    "artifact_type": "working_paper",
+    "pass_type": "extraction",
+    "case_id": "case-ground-01"
+  },
+  "classifications": [
+    {
+      "error_code": "GROUND.MISSING_REF",
+      "confidence": 0.85,
+      "evidence_source": "evaluation_output",
+      "explanation": "Observed GROUND.MISSING_REF error in evaluation run."
+    }
+  ],
+  "raw_inputs": {
+    "source": "evaluation_run",
+    "artifact_id": "artifact-clf-grou"
+  },
+  "taxonomy_version": "1.0.0"
+}

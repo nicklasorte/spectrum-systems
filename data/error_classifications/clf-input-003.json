@@ -1,0 +1,24 @@
+{
+  "classification_id": "clf-input-003",
+  "timestamp": "2026-03-18T22:09:43.380818+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "artifact-clf-inpu",
+    "artifact_type": "working_paper",
+    "pass_type": "extraction",
+    "case_id": "case-input-01"
+  },
+  "classifications": [
+    {
+      "error_code": "INPUT.BAD_TRANSCRIPT_QUALITY",
+      "confidence": 0.85,
+      "evidence_source": "evaluation_output",
+      "explanation": "Observed INPUT.BAD_TRANSCRIPT_QUALITY error in evaluation run."
+    }
+  ],
+  "raw_inputs": {
+    "source": "evaluation_run",
+    "artifact_id": "artifact-clf-inpu"
+  },
+  "taxonomy_version": "1.0.0"
+}
