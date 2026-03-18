@@ -1308,3 +1308,147 @@ python scripts/run_remediation_mapping.py --case CASE_ID
 ```
 
 Output: `outputs/remediation_plans.json` with full plan list and ranked summary.
+
+---
+
+## AW2 — Fix Simulation Sandbox
+
+### Role in the control loop
+
+AW2 is the **safety barrier** between AW1 (remediation mapping) and AW
+(application).  It takes proposed fixes from AW1 and runs them in a controlled
+simulation — shadow mode only — before any real system change is permitted.
+
+```
+AU → AV → AW0 → AW1 → AW2 → AW
+              (simulation)
+```
+
+AW2 answers four questions for each proposed fix:
+
+1. If we apply this fix in a simulated way, do metrics improve?
+2. Does the fix reduce the targeted failure pattern?
+3. Does it introduce regressions elsewhere?
+4. Is the fix safe enough to advance to AW?
+
+Only fixes that pass AW2 with a `promote` recommendation are forwarded to AW.
+
+### Why simulation is required before AW
+
+The AW layer applies changes to production prompts, grounding rules, schemas,
+and retrieval configuration.  These changes are difficult to reverse and can
+cause cascading failures.
+
+AW2 exists to catch:
+
+- **Regressions** — a proposed fix improves the targeted metric but degrades
+  other metrics beyond acceptable thresholds.
+- **Ineffective fixes** — a proposed fix does not produce the expected
+  directional change in the targeted metric.
+- **Weak signal** — the simulation evidence is insufficient to justify
+  advancing.  Inconclusive results are held, not rejected outright.
+
+AW2 fails closed: when in doubt, it holds or rejects rather than promoting.
+
+### Baseline vs candidate comparison model
+
+For each mapped RemediationPlan, AW2 runs the following comparison:
+
+1. **Case selection** — eval cases are selected based on the cluster's dominant
+   error family.  At least one targeted case (linked to the failure pattern) and
+   one control case (unrelated) are required.
+2. **Baseline summary** — eval metrics for the unmodified configuration.
+3. **Candidate summary** — eval metrics after applying the proposed fix in
+   shadow mode (no production artifact is modified).
+4. **Delta computation** — candidate minus baseline for each metric:
+   `structural_score_delta`, `semantic_score_delta`, `grounding_score_delta`,
+   `latency_ms_delta`.
+5. **Targeted effect** — was the expected directional change in the target
+   metric actually observed?
+6. **Regression check** — are any non-target metrics degraded beyond thresholds?
+
+### Promotion / hold / reject logic
+
+| Outcome | Condition |
+|---------|-----------|
+| `promote` | Simulation fidelity ≥ medium; target metric improved in expected direction; no hard regression failures; no warnings. |
+| `hold` | Target metric improved but regression warnings exist; or simulation fidelity is low; or mixed results. |
+| `reject` | Hard regression failures; target metric moved in wrong direction; or simulation fidelity is none (action cannot be simulated). |
+
+A simulation result carries both a `simulation_status` (passed / failed /
+inconclusive / rejected) and a `promotion_recommendation` (promote / hold /
+reject).  The promotion recommendation is the primary signal for AW.
+
+### Simulation strategies by action_type
+
+AW2 implements deterministic, rule-based simulation adapters for each
+action_type defined in the remediation plan schema:
+
+| Action type | Simulation approach |
+|-------------|---------------------|
+| `prompt_change` | Shadow overlay — conservative boost to structural and semantic scores. |
+| `grounding_rule_change` | Shadow mode — boost grounding score; minor structural penalty for stricter filtering. |
+| `schema_change` | Shadow serializer — boost structural score; minor semantic impact. |
+| `input_quality_rule_change` | Shadow gating — boost structural score; slight latency savings. |
+| `retrieval_change` | Shadow retrieval — boost semantic and grounding scores. |
+| `observability_change` | Metric emission only — minor latency savings; eval scores unchanged. |
+| `no_action` | Cannot be simulated — result is immediately `inconclusive`. |
+
+If a strategy cannot simulate the action faithfully, it returns
+`simulation_fidelity="none"` and the result is rejected.  AW2 does not fake
+positive results.
+
+### Relationship to AN, AP, AR and AW1
+
+- **AN (evaluation framework)** — AW2 adopts AN's eval summary vocabulary
+  (`structural_score`, `semantic_score`, `grounding_score`, `latency_ms`).
+- **AP (observability output)** — AW2 records `observability_refs` in the
+  evidence block for traceability.
+- **AR (regression harness)** — AW2's `regression_check` mirrors AR's
+  hard-failure / warning threshold model.
+- **AW1** — AW2 consumes `mapped` RemediationPlan objects from AW1.
+  `ambiguous` and `rejected` AW1 plans are immediately rejected by AW2.
+
+### Module locations
+
+```
+spectrum_systems/modules/improvement/
+    simulation.py               — SimulationResult, FixSimulator
+    simulation_strategies.py    — Deterministic strategy adapters by action_type
+    case_selection.py           — select_cases_for_plan
+    simulation_compare.py       — compare_baseline_candidate, check_regression,
+                                  determine_promotion_recommendation
+    simulation_store.py         — save/load/list simulation results
+    simulation_pipeline.py      — run_simulation_for_plan, run_simulation_batch,
+                                  summarize_simulation_outcomes
+```
+
+### Schema
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/simulation_result.schema.json` | Governed simulation result output format |
+
+### Storage
+
+Simulation results are persisted as flat JSON under:
+
+```
+data/simulation_results/{simulation_id}.json
+```
+
+### CLI
+
+```bash
+# Simulate all mapped remediation plans
+python scripts/run_fix_simulation.py --all
+
+# Simulate a specific plan by remediation_id
+python scripts/run_fix_simulation.py --remediation REMEDIATION_ID
+
+# Strict mode: exit code 2 if any hard regression failure
+python scripts/run_fix_simulation.py --strict
+```
+
+Output: `outputs/simulation_results.json` with full simulation result list and
+ranked summary of promotable, held, and rejected plans.

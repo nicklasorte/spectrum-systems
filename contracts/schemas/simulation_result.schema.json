@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/simulation_result.schema.json",
+  "title": "Simulation Result",
+  "description": "A governed, auditable simulation result produced by the AW2 Fix Simulation Sandbox. Captures baseline vs candidate comparison outcomes for a remediation plan without modifying any production artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "simulation_id",
+    "remediation_id",
+    "cluster_id",
+    "created_at",
+    "simulation_status",
+    "simulation_reasons",
+    "baseline_summary",
+    "candidate_summary",
+    "deltas",
+    "targeted_effect",
+    "regression_check",
+    "promotion_recommendation",
+    "evidence"
+  ],
+  "properties": {
+    "simulation_id": {
+      "type": "string",
+      "description": "Unique identifier for this simulation result."
+    },
+    "remediation_id": {
+      "type": "string",
+      "description": "ID of the source RemediationPlan being simulated."
+    },
+    "cluster_id": {
+      "type": "string",
+      "description": "ID of the source ValidatedCluster associated with the remediation plan."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp when this simulation result was created."
+    },
+    "simulation_status": {
+      "type": "string",
+      "enum": ["passed", "failed", "inconclusive", "rejected"],
+      "description": "Overall outcome of the simulation. 'passed' = candidate improved target metric with no regressions; 'failed' = candidate degraded target metric or caused hard regressions; 'inconclusive' = insufficient evidence to determine outcome; 'rejected' = plan could not be simulated (ambiguous/invalid plan, unsimulable action type)."
+    },
+    "simulation_reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Auditable reasons explaining every simulation decision and outcome."
+    },
+    "baseline_summary": {
+      "$ref": "#/$defs/eval_summary",
+      "description": "Evaluation metrics for the baseline (unmodified) configuration."
+    },
+    "candidate_summary": {
+      "$ref": "#/$defs/eval_summary",
+      "description": "Evaluation metrics for the candidate (proposed fix applied in shadow mode) configuration."
+    },
+    "deltas": {
+      "$ref": "#/$defs/score_deltas",
+      "description": "Computed deltas between candidate and baseline summaries."
+    },
+    "targeted_effect": {
+      "$ref": "#/$defs/targeted_effect",
+      "description": "Analysis of whether the fix produced the expected effect on the targeted metric."
+    },
+    "regression_check": {
+      "$ref": "#/$defs/regression_check",
+      "description": "Results of regression testing against the candidate configuration."
+    },
+    "promotion_recommendation": {
+      "type": "string",
+      "enum": ["promote", "hold", "reject"],
+      "description": "Recommendation for advancing this plan to AW. 'promote' = safe to advance; 'hold' = mixed results, needs more evidence; 'reject' = regressions or worsened target metric."
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidence",
+      "description": "References to supporting evaluation, observability, and regression artifacts."
+    }
+  },
+  "$defs": {
+    "eval_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cases_run",
+        "structural_score",
+        "semantic_score",
+        "grounding_score",
+        "latency_ms"
+      ],
+      "properties": {
+        "cases_run": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of evaluation cases run in this configuration."
+        },
+        "structural_score": {
+          "type": "number",
+          "description": "Average structural correctness score across all cases (0–1)."
+        },
+        "semantic_score": {
+          "type": "number",
+          "description": "Average semantic similarity score across all cases (0–1)."
+        },
+        "grounding_score": {
+          "type": "number",
+          "description": "Average grounding/reference quality score across all cases (0–1)."
+        },
+        "latency_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average end-to-end latency in milliseconds across all cases."
+        }
+      }
+    },
+    "score_deltas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "structural_score_delta",
+        "semantic_score_delta",
+        "grounding_score_delta",
+        "latency_ms_delta"
+      ],
+      "properties": {
+        "structural_score_delta": {
+          "type": "number",
+          "description": "candidate structural_score minus baseline structural_score."
+        },
+        "semantic_score_delta": {
+          "type": "number",
+          "description": "candidate semantic_score minus baseline semantic_score."
+        },
+        "grounding_score_delta": {
+          "type": "number",
+          "description": "candidate grounding_score minus baseline grounding_score."
+        },
+        "latency_ms_delta": {
+          "type": "number",
+          "description": "candidate latency_ms minus baseline latency_ms. Negative values indicate improvement."
+        }
+      }
+    },
+    "targeted_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_component",
+        "target_metric",
+        "expected_direction",
+        "observed_direction"
+      ],
+      "properties": {
+        "target_component": {
+          "type": "string",
+          "description": "The component targeted by the proposed action."
+        },
+        "target_metric": {
+          "type": "string",
+          "description": "The metric expected to be improved by this action."
+        },
+        "expected_direction": {
+          "type": "string",
+          "enum": ["increase", "decrease"],
+          "description": "The direction in which the target metric was expected to move."
+        },
+        "observed_direction": {
+          "type": "string",
+          "enum": ["increase", "decrease", "none", "mixed"],
+          "description": "The actual direction the target metric moved in simulation."
+        }
+      }
+    },
+    "regression_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overall_pass",
+        "hard_failures",
+        "warnings"
+      ],
+      "properties": {
+        "overall_pass": {
+          "type": "boolean",
+          "description": "True if no hard regression failures were detected."
+        },
+        "hard_failures": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of hard regression failures (metric degraded beyond threshold)."
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of regression warnings (metric slightly degraded, within tolerance)."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eval_result_refs",
+        "observability_refs"
+      ],
+      "properties": {
+        "eval_result_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to evaluation result artifacts used in this simulation."
+        },
+        "observability_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to observability metric outputs used in this simulation."
+        },
+        "regression_report_ref": {
+          "type": "string",
+          "description": "Optional reference to a regression report artifact."
+        }
+      }
+    }
+  }
+}
