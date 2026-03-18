@@ -31,12 +31,14 @@ from spectrum_systems.modules.feedback.human_feedback import (
     FeedbackStore,
     HumanFeedbackRecord,
 )
+from spectrum_systems.modules.observability.metrics import MetricsStore, ObservabilityRecord
 
 
 def create_feedback_from_review(
     artifact: Dict[str, Any],
     reviewer_input: Dict[str, Any],
     store: Optional[FeedbackStore] = None,
+    metrics_store: Optional[MetricsStore] = None,
 ) -> HumanFeedbackRecord:
     """Build and persist a new feedback record from raw reviewer input.
 
@@ -67,6 +69,10 @@ def create_feedback_from_review(
     store:
         ``FeedbackStore`` to persist the record.  A default store is created
         if not provided.
+    metrics_store:
+        Optional ``MetricsStore`` to emit an ``ObservabilityRecord`` capturing
+        this human disagreement event.  When provided, an observability record
+        is always emitted (``human_disagrees=True``).
 
     Returns
     -------
@@ -109,6 +115,10 @@ def create_feedback_from_review(
 
     _store = store or FeedbackStore()
     _store.save_feedback(record)
+
+    # Emit observability record for this human feedback event
+    _emit_feedback_observability(record, metrics_store)
+
     return record
 
 
@@ -151,3 +161,26 @@ def attach_feedback_to_artifact(
     _store.load_feedback(feedback_id)
     # Update index (idempotent)
     _store.update_artifact_index(artifact_id, feedback_id)
+
+
+# ---------------------------------------------------------------------------
+# Private helpers
+# ---------------------------------------------------------------------------
+
+
+def _emit_feedback_observability(
+    record: HumanFeedbackRecord,
+    metrics_store: Optional[MetricsStore],
+) -> None:
+    """Emit an ObservabilityRecord for a persisted feedback record.
+
+    No-op if no ``MetricsStore`` is provided.  Errors during emission are
+    suppressed so feedback ingestion is never disrupted.
+    """
+    if metrics_store is None:
+        return
+    try:
+        obs = ObservabilityRecord.from_feedback(record)
+        metrics_store.save(obs)
+    except Exception:  # noqa: BLE001
+        pass  # observability must not disrupt feedback ingestion
