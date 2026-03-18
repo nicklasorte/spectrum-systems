@@ -1,0 +1,418 @@
+{
+  "taxonomy_id": "spectrum-systems-error-taxonomy",
+  "version": "1.0.0",
+  "description": "Canonical governed error taxonomy for spectrum-systems evaluation, feedback, observability, and regression pipelines.",
+  "error_families": [
+    {
+      "family_code": "INPUT",
+      "family_name": "Input Quality",
+      "description": "Errors caused by poor-quality, incomplete, or missing input artifacts before any AI processing occurs.",
+      "subtypes": [
+        {
+          "error_code": "INPUT.BAD_TRANSCRIPT_QUALITY",
+          "error_name": "Bad Transcript Quality",
+          "description": "Transcript is garbled, truncated, or contains too many transcription errors to support accurate extraction.",
+          "default_severity": "high",
+          "detection_sources": ["manual_review", "evaluation", "feedback"],
+          "remediation_target": "input_quality",
+          "examples": [
+            "Transcript contains repeated [inaudible] segments covering key decisions",
+            "ASR output has >30% word error rate in technical sections"
+          ]
+        },
+        {
+          "error_code": "INPUT.BAD_SLIDE_QUALITY",
+          "error_name": "Bad Slide Quality",
+          "description": "Slides are unreadable, low-resolution, or lack sufficient text for grounding.",
+          "default_severity": "medium",
+          "detection_sources": ["manual_review", "evaluation", "feedback"],
+          "remediation_target": "input_quality",
+          "examples": [
+            "Slide deck is a scanned image with no OCR layer",
+            "Slides contain only diagrams with no supporting text"
+          ]
+        },
+        {
+          "error_code": "INPUT.MISSING_CONTEXT",
+          "error_name": "Missing Context",
+          "description": "Required context (prior meeting notes, reference documents, policy) was not provided as input.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "pipeline_control",
+          "examples": [
+            "Action items reference prior decisions not present in the context bundle",
+            "Regulatory citations cannot be verified without the referenced statute"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "EXTRACT",
+      "family_name": "Extraction",
+      "description": "Errors in structured information extraction from input artifacts.",
+      "subtypes": [
+        {
+          "error_code": "EXTRACT.MISSED_DECISION",
+          "error_name": "Missed Decision",
+          "description": "A decision that was explicitly made in the meeting or document was not extracted.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Board voted to defer the proposal; extraction shows no decision",
+            "Go/no-go decision mentioned at minute 42 not present in output"
+          ]
+        },
+        {
+          "error_code": "EXTRACT.MISSED_ACTION_ITEM",
+          "error_name": "Missed Action Item",
+          "description": "An action item explicitly assigned in the source was not extracted.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Action to send cost analysis to CFO by Friday not captured",
+            "Follow-up call with vendor not listed in action items"
+          ]
+        },
+        {
+          "error_code": "EXTRACT.FALSE_EXTRACTION",
+          "error_name": "False Extraction",
+          "description": "An item was extracted that does not correspond to any decision, action, or fact in the source.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Extracted decision 'Approve budget increase' when only a discussion occurred",
+            "Action item assigned to person not present in the meeting"
+          ]
+        },
+        {
+          "error_code": "EXTRACT.SPAN_BOUNDARY_ERROR",
+          "error_name": "Span Boundary Error",
+          "description": "The extracted span is correct in substance but incorrectly bounded, merging separate items or splitting a single one.",
+          "default_severity": "low",
+          "detection_sources": ["evaluation", "feedback"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Two separate decisions merged into one extracted item",
+            "Single action item split into two overlapping entries"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "REASON",
+      "family_name": "Reasoning",
+      "description": "Errors in AI reasoning, inference, and analytical conclusions drawn from input artifacts.",
+      "subtypes": [
+        {
+          "error_code": "REASON.BAD_INFERENCE",
+          "error_name": "Bad Inference",
+          "description": "A conclusion or inference drawn from the evidence is logically unsound.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Inferred approval from a tentative agreement that was later retracted",
+            "Concluded risk is low despite explicit risk flag in transcript"
+          ]
+        },
+        {
+          "error_code": "REASON.CONTRADICTION_MISSED",
+          "error_name": "Contradiction Missed",
+          "description": "A contradiction between two claims or between a claim and the source was not detected.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Output claims both 'approved' and 'deferred' for the same item without flagging conflict",
+            "Slide states deadline is Q3; transcript states Q4; conflict not surfaced"
+          ]
+        },
+        {
+          "error_code": "REASON.GAP_MISSED",
+          "error_name": "Gap Missed",
+          "description": "A significant missing piece of reasoning, evidence, or context was not identified.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Analysis does not flag absence of regulatory sign-off",
+            "Gap in timeline between milestone 2 and 3 not surfaced"
+          ]
+        },
+        {
+          "error_code": "REASON.OVERSTATED_CONCLUSION",
+          "error_name": "Overstated Conclusion",
+          "description": "The conclusion is more definitive or certain than the supporting evidence warrants.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Summary states 'team agreed unanimously' when vote was 3-2",
+            "Risk assessment concludes 'no risk identified' from inconclusive data"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "GROUND",
+      "family_name": "Grounding",
+      "description": "Errors where claims or outputs cannot be traced to authoritative source artifacts.",
+      "subtypes": [
+        {
+          "error_code": "GROUND.MISSING_REF",
+          "error_name": "Missing Reference",
+          "description": "A claim has no upstream reference to any source artifact.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "observability"],
+          "remediation_target": "grounding",
+          "examples": [
+            "Claim asserts a cost figure with no citation to transcript or slide",
+            "Decision attributed to no speaker or document"
+          ]
+        },
+        {
+          "error_code": "GROUND.INVALID_REF",
+          "error_name": "Invalid Reference",
+          "description": "A claim has a reference, but the referenced artifact does not exist or cannot be resolved.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "observability"],
+          "remediation_target": "grounding",
+          "examples": [
+            "Pass references slide_id='slide-99' which does not exist in the deck",
+            "Transcript timestamp reference points outside the transcript duration"
+          ]
+        },
+        {
+          "error_code": "GROUND.WEAK_SUPPORT",
+          "error_name": "Weak Support",
+          "description": "A reference exists but provides only weak or indirect support for the claim.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "grounding",
+          "examples": [
+            "Claim uses a passing mention as support for a strong assertion",
+            "Referenced slide contains tangentially related data, not the cited figure"
+          ]
+        },
+        {
+          "error_code": "GROUND.UNTRACEABLE_CLAIM",
+          "error_name": "Untraceable Claim",
+          "description": "A claim cannot be traced to any source despite a reference being provided; severe form of grounding failure.",
+          "default_severity": "critical",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "grounding",
+          "examples": [
+            "All provided upstream refs are missing and no alternative evidence exists",
+            "Claim contradicts all available source material"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "SCHEMA",
+      "family_name": "Schema",
+      "description": "Errors where AI output violates the expected output schema or contract.",
+      "subtypes": [
+        {
+          "error_code": "SCHEMA.INVALID_OUTPUT",
+          "error_name": "Invalid Output",
+          "description": "The AI output is not valid JSON or otherwise unparseable.",
+          "default_severity": "critical",
+          "detection_sources": ["evaluation", "observability"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Model returned plain text instead of required JSON",
+            "JSON output has unmatched brackets"
+          ]
+        },
+        {
+          "error_code": "SCHEMA.MISSING_REQUIRED_FIELD",
+          "error_name": "Missing Required Field",
+          "description": "A required field specified in the schema is absent from the output.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "observability"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Output missing required 'decisions' array",
+            "Action item record missing required 'owner' field"
+          ]
+        },
+        {
+          "error_code": "SCHEMA.TYPE_MISMATCH",
+          "error_name": "Type Mismatch",
+          "description": "A field is present but has the wrong type (e.g. string where array expected).",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "observability"],
+          "remediation_target": "prompt",
+          "examples": [
+            "'confidence' field returned as string '0.8' instead of number 0.8",
+            "'items' field returned as a single object instead of an array"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "HALLUC",
+      "family_name": "Hallucination",
+      "description": "Errors where AI output contains content invented with no basis in the input artifacts.",
+      "subtypes": [
+        {
+          "error_code": "HALLUC.UNSUPPORTED_ASSERTION",
+          "error_name": "Unsupported Assertion",
+          "description": "A factual assertion is made that has no basis in any provided source artifact.",
+          "default_severity": "critical",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Output states 'regulatory approval granted' when no such event is in the sources",
+            "Budget figure cited that does not appear in any slide or transcript"
+          ]
+        },
+        {
+          "error_code": "HALLUC.INVENTED_DETAIL",
+          "error_name": "Invented Detail",
+          "description": "A specific detail (name, date, number, attribution) is fabricated and does not appear in sources.",
+          "default_severity": "critical",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "model",
+          "examples": [
+            "Action item attributed to 'Dr. Smith' who did not attend the meeting",
+            "Cost figure of $2.3M cited when actual figure in slides is $1.8M"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "REGRESS",
+      "family_name": "Regression",
+      "description": "Errors detected by comparing a candidate run against a stored baseline, indicating quality degradation.",
+      "subtypes": [
+        {
+          "error_code": "REGRESS.STRUCTURAL_DROP",
+          "error_name": "Structural Score Drop",
+          "description": "Structural F1 score has dropped below the regression threshold compared to baseline.",
+          "default_severity": "high",
+          "detection_sources": ["regression", "observability"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Structural F1 dropped from 0.92 to 0.84 (threshold: 0.05)",
+            "New prompt version misses expected structural elements in 3 of 10 cases"
+          ]
+        },
+        {
+          "error_code": "REGRESS.SEMANTIC_DROP",
+          "error_name": "Semantic Score Drop",
+          "description": "Semantic F1 score has dropped below the regression threshold compared to baseline.",
+          "default_severity": "high",
+          "detection_sources": ["regression", "observability"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Semantic similarity dropped from 0.88 to 0.78 (threshold: 0.08)",
+            "Summary quality degraded in technical domain cases"
+          ]
+        },
+        {
+          "error_code": "REGRESS.GROUNDING_DROP",
+          "error_name": "Grounding Score Drop",
+          "description": "Grounding score has dropped below the regression threshold compared to baseline.",
+          "default_severity": "critical",
+          "detection_sources": ["regression", "observability"],
+          "remediation_target": "grounding",
+          "examples": [
+            "Grounding rate dropped from 0.95 to 0.91 (threshold: 0.03)",
+            "New retrieval config returns fewer relevant sources"
+          ]
+        },
+        {
+          "error_code": "REGRESS.LATENCY_SPIKE",
+          "error_name": "Latency Spike",
+          "description": "Latency has increased beyond the regression threshold compared to baseline.",
+          "default_severity": "medium",
+          "detection_sources": ["regression", "observability"],
+          "remediation_target": "pipeline_control",
+          "examples": [
+            "P95 latency increased from 3.2s to 5.1s (threshold: +25%)",
+            "Context assembly step now exceeds SLA budget"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "RETRIEVE",
+      "family_name": "Retrieval",
+      "description": "Errors in memory or context retrieval that degrade downstream AI output quality.",
+      "subtypes": [
+        {
+          "error_code": "RETRIEVE.IRRELEVANT_MEMORY",
+          "error_name": "Irrelevant Memory Retrieved",
+          "description": "Retrieved memory or context chunks are not relevant to the current task.",
+          "default_severity": "medium",
+          "detection_sources": ["evaluation", "observability", "manual_review"],
+          "remediation_target": "retrieval",
+          "examples": [
+            "Context bundle includes meeting notes from unrelated project",
+            "Similarity search returns chunks with <0.3 cosine similarity"
+          ]
+        },
+        {
+          "error_code": "RETRIEVE.MISSED_RELEVANT_MEMORY",
+          "error_name": "Missed Relevant Memory",
+          "description": "Relevant memory or context that would have improved grounding or accuracy was not retrieved.",
+          "default_severity": "high",
+          "detection_sources": ["evaluation", "feedback", "manual_review"],
+          "remediation_target": "retrieval",
+          "examples": [
+            "Prior decision log not included despite being referenced in transcript",
+            "Relevant regulatory document not retrieved for compliance claim"
+          ]
+        }
+      ]
+    },
+    {
+      "family_code": "HUMAN",
+      "family_name": "Human Review",
+      "description": "Errors or signals surfaced through human review processes.",
+      "subtypes": [
+        {
+          "error_code": "HUMAN.REVIEWER_DISAGREEMENT",
+          "error_name": "Reviewer Disagreement",
+          "description": "A human reviewer disagrees with the AI output in a way that requires investigation.",
+          "default_severity": "medium",
+          "detection_sources": ["feedback", "manual_review"],
+          "remediation_target": "human_process",
+          "examples": [
+            "Reviewer rejected extracted decision as inaccurate",
+            "Two reviewers reach opposite conclusions on the same output"
+          ]
+        },
+        {
+          "error_code": "HUMAN.NEEDS_SUPPORT",
+          "error_name": "Needs Support",
+          "description": "Reviewer indicated the output needs additional supporting evidence or context to be actionable.",
+          "default_severity": "medium",
+          "detection_sources": ["feedback"],
+          "remediation_target": "grounding",
+          "examples": [
+            "Reviewer flagged output as 'needs_support' citing insufficient citation",
+            "Action item owner cannot be verified without additional context"
+          ]
+        },
+        {
+          "error_code": "HUMAN.REWRITE_REQUIRED",
+          "error_name": "Rewrite Required",
+          "description": "Reviewer determined the AI output requires a full rewrite, indicating fundamental quality failure.",
+          "default_severity": "high",
+          "detection_sources": ["feedback"],
+          "remediation_target": "prompt",
+          "examples": [
+            "Reviewer selected 'rewrite' action for a decision summary",
+            "Entire section rejected by domain expert due to factual errors"
+          ]
+        }
+      ]
+    }
+  ]
+}

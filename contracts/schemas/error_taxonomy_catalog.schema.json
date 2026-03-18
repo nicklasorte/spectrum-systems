@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/error_taxonomy_catalog.schema.json",
+  "title": "Error Taxonomy Catalog",
+  "description": "Canonical governed error taxonomy for classifying failures across evaluation, grounding, feedback, observability, and regression systems.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taxonomy_id",
+    "version",
+    "description",
+    "error_families"
+  ],
+  "properties": {
+    "taxonomy_id": {
+      "type": "string",
+      "description": "Unique identifier for this taxonomy catalog."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string for this taxonomy (e.g. '1.0.0')."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this taxonomy catalog."
+    },
+    "error_families": {
+      "type": "array",
+      "description": "Top-level error family groups.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/error_family"
+      }
+    }
+  },
+  "$defs": {
+    "error_family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family_code",
+        "family_name",
+        "description",
+        "subtypes"
+      ],
+      "properties": {
+        "family_code": {
+          "type": "string",
+          "description": "Short uppercase code for the family (e.g. EXTRACT, REASON, GROUND)."
+        },
+        "family_name": {
+          "type": "string",
+          "description": "Human-readable name for the family."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of what kinds of errors belong to this family."
+        },
+        "subtypes": {
+          "type": "array",
+          "description": "Error subtypes within this family.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/error_subtype"
+          }
+        }
+      }
+    },
+    "error_subtype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_code",
+        "error_name",
+        "description",
+        "default_severity",
+        "detection_sources",
+        "remediation_target",
+        "examples"
+      ],
+      "properties": {
+        "error_code": {
+          "type": "string",
+          "description": "Stable dot-notation error code (e.g. GROUND.MISSING_REF)."
+        },
+        "error_name": {
+          "type": "string",
+          "description": "Human-readable name for this error subtype."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this specific error subtype."
+        },
+        "default_severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "description": "Default severity level for this error subtype."
+        },
+        "detection_sources": {
+          "type": "array",
+          "description": "Which systems can detect this error.",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "evaluation",
+              "feedback",
+              "observability",
+              "regression",
+              "manual_review"
+            ]
+          }
+        },
+        "remediation_target": {
+          "type": "string",
+          "enum": [
+            "prompt",
+            "schema",
+            "grounding",
+            "model",
+            "input_quality",
+            "retrieval",
+            "pipeline_control",
+            "human_process"
+          ],
+          "description": "Which system component is the primary remediation target."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Illustrative examples of this error.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

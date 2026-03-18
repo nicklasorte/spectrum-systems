@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/error_classification_record.schema.json",
+  "title": "Error Classification Record",
+  "description": "Governed record that captures one or more canonical taxonomy-coded error classifications derived from a source system signal, preserving the raw input for audit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "classification_id",
+    "timestamp",
+    "context",
+    "classifications",
+    "raw_inputs",
+    "taxonomy_version"
+  ],
+  "properties": {
+    "classification_id": {
+      "type": "string",
+      "description": "Unique identifier for this classification record."
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO-8601 timestamp when this record was created."
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system"],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "description": "ID of the artifact this classification relates to."
+        },
+        "artifact_type": {
+          "type": "string",
+          "description": "Type of the artifact (e.g. meeting_minutes, working_paper)."
+        },
+        "case_id": {
+          "type": "string",
+          "description": "Evaluation or review case identifier."
+        },
+        "pass_id": {
+          "type": "string",
+          "description": "Pass identifier within an evaluation run."
+        },
+        "pass_type": {
+          "type": "string",
+          "description": "Type of pass (e.g. extraction, reasoning)."
+        },
+        "source_system": {
+          "type": "string",
+          "enum": [
+            "evaluation",
+            "feedback",
+            "observability",
+            "regression",
+            "manual_review"
+          ],
+          "description": "Source system that produced the raw signal."
+        }
+      }
+    },
+    "classifications": {
+      "type": "array",
+      "description": "One or more canonical error code classifications derived from the raw input.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/classification_entry"
+      }
+    },
+    "raw_inputs": {
+      "type": "object",
+      "description": "Original source signal preserved verbatim for audit trail."
+    },
+    "taxonomy_version": {
+      "type": "string",
+      "description": "Version of the error taxonomy catalog used for classification."
+    }
+  },
+  "$defs": {
+    "classification_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_code",
+        "confidence",
+        "evidence_source",
+        "explanation"
+      ],
+      "properties": {
+        "error_code": {
+          "type": "string",
+          "description": "Canonical taxonomy error code (e.g. GROUND.MISSING_REF)."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence in this classification (0.0–1.0)."
+        },
+        "evidence_source": {
+          "type": "string",
+          "description": "Which field or signal from raw_inputs supports this classification."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation for why this code was assigned."
+        }
+      }
+    }
+  }
+}

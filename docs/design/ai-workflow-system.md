@@ -941,3 +941,132 @@ reports partial attribution rather than fabricating precision.
   clustering of regression signals by case, pass, and dimension.
 - **AW (prompt improvement)** — Grounding and semantic regression signals
   identify which prompts to target for improvement in the AW layer.
+
+
+---
+
+## Error Taxonomy System (Prompt AU)
+
+The Error Taxonomy System (AU) is the canonical governed classification layer
+for failures produced by the evaluation (AN), feedback (AO), observability
+(AP), and regression (AR) systems.
+
+### Why canonical codes matter
+
+Before AU, each subsystem used ad hoc error labels:
+
+- AN used the `ErrorType` enum (`extraction_error`, `grounding_failure`, …)
+- AO used `failure_type` strings from human feedback records
+- AP captured `error_types` as lists of ErrorType values
+- AR described regressions by dimension name and delta
+
+These coarse signals could not be compared across sources, clustered for
+trend analysis, or routed to specific remediation targets without
+re-interpretation at every consumer.
+
+AU replaces scattered ad hoc labels with a single governed catalog of
+stable dot-notation codes (e.g. `GROUND.MISSING_REF`, `REGRESS.GROUNDING_DROP`)
+that are the same regardless of which system detected the failure.
+
+### Taxonomy structure
+
+The catalog is stored at `config/error_taxonomy_catalog.json` and validated
+against `contracts/schemas/error_taxonomy_catalog.schema.json`.
+
+**Families and subtypes:**
+
+| Family | Example codes |
+|--------|--------------|
+| `INPUT` | `INPUT.BAD_TRANSCRIPT_QUALITY`, `INPUT.MISSING_CONTEXT` |
+| `EXTRACT` | `EXTRACT.MISSED_DECISION`, `EXTRACT.MISSED_ACTION_ITEM`, `EXTRACT.FALSE_EXTRACTION` |
+| `REASON` | `REASON.BAD_INFERENCE`, `REASON.CONTRADICTION_MISSED`, `REASON.GAP_MISSED` |
+| `GROUND` | `GROUND.MISSING_REF`, `GROUND.INVALID_REF`, `GROUND.WEAK_SUPPORT`, `GROUND.UNTRACEABLE_CLAIM` |
+| `SCHEMA` | `SCHEMA.INVALID_OUTPUT`, `SCHEMA.MISSING_REQUIRED_FIELD`, `SCHEMA.TYPE_MISMATCH` |
+| `HALLUC` | `HALLUC.UNSUPPORTED_ASSERTION`, `HALLUC.INVENTED_DETAIL` |
+| `REGRESS` | `REGRESS.STRUCTURAL_DROP`, `REGRESS.SEMANTIC_DROP`, `REGRESS.GROUNDING_DROP`, `REGRESS.LATENCY_SPIKE` |
+| `RETRIEVE` | `RETRIEVE.IRRELEVANT_MEMORY`, `RETRIEVE.MISSED_RELEVANT_MEMORY` |
+| `HUMAN` | `HUMAN.REVIEWER_DISAGREEMENT`, `HUMAN.NEEDS_SUPPORT`, `HUMAN.REWRITE_REQUIRED` |
+
+Each subtype carries:
+- `default_severity` (low / medium / high / critical)
+- `detection_sources` (which systems can detect it)
+- `remediation_target` (prompt / schema / grounding / model / input_quality / retrieval / pipeline_control / human_process)
+- `examples` (illustrative cases)
+
+### Module location
+
+```
+spectrum_systems/modules/error_taxonomy/
+    __init__.py     — public exports
+    catalog.py      — ErrorSubtype, ErrorFamily, ErrorTaxonomyCatalog
+    normalize.py    — normalization functions (source signal → classification)
+    classify.py     — ErrorClassificationRecord, ErrorClassifier
+    bridge.py       — backward compatibility bridge (legacy ErrorType → AU codes)
+    aggregation.py  — count_by_family, count_by_subtype, identify_highest_impact_subtypes
+```
+
+### Schemas
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/error_taxonomy_catalog.schema.json` | Governed catalog structure |
+| `contracts/schemas/error_classification_record.schema.json` | Governed classification record |
+
+### How AU consumes AN / AO / AP / AR
+
+**AN (evaluation)** — After `EvalRunner` produces failures, `ErrorClassifier.classify_eval_result()` maps each failure into one or more `ClassificationResult` entries and wraps them in an `ErrorClassificationRecord`. Schema errors → `SCHEMA.*`, grounding failures → `GROUND.*` or `HALLUC.*`, reasoning passes → `REASON.*`, extraction passes → `EXTRACT.*`.
+
+**AO (feedback)** — When a `HumanFeedbackRecord` is saved, `ErrorClassifier.classify_feedback_record()` maps `failure_type` and `action` into canonical codes. `needs_support` → `HUMAN.NEEDS_SUPPORT` + `GROUND.WEAK_SUPPORT`. `rewrite` → `HUMAN.REWRITE_REQUIRED`. The raw record is preserved in `raw_inputs`.
+
+**AP (observability)** — AU does **not** mutate observability records. Instead, `ErrorClassifier.classify_observability_record()` reads the flag and score fields from an `ObservabilityRecord` dict and derives taxonomy-coded classifications. `grounding_passed=false` → `GROUND.MISSING_REF` or `HALLUC.UNSUPPORTED_ASSERTION`. `human_disagrees=true` → `HUMAN.REVIEWER_DISAGREEMENT`.
+
+**AR (regression)** — `ErrorClassifier.classify_regression_report()` iterates `worst_regressions` entries and maps each `dimension` to a `REGRESS.*` code: `grounding_score` → `REGRESS.GROUNDING_DROP`, `structural_score` → `REGRESS.STRUCTURAL_DROP`, `latency` → `REGRESS.LATENCY_SPIKE`.
+
+### Backward compatibility bridge
+
+`bridge.py` maps the legacy `ErrorType` enum values from AN/AP/AO into AU codes without breaking existing callers:
+
+```python
+from spectrum_systems.modules.error_taxonomy.bridge import map_legacy_error_type
+from spectrum_systems.modules.evaluation.error_taxonomy import ErrorType
+
+codes = map_legacy_error_type(ErrorType.grounding_failure)
+# → ["GROUND.MISSING_REF"]
+```
+
+### How AU prepares AV and AW
+
+**AV (failure clustering)** — `ErrorClassificationRecord` objects are stored under `data/error_classifications/` as flat JSON files. Each record carries stable `error_code` values, `confidence`, `taxonomy_version`, and context (case_id, pass_id, source_system). AV can load all records via `ErrorClassificationRecord.list_all()` and cluster by family, subtype, or remediation_target using the `aggregation` module.
+
+**AW (prompt improvement)** — `identify_highest_impact_subtypes()` ranks subtypes by count × severity_weight, surfacing which prompts to target first. `count_by_remediation_target()` directs prompt engineers to the right layer (`prompt`, `grounding`, `retrieval`, etc.).
+
+### Raw signal → canonical code examples
+
+| Source | Raw signal | Canonical code(s) |
+|--------|-----------|-------------------|
+| AN eval | `schema_errors: ["'decisions' is required"]` | `SCHEMA.MISSING_REQUIRED_FIELD` |
+| AN eval | `missing_refs: ["ref-1"], upstream_pass_refs: ["ref-1"]` (all missing) | `HALLUC.UNSUPPORTED_ASSERTION` |
+| AN eval | `mismatched_refs: ["ref-2"]` | `GROUND.WEAK_SUPPORT` |
+| AN eval | `pass_type: "contradiction_detection"` | `REASON.CONTRADICTION_MISSED` |
+| AO feedback | `action: "needs_support"` | `HUMAN.NEEDS_SUPPORT`, `GROUND.WEAK_SUPPORT` |
+| AO feedback | `failure_type: "hallucination"` | `HALLUC.UNSUPPORTED_ASSERTION` |
+| AP observability | `grounding_passed: false, grounding_score: 0.0` | `HALLUC.UNSUPPORTED_ASSERTION` |
+| AP observability | `human_disagrees: true` | `HUMAN.REVIEWER_DISAGREEMENT` |
+| AR regression | `dimension: "grounding_score", severity: "hard_fail"` | `REGRESS.GROUNDING_DROP` |
+| AR regression | `dimension: "latency"` | `REGRESS.LATENCY_SPIKE` |
+
+### CLI
+
+```bash
+# Report all classification records
+python scripts/run_error_taxonomy_report.py --all
+
+# Filter to a specific evaluation case
+python scripts/run_error_taxonomy_report.py --case CASE_ID
+
+# Filter to a specific artifact
+python scripts/run_error_taxonomy_report.py --artifact ARTIFACT_ID
+```
+
+Output: `outputs/error_taxonomy_report.json` with counts by family, subtype,
+source system, remediation target, and highest-impact subtypes.
