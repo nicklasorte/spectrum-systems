@@ -579,7 +579,7 @@ class TestTrends:
 
     def test_compare_runs_latency_improvement(self):
         result = compare_runs(self._current_records(), self._previous_records())
-        # Latency improved (lower): prev=200, curr=100 → positive delta (improvement)
+        # Latency improved (lower is better): prev=200ms, curr=100ms → delta = prev - curr = +100ms (positive = improvement)
         assert result["deltas"]["latency_ms"] == pytest.approx(100.0, abs=1e-9)
 
     def test_compare_runs_empty_current(self):

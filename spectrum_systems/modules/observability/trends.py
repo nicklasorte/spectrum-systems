@@ -96,13 +96,15 @@ def compare_runs(
     deltas["structural_score"] = _delta("avg_structural_score")
     deltas["semantic_score"] = _delta("avg_semantic_score")
     deltas["grounding_score"] = _delta("avg_grounding_score")
-    # Latency: positive delta is regression (higher is worse), so we negate
+    # Latency: negate so that positive delta = improvement (less latency is better),
+    # matching the convention used for scores where positive delta always means better.
     _lat_curr = current_summary.get("avg_latency_ms")
     _lat_prev = previous_summary.get("avg_latency_ms")
     deltas["latency_ms"] = (
         (_lat_prev - _lat_curr) if _lat_curr is not None and _lat_prev is not None else None
     )
-    # Rates: lower is better, so delta is prev - curr
+    # For failure and disagreement rates: lower is better, so delta = prev - curr
+    # (positive delta = improvement, matching the convention for scores).
     for rate_key in ("failure_rate", "grounding_failure_rate", "human_disagreement_rate"):
         _c = current_summary.get(rate_key)
         _p = previous_summary.get(rate_key)

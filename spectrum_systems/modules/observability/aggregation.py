@@ -241,7 +241,9 @@ def compute_latency_stats(records: List[ObservabilityRecord]) -> Dict[str, Any]:
         if not vals:
             return 0.0
         sorted_vals = sorted(vals)
-        idx = max(0, int(len(sorted_vals) * 0.95) - 1)
+        # Use the value at the 95th percentile index (0-based).
+        # For n values: index = int(n * 0.95), clamped to valid range.
+        idx = min(int(len(sorted_vals) * 0.95), len(sorted_vals) - 1)
         return float(sorted_vals[idx])
 
     by_pass: Dict[str, List[int]] = defaultdict(list)
