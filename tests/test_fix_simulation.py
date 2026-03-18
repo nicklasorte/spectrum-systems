@@ -762,3 +762,114 @@ def test_end_to_end_invalid_cluster_rejected():
 
     assert result.simulation_status == "rejected"
     assert result.promotion_recommendation == "reject"
+
+
+# ---------------------------------------------------------------------------
+# 15. Safety invariant: minimum improvement threshold
+# ---------------------------------------------------------------------------
+
+
+def test_hold_below_minimum_improvement_high_fidelity():
+    """Sub-threshold delta must not produce 'promote' even at high fidelity."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"grounding_score_delta": 0.005},  # below _MIN_IMPROVEMENT_FOR_PROMOTE=0.01
+    )
+    assert rec == "hold"
+
+
+def test_hold_below_minimum_improvement_medium_fidelity():
+    """Sub-threshold delta must not produce 'promote' even at medium fidelity."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="medium",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"grounding_score_delta": 0.009},  # just below threshold
+    )
+    assert rec == "hold"
+
+
+def test_promote_at_exactly_minimum_improvement():
+    """Delta exactly at the minimum threshold should be allowed to promote."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"grounding_score_delta": 0.01},  # exactly at threshold
+    )
+    assert rec == "promote"
+
+
+# ---------------------------------------------------------------------------
+# 16. Safety invariant: latency regression detection
+# ---------------------------------------------------------------------------
+
+
+def test_check_regression_latency_hard_failure():
+    """A large latency increase must produce a hard failure."""
+    candidate = dict(_BASELINE)
+    candidate["latency_ms"] = 350.0  # +100 ms — hard failure
+    rc = check_regression(_BASELINE, candidate)
+    assert rc["overall_pass"] is False
+    assert rc["hard_failures"] >= 1
+
+
+def test_check_regression_latency_warning():
+    """A moderate latency increase must produce a warning."""
+    candidate = dict(_BASELINE)
+    candidate["latency_ms"] = 275.0  # +25 ms — within warning band
+    rc = check_regression(_BASELINE, candidate)
+    assert rc["hard_failures"] == 0
+    assert rc["warnings"] >= 1
+
+
+def test_check_regression_latency_no_regression():
+    """A latency improvement (decrease) must not trigger any regression signal."""
+    candidate = dict(_BASELINE)
+    candidate["latency_ms"] = 245.0  # -5 ms — improvement
+    rc = check_regression(_BASELINE, candidate)
+    assert rc["hard_failures"] == 0
+    assert rc["warnings"] == 0
+
+
+def test_check_regression_latency_small_increase_no_warning():
+    """A latency increase below the warning threshold must not trigger a warning."""
+    candidate = dict(_BASELINE)
+    candidate["latency_ms"] = 260.0  # +10 ms — below warning threshold
+    rc = check_regression(_BASELINE, candidate)
+    assert rc["hard_failures"] == 0
+    assert rc["warnings"] == 0
+
+
+# ---------------------------------------------------------------------------
+# 17. Safety invariant: simulation_status = "rejected" for unsimulable actions
+# ---------------------------------------------------------------------------
+
+
+def test_simulation_status_no_action_is_rejected():
+    """A mapped plan with no_action must produce simulation_status='rejected'."""
+    plan = _make_plan(action_type="no_action")
+    simulator = FixSimulator(golden_dataset=_make_golden_cases(), baseline_summary=_BASELINE)
+    result = simulator.simulate_plan(plan)
+    assert result.simulation_status == "rejected"
+    assert result.promotion_recommendation == "reject"
+
+
+def test_simulation_status_unknown_action_is_rejected():
+    """A mapped plan with an unknown action_type must produce simulation_status='rejected'."""
+    plan = _make_plan(action_type="totally_unknown_action")
+    simulator = FixSimulator(golden_dataset=_make_golden_cases(), baseline_summary=_BASELINE)
+    result = simulator.simulate_plan(plan)
+    assert result.simulation_status == "rejected"
+    assert result.promotion_recommendation == "reject"
+
+
+def test_schema_validates_rejected_status_for_no_action():
+    """Schema validation must pass for a no_action result with simulation_status='rejected'."""
+    plan = _make_plan(action_type="no_action")
+    simulator = FixSimulator(golden_dataset=_make_golden_cases(), baseline_summary=_BASELINE)
+    result = simulator.simulate_plan(plan)
+    errors = result.validate_against_schema()
+    assert errors == [], f"Schema validation errors: {errors}"
