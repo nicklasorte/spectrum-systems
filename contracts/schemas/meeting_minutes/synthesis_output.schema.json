@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes/synthesis_output.schema.json",
+  "title": "Synthesis Output",
+  "description": "Structured output of the synthesis pass. Produces the final governed meeting minutes summary grounded in upstream structured artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meeting_id",
+    "summary",
+    "decisions_summary",
+    "action_items_summary",
+    "unresolved_items",
+    "upstream_pass_refs"
+  ],
+  "properties": {
+    "meeting_id": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prose summary of the meeting. Must be grounded in upstream structured artifacts only."
+    },
+    "decisions_summary": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Concise list of key decisions. Each entry must trace to a decision in the decisions_output."
+    },
+    "action_items_summary": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Concise list of action items. Each entry must trace to an item in the action_items_output."
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Open items or gaps carried forward. Each entry must trace to a gap or contradiction from upstream passes."
+    },
+    "upstream_pass_refs": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "pass_id values of all upstream passes whose structured outputs informed this synthesis. Must be non-empty."
+    }
+  }
+}

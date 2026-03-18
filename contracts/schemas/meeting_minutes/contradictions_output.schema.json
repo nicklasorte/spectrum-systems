@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes/contradictions_output.schema.json",
+  "title": "Contradictions Output",
+  "description": "Structured output of the contradiction_detection pass.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meeting_id", "contradictions"],
+  "properties": {
+    "meeting_id": {
+      "type": "string"
+    },
+    "contradictions": {
+      "type": "array",
+      "description": "Contradictions detected between statements or decisions in the meeting.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["contradiction_id", "description", "item_a_ref", "item_b_ref", "severity"],
+        "properties": {
+          "contradiction_id": {"type": "string"},
+          "description":      {"type": "string", "minLength": 1},
+          "item_a_ref":       {"type": "string", "description": "Reference to the first conflicting item."},
+          "item_b_ref":       {"type": "string", "description": "Reference to the second conflicting item."},
+          "severity":         {
+            "type": "string",
+            "enum": ["critical", "significant", "minor"],
+            "description": "Severity of the contradiction."
+          }
+        }
+      }
+    }
+  }
+}

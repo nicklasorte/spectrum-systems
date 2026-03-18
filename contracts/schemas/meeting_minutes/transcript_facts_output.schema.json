@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/meeting_minutes/transcript_facts_output.schema.json",
+  "title": "Transcript Facts Output",
+  "description": "Structured output of the transcript_extraction pass. Contains objective facts extracted from the meeting transcript.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meeting_id", "facts", "participant_names", "topics_discussed"],
+  "properties": {
+    "meeting_id": {
+      "type": "string",
+      "description": "Identifier of the meeting whose transcript was processed."
+    },
+    "facts": {
+      "type": "array",
+      "description": "Objective facts extracted from the transcript. Each entry is a single extractable statement.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "source_span"],
+        "properties": {
+          "text":        {"type": "string", "minLength": 1},
+          "source_span": {"type": "string", "description": "Approximate location in transcript (e.g., 'paragraph 3')."}
+        }
+      }
+    },
+    "participant_names": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Names of participants identified in the transcript."
+    },
+    "topics_discussed": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "High-level topics covered during the meeting."
+    },
+    "duration_minutes": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Meeting duration in minutes if determinable from the transcript."
+    }
+  }
+}

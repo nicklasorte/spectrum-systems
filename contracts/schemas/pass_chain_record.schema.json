@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pass_chain_record.schema.json",
+  "title": "Pass Chain Record",
+  "description": "Governed traceability record for a complete multi-pass reasoning chain execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chain_id",
+    "chain_type",
+    "task_type",
+    "context_id",
+    "routing_table_version",
+    "pass_sequence",
+    "pass_results",
+    "intermediate_artifact_refs",
+    "status",
+    "started_at",
+    "completed_at",
+    "circuit_breaker_policy",
+    "termination_reason",
+    "escalation_required",
+    "warnings"
+  ],
+  "properties": {
+    "chain_id": {
+      "type": "string",
+      "description": "Deterministic identifier for this chain execution, derived from task_type, context_id, and chain config."
+    },
+    "chain_type": {
+      "type": "string",
+      "description": "Category of reasoning chain (e.g., 'meeting_minutes')."
+    },
+    "task_type": {
+      "type": "string",
+      "description": "AI task type that triggered this chain (e.g., 'meeting_minutes')."
+    },
+    "context_id": {
+      "type": "string",
+      "description": "context_id of the context bundle used as input to this chain."
+    },
+    "routing_table_version": {
+      "type": ["string", "null"],
+      "description": "Version of the routing table resolved at chain build time. Null if routing is not version-pinned."
+    },
+    "pass_sequence": {
+      "type": "array",
+      "description": "Ordered list of pass specs defining the planned execution sequence.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pass_id",
+          "pass_type",
+          "pass_order",
+          "prompt_id",
+          "prompt_version",
+          "confidence_method",
+          "schema_id",
+          "input_refs"
+        ],
+        "properties": {
+          "pass_id":          {"type": "string"},
+          "pass_type":        {"type": "string"},
+          "pass_order":       {"type": "integer", "minimum": 1},
+          "prompt_id":        {"type": "string"},
+          "prompt_version":   {"type": ["string", "null"]},
+          "model_family":     {"type": ["string", "null"]},
+          "model_name":       {"type": ["string", "null"]},
+          "confidence_method":{"type": "string", "enum": ["self_reported", "scoring_pass", "heuristic"]},
+          "schema_id":        {"type": ["string", "null"]},
+          "input_refs":       {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "pass_results": {
+      "type": "array",
+      "description": "Ordered list of pass result records, one per executed pass. Each item conforms to pass_result.schema.json.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "intermediate_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "References to all intermediate artifacts produced during chain execution."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["running", "completed", "terminated", "escalated"],
+      "description": "Final status of the chain. 'terminated' = circuit breaker halted execution; 'escalated' = circuit breaker halted and escalation is required; 'completed' = all passes ran to completion."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when chain execution began."
+    },
+    "completed_at": {
+      "type": ["string", "null"],
+      "description": "Timestamp when chain execution finished. Null if still in progress."
+    },
+    "circuit_breaker_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_passes",
+        "max_failed_passes",
+        "consecutive_failure_limit",
+        "persistent_validation_failure_limit",
+        "escalation_policy"
+      ],
+      "description": "Policy that governs circuit-breaker behaviour for this chain.",
+      "properties": {
+        "max_passes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of passes allowed in the chain."
+        },
+        "max_failed_passes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total failed passes before the chain is terminated."
+        },
+        "consecutive_failure_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of consecutive failed passes before the chain is terminated."
+        },
+        "persistent_validation_failure_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of schema validation failures across the chain before escalation."
+        },
+        "escalation_policy": {
+          "type": "string",
+          "enum": ["escalate_after_persistent_failure", "terminate_only"],
+          "description": "Governs whether circuit-breaker termination triggers an escalation flag."
+        }
+      }
+    },
+    "termination_reason": {
+      "type": ["string", "null"],
+      "description": "Human-readable reason why the chain was terminated early. Null for successfully completed chains."
+    },
+    "escalation_required": {
+      "type": "boolean",
+      "description": "True when the chain has been escalated due to persistent failures or policy violations."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Non-fatal warnings raised during chain execution."
+    }
+  }
+}
