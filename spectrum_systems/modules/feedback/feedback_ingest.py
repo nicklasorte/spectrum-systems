@@ -149,5 +149,5 @@ def attach_feedback_to_artifact(
     _store = store or FeedbackStore()
     # Load the feedback record to ensure it exists
     _store.load_feedback(feedback_id)
-    # Update index (idempotent: duplicate links are ignored in _update_index)
-    _store._update_index(artifact_id, feedback_id)  # noqa: SLF001
+    # Update index (idempotent)
+    _store.update_artifact_index(artifact_id, feedback_id)

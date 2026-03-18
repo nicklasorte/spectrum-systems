@@ -451,6 +451,24 @@ class FeedbackStore:
         index = self._load_index()
         return index.get(artifact_id, [])
 
+    def update_artifact_index(self, artifact_id: str, feedback_id: str) -> None:
+        """Explicitly link a feedback record to an artifact in the index.
+
+        Idempotent: calling with an already-linked pair is a no-op.
+
+        Parameters
+        ----------
+        artifact_id:
+            Artifact identifier to link against.
+        feedback_id:
+            Feedback record identifier to register.
+        """
+        index = self._load_index()
+        index.setdefault(artifact_id, [])
+        if feedback_id not in index[artifact_id]:
+            index[artifact_id].append(feedback_id)
+        self._index_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
+
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
@@ -461,11 +479,7 @@ class FeedbackStore:
         return json.loads(self._index_path.read_text(encoding="utf-8"))
 
     def _update_index(self, artifact_id: str, feedback_id: str) -> None:
-        index = self._load_index()
-        index.setdefault(artifact_id, [])
-        if feedback_id not in index[artifact_id]:
-            index[artifact_id].append(feedback_id)
-        self._index_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
+        self.update_artifact_index(artifact_id, feedback_id)
 
 
 # ---------------------------------------------------------------------------

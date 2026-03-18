@@ -19,6 +19,8 @@ map_feedback_to_error_type(feedback_record) -> ErrorType
 """
 from __future__ import annotations
 
+from typing import Dict
+
 from spectrum_systems.modules.evaluation.error_taxonomy import ErrorType
 from spectrum_systems.modules.feedback.human_feedback import HumanFeedbackRecord
 
@@ -27,7 +29,7 @@ from spectrum_systems.modules.feedback.human_feedback import HumanFeedbackRecord
 # Explicit failure_type → ErrorType mapping
 # ---------------------------------------------------------------------------
 
-_FAILURE_TYPE_MAP: dict = {
+_FAILURE_TYPE_MAP: Dict[str, ErrorType] = {
     "extraction_error": ErrorType.extraction_error,
     "reasoning_error": ErrorType.reasoning_error,
     "grounding_failure": ErrorType.grounding_failure,
@@ -39,7 +41,7 @@ _FAILURE_TYPE_MAP: dict = {
 # Action → ErrorType fallback (used when failure_type == "unclear")
 # ---------------------------------------------------------------------------
 
-_ACTION_FALLBACK_MAP: dict = {
+_ACTION_FALLBACK_MAP: Dict[str, ErrorType] = {
     "reject": ErrorType.reasoning_error,
     "rewrite": ErrorType.reasoning_error,
     "major_edit": ErrorType.extraction_error,
