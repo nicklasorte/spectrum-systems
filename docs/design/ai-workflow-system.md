@@ -1182,3 +1182,129 @@ python scripts/run_error_clustering.py --case CASE_ID
 ```
 
 Output: `outputs/error_clusters.json` with full ranked cluster list.
+
+---
+
+## AW1 — Remediation Mapping Engine
+
+### Position in the control loop
+
+AW1 sits between AW0 (Cluster Validation Layer) and AW2 (Simulation Layer):
+
+```
+AU (classification) → AV (clustering) → AW0 (validation) → AW1 (remediation mapping) → AW2 (simulation) → AW (application)
+```
+
+AW1 is a **governed translation layer**: it converts validated failure patterns
+into specific, auditable candidate interventions without applying any changes.
+
+### Why validated clusters are required
+
+AW0 gates the quality of clusters on six criteria (size, cohesion, pass
+consistency, signature stability, actionability, and confidence).  Only
+clusters that pass all gates are forwarded to AW1.
+
+An invalid cluster may reflect noise, data collection artefacts, or a
+genuinely ambiguous mix of failure modes.  Proposing remediation for such a
+cluster would waste simulation budget and risk introducing regressions.
+AW1 therefore enforces the AW0 gate: invalid clusters receive an explicit
+`rejected` plan rather than a proposed action.
+
+### Mapping logic overview
+
+AW1 applies a deterministic, rule-based mapping from dominant error codes to
+proposed actions.  No ML or LLM is used.
+
+| Rule | Signal | Action type | Target component |
+|------|--------|-------------|-----------------|
+| A | `GROUND.*` dominant | `grounding_rule_change` | `grounding_verifier` |
+| B | `EXTRACT.MISSED_DECISION` dominant | `prompt_change` | `decision_extraction_prompt` |
+| B | `EXTRACT.MISSED_ACTION_ITEM` dominant | `prompt_change` | `action_item_extraction_prompt` |
+| C | `SCHEMA.INVALID_OUTPUT` dominant | `schema_change` | `output_schema_contract` |
+| D | `INPUT.BAD_TRANSCRIPT_QUALITY` dominant | `input_quality_rule_change` | `transcript_preprocessing_rules` |
+| E | `RETRIEVE.*` dominant | `retrieval_change` | `retrieval_selection_rules` |
+| F | `HUMAN.NEEDS_SUPPORT` + `GROUND.WEAK_SUPPORT` | `grounding_rule_change` | `synthesis_grounding_rules` |
+| G | Mixed / no clear dominant | `no_action` | — (`ambiguous`) |
+
+A cluster is considered to have a **dominant signal** when the primary error
+code accounts for ≥ 60 % of all error code occurrences in the cluster.
+Clusters that do not meet this threshold receive `mapping_status = ambiguous`.
+
+Each plan carries at most **two proposed actions**.  Confidence and risk scores
+are computed deterministically from `cohesion_score`, `actionability_score`,
+`avg_confidence`, and `dominant_share`.
+
+### Component targeting
+
+All `target_component` values must be registered in the canonical target
+registry (`spectrum_systems/modules/improvement/target_registry.py`).
+Free-form component names are not permitted.
+
+### Examples
+
+```
+Cluster: GROUND.MISSING_REF  (cohesion=0.85, actionability=0.85)
+→ mapping_status: mapped
+→ action_type: grounding_rule_change
+→ target_component: grounding_verifier
+→ confidence_score: ~0.85
+
+Cluster: EXTRACT.MISSED_DECISION  (cohesion=0.90, actionability=1.0)
+→ mapping_status: mapped
+→ action_type: prompt_change
+→ target_component: decision_extraction_prompt
+→ confidence_score: ~0.88
+
+Cluster: MISC.UNKNOWN  (cohesion=0.30, actionability=0.30)
+→ mapping_status: ambiguous
+→ action_type: no_action
+→ reason: no clear dominant target
+```
+
+### Relationship to AW2 and AW
+
+Each `mapped` RemediationPlan produced by AW1 is a simulation candidate for
+AW2.  AW2 reads `proposed_actions[primary_proposal_index]` and runs a
+controlled simulation to estimate whether applying the change would reduce the
+error rate for the source cluster.
+
+The AW (application) layer only acts on changes that have passed AW2
+simulation.  AW1 itself never mutates any prompt, schema, grounding rule, or
+configuration.
+
+### Module locations
+
+```
+spectrum_systems/modules/improvement/
+    remediation_mapping.py   — RemediationPlan, RemediationMapper
+    target_registry.py       — KNOWN_TARGET_COMPONENTS, validate_target_component
+    remediation_store.py     — save_remediation_plan, load_remediation_plan, list_remediation_plans
+    remediation_pipeline.py  — build_remediation_plans_from_validated_clusters,
+                               filter_mapped_plans, summarize_remediation_targets
+```
+
+### Schema
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/remediation_plan.schema.json` | Governed remediation plan output format |
+
+### Storage
+
+Mapped plans are persisted as flat JSON under:
+
+```
+data/remediation_plans/{remediation_id}.json
+```
+
+### CLI
+
+```bash
+# Map all validated clusters
+python scripts/run_remediation_mapping.py --all
+
+# Filter to a specific case
+python scripts/run_remediation_mapping.py --case CASE_ID
+```
+
+Output: `outputs/remediation_plans.json` with full plan list and ranked summary.
