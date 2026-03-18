@@ -1070,3 +1070,115 @@ python scripts/run_error_taxonomy_report.py --artifact ARTIFACT_ID
 
 Output: `outputs/error_taxonomy_report.json` with counts by family, subtype,
 source system, remediation target, and highest-impact subtypes.
+
+---
+
+## Auto-Failure Clustering (Prompt AV)
+
+AV is the pattern detection layer that transforms raw `ErrorClassificationRecord`
+objects (AU) into actionable, ranked failure pattern clusters for the prompt
+improvement loop (AW).
+
+### Clustering approach
+
+AV uses **deterministic, threshold-driven clustering** — no opaque ML models,
+no embeddings, no probabilistic groupings. Every clustering decision is
+traceable to taxonomy codes.
+
+Steps:
+
+1. **Group by primary error code** — each record's highest-confidence error
+   code determines its initial bucket.
+2. **Sub-cluster by co-occurrence + pass_type** — within each primary-code
+   group, records are further split by their full set of co-occurring codes
+   and `pass_type` / `source_system` context.
+3. **Merge small clusters** — groups below `min_cluster_size` (default: 2)
+   are merged into the nearest sibling cluster sharing the same dominant
+   error family, preserving all records.
+
+Multi-label records (those with multiple `error_code` entries) are assigned
+to the cluster whose `primary_error_code` matches their highest-confidence
+code, ensuring every record belongs to exactly one cluster.
+
+### Signature definition
+
+Each cluster carries a `cluster_signature` derived entirely from taxonomy codes:
+
+| Field | Definition |
+|-------|-----------|
+| `primary_error_code` | Most frequent error code across all records in the cluster |
+| `secondary_error_codes` | Other codes that co-occur, sorted by descending frequency |
+| `dominant_family` | Top-level family prefix of `primary_error_code` (e.g. `GROUND`) |
+
+Signatures are computed deterministically; ties are broken alphabetically.
+
+### Impact scoring
+
+Impact is computed at two levels:
+
+**Per-record** (`compute_weighted_severity`):
+```
+score = Σ (severity_weight × confidence)  for each classification entry
+```
+
+Default severity weights: `low=1`, `medium=2`, `high=3`, `critical=5`.
+
+**Per-cluster** (`weighted_severity_score` in metrics):
+```
+cluster_score = Σ per-record scores  across all records in the cluster
+```
+
+Clusters are ranked by a three-key sort:
+1. `weighted_severity_score` (descending)
+2. `record_count` (descending)
+3. `avg_confidence` (descending)
+
+### Module location
+
+```
+spectrum_systems/modules/error_taxonomy/
+    clustering.py       — ErrorCluster, ErrorClusterer
+    impact.py           — compute_weighted_severity, rank_clusters
+    cluster_store.py    — save_cluster, load_cluster, list_clusters
+    cluster_pipeline.py — build_clusters_from_classifications, rank_and_filter_clusters
+```
+
+### Schema
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/error_cluster.schema.json` | Governed cluster output format |
+
+### Storage
+
+Clusters are persisted as flat JSON under:
+```
+data/error_clusters/{cluster_id}.json
+```
+
+### How AV feeds AW
+
+AV produces a ranked list of `ErrorCluster` objects. Each cluster exposes:
+
+- `cluster_signature.primary_error_code` — the specific failure pattern
+- `remediation_targets` — which system layer to fix (`prompt`, `grounding`,
+  `retrieval`, `schema`, etc.)
+- `metrics.weighted_severity_score` — relative priority
+- `representative_examples` — concrete records AW can use as training signal
+
+AW consumes this ranked list to determine:
+- Which prompts to rewrite (clusters with `remediation_target = prompt`)
+- Which grounding rules to tighten (clusters with `remediation_target = grounding`)
+- Which retrieval pipeline to fix (clusters with `remediation_target = retrieval`)
+
+### CLI
+
+```bash
+# Cluster all classification records
+python scripts/run_error_clustering.py --all
+
+# Filter to a specific evaluation case
+python scripts/run_error_clustering.py --case CASE_ID
+```
+
+Output: `outputs/error_clusters.json` with full ranked cluster list.
