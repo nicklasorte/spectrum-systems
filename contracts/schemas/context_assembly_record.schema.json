@@ -21,6 +21,7 @@
   "properties": {
     "context_id": {
       "type": "string",
+      "pattern": "^ctx-[a-f0-9]{16}$",
       "description": "Matches the context_id of the assembled context bundle."
     },
     "task_type": {
@@ -60,8 +61,8 @@
     },
     "retrieval_status": {
       "type": "string",
-      "enum": ["available", "unavailable"],
-      "description": "Whether the retrieval system was available and returned results."
+      "enum": ["available", "empty", "unavailable"],
+      "description": "Whether the retrieval system was called and returned results. 'available' = retrieval ran and returned results; 'empty' = retrieval ran but returned no results; 'unavailable' = retrieval was not called or not yet implemented."
     },
     "warnings": {
       "type": "array",

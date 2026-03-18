@@ -48,8 +48,11 @@ Additional administrative fields: `context_id`, `task_type`, `metadata`,
 
 ### Determinism guarantee
 
-`context_id` is derived from a SHA-256 digest of `task_type` and
-`primary_input`.  Identical inputs always produce the same bundle shape.
+`context_id` is derived from a SHA-256 digest of **all bundle-contributing
+inputs**: `task_type`, `primary_input`, sorted source artifact IDs,
+`policy_constraints`, `glossary_terms`, and `unresolved_questions`.  Two
+bundles that differ in any of these fields will always receive different
+`context_id` values.
 
 ---
 
@@ -75,13 +78,19 @@ Budget enforcement is controlled by a **context budget policy** dict:
 ```python
 {
     "total_budget_tokens": 4000,
-    "input_reservation": 1000,
+    "input_reservation": 1000,        # floor reserved for primary_input (not truncated)
     "policy_constraint_reservation": 500,
     "retrieval_reservation": 1000,
-    "output_reservation": 500,
+    "output_reservation": 500,        # reserved for model output (not part of the bundle)
     "overflow_action": "truncate_retrieval"  # or "reject_call" or "escalate"
 }
 ```
+
+`input_reservation` and `output_reservation` are counted against
+`total_budget_tokens` to ensure the budget is not over-committed, but neither
+section is truncated by the assembly layer — `primary_input` is always included
+intact and `output_reservation` reserves headroom for the model's response,
+which is outside the bundle.
 
 ### Rules
 
@@ -141,8 +150,17 @@ Return schema per item:
 | `relevance_score` | float (0–1) | Relevance score |
 | `provenance` | dict | Source provenance |
 
+The retrieval query is taken from `config["retrieval_query"]` when supplied.
+When absent, `task_type` is used as a placeholder query.  Callers should
+supply an explicit query via `config["retrieval_query"]` once real retrieval
+is implemented, so the query reflects the actual content of the task.
+
 When retrieval is unavailable the function returns `[]` and
 `metadata.retrieval_status` is set to `"unavailable"` in the bundle.
+When a real retrieval implementation returns an empty result set,
+`retrieval_status` should be set to `"empty"` (not `"unavailable"`) to
+distinguish "system ran but found nothing" from "system was not called".
+The three valid values are `"available"`, `"empty"`, and `"unavailable"`.
 
 ---
 
