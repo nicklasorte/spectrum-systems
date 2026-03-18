@@ -326,12 +326,31 @@ def run_pipeline(
                 )
             )
 
+    # Build effective gap_analysis for working paper and pipeline output.
+    # When slide intelligence was run, merge its canonical analysis_gaps into
+    # the gap_analysis dict under the canonical_gaps key so downstream
+    # consumers (meeting_minutes_record) can access machine-readable gaps.
+    effective_gap_analysis: Optional[Dict[str, Any]] = (
+        dict(gap_analysis) if gap_analysis else None
+    )
+    if slide_signals is not None:
+        analysis_gaps = slide_signals.get("analysis_gaps") or []
+        if analysis_gaps:
+            if effective_gap_analysis is None:
+                effective_gap_analysis = {}
+            # Populate canonical_gaps from slide intelligence; do not
+            # overwrite a value already supplied by the caller.
+            if "canonical_gaps" not in effective_gap_analysis:
+                effective_gap_analysis["canonical_gaps"] = list(analysis_gaps)
+    if effective_gap_analysis is not None:
+        package_result["gap_analysis"] = effective_gap_analysis
+
     # Working paper generation stage — always runs; gracefully handles missing inputs.
     try:
         working_paper = generate_working_paper(
             structured_extraction,
             slide_signals=slide_signals,
-            gap_analysis=gap_analysis,
+            gap_analysis=effective_gap_analysis,
         )
         logger.info(
             json.dumps(
