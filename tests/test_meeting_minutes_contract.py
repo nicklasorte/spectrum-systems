@@ -324,3 +324,51 @@ def test_dec_id_invalid_pattern_rejected_in_decision_log() -> None:
         assert False, "Expected ValidationError for non-conforming decision_id"
     except jsonschema.ValidationError:
         pass
+
+
+def _base_nba_memo() -> dict:
+    """Return a minimal valid next_best_action_memo for pattern testing."""
+    return {
+        "artifact_type": "next_best_action_memo",
+        "artifact_class": "coordination",
+        "artifact_id": "NBA-MEMO-TEST-001",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "2026.03.0",
+        "record_id": "REC-TEST-001",
+        "run_id": "run-20260318T000000Z",
+        "created_at": "2026-03-18T00:00:00Z",
+        "created_by": {"name": "Test", "role": "tester", "agent_type": "script"},
+        "source_repo": "test/repo",
+        "source_repo_version": "v1.0.0",
+        "program_id": "PRG-TEST-001",
+        "actions": [
+            {
+                "action_id": "NBA-001",
+                "title": "Test action",
+                "priority": "high",
+                "status": "planned",
+            }
+        ],
+    }
+
+
+def test_nba_memo_decision_dependency_invalid_pattern_rejected() -> None:
+    """decision_dependency not conforming to ^DEC-[A-Z0-9][A-Z0-9._-]*$ is rejected in next_best_action_memo."""
+    import jsonschema
+
+    data = _base_nba_memo()
+    data["actions"][0]["decision_dependency"] = "DEC-.BAD"  # starts with non-[A-Z0-9] after DEC-
+    try:
+        validate_artifact(data, "next_best_action_memo")
+        assert False, "Expected ValidationError for non-canonical decision_dependency DEC-.BAD"
+    except jsonschema.ValidationError:
+        pass
+
+
+def test_nba_memo_agent_type_expanded_values_accepted() -> None:
+    """agent_type values ai_model and workflow added in canonical 6-value enum must be accepted."""
+    for agent_type in ("ai_model", "workflow"):
+        data = _base_nba_memo()
+        data["created_by"]["agent_type"] = agent_type
+        validate_artifact(data, "next_best_action_memo")  # must not raise

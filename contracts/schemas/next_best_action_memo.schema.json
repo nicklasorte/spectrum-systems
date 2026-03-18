@@ -123,6 +123,9 @@
           "type": "string",
           "enum": [
             "human",
+            "ai_model",
+            "workflow",
+            "script",
             "automated_system",
             "ai_assistant"
           ]
@@ -248,7 +251,7 @@
         },
         "decision_dependency": {
           "type": "string",
-          "pattern": "^DEC-[A-Z0-9._-]+$"
+          "pattern": "^DEC-[A-Z0-9][A-Z0-9._-]*$"
         },
         "related_risks": {
           "type": "array",
