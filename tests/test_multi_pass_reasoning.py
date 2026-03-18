@@ -1094,3 +1094,51 @@ class TestEdgeCases:
         assert record["status"] in ("terminated", "escalated")
         # First result should be a hard failure.
         assert record["pass_results"][0]["status"] == "failed"
+
+
+# ─── Private helper coverage ──────────────────────────────────────────────────
+
+class TestPrivateHelpers:
+    """Targeted coverage for private helpers flagged in review."""
+
+    def test_utc_now_returns_iso8601_with_timezone(self):
+        from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import _utc_now
+        ts = _utc_now()
+        # Should end with +00:00 (UTC offset) and parse without error.
+        from datetime import datetime
+        dt = datetime.fromisoformat(ts)
+        assert dt.utcoffset() is not None
+        assert "+00:00" in ts or "Z" in ts
+
+    def test_make_chain_id_empty_config(self):
+        cid = _make_chain_id("meeting_minutes", "ctx-abc", None, {})
+        assert cid.startswith("chain-")
+
+    def test_make_chain_id_none_routing_version(self):
+        cid1 = _make_chain_id("meeting_minutes", "ctx-abc", None, {})
+        cid2 = _make_chain_id("meeting_minutes", "ctx-abc", None, {})
+        assert cid1 == cid2  # deterministic
+
+    def test_make_chain_id_differs_with_routing_version(self):
+        cid1 = _make_chain_id("meeting_minutes", "ctx-abc", None, {})
+        cid2 = _make_chain_id("meeting_minutes", "ctx-abc", "v2", {})
+        assert cid1 != cid2
+
+    def test_heuristic_confidence_empty_dict_returns_zero(self):
+        from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import _heuristic_confidence
+        assert _heuristic_confidence({}) == 0.0
+
+    def test_heuristic_confidence_non_dict_returns_none(self):
+        from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import _heuristic_confidence
+        assert _heuristic_confidence("string") is None
+        assert _heuristic_confidence(None) is None
+
+    def test_heuristic_confidence_all_populated_keys(self):
+        from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import _heuristic_confidence
+        result = _heuristic_confidence({"a": 1, "b": "x", "c": [1]})
+        assert result == pytest.approx(1.0)
+
+    def test_heuristic_confidence_all_empty_keys(self):
+        from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import _heuristic_confidence
+        result = _heuristic_confidence({"a": None, "b": "", "c": []})
+        assert result == pytest.approx(0.0)
