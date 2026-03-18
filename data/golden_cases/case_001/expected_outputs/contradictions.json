@@ -1,0 +1,9 @@
+[
+  {
+    "contradiction_id": "C001",
+    "text": "FCC and DOD use different propagation models (flat terrain vs clutter), producing different interference predictions for the same band",
+    "parties": ["FCC", "DOD"],
+    "severity": "high",
+    "status": "unresolved"
+  }
+]

@@ -1,0 +1,28 @@
+[
+  {
+    "decision_id": "D001",
+    "text": "Adopt the -114 dBm/MHz interference threshold for the 7125-7250 MHz band",
+    "made_by": "Alice Chen",
+    "supporting_parties": ["FCC", "Industry"],
+    "status": "agreed"
+  },
+  {
+    "decision_id": "D002",
+    "text": "Request DOD to submit formal technical justification for 15 MHz guard band by December 15th",
+    "made_by": "Alice Chen",
+    "status": "agreed"
+  },
+  {
+    "decision_id": "D003",
+    "text": "Q1 coordination packages must be submitted to FCC no later than February 14th",
+    "made_by": "Alice Chen",
+    "supporting_parties": ["FCC"],
+    "status": "agreed"
+  },
+  {
+    "decision_id": "D004",
+    "text": "Schedule joint technical working session to align propagation methodology for the week of December 9th",
+    "made_by": "Alice Chen",
+    "status": "agreed"
+  }
+]

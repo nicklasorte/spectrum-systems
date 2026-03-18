@@ -1,0 +1,16 @@
+[
+  {
+    "gap_id": "G001",
+    "text": "No propagation analyses account for urban canyon effects, which could materially affect the protection radius determination",
+    "severity": "high",
+    "status": "open",
+    "blocking": true
+  },
+  {
+    "gap_id": "G002",
+    "text": "DOD detection margin analysis against -96 dBm threshold is incomplete",
+    "severity": "medium",
+    "status": "open",
+    "blocking": false
+  }
+]

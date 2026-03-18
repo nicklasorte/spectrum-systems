@@ -1,0 +1,14 @@
+[
+  {
+    "decision_id": "D001",
+    "text": "Adopt -96 dBm as the interim coordination trigger threshold pending DOD validation",
+    "made_by": "Sarah Park",
+    "status": "interim"
+  },
+  {
+    "decision_id": "D002",
+    "text": "Protection zone radius decision deferred pending submission of updated propagation analyses by December 20th",
+    "made_by": "Sarah Park",
+    "status": "deferred"
+  }
+]

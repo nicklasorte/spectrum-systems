@@ -1,0 +1,57 @@
+# Evaluation Framework Configuration
+# config/eval_config.yaml
+
+# ---------------------------------------------------------------------------
+# Regression thresholds
+# How much a score is allowed to drop before triggering a regression failure.
+# Values are in the range [0.0, 1.0].
+# ---------------------------------------------------------------------------
+regression_thresholds:
+  structural_score: 0.05
+  semantic_score: 0.05
+  grounding_score: 0.05
+
+# ---------------------------------------------------------------------------
+# Latency budgets (milliseconds)
+# Per-pass-type budget.  Violations are flagged in EvalResult but do not
+# cause an immediate pass_fail=False unless configured below.
+# ---------------------------------------------------------------------------
+latency_budgets:
+  extraction: 2000
+  reasoning: 4000
+  adversarial: 6000
+
+# ---------------------------------------------------------------------------
+# Latency violation policy
+# "flag"  — record violation but do not fail the case (default)
+# "fail"  — treat latency violation as a hard failure
+# ---------------------------------------------------------------------------
+latency_violation_policy: flag
+
+# ---------------------------------------------------------------------------
+# Semantic comparison
+# Minimum Jaccard similarity for two items to be considered a semantic match.
+# ---------------------------------------------------------------------------
+semantic_threshold: 0.3
+
+# ---------------------------------------------------------------------------
+# Grounding
+# Minimum token overlap for a reference to be considered semantically
+# consistent with a claim.
+# ---------------------------------------------------------------------------
+grounding_min_overlap_tokens: 1
+
+# ---------------------------------------------------------------------------
+# Deterministic mode
+# When true, enforces temperature=0, seed=0, and stable prompt versions.
+# Recommended for CI regression runs.
+# ---------------------------------------------------------------------------
+deterministic: true
+
+# ---------------------------------------------------------------------------
+# Paths (relative to repo root)
+# ---------------------------------------------------------------------------
+paths:
+  golden_cases_dir: data/golden_cases
+  baselines_dir: data/eval_baselines
+  output_dir: outputs

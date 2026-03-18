@@ -1,0 +1,9 @@
+[
+  {
+    "gap_id": "G001",
+    "text": "Propagation model methodology has not been reconciled between FCC (flat terrain) and DOD (clutter model)",
+    "severity": "high",
+    "status": "open",
+    "blocking": true
+  }
+]
