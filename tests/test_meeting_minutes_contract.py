@@ -88,3 +88,95 @@ def test_all_intended_consumers_declare_meeting_minutes_record() -> None:
             f"{repo_name} is an intended_consumer of meeting_minutes_record "
             f"but does not declare it in its governance manifest"
         )
+
+
+def _base_mmr() -> dict:
+    """Return a minimal valid meeting_minutes_record for pattern testing."""
+    return {
+        "artifact_type": "meeting_minutes_record",
+        "artifact_class": "coordination",
+        "artifact_id": "MMR-TEST-001",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "2026.03.0",
+        "record_id": "REC-TEST-001",
+        "run_id": "run-20260318T000000Z",
+        "created_at": "2026-03-18T00:00:00Z",
+        "created_by": {"name": "Test", "role": "tester", "agent_type": "script"},
+        "source_repo": "test/repo",
+        "source_repo_version": "v1.0.0",
+        "meeting_id": "MM-2026-03-18",
+        "meeting_title": "Test Meeting",
+        "date": "2026-03-18",
+        "source_transcript": "transcripts/test.txt",
+        "attendees": ["Alice"],
+        "agenda_items": [],
+        "decisions": [],
+        "action_items": [],
+        "open_questions": [],
+        "provenance": {
+            "generated_by": "test",
+            "generation_timestamp": "2026-03-18T00:00:00Z",
+            "source_file": "transcripts/test.txt",
+        },
+    }
+
+
+def test_decision_id_valid_pattern_accepted() -> None:
+    """decision_id conforming to ^DEC-[A-Z0-9][A-Z0-9._-]*$ must pass validation."""
+    data = _base_mmr()
+    data["decisions"] = [
+        {"decision_id": "DEC-001", "description": "d", "rationale": "r", "decided_by": "team"}
+    ]
+    validate_artifact(data, "meeting_minutes_record")  # must not raise
+
+
+def test_decision_id_invalid_pattern_rejected() -> None:
+    """decision_id not conforming to the DEC- pattern must fail validation."""
+    import jsonschema
+
+    data = _base_mmr()
+    data["decisions"] = [
+        {"decision_id": "D-001", "description": "d", "rationale": "r", "decided_by": "team"}
+    ]
+    try:
+        validate_artifact(data, "meeting_minutes_record")
+        assert False, "Expected ValidationError for non-conforming decision_id"
+    except jsonschema.ValidationError:
+        pass
+
+
+def test_action_id_valid_pattern_accepted() -> None:
+    """action_id conforming to ^ACT-[A-Z0-9][A-Z0-9._-]*$ must pass validation."""
+    data = _base_mmr()
+    data["action_items"] = [
+        {
+            "action_id": "ACT-001",
+            "description": "do something",
+            "owner": "Alice",
+            "due_date": "2026-04-01",
+            "status": "open",
+        }
+    ]
+    validate_artifact(data, "meeting_minutes_record")  # must not raise
+
+
+def test_action_id_invalid_pattern_rejected() -> None:
+    """action_id not conforming to the ACT- pattern must fail validation."""
+    import jsonschema
+
+    data = _base_mmr()
+    data["action_items"] = [
+        {
+            "action_id": "AI-001",
+            "description": "do something",
+            "owner": "Alice",
+            "due_date": "2026-04-01",
+            "status": "open",
+        }
+    ]
+    try:
+        validate_artifact(data, "meeting_minutes_record")
+        assert False, "Expected ValidationError for non-conforming action_id"
+    except jsonschema.ValidationError:
+        pass

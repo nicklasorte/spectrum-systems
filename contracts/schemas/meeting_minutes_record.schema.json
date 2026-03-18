@@ -227,7 +227,7 @@
       "additionalProperties": false,
       "required": ["followup_id", "type", "text", "source_type", "source_id"],
       "properties": {
-        "followup_id": { "type": "string" },
+        "followup_id": { "type": "string", "pattern": "^FUP-[A-Z0-9][A-Z0-9._-]*$" },
         "type": {
           "type": "string",
           "enum": ["discuss", "add_evidence", "clarify_alignment"]
@@ -247,7 +247,7 @@
       "additionalProperties": false,
       "required": ["gap_id", "gap_type", "description", "severity", "source_slide_id", "related_claim_ids"],
       "properties": {
-        "gap_id": { "type": "string" },
+        "gap_id": { "type": "string", "pattern": "^GAP-[A-Z0-9][A-Z0-9._-]*$" },
         "gap_type": {
           "type": "string",
           "enum": [
@@ -329,7 +329,8 @@
       ],
       "properties": {
         "decision_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^DEC-[A-Z0-9][A-Z0-9._-]*$"
         },
         "description": {
           "type": "string"
@@ -355,7 +356,8 @@
       ],
       "properties": {
         "action_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^ACT-[A-Z0-9][A-Z0-9._-]*$"
         },
         "description": {
           "type": "string"
@@ -388,7 +390,8 @@
       ],
       "properties": {
         "question_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^QST-[A-Z0-9][A-Z0-9._-]*$"
         },
         "description": {
           "type": "string"

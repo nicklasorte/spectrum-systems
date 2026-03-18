@@ -14,7 +14,8 @@
   "properties": {
     "edge_id": {
       "type": "string",
-      "description": "Stable identifier for this edge instance."
+      "description": "Stable identifier for this edge instance.",
+      "pattern": "^EDG-[A-Z0-9][A-Z0-9._-]*$"
     },
     "source": {
       "type": "string",
@@ -38,20 +39,37 @@
       "description": "Target entity name or identifier."
     },
     "source_slide_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Slide that produced this edge, for traceability."
     },
     "source_artifact_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Artifact that produced this edge, for traceability."
     },
     "confidence": {
-      "type": ["string", "null"],
-      "enum": ["low", "medium", "high", null],
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        null
+      ],
       "description": "Extraction confidence level."
     },
     "notes": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Optional annotation on the relationship."
     }
   }
