@@ -965,7 +965,10 @@ def rewrite_for_working_paper(slide_unit: dict, role: dict, section: str) -> dic
     raw_text = slide_unit.get("raw_text") or ""
     for pat in strong_patterns:
         if re.search(pat, raw_text, re.IGNORECASE):
-            caution_flags.append(f"Strong language detected ({pat.strip(r'\\b')}); verify support.")
+            # Assign the stripped pattern to a local variable so the f-string
+            # contains no backslash expression (required for Python 3.11 compat).
+            stripped_pat = pat.strip(r'\b')
+            caution_flags.append(f"Strong language detected ({stripped_pat}); verify support.")
 
     provisional_kws = [
         "preliminary", "draft", "tbd", "placeholder",
@@ -1370,12 +1373,16 @@ def build_slide_intelligence_packet(
     # Contradiction gaps affecting two slides get caution flags on both candidates.
     for gap in analysis_gaps:
         src = gap.get("source_slide_id")
+        # Compute caution_text unconditionally so contradiction propagation is
+        # never stale (from a prior iteration) or undefined when source_slide_id
+        # is None or not mapped to a candidate.
+        severity = gap.get("severity", "")
+        desc = gap.get("description", "")
+        sev_prefix = f"[{severity.upper()}] " if severity else ""
+        caution_text = f"{sev_prefix}{desc}"
+
         if src and src in _candidate_by_slide:
             candidate = slide_to_paper_candidates[_candidate_by_slide[src]]
-            severity = gap.get("severity", "")
-            desc = gap.get("description", "")
-            sev_prefix = f"[{severity.upper()}] " if severity else ""
-            caution_text = f"{sev_prefix}{desc}"
             flags: list[str] = candidate["caution_flags"]
             if caution_text not in flags:
                 flags.append(caution_text)
