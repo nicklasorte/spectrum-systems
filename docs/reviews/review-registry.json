@@ -139,5 +139,31 @@
     "scope": "Deep architecture and governance review: governance completeness, cross-repo constitutional strength, review culture, operational readiness, artifact and contract quality, CI/automation enforcement. 10 findings (2 critical, 3 high, 2 medium, 3 low); 7 actions generated. Artifacts delivered: contracts/governance-declaration.template.json (Phase 1 initiated), docs/governance-enforcement-roadmap.md (Phase 1 marked Initiated), docs/governance-conformance-checklist.md (5 new items), schemas/README.md (schema authority designation), CONTRACTS.md (schema authority cross-reference).",
     "closure_verification_date": "2026-03-17",
     "closure_report_path": "docs/reviews/2026-03-16-governance-constitution-deep-review.closure.md"
+  },
+  {
+    "review_id": "2026-03-18-roadmap-inventory-review",
+    "review_date": "2026-03-18",
+    "review_type": "REVIEW — Roadmap classification and single-source-of-truth identification",
+    "repo": "spectrum-systems",
+    "reviewer": "Copilot (Architecture Agent)",
+    "status": "Closed",
+    "maturity_rating": "—",
+    "artifact_path": "docs/reviews/2026-03-18-roadmap-inventory-review.md",
+    "action_tracker_path": "docs/review-actions/2026-03-18-roadmap-inventory-actions.md",
+    "follow_up_trigger": "Actions RI-001 through RI-003 resolved 2026-03-18. Verified by docs/reviews/2026-03-18-roadmap-authority-validation.md.",
+    "resolution_notes": "Identified dual-Active conflict (codex-prompt-roadmap.md and module-pivot-roadmap.md) and vestigial docs/roadmap.md. Recommended RI-001 (deprecate docs/roadmap.md), RI-002 (reclassify module-pivot-roadmap.md as Reference), RI-003 (add Roadmap Execution Rule to AGENTS.md and CODEX.md). All three actions resolved in the subsequent BUILD step."
+  },
+  {
+    "review_id": "2026-03-18-roadmap-authority-validation",
+    "review_date": "2026-03-18",
+    "review_type": "VALIDATE — Post-change roadmap authority cleanup verification",
+    "repo": "spectrum-systems",
+    "reviewer": "Copilot (Architecture Agent)",
+    "status": "Closed",
+    "maturity_rating": "—",
+    "artifact_path": "docs/reviews/2026-03-18-roadmap-authority-validation.md",
+    "action_tracker_path": "docs/review-actions/2026-03-18-roadmap-authority-validation-actions.md",
+    "follow_up_trigger": "No follow-up required. Re-run this validation if new roadmap documents are introduced.",
+    "resolution_notes": "All three critical files correctly labeled (ACTIVE / DEPRECATED / REFERENCE). AGENTS.md and CODEX.md both contain the Roadmap Execution Rule. No conflicting active roadmap authority signals. Actions RI-001, RI-002, RI-003 all confirmed Resolved. Verdict: PASS."
   }
 ]
