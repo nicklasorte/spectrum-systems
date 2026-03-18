@@ -1,0 +1,33 @@
+MEETING MINUTES — 5G NR Spectrum Sharing Technical Review
+Date: 2025-12-03
+Attendees: Sarah Park (NTIA Chair), James Wong (Carrier A), Maria Santos (Carrier B), Tom Bradley (DOD)
+
+--- TRANSCRIPT BEGIN ---
+
+Sarah Park: Today's agenda covers the 3.45-3.55 GHz sharing framework, specifically the dynamic protection zone radius and the coordination trigger threshold.
+
+James Wong: Carrier A's position is that a 40 km protection zone radius is workable. Our network planning assumes this constraint.
+
+Maria Santos: Carrier B disagrees. Our technical analysis shows a 40 km radius would exclude 23% of our planned deployment sites in urban cores. We need 25 km maximum.
+
+Tom Bradley: DOD requires a minimum 55 km radius based on our radar operational envelope. 40 km is already a compromise position.
+
+Sarah Park: We have a direct conflict: Carrier B wants 25 km, Carrier A accepts 40 km, DOD requires 55 km. We cannot resolve this today without additional technical data.
+
+Sarah Park: On the coordination trigger threshold, what is the proposed signal level?
+
+James Wong: -96 dBm measured at the radar site boundary.
+
+Maria Santos: Carrier B agrees with the -96 dBm threshold.
+
+Tom Bradley: DOD has not completed the analysis to confirm -96 dBm is sufficient. We need two weeks to validate against our detection margin requirements.
+
+Sarah Park: Decision: we will adopt -96 dBm as the interim coordination trigger threshold, pending DOD validation. DOD will confirm or escalate by December 17th.
+
+Sarah Park: On protection zones, there is no agreement today. Action item: all parties will submit updated propagation analyses by December 20th for NTIA to adjudicate.
+
+James Wong: One data gap we should note: none of the submitted analyses account for urban canyon effects in the propagation models. This could materially affect the protection radius.
+
+Sarah Park: Agreed, that is a significant gap. We need urban canyon sensitivity data before making a final determination on the radius.
+
+--- TRANSCRIPT END ---

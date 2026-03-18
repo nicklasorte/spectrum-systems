@@ -374,3 +374,180 @@ from spectrum_systems.modules.ai_workflow.multi_pass_reasoning import (
 - No silent prompt substitution: missing prompt → hard failure, chain terminates.
 - No silent fallback on routing: version is pinned across all passes.
 - No external dependencies beyond the Python standard library.
+
+---
+
+## Evaluation + Grounding Framework (Prompt AN)
+
+### Purpose
+
+The Evaluation + Grounding Framework provides governed, reproducible evaluation
+infrastructure for the full meeting-minutes → working-paper pipeline.  It
+enforces claim-level traceability, detects regressions against stored baselines,
+and produces structured evidence bundles that can be used for audit and CI.
+
+The golden path for this framework is: **Observe → Interpret → Validate**.
+
+### Module location
+
+```
+spectrum_systems/modules/evaluation/
+├── __init__.py
+├── golden_dataset.py     # GoldenCase, GoldenDataset, load_all_cases, load_case
+├── grounding.py          # GroundingVerifier, claim-level traceability enforcement
+├── comparison.py         # compare_structural, compare_semantic
+├── error_taxonomy.py     # ErrorType, EvalError, classify_error
+├── regression.py         # RegressionHarness, BaselineRecord
+└── eval_runner.py        # EvalResult, EvalRunner
+```
+
+### Architecture diagram
+
+```
+  ┌─────────────────────────────────────────────────────────────┐
+  │                      EvalRunner                             │
+  │                                                             │
+  │  GoldenDataset ──► run_case() ──► ReasoningEngine.run()     │
+  │       │                │                  │                 │
+  │       │          PassChainRecord     PassResults            │
+  │       │                │                  │                 │
+  │       ▼                ▼                  ▼                 │
+  │  expected_outputs  actual_outputs    latency_ms             │
+  │       │                │                                    │
+  │       └──► compare_structural() ──► structural_score        │
+  │       └──► compare_semantic()   ──► semantic_score          │
+  │                                                             │
+  │  synthesized_doc ──► GroundingVerifier ──► grounding_score  │
+  │                                                             │
+  │  RegressionHarness ──► compare() ──► regression_detected    │
+  │                                                             │
+  │  ErrorTaxonomy ──► classify_error() ──► EvalError list      │
+  │                                                             │
+  │  ─────────────────────────────────────────────             │
+  │  EvalResult { pass_fail, structural_score, semantic_score,  │
+  │               grounding_score, latency_summary, error_types}│
+  └─────────────────────────────────────────────────────────────┘
+```
+
+### How grounding works
+
+Every claim in a synthesized document (e.g., a working-paper section) must
+declare ``upstream_pass_refs`` — a list of pass IDs from the reasoning chain
+that the claim is derived from.
+
+The ``GroundingVerifier`` enforces three rules:
+
+1. **Missing refs** — a claim with no ``upstream_pass_refs`` → FAIL
+2. **Reference does not exist** — a declared pass ID is absent from
+   ``intermediate_artifacts`` → FAIL
+3. **Semantic mismatch** — the referenced artifact shares no meaningful token
+   overlap with the claim text → FAIL
+
+All grounding failures are classified by `error_taxonomy.classify_error`:
+
+- `grounding_failure` — at least one ref exists but is invalid or mismatched
+- `hallucination` — all declared refs are absent (no upstream evidence at all)
+
+There is no silent fallback.  A claim that cannot be grounded causes
+`pass_fail=False` in `EvalResult`.
+
+### How regression works
+
+Baselines are stored as JSON files in `data/eval_baselines/{case_id}.json`.
+
+Each baseline record contains:
+- `structural_score` — F1 from structural comparison
+- `semantic_score` — F1 from semantic comparison
+- `grounding_score` — fraction of grounded claims
+
+Thresholds are configurable in `config/eval_config.yaml`
+(`regression_thresholds`).  Default: **0.05** drop allowed per dimension.
+
+When a current run's score drops below `baseline - threshold`, a
+`regression_failure` error is recorded and `regression_detected=True` is set in
+`EvalResult`.
+
+To update baselines after a deliberate improvement:
+
+```bash
+python scripts/run_eval.py --all --update-baseline
+```
+
+### How to add new golden cases
+
+1. Create a new directory under `data/golden_cases/<case_id>/`.
+
+2. Add the required files:
+
+```
+data/golden_cases/<case_id>/
+  metadata.json                  # case_id, domain, difficulty, notes
+  input/
+      transcript.txt             # required
+      slides.pdf                 # optional
+  expected_outputs/
+      decisions.json             # required — list of decision objects
+      action_items.json          # required — list of action item objects
+      gaps.json                  # required — list of gap objects
+      contradictions.json        # required — list of contradiction objects
+      working_paper_sections.json  # optional
+```
+
+3. Verify structure:
+
+```python
+from pathlib import Path
+from spectrum_systems.modules.evaluation.golden_dataset import validate_case_structure
+errors = validate_case_structure(Path("data/golden_cases/<case_id>"))
+assert errors == [], errors
+```
+
+4. Run evaluation:
+
+```bash
+python scripts/run_eval.py --case <case_id>
+```
+
+5. If the new case represents the correct expected output, record the baseline:
+
+```bash
+python scripts/run_eval.py --case <case_id> --update-baseline
+```
+
+### CLI
+
+```bash
+# Run all cases
+python scripts/run_eval.py --all
+
+# Run a single case
+python scripts/run_eval.py --case case_001
+
+# Run all and update baselines
+python scripts/run_eval.py --all --update-baseline
+
+# Run without deterministic mode
+python scripts/run_eval.py --all --no-deterministic
+
+# Custom config and output path
+python scripts/run_eval.py --all --config config/eval_config.yaml --output outputs/eval_results.json
+```
+
+### Error taxonomy
+
+| Error type | Meaning |
+|---|---|
+| `extraction_error` | Structured data not extracted from input |
+| `reasoning_error` | Reasoning-class pass produced incorrect output |
+| `grounding_failure` | Claim has invalid or mismatched upstream reference |
+| `schema_violation` | Pass output failed JSON schema validation |
+| `hallucination` | Claim has zero upstream evidence (all refs absent) |
+| `regression_failure` | Score dropped below baseline beyond threshold |
+
+### Reliability rules
+
+- No ungrounded claim passes evaluation.
+- No silent fallback on failures; all failures are classified.
+- Evaluation must be reproducible: use `deterministic=true` for CI runs.
+- System must fail loudly, not degrade quietly.
+- No external dependencies beyond the Python standard library.

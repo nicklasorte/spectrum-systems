@@ -1,0 +1,9 @@
+[
+  {
+    "contradiction_id": "C001",
+    "text": "Carrier B requires maximum 25 km protection zone radius while DOD requires minimum 55 km and Carrier A accepts 40 km",
+    "parties": ["Carrier B", "DOD", "Carrier A"],
+    "severity": "critical",
+    "status": "unresolved"
+  }
+]

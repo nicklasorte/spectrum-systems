@@ -1,0 +1,30 @@
+[
+  {
+    "action_id": "A001",
+    "text": "Ensure all industry coordination packages are submitted to FCC no later than February 14th",
+    "owner": "David Kim",
+    "due_date": "2026-02-14",
+    "status": "open"
+  },
+  {
+    "action_id": "A002",
+    "text": "Circulate a draft coordination template to the group",
+    "owner": "David Kim",
+    "due_date": "2025-11-30",
+    "status": "open"
+  },
+  {
+    "action_id": "A003",
+    "text": "Submit formal technical justification for 15 MHz guard band requirement",
+    "owner": "Carol Lee",
+    "due_date": "2025-12-15",
+    "status": "open"
+  },
+  {
+    "action_id": "A004",
+    "text": "Schedule joint propagation methodology working session for the week of December 9th",
+    "owner": "Alice Chen",
+    "due_date": "2025-11-21",
+    "status": "open"
+  }
+]

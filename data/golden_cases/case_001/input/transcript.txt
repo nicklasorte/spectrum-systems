@@ -1,0 +1,39 @@
+MEETING MINUTES — 7 GHz Spectrum Coordination Working Group
+Date: 2025-11-14
+Attendees: Alice Chen (Chair), Bob Martinez (FCC), Carol Lee (DOD), David Kim (Industry)
+
+--- TRANSCRIPT BEGIN ---
+
+Alice Chen: Let's get started. Today we need to resolve the interference threshold question for the 7125-7250 MHz band and decide on the coordination timeline for Q1 filings.
+
+Bob Martinez: FCC staff analysis shows that the proposed -114 dBm/MHz threshold is technically justified based on the propagation studies submitted by the industry group.
+
+David Kim: Industry supports the -114 dBm/MHz threshold. We ran independent validation and our models align with the FCC analysis.
+
+Carol Lee: DOD has concerns about the guard band width. The current proposal of 10 MHz is insufficient given our operational requirements at the upper edge.
+
+Alice Chen: Carol, can you quantify the minimum guard band DOD needs?
+
+Carol Lee: We need at least 15 MHz. The 10 MHz proposal leaves only 3 dB of margin under our worst-case scenario models.
+
+Bob Martinez: A 15 MHz guard band would reduce the usable commercial spectrum by 5 MHz. That is a real cost but may be necessary.
+
+Alice Chen: Let's take a decision: we will adopt the -114 dBm/MHz interference threshold as proposed, and we will request DOD to submit a formal technical justification for the 15 MHz guard band request by December 15th.
+
+Bob Martinez: Agreed on the threshold decision. On the timeline: Q1 filing deadline is March 31st. We need coordination packages submitted to FCC by February 14th to allow 45 days for review.
+
+Alice Chen: Agreed. Action item for David: ensure all industry coordination packages are submitted to FCC no later than February 14th.
+
+David Kim: Understood. I will also circulate a draft coordination template to the group by November 30th.
+
+Alice Chen: Good. Carol, can DOD have the technical justification for the guard band ready by December 15th?
+
+Carol Lee: Yes, we can meet that deadline.
+
+Alice Chen: One unresolved issue: the propagation model used by FCC assumes flat terrain. The DOD analysis uses a clutter model. We have not reconciled these two approaches and they produce different interference predictions.
+
+Bob Martinez: That is a known gap. We need a joint technical working session to align the propagation methodology before the Q1 filings.
+
+Alice Chen: Agreed. Let's schedule that working session for the week of December 9th.
+
+--- TRANSCRIPT END ---

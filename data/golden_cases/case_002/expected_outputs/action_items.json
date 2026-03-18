@@ -1,0 +1,16 @@
+[
+  {
+    "action_id": "A001",
+    "text": "Submit updated propagation analyses to NTIA",
+    "owner": "All parties",
+    "due_date": "2025-12-20",
+    "status": "open"
+  },
+  {
+    "action_id": "A002",
+    "text": "Confirm or escalate -96 dBm coordination trigger threshold based on detection margin analysis",
+    "owner": "Tom Bradley",
+    "due_date": "2025-12-17",
+    "status": "open"
+  }
+]

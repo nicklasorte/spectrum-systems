@@ -1,0 +1,6 @@
+{
+  "case_id": "case_002",
+  "domain": "5gnr",
+  "difficulty": "medium",
+  "notes": "5G NR spectrum sharing coordination. Tests handling of multiple contradictions and gaps. Medium difficulty due to multiple parties and conflicting positions."
+}
