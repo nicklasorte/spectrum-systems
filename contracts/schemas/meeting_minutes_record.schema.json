@@ -291,7 +291,9 @@
             "human",
             "ai_model",
             "workflow",
-            "script"
+            "script",
+            "automated_system",
+            "ai_assistant"
           ]
         },
         "organization": {
