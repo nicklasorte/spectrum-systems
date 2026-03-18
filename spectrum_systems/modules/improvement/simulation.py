@@ -452,7 +452,7 @@ def _derive_simulation_status(
 ) -> str:
     """Derive simulation_status from outcome components."""
     if simulation_fidelity == "none":
-        return "inconclusive"
+        return "rejected"
 
     hard_failures = regression_check.get("hard_failures", 0)
     if hard_failures > 0:
