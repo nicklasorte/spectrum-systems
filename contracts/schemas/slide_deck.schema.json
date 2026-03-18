@@ -21,16 +21,26 @@
       "description": "Canonical artifact type identifier."
     },
     "presenting_org": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Organization or agency that presented the slide deck."
     },
     "meeting_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Identifier of the meeting session where the deck was presented."
     },
     "study_id": {
-      "type": ["string", "null"],
-      "description": "Study identifier this slide deck contributes to."
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Study identifier this slide deck contributes to.",
+      "pattern": "^[A-Z][A-Z0-9._-]*$"
     },
     "slides": {
       "type": "array",
@@ -55,11 +65,17 @@
           "description": "Position of the slide within the deck (1-indexed)."
         },
         "slide_id": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Optional explicit identifier for this slide."
         },
         "title": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Slide title. If absent, first non-empty line of raw_text is used."
         },
         "bullets": {
@@ -77,24 +93,47 @@
           "description": "Alternative content list when bullets is not present."
         },
         "notes": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Speaker notes or supplemental text for this slide."
         },
         "raw_text": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Full raw text blob for the slide, preserving original layout."
         },
         "has_figure": {
-          "type": ["boolean", "null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "description": "Explicit flag indicating the slide contains a figure or diagram."
         },
         "has_table": {
-          "type": ["boolean", "null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "description": "Explicit flag indicating the slide contains a table."
         },
         "type": {
-          "type": ["string", "null"],
-          "enum": ["text", "figure", "table", "diagram", "chart", "image", null],
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "text",
+            "figure",
+            "table",
+            "diagram",
+            "chart",
+            "image",
+            null
+          ],
           "description": "Content type hint for the slide."
         }
       }

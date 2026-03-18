@@ -52,14 +52,14 @@
   ],
   "action_items": [
     {
-      "action_id": "AI-2026-03-14-01",
+      "action_id": "ACT-2026-03-14-01",
       "description": "Update pipeline orchestration to emit meeting_minutes_record JSON alongside DOCX outputs.",
       "owner": "Priya Raman",
       "due_date": "2026-03-21",
       "status": "in_progress"
     },
     {
-      "action_id": "AI-2026-03-14-02",
+      "action_id": "ACT-2026-03-14-02",
       "description": "Backfill last two meeting transcripts into the new schema for regression testing.",
       "owner": "Morgan Lee",
       "due_date": "2026-03-18",
@@ -68,12 +68,12 @@
   ],
   "open_questions": [
     {
-      "question_id": "Q-2026-03-14-01",
+      "question_id": "QST-2026-03-14-01",
       "description": "Do we need a confidence score per decision extracted from the transcript?",
       "raised_by": "Dana Schultz"
     },
     {
-      "question_id": "Q-2026-03-14-02",
+      "question_id": "QST-2026-03-14-02",
       "description": "Should attendee absences be tracked for quorum checks?",
       "raised_by": "Alex Chen"
     }

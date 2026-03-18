@@ -66,7 +66,11 @@
     },
     "validation_status": {
       "type": "string",
-      "enum": ["needs_review", "provisional", "informational"],
+      "enum": [
+        "needs_review",
+        "provisional",
+        "informational"
+      ],
       "description": "Aggregate validation status for the packet."
     },
     "recommended_agency_questions": {
@@ -102,69 +106,180 @@
     "paper_candidate": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["slide_id", "section", "integration_role", "proposed_text"],
+      "required": [
+        "slide_id",
+        "section",
+        "integration_role",
+        "proposed_text"
+      ],
       "properties": {
-        "slide_id": { "type": "string" },
-        "section": { "type": "string" },
+        "slide_id": {
+          "type": "string",
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "section": {
+          "type": "string"
+        },
         "integration_role": {
           "type": "string",
-          "enum": ["source_text", "source_claim", "source_question", "source_exhibit"]
+          "enum": [
+            "source_text",
+            "source_claim",
+            "source_question",
+            "source_exhibit"
+          ]
         },
-        "technical_tags": { "type": "array", "items": { "type": "string" } },
-        "proposed_text": { "type": "string" },
-        "style_mode": { "type": "string" },
-        "caution_flags": { "type": "array", "items": { "type": "string" } },
-        "confidence": { "type": "string" },
-        "traceability": { "type": "object" }
+        "technical_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proposed_text": {
+          "type": "string"
+        },
+        "style_mode": {
+          "type": "string"
+        },
+        "caution_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "traceability": {
+          "type": "object"
+        }
       }
     },
     "claim": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["claim_id", "claim_text", "confidence", "source_slide_id"],
+      "required": [
+        "claim_id",
+        "claim_text",
+        "confidence",
+        "source_slide_id"
+      ],
       "properties": {
-        "claim_id": { "type": "string" },
-        "claim_text": { "type": "string" },
-        "related_entities": { "type": "array", "items": { "type": "string" } },
+        "claim_id": {
+          "type": "string",
+          "pattern": "^CLM-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "claim_text": {
+          "type": "string"
+        },
+        "related_entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "confidence": {
           "type": "string",
-          "enum": ["low", "medium", "high"]
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
         },
-        "source_slide_id": { "type": "string" }
+        "source_slide_id": {
+          "type": "string"
+        }
       }
     },
     "assumption_entry": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["assumption_id", "type", "applies_to", "source_slide_id"],
+      "required": [
+        "assumption_id",
+        "type",
+        "applies_to",
+        "source_slide_id"
+      ],
       "properties": {
-        "assumption_id": { "type": "string" },
-        "type": { "type": "string" },
-        "value": { "type": ["string", "null"] },
-        "applies_to": { "type": "string" },
-        "source_slide_id": { "type": "string" },
-        "source_artifact_id": { "type": ["string", "null"] }
+        "assumption_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "applies_to": {
+          "type": "string"
+        },
+        "source_slide_id": {
+          "type": "string"
+        },
+        "source_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "kg_edge": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["edge_id", "source", "relation", "target"],
+      "required": [
+        "edge_id",
+        "source",
+        "relation",
+        "target"
+      ],
       "properties": {
-        "edge_id": { "type": "string" },
-        "source": { "type": "string" },
-        "relation": { "type": "string" },
-        "target": { "type": "string" },
-        "source_slide_id": { "type": ["string", "null"] },
-        "source_artifact_id": { "type": ["string", "null"] }
+        "edge_id": {
+          "type": "string",
+          "pattern": "^EDG-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "source": {
+          "type": "string"
+        },
+        "relation": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "source_slide_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "gap": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["gap_id", "gap_type", "description", "severity", "source_slide_id", "related_claim_ids"],
+      "required": [
+        "gap_id",
+        "gap_type",
+        "description",
+        "severity",
+        "source_slide_id",
+        "related_claim_ids"
+      ],
       "properties": {
-        "gap_id": { "type": "string" },
+        "gap_id": {
+          "type": "string",
+          "pattern": "^GAP-[A-Z0-9][A-Z0-9._-]*$"
+        },
         "gap_type": {
           "type": "string",
           "enum": [
@@ -177,61 +292,155 @@
             "reconciliation_gap"
           ]
         },
-        "description": { "type": "string" },
+        "description": {
+          "type": "string"
+        },
         "severity": {
           "type": "string",
-          "enum": ["high", "medium", "low"]
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
         },
-        "related_claim_ids": { "type": "array", "items": { "type": "string" } },
-        "source_slide_id": { "type": ["string", "null"] },
-        "evidence": { "type": ["string", "null"] }
+        "related_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_slide_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "agency_question": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["slide_id", "question_text"],
+      "required": [
+        "slide_id",
+        "question_text"
+      ],
       "properties": {
-        "slide_id": { "type": "string" },
-        "question_text": { "type": "string" },
-        "source_artifact_id": { "type": ["string", "null"] }
+        "slide_id": {
+          "type": "string",
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "question_text": {
+          "type": "string"
+        },
+        "source_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "exhibit_suggestion": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["slide_id", "suggested_section"],
+      "required": [
+        "slide_id",
+        "suggested_section"
+      ],
       "properties": {
-        "slide_id": { "type": "string" },
-        "title": { "type": ["string", "null"] },
-        "suggested_section": { "type": "string" },
-        "note": { "type": ["string", "null"] }
+        "slide_id": {
+          "type": "string",
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suggested_section": {
+          "type": "string"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "signal_score": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["slide_id", "signal_score"],
+      "required": [
+        "slide_id",
+        "signal_score"
+      ],
       "properties": {
-        "slide_id": { "type": "string" },
-        "signal_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
-        "reasoning": { "type": "array", "items": { "type": "string" } }
+        "slide_id": {
+          "type": "string",
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "signal_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "reasoning": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "traceability_entry": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["slide_id", "slide_number", "section", "integration_role"],
+      "required": [
+        "slide_id",
+        "slide_number",
+        "section",
+        "integration_role"
+      ],
       "properties": {
-        "slide_id": { "type": "string" },
-        "slide_number": { "type": "integer" },
-        "source_artifact_id": { "type": ["string", "null"] },
-        "section": { "type": "string" },
-        "integration_role": { "type": "string" },
-        "signal_score": { "type": "number" },
-        "claim_count": { "type": "integer" },
-        "assumption_count": { "type": "integer" },
-        "gap_count": { "type": "integer" }
+        "slide_id": {
+          "type": "string",
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "slide_number": {
+          "type": "integer"
+        },
+        "source_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "section": {
+          "type": "string"
+        },
+        "integration_role": {
+          "type": "string"
+        },
+        "signal_score": {
+          "type": "number"
+        },
+        "claim_count": {
+          "type": "integer"
+        },
+        "assumption_count": {
+          "type": "integer"
+        },
+        "gap_count": {
+          "type": "integer"
+        }
       }
     }
   }

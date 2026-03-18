@@ -198,7 +198,8 @@
       ],
       "properties": {
         "option_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^OPT-[A-Z0-9][A-Z0-9._-]*$"
         },
         "description": {
           "type": "string"

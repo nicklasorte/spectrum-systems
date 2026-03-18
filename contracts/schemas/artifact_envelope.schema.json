@@ -85,11 +85,13 @@
     },
     "meeting_id": {
       "type": "string",
-      "description": "Meeting identifier when the artifact is tied to a session."
+      "description": "Meeting identifier when the artifact is tied to a session.",
+      "pattern": "^[A-Z][A-Z0-9._-]*$"
     },
     "review_cycle_id": {
       "type": "string",
-      "description": "Review cycle identifier when the artifact participates in adjudication."
+      "description": "Review cycle identifier when the artifact participates in adjudication.",
+      "pattern": "^[A-Z][A-Z0-9._-]*$"
     },
     "tags": {
       "type": "array",

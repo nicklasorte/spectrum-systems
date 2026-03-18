@@ -230,7 +230,8 @@
       ],
       "properties": {
         "gate_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^GATE-[A-Z0-9][A-Z0-9._-]*$"
         },
         "name": {
           "type": "string"
@@ -351,7 +352,7 @@
       "properties": {
         "action_id": {
           "type": "string",
-          "pattern": "^NBA-[A-Z0-9._-]+$"
+          "pattern": "^ACT-[A-Z0-9][A-Z0-9._-]*$"
         },
         "title": {
           "type": "string"

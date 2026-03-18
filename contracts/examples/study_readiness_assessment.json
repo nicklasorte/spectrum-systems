@@ -138,7 +138,7 @@
   ],
   "recommended_actions": [
     {
-      "action_id": "NBA-001",
+      "action_id": "ACT-001",
       "title": "Run validation rerun",
       "description": "Execute rerun with 2024 clutter dataset and publish residuals",
       "priority": "urgent",
@@ -153,7 +153,7 @@
       ]
     },
     {
-      "action_id": "NBA-002",
+      "action_id": "ACT-002",
       "title": "Draft stakeholder comparison brief",
       "description": "Summarize phased vs single-step mitigation impacts for board",
       "priority": "high",

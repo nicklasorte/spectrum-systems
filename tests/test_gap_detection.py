@@ -204,6 +204,7 @@ class TestUnifiedGapSchema:
         deck = {
             "artifact_id": "DECK-001",
             "slides": [{
+                "slide_id": "SLD-001",
                 "slide_number": 1,
                 "title": "Interference",
                 "bullets": ["5G NR may interfere with radar"],
