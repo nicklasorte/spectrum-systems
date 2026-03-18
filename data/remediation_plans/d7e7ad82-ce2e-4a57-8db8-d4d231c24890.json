@@ -1,0 +1,37 @@
+{
+  "remediation_id": "d7e7ad82-ce2e-4a57-8db8-d4d231c24890",
+  "cluster_id": "cc6297f4-45b9-4ad5-b266-395357a9882e",
+  "cluster_signature": "GROUND.MISSING_REF",
+  "taxonomy_version": "1.0.0",
+  "created_at": "2026-03-18T22:09:48.482376+00:00",
+  "mapping_status": "mapped",
+  "mapping_reasons": [
+    "rule_A: dominant GROUND family code 'GROUND.MISSING_REF' with share=0.714"
+  ],
+  "dominant_error_codes": [
+    "GROUND.MISSING_REF"
+  ],
+  "remediation_targets": [
+    "grounding_verifier"
+  ],
+  "proposed_actions": [
+    {
+      "action_id": "5cdbd221-90ad-4061-8c7b-a5c91ab33d83",
+      "action_type": "grounding_rule_change",
+      "target_component": "grounding_verifier",
+      "rationale": "Dominant error family is GROUND (GROUND.MISSING_REF, share=0.71). Grounding rules need tightening to reduce missing or weak references.",
+      "expected_benefit": "Reduce GROUND-family errors by enforcing stricter reference constraints.",
+      "risk_level": "medium",
+      "confidence_score": 0.4822
+    }
+  ],
+  "primary_proposal_index": 0,
+  "evidence_summary": {
+    "record_count": 6,
+    "avg_cluster_confidence": 0.0,
+    "weighted_severity_score": 0.0,
+    "pass_types": [
+      "extraction"
+    ]
+  }
+}

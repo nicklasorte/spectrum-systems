@@ -1,0 +1,30 @@
+{
+  "classification_id": "clf-mixed-003",
+  "timestamp": "2026-03-18T22:09:43.380818+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "artifact-clf-mixe",
+    "artifact_type": "working_paper",
+    "pass_type": "extraction",
+    "case_id": "case-mixed-01"
+  },
+  "classifications": [
+    {
+      "error_code": "REASON.BAD_INFERENCE",
+      "confidence": 0.85,
+      "evidence_source": "evaluation_output",
+      "explanation": "Observed REASON.BAD_INFERENCE error in evaluation run."
+    },
+    {
+      "error_code": "GROUND.INVALID_REF",
+      "confidence": 0.85,
+      "evidence_source": "evaluation_output",
+      "explanation": "Observed GROUND.INVALID_REF error in evaluation run."
+    }
+  ],
+  "raw_inputs": {
+    "source": "evaluation_run",
+    "artifact_id": "artifact-clf-mixe"
+  },
+  "taxonomy_version": "1.0.0"
+}

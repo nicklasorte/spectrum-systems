@@ -1,0 +1,24 @@
+{
+  "classification_id": "clf-extract-004",
+  "timestamp": "2026-03-18T22:09:43.380818+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "artifact-clf-extr",
+    "artifact_type": "working_paper",
+    "pass_type": "extraction",
+    "case_id": "case-extract-01"
+  },
+  "classifications": [
+    {
+      "error_code": "EXTRACT.MISSED_DECISION",
+      "confidence": 0.85,
+      "evidence_source": "evaluation_output",
+      "explanation": "Observed EXTRACT.MISSED_DECISION error in evaluation run."
+    }
+  ],
+  "raw_inputs": {
+    "source": "evaluation_run",
+    "artifact_id": "artifact-clf-extr"
+  },
+  "taxonomy_version": "1.0.0"
+}
