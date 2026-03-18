@@ -37,6 +37,7 @@ from spectrum_systems.modules.evaluation.grounding import GroundingVerifier, Doc
 from spectrum_systems.modules.evaluation.comparison import compare_structural, compare_semantic, ComparisonResult
 from spectrum_systems.modules.evaluation.error_taxonomy import EvalError, ErrorType, classify_error
 from spectrum_systems.modules.evaluation.regression import RegressionHarness, BaselineRecord
+from spectrum_systems.modules.observability.metrics import ObservabilityRecord, MetricsStore
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +172,9 @@ class EvalRunner:
         config, and verifies that pass results carry stable prompt versions.
     output_dir:
         Directory where ``eval_results.json`` is written.
+    metrics_store:
+        Optional ``MetricsStore`` instance.  When provided, an
+        ``ObservabilityRecord`` is emitted after each ``run_case`` call.
     """
 
     def __init__(
@@ -181,6 +185,7 @@ class EvalRunner:
         latency_budgets: Optional[Dict[str, int]] = None,
         deterministic: bool = False,
         output_dir: Optional[Path] = None,
+        metrics_store: Optional[MetricsStore] = None,
     ) -> None:
         self._engine = reasoning_engine
         self._grounding = grounding_verifier or GroundingVerifier()
@@ -188,6 +193,7 @@ class EvalRunner:
         self._latency_budgets = latency_budgets or dict(DEFAULT_LATENCY_BUDGETS)
         self._deterministic = deterministic
         self._output_dir = output_dir
+        self._metrics_store = metrics_store
 
     # ------------------------------------------------------------------
     # Public API
@@ -367,7 +373,7 @@ class EvalRunner:
             )
         )
 
-        return EvalResult(
+        result = EvalResult(
             case_id=case.case_id,
             pass_fail=pass_fail,
             structural_score=structural_score,
@@ -379,6 +385,11 @@ class EvalRunner:
             schema_valid=schema_valid,
             regression_detected=regression_detected,
         )
+
+        # -- Emit observability record ------------------------------------
+        self._emit_observability(result)
+
+        return result
 
     def run_all_cases(self, dataset: GoldenDataset) -> List[EvalResult]:
         """Run evaluation for all cases in a dataset.
@@ -527,6 +538,20 @@ class EvalRunner:
                 outputs["working_paper_sections_doc"] = raw
 
         return outputs
+
+    def _emit_observability(self, result: "EvalResult") -> None:
+        """Emit an ObservabilityRecord for a completed EvalResult.
+
+        No-op if no ``MetricsStore`` is configured.  Errors during emission
+        are suppressed so observability never disrupts evaluation.
+        """
+        if self._metrics_store is None:
+            return
+        try:
+            obs_record = ObservabilityRecord.from_eval_result(result)
+            self._metrics_store.save(obs_record)
+        except Exception:  # noqa: BLE001
+            pass  # observability must not mutate or break system outputs
 
 
 # ---------------------------------------------------------------------------

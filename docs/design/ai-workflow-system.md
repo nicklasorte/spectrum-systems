@@ -660,3 +660,155 @@ python scripts/run_feedback_session.py \
 - Feedback must map to a specific `artifact_id` + `target_id`.
 - No silent overwriting: `original_text` is always preserved alongside `edited_text`.
 - Feedback is additive: artifacts are never mutated by the feedback system.
+
+---
+
+## Observability + Metrics Layer (Prompt AP)
+
+### Purpose
+
+The Observability + Metrics Layer is the system's nervous system.  It captures
+structured, queryable metrics for every AI workflow event — pass executions,
+evaluation runs, and human feedback events — and surfaces actionable insight
+into where the system is failing, what error types dominate, which passes are
+weakest, and where humans disagree with the system.
+
+### Module location
+
+```
+spectrum_systems/modules/observability/
+  __init__.py
+  metrics.py      # ObservabilityRecord, MetricsStore
+  aggregation.py  # Aggregation functions
+  trends.py       # Run-over-run trend tracking
+```
+
+### Schema
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/observability_record.schema.json` | Governed observability record — every metric event |
+
+### Metric definitions
+
+Every observability record captures:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `record_id` | string | Unique identifier |
+| `timestamp` | string (ISO-8601) | Time of emission |
+| `context.artifact_id` | string | Artifact being measured |
+| `context.artifact_type` | string | Type of artifact |
+| `context.case_id` | string (optional) | Golden case ID (for eval records) |
+| `context.pipeline_stage` | enum | `observe` \| `interpret` \| `validate` \| `learn` |
+| `pass_info.pass_id` | string | Unique pass identifier |
+| `pass_info.pass_type` | string | Pass type (e.g. `extraction`, `reasoning`) |
+| `metrics.structural_score` | float (0–1) | Structural F1 score |
+| `metrics.semantic_score` | float (0–1) | Semantic F1 score |
+| `metrics.grounding_score` | float (0–1) | Fraction of claims grounded |
+| `metrics.latency_ms` | int | Latency in milliseconds |
+| `metrics.tokens_used` | int (optional) | Tokens consumed |
+| `flags.schema_valid` | bool | Schema validation passed |
+| `flags.grounding_passed` | bool | All claims grounded |
+| `flags.regression_passed` | bool | No regression detected |
+| `flags.human_disagrees` | bool | Human reviewer disagreed |
+| `error_summary.error_types` | array | AU-aligned error types |
+| `error_summary.failure_count` | int | Total failures |
+
+### Aggregation logic
+
+`spectrum_systems/modules/observability/aggregation.py` provides:
+
+| Function | Returns |
+|----------|---------|
+| `compute_pass_metrics(records)` | Avg scores and failure rates per pass type |
+| `compute_error_distribution(records)` | Count per error type, top error type |
+| `compute_human_disagreement(records)` | Disagreement rate per pass and per artifact |
+| `compute_grounding_failure_rate(records)` | Grounding failure rate per pass type |
+| `compute_latency_stats(records)` | Mean, p95, max latency |
+| `compute_weakest_passes(records)` | Passes ordered by failure rate |
+
+### Integration with evaluation (AN)
+
+`EvalRunner` accepts an optional `metrics_store` parameter.  When configured,
+an `ObservabilityRecord` is emitted automatically after every `run_case` call:
+
+```python
+from spectrum_systems.modules.observability.metrics import MetricsStore
+from spectrum_systems.modules.evaluation.eval_runner import EvalRunner
+
+store = MetricsStore()
+runner = EvalRunner(reasoning_engine=engine, metrics_store=store)
+runner.run_case(case)  # → emits ObservabilityRecord automatically
+```
+
+### Integration with feedback (AO)
+
+`create_feedback_from_review` accepts an optional `metrics_store` parameter.
+When provided, an `ObservabilityRecord` with `human_disagrees=True` is emitted
+for every recorded feedback event:
+
+```python
+from spectrum_systems.modules.observability.metrics import MetricsStore
+from spectrum_systems.modules.feedback.feedback_ingest import create_feedback_from_review
+
+store = MetricsStore()
+create_feedback_from_review(artifact, reviewer_input, metrics_store=store)
+# → emits ObservabilityRecord with human_disagrees=True
+```
+
+### CLI report generation
+
+```bash
+# Report across all stored records
+python scripts/run_metrics_report.py --all
+
+# Report filtered to a specific golden case
+python scripts/run_metrics_report.py --case CASE_ID
+
+# Custom store and output paths
+python scripts/run_metrics_report.py --all \
+  --store data/observability/ \
+  --output outputs/metrics_report.json
+```
+
+Output includes:
+
+- Console summary: weakest passes, top error types, grounding failure rate,
+  human disagreement rate, latency statistics
+- JSON report at `outputs/metrics_report.json`
+
+### Trend tracking
+
+`spectrum_systems/modules/observability/trends.py` enables run-over-run comparison:
+
+```python
+from spectrum_systems.modules.observability.trends import compare_runs, save_snapshot
+
+# Save a snapshot after each eval run
+save_snapshot(records, label="run_2026_03_18")
+
+# Compare current run to a previous one
+trend = compare_runs(current_records, previous_records)
+# → returns deltas in scores, error rates, latency
+```
+
+Snapshots are stored under `data/observability_history/`.
+
+### How observability feeds downstream systems
+
+| Downstream system | How observability feeds it |
+|---|---|
+| **AU — Error taxonomy** | `error_types` field in every record uses AU-aligned `ErrorType` values |
+| **AV — Failure clustering** | `error_types` + `flags` fields enable clustering of failure modes across runs |
+| **AR — Regression** | `flags.regression_passed` + trend deltas surface score regressions |
+| **AW — Prompt improvement** | Aggregated grounding scores and human disagreement rates identify prompts to improve |
+
+### Strict rules
+
+- No unstructured logs: every metric must be an `ObservabilityRecord`.
+- Every record must map to a `pass_id` and `artifact_id`.
+- Observability must never mutate system outputs.
+- Missing metrics are failures: do not silently skip emission.
+- Human disagreement must always be captured when present (`human_disagrees=True`).
+- All `error_types` must align with `ErrorType` from AU error taxonomy.
