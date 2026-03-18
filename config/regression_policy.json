@@ -1,0 +1,39 @@
+{
+  "policy_id": "default",
+  "version": "1.0.0",
+  "description": "Default regression policy for spectrum-systems. Grounding and structural dimensions are strict hard-fail gates; semantic is a hard-fail at a slightly looser threshold; latency and human disagreement default to warning.",
+  "thresholds": {
+    "structural_score_drop_max": 0.05,
+    "semantic_score_drop_max": 0.08,
+    "grounding_score_drop_max": 0.03,
+    "latency_increase_pct_max": 25,
+    "human_disagreement_increase_pct_max": 20
+  },
+  "hard_fail_dimensions": {
+    "structural_score": true,
+    "semantic_score": true,
+    "grounding_score": true,
+    "latency": false,
+    "human_disagreement": false
+  },
+  "minimum_sample_sizes": {
+    "cases": 3,
+    "per_pass_records": 3
+  },
+  "scope": {
+    "artifact_types": [
+      "evaluation_result",
+      "pass_result",
+      "pass_chain_record"
+    ],
+    "pass_types": [
+      "extraction",
+      "reasoning",
+      "adversarial",
+      "synthesis",
+      "decision_extraction",
+      "adversarial_review"
+    ]
+  },
+  "deterministic_required": false
+}

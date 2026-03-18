@@ -812,3 +812,132 @@ Snapshots are stored under `data/observability_history/`.
 - Missing metrics are failures: do not silently skip emission.
 - Human disagreement must always be captured when present (`human_disagrees=True`).
 - All `error_types` must align with `ErrorType` from AU error taxonomy.
+
+---
+
+## Prompt Regression Harness + Hard Enforcement (Prompt AR)
+
+### Role of AR in the control loop
+
+The Regression Harness (AR) converts evaluation and observability outputs into
+hard gates.  It prevents silent degradation when prompts, model adapters,
+scoring logic, or pass-chain behaviour change.  AR sits between the evaluation
+layer (AN) and the observability/trend layer (AP), consuming their outputs and
+producing governed regression reports that can block releases.
+
+### Text architecture diagram
+
+```
+golden cases
+    |
+    v
+eval (AN)  ─────────────────────────────►  eval_results.json
+    |                                             |
+    v                                             |
+observability (AP)  ─────────────────────►  metrics_report.json
+                                                  |
+                          ┌───────────────────────┘
+                          v
+              regression baseline (named)
+                          |
+                          v
+              candidate comparison
+                          |
+                          v
+               gate evaluation (policy)
+                          |
+                 ┌────────┴────────┐
+                 v                 v
+             PASS (0)           FAIL (2)
+                          |
+                          v
+                  regression_report.json
+```
+
+### Module location
+
+```
+spectrum_systems/modules/regression/
+    __init__.py        — public exports
+    harness.py         — RegressionHarness, RegressionPolicy, RegressionReport
+    baselines.py       — BaselineManager (save/load/list/describe)
+    gates.py           — evaluate_dimension_gate, evaluate_policy_gates
+    attribution.py     — pass-level regression attribution
+    recommendations.py — rule-based recommendation engine
+```
+
+### Schemas
+
+| Schema | Purpose |
+|--------|---------|
+| `contracts/schemas/regression_policy.schema.json` | Governed policy defining thresholds and hard-fail dimensions |
+| `contracts/schemas/regression_report.schema.json` | Governed report produced by every regression check |
+
+### Default policy
+
+`config/regression_policy.json` ships with the following defaults:
+
+| Dimension | Threshold | Hard fail |
+|-----------|-----------|-----------|
+| `grounding_score` | drop > 0.03 | yes |
+| `structural_score` | drop > 0.05 | yes |
+| `semantic_score` | drop > 0.08 | yes |
+| `latency` | increase > 25% | no (warning) |
+| `human_disagreement` | increase > 20% | no (warning) |
+
+Grounding is stricter than semantic; structural is stricter than latency.
+Latency and human disagreement default to warnings, not hard failures, unless
+the policy is overridden.
+
+### Baseline lifecycle
+
+1. **Create** — Run `scripts/run_regression_check.py --create-baseline NAME`
+   after a known-good eval + observability run.  The baseline is stored under
+   `data/regression_baselines/{NAME}/` with eval_results, observability_records,
+   and metadata.
+2. **Compare** — Run `scripts/run_regression_check.py --baseline NAME` to
+   compare the current run against the stored baseline.
+3. **Update** — Pass `--update-baseline` to explicitly replace a baseline.
+   Silent overwrites are forbidden.
+4. **Describe** — `BaselineManager.describe_baseline(name)` returns the
+   baseline metadata without loading scores.
+
+### Hard fail vs warning behaviour
+
+| Severity | Condition | Exit code |
+|----------|-----------|-----------|
+| `hard_fail` | Dimension threshold exceeded AND `hard_fail_dimensions[dim]=true` | 2 |
+| `warning` | Threshold exceeded AND `hard_fail_dimensions[dim]=false` | 1 |
+| `info` | Within threshold | 0 |
+
+Hard failures block the pipeline.  Warnings are surfaced but do not block
+unless `--strict-warnings` is passed to the CLI.
+
+### Deterministic mode requirements
+
+When `deterministic_required: true` in the policy, a candidate run that did
+not use deterministic mode (`temperature=0`, fixed seed) is a hard failure.
+
+The baseline metadata records `deterministic_mode`.  If the candidate's
+determinism mode differs from the baseline's, a warning is emitted.
+
+### How AR consumes AN + AP outputs
+
+- **AN (eval)** — `EvalRunner.write_report()` produces `eval_results.json`
+  (a list of `EvalResult.to_dict()` dicts).  `RegressionHarness` loads this
+  via `eval_result_to_dict()`.
+- **AP (observability)** — `MetricsStore` emits `ObservabilityRecord` dicts.
+  `RegressionHarness` normalises nested schema dicts to a flat format via
+  `observability_record_to_dict()` / `_flatten_obs_record_dict()`.
+
+If pass-level observability is not available for some records, AR explicitly
+reports partial attribution rather than fabricating precision.
+
+### How AR prepares the system for AU / AV / AW
+
+- **AU (error taxonomy)** — Worst regression entries carry `severity`,
+  `dimension`, and `explanation` fields aligned with AU taxonomy.
+- **AV (failure clustering)** — `worst_regressions` array enables downstream
+  clustering of regression signals by case, pass, and dimension.
+- **AW (prompt improvement)** — Grounding and semantic regression signals
+  identify which prompts to target for improvement in the AW layer.
