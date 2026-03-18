@@ -13,6 +13,7 @@
   "properties": {
     "artifact_id": {
       "type": "string",
+      "pattern": "^SLDK-[A-Z0-9][A-Z0-9._-]*$",
       "description": "Stable identifier for this slide deck artifact instance."
     },
     "artifact_type": {
@@ -69,7 +70,8 @@
             "string",
             "null"
           ],
-          "description": "Optional explicit identifier for this slide."
+          "pattern": "^SLD-[A-Z0-9][A-Z0-9._-]*$",
+          "description": "Optional explicit identifier for this slide. When provided as a string, must conform to the SLD- canonical pattern. Null is permitted when no explicit ID is assigned."
         },
         "title": {
           "type": [

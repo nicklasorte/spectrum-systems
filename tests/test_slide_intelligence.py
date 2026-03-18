@@ -169,7 +169,7 @@ class TestExtractSlideUnits:
 class TestScoreSlideSignal:
     def _unit(self, raw_text="", bullets=None, figures=False, tables=False):
         return {
-            "slide_id": "S1",
+            "slide_id": "SLD-001",
             "title": "Test",
             "raw_text": raw_text,
             "bullets": bullets or [],
@@ -218,7 +218,7 @@ class TestScoreSlideSignal:
 class TestClassifySlideRole:
     def _unit(self, raw_text="", bullets=None, title="", figures=False, tables=False):
         return {
-            "slide_id": "S1",
+            "slide_id": "SLD-001",
             "title": title,
             "raw_text": raw_text,
             "bullets": bullets or [],
@@ -342,7 +342,7 @@ class TestExtractClaims:
     def test_no_duplicate_claims(self):
         # Same text repeated should not produce duplicates
         unit = {
-            "slide_id": "S1",
+            "slide_id": "SLD-001",
             "title": "5G NR may interfere with radar",
             "bullets": ["5G NR may interfere with radar"],
             "raw_text": "5G NR may interfere with radar",
@@ -2280,3 +2280,151 @@ class TestCanonicalGapsWiring:
         assert "gap_analysis" not in result, (
             "gap_analysis must not appear when slide deck produces no analysis_gaps"
         )
+
+
+# ---------------------------------------------------------------------------
+# P. Canonical ID pattern rejection tests (Phase 1 surgical fix pass)
+# ---------------------------------------------------------------------------
+
+class TestCanonicalIDPatternRejection:
+    """Negative tests verifying that slide_intelligence_packet schema rejects
+    non-conforming IDs for SLD-, GAP-, and CLM- prefixes."""
+
+    def _minimal_packet(self) -> dict:
+        """Return a minimal valid slide_intelligence_packet for pattern testing."""
+        return {
+            "artifact_type": "slide_intelligence_packet",
+            "source_artifact_id": "SLDK-TEST-001",
+            "slide_to_paper_candidates": [],
+            "extracted_claims": [],
+            "assumptions_registry_entries": [],
+            "knowledge_graph_edges": [],
+            "analysis_gaps": [],
+            "validation_status": "provisional",
+            "recommended_agency_questions": [],
+            "suggested_exhibits": [],
+            "signal_scores": [],
+            "traceability_index": [],
+        }
+
+    def test_valid_sld_id_accepted_in_packet(self) -> None:
+        """slide_id conforming to ^SLD-[A-Z0-9][A-Z0-9._-]*$ must pass SIP validation."""
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["slide_to_paper_candidates"] = [
+            {
+                "slide_id": "SLD-001",
+                "section": "Methodology",
+                "integration_role": "source_text",
+                "proposed_text": "Some content",
+            }
+        ]
+        validate_artifact(packet, "slide_intelligence_packet")  # must not raise
+
+    def test_invalid_sld_id_rejected_in_packet(self) -> None:
+        """slide_id not conforming to SLD- pattern must fail SIP schema validation."""
+        import jsonschema
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["slide_to_paper_candidates"] = [
+            {
+                "slide_id": "S-001",  # wrong prefix — must start with SLD-
+                "section": "Methodology",
+                "integration_role": "source_text",
+                "proposed_text": "Some content",
+            }
+        ]
+        try:
+            validate_artifact(packet, "slide_intelligence_packet")
+            assert False, "Expected ValidationError for non-conforming slide_id"
+        except jsonschema.ValidationError:
+            pass
+
+    def test_sld_prefix_with_no_body_rejected_in_packet(self) -> None:
+        """slide_id of exactly 'SLD-' (prefix only, no body) must fail SIP schema validation."""
+        import jsonschema
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["slide_to_paper_candidates"] = [
+            {
+                "slide_id": "SLD-",  # prefix present but body is empty
+                "section": "Methodology",
+                "integration_role": "source_text",
+                "proposed_text": "Some content",
+            }
+        ]
+        try:
+            validate_artifact(packet, "slide_intelligence_packet")
+            assert False, "Expected ValidationError for SLD- with no body"
+        except jsonschema.ValidationError:
+            pass
+
+    def test_valid_clm_id_accepted_in_packet(self) -> None:
+        """claim_id conforming to ^CLM-[A-Z0-9][A-Z0-9._-]*$ must pass SIP validation."""
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["extracted_claims"] = [
+            {
+                "claim_id": "CLM-001",
+                "claim_text": "5G NR may interfere with radar",
+                "confidence": "low",
+                "source_slide_id": "SLD-001",
+            }
+        ]
+        validate_artifact(packet, "slide_intelligence_packet")  # must not raise
+
+    def test_invalid_clm_id_rejected_in_packet(self) -> None:
+        """claim_id not conforming to CLM- pattern must fail SIP schema validation."""
+        import jsonschema
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["extracted_claims"] = [
+            {
+                "claim_id": "CLAIM-TEST-SLIDE-001-1",  # old-style CLAIM- prefix
+                "claim_text": "5G NR may interfere with radar",
+                "confidence": "low",
+                "source_slide_id": "SLD-001",
+            }
+        ]
+        try:
+            validate_artifact(packet, "slide_intelligence_packet")
+            assert False, "Expected ValidationError for non-conforming claim_id"
+        except jsonschema.ValidationError:
+            pass
+
+    def test_valid_gap_id_accepted_in_packet(self) -> None:
+        """gap_id conforming to ^GAP-[A-Z0-9][A-Z0-9._-]*$ must pass SIP validation."""
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["analysis_gaps"] = [
+            {
+                "gap_id": "GAP-001",
+                "gap_type": "missing_propagation_model",
+                "description": "No propagation model specified",
+                "severity": "high",
+                "source_slide_id": None,
+                "related_claim_ids": [],
+            }
+        ]
+        validate_artifact(packet, "slide_intelligence_packet")  # must not raise
+
+    def test_invalid_gap_id_rejected_in_packet(self) -> None:
+        """gap_id not conforming to GAP- pattern must fail SIP schema validation."""
+        import jsonschema
+        from spectrum_systems.contracts import validate_artifact
+        packet = self._minimal_packet()
+        packet["analysis_gaps"] = [
+            {
+                "gap_id": "gap-001",  # lowercase prefix
+                "gap_type": "missing_propagation_model",
+                "description": "No propagation model specified",
+                "severity": "high",
+                "source_slide_id": None,
+                "related_claim_ids": [],
+            }
+        ]
+        try:
+            validate_artifact(packet, "slide_intelligence_packet")
+            assert False, "Expected ValidationError for non-conforming gap_id"
+        except jsonschema.ValidationError:
+            pass

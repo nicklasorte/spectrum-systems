@@ -180,3 +180,147 @@ def test_action_id_invalid_pattern_rejected() -> None:
         assert False, "Expected ValidationError for non-conforming action_id"
     except jsonschema.ValidationError:
         pass
+
+
+def test_fup_id_valid_pattern_accepted() -> None:
+    """followup_id conforming to ^FUP-[A-Z0-9][A-Z0-9._-]*$ must pass validation."""
+    data = _base_mmr()
+    data["gap_analysis"] = {
+        "recommended_followups": [
+            {
+                "followup_id": "FUP-001",
+                "type": "discuss",
+                "text": "Discuss propagation model selection",
+                "source_type": "slide",
+                "source_id": "SLD-001",
+            }
+        ]
+    }
+    validate_artifact(data, "meeting_minutes_record")  # must not raise
+
+
+def test_fup_id_invalid_pattern_rejected() -> None:
+    """followup_id not conforming to the FUP- pattern must fail validation."""
+    import jsonschema
+
+    data = _base_mmr()
+    data["gap_analysis"] = {
+        "recommended_followups": [
+            {
+                "followup_id": "FOLLOWUP-001",
+                "type": "discuss",
+                "text": "Discuss propagation model selection",
+                "source_type": "slide",
+                "source_id": "SLD-001",
+            }
+        ]
+    }
+    try:
+        validate_artifact(data, "meeting_minutes_record")
+        assert False, "Expected ValidationError for non-conforming followup_id"
+    except jsonschema.ValidationError:
+        pass
+
+
+def test_gap_id_valid_pattern_accepted_in_mmr() -> None:
+    """gap_id conforming to ^GAP-[A-Z0-9][A-Z0-9._-]*$ must pass MMR validation."""
+    data = _base_mmr()
+    data["gap_analysis"] = {
+        "canonical_gaps": [
+            {
+                "gap_id": "GAP-001",
+                "gap_type": "missing_propagation_model",
+                "description": "No propagation model specified",
+                "severity": "high",
+                "source_slide_id": None,
+                "related_claim_ids": [],
+            }
+        ]
+    }
+    validate_artifact(data, "meeting_minutes_record")  # must not raise
+
+
+def test_gap_id_invalid_pattern_rejected_in_mmr() -> None:
+    """gap_id not conforming to the GAP- pattern must fail MMR validation."""
+    import jsonschema
+
+    data = _base_mmr()
+    data["gap_analysis"] = {
+        "canonical_gaps": [
+            {
+                "gap_id": "G-001",
+                "gap_type": "missing_propagation_model",
+                "description": "No propagation model specified",
+                "severity": "high",
+                "source_slide_id": None,
+                "related_claim_ids": [],
+            }
+        ]
+    }
+    try:
+        validate_artifact(data, "meeting_minutes_record")
+        assert False, "Expected ValidationError for non-conforming gap_id"
+    except jsonschema.ValidationError:
+        pass
+
+
+def _base_declog() -> dict:
+    """Return a minimal valid decision_log for pattern testing."""
+    return {
+        "artifact_type": "decision_log",
+        "artifact_id": "DECLOG-TEST-001",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "2026.03.0",
+        "record_id": "REC-TEST-001",
+        "run_id": "run-20260318T000000Z",
+        "created_at": "2026-03-18T00:00:00Z",
+        "created_by": {"name": "Test", "role": "tester", "agent_type": "script"},
+        "source_repo": "test/repo",
+        "source_repo_version": "v1.0.0",
+        "program_id": "PRG-TEST-001",
+        "decisions": [
+            {
+                "decision_id": "DEC-001",
+                "title": "Test decision",
+                "status": "proposed",
+                "decision_type": "technical",
+                "decision_readiness": {"status": "evidence_needed"},
+            }
+        ],
+    }
+
+
+def test_dec_id_valid_pattern_accepted_in_decision_log() -> None:
+    """decision_id conforming to ^DEC-[A-Z0-9][A-Z0-9._-]*$ is accepted in decision_log."""
+    data = _base_declog()
+    validate_artifact(data, "decision_log")  # must not raise
+
+
+def test_dec_id_valid_pattern_consistent_across_mmr_and_decision_log() -> None:
+    """The same DEC-001 value must be accepted by both meeting_minutes_record and
+    decision_log, proving DEC- pattern consistency across schemas."""
+    valid_decision_id = "DEC-001"
+
+    mmr_data = _base_mmr()
+    mmr_data["decisions"] = [
+        {"decision_id": valid_decision_id, "description": "d", "rationale": "r", "decided_by": "team"}
+    ]
+    validate_artifact(mmr_data, "meeting_minutes_record")  # must not raise
+
+    declog_data = _base_declog()
+    declog_data["decisions"][0]["decision_id"] = valid_decision_id
+    validate_artifact(declog_data, "decision_log")  # must not raise
+
+
+def test_dec_id_invalid_pattern_rejected_in_decision_log() -> None:
+    """decision_id not conforming to ^DEC-[A-Z0-9][A-Z0-9._-]*$ is rejected in decision_log."""
+    import jsonschema
+
+    data = _base_declog()
+    data["decisions"][0]["decision_id"] = "DEC-"  # no body after prefix
+    try:
+        validate_artifact(data, "decision_log")
+        assert False, "Expected ValidationError for non-conforming decision_id"
+    except jsonschema.ValidationError:
+        pass
