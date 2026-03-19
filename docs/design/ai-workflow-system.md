@@ -1452,3 +1452,139 @@ python scripts/run_fix_simulation.py --strict
 
 Output: `outputs/simulation_results.json` with full simulation result list and
 ranked summary of promotable, held, and rejected plans.
+
+---
+
+## AR Hard Gating (Prompt AZ)
+
+AR Hard Gating converts the AW2 Fix Simulation Sandbox from an optimistic
+promoter into a **fail-closed, trustworthy gate**.  No remediation plan may be
+promoted unless it demonstrates meaningful, measurable, and trustworthy
+improvement over the baseline.
+
+### Fail-closed philosophy
+
+The system defaults to **HOLD** when uncertain and to **REJECT** when a hard
+violation is detected.  A promotion is only returned when every gate is passed.
+
+> Prefer HOLD over PROMOTE when uncertain.  
+> Prefer REJECT over HOLD when unsafe.
+
+### Gating criteria
+
+| Gate | Condition | Outcome on failure |
+|------|-----------|--------------------|
+| **Baseline availability** | A real baseline must exist | `hold` (`insufficient_signal`) |
+| **Simulation fidelity** | `fidelity` must not be `"none"` | `reject` (`insufficient_signal`) |
+| **Structural validity** | Candidate `structural_score` must be > 0.0 | `reject` (`structural_failure`) |
+| **Hard regression** | `check_regression` hard failures must be 0 | `reject` (`regression_detected`) |
+| **Semantic regression** | `semantic_score_delta` ≥ −0.01 | `reject` (`regression_detected`) |
+| **Structural regression** | `structural_score_delta` ≥ −0.01 | `reject` (`regression_detected`) |
+| **Grounding regression** | `grounding_score_delta` ≥ −0.01 | `reject` (`regression_detected`) |
+| **Latency regression** | `latency_ms_delta` ≤ 50 ms | `reject` (`regression_detected`) |
+| **Target direction** | Observed direction must not be opposite to expected | `reject` (`regression_detected`) |
+| **Minimum semantic improvement** | `semantic_score_delta` ≥ 0.05 | `hold` (`low_semantic_improvement`) |
+| **Fidelity level** | `fidelity` must be `"high"` or `"medium"` | `hold` (`low_fidelity`) |
+| **Regression warnings** | `check_regression` warnings must be 0 | `hold` (`regression_warning`) |
+| **Observed direction** | Observed direction must match expected | `hold` (`insufficient_signal`) |
+| **Meaningful change** | Target metric delta ≥ 0.01 | `hold` (`low_semantic_improvement`) |
+| **Grounding sensitivity** | Grounding must respond when other outputs change | `hold` (`grounding_not_sensitive`) |
+
+All gates must pass for `recommendation = "promote"`.
+
+### Configuration constants
+
+Defined in `spectrum_systems/modules/improvement/simulation_compare.py`:
+
+```python
+_MIN_SEMANTIC_IMPROVEMENT    = 0.05   # minimum semantic_score_delta for promotion
+_MAX_REGRESSION_TOLERANCE    = 0.01   # per-metric regression tolerance
+_REQUIRE_STRUCTURAL_SCORE    = True   # structural_score == 0.0 is a hard reject
+_MIN_IMPROVEMENT_FOR_PROMOTE = 0.01   # minimum target-metric delta for promotion
+_HARD_LATENCY_REGRESSION_MS  = 50.0   # ms increase that triggers hard latency reject
+```
+
+### Output fields
+
+`SimulationResult` now includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `gating_decision_reason` | `string` | Primary reason for the gating decision |
+| `gating_flags` | `list[string]` | All flags raised during gating evaluation |
+
+Possible flag values:
+
+| Flag | Meaning |
+|------|---------|
+| `low_semantic_improvement` | `semantic_score_delta` below `_MIN_SEMANTIC_IMPROVEMENT` |
+| `structural_failure` | Candidate `structural_score` is 0.0 |
+| `regression_detected` | A metric regressed beyond the allowed tolerance |
+| `grounding_not_sensitive` | Grounding score did not respond to output changes |
+| `insufficient_signal` | Missing baseline, ambiguous fidelity, or unclear direction |
+| `low_fidelity` | Simulation fidelity is `"low"` |
+| `regression_warning` | Minor regression warnings from `check_regression` |
+
+### Examples
+
+**PROMOTE** — all gates passed:
+
+```
+semantic_score_delta = +0.06  (≥ 0.05 ✓)
+structural_score     = 0.72   (> 0 ✓)
+structural_delta     = +0.02  (no regression ✓)
+grounding_delta      = +0.05  (changes with outputs ✓)
+latency_delta        = -5 ms  (improved ✓)
+fidelity             = "high" ✓
+hard_failures        = 0 ✓
+warnings             = 0 ✓
+→ recommendation: "promote", gating_decision_reason: "all_gates_passed"
+```
+
+**HOLD** — semantic improvement below threshold:
+
+```
+semantic_score_delta = +0.03  (< 0.05 ✗)
+→ recommendation: "hold", gating_flags: ["low_semantic_improvement"]
+```
+
+**HOLD** — grounding insensitive to output changes:
+
+```
+semantic_score_delta  = +0.06
+grounding_score_delta = 0.00  (unchanged while other outputs changed ✗)
+→ recommendation: "hold", gating_flags: ["grounding_not_sensitive"]
+```
+
+**REJECT** — structural score is zero:
+
+```
+structural_score (candidate) = 0.0 ✗
+→ recommendation: "reject", gating_flags: ["structural_failure"]
+```
+
+**REJECT** — semantic regression:
+
+```
+semantic_score_delta = -0.05  (< -0.01 ✗)
+→ recommendation: "reject", gating_flags: ["regression_detected"]
+```
+
+**HOLD** — baseline unavailable:
+
+```
+baseline_available = False ✗
+→ recommendation: "hold", gating_flags: ["insufficient_signal"]
+```
+
+### Relationship to AW2 simulation
+
+AR Hard Gating is the promotion decision layer inside AW2.  The gating logic
+lives in `determine_promotion_recommendation()` within
+`spectrum_systems/modules/improvement/simulation_compare.py`.
+
+Every `SimulationResult` produced by `FixSimulator.simulate_plan()` carries
+`gating_decision_reason` and `gating_flags` so that every decision is fully
+auditable.  The CLI (`scripts/run_fix_simulation.py`) prints a gating breakdown
+that includes `promote_count`, `hold_count`, `reject_count`, and a ranked table
+of gating reasons to make the gate behaviour visible at a glance.
