@@ -220,3 +220,297 @@ Core functions:
 | `derive_runtime_decision()` | Aggregates conditions into a system response |
 | `classify_runtime_failure()` | Returns the most severe failure type |
 | `capture_runtime_env_snapshot()` | Captures the current execution environment |
+
+---
+
+## BD — Run Bundle Contract + Manifest Hardening
+
+### Purpose
+
+The BD layer governs what a run bundle **must contain** and **promises to produce**
+before BC runtime compatibility validation is attempted.  BC validates the
+environment; BD validates the bundle itself.
+
+```
+Bundle submitted for execution
+          │
+          ▼
+┌────────────────────────────────────────────────────┐
+│  BD: Run Bundle Contract + Manifest Hardening      │
+│  (bundle correctness gate)                         │
+│  scripts/run_bundle_validation.py                  │
+└──────────────────────────┬─────────────────────────┘
+                           │ valid bundle contract
+                           ▼
+┌────────────────────────────────────────────────────┐
+│  BC: Runtime Compatibility Enforcement             │
+│  (environment gate)                                │
+│  scripts/run_runtime_validation.py                 │
+└──────────────────────────┬─────────────────────────┘
+                           │ allow_execution
+                           ▼
+                      Job runs
+```
+
+BD fires **before** BC.  A bundle with an invalid manifest or missing
+output contract never reaches runtime validation.
+
+---
+
+### Required Bundle Layout
+
+A valid run bundle must contain a manifest JSON file
+(`run_bundle_manifest.json`) conforming to:
+
+```
+contracts/schemas/run_bundle_manifest.schema.json
+```
+
+Example on-disk layout:
+
+```
+bundle-root/
+├── run_bundle_manifest.json      ← governed manifest (this schema)
+├── bin/
+│   └── run_spectral_analysis.sh  ← worker_entrypoint
+├── inputs/
+│   ├── spectrum_cases.json       ← required input
+│   └── parameters.mat            ← required input
+├── outputs/
+│   ├── results_summary.json      ← results_summary_json (paper_relevant)
+│   ├── provenance.json           ← provenance_json
+│   └── raw/
+│       └── results.mat           ← raw_mat
+├── figures/                      ← figure_dir (paper_relevant)
+├── tables/                       ← table_dir (paper_relevant)
+└── logs/
+    └── worker.log                ← log_file
+```
+
+---
+
+### Manifest Field Definitions
+
+| Field | Type | Description |
+|---|---|---|
+| `bundle_version` | string (semver) | Schema/format version of this manifest |
+| `run_id` | string | Unique identifier for this run bundle |
+| `matlab_release` | string | MATLAB release string, e.g. `R2024b` |
+| `runtime_version_required` | string | Exact MCR version required |
+| `platform` | enum | `windows-x86_64` or `linux-x86_64` |
+| `worker_entrypoint` | string | Relative path to the executable/script |
+| `component_cache.mcr_cache_root` | string | Path to MCR cache root |
+| `component_cache.mcr_cache_size` | string | Max cache size, e.g. `2GB` |
+| `startup_options.logfile` | string | Relative path to worker log |
+| `startup_options.environment_vars` | object | Key/value env vars |
+| `startup_options.timeout_seconds` | integer | Max execution time |
+| `inputs` | array | Explicit list of all input artifacts |
+| `inputs[].path` | string | Relative path to input file |
+| `inputs[].type` | string | Input artifact type |
+| `inputs[].required` | boolean | Whether the input is mandatory |
+| `inputs[].content_hash` | string | Optional SHA-256 for integrity |
+| `expected_outputs` | array | Explicit list of expected outputs |
+| `expected_outputs[].path` | string | Relative path of expected output |
+| `expected_outputs[].type` | enum | See output types below |
+| `expected_outputs[].required` | boolean | Whether output is mandatory |
+| `expected_outputs[].paper_relevant` | boolean | Whether output feeds a working paper |
+| `provenance` | object | Replay and traceability fields |
+| `execution_policy` | object | Retry and idempotency declaration |
+| `created_at` | string (date-time) | ISO 8601 creation timestamp |
+
+#### Output types
+
+| Type | Description |
+|---|---|
+| `results_summary_json` | Summary of computed results |
+| `provenance_json` | Provenance record for the run |
+| `raw_mat` | Raw MATLAB results file |
+| `figure_dir` | Directory of generated figures |
+| `table_dir` | Directory of generated tables |
+| `log_file` | Worker execution log |
+
+---
+
+### Output Contract Rules
+
+A valid bundle **must** declare at least:
+
+1. One `results_summary_json` output
+2. One `provenance_json` output
+3. One `log_file` output
+4. At least one output with `paper_relevant: true`
+
+Failure to satisfy any of these rules produces `output_contract_invalid`.
+
+---
+
+### Provenance Minimums
+
+The `provenance` block must declare:
+
+| Field | Requirement |
+|---|---|
+| `source_case_ids` | Non-empty list of case IDs |
+| `manifest_author` | Non-empty string |
+| `creation_context` | Non-empty string |
+| `rng_seed` or `rng_state_ref` | At least one must be declared |
+
+Failure produces `provenance_incomplete`.
+
+---
+
+### Idempotency Policy
+
+`execution_policy.idempotency_mode` must be declared explicitly as one of:
+
+| Value | Meaning |
+|---|---|
+| `safe_rerun` | Re-running this bundle produces the same outputs |
+| `strict_once` | Bundle must run exactly once; re-run is forbidden |
+
+An absent or empty `idempotency_mode` produces `idempotency_undefined`.
+
+---
+
+### Relationship to BC Runtime Validation
+
+| Layer | Validates | Failure blocks |
+|---|---|---|
+| **BD** | Bundle manifest correctness, output contract, provenance, idempotency | BC validation attempt |
+| **BC** | Runtime environment compatibility | Job execution |
+
+The two layers are intentionally separate:
+- **BD = bundle correctness** — does the bundle declare everything it needs?
+- **BC = environment compatibility** — does the runtime satisfy what the bundle requires?
+
+---
+
+### Example Manifest
+
+```json
+{
+  "bundle_version": "1.0.0",
+  "run_id": "run-matlab-spectral-analysis-2024b-001",
+  "matlab_release": "R2024b",
+  "runtime_version_required": "R2024b",
+  "platform": "linux-x86_64",
+  "worker_entrypoint": "bin/run_spectral_analysis.sh",
+  "component_cache": {
+    "mcr_cache_root": "/tmp/mcr_cache",
+    "mcr_cache_size": "2GB"
+  },
+  "startup_options": {
+    "logfile": "logs/worker.log",
+    "environment_vars": { "MCR_CACHE_ROOT": "/tmp/mcr_cache" },
+    "timeout_seconds": 3600
+  },
+  "inputs": [
+    { "path": "inputs/spectrum_cases.json", "type": "case_definition", "required": true, "content_hash": "sha256:abc123" },
+    { "path": "inputs/parameters.mat", "type": "matlab_parameters", "required": true },
+    { "path": "inputs/optional_seed_override.json", "type": "rng_seed_override", "required": false }
+  ],
+  "expected_outputs": [
+    { "path": "outputs/results_summary.json", "type": "results_summary_json", "required": true, "paper_relevant": true },
+    { "path": "outputs/provenance.json", "type": "provenance_json", "required": true, "paper_relevant": false },
+    { "path": "outputs/raw/results.mat", "type": "raw_mat", "required": true, "paper_relevant": false },
+    { "path": "outputs/figures/", "type": "figure_dir", "required": false, "paper_relevant": true },
+    { "path": "outputs/tables/", "type": "table_dir", "required": false, "paper_relevant": true },
+    { "path": "logs/worker.log", "type": "log_file", "required": true, "paper_relevant": false }
+  ],
+  "provenance": {
+    "source_artifact_ids": ["artifact-spectrum-v3-2024b"],
+    "source_case_ids": ["case-001", "case-002", "case-003"],
+    "rng_seed": 42,
+    "manifest_author": "spectrum-pipeline-agent",
+    "creation_context": "Automated spectral analysis run for Q4-2024 working paper draft."
+  },
+  "execution_policy": {
+    "idempotency_mode": "safe_rerun",
+    "retry_allowed": true,
+    "max_retries": 2,
+    "stale_claim_timeout_hours": 4.0
+  },
+  "created_at": "2024-11-15T12:00:00Z"
+}
+```
+
+---
+
+### Artifacts
+
+Every call to `validate_bundle_contract()` produces a decision artifact
+conforming to:
+
+```
+contracts/schemas/run_bundle_validation_decision.schema.json
+```
+
+Decisions are persisted to:
+
+```
+data/run_bundle_decisions/run_bundle_validation_decision_<timestamp>.json
+```
+
+The latest decision is also written to:
+
+```
+outputs/run_bundle_validation_decision.json
+```
+
+### Key BD decision fields
+
+| Field | Description |
+|---|---|
+| `decision_id` | Unique ID derived from run_id + created_at |
+| `run_id` | ID of the bundle being validated |
+| `valid` | True only when all hardening rules pass |
+| `failure_type` | Most severe failure type, or null when valid |
+| `triggering_conditions` | Full list of validation error strings |
+| `bundle_summary` | Concise summary of key bundle fields |
+
+### BD failure types
+
+| failure_type | When triggered |
+|---|---|
+| `manifest_invalid` | Required fields missing or schema violation |
+| `missing_required_input` | A required input has no path or is absent on disk |
+| `output_contract_invalid` | Missing required output types or no paper_relevant output |
+| `provenance_incomplete` | Missing source_case_ids, author, context, or RNG |
+| `idempotency_undefined` | idempotency_mode absent or empty |
+
+---
+
+### CLI
+
+```bash
+python scripts/run_bundle_validation.py <bundle_manifest.json|bundle_root_dir> \
+    [--bundle-root <directory>]
+```
+
+Exit codes:
+- `0` — Valid — bundle contract satisfied
+- `1` — Invalid manifest or contract violation
+- `2` — Runtime/path-related error (bad input, schema load failure)
+
+---
+
+### Module location
+
+```
+spectrum_systems/modules/runtime/run_bundle.py
+```
+
+Core functions:
+
+| Function | Purpose |
+|---|---|
+| `load_run_bundle_manifest()` | Load and parse a manifest JSON file |
+| `normalize_run_bundle_manifest()` | Stable-format normalization (no error hiding) |
+| `validate_run_bundle_manifest()` | JSON Schema structural validation |
+| `validate_bundle_contract()` | Top-level BD entry point; runs all hardening rules |
+| `validate_expected_outputs()` | Checks output-type and paper_relevant requirements |
+| `validate_input_paths()` | Checks required inputs declared and optionally on disk |
+| `validate_output_contract()` | Alias for validate_expected_outputs |
+| `validate_provenance_fields()` | Checks provenance replay minimums |
+| `derive_bundle_summary()` | Returns concise summary dict for auditing |
+| `classify_bundle_failure()` | Returns most severe failure type |
