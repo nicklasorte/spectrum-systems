@@ -1,0 +1,28 @@
+{
+  "artifact_id": "SLOE-37CE6116AE50",
+  "evaluation_id": "SLO-C812B50443D6",
+  "slo_status": "violated",
+  "allowed_to_proceed": false,
+  "slis": {
+    "completeness": 0.5,
+    "timeliness": 1.0,
+    "traceability": 1.0
+  },
+  "violations": [
+    {
+      "sli": "completeness",
+      "severity": "high",
+      "description": "completeness SLI is violated (value=0.5000). Expected >=0.95 for healthy operation."
+    }
+  ],
+  "error_budget": {
+    "remaining": 0.833333,
+    "burn_rate": 0.166667
+  },
+  "inputs": {
+    "be_artifacts": [],
+    "bf_artifact": null,
+    "bg_artifact": "/tmp/tmpaz2369l8/bg.json"
+  },
+  "created_at": "2026-03-19T12:02:58.412207+00:00"
+}

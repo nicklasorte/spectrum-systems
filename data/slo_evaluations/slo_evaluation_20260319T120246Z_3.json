@@ -1,0 +1,24 @@
+{
+  "artifact_id": "SLOE-01C595CF535B",
+  "evaluation_id": "SLO-2CECA6E649D0",
+  "slo_status": "healthy",
+  "allowed_to_proceed": true,
+  "slis": {
+    "completeness": 1.0,
+    "timeliness": 1.0,
+    "traceability": 1.0
+  },
+  "violations": [],
+  "error_budget": {
+    "remaining": 1.0,
+    "burn_rate": 0.0
+  },
+  "inputs": {
+    "be_artifacts": [
+      "/tmp/tmpjmh6o9t5/nrr.json"
+    ],
+    "bf_artifact": null,
+    "bg_artifact": "/tmp/tmpjmh6o9t5/bg.json"
+  },
+  "created_at": "2026-03-19T12:02:46.909602+00:00"
+}

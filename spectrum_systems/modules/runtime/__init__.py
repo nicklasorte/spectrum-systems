@@ -4,9 +4,9 @@ Runtime Module — spectrum_systems/modules/runtime/
 Provides the runtime compatibility enforcement layer (Prompt BC), the
 run-bundle contract hardening layer (Prompt BD), the run output
 normalization and evaluation layer (Prompt BE), the cross-run
-intelligence and anomaly detection layer (Prompt BF), and the working
-paper evidence pack synthesis layer (Prompt BG) for validating
-execution bundles and their outputs.
+intelligence and anomaly detection layer (Prompt BF), the working
+paper evidence pack synthesis layer (Prompt BG), and the SLO control
+layer (Prompt BR) for validating execution bundles and their outputs.
 
 Every validation produces a deterministic decision artifact that is
 persisted and auditable.
@@ -27,6 +27,9 @@ cross_run_intelligence
 working_paper_synthesis
     Evidence pack synthesis, section mapping, ranked finding derivation,
     caveat extraction, and follow-up question generation (BG).
+slo_control
+    SLO evaluation, error budget computation, and proceed/block
+    determination across BE, BF, and BG outputs (BR).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -108,6 +111,20 @@ from spectrum_systems.modules.runtime.working_paper_synthesis import (
     validate_working_paper_evidence_pack,
     validate_working_paper_synthesis_decision,
 )
+from spectrum_systems.modules.runtime.slo_control import (
+    build_slo_evaluation_artifact,
+    classify_violation,
+    compute_completeness_sli,
+    compute_error_budget,
+    compute_slo_status,
+    compute_timeliness_sli,
+    compute_traceability_sli,
+    determine_allowed_to_proceed,
+    load_inputs,
+    run_slo_control,
+    validate_inputs_against_schema,
+    validate_output_against_schema,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -184,4 +201,17 @@ __all__ = [
     "validate_working_paper_evidence_pack",
     "validate_working_paper_synthesis_decision",
     "synthesize_working_paper_evidence",
+    # BR — SLO Control Layer
+    "load_inputs",
+    "validate_inputs_against_schema",
+    "compute_completeness_sli",
+    "compute_timeliness_sli",
+    "compute_traceability_sli",
+    "classify_violation",
+    "compute_slo_status",
+    "compute_error_budget",
+    "determine_allowed_to_proceed",
+    "build_slo_evaluation_artifact",
+    "validate_output_against_schema",
+    "run_slo_control",
 ]
