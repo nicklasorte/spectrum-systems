@@ -13,7 +13,9 @@
     "violations",
     "error_budget",
     "inputs",
-    "created_at"
+    "created_at",
+    "lineage_valid",
+    "parent_artifact_ids"
   ],
   "additionalProperties": false,
   "properties": {
@@ -39,7 +41,7 @@
     "slis": {
       "type": "object",
       "description": "Individual SLI measurements, each in range [0.0, 1.0].",
-      "required": ["completeness", "timeliness", "traceability"],
+      "required": ["completeness", "timeliness", "traceability", "traceability_integrity"],
       "additionalProperties": false,
       "properties": {
         "completeness": {
@@ -75,6 +77,7 @@
     "parent_artifact_ids": {
       "type": "array",
       "description": "IDs of parent artifacts (decision and synthesis) that drove this SLO evaluation.",
+      "minItems": 1,
       "items": {
         "type": "string",
         "minLength": 1

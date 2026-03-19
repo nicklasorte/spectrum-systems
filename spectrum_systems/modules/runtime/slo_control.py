@@ -353,8 +353,15 @@ def compute_traceability_sli(loaded: Dict[str, Any]) -> float:
             continue
         art_id = sa.get("artifact_id", "")
         bundle_id = sa.get("source_bundle_id", "")
-        if art_id or bundle_id:
-            linked += 1
+        if known_ids:
+            # Full linkage verification: IDs must exist in the known source artifact registry.
+            if (art_id and art_id in known_ids) or (bundle_id and bundle_id in known_ids):
+                linked += 1
+        else:
+            # Degraded validation mode: presence check only — no registry to verify
+            # correctness against.  This does NOT confirm actual artifact linkage.
+            if art_id or bundle_id:
+                linked += 1
 
     if not source_artifacts:
         return 0.5
@@ -596,9 +603,14 @@ def build_slo_evaluation_artifact(
         "completeness": slis.get("completeness", 0.0),
         "timeliness": slis.get("timeliness", 0.0),
         "traceability": slis.get("traceability", 0.0),
+        # Default 1.0 is intentional for this assembler function: the caller
+        # (run_slo_control) always computes and supplies this value.  When this
+        # function is called directly without a precomputed value, 1.0 signals
+        # "not assessed by this call path" — not "verified valid".  If you are
+        # calling this function directly you are responsible for computing the SLI
+        # and including it in the slis dict.
+        "traceability_integrity": slis.get("traceability_integrity", 1.0),
     }
-    if "traceability_integrity" in slis:
-        slis_out["traceability_integrity"] = slis["traceability_integrity"]
 
     artifact: Dict[str, Any] = {
         "artifact_id": art_id,
@@ -618,6 +630,9 @@ def build_slo_evaluation_artifact(
 
     if lineage_valid is not None:
         artifact["lineage_valid"] = lineage_valid
+    else:
+        # Fail-safe default: when lineage has not been assessed, record as unverified.
+        artifact["lineage_valid"] = False
     if parent_artifact_ids is not None:
         artifact["parent_artifact_ids"] = list(parent_artifact_ids)
 

@@ -656,6 +656,8 @@ def test_validate_output_valid_artifact():
         error_budget=eb,
         allowed_to_proceed=True,
         created_at="2025-01-01T00:00:00+00:00",
+        lineage_valid=True,
+        parent_artifact_ids=["DEC-001"],
     )
     errors = validate_output_against_schema(artifact)
     assert errors == []
@@ -701,7 +703,7 @@ def test_run_slo_control_be_only_healthy():
     with tempfile.TemporaryDirectory() as tmpd:
         tmp = Path(tmpd)
         p = _write_json(tmp, "nrr.json", _minimal_nrr())
-        result = run_slo_control([str(p)], None, None)
+        result = run_slo_control([str(p)], None, None, parent_artifact_ids=["DEC-001"])
         assert result["slo_evaluation"] is not None
         assert result["schema_errors"] == []
 
@@ -752,7 +754,7 @@ def test_run_slo_control_output_schema_valid():
     with tempfile.TemporaryDirectory() as tmpd:
         tmp = Path(tmpd)
         bg_p = _write_json(tmp, "bg.json", _minimal_bg())
-        result = run_slo_control([], None, str(bg_p))
+        result = run_slo_control([], None, str(bg_p), parent_artifact_ids=["DEC-001"])
         assert result["schema_errors"] == []
 
 
@@ -789,7 +791,10 @@ def _run_cli(argv: list) -> int:
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod.main(argv)
+    try:
+        return mod.main(argv)
+    except SystemExit as exc:
+        return int(exc.code)
 
 
 def test_cli_exit_0_healthy():
@@ -800,6 +805,7 @@ def test_cli_exit_0_healthy():
         code = _run_cli([
             "--be-input", str(be_p),
             "--bg-input", str(bg_p),
+            "--parent-id", "DEC-001",
             "--output-dir", tmpd,
         ])
         assert code == 0
@@ -936,3 +942,309 @@ def test_run_slo_control_inputs_recorded():
         assert len(inputs["be_artifacts"]) == 1
         assert inputs["bf_artifact"] is None
         assert inputs["bg_artifact"] is None
+
+
+# ===========================================================================
+# 14. Critical defect fixes — BR+BS blocking bundle
+# ===========================================================================
+
+
+def _minimal_slo_artifact(
+    parent_artifact_ids: Optional[List[str]] = None,
+    lineage_valid: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """Return a minimal, schema-compliant SLO evaluation artifact dict."""
+    loaded = load_inputs([], None, None)
+    slis = {
+        "completeness": 1.0,
+        "timeliness": 1.0,
+        "traceability": 1.0,
+        "traceability_integrity": 1.0,
+    }
+    eb = compute_error_budget(slis)
+    return build_slo_evaluation_artifact(
+        loaded=loaded,
+        slis=slis,
+        violations=[],
+        slo_status="healthy",
+        error_budget=eb,
+        allowed_to_proceed=True,
+        created_at="2025-01-01T00:00:00+00:00",
+        lineage_valid=lineage_valid if lineage_valid is not None else True,
+        parent_artifact_ids=parent_artifact_ids if parent_artifact_ids is not None else ["DEC-001"],
+    )
+
+
+# --- Schema contract enforcement ---
+
+
+def test_schema_rejects_missing_lineage_valid():
+    """SLO artifact without lineage_valid must be schema-invalid."""
+    artifact = _minimal_slo_artifact()
+    del artifact["lineage_valid"]
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Expected schema error for missing lineage_valid"
+
+
+def test_schema_rejects_missing_parent_artifact_ids():
+    """SLO artifact without parent_artifact_ids must be schema-invalid."""
+    artifact = _minimal_slo_artifact()
+    del artifact["parent_artifact_ids"]
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Expected schema error for missing parent_artifact_ids"
+
+
+def test_schema_rejects_empty_parent_artifact_ids():
+    """SLO artifact with empty parent_artifact_ids must be schema-invalid (minItems: 1)."""
+    artifact = _minimal_slo_artifact(parent_artifact_ids=["DEC-001"])
+    artifact["parent_artifact_ids"] = []
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Expected schema error for empty parent_artifact_ids"
+
+
+def test_schema_accepts_valid_artifact_with_lineage():
+    """A fully-populated artifact including lineage fields must be schema-valid."""
+    artifact = _minimal_slo_artifact(parent_artifact_ids=["DEC-001", "SYN-001"])
+    errors = validate_output_against_schema(artifact)
+    assert errors == [], errors
+
+
+# --- compute_traceability_sli with known_ids ---
+
+
+def test_traceability_sli_known_ids_valid_references_score_correctly():
+    """Source artifacts whose IDs match known_ids contribute to the linked count."""
+    be = _minimal_nrr(artifact_id="NRR-KNOWN", bundle_id="BND-KNOWN")
+    bg = _minimal_bg(be_artifact_id="NRR-KNOWN", be_bundle_id="BND-KNOWN")
+    loaded = {
+        "be_artifacts": [be],
+        "bf_artifact": None,
+        "bg_artifact": bg,
+    }
+    score = compute_traceability_sli(loaded)
+    # known_ids = {"NRR-KNOWN", "BND-KNOWN"} — source artifact matches → score is high
+    assert score > 0.5
+
+
+def test_traceability_sli_fabricated_ids_do_not_score_as_linked():
+    """Source artifacts that reference IDs absent from known_ids must not score as linked."""
+    be = _minimal_nrr(artifact_id="NRR-REAL", bundle_id="BND-REAL")
+    # BG references completely different (fabricated) IDs not present in the BE artifact
+    bg = _minimal_bg(be_artifact_id="NRR-FABRICATED", be_bundle_id="BND-FABRICATED")
+    loaded = {
+        "be_artifacts": [be],
+        "bf_artifact": None,
+        "bg_artifact": bg,
+    }
+    score = compute_traceability_sli(loaded)
+    # known_ids = {"NRR-REAL", "BND-REAL"}; source artifact uses fabricated IDs → linked = 0
+    # base_score = 0.0; citation rate (presence-only) is at most 0.4 of composite.
+    # Final: 0.6 * 0.0 + 0.4 * citation_rate ≤ 0.4
+    assert score <= 0.5, f"Fabricated IDs should not score as linked; got {score}"
+
+
+def test_traceability_sli_no_known_ids_uses_degraded_fallback():
+    """When no BE/BF artifacts are provided, known_ids is empty and degraded mode is used."""
+    bg = _minimal_bg()
+    loaded = {
+        "be_artifacts": [],
+        "bf_artifact": None,
+        "bg_artifact": bg,
+    }
+    # With empty known_ids, degraded fallback uses presence-only check.
+    # The BG source_artifacts entry has artifact_id set → still counts as linked.
+    score = compute_traceability_sli(loaded)
+    assert 0.0 <= score <= 1.0  # Must not crash; result is deterministic
+
+
+# --- run_slo_control lineage integration ---
+
+
+def _malformed_lineage_registry() -> Dict[str, Any]:
+    """Return a lineage registry that validate_full_registry reports as invalid."""
+    # An slo_evaluation artifact with no parents is an orphan — always invalid.
+    return {
+        "SLO-ORPHAN": {
+            "artifact_id": "SLO-ORPHAN",
+            "artifact_type": "slo_evaluation",
+            "parent_artifact_ids": [],
+            "lineage_depth": 0,
+            "root_artifact_ids": [],
+            "lineage_valid": False,
+            "lineage_errors": ["orphan"],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        }
+    }
+
+
+def test_run_slo_control_malformed_lineage_sets_lineage_valid_false():
+    """run_slo_control with an invalid lineage registry must set lineage_valid=False."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    assert result["lineage_valid"] is False
+    assert result["slo_evaluation"]["lineage_valid"] is False
+
+
+def test_run_slo_control_malformed_lineage_blocks_proceed():
+    """run_slo_control with an invalid lineage registry must set allowed_to_proceed=False."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    assert result["allowed_to_proceed"] is False
+    assert result["slo_evaluation"]["allowed_to_proceed"] is False
+
+
+def test_run_slo_control_malformed_lineage_integrity_not_healthy():
+    """Invalid lineage registry must not silently return traceability_integrity = 1.0."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    slis = result["slo_evaluation"]["slis"]
+    assert slis["traceability_integrity"] < 1.0, (
+        "traceability_integrity must not be 1.0 when lineage registry is invalid"
+    )
+
+
+def test_run_slo_control_records_parent_artifact_ids():
+    """run_slo_control must record parent_artifact_ids in the output artifact."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        parent_artifact_ids=["DEC-001", "SYN-001"],
+    )
+    artifact = result["slo_evaluation"]
+    assert "parent_artifact_ids" in artifact
+    assert artifact["parent_artifact_ids"] == ["DEC-001", "SYN-001"]
+
+
+# --- CLI lineage integration ---
+
+
+def test_cli_lineage_dir_loads_registry_and_uses_it():
+    """CLI --lineage-dir must load all *.json files and pass the registry to run_slo_control."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        lineage_dir = tmp / "lineage"
+        lineage_dir.mkdir()
+
+        # Write a valid lineage artifact that validate_full_registry will accept as OK.
+        # A simulation_input is a root type — always valid with no parents.
+        valid_root = {
+            "artifact_id": "SIM-IN-001",
+            "artifact_type": "simulation_input",
+            "parent_artifact_ids": [],
+            "lineage_depth": 0,
+            "root_artifact_ids": ["SIM-IN-001"],
+            "lineage_valid": True,
+            "lineage_errors": [],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        }
+        _write_json(lineage_dir, "sim_in.json", valid_root)
+
+        be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
+        bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=8, num_findings=5))
+
+        code = _run_cli([
+            "--be-input", str(be_p),
+            "--bg-input", str(bg_p),
+            "--lineage-dir", str(lineage_dir),
+            "--parent-id", "DEC-001",
+            "--output-dir", tmpd,
+        ])
+        # A valid registry with a healthy simulation_input should not break the evaluation.
+        assert code in (0, 1, 2)
+        # Confirm the output artifact was written
+        assert (tmp / "slo_evaluation.json").exists()
+        out = json.loads((tmp / "slo_evaluation.json").read_text())
+        assert "traceability_integrity" in out["slis"]
+        assert out["parent_artifact_ids"] == ["DEC-001"]
+
+
+def test_cli_invalid_lineage_registry_causes_non_healthy_outcome():
+    """CLI with an invalid lineage registry must yield traceability_integrity < 1.0."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        lineage_dir = tmp / "lineage"
+        lineage_dir.mkdir()
+
+        # Write an orphan slo_evaluation artifact — lineage is broken
+        _write_json(lineage_dir, "orphan.json", {
+            "artifact_id": "SLO-ORPHAN",
+            "artifact_type": "slo_evaluation",
+            "parent_artifact_ids": [],
+            "lineage_depth": 0,
+            "root_artifact_ids": [],
+            "lineage_valid": False,
+            "lineage_errors": ["orphan"],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        })
+
+        code = _run_cli([
+            "--lineage-dir", str(lineage_dir),
+            "--parent-id", "DEC-001",
+            "--output-dir", tmpd,
+        ])
+        # Broken lineage → traceability_integrity = 0.0 → violated → exit 2
+        assert code == 2
+        out = json.loads((tmp / "slo_evaluation.json").read_text())
+        assert out["slis"]["traceability_integrity"] < 1.0
+        assert out["allowed_to_proceed"] is False
+
+
+def test_cli_missing_lineage_dir_exits_2():
+    """CLI with --lineage-dir pointing to a non-existent path must exit with code 2."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        code = _run_cli([
+            "--lineage-dir", "/nonexistent/lineage/dir",
+            "--output-dir", tmpd,
+        ])
+        assert code == 2
+
+
+def test_cli_empty_lineage_dir_exits_2():
+    """CLI with --lineage-dir pointing to an empty directory must exit with code 2."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        empty_dir = tmp / "empty_lineage"
+        empty_dir.mkdir()
+        code = _run_cli([
+            "--lineage-dir", str(empty_dir),
+            "--output-dir", tmpd,
+        ])
+        assert code == 2
+
+
+def test_cli_malformed_lineage_json_exits_2():
+    """CLI with --lineage-dir containing malformed JSON must exit with code 2."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        lineage_dir = tmp / "bad_lineage"
+        lineage_dir.mkdir()
+        bad_file = lineage_dir / "bad.json"
+        bad_file.write_text("NOT VALID JSON", encoding="utf-8")
+        code = _run_cli([
+            "--lineage-dir", str(lineage_dir),
+            "--output-dir", tmpd,
+        ])
+        assert code == 2
+
