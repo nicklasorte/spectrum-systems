@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slo_control_chain_decision.schema.json",
+  "title": "SLO Control-Chain Decision",
+  "description": "Governed machine-readable artifact produced by the Control-Chain Orchestrator (BN.4). Records the full evaluation → enforcement → gating chain and the final continuation eligibility decision for a pipeline stage.",
+  "type": "object",
+  "required": [
+    "control_chain_decision_id",
+    "artifact_id",
+    "stage",
+    "input_kind",
+    "enforcement_decision_id",
+    "gating_decision_id",
+    "enforcement_policy",
+    "enforcement_decision_status",
+    "gating_outcome",
+    "continuation_allowed",
+    "blocking_layer",
+    "primary_reason_code",
+    "traceability_integrity_sli",
+    "lineage_validation_mode",
+    "lineage_defaulted",
+    "lineage_valid",
+    "warnings",
+    "errors",
+    "recommended_action",
+    "evaluated_at",
+    "schema_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "control_chain_decision_id": {
+      "type": "string",
+      "description": "Unique identifier for this control-chain decision.",
+      "pattern": "^CC-[A-Z0-9]+$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Identifier of the artifact that was evaluated.",
+      "minLength": 1
+    },
+    "stage": {
+      "type": "string",
+      "description": "Pipeline stage for which the control chain was run. '(unknown)' when indeterminate.",
+      "minLength": 1
+    },
+    "input_kind": {
+      "type": "string",
+      "description": "Kind of input that triggered this control-chain run.",
+      "enum": ["evaluation", "enforcement", "gating"]
+    },
+    "enforcement_decision_id": {
+      "type": "string",
+      "description": "Identifier of the enforcement decision produced or consumed by this chain. '(none)' when not applicable.",
+      "minLength": 1
+    },
+    "gating_decision_id": {
+      "type": "string",
+      "description": "Identifier of the gating decision produced or consumed by this chain. '(none)' when gating was not executed.",
+      "minLength": 1
+    },
+    "enforcement_policy": {
+      "type": "string",
+      "description": "Named enforcement policy profile used in this chain. '(unknown)' when indeterminate.",
+      "minLength": 1
+    },
+    "enforcement_decision_status": {
+      "type": "string",
+      "description": "Decision status from the enforcement step. '(unknown)' when not determinable.",
+      "minLength": 1
+    },
+    "gating_outcome": {
+      "type": "string",
+      "description": "Stage-aware gating outcome from the gating step. '(none)' when gating was not executed.",
+      "minLength": 1
+    },
+    "continuation_allowed": {
+      "type": "boolean",
+      "description": "True when the full control chain permits the stage to continue; false otherwise."
+    },
+    "blocking_layer": {
+      "type": "string",
+      "description": "Layer that blocked continuation, or 'none' when allowed.",
+      "enum": ["none", "enforcement", "gating", "orchestration"]
+    },
+    "primary_reason_code": {
+      "type": "string",
+      "description": "Machine-readable code identifying the primary reason for the control-chain decision.",
+      "enum": [
+        "control_chain_continue",
+        "control_chain_continue_with_warning",
+        "control_chain_blocked_by_gating",
+        "control_chain_blocked_by_missing_gating",
+        "control_chain_blocked_by_malformed_input",
+        "control_chain_blocked_by_inconsistent_state"
+      ]
+    },
+    "traceability_integrity_sli": {
+      "type": ["number", "null"],
+      "description": "The traceability_integrity SLI value. Null when not determinable.",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "lineage_validation_mode": {
+      "type": "string",
+      "description": "Lineage validation mode from the enforcement step.",
+      "minLength": 1
+    },
+    "lineage_defaulted": {
+      "type": ["boolean", "null"],
+      "description": "True when lineage fields were populated via fail-safe defaults. Null when not determinable."
+    },
+    "lineage_valid": {
+      "type": ["boolean", "null"],
+      "description": "Whether the artifact lineage was validated without errors. Null when not determinable."
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Human-readable warning messages accumulated during control-chain evaluation.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "Human-readable error messages accumulated during control-chain evaluation.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "Machine-readable recommended action derived from the control-chain decision.",
+      "enum": [
+        "continue",
+        "continue_with_monitoring",
+        "stop_and_review",
+        "stop_and_repair_lineage",
+        "stop_and_rerun_with_registry",
+        "stop_and_escalate"
+      ]
+    },
+    "evaluated_at": {
+      "type": "string",
+      "description": "ISO 8601 date-time when this control-chain decision was generated.",
+      "format": "date-time"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Schema/contract version for this artifact.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "stage_source": {
+      "type": "string",
+      "description": "Whether the stage was taken from the artifact ('original') or overridden by the caller ('override').",
+      "enum": ["original", "override"]
+    }
+  }
+}

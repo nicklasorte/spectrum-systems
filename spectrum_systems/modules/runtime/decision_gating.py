@@ -211,15 +211,17 @@ _FALLBACK_STAGE_POSTURES: Dict[str, Dict[str, bool]] = {
 # ---------------------------------------------------------------------------
 
 _GATING_RULES_CACHE: Optional[Dict[str, Any]] = None
+_GATING_CONFIG_FALLBACK_USED: bool = False
 
 
 def _load_gating_rules() -> Dict[str, Any]:
     """Load and cache gating rules from the governed JSON config file.
 
     Falls back to built-in posture map on any load/validation error so the
-    system never fails to gate.
+    system never fails to gate.  Sets :data:`_GATING_CONFIG_FALLBACK_USED` to
+    ``True`` when the fallback is used (BN.4 I.2: fallback visibility).
     """
-    global _GATING_RULES_CACHE
+    global _GATING_RULES_CACHE, _GATING_CONFIG_FALLBACK_USED
     if _GATING_RULES_CACHE is not None:
         return _GATING_RULES_CACHE
 
@@ -228,6 +230,7 @@ def _load_gating_rules() -> Dict[str, Any]:
         _GATING_RULES_CACHE = rules_data
         return _GATING_RULES_CACHE
     except Exception:  # noqa: BLE001
+        _GATING_CONFIG_FALLBACK_USED = True
         return {"stages": _FALLBACK_STAGE_POSTURES}
 
 
@@ -672,6 +675,13 @@ def _run_slo_gating_inner(
     # Collect accumulated warnings / errors
     acc_warnings: List[str] = list(norm.get("warnings") or [])
     acc_errors: List[str] = list(validation_errors)
+
+    # Add a warning if the gating config fallback was used (BN.4 I.2 fix)
+    if _GATING_CONFIG_FALLBACK_USED:
+        acc_warnings.append(
+            "Gating rules config could not be loaded; built-in fallback postures are in use. "
+            f"Verify that {_GATING_RULES_PATH} is present and valid."
+        )
 
     # Add a warning if stage is unknown (but don't block on it)
     if not posture["stage_known"] and effective_stage is not None:
