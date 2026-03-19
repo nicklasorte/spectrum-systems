@@ -59,7 +59,25 @@
           "description": "Fraction of evidence items traceable back to BE/BF source artifacts.",
           "minimum": 0.0,
           "maximum": 1.0
+        },
+        "traceability_integrity": {
+          "type": "number",
+          "description": "Lineage integrity SLI — 1.0 when all artifact lineage chains are valid, 0.0 when any lineage error is detected.",
+          "minimum": 0.0,
+          "maximum": 1.0
         }
+      }
+    },
+    "lineage_valid": {
+      "type": "boolean",
+      "description": "Whether the artifact lineage chain for this SLO evaluation has been validated without errors."
+    },
+    "parent_artifact_ids": {
+      "type": "array",
+      "description": "IDs of parent artifacts (decision and synthesis) that drove this SLO evaluation.",
+      "items": {
+        "type": "string",
+        "minLength": 1
       }
     },
     "violations": {
@@ -73,7 +91,7 @@
           "sli": {
             "type": "string",
             "description": "Which SLI triggered the violation.",
-            "enum": ["completeness", "timeliness", "traceability"]
+            "enum": ["completeness", "timeliness", "traceability", "traceability_integrity"]
           },
           "severity": {
             "type": "string",

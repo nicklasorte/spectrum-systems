@@ -5,8 +5,10 @@ Provides the runtime compatibility enforcement layer (Prompt BC), the
 run-bundle contract hardening layer (Prompt BD), the run output
 normalization and evaluation layer (Prompt BE), the cross-run
 intelligence and anomaly detection layer (Prompt BF), the working
-paper evidence pack synthesis layer (Prompt BG), and the SLO control
-layer (Prompt BR) for validating execution bundles and their outputs.
+paper evidence pack synthesis layer (Prompt BG), the SLO control
+layer (Prompt BR) for validating execution bundles and their outputs,
+and the artifact lineage system (Prompt BS) for full pipeline
+traceability.
 
 Every validation produces a deterministic decision artifact that is
 persisted and auditable.
@@ -30,6 +32,9 @@ working_paper_synthesis
 slo_control
     SLO evaluation, error budget computation, and proceed/block
     determination across BE, BF, and BG outputs (BR).
+artifact_lineage
+    Strict deterministic lineage system connecting all pipeline artifacts
+    with full traceability and integrity enforcement (BS).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -118,12 +123,28 @@ from spectrum_systems.modules.runtime.slo_control import (
     compute_error_budget,
     compute_slo_status,
     compute_timeliness_sli,
+    compute_traceability_integrity_sli,
     compute_traceability_sli,
     determine_allowed_to_proceed,
     load_inputs,
     run_slo_control,
     validate_inputs_against_schema,
     validate_output_against_schema,
+)
+from spectrum_systems.modules.runtime.artifact_lineage import (
+    ARTIFACT_TYPES,
+    build_full_lineage_graph,
+    compute_lineage_depth,
+    compute_root_artifacts,
+    create_artifact_metadata,
+    detect_lineage_gaps,
+    enforce_no_orphans,
+    link_artifacts,
+    trace_to_leaves,
+    trace_to_root,
+    validate_against_schema as validate_lineage_against_schema,
+    validate_full_registry,
+    validate_lineage_chain,
 )
 
 __all__ = [
@@ -207,6 +228,7 @@ __all__ = [
     "compute_completeness_sli",
     "compute_timeliness_sli",
     "compute_traceability_sli",
+    "compute_traceability_integrity_sli",
     "classify_violation",
     "compute_slo_status",
     "compute_error_budget",
@@ -214,4 +236,18 @@ __all__ = [
     "build_slo_evaluation_artifact",
     "validate_output_against_schema",
     "run_slo_control",
+    # BS — Artifact Lineage System
+    "ARTIFACT_TYPES",
+    "create_artifact_metadata",
+    "link_artifacts",
+    "compute_lineage_depth",
+    "compute_root_artifacts",
+    "validate_lineage_chain",
+    "build_full_lineage_graph",
+    "trace_to_root",
+    "trace_to_leaves",
+    "detect_lineage_gaps",
+    "enforce_no_orphans",
+    "validate_lineage_against_schema",
+    "validate_full_registry",
 ]

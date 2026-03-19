@@ -388,6 +388,46 @@ def compute_traceability_sli(loaded: Dict[str, Any]) -> float:
     return round(max(0.0, min(1.0, base_score)), 4)
 
 
+def compute_traceability_integrity_sli(
+    lineage_registry: Optional[Dict[str, Any]] = None,
+) -> Tuple[float, bool, List[str]]:
+    """Compute the traceability integrity SLI from a lineage registry.
+
+    This SLI measures whether the artifact lineage chain for this SLO
+    evaluation is structurally valid.  A value of 1.0 means all lineage
+    checks passed; 0.0 means at least one lineage error was detected.
+
+    Parameters
+    ----------
+    lineage_registry:
+        Optional dict mapping artifact_id → artifact metadata.  When
+        ``None`` or empty the SLI defaults to 1.0 (lineage not assessed).
+
+    Returns
+    -------
+    Tuple[float, bool, List[str]]
+        (sli_value, lineage_valid, lineage_errors)
+    """
+    if not lineage_registry:
+        return (1.0, True, [])
+
+    try:
+        from spectrum_systems.modules.runtime.artifact_lineage import validate_full_registry
+
+        result = validate_full_registry(lineage_registry)
+        if result["valid"]:
+            return (1.0, True, [])
+
+        # Collect all errors from all artifacts
+        all_errors: List[str] = []
+        for aid_result in result["artifact_results"].values():
+            all_errors.extend(aid_result.get("errors", []))
+
+        return (0.0, False, all_errors)
+    except Exception as exc:  # noqa: BLE001
+        return (0.0, False, [f"Lineage validation error: {exc}"])
+
+
 # ---------------------------------------------------------------------------
 # Classification and status
 # ---------------------------------------------------------------------------
@@ -512,6 +552,8 @@ def build_slo_evaluation_artifact(
     error_budget: Dict[str, float],
     allowed_to_proceed: bool,
     created_at: Optional[str] = None,
+    lineage_valid: Optional[bool] = None,
+    parent_artifact_ids: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Assemble the governed SLO evaluation artifact dict.
 
@@ -531,6 +573,12 @@ def build_slo_evaluation_artifact(
         Whether downstream execution is permitted.
     created_at:
         ISO 8601 timestamp string.  Defaults to the current UTC time.
+    lineage_valid:
+        Optional boolean indicating whether the artifact lineage chain is
+        valid.  Included in the artifact when provided.
+    parent_artifact_ids:
+        Optional list of parent artifact IDs (decision + synthesis) that
+        drove this SLO evaluation.  Included in the artifact when provided.
 
     Returns
     -------
@@ -544,16 +592,20 @@ def build_slo_evaluation_artifact(
     bf_path = loaded.get("bf_path")
     bg_path = loaded.get("bg_path")
 
-    return {
+    slis_out: Dict[str, float] = {
+        "completeness": slis.get("completeness", 0.0),
+        "timeliness": slis.get("timeliness", 0.0),
+        "traceability": slis.get("traceability", 0.0),
+    }
+    if "traceability_integrity" in slis:
+        slis_out["traceability_integrity"] = slis["traceability_integrity"]
+
+    artifact: Dict[str, Any] = {
         "artifact_id": art_id,
         "evaluation_id": eval_id,
         "slo_status": slo_status,
         "allowed_to_proceed": allowed_to_proceed,
-        "slis": {
-            "completeness": slis.get("completeness", 0.0),
-            "timeliness": slis.get("timeliness", 0.0),
-            "traceability": slis.get("traceability", 0.0),
-        },
+        "slis": slis_out,
         "violations": violations,
         "error_budget": error_budget,
         "inputs": {
@@ -563,6 +615,13 @@ def build_slo_evaluation_artifact(
         },
         "created_at": ts,
     }
+
+    if lineage_valid is not None:
+        artifact["lineage_valid"] = lineage_valid
+    if parent_artifact_ids is not None:
+        artifact["parent_artifact_ids"] = list(parent_artifact_ids)
+
+    return artifact
 
 
 def validate_output_against_schema(artifact: Dict[str, Any]) -> List[str]:
@@ -592,6 +651,8 @@ def run_slo_control(
     bf_input: Optional[str] = None,
     bg_input: Optional[str] = None,
     created_at: Optional[str] = None,
+    lineage_registry: Optional[Dict[str, Any]] = None,
+    parent_artifact_ids: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Run the full SLO control evaluation pipeline.
 
@@ -605,6 +666,13 @@ def run_slo_control(
         Path to the BG (working_paper_evidence_pack) artifact, or ``None``.
     created_at:
         Optional ISO 8601 timestamp override (useful for deterministic tests).
+    lineage_registry:
+        Optional dict mapping artifact_id → artifact metadata for lineage
+        integrity validation.  When provided, a ``traceability_integrity``
+        SLI is computed and included in the artifact.
+    parent_artifact_ids:
+        Optional list of parent artifact IDs (decision + synthesis) that
+        drove this SLO evaluation.  Included in the artifact lineage metadata.
 
     Returns
     -------
@@ -614,6 +682,8 @@ def run_slo_control(
         ``allowed_to_proceed`` – boolean
         ``load_errors``       – list of load/validation errors
         ``schema_errors``     – list of schema validation errors
+        ``lineage_valid``     – boolean lineage validity flag
+        ``lineage_errors``    – list of lineage validation errors
     """
     # 1. Load inputs
     loaded = load_inputs(be_inputs, bf_input, bg_input)
@@ -625,10 +695,14 @@ def run_slo_control(
     completeness = compute_completeness_sli(loaded)
     timeliness = compute_timeliness_sli(loaded)
     traceability = compute_traceability_sli(loaded)
+    ti_value, lineage_valid, lineage_errors = compute_traceability_integrity_sli(
+        lineage_registry
+    )
     slis: Dict[str, float] = {
         "completeness": completeness,
         "timeliness": timeliness,
         "traceability": traceability,
+        "traceability_integrity": ti_value,
     }
 
     # 4. Classify violations
@@ -656,6 +730,8 @@ def run_slo_control(
         error_budget=error_budget,
         allowed_to_proceed=allowed,
         created_at=created_at,
+        lineage_valid=lineage_valid,
+        parent_artifact_ids=parent_artifact_ids,
     )
 
     # 9. Validate output artifact against schema
@@ -667,4 +743,6 @@ def run_slo_control(
         "allowed_to_proceed": allowed,
         "load_errors": loaded.get("load_errors", []),
         "schema_errors": schema_errors + out_errors,
+        "lineage_valid": lineage_valid,
+        "lineage_errors": lineage_errors,
     }
