@@ -1,0 +1,27 @@
+SPECTRUM COORDINATION SESSION — 5.9 GHz V2X Band
+Date: 2026-01-15
+Attendees: Harriet Stone (Chair), Wei Zhang (Industry), Piotr Kaminski (Regulator)
+
+--- TRANSCRIPT BEGIN ---
+
+Harriet Stone: Let's start with the coexistence framework outcome. We have agreed to adopt a dynamic channel access protocol for the 5.9 GHz V2X band.
+
+Wei Zhang: Confirmed. Dynamic channel access protocol — that's the right call for V2X coexistence.
+
+Piotr Kaminski: Agreed. Dynamic protocol adopted.
+
+Harriet Stone: On the interference floor: we are setting it at -103 dBm/MHz for V2X operations.
+
+Wei Zhang: -103 dBm/MHz interference threshold for V2X. Confirmed.
+
+Piotr Kaminski: -103 dBm/MHz is the accepted standard.
+
+Harriet Stone: Now, the reference minutes that were circulated before this meeting stated the threshold was -100 dBm/MHz and the channel access was TDMA-fixed.
+
+Wei Zhang: That document was wrong. We changed both of those in the last session.
+
+Piotr Kaminski: The pre-meeting minutes are incorrect. Today's decisions supersede them.
+
+Harriet Stone: Correct. For the record: dynamic channel access at -103 dBm/MHz. The pre-circulated minutes were based on a superseded draft.
+
+--- TRANSCRIPT END ---

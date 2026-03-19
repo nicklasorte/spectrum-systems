@@ -1,0 +1,49 @@
+JOINT TECHNICAL SESSION — SPECTRUM REALLOCATION
+Date: 2026-03-01
+Attendees: Grace Liu (Chair), Omar Ibrahimovic (DOD), Svetlana Morse (FCC), Derek Tan (Industry A), Yuki Hara (Industry B)
+
+--- TRANSCRIPT BEGIN ---
+
+Grace Liu: Let's resolve the 600 MHz reallocation first.
+
+Omar Ibrahimovic: DOD agrees the 600 MHz reallocation can proceed but the transition period must be 36 months minimum.
+
+Svetlana Morse: FCC position is 24 months. We have statutory obligations.
+
+Grace Liu: We will adopt 24 months for the 600 MHz transition period.
+
+Omar Ibrahimovic: DOD does not agree to that. 36 months.
+
+Grace Liu: For the record: 24 months is the adopted transition period for 600 MHz.
+
+Svetlana Morse: On the 3.7 GHz band: the C-band transition is on a separate track. Mid-band auction proceeds on schedule.
+
+Derek Tan: Industry A is focused on the 3.45 GHz band. The recent test results show a 7 dB interference margin improvement over the previous design.
+
+Yuki Hara: Industry B is primarily concerned about the 900 MHz IoT band. We have a completely different set of concerns than the others at this table.
+
+Grace Liu: Let's try to stay on the 600 MHz item.
+
+Yuki Hara: Right but we also need to resolve 900 MHz today if possible.
+
+Derek Tan: And I still have the 3.45 GHz question.
+
+Grace Liu: Okay let's try to handle all three.
+
+Omar Ibrahimovic: Back to 600 MHz: I want to formally note DOD's objection to 24 months. We require 36 months.
+
+Grace Liu: Noted. The decision stands at 24 months. DOD objection is on record.
+
+Svetlana Morse: On 900 MHz IoT: FCC has no current proceeding. That cannot be decided today.
+
+Yuki Hara: Then who decides it?
+
+Svetlana Morse: That goes to the next regulatory cycle. Not this body.
+
+Grace Liu: On 3.45 GHz: that also falls outside today's remit. Derek, please submit a formal request for a separate working session.
+
+Derek Tan: Understood.
+
+Grace Liu: So the only decision from today is: 600 MHz transition period is 24 months, with DOD objection noted.
+
+--- TRANSCRIPT END ---

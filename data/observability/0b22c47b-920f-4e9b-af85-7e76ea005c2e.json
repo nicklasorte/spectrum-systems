@@ -1,0 +1,30 @@
+{
+  "record_id": "0b22c47b-920f-4e9b-af85-7e76ea005c2e",
+  "timestamp": "2026-03-19T00:55:34.862208+00:00",
+  "context": {
+    "artifact_id": "adv_005",
+    "artifact_type": "evaluation_result",
+    "pipeline_stage": "validate",
+    "case_id": "adv_005"
+  },
+  "pass_info": {
+    "pass_id": "2e0ade0e-1f94-4a00-a00b-759fecfc905f",
+    "pass_type": "eval_summary"
+  },
+  "metrics": {
+    "structural_score": 1.0,
+    "semantic_score": 1.0,
+    "grounding_score": 1.0,
+    "latency_ms": 0
+  },
+  "flags": {
+    "schema_valid": true,
+    "grounding_passed": true,
+    "regression_passed": true,
+    "human_disagrees": false
+  },
+  "error_summary": {
+    "error_types": [],
+    "failure_count": 0
+  }
+}

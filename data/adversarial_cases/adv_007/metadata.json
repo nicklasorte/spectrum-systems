@@ -1,0 +1,11 @@
+{
+  "case_id": "adv_007",
+  "adversarial_type": "sparse_content",
+  "expected_difficulty": "easy",
+  "domain": "unknown",
+  "expected_failure_modes": [
+    "no_decisions_extracted",
+    "structural_failure"
+  ],
+  "notes": "Extreme edge case: transcript is a single word. System should not crash and must gracefully produce a zero-decision result."
+}

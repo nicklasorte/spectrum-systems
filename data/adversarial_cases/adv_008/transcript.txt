@@ -1,0 +1,43 @@
+SPECTRUM ALLOCATION — 28 GHz mmWave Coordination
+Date: 2026-02-18
+Attendees: Ben Zhao (Chair), Elena Novak (DOD), Farouk Diallo (Regulator)
+
+--- TRANSCRIPT BEGIN ---
+
+Ben Zhao: The coordination package for the 28 GHz band must be filed by March 1st. That is the formal deadline.
+
+Elena Novak: Confirmed. DOD will have inputs to the coordination package by March 1st.
+
+Farouk Diallo: Agreed. The filing deadline is March 1st.
+
+Ben Zhao: The interference protection threshold for the 28 GHz band is -94 dBm/MHz.
+
+Elena Novak: DOD accepts the -94 dBm/MHz threshold for 28 GHz operations.
+
+Farouk Diallo: The interference threshold is set at -94 dBm/MHz.
+
+Ben Zhao: The coordination zone radius for the 28 GHz band is 15 km from each licensed base station.
+
+Elena Novak: Agreed. 15 km coordination zone.
+
+Farouk Diallo: 15 km coordination zone confirmed.
+
+Ben Zhao: And the guard band between the 28 GHz licensed block and the adjacent federal allocation is 400 MHz.
+
+Elena Novak: 400 MHz guard band — that is workable for our systems.
+
+Farouk Diallo: 400 MHz guard band confirmed.
+
+Ben Zhao: Good. To be absolutely clear: March 1st deadline, -94 dBm/MHz threshold, 15 km coordination zone, 400 MHz guard band.
+
+Elena Novak: Yes. All confirmed. March 1st. -94 dBm/MHz. 15 km. 400 MHz.
+
+Farouk Diallo: Confirmed. March 1st filing. -94 dBm/MHz limit. 15 km zone. 400 MHz guard.
+
+Ben Zhao: And for the record once more: the coordination filing is due March 1st. The threshold is negative 94 dBm per MHz. The zone is 15 kilometers. The guard band is four hundred megahertz.
+
+Elena Novak: We are all aligned. March 1. Minus 94. Fifteen kilometers. Four hundred megahertz.
+
+Farouk Diallo: Correct. March 1. -94. 15 km. 400 MHz. All agreed.
+
+--- TRANSCRIPT END ---

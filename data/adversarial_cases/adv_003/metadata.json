@@ -1,0 +1,12 @@
+{
+  "case_id": "adv_003",
+  "adversarial_type": "ambiguous_language",
+  "expected_difficulty": "hard",
+  "domain": "700mhz",
+  "expected_failure_modes": [
+    "no_decisions_extracted",
+    "low_confidence_output",
+    "inconsistent_grounding"
+  ],
+  "notes": "Every statement uses hedging language: might, could, possibly, consider, potentially. No firm decision is ever stated. System should not extract any decisions as confirmed; if it does, grounding will fail."
+}

@@ -1,0 +1,10 @@
+{
+  "case_id": "adv_009",
+  "adversarial_type": "overconfident_reference_minutes",
+  "expected_difficulty": "hard",
+  "domain": "5.9ghz",
+  "expected_failure_modes": [
+    "inconsistent_grounding"
+  ],
+  "notes": "Reference minutes are deliberately wrong (-100 dBm/MHz, TDMA-fixed) while the transcript correctly states -103 dBm/MHz and dynamic protocol. Grounding against reference will fail. Tests whether system blindly trusts reference over transcript."
+}

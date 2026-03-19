@@ -1,0 +1,22 @@
+{
+  "decisions": [
+    {
+      "id": "ref_adv012_d1",
+      "text": "Interference threshold set at -107 dBm/MHz for 4.9 GHz public safety band.",
+      "agreed": true
+    },
+    {
+      "id": "ref_adv012_d2",
+      "text": "Filing deadline confirmed as February 15th.",
+      "agreed": true
+    },
+    {
+      "id": "ref_adv012_d3",
+      "text": "Guard band finalized at 8 MHz for 4.9 GHz band.",
+      "agreed": true,
+      "note": "DELIBERATELY WRONG — guard band was explicitly left TBD in the transcript. These reference minutes fabricate a guard band decision that was never made."
+    }
+  ],
+  "action_items": [],
+  "note": "Reference minutes are overconfident and include a fabricated guard band decision. System that grounds against these minutes without cross-checking transcript will incorrectly validate a false decision."
+}

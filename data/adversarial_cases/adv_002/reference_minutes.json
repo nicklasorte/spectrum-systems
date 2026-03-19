@@ -1,0 +1,16 @@
+{
+  "decisions": [
+    {
+      "id": "ref_adv002_d1",
+      "text": "25 MHz guard band adopted for 6 GHz coordination.",
+      "agreed": true
+    },
+    {
+      "id": "ref_adv002_d2",
+      "text": "Interference threshold set at -112 dBm/MHz pending industry review.",
+      "agreed": true
+    }
+  ],
+  "action_items": [],
+  "note": "Reference minutes intentionally capture only the final settled positions, NOT the contradictory intermediate positions. An overconfident system may extract all 3 guard band values as decisions."
+}

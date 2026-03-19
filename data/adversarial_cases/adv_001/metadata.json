@@ -1,0 +1,11 @@
+{
+  "case_id": "adv_001",
+  "adversarial_type": "noisy_transcript",
+  "expected_difficulty": "medium",
+  "domain": "3.5ghz",
+  "expected_failure_modes": [
+    "no_decisions_extracted",
+    "low_confidence_output"
+  ],
+  "notes": "Heavily off-topic chatter dominates. No concrete decisions are made. System should flag zero or near-zero decision extraction."
+}

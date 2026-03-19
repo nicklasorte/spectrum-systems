@@ -1,0 +1,39 @@
+{
+  "classification_id": "392b8924-5b9c-474c-91a4-2f15a14770ab",
+  "timestamp": "2026-03-19T00:55:34.870786+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "eval-adv_004",
+    "case_id": "adv_004",
+    "pass_type": ""
+  },
+  "classifications": [
+    {
+      "error_code": "EXTRACT.FALSE_EXTRACTION",
+      "confidence": 0.4,
+      "evidence_source": "message",
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    }
+  ],
+  "raw_inputs": {
+    "case_id": "adv_004",
+    "pass_fail": true,
+    "structural_score": 1.0,
+    "semantic_score": 1.0,
+    "grounding_score": 1.0,
+    "latency_summary": {
+      "per_pass_latency": {
+        "decision_extraction": 0,
+        "transcript_extraction": 0
+      },
+      "total_latency_ms": 0,
+      "budget_violations": []
+    },
+    "error_types": [],
+    "schema_valid": true,
+    "regression_detected": false,
+    "evaluated_at": "2026-03-19T00:55:34.861530+00:00",
+    "human_feedback_overrides": []
+  },
+  "taxonomy_version": "1.0.0"
+}

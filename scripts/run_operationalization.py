@@ -33,6 +33,13 @@ decision_real
     model).  Creates a separate regression baseline labelled
     "decision-real-YYYY-MM-DD".
 
+Adversarial mode (--adversarial)
+---------------------------------
+When ``--adversarial`` is supplied the pipeline runs on cases in
+``data/adversarial_cases/`` instead of golden cases.  Engine mode is
+forced to ``decision_real``.  Adversarial observability records are
+persisted to ``data/observability/`` alongside normal records.
+
 Outputs (all relative to repo root)
 -------------------------------------
 data/observability/          ObservabilityRecord per eval case + AO event
@@ -50,6 +57,9 @@ Usage
 
     # narrow real-engine mode
     python scripts/run_operationalization.py --engine-mode decision_real
+
+    # adversarial stress test (forces decision_real engine)
+    python scripts/run_operationalization.py --adversarial
 
 Exit codes
 ----------
@@ -82,6 +92,12 @@ if str(_ROOT) not in sys.path:
 # ---------------------------------------------------------------------------
 
 from spectrum_systems.modules.evaluation.golden_dataset import load_all_cases
+from spectrum_systems.modules.evaluation.adversarial_dataset import (
+    load_all_adversarial_cases,
+    to_golden_case,
+    AdversarialCase,
+    AdversarialDataset,
+)
 from spectrum_systems.modules.evaluation.eval_runner import EvalRunner, EvalResult
 from spectrum_systems.modules.evaluation.grounding import GroundingVerifier
 from spectrum_systems.modules.evaluation.regression import RegressionHarness
@@ -125,6 +141,7 @@ from spectrum_systems.modules.feedback.feedback_ingest import create_feedback_fr
 # ---------------------------------------------------------------------------
 
 _GOLDEN_CASES_DIR = _ROOT / "data" / "golden_cases"
+_ADVERSARIAL_CASES_DIR = _ROOT / "data" / "adversarial_cases"
 _OBSERVABILITY_DIR = _ROOT / "data" / "observability"
 _REGRESSION_BASELINES_DIR = _ROOT / "data" / "regression_baselines"
 _ERROR_CLASSIFICATIONS_DIR = _ROOT / "data" / "error_classifications"
@@ -637,6 +654,213 @@ def stage_ao(eval_results: List[EvalResult], engine_mode: str = _ENGINE_MODE_STU
 
 
 # ---------------------------------------------------------------------------
+# Adversarial failure flag computation (AP — adversarial extension)
+# ---------------------------------------------------------------------------
+
+_LOW_CONFIDENCE_THRESHOLD = 0.3
+_LOW_GROUNDING_THRESHOLD = 0.5
+
+
+def _compute_adversarial_failure_flags(
+    eval_result: EvalResult,
+    adv_case: "AdversarialCase",
+) -> Dict[str, Any]:
+    """Derive structured failure flags from an adversarial EvalResult.
+
+    These flags capture the *observed* system behaviour for this case,
+    independent of the expected failure modes declared in metadata.
+
+    Parameters
+    ----------
+    eval_result:
+        Result produced by EvalRunner for this adversarial case.
+    adv_case:
+        Original adversarial case metadata.
+
+    Returns
+    -------
+    dict
+        Contains:
+
+        ``case_id``
+            Case identifier.
+        ``adversarial_type``
+            Declared adversarial type from metadata.
+        ``pass_results``
+            Pass results from the pass chain record (may be empty list).
+        ``failure_flags``
+            Dict of boolean flags describing observed failures.
+        ``gating_decision_reason``
+            Human-readable AZ gating rationale.
+        ``promotion_recommendation``
+            ``"promote"`` | ``"hold"`` | ``"reject"``
+        ``gating_flags``
+            List of string flag names that triggered the gating outcome.
+    """
+    pass_chain = eval_result.pass_chain_record or {}
+    pass_results = pass_chain.get("pass_results", [])
+
+    # Extract decisions from pass chain
+    decisions: List[Any] = []
+    for pr in pass_results:
+        raw_out = pr.get("_raw_output", {}) or {}
+        decisions.extend(raw_out.get("decisions", []))
+        decisions.extend(raw_out.get("action_items", []))
+
+    # Compute failure flags
+    no_decisions_extracted = len(decisions) == 0
+    low_confidence_output = (
+        eval_result.structural_score < _LOW_CONFIDENCE_THRESHOLD
+        and eval_result.semantic_score < _LOW_CONFIDENCE_THRESHOLD
+    )
+    inconsistent_grounding = eval_result.grounding_score < _LOW_GROUNDING_THRESHOLD
+    structural_failure = not eval_result.schema_valid or not pass_results
+
+    # Duplicate decisions: check for near-identical decision texts
+    decision_texts = []
+    for d in decisions:
+        if isinstance(d, dict):
+            text = d.get("text", d.get("description", ""))
+        else:
+            text = str(d)
+        decision_texts.append(text.strip().lower())
+
+    seen: set = set()
+    duplicate_count = 0
+    for text in decision_texts:
+        if text in seen:
+            duplicate_count += 1
+        seen.add(text)
+    duplicate_decisions = duplicate_count > 0
+
+    failure_flags: Dict[str, bool] = {
+        "no_decisions_extracted": no_decisions_extracted,
+        "duplicate_decisions": duplicate_decisions,
+        "low_confidence_output": low_confidence_output,
+        "inconsistent_grounding": inconsistent_grounding,
+        "structural_failure": structural_failure,
+    }
+
+    # AZ gating: fail-closed for adversarial runs
+    # Promote only if no serious flags are raised
+    triggered_flags = [name for name, value in failure_flags.items() if value]
+
+    if structural_failure or no_decisions_extracted:
+        promotion_recommendation = "reject"
+        gating_decision_reason = (
+            f"Rejected: structural failure or zero decision extraction "
+            f"(flags: {triggered_flags})."
+        )
+    elif inconsistent_grounding or low_confidence_output:
+        promotion_recommendation = "hold"
+        gating_decision_reason = (
+            f"Hold: grounding or confidence threshold not met "
+            f"(flags: {triggered_flags})."
+        )
+    elif duplicate_decisions:
+        promotion_recommendation = "hold"
+        gating_decision_reason = (
+            f"Hold: duplicate decisions detected "
+            f"(flags: {triggered_flags})."
+        )
+    else:
+        promotion_recommendation = "promote"
+        gating_decision_reason = "No adversarial failure flags triggered."
+
+    return {
+        "case_id": adv_case.case_id,
+        "adversarial_type": adv_case.adversarial_type,
+        "pass_results": pass_results,
+        "failure_flags": failure_flags,
+        "gating_decision_reason": gating_decision_reason,
+        "promotion_recommendation": promotion_recommendation,
+        "gating_flags": triggered_flags,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Stage AN + AP — Adversarial variant
+# ---------------------------------------------------------------------------
+
+
+def stage_an_ap_adversarial(
+    adv_dataset: "AdversarialDataset",
+) -> tuple:
+    """Run evaluation on adversarial cases and emit observability records.
+
+    Always uses the ``decision_real`` engine so the real extraction path
+    is exercised on adversarial inputs.
+
+    Parameters
+    ----------
+    adv_dataset:
+        Loaded adversarial dataset.
+
+    Returns
+    -------
+    tuple[List[EvalResult], List[ObservabilityRecord], List[Dict]]
+        Eval results, observability records, and adversarial failure dicts.
+    """
+    _section("AN + AP  |  Adversarial Evaluation + Observability")
+    _info(f"Engine mode: {_ENGINE_MODE_DECISION_REAL} (forced for adversarial run)")
+    _info(f"Loaded {len(adv_dataset)} adversarial case(s) from {_ADVERSARIAL_CASES_DIR.relative_to(_ROOT)}")
+
+    runner = _build_eval_runner(engine_mode=_ENGINE_MODE_DECISION_REAL)
+    metrics_store = MetricsStore(store_dir=_OBSERVABILITY_DIR)
+
+    eval_results: List[EvalResult] = []
+    obs_records: List[ObservabilityRecord] = []
+    adversarial_records: List[Dict[str, Any]] = []
+
+    for adv_case in adv_dataset.cases:
+        golden = to_golden_case(adv_case)
+        try:
+            res = runner.run_case(golden)
+        except Exception as exc:  # noqa: BLE001
+            _warn(f"Engine raised exception for {adv_case.case_id}: {exc}")
+            continue
+
+        eval_results.append(res)
+        status = "PASS" if res.pass_fail else "FAIL"
+
+        # AP — emit adversarial observability record
+        try:
+            obs = ObservabilityRecord.from_eval_result(res)
+            metrics_store.save(obs)
+            obs_records.append(obs)
+        except Exception as exc:  # noqa: BLE001
+            _warn(f"Could not save observability record for {adv_case.case_id}: {exc}")
+
+        # AP extension — compute adversarial failure flags
+        adv_record = _compute_adversarial_failure_flags(res, adv_case)
+        adversarial_records.append(adv_record)
+
+        _ok(
+            f"[{status}] {adv_case.case_id} ({adv_case.adversarial_type})  "
+            f"struct={res.structural_score:.2f}  sem={res.semantic_score:.2f}  "
+            f"→ {adv_record['promotion_recommendation'].upper()}"
+        )
+        flags_triggered = adv_record["gating_flags"]
+        if flags_triggered:
+            _info(f"         flags: {flags_triggered}")
+
+    # Persist adversarial records to data/observability/
+    adv_out_path = _OBSERVABILITY_DIR / "adversarial_run.json"
+    try:
+        with adv_out_path.open("w", encoding="utf-8") as fh:
+            json.dump(adversarial_records, fh, indent=2)
+        _ok(f"Adversarial records → {adv_out_path.relative_to(_ROOT)}")
+    except OSError as exc:
+        _warn(f"Could not write adversarial_run.json: {exc}")
+
+    _info(
+        f"Adversarial run: {len(eval_results)} case(s) evaluated, "
+        f"{len(obs_records)} observability record(s) saved"
+    )
+    return eval_results, obs_records, adversarial_records
+
+
+# ---------------------------------------------------------------------------
 # Evidence summary
 # ---------------------------------------------------------------------------
 
@@ -645,6 +869,36 @@ def _count_files(directory: Path) -> int:
     if not directory.exists():
         return 0
     return len([p for p in directory.iterdir() if p.suffix == ".json"])
+
+
+def _print_adversarial_summary(adv_records: List[Dict[str, Any]]) -> None:
+    """Print a concise adversarial run outcome summary."""
+    _section("ADVERSARIAL RUN SUMMARY")
+
+    total = len(adv_records)
+    no_decisions = sum(1 for r in adv_records if r["failure_flags"].get("no_decisions_extracted"))
+    promotes = sum(1 for r in adv_records if r["promotion_recommendation"] == "promote")
+    holds = sum(1 for r in adv_records if r["promotion_recommendation"] == "hold")
+    rejects = sum(1 for r in adv_records if r["promotion_recommendation"] == "reject")
+
+    # Failure flag frequency
+    flag_counts: Dict[str, int] = {}
+    for r in adv_records:
+        for flag, triggered in r["failure_flags"].items():
+            if triggered:
+                flag_counts[flag] = flag_counts.get(flag, 0) + 1
+    top_flags = sorted(flag_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+
+    print(f"  total_adversarial_cases  : {total}")
+    print(f"  cases_with_no_decisions  : {no_decisions}")
+    print(f"  promote_count            : {promotes}")
+    print(f"  hold_count               : {holds}")
+    print(f"  reject_count             : {rejects}")
+    print()
+    print("  Top 3 failure modes:")
+    for flag_name, count in top_flags:
+        print(f"    {flag_name:<35}  {count:>3}")
+    print()
 
 
 def _print_evidence_summary() -> None:
@@ -694,8 +948,23 @@ def main() -> int:
             "Creates a separate regression baseline 'decision-real-YYYY-MM-DD'."
         ),
     )
+    parser.add_argument(
+        "--adversarial",
+        action="store_true",
+        default=False,
+        help=(
+            "Run full pipeline on adversarial cases from data/adversarial_cases/. "
+            "Forces engine-mode to 'decision_real'.  "
+            "Persists adversarial observability records and failure flags."
+        ),
+    )
     args = parser.parse_args()
-    engine_mode = args.engine_mode
+
+    # Adversarial mode forces decision_real engine
+    if args.adversarial:
+        engine_mode = _ENGINE_MODE_DECISION_REAL
+    else:
+        engine_mode = args.engine_mode
 
     start = time.monotonic()
     print()
@@ -703,33 +972,47 @@ def main() -> int:
     print("  Spectrum Systems — AN–AW2 Operationalization Pass")
     print(f"  {datetime.now(timezone.utc).isoformat()}")
     print(f"  engine-mode: {engine_mode}")
+    if args.adversarial:
+        print("  mode: ADVERSARIAL STRESS TEST")
     print("=" * 64)
 
     _ensure_dirs()
 
-    # Stage AN + AP
-    eval_results, obs_records = stage_an_ap(engine_mode=engine_mode)
+    if args.adversarial:
+        # Adversarial path: load adversarial cases and run through full pipeline
+        adv_dataset = load_all_adversarial_cases(_ADVERSARIAL_CASES_DIR)
+        eval_results, obs_records, adv_records = stage_an_ap_adversarial(adv_dataset)
 
-    # Stage AR
-    stage_ar(eval_results, obs_records, engine_mode=engine_mode)
+        # AR — regression baseline for adversarial run
+        stage_ar(eval_results, obs_records, engine_mode=engine_mode)
 
-    # Stage AU
-    all_clf_records = stage_au(eval_results)
+        # AU — classify errors
+        all_clf_records = stage_au(eval_results)
 
-    # Stage AV
-    clusters = stage_av(all_clf_records)
+        # AV — cluster
+        clusters = stage_av(all_clf_records)
 
-    # Stage AW0
-    valid_clusters = stage_aw0(clusters, all_clf_records)
+        # AW0 — validate clusters
+        valid_clusters = stage_aw0(clusters, all_clf_records)
 
-    # Stage AW1
-    plans = stage_aw1(valid_clusters, all_clf_records)
+        # AW1 — remediation mapping
+        plans = stage_aw1(valid_clusters, all_clf_records)
 
-    # Stage AW2
-    stage_aw2(plans)
+        # AW2 — simulation
+        stage_aw2(plans)
 
-    # Stage AO
-    stage_ao(eval_results, engine_mode=engine_mode)
+        # Print adversarial summary
+        _print_adversarial_summary(adv_records)
+    else:
+        # Normal golden-case path
+        eval_results, obs_records = stage_an_ap(engine_mode=engine_mode)
+        stage_ar(eval_results, obs_records, engine_mode=engine_mode)
+        all_clf_records = stage_au(eval_results)
+        clusters = stage_av(all_clf_records)
+        valid_clusters = stage_aw0(clusters, all_clf_records)
+        plans = stage_aw1(valid_clusters, all_clf_records)
+        stage_aw2(plans)
+        stage_ao(eval_results, engine_mode=engine_mode)
 
     # Summary
     _print_evidence_summary()

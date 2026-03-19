@@ -1,0 +1,12 @@
+{
+  "case_id": "adv_011",
+  "adversarial_type": "sparse_content",
+  "expected_difficulty": "hard",
+  "domain": "unknown",
+  "expected_failure_modes": [
+    "no_decisions_extracted",
+    "low_confidence_output",
+    "structural_failure"
+  ],
+  "notes": "One participant. One sentence. 'The threshold is confirmed' — but which threshold? No context, no value, no band. System cannot extract a meaningful decision without hallucinating. Tests refusal to fabricate."
+}

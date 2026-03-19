@@ -1,0 +1,11 @@
+{
+  "decisions": [
+    {
+      "id": "ref_adv006_d1",
+      "text": "Interference threshold for 3.5 GHz band set at -113 dBm/MHz effective immediately.",
+      "agreed": true
+    }
+  ],
+  "action_items": [],
+  "note": "Reference minutes include ONLY the one real decision. All other discussion topics (merger, auction, CapEx, etc.) are NOT decisions. Overconfident system may mine these as decisions."
+}

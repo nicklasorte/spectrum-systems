@@ -1,0 +1,658 @@
+[
+  {
+    "case_id": "adv_000",
+    "adversarial_type": "missing_decisions",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "57dbda8e-8787-4e00-96c2-fc7438c48c58",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "04790510-196f-42bf-827d-12d9ebf74fba",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_001",
+    "adversarial_type": "noisy_transcript",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "1bc5e023-f480-4e81-b4bd-ab4a760f1750",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "f1a557f3-46ad-4a01-848f-fa2c79e790f9",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_002",
+    "adversarial_type": "contradictory_decisions",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "6994b575-6405-4632-9a1b-ed30b8394ac7",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": [
+            {
+              "decision_id": "D-001",
+              "text": "The decision is 20 MHz guard band.",
+              "status": "proposed"
+            },
+            {
+              "decision_id": "D-002",
+              "text": "The decision is 30 MHz guard band.",
+              "status": "proposed"
+            },
+            {
+              "decision_id": "D-003",
+              "text": "We will adopt the FCC-recommended 25 MHz guard band.",
+              "status": "agreed"
+            },
+            {
+              "decision_id": "D-004",
+              "text": "So the decision is -112 dBm/MHz interference threshold.",
+              "status": "proposed"
+            },
+            {
+              "decision_id": "D-005",
+              "text": "Then we will proceed with -112 dBm/MHz for now and revisit after industry input is reviewed.",
+              "status": "agreed"
+            }
+          ]
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "8797b102-d56b-4a74-bd1f-621756b0ec8a",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": false,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "No adversarial failure flags triggered.",
+    "promotion_recommendation": "promote",
+    "gating_flags": []
+  },
+  {
+    "case_id": "adv_003",
+    "adversarial_type": "ambiguous_language",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "8ffeb090-81d9-4f9f-9d9d-42ccbf61e1a8",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "ddbef422-3c00-4d62-94ee-e785f041ad98",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_004",
+    "adversarial_type": "duplicate_decisions",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "d0defa52-ac14-4601-a841-e3e43b5121ab",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "f050af0d-18e4-4a8f-bb47-45174d4a7331",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_005",
+    "adversarial_type": "truncated_transcript",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "105c9f14-4be2-4b96-bd20-fa02a326bcde",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "657b6f44-93ec-42d3-85c0-355fdd9d7096",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_006",
+    "adversarial_type": "mixed_topics",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "f9d72818-7625-4451-9335-bba8f89a172c",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "b7e1677f-6ea1-454b-bd66-b7f7d4572d4f",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_007",
+    "adversarial_type": "sparse_content",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "b5090da7-6cdc-4699-95c9-ccca60f7e2a6",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "876b3a8d-a850-4b62-8e6f-a9dd8cd88dee",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_008",
+    "adversarial_type": "redundant_repetition",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "ae07c7f1-5966-4c74-b4b7-21a8a4ca59fb",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "80130e7d-1286-4097-b392-d19b6925db87",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": [
+            {
+              "action_id": "A-001",
+              "text": "DOD will have inputs to the coordination package by March 1st.",
+              "status": "open"
+            }
+          ]
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": false,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "No adversarial failure flags triggered.",
+    "promotion_recommendation": "promote",
+    "gating_flags": []
+  },
+  {
+    "case_id": "adv_009",
+    "adversarial_type": "overconfident_reference_minutes",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "ee8dc624-c030-40f9-a530-10a76825a982",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "d5c6937a-9d39-4836-9057-366fc84b515b",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_010",
+    "adversarial_type": "mixed_topics",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "73fc3388-a720-460e-97fb-091eeae64f81",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": [
+            {
+              "decision_id": "D-001",
+              "text": "We will adopt 24 months for the 600 MHz transition period.",
+              "status": "agreed"
+            }
+          ]
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "a0815b59-ec74-42b0-a250-c816a3d99f1a",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": false,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "No adversarial failure flags triggered.",
+    "promotion_recommendation": "promote",
+    "gating_flags": []
+  },
+  {
+    "case_id": "adv_011",
+    "adversarial_type": "sparse_content",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "baa3cbba-1d1f-44c5-90ee-44f3d7afd6f3",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "5cb799f1-01f5-46be-b1ec-ec129370e15c",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  },
+  {
+    "case_id": "adv_012",
+    "adversarial_type": "overconfident_reference_minutes",
+    "pass_results": [
+      {
+        "pass_type": "decision_extraction",
+        "pass_id": "9cae1704-8efd-4dec-975e-0f73f6ad10a4",
+        "pass_order": 1,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "decision_extraction_output",
+        "_raw_output": {
+          "decisions": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      },
+      {
+        "pass_type": "transcript_extraction",
+        "pass_id": "fa85fc6c-afb9-4e29-8479-9cccdf85596d",
+        "pass_order": 2,
+        "latency_ms": 0,
+        "schema_validation": {
+          "status": "passed"
+        },
+        "output_ref": "action_items_output",
+        "_raw_output": {
+          "action_items": []
+        },
+        "engine_mode": "decision_real",
+        "execution_mode": "deterministic_pattern"
+      }
+    ],
+    "failure_flags": {
+      "no_decisions_extracted": true,
+      "duplicate_decisions": false,
+      "low_confidence_output": false,
+      "inconsistent_grounding": false,
+      "structural_failure": false
+    },
+    "gating_decision_reason": "Rejected: structural failure or zero decision extraction (flags: ['no_decisions_extracted']).",
+    "promotion_recommendation": "reject",
+    "gating_flags": [
+      "no_decisions_extracted"
+    ]
+  }
+]

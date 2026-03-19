@@ -1,0 +1,10 @@
+{
+  "case_id": "adv_004",
+  "adversarial_type": "duplicate_decisions",
+  "expected_difficulty": "medium",
+  "domain": "2.4ghz",
+  "expected_failure_modes": [
+    "duplicate_decisions"
+  ],
+  "notes": "Each of the three decisions is stated 3-4 times with slightly different phrasing. A correct system deduplicates to 3 unique decisions. A broken system may extract 9-12 separate decisions."
+}
