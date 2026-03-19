@@ -1,0 +1,60 @@
+{
+  "artifact_id": "NRR-P2P-THIN-001",
+  "artifact_type": "normalized_run_result",
+  "schema_version": "1.0.0",
+  "source_bundle_id": "bundle-p2p-thin",
+  "study_type": "p2p_interference",
+  "scenario": {
+    "scenario_id": "scenario-thin",
+    "scenario_label": "P2P Thin (Partial Data)",
+    "frequency_range_mhz": { "low_mhz": 3550.0, "high_mhz": 3600.0 },
+    "assumptions_summary": "Partial data — path_loss_db not computed."
+  },
+  "metrics": {
+    "metric_set_id": "ms-p2p-thin",
+    "summary_metrics": [
+      {
+        "name": "interference_power_dbm",
+        "value": -78.5,
+        "unit": "dBm",
+        "classification": "core",
+        "source_path": "outputs/results_summary.json#metrics[0]"
+      },
+      {
+        "name": "in_ratio_db",
+        "value": 6.1,
+        "unit": "dB",
+        "classification": "core",
+        "source_path": "outputs/results_summary.json#metrics[1]"
+      }
+    ],
+    "completeness": {
+      "required_metric_count": 3,
+      "present_required_metric_count": 2,
+      "missing_required_metrics": ["path_loss_db"],
+      "status": "partial"
+    }
+  },
+  "evaluation_signals": {
+    "readiness": "limited_use",
+    "outlier_flags": [],
+    "threshold_assessments": [
+      {
+        "metric_name": "interference_power_dbm",
+        "threshold_name": "max_interference_dbm",
+        "status": "unknown",
+        "detail": "No threshold definition found in manifest."
+      }
+    ],
+    "trust_notes": ["path_loss_db missing — comparison confidence is limited."]
+  },
+  "provenance": {
+    "manifest_author": "test-author",
+    "source_case_ids": ["case-thin"],
+    "creation_context": "BG test fixture — thin partial run",
+    "rng_reference": { "mode": "fixed", "value": 42 },
+    "results_summary_source": "outputs/results_summary.json",
+    "provenance_source": "outputs/provenance.json"
+  },
+  "generated_at": "2026-03-01T13:00:00+00:00"
+}

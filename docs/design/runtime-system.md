@@ -894,3 +894,220 @@ data/cross_run_intelligence_decisions/cross_run_intelligence_decision_<timestamp
   "generated_at": "2026-03-19T10:00:00+00:00"
 }
 ```
+
+---
+
+## BG — Working Paper Evidence Pack Synthesis
+
+### Purpose
+
+BG converts the technical outputs of BE and BF into a governed evidence
+pack that is ready for downstream working-paper drafting, agency review,
+and policy follow-up. It does **not** generate polished final prose. Its
+job is to assemble trustworthy, traceable, decision-relevant evidence
+blocks so that any later drafting is grounded, auditable, and defensible.
+
+### Relationship: BC → BD → BE → BF → BG
+
+```
+BC  validates runtime environment (can this run execute here?)
+BD  validates bundle contract (is this bundle contractually valid?)
+BE  normalizes run outputs (what did this run mean; is it usable?)
+BF  compares runs (how do runs compare; what stands out across them?)
+BG  synthesizes evidence (what evidence should go into the paper,
+    what findings matter most, what caveats must be carried forward,
+    and what questions should be posed back to agencies or reviewers?)
+```
+
+BG consumes one or more BE `normalized_run_result` artifacts and,
+optionally, one BF `cross_run_comparison` artifact. It produces two
+governed output artifacts:
+
+- `working_paper_evidence_pack` — section-organised evidence blocks
+- `working_paper_synthesis_decision` — synthesis outcome and findings
+
+### Why Evidence Packs Instead of Final Prose
+
+Final prose generation requires editorial judgment, style decisions, and
+authority that should rest with human reviewers and agency staff. BG
+provides the structured, traceable layer that makes that step safe:
+
+- Every evidence statement cites a source artifact and bundle ID.
+- Confidence levels are derived from artifact readiness and completeness.
+- Caveats are explicit and reusable by any downstream drafter.
+- Follow-up questions are triggered by real evidence gaps, not boilerplate.
+
+This design prevents hallucinated content from entering working papers and
+ensures that every claim can be traced back to a governed BE or BF
+artifact.
+
+### Section Mapping Logic
+
+BG populates eight fixed sections. Sections are never fabricated; empty
+sections are marked `empty`.
+
+| Section key | Content |
+|---|---|
+| `executive_summary` | Top critical/high ranked findings only |
+| `study_objective` | Scenario summaries and declared study context |
+| `technical_findings` | Core metric observations, threshold results |
+| `comparative_results` | BF rankings and cross-run comparisons |
+| `operational_implications` | High-priority findings in decision-relevant form |
+| `limitations_and_caveats` | Completeness gaps, anomalies, mixed units, readiness limits |
+| `agency_questions` | Follow-up questions triggered by caveats/anomalies/gaps |
+| `recommended_next_steps` | Evidence-triggered bounded actions for error-severity caveats |
+
+Each section carries a `synthesis_status` of `populated`, `partial`, or
+`empty`.
+
+### Confidence Semantics
+
+| Level | Meaning |
+|---|---|
+| `high` | Evidence from a complete BE result with `ready_for_comparison`; or BF ranked results with ≥ 2 ready runs |
+| `medium` | Evidence from a `limited_use` BE/BF artifact without hard errors |
+| `low` | Evidence tied to partial completeness, anomalies, gaps, or readiness issues |
+
+### Caveat and Follow-up Question Philosophy
+
+Caveats are explicit, categorised, and carry severity levels so downstream
+drafters can decide how to handle each one:
+
+| Category | When raised |
+|---|---|
+| `data_gap` | A required metric is absent |
+| `comparability_limit` | Mixed units prevented direct comparison |
+| `anomaly` | A BF anomaly flag is present |
+| `threshold_uncertainty` | A threshold assessment is `unknown` or `not_applicable` |
+| `provenance_limit` | A run is marked `not_ready` |
+| `modeling_limit` | Reserved for modeling-specific limits |
+
+Follow-up questions are operational and evidence-triggered. They name the
+specific metric, scenario, or artifact at issue. Generic filler questions
+are not produced.
+
+Examples of targeted questions BG will generate:
+- "What additional inputs are needed to compute `path_loss_db` for bundle `bundle-001`?"
+- "How should the anomaly in `interference_power_dbm` detected in `NRR-P2P-OUTLIER-001` be evaluated against operationally acceptable bounds?"
+- "What threshold definition should govern `max_interference_dbm` for this study type?"
+
+### Operator Workflow
+
+**Step 1 — Run BE on each execution bundle:**
+```
+python scripts/run_output_evaluation.py <bundle_manifest.json>
+```
+
+**Step 2 — (Optional) Run BF to compare across runs:**
+```
+python scripts/cross_run_intelligence.py --input run1/nrr.json --input run2/nrr.json
+```
+
+**Step 3 — Run BG to synthesize evidence:**
+```
+python scripts/working_paper_synthesis.py \
+    --be-input run1/normalized_run_result.json \
+    --be-input run2/normalized_run_result.json \
+    --bf-input comparison/cross_run_comparison.json \
+    --output-dir outputs/evidence/
+```
+
+This writes `working_paper_evidence_pack.json` and
+`working_paper_synthesis_decision.json` to `outputs/evidence/`. The
+decision is also archived to `data/working_paper_synthesis_decisions/`.
+
+**Exit codes:**
+- `0` — pass: synthesis complete, no errors or warnings
+- `1` — warning: synthesis complete with warning-level findings
+- `2` — fail: missing or invalid inputs, schema failures, or error-level findings
+
+### Artifact IDs and Patterns
+
+| Artifact | ID prefix | Pattern |
+|---|---|---|
+| `working_paper_evidence_pack` | `WPE-` | `^WPE-[A-Z0-9][A-Z0-9._-]*$` |
+| `working_paper_synthesis_decision` | `WPS-` | `^WPS-[A-Z0-9][A-Z0-9._-]*$` |
+| Evidence pack | `EPK-` | `^EPK-[A-Z0-9][A-Z0-9._-]*$` |
+| Evidence item | `EVI-` | `^EVI-[A-Z0-9][A-Z0-9._-]*$` |
+| Ranked finding | `FND-` | `^FND-[A-Z0-9][A-Z0-9._-]*$` |
+| Caveat | `CAV-` | `^CAV-[A-Z0-9][A-Z0-9._-]*$` |
+| Follow-up question | `QST-` | `^QST-[A-Z0-9][A-Z0-9._-]*$` |
+
+### Example: working_paper_evidence_pack (partial)
+
+```json
+{
+  "artifact_id": "WPE-3A4B5C6D7E8F",
+  "artifact_type": "working_paper_evidence_pack",
+  "schema_version": "1.0.0",
+  "evidence_pack_id": "EPK-1A2B3C4D5E6F",
+  "study_type": "p2p_interference",
+  "source_artifacts": [
+    {
+      "artifact_type": "normalized_run_result",
+      "artifact_id": "NRR-P2P-RUN1-001",
+      "source_bundle_id": "bundle-p2p-001",
+      "path_or_reference": "run1/normalized_run_result.json"
+    },
+    {
+      "artifact_type": "cross_run_comparison",
+      "artifact_id": "CRC-BG-TEST-001",
+      "source_bundle_id": "CMP-BG-TEST-001",
+      "path_or_reference": "comparison/cross_run_comparison.json"
+    }
+  ],
+  "section_evidence": [
+    {
+      "section_key": "technical_findings",
+      "section_title": "Technical Findings",
+      "synthesis_status": "populated",
+      "evidence_items": [
+        {
+          "evidence_id": "EVI-A1B2C3D4E5F6",
+          "evidence_type": "metric_observation",
+          "statement": "Metric 'interference_power_dbm' = -85.3 dBm for scenario 'scenario-alpha' (bundle 'bundle-p2p-001').",
+          "support": {
+            "metric_name": "interference_power_dbm",
+            "value": "-85.3",
+            "unit": "dBm",
+            "comparison_context": ""
+          },
+          "confidence": "high",
+          "traceability": {
+            "source_artifact_id": "NRR-P2P-RUN1-001",
+            "source_bundle_id": "bundle-p2p-001",
+            "source_path": "outputs/results_summary.json#interference_power_dbm"
+          }
+        }
+      ]
+    }
+  ],
+  "ranked_findings": [
+    {
+      "finding_id": "FND-B2C3D4E5F6A7",
+      "priority": "high",
+      "headline": "Top-ranked scenario on interference_power_dbm",
+      "rationale": "Scenario 'scenario-alpha' ranks #1 descending on 'interference_power_dbm': value=-85.3.",
+      "supporting_evidence_ids": ["EVI-A1B2C3D4E5F6"]
+    }
+  ],
+  "caveats": [],
+  "followup_questions": [],
+  "generated_at": "2026-03-19T10:00:00+00:00"
+}
+```
+
+### Example: working_paper_synthesis_decision
+
+```json
+{
+  "artifact_type": "working_paper_synthesis_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "WPS-C3D4E5F6A7B8",
+  "evidence_pack_id": "EPK-1A2B3C4D5E6F",
+  "overall_status": "pass",
+  "failure_type": "none",
+  "findings": [],
+  "generated_at": "2026-03-19T10:00:00+00:00"
+}
+```

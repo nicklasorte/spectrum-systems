@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/working_paper_synthesis_decision.schema.json",
+  "title": "Working Paper Synthesis Decision",
+  "description": "Governed decision artifact produced by BG. Records the synthesis outcome, failure type, and actionable findings for operator and audit use.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "evidence_pack_id",
+    "overall_status",
+    "failure_type",
+    "findings",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "description": "Must equal working_paper_synthesis_decision.",
+      "const": "working_paper_synthesis_decision"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version of this schema.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "decision_id": {
+      "type": "string",
+      "description": "Unique identifier for this synthesis decision.",
+      "pattern": "^WPS-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "evidence_pack_id": {
+      "type": "string",
+      "description": "The evidence_pack_id of the evidence pack this decision covers, or empty string when no pack was produced."
+    },
+    "overall_status": {
+      "type": "string",
+      "description": "Overall synthesis status.",
+      "enum": ["pass", "warning", "fail"]
+    },
+    "failure_type": {
+      "type": "string",
+      "description": "The dominant failure type, or none when status is pass.",
+      "enum": [
+        "none",
+        "no_inputs",
+        "malformed_input",
+        "schema_invalid",
+        "mixed_study_types",
+        "insufficient_evidence",
+        "synthesis_error"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "description": "Operator-facing findings generated during synthesis.",
+      "items": {
+        "type": "object",
+        "required": ["code", "severity", "message", "artifact_path"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error"]
+          },
+          "message": { "type": "string", "minLength": 1 },
+          "artifact_path": { "type": "string" }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 date-time when this decision was generated.",
+      "format": "date-time"
+    }
+  }
+}
