@@ -329,12 +329,15 @@ def test_normalize_source_path_present():
 
 
 def test_completeness_complete():
-    required = ["interference_power_dbm", "in_ratio_db", "path_loss_db"]
-    metrics = [
-        {"name": "interference_power_dbm", "value": -85.0, "unit": "dBm", "classification": "core", "source_path": "/metrics[0]"},
-        {"name": "in_ratio_db", "value": 12.0, "unit": "dB", "classification": "core", "source_path": "/metrics[1]"},
-        {"name": "path_loss_db", "value": 140.0, "unit": "dB", "classification": "core", "source_path": "/metrics[2]"},
-    ]
+    required = get_required_metrics_for_study_type("p2p_interference")
+    rs = {
+        "metrics": [
+            {"name": "interference_power_dbm", "value": -85.0, "unit": "dBm"},
+            {"name": "in_ratio_db", "value": 12.0, "unit": "dB"},
+            {"name": "path_loss_db", "value": 140.0, "unit": "dB"},
+        ]
+    }
+    metrics = normalize_summary_metrics("p2p_interference", rs)
     result = compute_completeness(required, metrics)
     assert result["status"] == "complete"
     assert result["missing_required_metrics"] == []
@@ -342,10 +345,9 @@ def test_completeness_complete():
 
 
 def test_completeness_partial():
-    required = ["interference_power_dbm", "in_ratio_db", "path_loss_db"]
-    metrics = [
-        {"name": "interference_power_dbm", "value": -85.0, "unit": "dBm", "classification": "core", "source_path": ""},
-    ]
+    required = get_required_metrics_for_study_type("p2p_interference")
+    rs = {"metrics": [{"name": "interference_power_dbm", "value": -85.0, "unit": "dBm"}]}
+    metrics = normalize_summary_metrics("p2p_interference", rs)
     result = compute_completeness(required, metrics)
     assert result["status"] == "partial"
     assert "in_ratio_db" in result["missing_required_metrics"]
@@ -353,8 +355,8 @@ def test_completeness_partial():
 
 
 def test_completeness_insufficient():
-    required = ["interference_power_dbm", "in_ratio_db", "path_loss_db"]
-    metrics = []
+    required = get_required_metrics_for_study_type("p2p_interference")
+    metrics = normalize_summary_metrics("p2p_interference", {})
     result = compute_completeness(required, metrics)
     assert result["status"] == "insufficient"
     assert result["present_required_metric_count"] == 0
