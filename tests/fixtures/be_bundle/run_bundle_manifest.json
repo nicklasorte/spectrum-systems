@@ -1,0 +1,62 @@
+{
+  "bundle_version": "1.0.0",
+  "run_id": "run-be-integration-001",
+  "matlab_release": "R2024b",
+  "runtime_version_required": "R2024b",
+  "platform": "linux-x86_64",
+  "worker_entrypoint": "bin/run.sh",
+  "component_cache": {
+    "mcr_cache_root": "/tmp/mcr_cache",
+    "mcr_cache_size": "2GB"
+  },
+  "startup_options": {
+    "logfile": "logs/worker.log"
+  },
+  "inputs": [
+    {"path": "inputs/cases.json", "type": "case_definition", "required": true}
+  ],
+  "expected_outputs": [
+    {
+      "path": "outputs/results_summary.json",
+      "type": "results_summary_json",
+      "required": true,
+      "paper_relevant": true
+    },
+    {
+      "path": "outputs/provenance.json",
+      "type": "provenance_json",
+      "required": true,
+      "paper_relevant": false
+    },
+    {
+      "path": "logs/worker.log",
+      "type": "log_file",
+      "required": true,
+      "paper_relevant": false
+    }
+  ],
+  "provenance": {
+    "source_artifact_ids": ["artifact-be-test-001"],
+    "source_case_ids": ["case-be-001", "case-be-002"],
+    "rng_seed": 12345,
+    "manifest_author": "be-integration-test",
+    "creation_context": "Integration test for Prompt BE evaluation layer."
+  },
+  "execution_policy": {
+    "idempotency_mode": "safe_rerun",
+    "retry_allowed": false,
+    "max_retries": 0,
+    "stale_claim_timeout_hours": 1.0
+  },
+  "study_type": "p2p_interference",
+  "scenario": {
+    "scenario_id": "scenario-be-001",
+    "scenario_label": "P2P Interference Test Scenario",
+    "frequency_range_mhz": {
+      "low_mhz": 3500.0,
+      "high_mhz": 3700.0
+    },
+    "assumptions_summary": "Free-space path loss, isotropic antennas."
+  },
+  "created_at": "2024-01-15T12:00:00Z"
+}

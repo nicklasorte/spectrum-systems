@@ -1,0 +1,7 @@
+{
+  "run_id": "run-be-integration-001",
+  "source_case_ids": ["case-be-001", "case-be-002"],
+  "rng_seed": 12345,
+  "generated_by": "be-integration-test",
+  "generated_at": "2024-01-15T12:05:00Z"
+}

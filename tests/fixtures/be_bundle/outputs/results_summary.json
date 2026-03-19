@@ -1,0 +1,20 @@
+{
+  "study_type": "p2p_interference",
+  "metrics": [
+    {
+      "name": "interference_power_dbm",
+      "value": -85.3,
+      "unit": "dBm"
+    },
+    {
+      "name": "in_ratio_db",
+      "value": 12.7,
+      "unit": "dB"
+    },
+    {
+      "name": "path_loss_db",
+      "value": 142.5,
+      "unit": "dB"
+    }
+  ]
+}

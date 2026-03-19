@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/run_output_evaluation_decision.schema.json",
+  "title": "Run Output Evaluation Decision",
+  "description": "Governed decision artifact produced by BE evaluation of run outputs. Records overall pass/fail status and structured findings.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "source_bundle_id",
+    "overall_status",
+    "failure_type",
+    "findings",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "run_output_evaluation_decision"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^ROE-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "source_bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "warning", "fail"]
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "missing_output_file",
+        "malformed_json",
+        "schema_invalid",
+        "semantic_incomplete",
+        "unsupported_study_type",
+        "missing_required_metric",
+        "invalid_threshold_definition",
+        "normalization_error"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "severity", "message", "artifact_path"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error"]
+          },
+          "message": { "type": "string", "minLength": 1 },
+          "artifact_path": { "type": "string" }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

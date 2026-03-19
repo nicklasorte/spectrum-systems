@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/normalized_run_result.schema.json",
+  "title": "Normalized Run Result",
+  "description": "Governed artifact produced by BE. Converts a validated run bundle into a normalized, comparison-ready result.",
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "source_bundle_id",
+    "study_type",
+    "scenario",
+    "metrics",
+    "evaluation_signals",
+    "provenance",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Unique identifier for this normalized run result artifact.",
+      "pattern": "^NRR-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Must equal normalized_run_result.",
+      "const": "normalized_run_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version of this schema.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "source_bundle_id": {
+      "type": "string",
+      "description": "Bundle manifest identifier (run_id) of the BD-validated run bundle this artifact was produced from.",
+      "minLength": 1
+    },
+    "study_type": {
+      "type": "string",
+      "description": "The type of spectrum study this run represents.",
+      "enum": ["p2p_interference", "adjacency_analysis", "retuning_analysis", "sharing_study", "generic"]
+    },
+    "scenario": {
+      "type": "object",
+      "description": "Scenario identification and configuration.",
+      "required": ["scenario_id", "scenario_label", "frequency_range_mhz", "assumptions_summary"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario_id": { "type": "string", "minLength": 1 },
+        "scenario_label": { "type": "string", "minLength": 1 },
+        "frequency_range_mhz": {
+          "type": "object",
+          "required": ["low_mhz", "high_mhz"],
+          "additionalProperties": false,
+          "properties": {
+            "low_mhz": { "type": "number" },
+            "high_mhz": { "type": "number" }
+          }
+        },
+        "assumptions_summary": { "type": "string" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Normalized metric set.",
+      "required": ["metric_set_id", "summary_metrics", "completeness"],
+      "additionalProperties": false,
+      "properties": {
+        "metric_set_id": { "type": "string", "minLength": 1 },
+        "summary_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "value", "unit", "classification", "source_path"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "value": {},
+              "unit": { "type": "string" },
+              "classification": {
+                "type": "string",
+                "enum": ["core", "supporting", "diagnostic"]
+              },
+              "source_path": { "type": "string" }
+            }
+          }
+        },
+        "completeness": {
+          "type": "object",
+          "required": ["required_metric_count", "present_required_metric_count", "missing_required_metrics", "status"],
+          "additionalProperties": false,
+          "properties": {
+            "required_metric_count": { "type": "integer", "minimum": 0 },
+            "present_required_metric_count": { "type": "integer", "minimum": 0 },
+            "missing_required_metrics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "status": {
+              "type": "string",
+              "enum": ["complete", "partial", "insufficient"]
+            }
+          }
+        }
+      }
+    },
+    "evaluation_signals": {
+      "type": "object",
+      "description": "Evaluation signals and readiness determination.",
+      "required": ["readiness", "outlier_flags", "threshold_assessments", "trust_notes"],
+      "additionalProperties": false,
+      "properties": {
+        "readiness": {
+          "type": "string",
+          "enum": ["ready_for_comparison", "limited_use", "not_ready"]
+        },
+        "outlier_flags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["flag_type", "metric_name", "detail"],
+            "additionalProperties": false,
+            "properties": {
+              "flag_type": { "type": "string", "minLength": 1 },
+              "metric_name": { "type": "string", "minLength": 1 },
+              "detail": { "type": "string" }
+            }
+          }
+        },
+        "threshold_assessments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["metric_name", "threshold_name", "status", "detail"],
+            "additionalProperties": false,
+            "properties": {
+              "metric_name": { "type": "string", "minLength": 1 },
+              "threshold_name": { "type": "string", "minLength": 1 },
+              "status": {
+                "type": "string",
+                "enum": ["pass", "fail", "unknown", "not_applicable"]
+              },
+              "detail": { "type": "string" }
+            }
+          }
+        },
+        "trust_notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Provenance traceability from source bundle.",
+      "required": ["manifest_author", "source_case_ids", "creation_context", "rng_reference", "results_summary_source", "provenance_source"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest_author": { "type": "string", "minLength": 1 },
+        "source_case_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "creation_context": { "type": "string" },
+        "rng_reference": {
+          "type": "object",
+          "required": ["mode", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "type": "string", "minLength": 1 },
+            "value": {}
+          }
+        },
+        "results_summary_source": { "type": "string" },
+        "provenance_source": { "type": "string" }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 date-time when this artifact was generated.",
+      "format": "date-time"
+    }
+  }
+}
