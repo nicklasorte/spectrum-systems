@@ -14,4 +14,6 @@ aggregation
     grounding failure rates, and human disagreement rates.
 trends
     Run-over-run trend tracking and delta computation.
+failure_ranking
+    Failure-first ranking functions for worst cases and weak components.
 """

@@ -259,6 +259,63 @@ spectrum_systems/modules/ai_workflow/multi_pass_reasoning.py
 | `contracts/schemas/meeting_minutes/adversarial_review_output.schema.json` | Adversarial review output |
 | `contracts/schemas/meeting_minutes/synthesis_output.schema.json` | Synthesis pass output |
 
+---
+
+## BB — Failure-First Observability
+
+Prompt BB extends observability from average-first monitoring to
+failure-first triage. Averages are useful for trend tracking, but they can hide
+the specific failure pockets that create the highest operational and trust
+risk. A system that is \"usually good\" can still be unsafe if it is wrong in
+the same high-impact ways.
+
+### Why averages are misleading
+
+- Averages smooth out tail failures and collapse materially different failure
+  classes into one score.
+- A high mean structural or semantic score can co-exist with repeated
+  contradiction misses, duplicate decisions, or grounding breaks.
+- Governance decisions (promote / hold / reject) require explicit visibility
+  into worst-case behavior, not just central tendency.
+
+### Why dangerous promotes matter
+
+A dangerous promote is any promoted case that still carries meaningful failure
+signals (for example: adversarial flags, structural weakness, or unclear
+grounding). These cases are prioritized above ordinary rejects because they can
+move defects into trusted workflows.
+
+BB records and ranks:
+
+- `dangerous_promote` (boolean)
+- `dangerous_promote_reason` (human-readable reason string)
+
+### High-confidence error detection
+
+BB adds explicit false-confidence detection:
+
+- `high_confidence_error = true` when confidence is medium/high **and** the
+  gate result is hold/reject, or downstream failure is present.
+
+This isolates where the system appears certain but is wrong, which is one of
+the strongest trust-risk indicators for prompt hardening.
+
+### How BB feeds hardening and trust scoring
+
+BB report outputs (`outputs/failure_first_report.json` + archived snapshots in
+`data/observability_reports/`) include:
+
+- executive failure summary,
+- worst-case ranking,
+- top recurring failure modes,
+- weakest passes/components,
+- false-confidence zones,
+- structural health distribution.
+
+These signals are used to prioritize future prompt hardening, adversarial test
+expansion, and trust-scoring updates based on failure concentration rather than
+dashboard aesthetics.
+
 ### Pass chain execution model
 
 A pass chain is built by `build_pass_chain(task_type, context_bundle, config)`.

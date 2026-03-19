@@ -91,7 +91,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | Plan file | Item | Status |
 | --- | --- | --- |
-| *(none yet)* | — | — |
+| docs/review-actions/PLAN-BB-2026-03-19.md | Prompt BB — Failure-First Observability | Active |
 
 Update this table when plans are created or completed.
 
