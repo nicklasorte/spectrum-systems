@@ -45,3 +45,7 @@ artifacts/policy-engine-summary.md
 !tests/fixtures/**/*.docx
 !contracts/examples/**/*.pdf
 !contracts/examples/**/*.docx
+
+# Runtime decision archive files (transient operational artifacts)
+data/run_bundle_decisions/*.json
+data/run_output_evaluation_decisions/*.json
