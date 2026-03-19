@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/runtime_compatibility_decision.schema.json",
+  "title": "Runtime Compatibility Decision",
+  "description": "Deterministic BC compatibility decision produced before any execution bundle is allowed to run.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "bundle_id",
+    "created_at",
+    "compatible",
+    "system_response",
+    "failure_type",
+    "triggering_conditions",
+    "required_actions",
+    "runtime_env_snapshot",
+    "notes"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "compatible": {
+      "type": "boolean"
+    },
+    "system_response": {
+      "type": "string",
+      "enum": [
+        "allow_execution",
+        "reject_execution",
+        "require_rebuild",
+        "require_environment_update"
+      ]
+    },
+    "failure_type": {
+      "type": ["string", "null"],
+      "enum": [
+        "runtime_version_mismatch",
+        "platform_mismatch",
+        "missing_artifacts",
+        "invalid_entrypoint",
+        "cache_unavailable",
+        "manifest_invalid",
+        null
+      ]
+    },
+    "triggering_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_env_snapshot": {
+      "type": "object"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
