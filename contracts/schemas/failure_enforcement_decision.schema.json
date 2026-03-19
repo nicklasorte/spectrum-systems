@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/failure_enforcement_decision.schema.json",
+  "title": "Failure Enforcement Decision",
+  "description": "Deterministic BB+1 control decision derived from failure-first observability metrics.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "created_at",
+    "source_report_ref",
+    "promotion_allowed",
+    "system_response",
+    "incident_severity",
+    "triggering_conditions",
+    "suppressed_components",
+    "required_actions",
+    "notes"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_report_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "promotion_allowed": {
+      "type": "boolean"
+    },
+    "system_response": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "hold",
+        "reject",
+        "require_human_review",
+        "incident_flag",
+        "suppress_component"
+      ]
+    },
+    "incident_severity": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "triggering_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suppressed_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "component_health": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "component",
+          "component_health_score",
+          "suppressed_for_final_outputs"
+        ],
+        "properties": {
+          "component": {
+            "type": "string"
+          },
+          "component_health_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "suppressed_for_final_outputs": {
+            "type": "boolean"
+          },
+          "repeat_weak_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "observations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dangerous_promotes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "high_confidence_errors": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "structural_failures": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "repeated_failures": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

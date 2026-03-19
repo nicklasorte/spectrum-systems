@@ -316,6 +316,60 @@ These signals are used to prioritize future prompt hardening, adversarial test
 expansion, and trust-scoring updates based on failure concentration rather than
 dashboard aesthetics.
 
+## BB+1 — Failure Enforcement & Control Layer
+
+Detection alone is insufficient for safety-critical governance. BB identifies risky
+patterns, but BB+1 converts those signals into deterministic control behavior so
+the system can stop, downgrade, reroute, or require explicit human intervention
+before unsafe outputs are promoted.
+
+### Why BB+1 exists
+
+- BB is observability: it detects and ranks failures.
+- BB+1 is enforcement: it binds those failures to explicit responses.
+- Without BB+1, dangerous promotes can remain informational and therefore
+  operationally ineffective.
+
+### Module and contracts
+
+- Module: `spectrum_systems/modules/observability/failure_enforcement.py`
+- Decision contract: `contracts/schemas/failure_enforcement_decision.schema.json`
+- CLI: `scripts/run_failure_enforcement.py`
+- Governed storage: `data/failure_enforcement_decisions/`
+
+### Deterministic control rule table
+
+| Metric / condition | Deterministic control action |
+|---|---|
+| `dangerous_promote_count > 0` | `system_response=incident_flag`, `promotion_allowed=false` |
+| `high_confidence_error_rate > 0.05` | `system_response=require_human_review` |
+| `structural_failure_rate > 0.10` | `promotion_allowed=false`; route to `hold`/`reject` path |
+| Component repeatedly weak or low health score | Suppress component from final outputs (`suppress_component`) |
+| One failure mode dominates beyond threshold | Add priority remediation requirement |
+
+### Incident severity policy
+
+- `critical`: dangerous promotes exist and promotion was still possible before
+  BB+1 intervention.
+- `high`: high-confidence error rate is above threshold and structural failures
+  are repeated.
+- `medium`: repeated failure concentration dominates above threshold.
+- `low`: isolated failures with explicit triggers.
+- `none`: no triggering conditions.
+
+### Relationship to BB, AZ, AW1, AW2, and future trust scoring
+
+- **BB (Failure-First Observability):** produces the ranked metrics BB+1
+  consumes.
+- **AZ (Data Flywheel):** BB+1 priorities feed which failures require targeted
+  golden-set expansion.
+- **AW1 (Remediation Mapping):** BB+1 priority remediation flags define urgent
+  remediation queues.
+- **AW2 (Simulation Layer):** BB+1 decisions constrain promotion paths unless
+  simulation evidence resolves triggers.
+- **Future trust scoring:** component health scores and suppression actions
+  provide deterministic trust penalties for low-trust components.
+
 ### Pass chain execution model
 
 A pass chain is built by `build_pass_chain(task_type, context_bundle, config)`.
