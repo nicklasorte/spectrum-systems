@@ -1,0 +1,37 @@
+{
+  "remediation_id": "c9070ba5-ce59-4cb0-adc8-e11a0b30fcf6",
+  "cluster_id": "2072276a-c1ef-487e-a6ec-f9397418bc38",
+  "cluster_signature": "INPUT.BAD_TRANSCRIPT_QUALITY",
+  "taxonomy_version": "1.0.0",
+  "created_at": "2026-03-19T00:08:21.958494+00:00",
+  "mapping_status": "mapped",
+  "mapping_reasons": [
+    "rule_D: dominant INPUT.BAD_TRANSCRIPT_QUALITY with share=1.000"
+  ],
+  "dominant_error_codes": [
+    "INPUT.BAD_TRANSCRIPT_QUALITY"
+  ],
+  "remediation_targets": [
+    "transcript_preprocessing_rules"
+  ],
+  "proposed_actions": [
+    {
+      "action_id": "90dd1862-d21c-4a78-af0d-2a9b6983b873",
+      "action_type": "input_quality_rule_change",
+      "target_component": "transcript_preprocessing_rules",
+      "rationale": "Dominant error INPUT.BAD_TRANSCRIPT_QUALITY indicates poor-quality transcripts are reaching the pipeline without quality gating.",
+      "expected_benefit": "Block or flag low-quality transcripts before processing.",
+      "risk_level": "low",
+      "confidence_score": 0.75
+    }
+  ],
+  "primary_proposal_index": 0,
+  "evidence_summary": {
+    "record_count": 3,
+    "avg_cluster_confidence": 0.0,
+    "weighted_severity_score": 0.0,
+    "pass_types": [
+      "extraction"
+    ]
+  }
+}

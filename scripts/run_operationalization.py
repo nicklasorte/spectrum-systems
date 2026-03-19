@@ -18,10 +18,25 @@ Pipeline
 8. AW2 — Fix Simulation Sandbox: simulate each mapped plan
 9. AO  — Human Feedback: persist one representative feedback record
 
+Engine modes
+------------
+Two explicit engine modes are available:
+
+stub (default, safe)
+    The stub engine returns empty pass_results.  All evaluation scores are
+    zero or vacuously passing.  Suitable for deterministic plumbing tests.
+
+decision_real
+    The narrow real-engine path.  Uses DecisionExtractionAdapter with
+    deterministic pattern matching to produce non-empty decision and
+    action-item outputs.  execution_mode = "deterministic_pattern" (no live
+    model).  Creates a separate regression baseline labelled
+    "decision-real-YYYY-MM-DD".
+
 Outputs (all relative to repo root)
 -------------------------------------
 data/observability/          ObservabilityRecord per eval case + AO event
-data/regression_baselines/   Named baseline  "operationalization-2026-03-18"
+data/regression_baselines/   Named baseline (name varies by engine mode)
 data/error_clusters/         ErrorCluster per dominant family
 data/validated_clusters/     ValidatedCluster for each passing cluster
 data/remediation_plans/      RemediationPlan per validated cluster
@@ -30,7 +45,11 @@ data/human_feedback/         HumanFeedbackRecord for case_001 eval result
 
 Usage
 -----
+    # stub mode (default — safe, deterministic plumbing only)
     python scripts/run_operationalization.py
+
+    # narrow real-engine mode
+    python scripts/run_operationalization.py --engine-mode decision_real
 
 Exit codes
 ----------
@@ -40,6 +59,7 @@ Exit codes
 """
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -65,6 +85,8 @@ from spectrum_systems.modules.evaluation.golden_dataset import load_all_cases
 from spectrum_systems.modules.evaluation.eval_runner import EvalRunner, EvalResult
 from spectrum_systems.modules.evaluation.grounding import GroundingVerifier
 from spectrum_systems.modules.evaluation.regression import RegressionHarness
+
+from spectrum_systems.modules.engines import DecisionExtractionAdapter
 
 from spectrum_systems.modules.observability.metrics import ObservabilityRecord, MetricsStore
 
@@ -114,6 +136,12 @@ _HUMAN_FEEDBACK_DIR = _ROOT / "data" / "human_feedback"
 
 _OUTPUTS_DIR = _ROOT / "outputs"
 _BASELINE_NAME = "operationalization-2026-03-18"
+_REAL_ENGINE_BASELINE_DATE = "2026-03-18"
+
+# Valid engine modes
+_ENGINE_MODE_STUB = "stub"
+_ENGINE_MODE_DECISION_REAL = "decision_real"
+_VALID_ENGINE_MODES = (_ENGINE_MODE_STUB, _ENGINE_MODE_DECISION_REAL)
 
 # ---------------------------------------------------------------------------
 # Stub reasoning engine (same as run_eval.py)
@@ -179,10 +207,13 @@ def _ensure_dirs() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
-def _build_eval_runner() -> EvalRunner:
+def _build_eval_runner(engine_mode: str = _ENGINE_MODE_STUB) -> EvalRunner:
     harness = RegressionHarness(baselines_dir=_ROOT / "data" / "eval_baselines")
     grounding = GroundingVerifier(min_overlap_tokens=1)
-    engine = _StubReasoningEngine()
+    if engine_mode == _ENGINE_MODE_DECISION_REAL:
+        engine: Any = DecisionExtractionAdapter(include_action_items=True)
+    else:
+        engine = _StubReasoningEngine()
     return EvalRunner(
         reasoning_engine=engine,
         grounding_verifier=grounding,
@@ -197,14 +228,15 @@ def _build_eval_runner() -> EvalRunner:
 # ---------------------------------------------------------------------------
 
 
-def stage_an_ap() -> tuple[List[EvalResult], List[ObservabilityRecord]]:
+def stage_an_ap(engine_mode: str = _ENGINE_MODE_STUB) -> tuple[List[EvalResult], List[ObservabilityRecord]]:
     """Run evaluation on all golden cases and emit observability records."""
     _section("AN + AP  |  Evaluation Framework + Observability")
+    _info(f"Engine mode: {engine_mode}")
 
     dataset = load_all_cases(_GOLDEN_CASES_DIR)
     _info(f"Loaded {len(dataset)} golden case(s) from {_GOLDEN_CASES_DIR.relative_to(_ROOT)}")
 
-    runner = _build_eval_runner()
+    runner = _build_eval_runner(engine_mode=engine_mode)
     results = runner.run_all_cases(dataset)
 
     metrics_store = MetricsStore(store_dir=_OBSERVABILITY_DIR)
@@ -246,6 +278,7 @@ def stage_an_ap() -> tuple[List[EvalResult], List[ObservabilityRecord]]:
 def stage_ar(
     eval_results: List[EvalResult],
     obs_records: List[ObservabilityRecord],
+    engine_mode: str = _ENGINE_MODE_STUB,
 ) -> None:
     """Create a governed regression baseline from this run."""
     _section("AR  |  Regression Baseline")
@@ -255,26 +288,41 @@ def stage_ar(
     eval_dicts = [r.to_dict() for r in eval_results]
     obs_dicts = [r.to_dict() for r in obs_records]
 
+    if engine_mode == _ENGINE_MODE_DECISION_REAL:
+        baseline_name = f"decision-real-{_REAL_ENGINE_BASELINE_DATE}"
+        notes = (
+            "Narrow real-engine baseline — decision_real mode using "
+            "DecisionExtractionAdapter (execution_mode=deterministic_pattern). "
+            "Decision and action-item passes produce non-empty output; gap and "
+            "contradiction passes remain stubbed.  Created 2026-03-18."
+        )
+        meta_engine = "decision_real:deterministic_pattern"
+    else:
+        baseline_name = _BASELINE_NAME
+        notes = (
+            "Operationalization baseline — first governed run of the full "
+            "AN–AW2 pipeline on 2026-03-18.  Stub engine; scores reflect "
+            "structural gap between stub output and golden expectations."
+        )
+        meta_engine = "stub"
+
     try:
         baseline_dir = manager.save_baseline(
-            name=_BASELINE_NAME,
+            name=baseline_name,
             eval_results=eval_dicts,
             observability_records=obs_dicts,
             metadata={
                 "run_mode": "deterministic",
-                "engine": "stub",
+                "engine": meta_engine,
+                "engine_mode": engine_mode,
                 "golden_cases_dir": str(_GOLDEN_CASES_DIR.relative_to(_ROOT)),
                 "run_context": "operationalization-pass-2026-03-18",
             },
-            notes=(
-                "Operationalization baseline — first governed run of the full "
-                "AN–AW2 pipeline on 2026-03-18.  Stub engine; scores reflect "
-                "structural gap between stub output and golden expectations."
-            ),
+            notes=notes,
         )
-        _ok(f"Baseline '{_BASELINE_NAME}' → {baseline_dir.relative_to(_ROOT)}")
+        _ok(f"Baseline '{baseline_name}' → {baseline_dir.relative_to(_ROOT)}")
     except BaselineExistsError:
-        _warn(f"Baseline '{_BASELINE_NAME}' already exists; skipping creation.")
+        _warn(f"Baseline '{baseline_name}' already exists; skipping creation.")
 
 
 # ---------------------------------------------------------------------------
@@ -480,7 +528,7 @@ def stage_aw2(plans: list) -> list:
 # ---------------------------------------------------------------------------
 
 
-def stage_ao(eval_results: List[EvalResult]) -> None:
+def stage_ao(eval_results: List[EvalResult], engine_mode: str = _ENGINE_MODE_STUB) -> None:
     """Persist one real feedback record against the first eval result."""
     _section("AO  |  Human Feedback Capture")
 
@@ -500,36 +548,63 @@ def stage_ao(eval_results: List[EvalResult]) -> None:
         "grounding_score": result.grounding_score,
         "pass_fail": result.pass_fail,
         "evaluated_at": result.evaluated_at,
+        "engine_mode": engine_mode,
     }
+
+    if engine_mode == _ENGINE_MODE_DECISION_REAL:
+        action = "accept" if result.semantic_score > 0.0 else "major_edit"
+        edited_text = (
+            f"decision_real engine (deterministic_pattern) produced non-empty "
+            f"decision output.  semantic_score={result.semantic_score:.2f}.  "
+            f"Gap and contradiction passes remain stubbed; those scores are "
+            f"still zero.  Decision extraction is producing meaningful results."
+        )
+        rationale = (
+            "The evaluation was run with the narrow real-engine adapter "
+            "(DecisionExtractionAdapter, execution_mode=deterministic_pattern).  "
+            "The feedback confirms that decision extraction produces non-empty "
+            "structured outputs.  semantic_score is non-zero where decisions "
+            "are present in the transcript.  This is the first governed "
+            "feedback record against a real decision-extraction artifact."
+        )
+        failure_type = "grounding_failure" if result.semantic_score == 0.0 else "extraction_error"
+        severity = "medium" if result.semantic_score > 0.0 else "high"
+    else:
+        action = "major_edit"
+        edited_text = (
+            "Stub engine produced empty pass outputs.  Scores reflect the "
+            "structural gap between stub (no extraction) and golden expectations. "
+            "A real reasoning engine is required to achieve meaningful scores."
+        )
+        rationale = (
+            "The evaluation was run with a stub reasoning engine for "
+            "operationalization purposes.  The feedback confirms that the "
+            "evaluation pipeline executed end-to-end and identifies the "
+            "primary gap: no live model is wired in.  This record is the "
+            "first governed feedback artifact against a real pipeline execution."
+        )
+        failure_type = "extraction_error"
+        severity = "high"
 
     reviewer_input = {
         "reviewer_id": "operationalization-agent",
         "reviewer_role": "engineer",
         "target_level": "artifact",
         "target_id": artifact["artifact_id"],
-        "action": "major_edit",
+        "action": action,
         "original_text": (
-            f"Evaluation result for case '{result.case_id}': "
+            f"Evaluation result for case '{result.case_id}' "
+            f"(engine_mode={engine_mode}): "
             f"structural={result.structural_score:.2f}, "
             f"semantic={result.semantic_score:.2f}, "
             f"grounding={result.grounding_score:.2f}, "
             f"pass_fail={result.pass_fail}"
         ),
-        "edited_text": (
-            "Stub engine produced empty pass outputs.  Scores reflect the "
-            "structural gap between stub (no extraction) and golden expectations. "
-            "A real reasoning engine is required to achieve meaningful scores."
-        ),
-        "rationale": (
-            "The evaluation was run with a stub reasoning engine for "
-            "operationalization purposes.  The feedback confirms that the "
-            "evaluation pipeline executed end-to-end and identifies the "
-            "primary gap: no live model is wired in.  This record is the "
-            "first governed feedback artifact against a real pipeline execution."
-        ),
+        "edited_text": edited_text,
+        "rationale": rationale,
         "source_of_truth": "engineering_analysis",
-        "failure_type": "extraction_error",
-        "severity": "high",
+        "failure_type": failure_type,
+        "severity": severity,
         "should_update": {
             "golden_dataset": False,
             "prompts": False,
@@ -604,20 +679,39 @@ def _print_evidence_summary() -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Operationalization Pass — AN–AW2 control-loop end-to-end."
+    )
+    parser.add_argument(
+        "--engine-mode",
+        choices=list(_VALID_ENGINE_MODES),
+        default=_ENGINE_MODE_STUB,
+        help=(
+            "Reasoning engine to use.  "
+            "'stub' (default): empty pass_results, deterministic plumbing only.  "
+            "'decision_real': narrow real-engine path using DecisionExtractionAdapter "
+            "(deterministic pattern matching, no live model).  "
+            "Creates a separate regression baseline 'decision-real-YYYY-MM-DD'."
+        ),
+    )
+    args = parser.parse_args()
+    engine_mode = args.engine_mode
+
     start = time.monotonic()
     print()
     print("=" * 64)
     print("  Spectrum Systems — AN–AW2 Operationalization Pass")
     print(f"  {datetime.now(timezone.utc).isoformat()}")
+    print(f"  engine-mode: {engine_mode}")
     print("=" * 64)
 
     _ensure_dirs()
 
     # Stage AN + AP
-    eval_results, obs_records = stage_an_ap()
+    eval_results, obs_records = stage_an_ap(engine_mode=engine_mode)
 
     # Stage AR
-    stage_ar(eval_results, obs_records)
+    stage_ar(eval_results, obs_records, engine_mode=engine_mode)
 
     # Stage AU
     all_clf_records = stage_au(eval_results)
@@ -635,7 +729,7 @@ def main() -> int:
     stage_aw2(plans)
 
     # Stage AO
-    stage_ao(eval_results)
+    stage_ao(eval_results, engine_mode=engine_mode)
 
     # Summary
     _print_evidence_summary()

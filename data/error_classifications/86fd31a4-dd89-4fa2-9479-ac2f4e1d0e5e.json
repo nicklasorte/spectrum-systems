@@ -1,0 +1,100 @@
+{
+  "classification_id": "86fd31a4-dd89-4fa2-9479-ac2f4e1d0e5e",
+  "timestamp": "2026-03-19T00:08:34.380621+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "eval-case_002",
+    "case_id": "case_002",
+    "pass_type": ""
+  },
+  "classifications": [
+    {
+      "error_code": "EXTRACT.FALSE_EXTRACTION",
+      "confidence": 0.4,
+      "evidence_source": "message",
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    }
+  ],
+  "raw_inputs": {
+    "case_id": "case_002",
+    "pass_fail": false,
+    "structural_score": 0.0,
+    "semantic_score": 0.0,
+    "grounding_score": 1.0,
+    "latency_summary": {
+      "per_pass_latency": {},
+      "total_latency_ms": 0,
+      "budget_violations": []
+    },
+    "error_types": [
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt -96 dBm as the interim coordination trigger threshold pending DOD validation', 'm\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt -96 dBm as the interim coordination trigger threshold pending DOD validation', 'm\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Protection zone radius decision deferred pending submission of updated propagation anal\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Protection zone radius decision deferred pending submission of updated propagation anal\u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Submit updated propagation analyses to NTIA', 'owner': 'All parties', 'due_date': '2025-1\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Submit updated propagation analyses to NTIA', 'owner': 'All parties', 'due_date': '2025-1\u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Confirm or escalate -96 dBm coordination trigger threshold based on detection margin anal\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Confirm or escalate -96 dBm coordination trigger threshold based on detection margin anal\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G002', 'text': 'DOD detection margin analysis against -96 dBm threshold is incomplete', 'severity': 'medium'\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "gap_detection",
+          "message": "Missing gaps item: {'gap_id': 'G002', 'text': 'DOD detection margin analysis against -96 dBm threshold is incomplete', 'severity': 'medium'\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'No propagation analyses account for urban canyon effects, which could materially affect the \u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "gap_detection",
+          "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'No propagation analyses account for urban canyon effects, which could materially affect the \u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'Carrier B requires maximum 25 km protection zone radius while DOD requires minimum\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "contradiction_detection",
+          "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'Carrier B requires maximum 25 km protection zone radius while DOD requires minimum\u2026"
+        }
+      }
+    ],
+    "schema_valid": true,
+    "regression_detected": false,
+    "evaluated_at": "2026-03-19T00:08:34.379023+00:00",
+    "human_feedback_overrides": []
+  },
+  "taxonomy_version": "1.0.0"
+}

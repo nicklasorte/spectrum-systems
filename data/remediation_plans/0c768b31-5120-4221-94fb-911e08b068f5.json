@@ -1,0 +1,37 @@
+{
+  "remediation_id": "0c768b31-5120-4221-94fb-911e08b068f5",
+  "cluster_id": "89e54fef-ceed-487c-94da-2ac90c567b55",
+  "cluster_signature": "SCHEMA.INVALID_OUTPUT",
+  "taxonomy_version": "1.0.0",
+  "created_at": "2026-03-19T00:08:21.958463+00:00",
+  "mapping_status": "mapped",
+  "mapping_reasons": [
+    "rule_C: dominant SCHEMA.INVALID_OUTPUT with share=1.000"
+  ],
+  "dominant_error_codes": [
+    "SCHEMA.INVALID_OUTPUT"
+  ],
+  "remediation_targets": [
+    "output_schema_contract"
+  ],
+  "proposed_actions": [
+    {
+      "action_id": "af719617-f003-4bd1-b88d-e84aa6a1379f",
+      "action_type": "schema_change",
+      "target_component": "output_schema_contract",
+      "rationale": "Dominant error SCHEMA.INVALID_OUTPUT indicates the output contract does not match what the pipeline actually produces.",
+      "expected_benefit": "Eliminate schema validation failures by aligning the output contract.",
+      "risk_level": "high",
+      "confidence_score": 0.75
+    }
+  ],
+  "primary_proposal_index": 0,
+  "evidence_summary": {
+    "record_count": 4,
+    "avg_cluster_confidence": 0.0,
+    "weighted_severity_score": 0.0,
+    "pass_types": [
+      "extraction"
+    ]
+  }
+}

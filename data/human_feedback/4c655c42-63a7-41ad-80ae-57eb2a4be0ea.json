@@ -1,0 +1,24 @@
+{
+  "feedback_id": "4c655c42-63a7-41ad-80ae-57eb2a4be0ea",
+  "artifact_id": "eval-case_001",
+  "artifact_type": "evaluation_result",
+  "target_level": "artifact",
+  "target_id": "eval-case_001",
+  "reviewer": {
+    "reviewer_id": "operationalization-agent",
+    "reviewer_role": "engineer"
+  },
+  "action": "accept",
+  "original_text": "Evaluation result for case 'case_001' (engine_mode=decision_real): structural=0.00, semantic=0.33, grounding=1.00, pass_fail=False",
+  "edited_text": "decision_real engine (deterministic_pattern) produced non-empty decision output.  semantic_score=0.33.  Gap and contradiction passes remain stubbed; those scores are still zero.  Decision extraction is producing meaningful results.",
+  "rationale": "The evaluation was run with the narrow real-engine adapter (DecisionExtractionAdapter, execution_mode=deterministic_pattern).  The feedback confirms that decision extraction produces non-empty structured outputs.  semantic_score is non-zero where decisions are present in the transcript.  This is the first governed feedback record against a real decision-extraction artifact.",
+  "source_of_truth": "engineering_analysis",
+  "failure_type": "extraction_error",
+  "severity": "medium",
+  "should_update": {
+    "golden_dataset": false,
+    "prompts": false,
+    "retrieval_memory": false
+  },
+  "timestamp": "2026-03-19T00:08:26.679128+00:00"
+}

@@ -1,0 +1,62 @@
+{
+  "cluster_id": "7bf9b158-76b5-4fa4-aa20-b4f84c634b64",
+  "timestamp": "2026-03-19T00:08:26.669463+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "EXTRACT.FALSE_EXTRACTION",
+    "secondary_error_codes": [
+      "EXTRACT.MISSED_ACTION_ITEM",
+      "EXTRACT.MISSED_DECISION",
+      "GROUND.MISSING_REF",
+      "SCHEMA.MISSING_REQUIRED_FIELD"
+    ],
+    "dominant_family": "EXTRACT"
+  },
+  "metrics": {
+    "record_count": 8,
+    "weighted_severity_score": 17.4,
+    "avg_confidence": 0.58
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "unknown": 6,
+      "working_paper": 2
+    },
+    "pass_types": {
+      "unknown": 6,
+      "extraction": 2
+    },
+    "source_systems": {
+      "evaluation": 8
+    }
+  },
+  "remediation_targets": [
+    "grounding",
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-mixed-001",
+      "error_codes": [
+        "GROUND.MISSING_REF",
+        "EXTRACT.MISSED_DECISION"
+      ],
+      "explanation": "Observed GROUND.MISSING_REF error in evaluation run."
+    },
+    {
+      "classification_id": "clf-mixed-004",
+      "error_codes": [
+        "EXTRACT.MISSED_ACTION_ITEM",
+        "SCHEMA.MISSING_REQUIRED_FIELD"
+      ],
+      "explanation": "Observed EXTRACT.MISSED_ACTION_ITEM error in evaluation run."
+    },
+    {
+      "classification_id": "05cc6582-2433-4783-b608-c59be8dd1540",
+      "error_codes": [
+        "EXTRACT.FALSE_EXTRACTION"
+      ],
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    }
+  ]
+}

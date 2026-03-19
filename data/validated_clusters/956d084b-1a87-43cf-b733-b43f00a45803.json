@@ -1,0 +1,30 @@
+{
+  "cluster_id": "956d084b-1a87-43cf-b733-b43f00a45803",
+  "cluster_signature": "GROUND.MISSING_REF",
+  "record_count": 6,
+  "error_codes": [
+    "GROUND.MISSING_REF",
+    "GROUND.INVALID_REF",
+    "REASON.BAD_INFERENCE"
+  ],
+  "pass_types": [
+    "extraction"
+  ],
+  "remediation_targets": [
+    "grounding",
+    "prompt"
+  ],
+  "validation_status": "valid",
+  "validation_reasons": [
+    "size_ok: record_count=6 >= min=3",
+    "cohesion_ok: dominant_code_fraction=0.7143 >= min=0.6",
+    "pass_consistency_ok: pass_type_count=1 <= max=3",
+    "signature_stable: stored='GROUND.MISSING_REF' == recomputed='GROUND.MISSING_REF'",
+    "actionability_ok: remediation_target_count=2 <= max=2",
+    "confidence_ok: avg_confidence=0.8500 >= min=0.6"
+  ],
+  "stability_score": 0.9167,
+  "cohesion_score": 0.7143,
+  "actionability_score": 0.5,
+  "created_at": "2026-03-19T00:08:21.957368+00:00"
+}

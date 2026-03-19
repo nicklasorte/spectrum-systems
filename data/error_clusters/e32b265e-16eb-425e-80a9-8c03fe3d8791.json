@@ -1,0 +1,52 @@
+{
+  "cluster_id": "e32b265e-16eb-425e-80a9-8c03fe3d8791",
+  "timestamp": "2026-03-19T00:08:21.955806+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "RETRIEVE.IRRELEVANT_MEMORY",
+    "secondary_error_codes": [],
+    "dominant_family": "RETRIEVE"
+  },
+  "metrics": {
+    "record_count": 3,
+    "weighted_severity_score": 5.1,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 3
+    },
+    "pass_types": {
+      "extraction": 3
+    },
+    "source_systems": {
+      "evaluation": 3
+    }
+  },
+  "remediation_targets": [
+    "retrieval"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-retrieve-001",
+      "error_codes": [
+        "RETRIEVE.IRRELEVANT_MEMORY"
+      ],
+      "explanation": "Observed RETRIEVE.IRRELEVANT_MEMORY error in evaluation run."
+    },
+    {
+      "classification_id": "clf-retrieve-002",
+      "error_codes": [
+        "RETRIEVE.IRRELEVANT_MEMORY"
+      ],
+      "explanation": "Observed RETRIEVE.IRRELEVANT_MEMORY error in evaluation run."
+    },
+    {
+      "classification_id": "clf-retrieve-003",
+      "error_codes": [
+        "RETRIEVE.IRRELEVANT_MEMORY"
+      ],
+      "explanation": "Observed RETRIEVE.IRRELEVANT_MEMORY error in evaluation run."
+    }
+  ]
+}
