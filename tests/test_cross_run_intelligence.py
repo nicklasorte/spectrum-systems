@@ -522,32 +522,11 @@ def test_generic_no_rankings():
 
 
 def test_extreme_spread_detected():
-    nrr1 = _p2p_nrr("b1", "NRR-A1", "s1", "S1", interference=-1.0)
-    nrr2 = _p2p_nrr("b2", "NRR-A2", "s2", "S2", interference=-200.0)
-    # mean = -100.5, range = 199.0  → range > 10 * abs(mean) = 1005? No.
-    # Let's use values where range > 10 * abs(mean)
-    # mean = 5, range = 60 → range(60) > 10 * abs(5) = 50 → True
-    nrr1["metrics"]["summary_metrics"][0]["value"] = 2.0
-    nrr2["metrics"]["summary_metrics"][0]["value"] = 62.0
-    # mean = 32, range = 60 → 60 > 10 * 32 = 320? No.
-    # Use: val1=1, val2=12  → mean=6.5, range=11 → 11 > 10*6.5=65? No
-    # Use: val1=0.5, val2=6 → mean=3.25, range=5.5 → 5.5 > 32.5? No
-    # Use: val1=1, val2=100 → mean=50.5, range=99 → 99 > 505? No
-    # The rule: abs(mean) > 0 and range > 10 * abs(mean)
-    # need range/mean > 10 → e.g. mean=1, range=11
-    # val1=0, val2=2 → mean=1, range=2 → 2 > 10? No
-    # val1=-0.5, val2=10.5 → mean=5, range=11 → 11 > 50? No
-    # val1=0.1, val2=1.1 → mean=0.6, range=1.0 → 1.0 > 6? No
-    # val1=0.1, val2=10.1 → mean=5.1, range=10.0 → 10 > 51? No
-    # val1=1, val2=20 → mean=10.5, range=19 → 19 > 105? No
-    # Need: range/abs(mean) > 10
-    # e.g. mean=1 (val1=0.5, val2=1.5 → range=1, mean=1 → 1>10? No)
-    # val1=0.09, val2=1.09 → mean=0.59, range=1 → 1>5.9? No
-    # val1=0.09, val2=5.09 → mean=2.59, range=5 → 5>25.9? No
-    # Try: val1=-5, val2=6 → mean=0.5, range=11 → 11>5? Yes!
+    nrr1 = _p2p_nrr("b1", "NRR-A1", "s1", "S1", interference=-85.0)
+    nrr2 = _p2p_nrr("b2", "NRR-A2", "s2", "S2", interference=-92.0)
+    # Values: -5 and 6 → mean=0.5, range=11 → range(11) > 10*abs(mean)(5) → triggers extreme_spread
     nrr1["metrics"]["summary_metrics"][0]["value"] = -5.0
     nrr2["metrics"]["summary_metrics"][0]["value"] = 6.0
-    # mean = 0.5, range = 11 → 11 > 10 * 0.5 = 5 → True!
     comparisons = build_metric_comparisons([nrr1, nrr2])
     flags = detect_cross_run_anomalies(comparisons, [nrr1, nrr2])
     extreme = [f for f in flags if f["flag_type"] == "extreme_spread"]
