@@ -1,7 +1,8 @@
 """SLO Control Layer (Prompt BR).
 
-Evaluates artifact quality, timeliness, and traceability across BE, BF, and
-BG outputs and determines whether the system is allowed to proceed.
+Evaluates artifact quality, timeliness, traceability, and traceability
+integrity across BE, BF, and BG outputs and determines whether the system
+is allowed to proceed.
 
 This is a control system, not a reporting feature.  When SLOs are violated or
 the error budget is exhausted the layer returns ``allowed_to_proceed=False``
@@ -458,7 +459,8 @@ def classify_violation(sli_name: str, value: float) -> Optional[Dict[str, Any]]:
     Parameters
     ----------
     sli_name:
-        One of ``"completeness"``, ``"timeliness"``, ``"traceability"``.
+        One of ``"completeness"``, ``"timeliness"``, ``"traceability"``,
+        ``"traceability_integrity"``.
     value:
         The measured SLI value in [0.0, 1.0].
 
@@ -588,11 +590,14 @@ def build_slo_evaluation_artifact(
     created_at:
         ISO 8601 timestamp string.  Defaults to the current UTC time.
     lineage_valid:
-        Optional boolean indicating whether the artifact lineage chain is
-        valid.  Included in the artifact when provided.
+        Whether the artifact lineage chain is valid (as determined by
+        ``compute_traceability_integrity_sli``).  This is a schema-required
+        field; the fail-safe default is ``False`` when not explicitly set.
     parent_artifact_ids:
-        Optional list of parent artifact IDs (decision + synthesis) that
-        drove this SLO evaluation.  Included in the artifact when provided.
+        List of parent artifact IDs (decision + synthesis artifacts that
+        drove this SLO evaluation).  This is a schema-required field
+        (``minItems: 1``); operators must supply at least one parent ID via
+        ``--parent-id``.
 
     Returns
     -------

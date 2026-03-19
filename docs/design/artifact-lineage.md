@@ -156,7 +156,7 @@ The lineage system makes every decision artifact **auditable**:
 
 2. **Integrity**: `validate_full_registry(registry)` checks every artifact in the chain for structural correctness. A decision is only valid if its entire lineage chain passes validation.
 
-3. **SLO Integration**: The `slo_evaluation` artifact includes `lineage_valid` (computed by `validate_lineage_chain`) and can contribute a `traceability_integrity_sli` to the SLO evaluation. If lineage is broken, the SLO layer blocks downstream execution.
+3. **SLO Integration**: The `slo_evaluation` artifact includes `lineage_valid` (computed by `validate_lineage_chain`) and always contributes a `traceability_integrity` SLI to the SLO evaluation. If lineage is broken, the SLO layer blocks downstream execution.
 
 4. **No Silent Failures**: `enforce_no_orphans()` and `link_artifacts()` raise hard errors rather than proceeding silently.
 

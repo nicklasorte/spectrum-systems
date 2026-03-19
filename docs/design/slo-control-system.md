@@ -140,6 +140,25 @@ artifacts that drove this evaluation.  Operators must supply these via the CLI
 
 ---
 
+## SLO and Lineage Integration
+
+The SLO Control Layer uses the Artifact Lineage System (Prompt BS) as a
+gating signal:
+
+- `traceability_integrity` SLI is computed by running `validate_full_registry`
+  over the lineage registry supplied via `--lineage-dir`.  A registry error
+  sets the SLI to 0.0, which drives `slo_status` to `violated` and sets
+  `allowed_to_proceed` to `false`.
+- `lineage_valid` is a schema-required field in every `slo_evaluation`
+  artifact.  It reflects the outcome of lineage validation and defaults to
+  `false` when lineage has not been assessed.
+- When no lineage registry is provided the system operates in **degraded
+  validation mode**: `traceability_integrity` defaults to 1.0 (not assessed)
+  and `lineage_valid` remains `false`.  Operators who require lineage
+  verification must supply a registry via `--lineage-dir`.
+
+---
+
 ## Threshold Classification
 
 | SLI value  | Classification | Severity |
