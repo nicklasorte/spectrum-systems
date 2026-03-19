@@ -1,0 +1,31 @@
+{
+  "record_id": "c8b989f7-bd8c-461d-bfe8-bbb282bdd44a",
+  "timestamp": "2026-03-19T00:08:34.393709+00:00",
+  "context": {
+    "artifact_id": "eval-case_001",
+    "artifact_type": "evaluation_result",
+    "pipeline_stage": "learn"
+  },
+  "pass_info": {
+    "pass_id": "0026f213-97e9-4758-ae89-4278ecd07e86",
+    "pass_type": "human_feedback"
+  },
+  "metrics": {
+    "structural_score": 0.0,
+    "semantic_score": 0.0,
+    "grounding_score": 0.0,
+    "latency_ms": 0
+  },
+  "flags": {
+    "schema_valid": true,
+    "grounding_passed": true,
+    "regression_passed": true,
+    "human_disagrees": true
+  },
+  "error_summary": {
+    "error_types": [
+      "extraction_error"
+    ],
+    "failure_count": 1
+  }
+}

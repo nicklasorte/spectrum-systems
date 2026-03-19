@@ -1,0 +1,81 @@
+[
+  {
+    "context": {
+      "artifact_id": "case_001",
+      "artifact_type": "evaluation_result",
+      "case_id": "case_001",
+      "pipeline_stage": "validate"
+    },
+    "error_summary": {
+      "error_types": [
+        "reasoning_error",
+        "reasoning_error",
+        "reasoning_error",
+        "reasoning_error",
+        "extraction_error",
+        "extraction_error",
+        "extraction_error",
+        "extraction_error",
+        "reasoning_error",
+        "reasoning_error"
+      ],
+      "failure_count": 10
+    },
+    "flags": {
+      "grounding_passed": true,
+      "human_disagrees": false,
+      "regression_passed": true,
+      "schema_valid": true
+    },
+    "metrics": {
+      "grounding_score": 1.0,
+      "latency_ms": 1,
+      "semantic_score": 0.3333333333333333,
+      "structural_score": 0.0
+    },
+    "pass_info": {
+      "pass_id": "0eabaf4d-7db7-4cb0-8796-6b4ee6587b0a",
+      "pass_type": "eval_summary"
+    },
+    "record_id": "ef9ec0e1-b6af-4c0d-9d0e-58e5cd4d64ad",
+    "timestamp": "2026-03-19T00:08:21.952251+00:00"
+  },
+  {
+    "context": {
+      "artifact_id": "case_002",
+      "artifact_type": "evaluation_result",
+      "case_id": "case_002",
+      "pipeline_stage": "validate"
+    },
+    "error_summary": {
+      "error_types": [
+        "reasoning_error",
+        "reasoning_error",
+        "extraction_error",
+        "extraction_error",
+        "reasoning_error",
+        "reasoning_error",
+        "reasoning_error"
+      ],
+      "failure_count": 7
+    },
+    "flags": {
+      "grounding_passed": true,
+      "human_disagrees": false,
+      "regression_passed": true,
+      "schema_valid": true
+    },
+    "metrics": {
+      "grounding_score": 1.0,
+      "latency_ms": 1,
+      "semantic_score": 0.225,
+      "structural_score": 0.0
+    },
+    "pass_info": {
+      "pass_id": "ea51ab7f-4576-4a7b-aaaa-c9fcf062b86c",
+      "pass_type": "eval_summary"
+    },
+    "record_id": "03640412-cb63-4068-a5f3-914cf720e27f",
+    "timestamp": "2026-03-19T00:08:21.952459+00:00"
+  }
+]

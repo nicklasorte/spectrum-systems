@@ -1,0 +1,27 @@
+{
+  "cluster_id": "afe5cab0-a2f2-4cca-bcec-31c4b2992b5b",
+  "cluster_signature": "RETRIEVE.IRRELEVANT_MEMORY",
+  "record_count": 3,
+  "error_codes": [
+    "RETRIEVE.IRRELEVANT_MEMORY"
+  ],
+  "pass_types": [
+    "extraction"
+  ],
+  "remediation_targets": [
+    "retrieval"
+  ],
+  "validation_status": "valid",
+  "validation_reasons": [
+    "size_ok: record_count=3 >= min=3",
+    "cohesion_ok: dominant_code_fraction=1.0000 >= min=0.6",
+    "pass_consistency_ok: pass_type_count=1 <= max=3",
+    "signature_stable: stored='RETRIEVE.IRRELEVANT_MEMORY' == recomputed='RETRIEVE.IRRELEVANT_MEMORY'",
+    "actionability_ok: remediation_target_count=1 <= max=2",
+    "confidence_ok: avg_confidence=0.8500 >= min=0.6"
+  ],
+  "stability_score": 1.0,
+  "cohesion_score": 1.0,
+  "actionability_score": 1.0,
+  "created_at": "2026-03-19T00:08:26.671586+00:00"
+}

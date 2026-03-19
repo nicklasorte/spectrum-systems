@@ -1,0 +1,24 @@
+{
+  "feedback_id": "57065352-c0a7-4a9b-b851-cd2428fafa52",
+  "artifact_id": "eval-case_001",
+  "artifact_type": "evaluation_result",
+  "target_level": "artifact",
+  "target_id": "eval-case_001",
+  "reviewer": {
+    "reviewer_id": "operationalization-agent",
+    "reviewer_role": "engineer"
+  },
+  "action": "major_edit",
+  "original_text": "Evaluation result for case 'case_001' (engine_mode=stub): structural=0.00, semantic=0.00, grounding=1.00, pass_fail=False",
+  "edited_text": "Stub engine produced empty pass outputs.  Scores reflect the structural gap between stub (no extraction) and golden expectations. A real reasoning engine is required to achieve meaningful scores.",
+  "rationale": "The evaluation was run with a stub reasoning engine for operationalization purposes.  The feedback confirms that the evaluation pipeline executed end-to-end and identifies the primary gap: no live model is wired in.  This record is the first governed feedback artifact against a real pipeline execution.",
+  "source_of_truth": "engineering_analysis",
+  "failure_type": "extraction_error",
+  "severity": "high",
+  "should_update": {
+    "golden_dataset": false,
+    "prompts": false,
+    "retrieval_memory": false
+  },
+  "timestamp": "2026-03-19T00:08:34.393434+00:00"
+}

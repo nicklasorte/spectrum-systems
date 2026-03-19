@@ -60,6 +60,7 @@ from spectrum_systems.modules.evaluation.golden_dataset import load_all_cases, l
 from spectrum_systems.modules.evaluation.eval_runner import EvalRunner, EvalResult  # noqa: E402
 from spectrum_systems.modules.evaluation.grounding import GroundingVerifier  # noqa: E402
 from spectrum_systems.modules.evaluation.regression import RegressionHarness, BaselineRecord  # noqa: E402
+from spectrum_systems.modules.engines import DecisionExtractionAdapter  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -165,7 +166,7 @@ class _StubReasoningEngine:
 # CLI helpers
 # ---------------------------------------------------------------------------
 
-def _build_runner(cfg: dict, deterministic: bool, output_dir: Path) -> EvalRunner:
+def _build_runner(cfg: dict, deterministic: bool, output_dir: Path, engine_mode: str = "stub") -> EvalRunner:
     """Construct an ``EvalRunner`` from loaded config."""
     thresholds = cfg.get("regression_thresholds", {})
     latency_budgets = cfg.get("latency_budgets", {})
@@ -178,7 +179,10 @@ def _build_runner(cfg: dict, deterministic: bool, output_dir: Path) -> EvalRunne
     grounding_min = int(cfg.get("grounding_min_overlap_tokens", 1))
     grounding = GroundingVerifier(min_overlap_tokens=grounding_min)
 
-    engine = _StubReasoningEngine()
+    if engine_mode == "decision_real":
+        engine: object = DecisionExtractionAdapter(include_action_items=True)
+    else:
+        engine = _StubReasoningEngine()
 
     return EvalRunner(
         reasoning_engine=engine,
@@ -276,6 +280,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Disable deterministic mode",
     )
+    parser.add_argument(
+        "--engine-mode",
+        choices=["stub", "decision_real"],
+        default="stub",
+        help=(
+            "Reasoning engine to use.  "
+            "'stub' (default): empty outputs, deterministic plumbing only.  "
+            "'decision_real': narrow real-engine path using DecisionExtractionAdapter "
+            "(deterministic pattern matching, no live model)."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -288,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Build runner
     try:
-        runner = _build_runner(cfg, deterministic=deterministic, output_dir=output_dir)
+        runner = _build_runner(cfg, deterministic=deterministic, output_dir=output_dir, engine_mode=args.engine_mode)
     except Exception as exc:  # noqa: BLE001
         print(f"[error] Failed to build evaluation runner: {exc}", file=sys.stderr)
         return 2

@@ -1,0 +1,127 @@
+{
+  "classification_id": "96f06428-69ba-487c-937e-65e275342d76",
+  "timestamp": "2026-03-19T00:08:34.380218+00:00",
+  "context": {
+    "source_system": "evaluation",
+    "artifact_id": "eval-case_001",
+    "case_id": "case_001",
+    "pass_type": ""
+  },
+  "classifications": [
+    {
+      "error_code": "EXTRACT.FALSE_EXTRACTION",
+      "confidence": 0.4,
+      "evidence_source": "message",
+      "explanation": "Unclassified evaluation failure; low-confidence fallback."
+    }
+  ],
+  "raw_inputs": {
+    "case_id": "case_001",
+    "pass_fail": false,
+    "structural_score": 0.0,
+    "semantic_score": 0.0,
+    "grounding_score": 1.0,
+    "latency_summary": {
+      "per_pass_latency": {},
+      "total_latency_ms": 0,
+      "budget_violations": []
+    },
+    "error_types": [
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt the -114 dBm/MHz interference threshold for the 7125-7250 MHz band', 'made_by': '\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D001', 'text': 'Adopt the -114 dBm/MHz interference threshold for the 7125-7250 MHz band', 'made_by': '\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Request DOD to submit formal technical justification for 15 MHz guard band by December \u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D002', 'text': 'Request DOD to submit formal technical justification for 15 MHz guard band by December \u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D003', 'text': 'Q1 coordination packages must be submitted to FCC no later than February 14th', 'made_b\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D003', 'text': 'Q1 coordination packages must be submitted to FCC no later than February 14th', 'made_b\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing decisions item: {'decision_id': 'D004', 'text': 'Schedule joint technical working session to align propagation methodology for the week \u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "decision_extraction",
+          "message": "Missing decisions item: {'decision_id': 'D004', 'text': 'Schedule joint technical working session to align propagation methodology for the week \u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Ensure all industry coordination packages are submitted to FCC no later than February 14t\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A001', 'text': 'Ensure all industry coordination packages are submitted to FCC no later than February 14t\u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Circulate a draft coordination template to the group', 'owner': 'David Kim', 'due_date': \u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A002', 'text': 'Circulate a draft coordination template to the group', 'owner': 'David Kim', 'due_date': \u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A003', 'text': 'Submit formal technical justification for 15 MHz guard band requirement', 'owner': 'Carol\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A003', 'text': 'Submit formal technical justification for 15 MHz guard band requirement', 'owner': 'Carol\u2026"
+        }
+      },
+      {
+        "error_type": "extraction_error",
+        "message": "Missing action_items item: {'action_id': 'A004', 'text': 'Schedule joint propagation methodology working session for the week of December 9th', 'ow\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "transcript_extraction",
+          "message": "Missing action_items item: {'action_id': 'A004', 'text': 'Schedule joint propagation methodology working session for the week of December 9th', 'ow\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'Propagation model methodology has not been reconciled between FCC (flat terrain) and DOD (cl\u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "gap_detection",
+          "message": "Missing gaps item: {'gap_id': 'G001', 'text': 'Propagation model methodology has not been reconciled between FCC (flat terrain) and DOD (cl\u2026"
+        }
+      },
+      {
+        "error_type": "reasoning_error",
+        "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'FCC and DOD use different propagation models (flat terrain vs clutter), producing \u2026",
+        "pass_id": null,
+        "details": {
+          "pass_type": "contradiction_detection",
+          "message": "Missing contradictions item: {'contradiction_id': 'C001', 'text': 'FCC and DOD use different propagation models (flat terrain vs clutter), producing \u2026"
+        }
+      }
+    ],
+    "schema_valid": true,
+    "regression_detected": false,
+    "evaluated_at": "2026-03-19T00:08:34.378871+00:00",
+    "human_feedback_overrides": []
+  },
+  "taxonomy_version": "1.0.0"
+}

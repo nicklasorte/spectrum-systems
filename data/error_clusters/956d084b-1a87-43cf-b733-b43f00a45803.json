@@ -1,0 +1,57 @@
+{
+  "cluster_id": "956d084b-1a87-43cf-b733-b43f00a45803",
+  "timestamp": "2026-03-19T00:08:21.955753+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "GROUND.MISSING_REF",
+    "secondary_error_codes": [
+      "GROUND.INVALID_REF",
+      "REASON.BAD_INFERENCE"
+    ],
+    "dominant_family": "GROUND"
+  },
+  "metrics": {
+    "record_count": 6,
+    "weighted_severity_score": 17.85,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 6
+    },
+    "pass_types": {
+      "extraction": 6
+    },
+    "source_systems": {
+      "evaluation": 6
+    }
+  },
+  "remediation_targets": [
+    "grounding",
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-mixed-003",
+      "error_codes": [
+        "REASON.BAD_INFERENCE",
+        "GROUND.INVALID_REF"
+      ],
+      "explanation": "Observed REASON.BAD_INFERENCE error in evaluation run."
+    },
+    {
+      "classification_id": "clf-ground-001",
+      "error_codes": [
+        "GROUND.MISSING_REF"
+      ],
+      "explanation": "Observed GROUND.MISSING_REF error in evaluation run."
+    },
+    {
+      "classification_id": "clf-ground-002",
+      "error_codes": [
+        "GROUND.MISSING_REF"
+      ],
+      "explanation": "Observed GROUND.MISSING_REF error in evaluation run."
+    }
+  ]
+}

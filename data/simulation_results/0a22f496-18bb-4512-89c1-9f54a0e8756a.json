@@ -1,0 +1,54 @@
+{
+  "simulation_id": "0a22f496-18bb-4512-89c1-9f54a0e8756a",
+  "remediation_id": "df556212-e85a-4d84-9567-b55f15b2eef4",
+  "cluster_id": "e32b265e-16eb-425e-80a9-8c03fe3d8791",
+  "created_at": "2026-03-19T00:08:34.388298+00:00",
+  "simulation_status": "passed",
+  "simulation_reasons": [
+    "no_cases: golden_dataset is empty; no cases selected",
+    "primary_action: index=0, action_type='retrieval_change', target_component='retrieval_selection_rules'",
+    "retrieval_change_shadow: applied semantic_boost=0.0300, grounding_boost=0.0225 at confidence=0.75",
+    "cases_simulated: 0 case(s) in shadow mode",
+    "simulation_fidelity: 'medium'",
+    "targeted_effect: metric='semantic_score', expected='increase', observed='increase'",
+    "regression_check: overall_pass=True, hard_failures=0, warnings=0",
+    "promotion_recommendation: 'promote'",
+    "simulation_status: 'passed'"
+  ],
+  "baseline_summary": {
+    "cases_run": 0,
+    "structural_score": 0.7,
+    "semantic_score": 0.7,
+    "grounding_score": 0.65,
+    "latency_ms": 250.0
+  },
+  "candidate_summary": {
+    "cases_run": 0,
+    "structural_score": 0.7,
+    "semantic_score": 0.73,
+    "grounding_score": 0.6725,
+    "latency_ms": 250.0
+  },
+  "deltas": {
+    "structural_score_delta": 0.0,
+    "semantic_score_delta": 0.03,
+    "grounding_score_delta": 0.0225,
+    "latency_ms_delta": 0.0
+  },
+  "targeted_effect": {
+    "target_component": "retrieval_selection_rules",
+    "target_metric": "semantic_score",
+    "expected_direction": "increase",
+    "observed_direction": "increase"
+  },
+  "regression_check": {
+    "overall_pass": true,
+    "hard_failures": 0,
+    "warnings": 0
+  },
+  "promotion_recommendation": "promote",
+  "evidence": {
+    "eval_result_refs": [],
+    "observability_refs": []
+  }
+}

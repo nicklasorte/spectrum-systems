@@ -1,0 +1,54 @@
+{
+  "simulation_id": "e707952c-b6b8-4f5a-8394-30e07e387528",
+  "remediation_id": "5cc4d0b1-c466-4c7d-b663-e51d92a54285",
+  "cluster_id": "a7510446-ea03-4149-9b40-5a95b5a547b3",
+  "created_at": "2026-03-19T00:08:34.388044+00:00",
+  "simulation_status": "passed",
+  "simulation_reasons": [
+    "no_cases: golden_dataset is empty; no cases selected",
+    "primary_action: index=0, action_type='prompt_change', target_component='decision_extraction_prompt'",
+    "prompt_change_shadow: applied structural_boost=0.0300, semantic_boost=0.0375 at confidence=0.75",
+    "cases_simulated: 0 case(s) in shadow mode",
+    "simulation_fidelity: 'high'",
+    "targeted_effect: metric='structural_score', expected='increase', observed='increase'",
+    "regression_check: overall_pass=True, hard_failures=0, warnings=0",
+    "promotion_recommendation: 'promote'",
+    "simulation_status: 'passed'"
+  ],
+  "baseline_summary": {
+    "cases_run": 0,
+    "structural_score": 0.7,
+    "semantic_score": 0.7,
+    "grounding_score": 0.65,
+    "latency_ms": 250.0
+  },
+  "candidate_summary": {
+    "cases_run": 0,
+    "structural_score": 0.73,
+    "semantic_score": 0.7375,
+    "grounding_score": 0.65,
+    "latency_ms": 250.0
+  },
+  "deltas": {
+    "structural_score_delta": 0.03,
+    "semantic_score_delta": 0.0375,
+    "grounding_score_delta": 0.0,
+    "latency_ms_delta": 0.0
+  },
+  "targeted_effect": {
+    "target_component": "decision_extraction_prompt",
+    "target_metric": "structural_score",
+    "expected_direction": "increase",
+    "observed_direction": "increase"
+  },
+  "regression_check": {
+    "overall_pass": true,
+    "hard_failures": 0,
+    "warnings": 0
+  },
+  "promotion_recommendation": "promote",
+  "evidence": {
+    "eval_result_refs": [],
+    "observability_refs": []
+  }
+}

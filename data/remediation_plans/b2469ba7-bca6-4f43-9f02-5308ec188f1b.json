@@ -1,0 +1,37 @@
+{
+  "remediation_id": "b2469ba7-bca6-4f43-9f02-5308ec188f1b",
+  "cluster_id": "bf8c2096-6b65-4fee-a626-0507ccae7a37",
+  "cluster_signature": "EXTRACT.MISSED_DECISION",
+  "taxonomy_version": "1.0.0",
+  "created_at": "2026-03-19T00:08:26.672703+00:00",
+  "mapping_status": "mapped",
+  "mapping_reasons": [
+    "rule_B: dominant extraction miss code 'EXTRACT.MISSED_DECISION' with share=1.000"
+  ],
+  "dominant_error_codes": [
+    "EXTRACT.MISSED_DECISION"
+  ],
+  "remediation_targets": [
+    "decision_extraction_prompt"
+  ],
+  "proposed_actions": [
+    {
+      "action_id": "6742dd27-b51c-4bb8-86a0-9292a4c898af",
+      "action_type": "prompt_change",
+      "target_component": "decision_extraction_prompt",
+      "rationale": "Dominant error 'EXTRACT.MISSED_DECISION' indicates the extraction prompt is failing to capture required items.",
+      "expected_benefit": "Improve extraction recall by revising the relevant extraction prompt.",
+      "risk_level": "medium",
+      "confidence_score": 0.75
+    }
+  ],
+  "primary_proposal_index": 0,
+  "evidence_summary": {
+    "record_count": 4,
+    "avg_cluster_confidence": 0.0,
+    "weighted_severity_score": 0.0,
+    "pass_types": [
+      "extraction"
+    ]
+  }
+}

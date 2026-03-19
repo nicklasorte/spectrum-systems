@@ -1,0 +1,37 @@
+{
+  "remediation_id": "a52f8c2e-5927-4669-960a-f7fac979d872",
+  "cluster_id": "afe5cab0-a2f2-4cca-bcec-31c4b2992b5b",
+  "cluster_signature": "RETRIEVE.IRRELEVANT_MEMORY",
+  "taxonomy_version": "1.0.0",
+  "created_at": "2026-03-19T00:08:26.672732+00:00",
+  "mapping_status": "mapped",
+  "mapping_reasons": [
+    "rule_E: dominant RETRIEVE family code 'RETRIEVE.IRRELEVANT_MEMORY' with share=1.000"
+  ],
+  "dominant_error_codes": [
+    "RETRIEVE.IRRELEVANT_MEMORY"
+  ],
+  "remediation_targets": [
+    "retrieval_selection_rules"
+  ],
+  "proposed_actions": [
+    {
+      "action_id": "233abc70-605e-48a7-82b1-e7ce2112d5a5",
+      "action_type": "retrieval_change",
+      "target_component": "retrieval_selection_rules",
+      "rationale": "Dominant error family is RETRIEVE (RETRIEVE.IRRELEVANT_MEMORY). Retrieval selection rules need updating to surface more relevant context.",
+      "expected_benefit": "Reduce retrieval errors by refining selection and ranking rules.",
+      "risk_level": "medium",
+      "confidence_score": 0.75
+    }
+  ],
+  "primary_proposal_index": 0,
+  "evidence_summary": {
+    "record_count": 3,
+    "avg_cluster_confidence": 0.0,
+    "weighted_severity_score": 0.0,
+    "pass_types": [
+      "extraction"
+    ]
+  }
+}
