@@ -40,6 +40,7 @@ from spectrum_systems.modules.runtime.slo_control import (  # noqa: E402
     compute_error_budget,
     compute_slo_status,
     compute_timeliness_sli,
+    compute_traceability_integrity_sli,
     compute_traceability_sli,
     determine_allowed_to_proceed,
     load_inputs,
@@ -1247,4 +1248,158 @@ def test_cli_malformed_lineage_json_exits_2():
             "--output-dir", tmpd,
         ])
         assert code == 2
+
+
+# ===========================================================================
+# 16. Lineage integrity SLI and failure propagation (Fix 6)
+# ===========================================================================
+
+
+def _registry_with_missing_parent() -> Dict[str, Any]:
+    """Return a lineage registry where a non-root artifact references a missing parent."""
+    return {
+        "SIM-OUT-001": {
+            "artifact_id": "SIM-OUT-001",
+            "artifact_type": "simulation_output",
+            "parent_artifact_ids": ["SIM-IN-MISSING"],
+            "lineage_depth": 1,
+            "root_artifact_ids": ["SIM-IN-MISSING"],
+            "lineage_valid": False,
+            "lineage_errors": ["missing parent"],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        }
+    }
+
+
+def _registry_with_circular_dep() -> Dict[str, Any]:
+    """Return a lineage registry with a circular dependency."""
+    return {
+        "ART-A": {
+            "artifact_id": "ART-A",
+            "artifact_type": "simulation_output",
+            "parent_artifact_ids": ["ART-B"],
+            "lineage_depth": 1,
+            "root_artifact_ids": ["ART-B"],
+            "lineage_valid": False,
+            "lineage_errors": ["circular"],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        },
+        "ART-B": {
+            "artifact_id": "ART-B",
+            "artifact_type": "simulation_output",
+            "parent_artifact_ids": ["ART-A"],
+            "lineage_depth": 1,
+            "root_artifact_ids": ["ART-A"],
+            "lineage_valid": False,
+            "lineage_errors": ["circular"],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        },
+    }
+
+
+def _valid_lineage_registry() -> Dict[str, Any]:
+    """Return a fully valid lineage registry."""
+    return {
+        "SIM-IN-001": {
+            "artifact_id": "SIM-IN-001",
+            "artifact_type": "simulation_input",
+            "parent_artifact_ids": [],
+            "lineage_depth": 0,
+            "root_artifact_ids": ["SIM-IN-001"],
+            "lineage_valid": True,
+            "lineage_errors": [],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        },
+        "SIM-OUT-001": {
+            "artifact_id": "SIM-OUT-001",
+            "artifact_type": "simulation_output",
+            "parent_artifact_ids": ["SIM-IN-001"],
+            "lineage_depth": 1,
+            "root_artifact_ids": ["SIM-IN-001"],
+            "lineage_valid": True,
+            "lineage_errors": [],
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "created_by": "test",
+            "version": "1.0.0",
+        },
+    }
+
+
+def test_compute_traceability_integrity_sli_invalid_registry_missing_parent():
+    """Registry with a missing parent must yield sli=0.0, lineage_valid=False, non-empty errors."""
+    sli_value, lineage_valid, lineage_errors = compute_traceability_integrity_sli(
+        _registry_with_missing_parent()
+    )
+    assert sli_value == 0.0
+    assert lineage_valid is False
+    assert len(lineage_errors) > 0
+
+
+def test_compute_traceability_integrity_sli_invalid_registry_circular():
+    """Registry with a circular dependency must yield sli=0.0, lineage_valid=False, non-empty errors."""
+    sli_value, lineage_valid, lineage_errors = compute_traceability_integrity_sli(
+        _registry_with_circular_dep()
+    )
+    assert sli_value == 0.0
+    assert lineage_valid is False
+    assert len(lineage_errors) > 0
+
+
+def test_run_slo_control_lineage_failure_blocks():
+    """Invalid lineage registry must block execution: allowed_to_proceed=False, lineage_valid=False."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_registry_with_missing_parent(),
+        parent_artifact_ids=["DEC-001"],
+        created_at="2025-01-01T00:00:00+00:00",
+    )
+    assert result["allowed_to_proceed"] is False
+    assert result["lineage_valid"] is False
+    slo_artifact = result["slo_evaluation"]
+    assert slo_artifact["lineage_valid"] is False
+    assert slo_artifact["allowed_to_proceed"] is False
+    violations = slo_artifact.get("violations", [])
+    violation_names = [v["sli"] for v in violations]
+    assert "traceability_integrity" in violation_names
+
+
+def test_run_slo_control_valid_lineage_passes():
+    """Fully valid lineage registry must yield lineage_valid=True."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+        created_at="2025-01-01T00:00:00+00:00",
+    )
+    assert result["lineage_valid"] is True
+    assert result["slo_evaluation"]["lineage_valid"] is True
+    slis = result["slo_evaluation"]["slis"]
+    assert slis["traceability_integrity"] == 1.0
+
+
+def test_parent_artifact_ids_propagation():
+    """parent_artifact_ids passed to run_slo_control must appear exactly in the output artifact."""
+    parent_ids = ["DEC-FIXED-001", "SYN-FIXED-001"]
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        parent_artifact_ids=parent_ids,
+        created_at="2025-01-01T00:00:00+00:00",
+    )
+    artifact = result["slo_evaluation"]
+    assert "parent_artifact_ids" in artifact
+    assert artifact["parent_artifact_ids"] == parent_ids
 

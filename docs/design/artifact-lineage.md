@@ -217,3 +217,29 @@ python scripts/run_lineage_validation.py --dir artifacts/ --output outputs/linea
   "gap_report": { ... }
 }
 ```
+
+---
+
+## Root Artifact Invariants
+
+Every artifact in the pipeline must have a non-empty `root_artifact_ids` list. The following invariants are enforced at both the schema level and at runtime:
+
+1. **All artifacts**: `root_artifact_ids` must have at least one entry (`minItems: 1`). An empty array is a schema violation.
+
+2. **`simulation_input` artifacts**: `root_artifact_ids` must include the artifact's own `artifact_id`. A `simulation_input` is its own root — it anchors the entire downstream lineage chain. Omitting the self-reference is a validation error.
+
+These invariants are enforced by:
+- `contracts/schemas/artifact_lineage.schema.json` — `minItems: 1` on `root_artifact_ids` with `if/then/else` for artifact type
+- `validate_against_schema()` in `artifact_lineage.py` — runtime check for `simulation_input` self-reference
+- `create_artifact_metadata()` — auto-populates `root_artifact_ids` correctly when building artifacts
+
+---
+
+## Timestamp Validation
+
+All `created_at` fields are declared with `"format": "date-time"` in the JSON Schema and are validated using `jsonschema.FormatChecker()` at runtime.
+
+- The schema declares `"format": "date-time"` on the `created_at` property.
+- Both `artifact_lineage.py` and `slo_control.py` pass `format_checker=FormatChecker()` to `Draft202012Validator`, ensuring format errors are raised rather than silently ignored.
+- Invalid timestamps (e.g., `"not-a-date"`, `"2025-13-01T00:00:00Z"`) will fail validation.
+- All valid artifacts must use strict ISO 8601 date-time format (e.g., `"2025-01-01T00:00:00+00:00"`).

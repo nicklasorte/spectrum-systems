@@ -194,6 +194,38 @@ class TestSchemaValidation:
         valid, errors = validate_against_schema(artifact)
         assert not valid
 
+    def test_root_artifact_ids_empty_invalid(self):
+        """An artifact with root_artifact_ids=[] must fail schema validation."""
+        artifact = _mk("SIM-IN-001", "simulation_input", root_artifact_ids=[])
+        valid, errors = validate_against_schema(artifact)
+        assert not valid
+        assert errors
+
+    def test_simulation_input_root_must_include_self(self):
+        """simulation_input missing its own ID in root_artifact_ids must fail validation."""
+        artifact = _mk("SIM-IN-001", "simulation_input", root_artifact_ids=["OTHER-001"])
+        valid, errors = validate_against_schema(artifact)
+        assert not valid
+        assert any("must include itself in root_artifact_ids" in e for e in errors)
+
+    def test_valid_root_artifact_ids_pass(self):
+        """An artifact with a proper root structure must pass schema validation."""
+        # simulation_input with itself as root
+        artifact_root = _mk("SIM-IN-001", "simulation_input", root_artifact_ids=["SIM-IN-001"])
+        valid, errors = validate_against_schema(artifact_root)
+        assert valid, errors
+
+        # Non-root artifact with root pointing to simulation input
+        artifact_child = _mk(
+            "SIM-OUT-001",
+            "simulation_output",
+            parent_artifact_ids=["SIM-IN-001"],
+            lineage_depth=1,
+            root_artifact_ids=["SIM-IN-001"],
+        )
+        valid, errors = validate_against_schema(artifact_child)
+        assert valid, errors
+
 
 # ===========================================================================
 # 3. CREATE ARTIFACT METADATA

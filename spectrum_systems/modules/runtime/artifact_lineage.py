@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 _SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 _LINEAGE_SCHEMA_PATH = _SCHEMA_DIR / "artifact_lineage.schema.json"
@@ -580,8 +580,19 @@ def validate_against_schema(artifact: Dict[str, Any]) -> Tuple[bool, List[str]]:
         (valid, error_messages)
     """
     schema = _load_lineage_schema()
-    validator = Draft202012Validator(schema)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = [str(e.message) for e in validator.iter_errors(artifact)]
+
+    # Enforce simulation_input self-reference invariant (semantic constraint
+    # not expressible in pure JSON Schema cross-field validation).
+    if artifact.get("artifact_type") == "simulation_input":
+        aid = artifact.get("artifact_id", "")
+        roots = artifact.get("root_artifact_ids", [])
+        if aid and aid not in roots:
+            errors.append(
+                f"simulation_input artifact '{aid}' must include itself in root_artifact_ids"
+            )
+
     return (len(errors) == 0, errors)
 
 
