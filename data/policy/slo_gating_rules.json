@@ -1,0 +1,26 @@
+{
+  "rules_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "stages": {
+    "observe": {
+      "warnings_allowed": true,
+      "decision_bearing": false
+    },
+    "interpret": {
+      "warnings_allowed": true,
+      "decision_bearing": false
+    },
+    "recommend": {
+      "warnings_allowed": false,
+      "decision_bearing": true
+    },
+    "synthesis": {
+      "warnings_allowed": false,
+      "decision_bearing": true
+    },
+    "export": {
+      "warnings_allowed": false,
+      "decision_bearing": true
+    }
+  }
+}

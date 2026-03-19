@@ -826,3 +826,199 @@ artifact path argument.  The existing enforcement execution path is unchanged.
 - `evaluate_traceability_policy()` now uses registry profile data for the
   TI-band decision mapping instead of hardcoded if/elif logic
 - All 2541 pre-BN.2 tests continue to pass
+
+---
+
+## Stage-Aware Decision Gating Engine (BN.3)
+
+### Why Gating Exists
+
+BN.1 created enforcement decisions.  BN.2 centralised policy and stage
+binding.  But neither step was sufficient to *stop* untrustworthy artifacts
+from entering decision-bearing stages.  Both layers described risk — they did
+not prevent bad execution.
+
+BN.3 closes that gap.  The gating engine consumes an
+``slo_enforcement_decision`` artifact and determines whether the downstream
+pipeline step may proceed, must halt, or may proceed only in an explicitly
+permitted warning state.  This makes the control layer binding, not advisory.
+
+### Enforcement vs. Gating
+
+| Layer       | Artifact                  | Question answered                                      |
+|-------------|---------------------------|--------------------------------------------------------|
+| Enforcement | `slo_enforcement_decision`| Is this artifact trustworthy under a named policy?     |
+| Gating      | `slo_gating_decision`     | May this pipeline step continue given the stage posture? |
+
+Enforcement evaluates TI against a policy profile.
+Gating evaluates an enforcement decision against a stage's governed posture.
+
+The outputs are distinct artifacts with distinct schemas.
+
+### Stage-Aware Continuation Rules
+
+Pipeline stages differ in what a ``allow_with_warning`` enforcement decision
+means for execution.  The gating engine applies a governed posture per stage:
+
+| Stage       | Warnings allowed | Decision-bearing | Default behaviour on warning |
+|-------------|-----------------|------------------|------------------------------|
+| `observe`   | Yes             | No               | `proceed_with_warning`       |
+| `interpret` | Yes             | No               | `proceed_with_warning`       |
+| `recommend` | No              | Yes              | `halt`                       |
+| `synthesis` | No              | Yes              | `halt`                       |
+| `export`    | No              | Yes              | `halt`                       |
+
+This posture is centralised in ``data/policy/slo_gating_rules.json`` and
+validated against ``contracts/schemas/slo_gating_rules.schema.json``.  The
+engine falls back to fail-closed posture if the config file is unavailable.
+
+### Gating Outcomes
+
+Gating outcomes are **distinct** from enforcement decision statuses.
+
+| Outcome               | Meaning                                                          |
+|-----------------------|------------------------------------------------------------------|
+| `proceed`             | Enforcement allowed; stage may continue                          |
+| `proceed_with_warning`| Enforcement warned; stage posture permits continuation           |
+| `halt`                | Enforcement failed, or warning at a decision-bearing stage       |
+
+### Gating Reason Codes
+
+| Reason code                          | Trigger condition                                          |
+|--------------------------------------|------------------------------------------------------------|
+| `enforcement_allow`                  | Upstream decision was ``allow``                            |
+| `enforcement_warning_allowed`        | Warning; stage posture permits continuation                |
+| `enforcement_warning_blocked_by_stage` | Warning; stage posture requires halt                     |
+| `enforcement_fail`                   | Upstream decision was ``fail``                             |
+| `malformed_enforcement_decision`     | Payload could not be parsed or required fields missing     |
+| `missing_enforcement_status`         | `decision_status` field absent from enforcement decision   |
+| `unknown_enforcement_status`         | `decision_status` has an unrecognised value                |
+| `inconsistent_enforcement_payload`   | Internally contradictory fields detected                   |
+
+### Recommended Actions
+
+Recommended actions are deterministic from gating context.
+
+| Action                       | When emitted                                                        |
+|------------------------------|---------------------------------------------------------------------|
+| `proceed`                    | Gating outcome is `proceed`                                         |
+| `proceed_with_monitoring`    | Gating outcome is `proceed_with_warning`                            |
+| `halt_and_review`            | Warning/fail; no specific lineage fault identified                  |
+| `halt_and_repair_lineage`    | `lineage_valid` is False; lineage needs correction                  |
+| `halt_and_rerun_with_registry`| Degraded lineage mode or `lineage_defaulted` is True               |
+| `halt_and_escalate`          | Malformed, inconsistent, or unrecognised enforcement payload        |
+
+### CLI Usage
+
+```bash
+# Gate an enforcement decision using the stage embedded in the artifact
+python scripts/run_slo_gating.py outputs/slo_enforcement_decision.json
+
+# Override the stage
+python scripts/run_slo_gating.py outputs/slo_enforcement_decision.json --stage synthesis
+
+# Non-decision-bearing stage (warnings allowed)
+python scripts/run_slo_gating.py outputs/slo_enforcement_decision.json --stage observe
+
+# Write gating decision to a custom path
+python scripts/run_slo_gating.py outputs/slo_enforcement_decision.json \
+    --output /tmp/gating_decision.json
+
+# Show all stage postures (no artifact required)
+python scripts/run_slo_gating.py --show-stage-posture
+
+# Show posture for a specific stage
+python scripts/run_slo_gating.py --show-stage-posture --stage synthesis
+```
+
+The gating decision artifact is written to ``outputs/slo_gating_decision.json``
+by default.  The Python API returns it under the key ``gating_decision``.
+
+**Exit codes:**
+
+| Code | Meaning                                              |
+|------|------------------------------------------------------|
+| 0    | proceed                                              |
+| 1    | proceed_with_warning                                 |
+| 2    | halt                                                 |
+| 3    | malformed input / schema / execution error           |
+
+Exit code 2 (halt) and exit code 3 (execution error) are deliberately distinct
+so operators can distinguish a governed gate stop from an infrastructure fault.
+
+### End-to-End Control Chain
+
+```
+run_slo_control   → outputs/slo_evaluation.json          (SLI evaluation)
+run_slo_enforcement → outputs/slo_enforcement_decision.json  (policy enforcement)
+run_slo_gating    → outputs/slo_gating_decision.json     (stage-aware binding gate)
+```
+
+Each step produces a governed machine-readable artifact.  Downstream stages
+consume the gating decision's ``gating_outcome`` field: ``proceed`` continues,
+``halt`` stops.
+
+The Python convenience path:
+
+```python
+from spectrum_systems.modules.runtime.slo_enforcement import run_slo_enforcement
+from spectrum_systems.modules.runtime.decision_gating import run_slo_gating
+
+# Step 1 — evaluate artifact against enforcement policy
+enforcement_result = run_slo_enforcement(raw_artifact, policy="permissive", stage="synthesis")
+
+# Step 2 — gate based on stage posture (run_slo_gating accepts the wrapper dict)
+gating_result = run_slo_gating(enforcement_result, stage="synthesis")
+
+outcome = gating_result["gating_outcome"]   # "proceed" | "proceed_with_warning" | "halt"
+artifact = gating_result["gating_decision"] # full governed gating artifact
+```
+
+### Gating Decision Artifact Schema
+
+Schema: ``contracts/schemas/slo_gating_decision.schema.json``
+
+Key fields:
+
+| Field                         | Type           | Description                                      |
+|-------------------------------|----------------|--------------------------------------------------|
+| `gating_decision_id`          | string         | Unique ID for this gating decision (GATE-...)    |
+| `source_decision_id`          | string         | ID of the upstream enforcement decision          |
+| `artifact_id`                 | string         | ID of the evaluated artifact                     |
+| `stage`                       | string         | Pipeline stage at which gating was evaluated     |
+| `enforcement_policy`          | string         | Policy profile that produced the enforcement decision |
+| `enforcement_decision_status` | string         | allow / allow_with_warning / fail                |
+| `gating_outcome`              | enum           | proceed / proceed_with_warning / halt            |
+| `gating_reason_code`          | enum           | Machine-readable reason for the outcome          |
+| `traceability_integrity_sli`  | number\|null   | TI value from the enforcement decision           |
+| `lineage_validation_mode`     | string         | strict or degraded                               |
+| `lineage_defaulted`           | boolean\|null  | True when lineage used fail-safe defaults        |
+| `lineage_valid`               | boolean\|null  | Lineage validity result                          |
+| `recommended_action`          | enum           | Deterministic recommended operator action       |
+| `warnings`                    | array          | Warning messages                                 |
+| `errors`                      | array          | Error messages                                   |
+| `evaluated_at`                | date-time      | When the gating decision was generated           |
+| `contract_version`            | string         | Schema version                                   |
+
+### Module Location
+
+```
+spectrum_systems/modules/runtime/decision_gating.py
+```
+
+### Governed Config Files
+
+| File                                              | Role                                       |
+|---------------------------------------------------|--------------------------------------------|
+| `data/policy/slo_gating_rules.json`              | Canonical gating posture per stage         |
+| `contracts/schemas/slo_gating_rules.schema.json` | JSON Schema 2020-12 for gating rules       |
+| `contracts/schemas/slo_gating_decision.schema.json` | JSON Schema 2020-12 for gating artifacts |
+
+### Backward Compatibility Notes
+
+- No existing modules, functions, schemas, or exit codes were modified
+- `run_slo_control` and `run_slo_enforcement` are unchanged
+- The gating engine is additive; existing callers are unaffected
+- `run_slo_gating` accepts either a bare enforcement decision dict or the
+  ``{enforcement_decision: ...}`` wrapper returned by ``run_slo_enforcement``
+- All pre-BN.3 tests continue to pass

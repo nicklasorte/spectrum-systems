@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slo_gating_rules.schema.json",
+  "title": "SLO Gating Rules",
+  "description": "Governed configuration of stage-aware gating posture for the Decision Gating Engine (BN.3). Defines which pipeline stages permit warnings to continue and which are decision-bearing (warnings halt by default).",
+  "type": "object",
+  "required": [
+    "rules_version",
+    "contract_version",
+    "stages"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "rules_version": {
+      "type": "string",
+      "description": "Version of the gating rules file.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Schema/contract version this file conforms to.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "stages": {
+      "type": "object",
+      "description": "Map of stage name to its gating posture.",
+      "additionalProperties": false,
+      "properties": {
+        "observe": { "$ref": "#/$defs/stage_posture" },
+        "interpret": { "$ref": "#/$defs/stage_posture" },
+        "recommend": { "$ref": "#/$defs/stage_posture" },
+        "synthesis": { "$ref": "#/$defs/stage_posture" },
+        "export": { "$ref": "#/$defs/stage_posture" }
+      },
+      "required": ["observe", "interpret", "recommend", "synthesis", "export"]
+    }
+  },
+  "$defs": {
+    "stage_posture": {
+      "type": "object",
+      "description": "Gating posture for a single pipeline stage.",
+      "required": ["warnings_allowed", "decision_bearing"],
+      "additionalProperties": false,
+      "properties": {
+        "warnings_allowed": {
+          "type": "boolean",
+          "description": "When true, enforce_with_warning decisions may yield proceed_with_warning at this stage. When false, they yield halt."
+        },
+        "decision_bearing": {
+          "type": "boolean",
+          "description": "When true, this stage produces outputs that feed decision artifacts and must fail closed on warnings."
+        }
+      }
+    }
+  }
+}
