@@ -510,3 +510,189 @@ state.
 Exit codes map directly from the overall status: healthy → 0, degraded → 1,
 violated → 2.  There are no fallback or default paths that mask
 classification errors.
+
+---
+
+## TI Enforcement Layer (Prompt 11B)
+
+### Why TI Needed Enforcement
+
+The SLO Control Layer (BR) computes `traceability_integrity_sli` as one of
+four SLIs and records it in the `slo_evaluation` artifact.  Before Prompt 11B,
+TI was a **passive metric**: it was observed, recorded, and could trigger an
+SLO violation, but downstream callers were not required to respect it at the
+stage level.
+
+The TI Enforcement Layer turns TI into an **active runtime control** via a
+policy-driven decision that determines whether a pipeline step may:
+
+- `allow` — proceed normally
+- `allow_with_warning` — proceed with caution; operator attention recommended
+- `fail` — stop; do not pass this artifact to the next stage
+
+The enforcement decision is recorded as a governed machine-readable
+`slo_enforcement_decision` artifact (schema:
+`contracts/schemas/slo_enforcement_decision.schema.json`).
+
+---
+
+### Module Location
+
+```
+spectrum_systems/modules/runtime/slo_enforcement.py
+```
+
+---
+
+### Supported Policy Profiles
+
+| Profile          | TI 1.0 | TI 0.5            | TI 0.0 |
+|------------------|--------|-------------------|--------|
+| `permissive`     | allow  | allow_with_warning | fail  |
+| `decision_grade` | allow  | fail              | fail   |
+| `exploratory`    | allow  | allow_with_warning | fail  |
+
+The **default policy** is `permissive`.
+
+Per-stage defaults (applied when no explicit `--policy` is provided):
+
+| Stage       | Default policy   |
+|-------------|-----------------|
+| `observe`   | `permissive`    |
+| `interpret` | `permissive`    |
+| `recommend` | `decision_grade`|
+| `synthesis` | `decision_grade`|
+| `export`    | `decision_grade`|
+
+An explicit `--policy` argument always overrides the stage default.
+
+---
+
+### Decision Meanings
+
+| Status               | Meaning                                                      |
+|----------------------|--------------------------------------------------------------|
+| `allow`              | TI is 1.0 (strict + valid lineage). Proceed normally.        |
+| `allow_with_warning` | TI is 0.5 (degraded / no registry). Proceed with caution.   |
+| `fail`               | TI is 0.0 (strict + invalid lineage) or inputs are invalid. Stop. |
+
+---
+
+### Reason Codes
+
+| Code                              | Meaning                                                    |
+|-----------------------------------|------------------------------------------------------------|
+| `strict_valid_lineage`            | TI 1.0 — strict mode, all lineage checks passed            |
+| `strict_invalid_lineage`          | TI 0.0 — strict mode, lineage registry has errors          |
+| `degraded_no_registry`            | TI 0.5 — no lineage registry supplied                      |
+| `missing_traceability_integrity`  | TI field absent from input artifact                        |
+| `malformed_traceability_integrity`| TI value is not a recognised governed band (1.0/0.5/0.0)  |
+| `missing_lineage_mode`            | `lineage_validation_mode` absent from input artifact       |
+| `malformed_lineage_mode`          | `lineage_validation_mode` is not `strict` or `degraded`    |
+| `inconsistent_lineage_state`      | Internally contradictory combination of lineage fields     |
+
+---
+
+### Inconsistency Detection
+
+The enforcement layer detects contradictory lineage state combinations and
+produces `fail` with reason code `inconsistent_lineage_state`:
+
+| Contradiction                                        | Example                                     |
+|------------------------------------------------------|---------------------------------------------|
+| TI 1.0 with `lineage_validation_mode == "degraded"`  | strict-valid lineage requires strict mode   |
+| TI 0.5 with `lineage_defaulted == False`             | degraded TI implies defaulted should be True|
+| TI 0.0 with `lineage_valid == True`                  | invalid lineage cannot also be valid        |
+| strict mode + TI 1.0/0.0 with `lineage_valid` absent | strict mode must record lineage_valid       |
+
+These are never silently normalised away.
+
+---
+
+### Exit Codes (CLI)
+
+| Code | Meaning                                         |
+|------|-------------------------------------------------|
+| 0    | `allow` — proceed                               |
+| 1    | `allow_with_warning` — proceed with caution     |
+| 2    | `fail` — stop                                   |
+| 3    | malformed input / schema error / execution error|
+
+---
+
+### Degraded-Mode Handling
+
+When no lineage registry is supplied, `traceability_integrity_sli` is 0.5
+(`degraded`).  The enforcement layer treats this as a real operational state,
+not a soft footnote:
+
+- Under `permissive` or `exploratory` policy: `allow_with_warning` with
+  `recommended_action: proceed_with_caution`.
+- Under `decision_grade` policy: `fail` with
+  `recommended_action: halt_degraded_lineage`.
+
+Operators who need to pass `decision_grade` stages must supply a lineage
+registry so that TI can be validated to 1.0.
+
+---
+
+### Backward Compatibility
+
+The TI Enforcement Layer is a **new module** (`slo_enforcement.py`) that
+complements, but does not modify, `slo_control.py`.  Existing callers of
+`run_slo_control` are unaffected.
+
+The enforcement layer accepts `slo_evaluation` artifacts produced by
+`run_slo_control` as-is, reading `traceability_integrity` from the nested
+`slo_evaluation.slis.traceability_integrity` path if the top-level key is
+absent.
+
+No existing schemas, functions, or tests were modified.
+
+---
+
+### CLI Usage
+
+```bash
+# Default (permissive) policy
+python scripts/run_slo_enforcement.py outputs/slo_evaluation.json
+
+# Explicit decision_grade policy
+python scripts/run_slo_enforcement.py outputs/slo_evaluation.json --policy decision_grade
+
+# Stage-driven policy (synthesis → decision_grade by default)
+python scripts/run_slo_enforcement.py outputs/slo_evaluation.json --stage synthesis
+
+# Custom output path
+python scripts/run_slo_enforcement.py outputs/slo_evaluation.json --output /tmp/decision.json
+```
+
+The decision artifact is written to `outputs/slo_enforcement_decision.json`
+by default, and also returned in the Python API result dict under the key
+`enforcement_decision`.
+
+---
+
+### Decision Artifact Schema
+
+Schema: `contracts/schemas/slo_enforcement_decision.schema.json`
+
+Key fields:
+
+| Field                        | Type          | Description                                   |
+|------------------------------|---------------|-----------------------------------------------|
+| `artifact_id`                | string        | ID of the evaluated artifact                  |
+| `enforcement_policy`         | enum          | Policy profile applied                        |
+| `enforcement_scope`          | enum (opt.)   | Stage, if provided                            |
+| `decision_status`            | enum          | allow / allow_with_warning / fail             |
+| `decision_reason_code`       | enum          | Machine-readable reason                       |
+| `traceability_integrity_sli` | number\|null  | TI value evaluated                            |
+| `lineage_validation_mode`    | string        | strict or degraded                            |
+| `lineage_defaulted`          | boolean       | True when lineage used fail-safe defaults     |
+| `lineage_valid`              | boolean\|null | Lineage validity result                       |
+| `recommended_action`         | enum          | Machine-readable recommended next step        |
+| `warnings`                   | array         | Warning messages                              |
+| `errors`                     | array         | Error messages                                |
+| `evaluated_at`               | date-time     | When the decision was generated               |
+| `contract_version`           | string        | Schema version                                |
+| `decision_id`                | string        | Unique decision identifier (ENF-...)          |
