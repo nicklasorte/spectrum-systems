@@ -696,3 +696,133 @@ Key fields:
 | `evaluated_at`               | date-time     | When the decision was generated               |
 | `contract_version`           | string        | Schema version                                |
 | `decision_id`                | string        | Unique decision identifier (ENF-...)          |
+
+---
+
+## Policy Registry + Stage Binding (BN.2)
+
+### Why the Registry Exists
+
+Before BN.2, policy names and stage-to-policy defaults were embedded directly
+in `slo_enforcement.py`.  This created policy sprawl risk: future modules
+might fork policy semantics or stage binding behaviour, leading to divergent
+enforcement across the system.
+
+BN.2 centralises all policy definitions and stage bindings into a governed,
+machine-readable registry so that:
+
+- Policy selection is auditable — one source of truth
+- Stage bindings are explicit and schema-validated
+- Runtime enforcement consumes the registry rather than inline defaults
+- New policies or stages can be added in one place without logic drift
+
+### Module Location
+
+```
+spectrum_systems/modules/runtime/policy_registry.py
+```
+
+The registry module owns policy definitions, stage bindings, validation, and
+override resolution.  It does not depend on CLI behaviour.
+
+### Registry Files
+
+| File                                              | Role                           |
+|---------------------------------------------------|--------------------------------|
+| `data/policy/slo_policy_registry.json`           | Canonical registry data file   |
+| `contracts/schemas/slo_policy_registry.schema.json` | JSON Schema 2020-12 for registry |
+
+### Policy Profiles
+
+| Profile         | TI 1.0    | TI 0.5             | TI 0.0 | Warnings | Degraded OK |
+|-----------------|-----------|---------------------|--------|----------|-------------|
+| `permissive`    | allow     | allow_with_warning  | fail   | yes      | yes         |
+| `decision_grade`| allow     | fail                | fail   | no       | no          |
+| `exploratory`   | allow     | allow_with_warning  | fail   | yes      | yes         |
+
+Each profile also specifies default `recommended_actions` per decision status.
+
+### Stage Bindings
+
+| Stage       | Default Policy   |
+|-------------|-----------------|
+| `observe`   | `permissive`    |
+| `interpret` | `permissive`    |
+| `recommend` | `decision_grade`|
+| `synthesis` | `decision_grade`|
+| `export`    | `decision_grade`|
+
+### Override Resolution Order
+
+Resolution is implemented in `resolve_effective_slo_policy()` and follows
+this strict precedence:
+
+1. **Explicit caller-provided policy** — if `--policy` is given and is a known
+   policy name, use it (regardless of stage)
+2. **Stage-bound default** — if `--stage` is given and has a registry binding,
+   use the bound policy
+3. **System default** — `permissive` (registry `default_policy` field)
+
+Unknown policy names and unknown stage names raise governed
+`UnknownPolicyError` / `UnknownStageError` exceptions, never uncaught errors.
+
+### Diagnostics Usage
+
+The policy registry exposes helpers for observability:
+
+```python
+from spectrum_systems.modules.runtime.policy_registry import (
+    list_slo_policies,
+    list_slo_stages,
+    list_stage_bindings,
+    describe_effective_policy,
+)
+
+# List all registered policy profile names
+policies = list_slo_policies()          # ['decision_grade', 'exploratory', 'permissive']
+
+# List all registered stage names
+stages = list_slo_stages()              # ['export', 'interpret', 'observe', 'recommend', 'synthesis']
+
+# Get the full stage → policy bindings map
+bindings = list_stage_bindings()
+
+# Describe effective policy resolution (useful for debugging)
+info = describe_effective_policy(requested_policy=None, stage="synthesis")
+# info["effective_policy"]   == "decision_grade"
+# info["resolution_source"]  == "stage_binding"
+```
+
+These are also surfaced in the CLI (see below).
+
+### CLI Changes (BN.2)
+
+Three new diagnostics flags were added to `scripts/run_slo_enforcement.py`:
+
+```bash
+# List all available policy profile names
+python scripts/run_slo_enforcement.py --list-policies
+
+# List all stages and their default policy bindings
+python scripts/run_slo_enforcement.py --list-stages
+
+# Show effective policy resolution for given inputs
+python scripts/run_slo_enforcement.py --show-effective-policy
+python scripts/run_slo_enforcement.py --show-effective-policy --policy decision_grade
+python scripts/run_slo_enforcement.py --show-effective-policy --stage synthesis
+```
+
+All three flags exit with code 0 and write to stdout.  They do not require an
+artifact path argument.  The existing enforcement execution path is unchanged.
+
+### Backward Compatibility Notes
+
+- All existing CLI options (`--policy`, `--stage`, `--output`) work unchanged
+- All constants previously exported from `slo_enforcement.py` remain importable
+  from the same location (they are now sourced from `policy_registry.py`)
+- `resolve_enforcement_policy()` in `slo_enforcement.py` still works; it now
+  delegates to `resolve_effective_slo_policy()` from the registry, with an
+  inline fallback for registry unavailability
+- `evaluate_traceability_policy()` now uses registry profile data for the
+  TI-band decision mapping instead of hardcoded if/elif logic
+- All 2541 pre-BN.2 tests continue to pass

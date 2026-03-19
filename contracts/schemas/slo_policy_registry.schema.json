@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slo_policy_registry.schema.json",
+  "title": "SLO Policy Registry",
+  "description": "Governed registry of enforcement policy profiles and stage-to-policy bindings for the TI Enforcement Layer (BN.2). Centralises all policy definitions so runtime enforcement no longer relies on embedded defaults.",
+  "type": "object",
+  "required": [
+    "registry_version",
+    "contract_version",
+    "default_policy",
+    "policies",
+    "stage_bindings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "description": "Version of this registry document.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Schema contract version for this artifact.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "default_policy": {
+      "type": "string",
+      "description": "System-wide default policy applied when no explicit policy or stage is provided.",
+      "enum": ["permissive", "decision_grade", "exploratory"]
+    },
+    "policies": {
+      "type": "object",
+      "description": "Map of policy profile name to policy profile definition.",
+      "additionalProperties": false,
+      "properties": {
+        "permissive": { "$ref": "#/$defs/policyProfile" },
+        "decision_grade": { "$ref": "#/$defs/policyProfile" },
+        "exploratory": { "$ref": "#/$defs/policyProfile" }
+      },
+      "required": ["permissive", "decision_grade", "exploratory"]
+    },
+    "stage_bindings": {
+      "type": "object",
+      "description": "Map of pipeline stage identifier to default policy profile name.",
+      "additionalProperties": false,
+      "properties": {
+        "observe": { "$ref": "#/$defs/policyRef" },
+        "interpret": { "$ref": "#/$defs/policyRef" },
+        "recommend": { "$ref": "#/$defs/policyRef" },
+        "synthesis": { "$ref": "#/$defs/policyRef" },
+        "export": { "$ref": "#/$defs/policyRef" }
+      },
+      "required": ["observe", "interpret", "recommend", "synthesis", "export"]
+    }
+  },
+  "$defs": {
+    "policyRef": {
+      "type": "string",
+      "description": "Reference to a policy profile name.",
+      "enum": ["permissive", "decision_grade", "exploratory"]
+    },
+    "decisionStatus": {
+      "type": "string",
+      "enum": ["allow", "allow_with_warning", "fail"]
+    },
+    "recommendedAction": {
+      "type": "string",
+      "enum": [
+        "proceed",
+        "proceed_with_caution",
+        "halt_and_review",
+        "halt_invalid_lineage",
+        "halt_degraded_lineage",
+        "investigate_inconsistency",
+        "fix_input"
+      ]
+    },
+    "policyProfile": {
+      "type": "object",
+      "description": "Definition of a named enforcement policy profile.",
+      "required": [
+        "profile_name",
+        "description",
+        "ti_1_0_decision",
+        "ti_0_5_decision",
+        "ti_0_0_decision",
+        "warnings_permitted",
+        "degraded_lineage_allowed",
+        "recommended_actions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "profile_name": {
+          "type": "string",
+          "description": "Canonical name of this policy profile.",
+          "enum": ["permissive", "decision_grade", "exploratory"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this profile's intent.",
+          "minLength": 1
+        },
+        "ti_1_0_decision": {
+          "$ref": "#/$defs/decisionStatus",
+          "description": "Decision when traceability_integrity_sli is 1.0 (strict valid)."
+        },
+        "ti_0_5_decision": {
+          "$ref": "#/$defs/decisionStatus",
+          "description": "Decision when traceability_integrity_sli is 0.5 (degraded)."
+        },
+        "ti_0_0_decision": {
+          "$ref": "#/$defs/decisionStatus",
+          "description": "Decision when traceability_integrity_sli is 0.0 (strict invalid)."
+        },
+        "warnings_permitted": {
+          "type": "boolean",
+          "description": "Whether allow_with_warning outcomes are permitted under this profile."
+        },
+        "degraded_lineage_allowed": {
+          "type": "boolean",
+          "description": "Whether degraded lineage (TI=0.5) may result in non-fail outcomes under this profile."
+        },
+        "recommended_actions": {
+          "type": "object",
+          "description": "Default recommended action for each decision status under this profile.",
+          "required": ["allow", "allow_with_warning", "fail"],
+          "additionalProperties": false,
+          "properties": {
+            "allow": { "$ref": "#/$defs/recommendedAction" },
+            "allow_with_warning": { "$ref": "#/$defs/recommendedAction" },
+            "fail": { "$ref": "#/$defs/recommendedAction" }
+          }
+        }
+      }
+    }
+  }
+}

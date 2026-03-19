@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI for the TI Enforcement Layer (Prompt 11B).
+"""CLI for the TI Enforcement Layer (Prompt 11B / BN.2).
 
 Evaluates a pipeline artifact against a named enforcement policy and
 determines whether the stage may proceed, must warn, or must fail.
@@ -28,6 +28,13 @@ Examples
 
     # Write output to a custom path
     python scripts/run_slo_enforcement.py outputs/slo_evaluation.json --output /tmp/decision.json
+
+    # Registry diagnostics
+    python scripts/run_slo_enforcement.py --list-policies
+    python scripts/run_slo_enforcement.py --list-stages
+    python scripts/run_slo_enforcement.py --show-effective-policy
+    python scripts/run_slo_enforcement.py --show-effective-policy --policy decision_grade
+    python scripts/run_slo_enforcement.py --show-effective-policy --stage synthesis
 """
 from __future__ import annotations
 
@@ -48,6 +55,14 @@ from spectrum_systems.modules.runtime.slo_enforcement import (  # noqa: E402
     KNOWN_POLICIES,
     STAGE_DEFAULT_POLICIES,
     run_slo_enforcement,
+)
+from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
+    MalformedRegistryError,
+    PolicyRegistryError,
+    describe_effective_policy,
+    list_slo_policies,
+    list_slo_stages,
+    list_stage_bindings,
 )
 
 # ---------------------------------------------------------------------------
@@ -137,6 +152,68 @@ def _decision_exit_code(status: str, has_schema_errors: bool) -> int:
     return EXIT_ERROR
 
 
+def _print_list_policies() -> int:
+    """Print available policy profile names to stdout."""
+    try:
+        policies = list_slo_policies()
+    except MalformedRegistryError as exc:
+        print(f"ERROR: could not load policy registry: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    print("Available SLO policy profiles:")
+    for name in policies:
+        print(f"  {name}")
+    return EXIT_ALLOW
+
+
+def _print_list_stages() -> int:
+    """Print available stage names and their bound policies to stdout."""
+    try:
+        stages = list_slo_stages()
+        bindings = list_stage_bindings()
+    except MalformedRegistryError as exc:
+        print(f"ERROR: could not load policy registry: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    print("Available pipeline stages and default policy bindings:")
+    for stage in stages:
+        bound = bindings.get(stage, "(unbound)")
+        print(f"  {stage:<12} -> {bound}")
+    return EXIT_ALLOW
+
+
+def _print_show_effective_policy(
+    requested_policy: Optional[str],
+    stage: Optional[str],
+) -> int:
+    """Print the effective policy resolution result to stdout."""
+    # describe_effective_policy captures PolicyRegistryError internally and
+    # sets info["error"], so we don't need a try/except here.
+    info = describe_effective_policy(requested_policy, stage)
+
+    if info.get("error"):
+        print(f"ERROR: {info['error']}", file=sys.stderr)
+        return EXIT_ERROR
+
+    print("=" * 60)
+    print("Effective SLO Policy Resolution")
+    print("=" * 60)
+    print(f"  effective_policy  : {info['effective_policy']}")
+    print(f"  resolution_source : {info['resolution_source']}")
+    if info["stage"] is not None:
+        print(f"  stage             : {info['stage']}")
+        print(f"  stage_binding     : {info['stage_binding']}")
+    if info["requested_policy"] is not None:
+        print(f"  requested_policy  : {info['requested_policy']}")
+    profile = info.get("profile") or {}
+    if profile:
+        print(f"  TI 1.0 decision   : {profile.get('ti_1_0_decision', '?')}")
+        print(f"  TI 0.5 decision   : {profile.get('ti_0_5_decision', '?')}")
+        print(f"  TI 0.0 decision   : {profile.get('ti_0_0_decision', '?')}")
+        print(f"  warnings_permitted: {profile.get('warnings_permitted', '?')}")
+        print(f"  degraded_allowed  : {profile.get('degraded_lineage_allowed', '?')}")
+    print("=" * 60)
+    return EXIT_ALLOW
+
+
 # ---------------------------------------------------------------------------
 # CLI main
 # ---------------------------------------------------------------------------
@@ -157,7 +234,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     parser.add_argument(
         "artifact_path",
-        help="Path to the input artifact JSON file to evaluate.",
+        nargs="?",
+        default=None,
+        help=(
+            "Path to the input artifact JSON file to evaluate. "
+            "Not required when using --list-policies, --list-stages, or --show-effective-policy."
+        ),
     )
     parser.add_argument(
         "--policy",
@@ -186,8 +268,49 @@ def main(argv: Optional[List[str]] = None) -> int:
             f"Defaults to outputs/{_DEFAULT_OUTPUT_FILENAME}."
         ),
     )
+    parser.add_argument(
+        "--list-policies",
+        action="store_true",
+        default=False,
+        help="List all available policy profile names and exit.",
+    )
+    parser.add_argument(
+        "--list-stages",
+        action="store_true",
+        default=False,
+        help="List all available stage names and their default policy bindings and exit.",
+    )
+    parser.add_argument(
+        "--show-effective-policy",
+        action="store_true",
+        default=False,
+        help=(
+            "Show the effective policy that would be resolved for the given "
+            "--policy / --stage combination and exit."
+        ),
+    )
 
     args = parser.parse_args(argv)
+
+    # Diagnostics modes — these do not require artifact_path.
+    if args.list_policies:
+        return _print_list_policies()
+
+    if args.list_stages:
+        return _print_list_stages()
+
+    if args.show_effective_policy:
+        return _print_show_effective_policy(args.policy, args.stage)
+
+    # Enforcement mode requires an artifact path.
+    if args.artifact_path is None:
+        print(
+            "ERROR: artifact_path is required for enforcement. "
+            "Use --list-policies, --list-stages, or --show-effective-policy for diagnostics.",
+            file=sys.stderr,
+        )
+        parser.print_usage(sys.stderr)
+        return EXIT_ERROR
 
     # Load artifact
     artifact_path = Path(args.artifact_path)
