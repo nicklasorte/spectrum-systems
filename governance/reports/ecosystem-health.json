@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-18T23:53:47Z",
+  "generated_at": "2026-03-19T00:02:57Z",
   "summary": {
     "overall_health": "warning",
     "total_repos": 13,
     "governance_compliance": {
-      "compliant": 10,
-      "warning": 3,
+      "compliant": 13,
+      "warning": 0,
       "fail": 0,
       "partial": 0
     },
@@ -133,7 +133,7 @@
       "repo_type": "operational_engine",
       "architecture_layer": "Layer 3",
       "status": "active",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -208,7 +208,7 @@
       "repo_type": "advisory",
       "architecture_layer": "Layer 5",
       "status": "experimental",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "partial",
@@ -258,7 +258,7 @@
       "repo_type": "governance",
       "architecture_layer": "Layer 2",
       "status": "active",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "governance-repo",
       "schema_status": "compliant",
       "ci_status": "compliant",
