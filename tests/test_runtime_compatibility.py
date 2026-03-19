@@ -588,8 +588,8 @@ def test_snapshot_auto_detects_os():
 # ---------------------------------------------------------------------------
 
 
-def test_cli_returns_0_for_compatible_bundle(tmp_path: Path):
-    from scripts.run_runtime_validation import main as cli_main
+def test_cli_returns_0_for_compatible_bundle(tmp_path: Path, monkeypatch):
+    from scripts import run_runtime_validation
 
     ep = tmp_path / "run.sh"
     ep.write_text("#!/bin/bash\n", encoding="utf-8")
@@ -599,13 +599,16 @@ def test_cli_returns_0_for_compatible_bundle(tmp_path: Path):
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
+    monkeypatch.setattr(run_runtime_validation, "_DEFAULT_OUTPUT_PATH", tmp_path / "out.json")
+    monkeypatch.setattr(run_runtime_validation, "_ARCHIVE_DIR", tmp_path / "archive")
+
     env_json = json.dumps(_linux_env())
-    rc = cli_main([str(manifest_path), "--runtime-env", env_json])
+    rc = run_runtime_validation.main([str(manifest_path), "--runtime-env", env_json])
     assert rc == 0
 
 
-def test_cli_returns_1_for_incompatible_bundle(tmp_path: Path):
-    from scripts.run_runtime_validation import main as cli_main
+def test_cli_returns_1_for_incompatible_bundle(tmp_path: Path, monkeypatch):
+    from scripts import run_runtime_validation
 
     ep = tmp_path / "run.sh"
     ep.write_text("#!/bin/bash\n", encoding="utf-8")
@@ -618,9 +621,12 @@ def test_cli_returns_1_for_incompatible_bundle(tmp_path: Path):
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
+    monkeypatch.setattr(run_runtime_validation, "_DEFAULT_OUTPUT_PATH", tmp_path / "out.json")
+    monkeypatch.setattr(run_runtime_validation, "_ARCHIVE_DIR", tmp_path / "archive")
+
     # Wrong MATLAB version installed
     env_json = json.dumps(_linux_env(matlab_runtime_version="R2023a"))
-    rc = cli_main([str(manifest_path), "--runtime-env", env_json])
+    rc = run_runtime_validation.main([str(manifest_path), "--runtime-env", env_json])
     assert rc == 1
 
 
