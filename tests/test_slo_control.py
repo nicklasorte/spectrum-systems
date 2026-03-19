@@ -36,6 +36,8 @@ sys.path.insert(0, str(_REPO_ROOT))
 from spectrum_systems.modules.runtime.slo_control import (  # noqa: E402
     DEGRADED_THRESHOLD,
     HEALTHY_THRESHOLD,
+    _GOVERNED_SLIS,
+    _TI_NO_REGISTRY_DEFAULT,
     build_slo_evaluation_artifact,
     classify_violation,
     compute_completeness_sli,
@@ -49,6 +51,7 @@ from spectrum_systems.modules.runtime.slo_control import (  # noqa: E402
     run_slo_control,
     validate_inputs_against_schema,
     validate_output_against_schema,
+    validate_sli_set,
 )
 
 _SLO_SCHEMA_PATH = _REPO_ROOT / "contracts" / "schemas" / "slo_evaluation.schema.json"
@@ -623,7 +626,7 @@ def test_traceability_bg_no_source_artifacts():
 
 def test_build_artifact_structure():
     loaded = load_inputs([], None, None)
-    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0}
+    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0, "traceability_integrity": 1.0}
     eb = compute_error_budget(slis)
     artifact = build_slo_evaluation_artifact(
         loaded=loaded,
@@ -647,7 +650,7 @@ def test_build_artifact_structure():
 
 def test_build_artifact_evaluation_id_pattern():
     loaded = load_inputs([], None, None)
-    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0}
+    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0, "traceability_integrity": 1.0}
     eb = compute_error_budget(slis)
     artifact = build_slo_evaluation_artifact(
         loaded=loaded,
@@ -668,7 +671,7 @@ def test_build_artifact_evaluation_id_pattern():
 
 def test_validate_output_valid_artifact():
     loaded = load_inputs([], None, None)
-    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0}
+    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0, "traceability_integrity": 1.0}
     eb = compute_error_budget(slis)
     artifact = build_slo_evaluation_artifact(
         loaded=loaded,
@@ -680,6 +683,8 @@ def test_validate_output_valid_artifact():
         created_at="2025-01-01T00:00:00+00:00",
         lineage_valid=True,
         parent_artifact_ids=["DEC-001"],
+        lineage_validation_mode="strict",
+        lineage_defaulted=False,
     )
     errors = validate_output_against_schema(artifact)
     assert errors == []
@@ -693,7 +698,7 @@ def test_validate_output_missing_required_field():
 
 def test_validate_output_extra_property_rejected():
     loaded = load_inputs([], None, None)
-    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0}
+    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0, "traceability_integrity": 1.0}
     eb = compute_error_budget(slis)
     artifact = build_slo_evaluation_artifact(
         loaded=loaded,
@@ -735,7 +740,14 @@ def test_run_slo_control_full_healthy():
         tmp = Path(tmpd)
         be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
         bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=8, num_findings=5))
-        result = run_slo_control([str(be_p)], None, str(bg_p))
+        # Supply a valid lineage registry so TI = 1.0 (strict mode) and
+        # the evaluation can reach "healthy" status.
+        registry = _valid_lineage_registry()
+        result = run_slo_control(
+            [str(be_p)], None, str(bg_p),
+            lineage_registry=registry,
+            parent_artifact_ids=["DEC-001"],
+        )
         assert result["slo_status"] == "healthy"
         assert result["allowed_to_proceed"] is True
 
@@ -824,9 +836,15 @@ def test_cli_exit_0_healthy():
         tmp = Path(tmpd)
         be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
         bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=8, num_findings=5))
+        # Supply a valid lineage registry so TI = 1.0 (strict mode) and the
+        # evaluation can reach exit-0 "healthy" status.
+        lineage_dir = tmp / "lineage"
+        lineage_dir.mkdir()
+        _write_json(lineage_dir, "root.json", _valid_lineage_registry()["SIM-IN-001"])
         code = _run_cli([
             "--be-input", str(be_p),
             "--bg-input", str(bg_p),
+            "--lineage-dir", str(lineage_dir),
             "--parent-id", "DEC-001",
             "--output-dir", tmpd,
         ])
@@ -839,13 +857,17 @@ def test_cli_exit_1_degraded():
         # 7/8 sections → completeness = 0.875 (strictly in degraded band 0.85–<0.95)
         # BE provided → traceability = 1.0 (healthy, not violated)
         # Fresh BG timestamp → timeliness = 1.0 (healthy, not violated)
-        # No lineage registry → traceability_integrity = 1.0 (healthy, not violated)
+        # Valid lineage registry → traceability_integrity = 1.0 (strict, healthy)
         # Overall: one degraded SLI, none violated → status = "degraded" → exit 1
         be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
         bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=7, num_findings=5))
+        lineage_dir = tmp / "lineage"
+        lineage_dir.mkdir()
+        _write_json(lineage_dir, "root.json", _valid_lineage_registry()["SIM-IN-001"])
         code = _run_cli([
             "--be-input", str(be_p),
             "--bg-input", str(bg_p),
+            "--lineage-dir", str(lineage_dir),
             "--output-dir", tmpd,
         ])
         assert code == 1  # strictly degraded
@@ -994,6 +1016,8 @@ def test_run_slo_control_inputs_recorded():
 def _minimal_slo_artifact(
     parent_artifact_ids: Optional[List[str]] = None,
     lineage_valid: Optional[bool] = None,
+    lineage_validation_mode: str = "strict",
+    lineage_defaulted: bool = False,
 ) -> Dict[str, Any]:
     """Return a minimal, schema-compliant SLO evaluation artifact dict."""
     loaded = load_inputs([], None, None)
@@ -1014,6 +1038,8 @@ def _minimal_slo_artifact(
         created_at="2025-01-01T00:00:00+00:00",
         lineage_valid=lineage_valid if lineage_valid is not None else True,
         parent_artifact_ids=parent_artifact_ids if parent_artifact_ids is not None else ["DEC-001"],
+        lineage_validation_mode=lineage_validation_mode,
+        lineage_defaulted=lineage_defaulted,
     )
 
 
@@ -1469,6 +1495,8 @@ def _minimal_result(
     parent_artifact_ids: Optional[List[str]] = None,
     lineage_errors: Optional[List[str]] = None,
     schema_errors: Optional[List[str]] = None,
+    lineage_validation_mode: str = "strict",
+    lineage_defaulted: bool = False,
 ) -> Dict[str, Any]:
     """Build a minimal run_slo_control result dict for summary testing."""
     if parent_artifact_ids is None:
@@ -1484,6 +1512,8 @@ def _minimal_result(
             "allowed_to_proceed": True,
             "lineage_valid": lineage_valid,
             "parent_artifact_ids": parent_artifact_ids,
+            "lineage_validation_mode": lineage_validation_mode,
+            "lineage_defaulted": lineage_defaulted,
             "slis": {
                 "completeness": 1.0,
                 "timeliness": 1.0,
@@ -1558,3 +1588,384 @@ def test_print_summary_absent_lineage_valid_is_flagged(capsys):
     _print_summary(result)
     out = capsys.readouterr().out
     assert "[absent" in out
+
+
+# ===========================================================================
+# 18. Fix 11 — SLO Enforcement Hardening
+# ===========================================================================
+
+
+# --- validate_sli_set ---
+
+
+def test_validate_sli_set_exact_four_passes():
+    """Exactly the 4 governed SLI names must pass without error."""
+    validate_sli_set({
+        "completeness": 1.0,
+        "timeliness": 1.0,
+        "traceability": 1.0,
+        "traceability_integrity": 1.0,
+    })  # no exception
+
+
+def test_validate_sli_set_missing_sli_raises():
+    """Missing any required SLI must raise ValueError."""
+    with pytest.raises(ValueError, match="Missing required SLIs"):
+        validate_sli_set({
+            "completeness": 1.0,
+            "timeliness": 1.0,
+            "traceability": 1.0,
+            # traceability_integrity absent
+        })
+
+
+def test_validate_sli_set_unknown_sli_raises():
+    """An unknown SLI name must raise ValueError."""
+    with pytest.raises(ValueError, match="Unknown SLIs"):
+        validate_sli_set({
+            "completeness": 1.0,
+            "timeliness": 1.0,
+            "traceability": 1.0,
+            "traceability_integrity": 1.0,
+            "fabricated_sli": 0.9,
+        })
+
+
+def test_validate_sli_set_wrong_names_raises():
+    """Completely different SLI names must raise ValueError."""
+    with pytest.raises(ValueError):
+        validate_sli_set({"foo": 1.0, "bar": 0.5, "baz": 0.9, "qux": 0.8})
+
+
+def test_build_artifact_raises_on_missing_sli():
+    """build_slo_evaluation_artifact must raise ValueError when slis is incomplete."""
+    loaded = load_inputs([], None, None)
+    slis = {"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0}  # missing TI
+    eb = compute_error_budget({"completeness": 1.0, "timeliness": 1.0, "traceability": 1.0, "traceability_integrity": 1.0})
+    with pytest.raises(ValueError, match="Missing required SLIs"):
+        build_slo_evaluation_artifact(
+            loaded=loaded,
+            slis=slis,
+            violations=[],
+            slo_status="healthy",
+            error_budget=eb,
+            allowed_to_proceed=True,
+        )
+
+
+def test_governed_slis_constant_has_exactly_four():
+    """_GOVERNED_SLIS must contain exactly 4 names."""
+    assert len(_GOVERNED_SLIS) == 4
+    assert "completeness" in _GOVERNED_SLIS
+    assert "timeliness" in _GOVERNED_SLIS
+    assert "traceability" in _GOVERNED_SLIS
+    assert "traceability_integrity" in _GOVERNED_SLIS
+
+
+# --- lineage_validation_mode ---
+
+
+def test_run_slo_control_strict_mode_with_registry():
+    """run_slo_control with a lineage registry must set lineage_validation_mode='strict'."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    artifact = result["slo_evaluation"]
+    assert artifact["lineage_validation_mode"] == "strict"
+
+
+def test_run_slo_control_degraded_mode_without_registry():
+    """run_slo_control without a lineage registry must set lineage_validation_mode='degraded'."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=None,
+    )
+    artifact = result["slo_evaluation"]
+    assert artifact["lineage_validation_mode"] == "degraded"
+
+
+def test_run_slo_control_lineage_validation_mode_always_present():
+    """lineage_validation_mode must be present in every artifact."""
+    result = run_slo_control([], None, None)
+    assert "lineage_validation_mode" in result["slo_evaluation"]
+
+
+# --- lineage_defaulted ---
+
+
+def test_run_slo_control_lineage_defaulted_true_without_registry():
+    """No registry → lineage_defaulted must be True."""
+    result = run_slo_control([], None, None)
+    assert result["slo_evaluation"]["lineage_defaulted"] is True
+
+
+def test_run_slo_control_lineage_defaulted_false_with_registry():
+    """With a registry → lineage_defaulted must be False."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    assert result["slo_evaluation"]["lineage_defaulted"] is False
+
+
+def test_run_slo_control_lineage_defaulted_always_present():
+    """lineage_defaulted must be present in every artifact."""
+    result = run_slo_control([], None, None)
+    assert "lineage_defaulted" in result["slo_evaluation"]
+
+
+# --- traceability_integrity tied to actual lineage validity ---
+
+
+def test_degraded_mode_ti_below_healthy_threshold():
+    """In degraded mode (no registry) traceability_integrity must be < HEALTHY_THRESHOLD."""
+    result = run_slo_control([], None, None)
+    ti = result["slo_evaluation"]["slis"]["traceability_integrity"]
+    assert ti < HEALTHY_THRESHOLD, (
+        f"Degraded-mode TI must be < {HEALTHY_THRESHOLD}; got {ti}"
+    )
+
+
+def test_degraded_mode_ti_not_equal_to_strict_healthy_ti():
+    """Degraded-mode TI must not equal the strict-mode healthy TI (1.0)."""
+    result_degraded = run_slo_control([], None, None)
+    ti_degraded = result_degraded["slo_evaluation"]["slis"]["traceability_integrity"]
+
+    result_strict = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    ti_strict = result_strict["slo_evaluation"]["slis"]["traceability_integrity"]
+
+    assert ti_strict == 1.0
+    assert ti_degraded != ti_strict, "Degraded-mode TI must differ from healthy strict-mode TI"
+
+
+def test_strict_invalid_lineage_ti_below_degraded_ti():
+    """Invalid lineage (strict mode) must yield TI < degraded-mode TI (clear three-way separation)."""
+    result_invalid = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    ti_invalid = result_invalid["slo_evaluation"]["slis"]["traceability_integrity"]
+
+    result_degraded = run_slo_control([], None, None)
+    ti_degraded = result_degraded["slo_evaluation"]["slis"]["traceability_integrity"]
+
+    # Three distinct bands: strict-invalid (0.0) < degraded (0.5) < strict-healthy (1.0)
+    assert ti_invalid < ti_degraded, (
+        f"Invalid-lineage TI ({ti_invalid}) must be < degraded TI ({ti_degraded})"
+    )
+
+
+def test_lineage_valid_false_in_strict_invalid_mode():
+    """lineage_valid=False when strict mode has invalid lineage."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    assert result["slo_evaluation"]["lineage_valid"] is False
+
+
+def test_lineage_valid_false_in_degraded_mode():
+    """lineage_valid=False in degraded mode — lineage was never assessed."""
+    result = run_slo_control([], None, None)
+    assert result["slo_evaluation"]["lineage_valid"] is False
+
+
+def test_ti_no_registry_default_constant_is_below_healthy_threshold():
+    """_TI_NO_REGISTRY_DEFAULT must be below HEALTHY_THRESHOLD."""
+    assert _TI_NO_REGISTRY_DEFAULT < HEALTHY_THRESHOLD
+
+
+def test_compute_traceability_integrity_sli_no_registry_degraded():
+    """No registry → returns _TI_NO_REGISTRY_DEFAULT, lineage_valid=False."""
+    sli_value, lineage_valid, lineage_errors = compute_traceability_integrity_sli(None)
+    assert sli_value == _TI_NO_REGISTRY_DEFAULT
+    assert lineage_valid is False
+    assert lineage_errors == []
+
+
+# --- artifact always has exactly 4 SLIs ---
+
+
+def test_artifact_always_has_exactly_four_slis():
+    """Every artifact produced by run_slo_control must have exactly the 4 governed SLIs."""
+    result = run_slo_control([], None, None)
+    slis = result["slo_evaluation"]["slis"]
+    assert set(slis.keys()) == _GOVERNED_SLIS
+
+
+def test_artifact_sli_set_stable_with_registry():
+    """With a registry, the artifact still has exactly 4 governed SLIs."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    slis = result["slo_evaluation"]["slis"]
+    assert set(slis.keys()) == _GOVERNED_SLIS
+
+
+# --- schema compliance with new required fields ---
+
+
+def test_schema_requires_lineage_validation_mode():
+    """Schema must reject an artifact missing lineage_validation_mode."""
+    artifact = _minimal_slo_artifact()
+    del artifact["lineage_validation_mode"]
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Schema must reject missing lineage_validation_mode"
+
+
+def test_schema_requires_lineage_defaulted():
+    """Schema must reject an artifact missing lineage_defaulted."""
+    artifact = _minimal_slo_artifact()
+    del artifact["lineage_defaulted"]
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Schema must reject missing lineage_defaulted"
+
+
+def test_schema_rejects_unknown_lineage_validation_mode():
+    """Schema must reject an unknown lineage_validation_mode value."""
+    artifact = _minimal_slo_artifact()
+    artifact["lineage_validation_mode"] = "unknown_mode"
+    errors = validate_output_against_schema(artifact)
+    assert len(errors) > 0, "Schema must reject unknown lineage_validation_mode"
+
+
+def test_schema_accepts_strict_mode_artifact():
+    """A valid strict-mode artifact must be schema-compliant."""
+    artifact = _minimal_slo_artifact(
+        lineage_validation_mode="strict",
+        lineage_defaulted=False,
+    )
+    errors = validate_output_against_schema(artifact)
+    assert errors == [], errors
+
+
+def test_schema_accepts_degraded_mode_artifact():
+    """A valid degraded-mode artifact (with correct TI value) must be schema-compliant."""
+    loaded = load_inputs([], None, None)
+    slis = {
+        "completeness": 0.5,
+        "timeliness": 1.0,
+        "traceability": 0.5,
+        "traceability_integrity": _TI_NO_REGISTRY_DEFAULT,
+    }
+    eb = compute_error_budget(slis)
+    artifact = build_slo_evaluation_artifact(
+        loaded=loaded,
+        slis=slis,
+        violations=[],
+        slo_status="violated",
+        error_budget=eb,
+        allowed_to_proceed=False,
+        created_at="2025-01-01T00:00:00+00:00",
+        lineage_valid=False,
+        parent_artifact_ids=["DEC-001"],
+        lineage_validation_mode="degraded",
+        lineage_defaulted=True,
+    )
+    errors = validate_output_against_schema(artifact)
+    assert errors == [], errors
+
+
+# --- CLI summary prints new fields ---
+
+
+def test_print_summary_includes_lineage_validation_mode(capsys):
+    """_print_summary must emit lineage_validation_mode."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(lineage_validation_mode="strict"))
+    out = capsys.readouterr().out
+    assert "lineage_validation_mode" in out
+    assert "strict" in out
+
+
+def test_print_summary_includes_lineage_defaulted(capsys):
+    """_print_summary must emit lineage_defaulted."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(lineage_defaulted=True))
+    out = capsys.readouterr().out
+    assert "lineage_defaulted" in out
+    assert "True" in out
+
+
+def test_print_summary_degraded_mode_shows_degraded(capsys):
+    """Summary for a degraded-mode result must show lineage_validation_mode=degraded."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(
+        lineage_validation_mode="degraded",
+        lineage_defaulted=True,
+        traceability_integrity=_TI_NO_REGISTRY_DEFAULT,
+    ))
+    out = capsys.readouterr().out
+    assert "degraded" in out
+    assert str(_TI_NO_REGISTRY_DEFAULT) in out
+
+
+def test_print_summary_absent_lineage_validation_mode_flagged(capsys):
+    """When lineage_validation_mode is absent from artifact, summary must flag it."""
+    _print_summary = _load_print_summary()
+    result = _minimal_result()
+    del result["slo_evaluation"]["lineage_validation_mode"]
+    _print_summary(result)
+    out = capsys.readouterr().out
+    assert "[absent]" in out
+
+
+def test_cli_output_includes_new_fields():
+    """CLI-written slo_evaluation.json must include lineage_validation_mode and lineage_defaulted."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
+        _run_cli([
+            "--be-input", str(be_p),
+            "--parent-id", "DEC-001",
+            "--output-dir", tmpd,
+        ])
+        out = json.loads((tmp / "slo_evaluation.json").read_text())
+        assert "lineage_validation_mode" in out
+        assert "lineage_defaulted" in out
+        assert out["lineage_validation_mode"] == "degraded"
+        assert out["lineage_defaulted"] is True
+
+
+def test_cli_strict_mode_output_fields():
+    """CLI with --lineage-dir must produce lineage_validation_mode='strict' and lineage_defaulted=False."""
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
+        lineage_dir = tmp / "lineage"
+        lineage_dir.mkdir()
+        _write_json(lineage_dir, "root.json", _valid_lineage_registry()["SIM-IN-001"])
+        _run_cli([
+            "--be-input", str(be_p),
+            "--lineage-dir", str(lineage_dir),
+            "--parent-id", "DEC-001",
+            "--output-dir", tmpd,
+        ])
+        out = json.loads((tmp / "slo_evaluation.json").read_text())
+        assert out["lineage_validation_mode"] == "strict"
+        assert out["lineage_defaulted"] is False
