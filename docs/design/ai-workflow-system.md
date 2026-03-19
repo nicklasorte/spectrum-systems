@@ -815,6 +815,141 @@ Snapshots are stored under `data/observability_history/`.
 
 ---
 
+## BB — Failure-First Observability
+
+### Why averages are misleading
+
+Average-based metrics hide the most dangerous behaviours.  A system with a
+mean structural score of 0.82 could still produce several promoted outputs that
+carry active failure flags — outputs that a human reviewer would reject
+immediately.  Averaging smooths those cases away and creates a false sense of
+safety.
+
+Failure-first observability inverts the default: instead of reporting how the
+system performs *on average*, it reports **where the system is most wrong**,
+**most overconfident**, and **most structurally broken**.
+
+### Why dangerous promotes matter
+
+A *dangerous promote* is a case that passed surface-level gates but still
+carries meaningful failure indicators.  Examples:
+
+- `error_types` are present but `failure_count` is 0 — silent failure.
+- A human reviewer disagreed but the failure was not counted.
+- Grounding failed while structural score is high — structural illusion.
+- Regression not passed despite high semantic score — silent regression.
+
+Dangerous promotes are the most operationally important signal because they
+represent cases where the system *appeared* to succeed but did not.
+
+### How high-confidence errors are detected
+
+A high-confidence error is flagged when:
+
+1. The composite score (mean of `structural_score`, `semantic_score`,
+   `grounding_score`) is ≥ 0.4 — the system appears confident.
+2. At least one failure indicator is present: `failure_count > 0`,
+   `grounding_passed == False`, or `regression_passed == False`.
+
+The `detect_high_confidence_error(record)` function in
+`failure_ranking.py` implements this check and returns a boolean.
+
+### Module location
+
+```
+spectrum_systems/modules/observability/
+  failure_ranking.py   # BB — Failure-First detection and ranking
+
+scripts/
+  run_failure_first_report.py   # BB — CLI report generator
+```
+
+### Derived metrics
+
+`compute_failure_first_metrics(records)` in `aggregation.py` computes:
+
+| Metric | Description |
+|--------|-------------|
+| `rejection_rate` | Fraction of records with any failure indicator |
+| `promote_rate` | Fraction with no failure indicator |
+| `structural_failure_rate` | Fraction with structural_score < 0.5 |
+| `no_decision_extraction_rate` | Fraction with extraction-related error type |
+| `duplicate_decision_rate` | Fraction with `duplicate_decision` error type |
+| `inconsistent_grounding_rate` | Fraction where grounding did not pass |
+| `high_confidence_error_rate` | Fraction that are high-confidence but failing |
+| `dangerous_promote_count` | Absolute count of dangerous promotes |
+| `repeated_failure_concentration` | Top 3 recurring failure patterns |
+| `pass_failure_concentration` | Failure counts keyed by pass_type |
+
+### Ranking functions
+
+`failure_ranking.py` provides:
+
+| Function | Returns |
+|----------|---------|
+| `rank_worst_cases(records)` | Records ranked worst-first by severity |
+| `rank_failure_modes(records)` | Failure modes ranked by count |
+| `rank_dangerous_promotes(records)` | Dangerous promotes ranked by risk |
+| `rank_pass_weaknesses(records)` | Passes ranked by combined failure risk |
+
+Severity order: dangerous promotes → high-confidence errors → structural
+failures → other failures → clean records.
+
+### CLI report generation
+
+```bash
+# Report across all stored records
+python scripts/run_failure_first_report.py --all
+
+# Report filtered to a specific golden case
+python scripts/run_failure_first_report.py --case CASE_ID
+
+# Custom store and output paths
+python scripts/run_failure_first_report.py --all \
+  --store data/observability/ \
+  --output outputs/failure_first_report.json
+```
+
+Output sections:
+
+1. **Executive Failure Summary** — total cases, rates, dangerous promotes, HCEs
+2. **Worst Cases** — top 5 worst records with gating reasons
+3. **Top Failure Modes** — ranked counts
+4. **Passes / Components Most at Risk** — ranked by combined failure rate
+5. **False-Confidence Zones** — passes where the system appears right but isn't
+6. **Structural Health** — score distribution and failure counts
+
+JSON is written to `outputs/failure_first_report.json`.
+Derived summaries are persisted under `data/observability_reports/`.
+
+### How BB feeds future prompt hardening and trust scoring
+
+BB report outputs feed directly into:
+
+- **Prompt hardening** — the worst cases and top failure modes identify exactly
+  which pass types and error patterns require prompt revision.
+- **Trust scoring** — `dangerous_promote_count` and
+  `high_confidence_error_rate` form the numerators of trust degradation
+  signals.  A system with many dangerous promotes cannot be trusted even if its
+  average scores look acceptable.
+- **Adversarial hardening** — BB consumes both normal and adversarial run
+  records, surfacing adversarial `case_id` values in worst-case outputs so
+  weaknesses exposed by AY-style testing become operationally obvious.
+
+### Storage
+
+Derived summaries are stored under `data/observability_reports/` with
+timestamped filenames to prevent silent overwrites.
+
+### Strict rules
+
+- Do not optimise for pretty dashboards over truthful signals.
+- Do not hide promotes that carry failure flags.
+- Prefer exposing ugly behaviour over smoothing it away.
+- Dangerous promotes are always ranked before ordinary rejects.
+
+---
+
 ## Prompt Regression Harness + Hard Enforcement (Prompt AR)
 
 ### Role of AR in the control loop
