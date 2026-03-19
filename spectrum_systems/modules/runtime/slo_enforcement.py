@@ -83,42 +83,28 @@ _ENFORCEMENT_SCHEMA_PATH = _SCHEMA_DIR / "slo_enforcement_decision.schema.json"
 CONTRACT_VERSION: str = "1.0.0"
 
 # ---------------------------------------------------------------------------
-# Policy profile names
+# Policy profile names, stage identifiers, and stage bindings
+# are now owned by the policy registry (BN.2).  They are imported here
+# for backward compatibility with existing callers.
 # ---------------------------------------------------------------------------
 
-POLICY_PERMISSIVE: str = "permissive"
-POLICY_DECISION_GRADE: str = "decision_grade"
-POLICY_EXPLORATORY: str = "exploratory"
-
-#: The default policy applied when no policy is explicitly specified.
-DEFAULT_POLICY: str = POLICY_PERMISSIVE
-
-#: Recognised policy names.
-KNOWN_POLICIES: frozenset = frozenset({
-    POLICY_PERMISSIVE,
+from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
+    DEFAULT_POLICY,
+    KNOWN_POLICIES,
+    KNOWN_STAGES,
     POLICY_DECISION_GRADE,
     POLICY_EXPLORATORY,
-})
-
-# ---------------------------------------------------------------------------
-# Stage identifiers
-# ---------------------------------------------------------------------------
-
-STAGE_OBSERVE: str = "observe"
-STAGE_INTERPRET: str = "interpret"
-STAGE_RECOMMEND: str = "recommend"
-STAGE_SYNTHESIS: str = "synthesis"
-STAGE_EXPORT: str = "export"
-
-#: Default policy to apply for each known stage.  Stages not listed here fall
-#: back to ``DEFAULT_POLICY``.
-STAGE_DEFAULT_POLICIES: Dict[str, str] = {
-    STAGE_OBSERVE: POLICY_PERMISSIVE,
-    STAGE_INTERPRET: POLICY_PERMISSIVE,
-    STAGE_RECOMMEND: POLICY_DECISION_GRADE,
-    STAGE_SYNTHESIS: POLICY_DECISION_GRADE,
-    STAGE_EXPORT: POLICY_DECISION_GRADE,
-}
+    POLICY_PERMISSIVE,
+    STAGE_DEFAULT_POLICIES,
+    STAGE_EXPORT,
+    STAGE_INTERPRET,
+    STAGE_OBSERVE,
+    STAGE_RECOMMEND,
+    STAGE_SYNTHESIS,
+    get_policy_profile,
+    load_slo_policy_registry,
+    resolve_effective_slo_policy,
+)
 
 # ---------------------------------------------------------------------------
 # Decision statuses
@@ -408,10 +394,17 @@ def resolve_enforcement_policy(
 ) -> str:
     """Resolve the effective enforcement policy.
 
-    Resolution order:
+    Delegates to the governed policy registry (BN.2) for authoritative
+    resolution.  Resolution order:
     1. If *requested_policy* is provided and recognised, use it.
     2. If *stage* is a known stage with a default policy, use that.
     3. Fall back to ``DEFAULT_POLICY``.
+
+    Unknown policy names and unknown stage names are silently ignored (same
+    behaviour as before BN.2) — the registry raises governed errors, but this
+    wrapper falls through to the next resolution step to preserve backward
+    compatibility.  Callers that need governed errors should call
+    :func:`policy_registry.resolve_effective_slo_policy` directly.
 
     Parameters
     ----------
@@ -424,6 +417,27 @@ def resolve_enforcement_policy(
     -------
     One of the POLICY_* constants.
     """
+    from spectrum_systems.modules.runtime.policy_registry import (  # noqa: PLC0415
+        MalformedRegistryError,
+        UnknownPolicyError,
+        UnknownStageError,
+    )
+    # Try registry resolution first.
+    try:
+        effective_policy, _ = resolve_effective_slo_policy(requested_policy, stage)
+        return effective_policy
+    except UnknownPolicyError:
+        # Unknown policy — skip to stage-based or default resolution.
+        pass
+    except UnknownStageError:
+        # Unknown stage — fall back to system default.
+        return DEFAULT_POLICY
+    except (MalformedRegistryError, OSError, json.JSONDecodeError):
+        # Registry file unavailable — fall back to inline defaults so enforcement
+        # remains operational even if the registry cannot be loaded from disk.
+        pass
+
+    # Inline fallback (backward-compatible behaviour).
     if requested_policy is not None and requested_policy in KNOWN_POLICIES:
         return requested_policy
     if stage is not None and stage in STAGE_DEFAULT_POLICIES:
@@ -442,6 +456,9 @@ def evaluate_traceability_policy(
 ) -> str:
     """Evaluate *ti_value* against *policy* and return a decision status.
 
+    Delegates to the governed policy registry (BN.2) for the TI-band
+    decision mapping defined in each policy profile.
+
     Parameters
     ----------
     ti_value:
@@ -454,26 +471,25 @@ def evaluate_traceability_policy(
     One of ``DECISION_ALLOW``, ``DECISION_ALLOW_WITH_WARNING``,
     ``DECISION_FAIL``.
     """
-    if policy == POLICY_PERMISSIVE:
+    from spectrum_systems.modules.runtime.policy_registry import (  # noqa: PLC0415
+        UnknownPolicyError,
+    )
+    try:
+        profile = get_policy_profile(policy)
         if ti_value == _TI_STRICT_VALID:
-            return DECISION_ALLOW
+            return profile["ti_1_0_decision"]
         if ti_value == _TI_DEGRADED:
-            return DECISION_ALLOW_WITH_WARNING
-        return DECISION_FAIL  # ti_value == _TI_STRICT_INVALID
+            return profile["ti_0_5_decision"]
+        if ti_value == _TI_STRICT_INVALID:
+            return profile["ti_0_0_decision"]
+    except UnknownPolicyError:
+        # Unknown policy — fail conservatively (same behaviour as before).
+        pass
+    except (KeyError, TypeError):
+        # Malformed profile data — fail conservatively.
+        pass
 
-    if policy == POLICY_DECISION_GRADE:
-        if ti_value == _TI_STRICT_VALID:
-            return DECISION_ALLOW
-        return DECISION_FAIL  # 0.5 and 0.0 both fail
-
-    if policy == POLICY_EXPLORATORY:
-        if ti_value == _TI_STRICT_VALID:
-            return DECISION_ALLOW
-        if ti_value == _TI_DEGRADED:
-            return DECISION_ALLOW_WITH_WARNING
-        return DECISION_FAIL  # ti_value == _TI_STRICT_INVALID
-
-    # Unknown policy — fail conservatively.
+    # Unrecognised policy or out-of-band TI value — fail conservatively.
     return DECISION_FAIL
 
 

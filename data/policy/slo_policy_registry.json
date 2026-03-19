@@ -1,0 +1,56 @@
+{
+  "registry_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "default_policy": "permissive",
+  "policies": {
+    "permissive": {
+      "profile_name": "permissive",
+      "description": "Lenient policy suitable for early pipeline stages. TI 1.0 allows proceed, TI 0.5 allows proceed with warning, TI 0.0 fails. Degraded lineage is permitted.",
+      "ti_1_0_decision": "allow",
+      "ti_0_5_decision": "allow_with_warning",
+      "ti_0_0_decision": "fail",
+      "warnings_permitted": true,
+      "degraded_lineage_allowed": true,
+      "recommended_actions": {
+        "allow": "proceed",
+        "allow_with_warning": "proceed_with_caution",
+        "fail": "halt_and_review"
+      }
+    },
+    "decision_grade": {
+      "profile_name": "decision_grade",
+      "description": "Strict policy required for stages producing decision-grade outputs. TI 1.0 allows proceed; TI 0.5 and 0.0 both fail. Degraded lineage is not permitted.",
+      "ti_1_0_decision": "allow",
+      "ti_0_5_decision": "fail",
+      "ti_0_0_decision": "fail",
+      "warnings_permitted": false,
+      "degraded_lineage_allowed": false,
+      "recommended_actions": {
+        "allow": "proceed",
+        "allow_with_warning": "halt_and_review",
+        "fail": "halt_and_review"
+      }
+    },
+    "exploratory": {
+      "profile_name": "exploratory",
+      "description": "Research-oriented policy that tolerates degraded lineage for exploratory analysis. TI 1.0 allows proceed, TI 0.5 allows proceed with warning, TI 0.0 fails.",
+      "ti_1_0_decision": "allow",
+      "ti_0_5_decision": "allow_with_warning",
+      "ti_0_0_decision": "fail",
+      "warnings_permitted": true,
+      "degraded_lineage_allowed": true,
+      "recommended_actions": {
+        "allow": "proceed",
+        "allow_with_warning": "proceed_with_caution",
+        "fail": "halt_and_review"
+      }
+    }
+  },
+  "stage_bindings": {
+    "observe": "permissive",
+    "interpret": "permissive",
+    "recommend": "decision_grade",
+    "synthesis": "decision_grade",
+    "export": "decision_grade"
+  }
+}
