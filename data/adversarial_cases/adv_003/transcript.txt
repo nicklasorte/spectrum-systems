@@ -1,0 +1,33 @@
+COORDINATION MEETING — 700 MHz Transition Planning
+Date: 2025-10-22
+Attendees: Fiona Blake (Chair), Ahmed Rashid (Operator A), Carlos Vega (Operator B)
+
+--- TRANSCRIPT BEGIN ---
+
+Fiona Blake: We should probably look at whether to move the transition deadline.
+
+Ahmed Rashid: We might consider pushing it to Q3.
+
+Carlos Vega: There could be some value in delaying, depending on the technical readiness review outcomes.
+
+Fiona Blake: It's possible that an extension would be appropriate.
+
+Ahmed Rashid: I think we would want to consider whether the coordination packages could be submitted by May if we had more time.
+
+Carlos Vega: That might work. Or it might not, depending on the vendor timelines.
+
+Fiona Blake: So should we make a decision today about the deadline?
+
+Ahmed Rashid: Maybe. We could if there's consensus.
+
+Carlos Vega: I think there might be consensus forming but I am not fully certain.
+
+Fiona Blake: Let's say we will consider moving forward on this and potentially decide at the next meeting pending further review.
+
+Ahmed Rashid: That sounds reasonable as a possible path forward.
+
+Carlos Vega: I think that might be the right approach, subject to further analysis.
+
+Fiona Blake: Okay. I think we may have a direction here.
+
+--- TRANSCRIPT END ---

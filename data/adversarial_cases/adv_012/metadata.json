@@ -1,0 +1,11 @@
+{
+  "case_id": "adv_012",
+  "adversarial_type": "overconfident_reference_minutes",
+  "expected_difficulty": "hard",
+  "domain": "4.9ghz",
+  "expected_failure_modes": [
+    "inconsistent_grounding",
+    "low_confidence_output"
+  ],
+  "notes": "Participants express high confidence and praise the process, but guard band is explicitly left TBD. Reference minutes claim a complete decision set. Tests whether system over-trusts participant confidence language or correctly flags the incomplete guard band decision."
+}

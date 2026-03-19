@@ -1,0 +1,18 @@
+{
+  "decisions": [
+    {
+      "id": "ref_adv009_d1",
+      "text": "TDMA-fixed channel access protocol adopted for 5.9 GHz V2X band.",
+      "agreed": true,
+      "note": "DELIBERATELY WRONG — this was superseded. Transcript states dynamic protocol."
+    },
+    {
+      "id": "ref_adv009_d2",
+      "text": "Interference threshold set at -100 dBm/MHz for V2X operations.",
+      "agreed": true,
+      "note": "DELIBERATELY WRONG — transcript states -103 dBm/MHz. These reference minutes are from a superseded draft."
+    }
+  ],
+  "action_items": [],
+  "note": "These reference minutes are intentionally incorrect to test overconfident grounding. A system that trusts reference over transcript will fail grounding validation."
+}

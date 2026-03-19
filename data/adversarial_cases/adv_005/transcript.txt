@@ -1,0 +1,23 @@
+SPECTRUM MANAGEMENT TECHNICAL REVIEW
+Date: 2025-11-30
+Attendees: Rachel Torres (Chair), James Kwon (DOD)
+
+--- TRANSCRIPT BEGIN ---
+
+Rachel Torres: So the question before us today is whether—
+
+[AUDIO DROPOUT - approximately 45 seconds missing]
+
+James Kwon: —and that is why DOD cannot accept that approach. The margin is simply insufficient.
+
+Rachel Torres: Right. So given what you just said about the propagation model—
+
+[RECORDING ARTIFACT - approximately 20 seconds garbled]
+
+Rachel Torres: —the 8700 MHz band specifically.
+
+James Kwon: My concern is the same one I raised in the previous technical session. If we proceed without resolving that, we're going to have an interference problem by mid-year.
+
+Rachel Torres: Understood. I think the position we had before still—
+
+[TRUNCATED — END OF AVAILABLE RECORDING]

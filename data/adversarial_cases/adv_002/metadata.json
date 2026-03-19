@@ -1,0 +1,12 @@
+{
+  "case_id": "adv_002",
+  "adversarial_type": "contradictory_decisions",
+  "expected_difficulty": "hard",
+  "domain": "6ghz",
+  "expected_failure_modes": [
+    "inconsistent_grounding",
+    "duplicate_decisions",
+    "low_confidence_output"
+  ],
+  "notes": "Multiple participants announce conflicting decisions on the same topic (guard band: 20 vs 30 vs 25 MHz). The final settled decision contradicts earlier stated decisions. Extraction engine may pick up all conflicting statements."
+}

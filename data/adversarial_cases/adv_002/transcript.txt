@@ -1,0 +1,53 @@
+MEETING — 6 GHz Coordination Session
+Date: 2026-01-10
+Attendees: Marcus Hill (Chair), Priya Nair (DOD), Leo Santos (FCC)
+
+--- TRANSCRIPT BEGIN ---
+
+Marcus Hill: Alright let's lock in the 6 GHz guard band. My proposal is 20 MHz.
+
+Priya Nair: DOD cannot accept 20 MHz. We need 30 MHz minimum. That is our final position.
+
+Leo Santos: FCC analysis actually supports 25 MHz as a workable compromise.
+
+Marcus Hill: I am moving forward with 20 MHz. That is what gets filed.
+
+Priya Nair: That is not agreed. DOD formally objects to 20 MHz.
+
+Leo Santos: For the record FCC recommends 25 MHz. We cannot support 20 MHz either.
+
+Marcus Hill: The decision is 20 MHz guard band.
+
+Priya Nair: The decision is 30 MHz guard band.
+
+Leo Santos: The decision should be 25 MHz.
+
+Marcus Hill: Fine. Let me clarify: we will adopt the FCC-recommended 25 MHz guard band.
+
+Priya Nair: DOD can accept 25 MHz as a compromise.
+
+Leo Santos: Agreed — 25 MHz guard band.
+
+Marcus Hill: Now on the interference threshold — I propose -110 dBm/MHz.
+
+Leo Santos: FCC previously filed that -112 dBm/MHz is the technically defensible floor. We should not go above -110.
+
+Priya Nair: Wait — are we saying -110 is more or less restrictive than -112? I always get confused by the negative sign direction.
+
+Marcus Hill: -110 is less restrictive. Higher power allowed.
+
+Leo Santos: Right, so FCC's position is -112 or stricter. -110 is too permissive.
+
+Marcus Hill: Understood. So the decision is -112 dBm/MHz interference threshold.
+
+Priya Nair: DOD supports -112.
+
+Leo Santos: Agreed.
+
+Marcus Hill: Actually hold on. I just recalled the industry coalition submitted a request for -108 dBm/MHz last week. That changes the calculus.
+
+Leo Santos: That request has not been reviewed. We cannot incorporate it today.
+
+Marcus Hill: Then we will proceed with -112 dBm/MHz for now and revisit after industry input is reviewed.
+
+--- TRANSCRIPT END ---

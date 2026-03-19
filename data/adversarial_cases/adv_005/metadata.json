@@ -1,0 +1,12 @@
+{
+  "case_id": "adv_005",
+  "adversarial_type": "truncated_transcript",
+  "expected_difficulty": "hard",
+  "domain": "8700mhz",
+  "expected_failure_modes": [
+    "no_decisions_extracted",
+    "structural_failure",
+    "low_confidence_output"
+  ],
+  "notes": "Transcript has audio dropouts and is cut off mid-discussion. No complete statement is ever made. System must not fabricate a decision from partial context. Structural failure expected."
+}

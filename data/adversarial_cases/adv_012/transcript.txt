@@ -1,0 +1,31 @@
+SPECTRUM COORDINATION SESSION — 4.9 GHz Public Safety Band
+Date: 2026-01-22
+Attendees: Morris Grant (Chair), Aiko Tanaka (Public Safety), Lars Eriksen (Industry)
+
+--- TRANSCRIPT BEGIN ---
+
+Morris Grant: Today we are finalizing the public safety band at 4.9 GHz. The coordination outcome is clear. The interference threshold has been extensively studied.
+
+Aiko Tanaka: Yes. Our technical analysis is unambiguous. I have full confidence in the outcome we're about to confirm.
+
+Lars Eriksen: Industry's models are all aligned. No uncertainty here.
+
+Morris Grant: So the guard band — well, we have not quite finalized that. But the interference threshold: we are adopting -107 dBm/MHz.
+
+Aiko Tanaka: Agreed. -107 dBm/MHz. And the guard band we will sort out — I'm not worried about it.
+
+Lars Eriksen: -107 dBm/MHz confirmed. Guard band will be whatever we need it to be.
+
+Morris Grant: Exactly. The interference threshold is firm. The filing deadline is firm. We are submitting by February 15th. This is a well-understood band. The public safety community has clear requirements. Everything else will fall into place.
+
+Aiko Tanaka: I agree. The process is solid. The decision quality here is excellent.
+
+Lars Eriksen: No concerns at all. The process speaks for itself.
+
+Morris Grant: Perfect. So to summarize what we decided: -107 dBm/MHz threshold, February 15th filing deadline, guard band TBD.
+
+Aiko Tanaka: That's it. Done.
+
+Lars Eriksen: Confirmed.
+
+--- TRANSCRIPT END ---

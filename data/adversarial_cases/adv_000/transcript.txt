@@ -1,0 +1,31 @@
+SPECTRUM ENGINEERING ROUNDTABLE
+Date: 2025-12-15
+Attendees: Philip Cross (Chair), Nadia Volkov (Research), Thomas Osei (Standards)
+
+--- TRANSCRIPT BEGIN ---
+
+Philip Cross: Thank you for joining the roundtable. Today we are gathering input on the proposed revision to the interference methodology standard.
+
+Nadia Volkov: Our lab has been running extensive modeling on the 5G-satellite coexistence problem. The key finding is that the current aggregate interference model underestimates peak load by approximately 4 dB.
+
+Thomas Osei: The standards body is tracking that issue. There is an open work item in the revision queue but no timeline commitment yet.
+
+Philip Cross: What is your view on the guard band sizing methodology?
+
+Nadia Volkov: The existing methodology dates from 2018 and does not account for beamforming directionality. It needs a full revision.
+
+Thomas Osei: I agree the methodology needs updating. There is no consensus yet on what replaces it.
+
+Philip Cross: So the question before us today is: do we have enough evidence to recommend updating the methodology to the full committee?
+
+Nadia Volkov: I think we are close. Maybe one more set of validation runs.
+
+Thomas Osei: The evidence base is building. We are not at a recommendation threshold yet.
+
+Philip Cross: Then today is an information session. No recommendations. We will reconvene when the validation data is complete.
+
+Nadia Volkov: Agreed. Not yet ready to recommend.
+
+Thomas Osei: Agreed. Awaiting further validation.
+
+--- TRANSCRIPT END ---

@@ -1,0 +1,41 @@
+{
+  "cluster_id": "6ab8530a-f302-42e7-b7aa-ca8f1411a2b1",
+  "timestamp": "2026-03-19T00:55:34.875366+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "HALLUC.UNSUPPORTED_ASSERTION",
+    "secondary_error_codes": [
+      "SCHEMA.INVALID_OUTPUT"
+    ],
+    "dominant_family": "HALLUC"
+  },
+  "metrics": {
+    "record_count": 1,
+    "weighted_severity_score": 8.5,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 1
+    },
+    "pass_types": {
+      "extraction": 1
+    },
+    "source_systems": {
+      "evaluation": 1
+    }
+  },
+  "remediation_targets": [
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-mixed-002",
+      "error_codes": [
+        "SCHEMA.INVALID_OUTPUT",
+        "HALLUC.UNSUPPORTED_ASSERTION"
+      ],
+      "explanation": "Observed SCHEMA.INVALID_OUTPUT error in evaluation run."
+    }
+  ]
+}

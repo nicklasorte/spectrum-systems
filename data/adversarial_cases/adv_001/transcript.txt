@@ -1,0 +1,41 @@
+MEETING — 3.5 GHz Band Planning Session
+Date: 2025-12-02
+Attendees: Janet Wu (Chair), Tom Briggs (Industry), Sandra Okafor (Regulator)
+
+--- TRANSCRIPT BEGIN ---
+
+Janet Wu: Thanks everyone for joining. Before we get into the 3.5 GHz item, I just want to check: did anyone get the revised propagation study from last week?
+
+Tom Briggs: I got something but I am not sure if it was the final version or the draft.
+
+Sandra Okafor: I did not receive anything at all.
+
+Janet Wu: Okay we will sort that out offline.
+
+Tom Briggs: Also my train was late this morning. Worst commute in years. The signal failures on the central line are out of control.
+
+Sandra Okafor: Ha, same. I got stuck at Victoria for twenty minutes.
+
+Janet Wu: Let's try to get through the agenda. So. 3.5 GHz. Tom, do you want to start?
+
+Tom Briggs: Sure. I think we should look at the adjacent band interference issue. There's a lot of complexity there.
+
+Sandra Okafor: Yes, definitely something to think about.
+
+Janet Wu: Agreed. So we should probably look at that at some point.
+
+Tom Briggs: My kid had a recital last night. Three hours of violin. I love her but honestly it was rough.
+
+Sandra Okafor: Oh no.
+
+Janet Wu: Ha. Okay. So... interference threshold. Should we decide something today or wait?
+
+Tom Briggs: Honestly not sure. We could wait for the study results.
+
+Sandra Okafor: Or we could move forward.
+
+Janet Wu: Let me think about it. Maybe let's revisit next meeting.
+
+Tom Briggs: Sounds good.
+
+--- TRANSCRIPT END ---

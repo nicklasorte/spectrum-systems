@@ -1,0 +1,52 @@
+{
+  "cluster_id": "90378a1d-7ea8-4bae-81f7-dbc6b633c9f8",
+  "timestamp": "2026-03-19T00:55:34.875225+00:00",
+  "taxonomy_version": "1.0.0",
+  "cluster_signature": {
+    "primary_error_code": "EXTRACT.MISSED_DECISION",
+    "secondary_error_codes": [],
+    "dominant_family": "EXTRACT"
+  },
+  "metrics": {
+    "record_count": 4,
+    "weighted_severity_score": 10.2,
+    "avg_confidence": 0.85
+  },
+  "context_distribution": {
+    "artifact_types": {
+      "working_paper": 4
+    },
+    "pass_types": {
+      "extraction": 4
+    },
+    "source_systems": {
+      "evaluation": 4
+    }
+  },
+  "remediation_targets": [
+    "prompt"
+  ],
+  "representative_examples": [
+    {
+      "classification_id": "clf-extract-001",
+      "error_codes": [
+        "EXTRACT.MISSED_DECISION"
+      ],
+      "explanation": "Observed EXTRACT.MISSED_DECISION error in evaluation run."
+    },
+    {
+      "classification_id": "clf-extract-002",
+      "error_codes": [
+        "EXTRACT.MISSED_DECISION"
+      ],
+      "explanation": "Observed EXTRACT.MISSED_DECISION error in evaluation run."
+    },
+    {
+      "classification_id": "clf-extract-003",
+      "error_codes": [
+        "EXTRACT.MISSED_DECISION"
+      ],
+      "explanation": "Observed EXTRACT.MISSED_DECISION error in evaluation run."
+    }
+  ]
+}

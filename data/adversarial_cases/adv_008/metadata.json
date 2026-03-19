@@ -1,0 +1,10 @@
+{
+  "case_id": "adv_008",
+  "adversarial_type": "redundant_repetition",
+  "expected_difficulty": "medium",
+  "domain": "28ghz",
+  "expected_failure_modes": [
+    "duplicate_decisions"
+  ],
+  "notes": "Each of 4 decisions is stated 4-5 times verbatim and paraphrased. Correct extraction: 4 unique decisions. Broken extraction: 16-20 near-duplicate decisions. Tests deduplication robustness."
+}

@@ -1,0 +1,35 @@
+SPECTRUM COORDINATION — 2.4 GHz / 5 GHz / 6 GHz Band Management
+Date: 2026-02-05
+Attendees: Diana Marsh (Chair), Kevin Oluf (Industry), Tamsin Reeve (Regulator)
+
+--- TRANSCRIPT BEGIN ---
+
+Diana Marsh: Alright, the main outcomes from today. First, we have confirmed the interference threshold for the 2.4 GHz band at -116 dBm/MHz.
+
+Kevin Oluf: Agreed. Industry will implement the -116 dBm/MHz limit immediately.
+
+Tamsin Reeve: Confirmed. The interference threshold for 2.4 GHz is set at -116 dBm/MHz.
+
+Diana Marsh: Second, we have decided that the coordination package deadline is April 30th.
+
+Kevin Oluf: April 30th — noted. We will have all coordination packages submitted by April 30th.
+
+Tamsin Reeve: The filing deadline is April 30th. That is confirmed.
+
+Diana Marsh: Third, the guard band width will be 12 MHz for the 2.4/5 GHz transition zone.
+
+Kevin Oluf: The 12 MHz guard band is the right technical call. Confirmed.
+
+Tamsin Reeve: 12 MHz guard band confirmed for the 2.4/5 GHz transition zone.
+
+Diana Marsh: And to confirm, the interference limit of minus one hundred sixteen decibels per millihertz per megahertz for the 2.4 GHz operational band is the agreed standard.
+
+Kevin Oluf: Yes, we are all agreeing that the 2.4 GHz interference floor is negative 116 dBm per MHz.
+
+Tamsin Reeve: For absolute clarity: -116 dBm/MHz is the limit. That's what we've decided.
+
+Diana Marsh: Right. So to summarize again: -116 dBm/MHz threshold, April 30th deadline, 12 MHz guard band.
+
+Kevin Oluf: Correct on all three items.
+
+--- TRANSCRIPT END ---

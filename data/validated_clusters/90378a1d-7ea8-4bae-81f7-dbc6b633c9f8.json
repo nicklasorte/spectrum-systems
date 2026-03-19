@@ -1,0 +1,27 @@
+{
+  "cluster_id": "90378a1d-7ea8-4bae-81f7-dbc6b633c9f8",
+  "cluster_signature": "EXTRACT.MISSED_DECISION",
+  "record_count": 4,
+  "error_codes": [
+    "EXTRACT.MISSED_DECISION"
+  ],
+  "pass_types": [
+    "extraction"
+  ],
+  "remediation_targets": [
+    "prompt"
+  ],
+  "validation_status": "valid",
+  "validation_reasons": [
+    "size_ok: record_count=4 >= min=3",
+    "cohesion_ok: dominant_code_fraction=1.0000 >= min=0.6",
+    "pass_consistency_ok: pass_type_count=1 <= max=3",
+    "signature_stable: stored='EXTRACT.MISSED_DECISION' == recomputed='EXTRACT.MISSED_DECISION'",
+    "actionability_ok: remediation_target_count=1 <= max=2",
+    "confidence_ok: avg_confidence=0.8500 >= min=0.6"
+  ],
+  "stability_score": 1.0,
+  "cohesion_score": 1.0,
+  "actionability_score": 1.0,
+  "created_at": "2026-03-19T00:55:34.878713+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "adv_006",
+  "adversarial_type": "mixed_topics",
+  "expected_difficulty": "medium",
+  "domain": "3.5ghz",
+  "expected_failure_modes": [
+    "low_confidence_output",
+    "inconsistent_grounding"
+  ],
+  "notes": "Transcript spans 7+ unrelated topics (merger, legislation, auction, mmWave, CapEx, international treaty, 5G) before landing on a single real decision. System may mis-attribute context or extract false decisions from the preamble."
+}

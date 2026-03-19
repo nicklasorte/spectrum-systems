@@ -1,0 +1,10 @@
+{
+  "case_id": "adv_000",
+  "adversarial_type": "missing_decisions",
+  "expected_difficulty": "easy",
+  "domain": "5g_satellite",
+  "expected_failure_modes": [
+    "no_decisions_extracted"
+  ],
+  "notes": "Explicitly an information-gathering session. All participants agree no decision will be made. A system that extracts any decision here is hallucinating. Clean case for baseline zero-decision detection."
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "adv_010",
+  "adversarial_type": "mixed_topics",
+  "expected_difficulty": "hard",
+  "domain": "600mhz",
+  "expected_failure_modes": [
+    "inconsistent_grounding",
+    "low_confidence_output",
+    "duplicate_decisions"
+  ],
+  "notes": "Five participants. Three bands discussed (600 MHz, 3.45 GHz, 900 MHz IoT). Only one real decision made (600 MHz: 24 months). Two bands explicitly deferred with no decision. Contradictory positions on the main decision (24 vs 36 months) with formal objection. Tests topic isolation and decision boundary detection."
+}

@@ -1,0 +1,31 @@
+SPECTRUM COORDINATION BOARD — QUARTERLY REVIEW
+Date: 2026-01-28
+Attendees: Olga Petrov (Chair), Nathan Hale (Industry), Simone Blanc (FCC)
+
+--- TRANSCRIPT BEGIN ---
+
+Olga Petrov: Okay. Final outcomes are as follows.
+
+Nathan Hale: Before that — I need to raise the CapEx question again. Our 5G rollout is projected to cost $2.3B in the southwest region alone. We need more favorable spectrum conditions.
+
+Simone Blanc: I understand the concern. FCC has a public interest obligation here.
+
+Olga Petrov: Also — the merger discussions between Carrier A and Carrier B are still pending and could affect all of this if they close by Q2.
+
+Nathan Hale: Exactly. And if the merger closes, the combined entity would have a completely different spectrum footprint. All of today's decisions might need revisiting.
+
+Simone Blanc: True. And there is the pending legislation in committee right now that could override any technical decisions we make today.
+
+Olga Petrov: Let's also not forget the international coordination obligation under the bilateral treaty — ITU Region 1 guidelines may preempt our approach on the 3.5 GHz piece.
+
+Nathan Hale: And the vendor ecosystem for the 26 GHz mmWave band is still immature. Any decision to deploy at scale before 2027 is premature.
+
+Simone Blanc: I would add: the spectrum auction scheduled for Q3 changes the landscape entirely for the 600 MHz band.
+
+Olga Petrov: So. Given all that context. I am going to formally decide: the interference threshold for the 3.5 GHz band is -113 dBm/MHz, effective immediately.
+
+Nathan Hale: Agreed.
+
+Simone Blanc: Agreed.
+
+--- TRANSCRIPT END ---
