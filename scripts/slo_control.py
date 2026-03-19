@@ -139,19 +139,38 @@ def _print_summary(result: Dict[str, Any]) -> None:
     slo_status = result.get("slo_status", "unknown")
     allowed = result.get("allowed_to_proceed", False)
 
-    print(f"slo_status:          {slo_status}")
-    print(f"allowed_to_proceed:  {allowed}")
+    print(f"slo_status:                  {slo_status}")
+    print(f"allowed_to_proceed:          {allowed}")
 
     slis = artifact.get("slis") or {}
-    print(f"completeness_sli:    {slis.get('completeness', 'n/a')}")
-    print(f"timeliness_sli:      {slis.get('timeliness', 'n/a')}")
-    print(f"traceability_sli:    {slis.get('traceability', 'n/a')}")
-    if "traceability_integrity" in slis:
-        print(f"traceability_integrity_sli: {slis['traceability_integrity']}")
+    print(f"completeness_sli:            {slis.get('completeness', 'n/a')}")
+    print(f"timeliness_sli:              {slis.get('timeliness', 'n/a')}")
+    print(f"traceability_sli:            {slis.get('traceability', 'n/a')}")
+    print(f"traceability_integrity_sli:  {slis.get('traceability_integrity', 'n/a')}")
 
     eb = artifact.get("error_budget") or {}
-    print(f"error_budget:        remaining={eb.get('remaining', 'n/a')}  "
+    print(f"error_budget:                remaining={eb.get('remaining', 'n/a')}  "
           f"burn_rate={eb.get('burn_rate', 'n/a')}")
+
+    lineage_valid = artifact.get("lineage_valid")
+    if lineage_valid is None:
+        print("lineage_valid:               [absent — lineage not assessed]")
+    else:
+        print(f"lineage_valid:               {lineage_valid}")
+
+    parent_ids = artifact.get("parent_artifact_ids")
+    if parent_ids is None:
+        print("parent_artifact_ids:         [absent]")
+    else:
+        print(f"parent_artifact_ids:         {parent_ids}")
+
+    lineage_errors = result.get("lineage_errors") or []
+    if lineage_errors:
+        print(f"lineage_errors ({len(lineage_errors)}):", file=sys.stderr)
+        for e in lineage_errors:
+            print(f"  {e}", file=sys.stderr)
+    else:
+        print("lineage_errors:              []")
 
     violations = artifact.get("violations") or []
     if violations:
@@ -159,24 +178,18 @@ def _print_summary(result: Dict[str, Any]) -> None:
         for v in violations:
             print(f"  [{v['severity'].upper()}] {v['sli']}: {v['description']}")
     else:
-        print("violations:          []")
+        print("violations:                  []")
 
     load_errors = result.get("load_errors") or []
     if load_errors:
-        print("load_errors:")
+        print("load_errors:", file=sys.stderr)
         for e in load_errors:
             print(f"  {e}", file=sys.stderr)
 
     schema_errors = result.get("schema_errors") or []
     if schema_errors:
-        print("schema_errors:")
+        print(f"Schema validation errors ({len(schema_errors)}):", file=sys.stderr)
         for e in schema_errors:
-            print(f"  {e}", file=sys.stderr)
-
-    lineage_errors = result.get("lineage_errors") or []
-    if lineage_errors:
-        print("lineage_errors:")
-        for e in lineage_errors:
             print(f"  {e}", file=sys.stderr)
 
 

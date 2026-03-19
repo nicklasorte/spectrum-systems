@@ -1444,3 +1444,117 @@ def test_parent_artifact_ids_propagation():
     assert "parent_artifact_ids" in artifact
     assert artifact["parent_artifact_ids"] == parent_ids
 
+
+
+# ===========================================================================
+# 17. Fix 8/9 — CLI summary visibility and schema_errors on stderr
+# ===========================================================================
+
+
+def _load_print_summary():
+    """Import _print_summary from scripts/slo_control.py (isolated load)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "slo_control_cli_vis",
+        _REPO_ROOT / "scripts" / "slo_control.py",
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod._print_summary
+
+
+def _minimal_result(
+    lineage_valid: bool = True,
+    traceability_integrity: float = 1.0,
+    parent_artifact_ids: Optional[List[str]] = None,
+    lineage_errors: Optional[List[str]] = None,
+    schema_errors: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """Build a minimal run_slo_control result dict for summary testing."""
+    if parent_artifact_ids is None:
+        parent_artifact_ids = ["DEC-001"]
+    return {
+        "slo_status": "healthy",
+        "allowed_to_proceed": True,
+        "lineage_valid": lineage_valid,
+        "lineage_errors": lineage_errors or [],
+        "schema_errors": schema_errors or [],
+        "slo_evaluation": {
+            "slo_status": "healthy",
+            "allowed_to_proceed": True,
+            "lineage_valid": lineage_valid,
+            "parent_artifact_ids": parent_artifact_ids,
+            "slis": {
+                "completeness": 1.0,
+                "timeliness": 1.0,
+                "traceability": 1.0,
+                "traceability_integrity": traceability_integrity,
+            },
+            "error_budget": {"remaining": 1.0, "burn_rate": 0.0},
+            "violations": [],
+        },
+    }
+
+
+def test_print_summary_includes_traceability_integrity(capsys):
+    """_print_summary must always emit traceability_integrity_sli, even when value is 1.0."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(traceability_integrity=0.75))
+    out = capsys.readouterr().out
+    assert "traceability_integrity_sli" in out
+    assert "0.75" in out
+
+
+def test_print_summary_includes_lineage_valid(capsys):
+    """_print_summary must emit lineage_valid field."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(lineage_valid=False))
+    out = capsys.readouterr().out
+    assert "lineage_valid" in out
+    assert "False" in out
+
+
+def test_print_summary_includes_parent_artifact_ids(capsys):
+    """_print_summary must emit parent_artifact_ids."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(parent_artifact_ids=["DEC-FIXED-001", "SYN-FIXED-001"]))
+    out = capsys.readouterr().out
+    assert "parent_artifact_ids" in out
+    assert "DEC-FIXED-001" in out
+
+
+def test_print_summary_lineage_errors_go_to_stderr(capsys):
+    """Non-empty lineage_errors must appear on stderr, not stdout."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(lineage_errors=["missing parent SIM-IN-MISSING"]))
+    captured = capsys.readouterr()
+    assert "missing parent SIM-IN-MISSING" in captured.err
+    assert "missing parent SIM-IN-MISSING" not in captured.out
+
+
+def test_print_summary_schema_errors_go_to_stderr(capsys):
+    """Schema validation errors must appear on stderr, not stdout."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(schema_errors=["'artifact_id' is a required property"]))
+    captured = capsys.readouterr()
+    assert "'artifact_id' is a required property" in captured.err
+    assert "'artifact_id' is a required property" not in captured.out
+
+
+def test_print_summary_schema_errors_label_on_stderr(capsys):
+    """The 'Schema validation errors' label itself must be on stderr."""
+    _print_summary = _load_print_summary()
+    _print_summary(_minimal_result(schema_errors=["some error"]))
+    captured = capsys.readouterr()
+    assert "Schema validation errors" in captured.err
+    assert "Schema validation errors" not in captured.out
+
+
+def test_print_summary_absent_lineage_valid_is_flagged(capsys):
+    """When slo_evaluation has no lineage_valid key, output must note it explicitly."""
+    _print_summary = _load_print_summary()
+    result = _minimal_result()
+    del result["slo_evaluation"]["lineage_valid"]
+    _print_summary(result)
+    out = capsys.readouterr().out
+    assert "[absent" in out

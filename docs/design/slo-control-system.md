@@ -347,6 +347,17 @@ contracts/schemas/slo_evaluation.schema.json
 The schema uses JSON Schema 2020-12 with `additionalProperties: false`
 throughout to prevent undeclared fields from passing validation.
 
+**Canonical schema `$id`:**
+
+```
+https://spectrum-systems.org/contracts/slo_evaluation.schema.json
+```
+
+All governed schemas in this repository use the `https://spectrum-systems.org/contracts/`
+base domain.  The `$id` was normalized to this domain (previously
+`https://spectrum.systems/contracts/slo_evaluation.schema.json`) so that
+future cross-schema `$ref` resolution is unambiguous.
+
 **Required top-level fields** (additions since initial design):
 - `lineage_valid` (boolean) — always required; fail-safe defaults to `false`
   when not explicitly set.
@@ -396,6 +407,39 @@ python scripts/slo_control.py \
 - If the directory does not exist, is empty, or any file fails to parse, the
   command exits with code 2.  This is intentional: a missing or broken
   registry must never silently pretend lineage is healthy.
+
+**CLI summary output:**
+
+The operator summary printed to stdout always includes lineage health fields
+so that a single log line is sufficient to determine whether a run is safe to
+trust:
+
+```
+slo_status:                  healthy
+allowed_to_proceed:          True
+completeness_sli:            1.0
+timeliness_sli:              1.0
+traceability_sli:            0.9166666666666666
+traceability_integrity_sli:  1.0
+error_budget:                remaining=0.9791666666666666  burn_rate=0.020833333333333426
+lineage_valid:               True
+parent_artifact_ids:         ['DEC-001', 'SYN-001']
+lineage_errors:              []
+violations:                  []
+```
+
+- `lineage_valid` and `parent_artifact_ids` are always emitted; if absent from
+  the artifact, the summary prints an explicit `[absent]` notice rather than
+  silently skipping the field.
+- `traceability_integrity_sli` is always emitted (not conditional).
+
+**stderr vs stdout:**
+
+- Normal summary fields go to **stdout**.
+- `Schema validation errors` (with count and details) go to **stderr**.
+- `lineage_errors` (when non-empty, with count and details) go to **stderr**.
+- This separation allows CI logs and operators to distinguish normal status
+  output from validation failures without parsing mixed streams.
 
 **Exit codes:**
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum.systems/contracts/slo_evaluation.schema.json",
+  "$id": "https://spectrum-systems.org/contracts/slo_evaluation.schema.json",
   "title": "SLO Evaluation",
   "description": "Governed SLO evaluation artifact produced by BR. Evaluates artifact quality, timeliness, and traceability across BE, BF, and BG outputs and determines whether the system is allowed to proceed.",
   "type": "object",
