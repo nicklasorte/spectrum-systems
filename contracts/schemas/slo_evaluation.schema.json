@@ -15,7 +15,9 @@
     "inputs",
     "created_at",
     "lineage_valid",
-    "parent_artifact_ids"
+    "parent_artifact_ids",
+    "lineage_validation_mode",
+    "lineage_defaulted"
   ],
   "additionalProperties": false,
   "properties": {
@@ -32,7 +34,11 @@
     "slo_status": {
       "type": "string",
       "description": "Overall SLO status derived from all SLI measurements.",
-      "enum": ["healthy", "degraded", "violated"]
+      "enum": [
+        "healthy",
+        "degraded",
+        "violated"
+      ]
     },
     "allowed_to_proceed": {
       "type": "boolean",
@@ -41,7 +47,12 @@
     "slis": {
       "type": "object",
       "description": "Individual SLI measurements, each in range [0.0, 1.0].",
-      "required": ["completeness", "timeliness", "traceability", "traceability_integrity"],
+      "required": [
+        "completeness",
+        "timeliness",
+        "traceability",
+        "traceability_integrity"
+      ],
       "additionalProperties": false,
       "properties": {
         "completeness": {
@@ -64,7 +75,7 @@
         },
         "traceability_integrity": {
           "type": "number",
-          "description": "Lineage integrity SLI — 1.0 when all artifact lineage chains are valid, 0.0 when any lineage error is detected.",
+          "description": "Lineage integrity SLI - 1.0 when all artifact lineage chains are valid (strict mode), 0.0 when any lineage error is detected, 0.5 when no registry was supplied (degraded mode).",
           "minimum": 0.0,
           "maximum": 1.0
         }
@@ -83,23 +94,49 @@
         "minLength": 1
       }
     },
+    "lineage_validation_mode": {
+      "type": "string",
+      "description": "Indicates whether lineage validation was performed against a registry ('strict') or fell back to fail-safe defaults because no registry was supplied ('degraded').",
+      "enum": [
+        "strict",
+        "degraded"
+      ]
+    },
+    "lineage_defaulted": {
+      "type": "boolean",
+      "description": "True when lineage-related fields are populated via fail-safe/default behaviour rather than validated registry-backed resolution. False when lineage was actually resolved through the lineage registry path."
+    },
     "violations": {
       "type": "array",
       "description": "List of SLI violations detected during evaluation.",
       "items": {
         "type": "object",
-        "required": ["sli", "severity", "description"],
+        "required": [
+          "sli",
+          "severity",
+          "description"
+        ],
         "additionalProperties": false,
         "properties": {
           "sli": {
             "type": "string",
             "description": "Which SLI triggered the violation.",
-            "enum": ["completeness", "timeliness", "traceability", "traceability_integrity"]
+            "enum": [
+              "completeness",
+              "timeliness",
+              "traceability",
+              "traceability_integrity"
+            ]
           },
           "severity": {
             "type": "string",
             "description": "Severity of the violation.",
-            "enum": ["low", "medium", "high", "critical"]
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
           },
           "description": {
             "type": "string",
@@ -112,7 +149,10 @@
     "error_budget": {
       "type": "object",
       "description": "Error budget derived from SLI averages.",
-      "required": ["remaining", "burn_rate"],
+      "required": [
+        "remaining",
+        "burn_rate"
+      ],
       "additionalProperties": false,
       "properties": {
         "remaining": {
@@ -131,7 +171,11 @@
     "inputs": {
       "type": "object",
       "description": "References to the BE, BF, and BG input artifacts consumed.",
-      "required": ["be_artifacts", "bf_artifact", "bg_artifact"],
+      "required": [
+        "be_artifacts",
+        "bf_artifact",
+        "bg_artifact"
+      ],
       "additionalProperties": false,
       "properties": {
         "be_artifacts": {
@@ -142,11 +186,17 @@
           }
         },
         "bf_artifact": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Path or identifier of the BF (cross_run_intelligence_decision) artifact, or null if not provided."
         },
         "bg_artifact": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Path or identifier of the BG (working_paper_evidence_pack) artifact, or null if not provided."
         }
       }

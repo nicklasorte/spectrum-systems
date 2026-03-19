@@ -65,6 +65,20 @@ _SCHEMA_VERSION = "1.0.0"
 HEALTHY_THRESHOLD = 0.95
 DEGRADED_THRESHOLD = 0.85
 
+# Governed SLI set — exactly these four names must appear in every artifact.
+_GOVERNED_SLIS: frozenset = frozenset({
+    "completeness",
+    "timeliness",
+    "traceability",
+    "traceability_integrity",
+})
+
+# traceability_integrity value emitted when no lineage registry is supplied.
+# Deliberately below HEALTHY_THRESHOLD so that degraded validation mode
+# (no-registry path) is machine-distinguishable from validated-and-healthy
+# strict-mode lineage.
+_TI_NO_REGISTRY_DEFAULT: float = 0.5
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,6 +101,25 @@ def _artifact_id(seed: str) -> str:
 
 def _load_schema() -> Dict[str, Any]:
     return json.loads(_SLO_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def validate_sli_set(slis: Dict[str, float]) -> None:
+    """Validate that *slis* contains exactly the 4 governed SLI names.
+
+    Raises
+    ------
+    ValueError
+        When any required SLI is absent or any unknown SLI name is present.
+        (Duplicate keys cannot exist in a Python dict; exact-set equality is
+        sufficient to cover all three failure modes stated in the requirement.)
+    """
+    actual = set(slis.keys())
+    missing = _GOVERNED_SLIS - actual
+    unknown = actual - _GOVERNED_SLIS
+    if missing:
+        raise ValueError(f"Missing required SLIs: {sorted(missing)}")
+    if unknown:
+        raise ValueError(f"Unknown SLIs not in governed set: {sorted(unknown)}")
 
 
 # ---------------------------------------------------------------------------
@@ -424,7 +457,12 @@ def compute_traceability_integrity_sli(
         (sli_value, lineage_valid, lineage_errors)
     """
     if not lineage_registry:
-        return (1.0, True, [])
+        # No registry supplied → degraded validation mode.
+        # Return _TI_NO_REGISTRY_DEFAULT (< HEALTHY_THRESHOLD) so that the
+        # no-registry path is never machine-indistinguishable from validated
+        # healthy strict-mode lineage.  lineage_valid=False records that
+        # lineage was NOT actually assessed.
+        return (_TI_NO_REGISTRY_DEFAULT, False, [])
 
     try:
         from spectrum_systems.modules.runtime.artifact_lineage import validate_full_registry
@@ -570,6 +608,8 @@ def build_slo_evaluation_artifact(
     created_at: Optional[str] = None,
     lineage_valid: Optional[bool] = None,
     parent_artifact_ids: Optional[List[str]] = None,
+    lineage_validation_mode: str = "degraded",  # fail-safe default; callers must override
+    lineage_defaulted: bool = True,              # fail-safe default; callers must override
 ) -> Dict[str, Any]:
     """Assemble the governed SLO evaluation artifact dict.
 
@@ -578,7 +618,8 @@ def build_slo_evaluation_artifact(
     loaded:
         The dict returned by :func:`load_inputs`.
     slis:
-        Dict mapping SLI name → measured value.
+        Dict mapping SLI name → measured value.  Must contain exactly the 4
+        governed SLI names; raises :exc:`ValueError` on missing or unknown SLIs.
     violations:
         List of violation dicts (from :func:`classify_violation`).
     slo_status:
@@ -598,11 +639,34 @@ def build_slo_evaluation_artifact(
         drove this SLO evaluation).  This is a schema-required field
         (``minItems: 1``); operators must supply at least one parent ID via
         ``--parent-id``.
+    lineage_validation_mode:
+        ``"strict"`` when a lineage registry was supplied and lineage checks
+        were actually performed; ``"degraded"`` when no registry was supplied
+        and the system fell back to fail-safe defaults.  Always present in
+        the artifact.  **Callers should always supply an explicit value.**
+        The default ``"degraded"`` is a conservative fail-safe for direct
+        callers that do not provide a registry; :func:`run_slo_control` always
+        sets this explicitly.
+    lineage_defaulted:
+        ``True`` when lineage-related fields are populated via fail-safe/
+        default behaviour rather than validated registry-backed resolution;
+        ``False`` when lineage was actually resolved through the lineage
+        registry path.  Always present in the artifact.  **Callers should
+        always supply an explicit value.**  The default ``True`` is a
+        conservative fail-safe; :func:`run_slo_control` always sets this
+        explicitly.
 
     Returns
     -------
     A dict that is schema-compliant with the slo_evaluation schema.
+
+    Raises
+    ------
+    ValueError
+        When *slis* does not contain exactly the 4 governed SLI names.
     """
+    validate_sli_set(slis)
+
     ts = created_at or _now_iso()
     eval_id = _evaluation_id(f"{ts}:{slo_status}")
     art_id = _artifact_id(eval_id)
@@ -612,16 +676,10 @@ def build_slo_evaluation_artifact(
     bg_path = loaded.get("bg_path")
 
     slis_out: Dict[str, float] = {
-        "completeness": slis.get("completeness", 0.0),
-        "timeliness": slis.get("timeliness", 0.0),
-        "traceability": slis.get("traceability", 0.0),
-        # Default 1.0 is intentional for this assembler function: the caller
-        # (run_slo_control) always computes and supplies this value.  When this
-        # function is called directly without a precomputed value, 1.0 signals
-        # "not assessed by this call path" — not "verified valid".  If you are
-        # calling this function directly you are responsible for computing the SLI
-        # and including it in the slis dict.
-        "traceability_integrity": slis.get("traceability_integrity", 1.0),
+        "completeness": slis["completeness"],
+        "timeliness": slis["timeliness"],
+        "traceability": slis["traceability"],
+        "traceability_integrity": slis["traceability_integrity"],
     }
 
     artifact: Dict[str, Any] = {
@@ -638,6 +696,8 @@ def build_slo_evaluation_artifact(
             "bg_artifact": bg_path if bg_path else None,
         },
         "created_at": ts,
+        "lineage_validation_mode": lineage_validation_mode,
+        "lineage_defaulted": lineage_defaulted,
     }
 
     if lineage_valid is not None:
@@ -732,6 +792,11 @@ def run_slo_control(
         "traceability_integrity": ti_value,
     }
 
+    # Determine lineage mode fields — set before artifact construction so they
+    # are passed through and recorded in the governed artifact.
+    lineage_validation_mode = "strict" if lineage_registry is not None else "degraded"
+    lineage_defaulted = lineage_registry is None
+
     # 4. Classify violations
     violations: List[Dict[str, Any]] = []
     for sli_name, value in slis.items():
@@ -759,6 +824,8 @@ def run_slo_control(
         created_at=created_at,
         lineage_valid=lineage_valid,
         parent_artifact_ids=parent_artifact_ids,
+        lineage_validation_mode=lineage_validation_mode,
+        lineage_defaulted=lineage_defaulted,
     )
 
     # 9. Validate output artifact against schema

@@ -158,6 +158,18 @@ def _print_summary(result: Dict[str, Any]) -> None:
     else:
         print(f"lineage_valid:               {lineage_valid}")
 
+    lvm = artifact.get("lineage_validation_mode")
+    if lvm is None:
+        print("lineage_validation_mode:     [absent]")
+    else:
+        print(f"lineage_validation_mode:     {lvm}")
+
+    ldef = artifact.get("lineage_defaulted")
+    if ldef is None:
+        print("lineage_defaulted:           [absent]")
+    else:
+        print(f"lineage_defaulted:           {ldef}")
+
     parent_ids = artifact.get("parent_artifact_ids")
     if parent_ids is None:
         print("parent_artifact_ids:         [absent]")
