@@ -92,6 +92,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | Plan file | Item | Status |
 | --- | --- | --- |
 | docs/review-actions/PLAN-BB-2026-03-19.md | Prompt BB — Failure-First Observability | Active |
+| docs/review-actions/PLAN-BB-PLUS-1-2026-03-19.md | Prompt BB+1 — Failure Enforcement & Control Layer | Active |
 
 Update this table when plans are created or completed.
 
