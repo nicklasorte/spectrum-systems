@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slo_gating_decision.schema.json",
+  "title": "SLO Gating Decision",
+  "description": "Governed machine-readable gating decision artifact produced by the Stage-Aware Decision Gating Engine (BN.3). Evaluates a validated SLO enforcement decision in the context of a named pipeline stage and determines whether execution may proceed, must halt, or may proceed only in explicitly permitted warning states.",
+  "type": "object",
+  "required": [
+    "gating_decision_id",
+    "source_decision_id",
+    "artifact_id",
+    "stage",
+    "enforcement_policy",
+    "enforcement_decision_status",
+    "gating_outcome",
+    "gating_reason_code",
+    "traceability_integrity_sli",
+    "lineage_validation_mode",
+    "lineage_defaulted",
+    "lineage_valid",
+    "warnings",
+    "errors",
+    "recommended_action",
+    "evaluated_at",
+    "contract_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "gating_decision_id": {
+      "type": "string",
+      "description": "Unique identifier for this gating decision.",
+      "pattern": "^GATE-[A-Z0-9]+$"
+    },
+    "source_decision_id": {
+      "type": "string",
+      "description": "Identifier of the upstream enforcement decision this gating decision was derived from.",
+      "minLength": 1
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Identifier of the artifact that was evaluated.",
+      "minLength": 1
+    },
+    "stage": {
+      "type": "string",
+      "description": "Pipeline stage at which gating was evaluated. '(unknown)' when the stage could not be determined.",
+      "minLength": 1
+    },
+    "enforcement_policy": {
+      "type": "string",
+      "description": "Named enforcement policy profile that produced the source enforcement decision. '(unknown)' when the source decision was malformed.",
+      "minLength": 1
+    },
+    "enforcement_decision_status": {
+      "type": "string",
+      "description": "Decision status from the upstream enforcement decision. '(unknown)' when the source decision was malformed.",
+      "minLength": 1
+    },
+    "gating_outcome": {
+      "type": "string",
+      "description": "Stage-aware gating outcome. proceed = execution may continue; proceed_with_warning = execution continues but operator should monitor; halt = execution must stop.",
+      "enum": ["proceed", "proceed_with_warning", "halt"]
+    },
+    "gating_reason_code": {
+      "type": "string",
+      "description": "Machine-readable code identifying the primary reason for this gating outcome.",
+      "enum": [
+        "enforcement_allow",
+        "enforcement_warning_allowed",
+        "enforcement_warning_blocked_by_stage",
+        "enforcement_fail",
+        "malformed_enforcement_decision",
+        "missing_enforcement_status",
+        "unknown_enforcement_status",
+        "inconsistent_enforcement_payload"
+      ]
+    },
+    "traceability_integrity_sli": {
+      "type": ["number", "null"],
+      "description": "The traceability_integrity SLI value from the enforcement decision. Null when not determinable.",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "lineage_validation_mode": {
+      "type": "string",
+      "description": "Lineage validation mode from the enforcement decision.",
+      "minLength": 1
+    },
+    "lineage_defaulted": {
+      "type": ["boolean", "null"],
+      "description": "True when lineage fields were populated via fail-safe defaults. Null when not determinable."
+    },
+    "lineage_valid": {
+      "type": ["boolean", "null"],
+      "description": "Whether the artifact lineage was validated without errors. Null when not determinable."
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Human-readable warning messages accumulated during gating evaluation.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "Human-readable error messages accumulated during gating evaluation.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "Machine-readable recommended action derived from the gating outcome.",
+      "enum": [
+        "proceed",
+        "proceed_with_monitoring",
+        "halt_and_review",
+        "halt_and_repair_lineage",
+        "halt_and_rerun_with_registry",
+        "halt_and_escalate"
+      ]
+    },
+    "evaluated_at": {
+      "type": "string",
+      "description": "ISO 8601 date-time when this gating decision was generated.",
+      "format": "date-time"
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Schema/contract version for this artifact.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    }
+  }
+}
