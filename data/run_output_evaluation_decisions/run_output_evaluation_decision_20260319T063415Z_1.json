@@ -1,0 +1,23 @@
+{
+  "artifact_type": "run_output_evaluation_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "ROE-E12B24930423",
+  "source_bundle_id": "run-test-be-001",
+  "overall_status": "fail",
+  "failure_type": "missing_output_file",
+  "findings": [
+    {
+      "code": "missing_output_file",
+      "severity": "error",
+      "message": "results_summary_json file not found: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_cli_fail_exit_code_missin0/outputs/results_summary.json'",
+      "artifact_path": "/tmp/pytest-of-runner/pytest-1/test_cli_fail_exit_code_missin0/outputs/results_summary.json"
+    },
+    {
+      "code": "missing_output_file",
+      "severity": "error",
+      "message": "provenance_json file not found: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_cli_fail_exit_code_missin0/outputs/provenance.json'",
+      "artifact_path": "/tmp/pytest-of-runner/pytest-1/test_cli_fail_exit_code_missin0/outputs/provenance.json"
+    }
+  ],
+  "generated_at": "2026-03-19T06:34:15.924911+00:00"
+}
