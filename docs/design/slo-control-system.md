@@ -106,19 +106,29 @@ claims submitted to regulatory proceedings.
 evaluation is structurally valid, as determined by the BS Artifact Lineage
 System.
 
-**Scoring:**
-- 1.0 when all lineage checks pass (or when no registry is provided, which
-  is a not-assessed state, not a confirmed-healthy state).
-- 0.0 when the lineage registry contains any validation error.
+**Governed trust-policy bands:**
+
+| Condition                  | TI value | Constant             |
+|----------------------------|----------|----------------------|
+| strict + valid lineage     | 1.0      | `_TI_STRICT_VALID`   |
+| strict + invalid lineage   | 0.0      | `_TI_STRICT_INVALID` |
+| degraded / no registry     | 0.5      | `_TI_DEGRADED`       |
+
+The three values are intentionally distinct so any downstream consumer can
+machine-distinguish all three states without inspecting
+`lineage_validation_mode`.
 
 **When a registry is provided:** The full `validate_full_registry` check is
 applied.  Any orphan artifact, missing parent type, or broken chain sets the
-SLI to 0.0, which drives `slo_status` to `violated` and blocks
-`allowed_to_proceed`.
+SLI to 0.0 (`_TI_STRICT_INVALID`), which drives `slo_status` to `violated`
+and blocks `allowed_to_proceed`.
 
-**When no registry is provided:** The SLI defaults to 1.0 (lineage not
-assessed).  This is a degraded validation state — operators who care about
-lineage must supply a registry via `--lineage-dir`.
+**When no registry is provided:** The system operates in **degraded
+validation mode**: `traceability_integrity` is set to `_TI_DEGRADED` (0.5)
+— not 1.0.  This value is deliberately below `HEALTHY_THRESHOLD` (0.95) so
+that the no-registry path is machine-distinguishable from confirmed-healthy
+strict-mode lineage.  Operators who require lineage verification must supply
+a registry via `--lineage-dir`.
 
 ---
 
@@ -147,15 +157,22 @@ gating signal:
 
 - `traceability_integrity` SLI is computed by running `validate_full_registry`
   over the lineage registry supplied via `--lineage-dir`.  A registry error
-  sets the SLI to 0.0, which drives `slo_status` to `violated` and sets
-  `allowed_to_proceed` to `false`.
+  sets the SLI to `_TI_STRICT_INVALID` (0.0), which drives `slo_status` to
+  `violated` and sets `allowed_to_proceed` to `false`.
 - `lineage_valid` is a schema-required field in every `slo_evaluation`
   artifact.  It reflects the outcome of lineage validation and defaults to
   `false` when lineage has not been assessed.
 - When no lineage registry is provided the system operates in **degraded
-  validation mode**: `traceability_integrity` defaults to 1.0 (not assessed)
-  and `lineage_valid` remains `false`.  Operators who require lineage
-  verification must supply a registry via `--lineage-dir`.
+  validation mode**: `traceability_integrity` is set to `_TI_DEGRADED` (0.5)
+  — not 1.0 — and `lineage_valid` remains `false`.  This value is
+  deliberately below `HEALTHY_THRESHOLD` so that unvalidated runs are
+  machine-distinguishable from validated-healthy strict-mode runs.  Operators
+  who require lineage verification must supply a registry via `--lineage-dir`.
+
+**Degraded validation mode is a governed trust policy, not a side effect.**
+The 0.5 value for the no-registry path is intentional and locked.  It
+reflects the system's deliberate posture: unknown lineage is neither healthy
+(1.0) nor failed (0.0); it is an unassessed, partially-trusted state.
 
 ---
 
@@ -350,8 +367,9 @@ the evidence pack before proceeding.
 - **Lineage is enforced, not assumed.** The CLI does not default
   `traceability_integrity` to a fake-healthy state.  When `--lineage-dir` is
   provided, the registry is loaded and validated.  When it is not provided,
-  the SLI is 1.0 (not-assessed), and the operator must acknowledge that
-  lineage has not been verified.
+  the SLI is set to `_TI_DEGRADED` (0.5) — not 1.0 — to signal that lineage
+  has not been verified.  Operators who require confirmed-healthy lineage must
+  supply a registry via `--lineage-dir`.
 
 ---
 

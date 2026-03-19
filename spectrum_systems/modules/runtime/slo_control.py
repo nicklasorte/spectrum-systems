@@ -73,11 +73,25 @@ _GOVERNED_SLIS: frozenset = frozenset({
     "traceability_integrity",
 })
 
-# traceability_integrity value emitted when no lineage registry is supplied.
-# Deliberately below HEALTHY_THRESHOLD so that degraded validation mode
-# (no-registry path) is machine-distinguishable from validated-and-healthy
-# strict-mode lineage.
-_TI_NO_REGISTRY_DEFAULT: float = 0.5
+# ---------------------------------------------------------------------------
+# traceability_integrity governed trust-policy bands
+# ---------------------------------------------------------------------------
+# These three values are the ONLY valid TI outcomes emitted by this module.
+# They are intentional, non-accidental, and governed — not magic numbers.
+#
+#   strict + valid lineage    → _TI_STRICT_VALID   (1.0)
+#   strict + invalid lineage  → _TI_STRICT_INVALID (0.0)
+#   degraded / no registry    → _TI_DEGRADED       (0.5)
+#
+# The values are deliberately distinct so any downstream consumer can
+# machine-distinguish all three states without inspecting
+# lineage_validation_mode.  Changing any value is a breaking change.
+_TI_STRICT_VALID: float = 1.0    # strict mode — all lineage checks passed
+_TI_STRICT_INVALID: float = 0.0  # strict mode — lineage registry has errors
+_TI_DEGRADED: float = 0.5        # degraded mode — no registry supplied
+
+# Backward-compatibility alias — prefer _TI_DEGRADED in new code.
+_TI_NO_REGISTRY_DEFAULT: float = _TI_DEGRADED
 
 
 # ---------------------------------------------------------------------------
@@ -110,8 +124,17 @@ def validate_sli_set(slis: Dict[str, float]) -> None:
     ------
     ValueError
         When any required SLI is absent or any unknown SLI name is present.
-        (Duplicate keys cannot exist in a Python dict; exact-set equality is
-        sufficient to cover all three failure modes stated in the requirement.)
+
+    Note on duplicate SLI names
+    ---------------------------
+    *slis* is typed as ``Dict[str, float]``.  Python dicts enforce unique keys
+    by construction — assigning the same key twice silently overwrites the
+    earlier value so only one entry survives.  Duplicate governed SLI names
+    therefore cannot exist inside a dict; they are structurally impossible at
+    this boundary.  Exact-set equality against ``_GOVERNED_SLIS`` is
+    sufficient to cover all failure modes (missing, unknown, and — by
+    construction — duplicate names).  No additional duplicate-key scan is
+    needed or possible here.
     """
     actual = set(slis.keys())
     missing = _GOVERNED_SLIS - actual
@@ -441,15 +464,23 @@ def compute_traceability_integrity_sli(
 ) -> Tuple[float, bool, List[str]]:
     """Compute the traceability integrity SLI from a lineage registry.
 
-    This SLI measures whether the artifact lineage chain for this SLO
-    evaluation is structurally valid.  A value of 1.0 means all lineage
-    checks passed; 0.0 means at least one lineage error was detected.
+    Governed trust-policy bands (see module-level constants):
+
+    +--------------------------+--------------------+----------------+
+    | Condition                | Returned value     | Constant       |
+    +==========================+====================+================+
+    | strict + valid lineage   | 1.0                | _TI_STRICT_VALID   |
+    | strict + invalid lineage | 0.0                | _TI_STRICT_INVALID |
+    | degraded / no registry   | 0.5                | _TI_DEGRADED       |
+    +--------------------------+--------------------+----------------+
 
     Parameters
     ----------
     lineage_registry:
         Optional dict mapping artifact_id → artifact metadata.  When
-        ``None`` or empty the SLI defaults to 1.0 (lineage not assessed).
+        ``None`` or empty the system operates in degraded validation mode
+        and returns ``_TI_DEGRADED`` (0.5) — NOT 1.0.  Callers that need
+        confirmed-healthy lineage must supply a non-empty registry.
 
     Returns
     -------
@@ -458,27 +489,26 @@ def compute_traceability_integrity_sli(
     """
     if not lineage_registry:
         # No registry supplied → degraded validation mode.
-        # Return _TI_NO_REGISTRY_DEFAULT (< HEALTHY_THRESHOLD) so that the
-        # no-registry path is never machine-indistinguishable from validated
-        # healthy strict-mode lineage.  lineage_valid=False records that
-        # lineage was NOT actually assessed.
-        return (_TI_NO_REGISTRY_DEFAULT, False, [])
+        # Return _TI_DEGRADED (< HEALTHY_THRESHOLD) so that the no-registry
+        # path is machine-distinguishable from validated healthy strict-mode
+        # lineage.  lineage_valid=False records that lineage was NOT assessed.
+        return (_TI_DEGRADED, False, [])
 
     try:
         from spectrum_systems.modules.runtime.artifact_lineage import validate_full_registry
 
         result = validate_full_registry(lineage_registry)
         if result["valid"]:
-            return (1.0, True, [])
+            return (_TI_STRICT_VALID, True, [])
 
         # Collect all errors from all artifacts
         all_errors: List[str] = []
         for aid_result in result["artifact_results"].values():
             all_errors.extend(aid_result.get("errors", []))
 
-        return (0.0, False, all_errors)
+        return (_TI_STRICT_INVALID, False, all_errors)
     except Exception as exc:  # noqa: BLE001
-        return (0.0, False, [f"Lineage validation error: {exc}"])
+        return (_TI_STRICT_INVALID, False, [f"Lineage validation error: {exc}"])
 
 
 # ---------------------------------------------------------------------------

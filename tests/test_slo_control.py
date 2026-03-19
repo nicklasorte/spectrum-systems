@@ -37,7 +37,10 @@ from spectrum_systems.modules.runtime.slo_control import (  # noqa: E402
     DEGRADED_THRESHOLD,
     HEALTHY_THRESHOLD,
     _GOVERNED_SLIS,
+    _TI_DEGRADED,
     _TI_NO_REGISTRY_DEFAULT,
+    _TI_STRICT_INVALID,
+    _TI_STRICT_VALID,
     build_slo_evaluation_artifact,
     classify_violation,
     compute_completeness_sli,
@@ -1969,3 +1972,155 @@ def test_cli_strict_mode_output_fields():
         out = json.loads((tmp / "slo_evaluation.json").read_text())
         assert out["lineage_validation_mode"] == "strict"
         assert out["lineage_defaulted"] is False
+
+
+# ===========================================================================
+# 19. Fix 11A — SLO Enforcement Gap Close: TI Policy & Duplicate Ambiguity
+# ===========================================================================
+
+
+# --- TI band policy constants ---
+
+
+def test_ti_strict_valid_constant_equals_one():
+    """_TI_STRICT_VALID must be exactly 1.0 (governed trust-policy band)."""
+    assert _TI_STRICT_VALID == 1.0
+
+
+def test_ti_strict_invalid_constant_equals_zero():
+    """_TI_STRICT_INVALID must be exactly 0.0 (governed trust-policy band)."""
+    assert _TI_STRICT_INVALID == 0.0
+
+
+def test_ti_degraded_constant_equals_half():
+    """_TI_DEGRADED must be exactly 0.5 (governed trust-policy band)."""
+    assert _TI_DEGRADED == 0.5
+
+
+def test_ti_no_registry_default_is_alias_for_ti_degraded():
+    """_TI_NO_REGISTRY_DEFAULT must equal _TI_DEGRADED (backward-compat alias)."""
+    assert _TI_NO_REGISTRY_DEFAULT == _TI_DEGRADED
+
+
+def test_ti_three_bands_are_distinct():
+    """All three TI band constants must be distinct values."""
+    assert len({_TI_STRICT_VALID, _TI_DEGRADED, _TI_STRICT_INVALID}) == 3
+
+
+def test_ti_bands_ordered_strict_invalid_lt_degraded_lt_strict_valid():
+    """Bands must satisfy: strict-invalid < degraded < strict-valid."""
+    assert _TI_STRICT_INVALID < _TI_DEGRADED < _TI_STRICT_VALID
+
+
+# --- TI policy semantics: exact band values ---
+
+
+def test_ti_strict_valid_returned_for_valid_lineage():
+    """strict + valid lineage → compute_traceability_integrity_sli returns _TI_STRICT_VALID (1.0)."""
+    sli_value, lineage_valid, errors = compute_traceability_integrity_sli(
+        _valid_lineage_registry()
+    )
+    assert sli_value == _TI_STRICT_VALID, (
+        f"Expected _TI_STRICT_VALID ({_TI_STRICT_VALID}), got {sli_value}"
+    )
+    assert lineage_valid is True
+    assert errors == []
+
+
+def test_ti_strict_invalid_returned_for_invalid_lineage():
+    """strict + invalid lineage → compute_traceability_integrity_sli returns _TI_STRICT_INVALID (0.0)."""
+    sli_value, lineage_valid, errors = compute_traceability_integrity_sli(
+        _malformed_lineage_registry()
+    )
+    assert sli_value == _TI_STRICT_INVALID, (
+        f"Expected _TI_STRICT_INVALID ({_TI_STRICT_INVALID}), got {sli_value}"
+    )
+    assert lineage_valid is False
+    assert len(errors) > 0
+
+
+def test_ti_degraded_returned_for_no_registry():
+    """degraded / no registry → compute_traceability_integrity_sli returns _TI_DEGRADED (0.5)."""
+    sli_value, lineage_valid, errors = compute_traceability_integrity_sli(None)
+    assert sli_value == _TI_DEGRADED, (
+        f"Expected _TI_DEGRADED ({_TI_DEGRADED}), got {sli_value}"
+    )
+    assert lineage_valid is False
+    assert errors == []
+
+
+def test_ti_degraded_is_distinct_from_strict_valid():
+    """_TI_DEGRADED must not equal _TI_STRICT_VALID — degraded is not healthy."""
+    assert _TI_DEGRADED != _TI_STRICT_VALID
+
+
+def test_ti_degraded_is_distinct_from_strict_invalid():
+    """_TI_DEGRADED must not equal _TI_STRICT_INVALID — degraded is not failed."""
+    assert _TI_DEGRADED != _TI_STRICT_INVALID
+
+
+def test_run_slo_control_strict_valid_ti_exact():
+    """run_slo_control with valid registry must emit traceability_integrity == _TI_STRICT_VALID."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_valid_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    ti = result["slo_evaluation"]["slis"]["traceability_integrity"]
+    assert ti == _TI_STRICT_VALID, f"Expected {_TI_STRICT_VALID}, got {ti}"
+
+
+def test_run_slo_control_strict_invalid_ti_exact():
+    """run_slo_control with invalid registry must emit traceability_integrity == _TI_STRICT_INVALID."""
+    result = run_slo_control(
+        be_inputs=[],
+        bf_input=None,
+        bg_input=None,
+        lineage_registry=_malformed_lineage_registry(),
+        parent_artifact_ids=["DEC-001"],
+    )
+    ti = result["slo_evaluation"]["slis"]["traceability_integrity"]
+    assert ti == _TI_STRICT_INVALID, f"Expected {_TI_STRICT_INVALID}, got {ti}"
+
+
+def test_run_slo_control_degraded_ti_exact():
+    """run_slo_control with no registry must emit traceability_integrity == _TI_DEGRADED."""
+    result = run_slo_control([], None, None)
+    ti = result["slo_evaluation"]["slis"]["traceability_integrity"]
+    assert ti == _TI_DEGRADED, f"Expected {_TI_DEGRADED}, got {ti}"
+
+
+# --- Duplicate SLI names: impossible by construction ---
+
+
+def test_validate_sli_set_dict_construction_prevents_duplicate_keys():
+    """Duplicate SLI names are impossible by Python dict construction.
+
+    Python dicts enforce unique keys: assigning the same key twice silently
+    overwrites the earlier value, so only one entry survives.  This test
+    demonstrates the construction path: even if a caller attempts to pass
+    two entries for the same SLI name, the dict collapses them to one before
+    validate_sli_set ever sees the data.
+
+    Consequence: validate_sli_set does NOT need a duplicate-key scan.
+    Exact-set equality against _GOVERNED_SLIS is sufficient.
+    """
+    # Attempt to construct a dict with a duplicate key — Python silently
+    # overwrites, leaving exactly one entry.
+    attempted_duplicate = dict(
+        [
+            ("completeness", 1.0),
+            ("timeliness", 1.0),
+            ("traceability", 1.0),
+            ("traceability_integrity", 1.0),
+            ("traceability_integrity", 0.5),  # duplicate — will be collapsed
+        ]
+    )
+    # The dict now has only 4 keys; the duplicate was silently collapsed.
+    assert len(attempted_duplicate) == 4
+    assert attempted_duplicate["traceability_integrity"] == 0.5  # last write wins
+
+    # validate_sli_set sees 4 unique keys and passes.
+    validate_sli_set(attempted_duplicate)  # must not raise
