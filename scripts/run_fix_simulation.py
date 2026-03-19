@@ -125,7 +125,7 @@ def main() -> None:
     # ── Console Summary ────────────────────────────────────────────────────
     print()
     print("=" * 62)
-    print("  FIX SIMULATION SANDBOX REPORT (Prompt AW2)")
+    print("  FIX SIMULATION SANDBOX REPORT (Prompt AW2 / AR Hard Gating AZ)")
     print("=" * 62)
     if args.remediation:
         print(f"  Filter:              remediation_id = {args.remediation}")
@@ -145,12 +145,32 @@ def main() -> None:
     print()
 
     by_rec = summary["by_recommendation"]
-    print("  PROMOTION RECOMMENDATIONS")
+    promote_count = by_rec.get("promote", 0)
+    hold_count = by_rec.get("hold", 0)
+    reject_count = by_rec.get("reject", 0)
+    print("  PROMOTION RECOMMENDATIONS (AR Hard Gating)")
     _print_divider()
-    print(f"  {'Promote':<20}  {by_rec.get('promote', 0):>5}")
-    print(f"  {'Hold':<20}  {by_rec.get('hold', 0):>5}")
-    print(f"  {'Reject':<20}  {by_rec.get('reject', 0):>5}")
+    print(f"  {'Promote':<20}  {promote_count:>5}")
+    print(f"  {'Hold':<20}  {hold_count:>5}")
+    print(f"  {'Reject':<20}  {reject_count:>5}")
     print()
+
+    # Gating reason breakdown
+    gating_reason_counts: dict[str, int] = {}
+    gating_flag_counts: dict[str, int] = {}
+    for r in results:
+        reason = getattr(r, "gating_decision_reason", "")
+        if reason:
+            gating_reason_counts[reason] = gating_reason_counts.get(reason, 0) + 1
+        for flag in getattr(r, "gating_flags", []):
+            gating_flag_counts[flag] = gating_flag_counts.get(flag, 0) + 1
+
+    if gating_reason_counts:
+        print("  TOP GATING REASONS")
+        _print_divider()
+        for reason, count in sorted(gating_reason_counts.items(), key=lambda x: -x[1])[:10]:
+            print(f"  {reason:<40}  {count:>5}")
+        print()
 
     if summary["top_targeted_improvements"]:
         print("  TOP TARGETED IMPROVEMENTS")
@@ -182,6 +202,16 @@ def main() -> None:
             "all": args.all,
         },
         "summary": summary,
+        "gating_breakdown": {
+            "total_plans": len(plans),
+            "promote_count": promote_count,
+            "hold_count": hold_count,
+            "reject_count": reject_count,
+            "top_gating_reasons": sorted(
+                [{"reason": r, "count": c} for r, c in gating_reason_counts.items()],
+                key=lambda x: -x["count"],
+            )[:10],
+        },
         "simulation_results": [r.to_dict() for r in results],
     }
 

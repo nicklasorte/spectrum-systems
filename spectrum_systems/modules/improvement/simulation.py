@@ -128,6 +128,8 @@ class SimulationResult:
         regression_check: Dict[str, Any],
         promotion_recommendation: str,
         evidence: Dict[str, Any],
+        gating_decision_reason: str = "",
+        gating_flags: Optional[List[str]] = None,
     ) -> None:
         self.simulation_id = simulation_id
         self.remediation_id = remediation_id
@@ -142,6 +144,8 @@ class SimulationResult:
         self.regression_check = regression_check
         self.promotion_recommendation = promotion_recommendation
         self.evidence = evidence
+        self.gating_decision_reason = gating_decision_reason
+        self.gating_flags: List[str] = gating_flags if gating_flags is not None else []
 
     # --- Serialisation -------------------------------------------------------
 
@@ -160,6 +164,8 @@ class SimulationResult:
             "regression_check": self.regression_check,
             "promotion_recommendation": self.promotion_recommendation,
             "evidence": self.evidence,
+            "gating_decision_reason": self.gating_decision_reason,
+            "gating_flags": self.gating_flags,
         }
 
     @classmethod
@@ -178,6 +184,8 @@ class SimulationResult:
             regression_check=data["regression_check"],
             promotion_recommendation=data["promotion_recommendation"],
             evidence=data["evidence"],
+            gating_decision_reason=data.get("gating_decision_reason", ""),
+            gating_flags=data.get("gating_flags", []),
         )
 
     # --- Schema validation ---------------------------------------------------
@@ -329,13 +337,18 @@ class FixSimulator:
         )
 
         # Determine promotion recommendation
-        promotion_recommendation = determine_promotion_recommendation(
+        gating_result = determine_promotion_recommendation(
             simulation_fidelity=simulation_fidelity,
             targeted_effect=targeted_effect,
             regression_check=regression_check,
             deltas=deltas,
+            candidate_summary=candidate_summary,
         )
+        promotion_recommendation = gating_result["recommendation"]
+        gating_decision_reason = gating_result["gating_decision_reason"]
+        gating_flags = gating_result["gating_flags"]
         reasons.append(f"promotion_recommendation: {promotion_recommendation!r}")
+        reasons.append(f"gating_decision_reason: {gating_decision_reason!r}")
 
         # Determine simulation_status
         simulation_status = _derive_simulation_status(
@@ -365,6 +378,8 @@ class FixSimulator:
             regression_check=regression_check,
             promotion_recommendation=promotion_recommendation,
             evidence=evidence,
+            gating_decision_reason=gating_decision_reason,
+            gating_flags=gating_flags,
         )
 
     def simulate_many(
@@ -435,6 +450,8 @@ class FixSimulator:
             },
             promotion_recommendation="reject",
             evidence={"eval_result_refs": [], "observability_refs": []},
+            gating_decision_reason="insufficient_signal",
+            gating_flags=["insufficient_signal"],
         )
 
 

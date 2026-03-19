@@ -23,12 +23,15 @@ determine_promotion_recommendation(
     targeted_effect,
     regression_check,
     deltas,
+    *,
+    candidate_summary=None,
+    baseline_available=True,
 )
-    -> str  # "promote" | "hold" | "reject"
+    -> Dict[str, Any]  # {"recommendation", "gating_decision_reason", "gating_flags"}
 """
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Thresholds
@@ -46,6 +49,20 @@ _MIN_IMPROVEMENT_FOR_PROMOTE: float = 0.01
 # Latency regression thresholds (ms increase = bad).
 _HARD_LATENCY_REGRESSION_MS: float = 50.0
 _WARN_LATENCY_REGRESSION_MS: float = 20.0
+
+# ---------------------------------------------------------------------------
+# AR Hard Gating constants (Prompt AZ)
+# ---------------------------------------------------------------------------
+
+# Minimum semantic_score_delta required to recommend promotion.
+_MIN_SEMANTIC_IMPROVEMENT: float = 0.05
+
+# Maximum allowed regression in any score metric before promotion is blocked.
+# Changes beyond this tolerance in the negative direction → REJECT.
+_MAX_REGRESSION_TOLERANCE: float = 0.01
+
+# Whether a zero structural score in the candidate is a hard reject gate.
+_REQUIRE_STRUCTURAL_SCORE: bool = True
 
 # ---------------------------------------------------------------------------
 # Metric target mappings per action_type
@@ -225,23 +242,26 @@ def determine_promotion_recommendation(
     targeted_effect: Dict[str, Any],
     regression_check: Dict[str, Any],
     deltas: Dict[str, Any],
-) -> str:
+    *,
+    candidate_summary: Optional[Dict[str, Any]] = None,
+    baseline_available: bool = True,
+) -> Dict[str, Any]:
     """Determine the promotion recommendation from simulation results.
 
-    Promotion logic
-    ---------------
-    - ``promote`` if:
-        - simulation_fidelity is "high" or "medium"
-        - targeted metric improved (observed_direction matches expected_direction)
-        - no hard regression failures
-    - ``hold`` if:
-        - mixed results or inconclusive evidence
-        - targeted metric improved but warnings exist
-        - fidelity is "low" but no regressions
-    - ``reject`` if:
-        - hard regression failures
-        - targeted metric worsened (observed_direction opposite to expected)
-        - simulation fidelity is "none"
+    AR Hard Gating (Prompt AZ) — fail-closed enforcement
+    -----------------------------------------------------
+    The system defaults to HOLD or REJECT unless ALL strict criteria are met.
+
+    Returns "promote" only when ALL of the following are true:
+    - ``baseline_available`` is True
+    - ``simulation_fidelity`` is "high" or "medium"
+    - ``semantic_score_delta`` >= ``_MIN_SEMANTIC_IMPROVEMENT`` (0.05)
+    - ``structural_score`` of candidate > 0 (when candidate_summary provided)
+    - No regressions beyond ``_MAX_REGRESSION_TOLERANCE`` in any metric
+    - No hard regression failures from ``check_regression``
+    - No regression warnings from ``check_regression``
+    - ``targeted_effect.observed_direction`` matches ``expected_direction``
+    - Grounding score is sensitive to output changes
 
     Parameters
     ----------
@@ -253,49 +273,116 @@ def determine_promotion_recommendation(
         Dict from ``check_regression``.
     deltas:
         Score deltas from ``compare_baseline_candidate``.
+    candidate_summary:
+        Optional candidate eval summary; used for structural validity hard gate.
+    baseline_available:
+        False when no real baseline was available for comparison → HOLD.
 
     Returns
     -------
-    str
-        "promote", "hold", or "reject".
+    Dict[str, Any]
+        ``{"recommendation": str, "gating_decision_reason": str, "gating_flags": List[str]}``
+        where recommendation is "promote", "hold", or "reject".
     """
+    gating_flags: List[str] = []
+
+    def _result(rec: str, reason: str) -> Dict[str, Any]:
+        return {
+            "recommendation": rec,
+            "gating_decision_reason": reason,
+            "gating_flags": list(gating_flags),
+        }
+
+    # F. DEFAULT FAIL-CLOSED: missing baseline signal → HOLD
+    if not baseline_available:
+        gating_flags.append("insufficient_signal")
+        return _result("hold", "insufficient_signal")
+
+    # Hard reject: simulation could not be run (fidelity=none)
+    if simulation_fidelity == "none":
+        gating_flags.append("insufficient_signal")
+        return _result("reject", "insufficient_signal")
+
+    # B. STRUCTURAL VALIDITY HARD GATE: candidate structural_score == 0.0 → REJECT
+    if _REQUIRE_STRUCTURAL_SCORE and candidate_summary is not None:
+        structural = float(candidate_summary.get("structural_score", 1.0))
+        if structural == 0.0:
+            gating_flags.append("structural_failure")
+            return _result("reject", "structural_failure")
+
+    # C/D. REGRESSION BLOCK: check hard failures from check_regression
     hard_failures = regression_check.get("hard_failures", 0)
-    warnings = regression_check.get("warnings", 0)
+    if hard_failures > 0:
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
+
+    # C/D. REGRESSION BLOCK: check per-metric deltas beyond tolerance
+    semantic_delta = float(deltas.get("semantic_score_delta", 0.0))
+    structural_delta = float(deltas.get("structural_score_delta", 0.0))
+    grounding_delta = float(deltas.get("grounding_score_delta", 0.0))
+    latency_delta = float(deltas.get("latency_ms_delta", 0.0))
+
+    if semantic_delta < -_MAX_REGRESSION_TOLERANCE:
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
+    if structural_delta < -_MAX_REGRESSION_TOLERANCE:
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
+    if grounding_delta < -_MAX_REGRESSION_TOLERANCE:
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
+    if latency_delta > _HARD_LATENCY_REGRESSION_MS:
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
+
+    # Check if target metric moved opposite to expected direction
     expected_direction = targeted_effect.get("expected_direction", "increase")
     observed_direction = targeted_effect.get("observed_direction", "none")
-
-    # Reject conditions
-    if simulation_fidelity == "none":
-        return "reject"
-
-    if hard_failures > 0:
-        return "reject"
-
-    # Check if observed direction is opposite to expected (regression in target)
     _opposites = {"increase": "decrease", "decrease": "increase"}
     if observed_direction == _opposites.get(expected_direction):
-        return "reject"
+        gating_flags.append("regression_detected")
+        return _result("reject", "regression_detected")
 
-    # Promote conditions
-    if simulation_fidelity in ("high", "medium"):
-        if observed_direction == expected_direction and hard_failures == 0:
-            # Require a minimum meaningful improvement to justify promotion.
-            target_metric = targeted_effect.get("target_metric", "structural_score")
-            delta_key = f"{target_metric}_delta"
-            delta_magnitude = abs(float(deltas.get(delta_key, 0.0)))
-            if delta_magnitude < _MIN_IMPROVEMENT_FOR_PROMOTE:
-                return "hold"
-            if warnings == 0:
-                return "promote"
-            else:
-                # Improvements with warnings → hold for safety
-                return "hold"
+    # A. MINIMUM SEMANTIC IMPROVEMENT: semantic_score_delta must meet threshold
+    if semantic_delta < _MIN_SEMANTIC_IMPROVEMENT:
+        gating_flags.append("low_semantic_improvement")
+        return _result("hold", "low_semantic_improvement")
 
-    # Low fidelity: hold even if target metric improved
-    if simulation_fidelity == "low":
-        if observed_direction == expected_direction:
-            return "hold"
-        return "hold"
+    # Require fidelity of high or medium for promotion
+    if simulation_fidelity not in ("high", "medium"):
+        gating_flags.append("low_fidelity")
+        return _result("hold", "low_fidelity")
 
-    # Mixed/unclear results
-    return "hold"
+    # Block promotion when regression warnings exist
+    warnings = regression_check.get("warnings", 0)
+    if warnings > 0:
+        gating_flags.append("regression_warning")
+        return _result("hold", "regression_warning")
+
+    # Require observed direction to match expected
+    if observed_direction != expected_direction:
+        gating_flags.append("insufficient_signal")
+        return _result("hold", "insufficient_signal")
+
+    # E. MEANINGFUL CHANGE CHECK: require minimum improvement in target metric
+    target_metric = targeted_effect.get("target_metric", "structural_score")
+    delta_key = f"{target_metric}_delta"
+    delta_magnitude = abs(float(deltas.get(delta_key, 0.0)))
+    if delta_magnitude < _MIN_IMPROVEMENT_FOR_PROMOTE:
+        gating_flags.append("insufficient_target_improvement")
+        return _result("hold", "insufficient_target_improvement")
+
+    # E. GROUNDING CONSISTENCY CHECK: grounding unchanged while other outputs changed
+    # Use _MIN_IMPROVEMENT_FOR_PROMOTE as the threshold for "meaningful output change"
+    # (distinct from _MAX_REGRESSION_TOLERANCE which guards against regressions).
+    grounding_unchanged = abs(grounding_delta) <= _MAX_REGRESSION_TOLERANCE
+    outputs_changed = (
+        abs(semantic_delta) > _MIN_IMPROVEMENT_FOR_PROMOTE
+        or abs(structural_delta) > _MIN_IMPROVEMENT_FOR_PROMOTE
+    )
+    if grounding_unchanged and outputs_changed:
+        gating_flags.append("grounding_not_sensitive")
+        return _result("hold", "grounding_not_sensitive")
+
+    # All gates passed → PROMOTE
+    return _result("promote", "all_gates_passed")

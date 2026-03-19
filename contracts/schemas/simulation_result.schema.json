@@ -18,7 +18,9 @@
     "targeted_effect",
     "regression_check",
     "promotion_recommendation",
-    "evidence"
+    "evidence",
+    "gating_decision_reason",
+    "gating_flags"
   ],
   "properties": {
     "simulation_id": {
@@ -75,6 +77,15 @@
     "evidence": {
       "$ref": "#/$defs/evidence",
       "description": "References to supporting evaluation, observability, and regression artifacts."
+    },
+    "gating_decision_reason": {
+      "type": "string",
+      "description": "Primary reason for the AR Hard Gating decision (e.g., 'all_gates_passed', 'low_semantic_improvement', 'structural_failure', 'regression_detected', 'grounding_not_sensitive', 'insufficient_signal')."
+    },
+    "gating_flags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "All AR Hard Gating flags raised during evaluation (e.g., 'low_semantic_improvement', 'structural_failure', 'regression_detected', 'grounding_not_sensitive', 'insufficient_signal')."
     }
   },
   "$defs": {

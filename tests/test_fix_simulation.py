@@ -485,9 +485,9 @@ def test_promote_high_fidelity_no_regressions():
         simulation_fidelity="high",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(0, 0),
-        deltas={"grounding_score_delta": 0.05},
+        deltas={"grounding_score_delta": 0.05, "semantic_score_delta": 0.05},
     )
-    assert rec == "promote"
+    assert rec["recommendation"] == "promote"
 
 
 def test_promote_medium_fidelity_no_regressions():
@@ -495,9 +495,9 @@ def test_promote_medium_fidelity_no_regressions():
         simulation_fidelity="medium",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(0, 0),
-        deltas={"grounding_score_delta": 0.03},
+        deltas={"grounding_score_delta": 0.05, "semantic_score_delta": 0.06},
     )
-    assert rec == "promote"
+    assert rec["recommendation"] == "promote"
 
 
 def test_hold_with_warnings():
@@ -505,9 +505,9 @@ def test_hold_with_warnings():
         simulation_fidelity="high",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(0, 1),
-        deltas={"grounding_score_delta": 0.03},
+        deltas={"grounding_score_delta": 0.03, "semantic_score_delta": 0.06},
     )
-    assert rec == "hold"
+    assert rec["recommendation"] == "hold"
 
 
 def test_hold_low_fidelity():
@@ -515,9 +515,9 @@ def test_hold_low_fidelity():
         simulation_fidelity="low",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(0, 0),
-        deltas={"grounding_score_delta": 0.02},
+        deltas={"grounding_score_delta": 0.05, "semantic_score_delta": 0.06},
     )
-    assert rec == "hold"
+    assert rec["recommendation"] == "hold"
 
 
 def test_reject_hard_failure():
@@ -525,9 +525,9 @@ def test_reject_hard_failure():
         simulation_fidelity="high",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(1, 0),
-        deltas={"grounding_score_delta": 0.05},
+        deltas={"grounding_score_delta": 0.05, "semantic_score_delta": 0.06},
     )
-    assert rec == "reject"
+    assert rec["recommendation"] == "reject"
 
 
 def test_reject_target_metric_worsened():
@@ -537,7 +537,7 @@ def test_reject_target_metric_worsened():
         regression_check=_make_regression_check(0, 0),
         deltas={"grounding_score_delta": -0.05},
     )
-    assert rec == "reject"
+    assert rec["recommendation"] == "reject"
 
 
 def test_reject_fidelity_none():
@@ -547,12 +547,121 @@ def test_reject_fidelity_none():
         regression_check=_make_regression_check(0, 0),
         deltas={"grounding_score_delta": 0.0},
     )
-    assert rec == "reject"
+    assert rec["recommendation"] == "reject"
 
 
 # ---------------------------------------------------------------------------
-# 11. Case selection
+# 10b. AR Hard Gating tests (Prompt AZ)
 # ---------------------------------------------------------------------------
+
+
+def test_az_hold_low_semantic_delta():
+    """A. semantic_score_delta < _MIN_SEMANTIC_IMPROVEMENT → HOLD."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"grounding_score_delta": 0.10, "semantic_score_delta": 0.03},
+    )
+    assert rec["recommendation"] == "hold"
+    assert "low_semantic_improvement" in rec["gating_flags"]
+
+
+def test_az_reject_structural_score_zero():
+    """B. structural_score == 0.0 in candidate → REJECT."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"structural_score_delta": -0.70, "semantic_score_delta": 0.06},
+        candidate_summary={
+            "cases_run": 3,
+            "structural_score": 0.0,
+            "semantic_score": 0.76,
+            "grounding_score": 0.65,
+            "latency_ms": 250.0,
+        },
+    )
+    assert rec["recommendation"] == "reject"
+    assert "structural_failure" in rec["gating_flags"]
+
+
+def test_az_reject_regression_semantic():
+    """C. semantic_score regression beyond tolerance → REJECT."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"semantic_score_delta": -0.05, "grounding_score_delta": 0.05},
+    )
+    assert rec["recommendation"] == "reject"
+    assert "regression_detected" in rec["gating_flags"]
+
+
+def test_az_reject_regression_latency():
+    """D. latency regression beyond hard threshold → REJECT (via latency gate)."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"latency_ms_delta": 80.0, "semantic_score_delta": 0.06},
+    )
+    assert rec["recommendation"] == "reject"
+    assert "regression_detected" in rec["gating_flags"]
+
+
+def test_az_hold_grounding_not_sensitive():
+    """E. grounding unchanged but outputs changed → HOLD with grounding_not_sensitive flag."""
+    # Use semantic_score as the target metric so the meaningful-change check passes
+    targeted_effect = {
+        "target_component": "decision_extraction_prompt",
+        "target_metric": "semantic_score",
+        "expected_direction": "increase",
+        "observed_direction": "increase",
+    }
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=targeted_effect,
+        regression_check=_make_regression_check(0, 0),
+        deltas={
+            "grounding_score_delta": 0.00,   # unchanged
+            "semantic_score_delta": 0.06,    # semantic improved → outputs changed
+            "structural_score_delta": 0.0,
+        },
+    )
+    assert rec["recommendation"] == "hold"
+    assert "grounding_not_sensitive" in rec["gating_flags"]
+
+
+def test_az_promote_perfect_case():
+    """F. All gates passed → PROMOTE."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={
+            "grounding_score_delta": 0.05,
+            "semantic_score_delta": 0.06,
+            "structural_score_delta": 0.02,
+            "latency_ms_delta": -5.0,
+        },
+    )
+    assert rec["recommendation"] == "promote"
+    assert rec["gating_decision_reason"] == "all_gates_passed"
+    assert rec["gating_flags"] == []
+
+
+def test_az_hold_missing_baseline():
+    """G. baseline_available=False → HOLD with insufficient_signal flag."""
+    rec = determine_promotion_recommendation(
+        simulation_fidelity="high",
+        targeted_effect=_make_targeted_effect("increase", "increase"),
+        regression_check=_make_regression_check(0, 0),
+        deltas={"semantic_score_delta": 0.10, "grounding_score_delta": 0.05},
+        baseline_available=False,
+    )
+    assert rec["recommendation"] == "hold"
+    assert "insufficient_signal" in rec["gating_flags"]
 
 
 def test_case_selection_targeted_by_error_codes():
@@ -777,7 +886,7 @@ def test_hold_below_minimum_improvement_high_fidelity():
         regression_check=_make_regression_check(0, 0),
         deltas={"grounding_score_delta": 0.005},  # below _MIN_IMPROVEMENT_FOR_PROMOTE=0.01
     )
-    assert rec == "hold"
+    assert rec["recommendation"] == "hold"
 
 
 def test_hold_below_minimum_improvement_medium_fidelity():
@@ -788,18 +897,21 @@ def test_hold_below_minimum_improvement_medium_fidelity():
         regression_check=_make_regression_check(0, 0),
         deltas={"grounding_score_delta": 0.009},  # just below threshold
     )
-    assert rec == "hold"
+    assert rec["recommendation"] == "hold"
 
 
 def test_promote_at_exactly_minimum_improvement():
-    """Delta exactly at the minimum threshold should be allowed to promote."""
+    """Delta exactly at minimum thresholds should be allowed to promote."""
     rec = determine_promotion_recommendation(
         simulation_fidelity="high",
         targeted_effect=_make_targeted_effect("increase", "increase"),
         regression_check=_make_regression_check(0, 0),
-        deltas={"grounding_score_delta": 0.01},  # exactly at threshold
+        deltas={
+            "grounding_score_delta": 0.02,   # above tolerance so grounding sensitivity won't fire
+            "semantic_score_delta": 0.05,    # exactly at _MIN_SEMANTIC_IMPROVEMENT
+        },
     )
-    assert rec == "promote"
+    assert rec["recommendation"] == "promote"
 
 
 # ---------------------------------------------------------------------------
