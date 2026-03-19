@@ -12,6 +12,14 @@ Usage
         --bf-input comparison/cri.json \\
         --bg-input evidence/wpe.json
 
+    # Evaluate with lineage registry and explicit parent artifact IDs:
+    python scripts/slo_control.py \\
+        --be-input run1/nrr.json \\
+        --lineage-dir lineage/artifacts/ \\
+        --parent-id DEC-001 \\
+        --parent-id SYN-001 \\
+        --output-dir outputs/slo/
+
     # Specify output directory:
     python scripts/slo_control.py \\
         --be-input run1/nrr.json \\
@@ -70,6 +78,62 @@ def _archive_evaluation(artifact: Dict[str, Any], archive_dir: Path) -> Path:
     return target
 
 
+def _load_lineage_registry(lineage_dir: str) -> Dict[str, Any]:
+    """Load all *.json files from *lineage_dir* into a lineage registry.
+
+    Each JSON file is expected to be an artifact metadata dict containing at
+    least an ``artifact_id`` field.  The registry maps artifact_id → artifact
+    metadata.
+
+    Raises
+    ------
+    SystemExit
+        When *lineage_dir* does not exist, contains no JSON files, or any file
+        cannot be parsed.  Explicit failure is intentional: a missing or
+        broken lineage registry must never silently pretend lineage is healthy.
+    """
+    dpath = Path(lineage_dir)
+    if not dpath.is_dir():
+        print(
+            f"ERROR: --lineage-dir '{lineage_dir}' is not a directory or does not exist.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+
+    json_files = sorted(dpath.glob("*.json"))
+    if not json_files:
+        print(
+            f"ERROR: --lineage-dir '{lineage_dir}' contains no *.json files. "
+            "Lineage registry cannot be empty.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+
+    registry: Dict[str, Any] = {}
+    for fpath in json_files:
+        try:
+            data = json.loads(fpath.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(
+                f"ERROR: Failed to load lineage artifact from '{fpath}': {exc}",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+
+        artifact_id = data.get("artifact_id")
+        if not artifact_id:
+            print(
+                f"ERROR: Lineage artifact in '{fpath}' is missing 'artifact_id'. "
+                "All lineage artifacts must carry a deterministic ID.",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+
+        registry[str(artifact_id)] = data
+
+    return registry
+
+
 def _print_summary(result: Dict[str, Any]) -> None:
     artifact = result.get("slo_evaluation") or {}
     slo_status = result.get("slo_status", "unknown")
@@ -82,6 +146,8 @@ def _print_summary(result: Dict[str, Any]) -> None:
     print(f"completeness_sli:    {slis.get('completeness', 'n/a')}")
     print(f"timeliness_sli:      {slis.get('timeliness', 'n/a')}")
     print(f"traceability_sli:    {slis.get('traceability', 'n/a')}")
+    if "traceability_integrity" in slis:
+        print(f"traceability_integrity_sli: {slis['traceability_integrity']}")
 
     eb = artifact.get("error_budget") or {}
     print(f"error_budget:        remaining={eb.get('remaining', 'n/a')}  "
@@ -105,6 +171,12 @@ def _print_summary(result: Dict[str, Any]) -> None:
     if schema_errors:
         print("schema_errors:")
         for e in schema_errors:
+            print(f"  {e}", file=sys.stderr)
+
+    lineage_errors = result.get("lineage_errors") or []
+    if lineage_errors:
+        print("lineage_errors:")
+        for e in lineage_errors:
             print(f"  {e}", file=sys.stderr)
 
 
@@ -140,6 +212,29 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="Path to the BG working_paper_evidence_pack.json artifact (optional).",
     )
     parser.add_argument(
+        "--lineage-dir",
+        dest="lineage_dir",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Directory containing lineage-relevant JSON artifacts to load into the "
+            "lineage registry.  When provided, all *.json files in the directory are "
+            "loaded and used to evaluate traceability_integrity.  If any file cannot "
+            "be parsed the command exits with code 2."
+        ),
+    )
+    parser.add_argument(
+        "--parent-id",
+        dest="parent_ids",
+        action="append",
+        metavar="VALUE",
+        default=[],
+        help=(
+            "Explicit parent artifact ID for this SLO output (e.g. a decision or "
+            "synthesis artifact ID).  Can be specified multiple times."
+        ),
+    )
+    parser.add_argument(
         "--output-dir",
         dest="output_dir",
         default=None,
@@ -149,12 +244,22 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     output_dir = Path(args.output_dir).resolve() if args.output_dir else Path.cwd()
 
+    # Load lineage registry when --lineage-dir is provided.
+    # Failure is explicit and fatal — never silently pretend lineage is healthy.
+    lineage_registry: Optional[Dict[str, Any]] = None
+    if args.lineage_dir:
+        lineage_registry = _load_lineage_registry(args.lineage_dir)
+
+    parent_artifact_ids: Optional[List[str]] = args.parent_ids if args.parent_ids else None
+
     # Run SLO evaluation
     try:
         result = run_slo_control(
             be_inputs=args.be_inputs or [],
             bf_input=args.bf_input or None,
             bg_input=args.bg_input or None,
+            lineage_registry=lineage_registry,
+            parent_artifact_ids=parent_artifact_ids,
         )
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: Unexpected failure during SLO evaluation: {exc}", file=sys.stderr)
