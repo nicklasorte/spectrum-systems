@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/run_bundle_manifest.schema.json",
+  "title": "Run Bundle Manifest",
+  "description": "Governed schema for a run bundle manifest (Prompt BD). Every execution bundle must conform to this schema before runtime validation (BC) is attempted.",
+  "type": "object",
+  "required": [
+    "bundle_version",
+    "run_id",
+    "matlab_release",
+    "runtime_version_required",
+    "platform",
+    "worker_entrypoint",
+    "component_cache",
+    "startup_options",
+    "inputs",
+    "expected_outputs",
+    "provenance",
+    "execution_policy",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "bundle_version": {
+      "type": "string",
+      "description": "Semantic version of the bundle schema/format.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for this run bundle.",
+      "minLength": 1
+    },
+    "matlab_release": {
+      "type": "string",
+      "description": "MATLAB release string, e.g. R2024b.",
+      "minLength": 1
+    },
+    "runtime_version_required": {
+      "type": "string",
+      "description": "Exact MATLAB Compiler Runtime version required for execution.",
+      "minLength": 1
+    },
+    "platform": {
+      "type": "string",
+      "description": "Target execution platform.",
+      "enum": ["windows-x86_64", "linux-x86_64"]
+    },
+    "worker_entrypoint": {
+      "type": "string",
+      "description": "Relative path to the executable or entry script within the bundle.",
+      "minLength": 1
+    },
+    "component_cache": {
+      "type": "object",
+      "description": "MCR component cache configuration.",
+      "required": ["mcr_cache_root", "mcr_cache_size"],
+      "additionalProperties": false,
+      "properties": {
+        "mcr_cache_root": {
+          "type": "string",
+          "description": "Absolute or relative path to the MCR cache root directory.",
+          "minLength": 1
+        },
+        "mcr_cache_size": {
+          "type": "string",
+          "description": "Maximum cache size, e.g. '2GB'.",
+          "minLength": 1
+        }
+      }
+    },
+    "startup_options": {
+      "type": "object",
+      "description": "Options applied at worker startup.",
+      "additionalProperties": false,
+      "properties": {
+        "logfile": {
+          "type": "string",
+          "description": "Relative path to the worker log file."
+        },
+        "environment_vars": {
+          "type": "object",
+          "description": "Environment variables to set before execution.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "description": "Maximum execution time in seconds.",
+          "minimum": 1
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "description": "Explicit list of all required and optional input artifacts.",
+      "items": {
+        "type": "object",
+        "required": ["path", "type", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the input file.",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "Input artifact type.",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this input is mandatory for execution."
+          },
+          "content_hash": {
+            "type": "string",
+            "description": "Optional SHA-256 hash of the input file for integrity verification."
+          }
+        }
+      }
+    },
+    "expected_outputs": {
+      "type": "array",
+      "description": "Explicit list of all expected output artifacts.",
+      "items": {
+        "type": "object",
+        "required": ["path", "type", "required", "paper_relevant"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path of the expected output.",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "Output artifact type.",
+            "enum": [
+              "results_summary_json",
+              "provenance_json",
+              "raw_mat",
+              "figure_dir",
+              "table_dir",
+              "log_file"
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this output is mandatory."
+          },
+          "paper_relevant": {
+            "type": "boolean",
+            "description": "Whether this output is required for working-paper generation."
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Provenance fields required for bundle reproducibility and replay.",
+      "required": [
+        "source_artifact_ids",
+        "source_case_ids",
+        "manifest_author",
+        "creation_context"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_artifact_ids": {
+          "type": "array",
+          "description": "IDs of the source artifacts used to construct this bundle.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_case_ids": {
+          "type": "array",
+          "description": "IDs of the cases this bundle is associated with.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "rng_seed": {
+          "type": "integer",
+          "description": "Integer RNG seed for deterministic replay."
+        },
+        "rng_state_ref": {
+          "type": "string",
+          "description": "Path or identifier referencing a serialized RNG state for replay.",
+          "minLength": 1
+        },
+        "manifest_author": {
+          "type": "string",
+          "description": "Identity of the person or system that authored this manifest.",
+          "minLength": 1
+        },
+        "creation_context": {
+          "type": "string",
+          "description": "Human-readable context describing why this bundle was created.",
+          "minLength": 1
+        }
+      }
+    },
+    "execution_policy": {
+      "type": "object",
+      "description": "Policy governing re-run behaviour and fault tolerance.",
+      "required": [
+        "idempotency_mode",
+        "retry_allowed",
+        "max_retries",
+        "stale_claim_timeout_hours"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "idempotency_mode": {
+          "type": "string",
+          "description": "Declares whether re-running this bundle is safe.",
+          "enum": ["safe_rerun", "strict_once"]
+        },
+        "retry_allowed": {
+          "type": "boolean",
+          "description": "Whether the scheduler may retry a failed job."
+        },
+        "max_retries": {
+          "type": "integer",
+          "description": "Maximum number of automatic retries.",
+          "minimum": 0
+        },
+        "stale_claim_timeout_hours": {
+          "type": "number",
+          "description": "Hours after which an in-progress claim is considered stale.",
+          "minimum": 0
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 datetime when this manifest was created.",
+      "format": "date-time"
+    }
+  }
+}

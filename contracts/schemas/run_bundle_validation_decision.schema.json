@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/run_bundle_validation_decision.schema.json",
+  "title": "Run Bundle Validation Decision",
+  "description": "Deterministic BD validation decision produced when a run-bundle manifest is validated against the governed bundle contract.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "run_id",
+    "created_at",
+    "valid",
+    "failure_type",
+    "triggering_conditions",
+    "required_actions",
+    "bundle_summary",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "description": "Unique identifier for this validation decision.",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "description": "run_id of the bundle being validated.",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 datetime when this decision was produced.",
+      "format": "date-time"
+    },
+    "valid": {
+      "type": "boolean",
+      "description": "True only when all hardening rules pass."
+    },
+    "failure_type": {
+      "type": ["string", "null"],
+      "description": "Most severe failure type, or null when valid.",
+      "enum": [
+        "manifest_invalid",
+        "missing_required_input",
+        "output_contract_invalid",
+        "provenance_incomplete",
+        "idempotency_undefined",
+        null
+      ]
+    },
+    "triggering_conditions": {
+      "type": "array",
+      "description": "List of all individual validation error strings.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_actions": {
+      "type": "array",
+      "description": "Actionable steps required to resolve all failures.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bundle_summary": {
+      "type": "object",
+      "description": "Concise summary of key bundle fields for auditing."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Human-readable summary of the decision outcome."
+    }
+  }
+}
