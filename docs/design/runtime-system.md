@@ -644,3 +644,253 @@ Exit codes:
 - `0` — pass
 - `1` — warning
 - `2` — fail
+
+---
+
+## BF — Cross-Run Intelligence and Anomaly Detection
+
+### Purpose
+
+BF answers the decision-support question that BC, BD, and BE cannot:
+
+> *How does this run compare to other runs, what is abnormal, and what
+> should decision-makers pay attention to?*
+
+The layer consumes multiple BE-produced `normalized_run_result` artifacts,
+aligns their metrics, ranks scenarios, detects anomalies, and emits two
+governed artifacts — a `cross_run_comparison` and a
+`cross_run_intelligence_decision` — that feed directly into working paper
+reviews, study gate checks, and operator triage.
+
+### Relationship: BC → BD → BE → BF
+
+```
+BC validates the runtime environment
+ └─▶ BD validates the bundle contract
+      └─▶ BE normalizes run outputs into NRR artifacts
+           └─▶ BF compares NRR artifacts across runs
+                ├─▶ cross_run_comparison.json
+                └─▶ cross_run_intelligence_decision.json
+```
+
+BF does not re-execute runs, re-validate bundle contracts, or perform
+any MATLAB-specific logic. It is runtime-agnostic: it consumes NRR
+artifacts regardless of how they were produced.
+
+### Metric alignment logic
+
+Metrics are aligned by `metric_name`. For each metric present across
+any of the inputs, BF builds a `metric_comparison` record.
+
+Comparability rules:
+
+| comparability_status | When set |
+|---|---|
+| `comparable` | All values share the same unit AND ≥ 2 numeric values exist |
+| `mixed_units` | Same metric_name appears with different units across runs |
+| `insufficient_data` | Fewer than 2 usable numeric values exist |
+| `inconsistent_structure` | Values present but non-numeric where numeric expected |
+
+Summary statistics (count, min, max, range, mean) are computed only when
+`comparability_status == comparable`.
+
+### Study type comparison rules
+
+BF enforces that all compared runs share the same study type.
+
+| Scenario | Result |
+|---|---|
+| All runs have the same non-generic study_type | Accepted; rankings apply |
+| All runs have study_type `generic` | Accepted; no default rankings |
+| One non-generic type + some `generic` runs | Accepted with warning; generic runs included but may lack required metrics |
+| Multiple distinct non-generic study types | **Rejected** with `failure_type=mixed_study_types` |
+
+### Ranking behavior
+
+Rankings are computed per study type using a fixed set of ranking bases.
+Rankings are only produced when:
+- The metric is `comparable`
+- At least 2 numeric values exist for that metric
+
+Default ranking bases:
+
+| study_type | metric_name | direction |
+|---|---|---|
+| `p2p_interference` | interference_power_dbm | descending |
+| `p2p_interference` | in_ratio_db | descending |
+| `adjacency_analysis` | interference_power_dbm | descending |
+| `retuning_analysis` | incumbent_links_impacted | descending |
+| `retuning_analysis` | retune_candidate_count | descending |
+| `sharing_study` | interference_power_dbm | descending |
+| `sharing_study` | affected_receivers_count | descending |
+| `generic` | (none) | — |
+
+### Anomaly detection philosophy
+
+BF implements lightweight, conservative anomaly detection only. Every
+check is designed to be:
+
+- **Deterministic** — same inputs always produce the same flags
+- **Safe-fail** — flags are warnings or errors, never silent drops
+- **Traceable** — every flag includes `affected_runs` and `metric_name`
+- **Explainable** — detail strings are human-readable
+
+Implemented anomaly types:
+
+| flag_type | severity | trigger |
+|---|---|---|
+| `extreme_spread` | error | `abs(mean) > 0 AND range > 10 * abs(mean)` |
+| `duplicate_scenario_id` | warning | Same scenario_id in multiple runs with materially different metric values |
+| `readiness_mismatch` | warning | Run is `ready_for_comparison` but completeness is not `complete` |
+| `mixed_units` | warning | Same metric appears with multiple units |
+| `low_sample_count` | warning | Only 2 values exist AND range > abs(mean) |
+
+### Why BF remains runtime-agnostic
+
+BF operates exclusively on NRR artifacts. It has no knowledge of:
+- MATLAB versions, platforms, or entrypoints (BC concerns)
+- Bundle contract validation (BD concerns)
+- How metrics were computed or what simulation was run
+
+This means BF can compare outputs from any normalized execution: MATLAB,
+Python, or any future runtime — as long as BE has normalized them.
+
+### Operator workflow examples
+
+**Compare two p2p_interference runs:**
+
+```bash
+python scripts/cross_run_intelligence.py \
+    --input run_a/outputs/normalized_run_result.json \
+    --input run_b/outputs/normalized_run_result.json \
+    --output-dir outputs/comparison/
+```
+
+**Auto-discover NRR files in a study directory:**
+
+```bash
+python scripts/cross_run_intelligence.py \
+    --dir studies/p2p_batch/ \
+    --output-dir outputs/batch_comparison/
+```
+
+Exit codes:
+- `0` — pass (no warnings or errors)
+- `1` — warning (comparison succeeded, anomalies detected)
+- `2` — fail (missing inputs, schema errors, mixed study types)
+
+### Artifacts
+
+Every call to `compare_normalized_runs()` produces:
+
+```
+cross_run_comparison.json
+cross_run_intelligence_decision.json
+```
+
+Archived under:
+
+```
+data/cross_run_intelligence_decisions/cross_run_intelligence_decision_<timestamp>.json
+```
+
+### Example: cross_run_comparison
+
+```json
+{
+  "artifact_id": "CRC-A1B2C3D4E5F6",
+  "artifact_type": "cross_run_comparison",
+  "schema_version": "1.0.0",
+  "comparison_id": "CMP-123456789ABC",
+  "study_type": "p2p_interference",
+  "compared_runs": [
+    {
+      "source_bundle_id": "bundle-p2p-001",
+      "normalized_run_result_id": "NRR-P2P-RUN1-001",
+      "scenario_id": "scenario-alpha",
+      "scenario_label": "P2P Alpha Link",
+      "readiness": "ready_for_comparison",
+      "completeness_status": "complete"
+    },
+    {
+      "source_bundle_id": "bundle-p2p-002",
+      "normalized_run_result_id": "NRR-P2P-RUN2-001",
+      "scenario_id": "scenario-beta",
+      "scenario_label": "P2P Beta Link",
+      "readiness": "ready_for_comparison",
+      "completeness_status": "complete"
+    }
+  ],
+  "metric_comparisons": [
+    {
+      "metric_name": "interference_power_dbm",
+      "unit": "dBm",
+      "compared_values": [
+        {
+          "source_bundle_id": "bundle-p2p-001",
+          "scenario_id": "scenario-alpha",
+          "value": -85.3,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[0]"
+        },
+        {
+          "source_bundle_id": "bundle-p2p-002",
+          "scenario_id": "scenario-beta",
+          "value": -92.1,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[0]"
+        }
+      ],
+      "summary_statistics": {
+        "count": 2,
+        "min": -92.1,
+        "max": -85.3,
+        "range": 6.8,
+        "mean": -88.7
+      },
+      "comparability_status": "comparable"
+    }
+  ],
+  "scenario_rankings": [
+    {
+      "ranking_basis": "interference_power_dbm",
+      "direction": "descending",
+      "ranked_scenarios": [
+        {
+          "rank": 1,
+          "source_bundle_id": "bundle-p2p-001",
+          "scenario_id": "scenario-alpha",
+          "scenario_label": "P2P Alpha Link",
+          "metric_name": "interference_power_dbm",
+          "value": -85.3
+        },
+        {
+          "rank": 2,
+          "source_bundle_id": "bundle-p2p-002",
+          "scenario_id": "scenario-beta",
+          "scenario_label": "P2P Beta Link",
+          "metric_name": "interference_power_dbm",
+          "value": -92.1
+        }
+      ]
+    }
+  ],
+  "anomaly_flags": [],
+  "generated_at": "2026-03-19T10:00:00+00:00"
+}
+```
+
+### Example: cross_run_intelligence_decision
+
+```json
+{
+  "artifact_type": "cross_run_intelligence_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "CRI-F1E2D3C4B5A6",
+  "comparison_id": "CMP-123456789ABC",
+  "overall_status": "pass",
+  "failure_type": "none",
+  "findings": [],
+  "generated_at": "2026-03-19T10:00:00+00:00"
+}
+```

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "cross_run_intelligence_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "CRI-EFD1669E2DB8",
+  "comparison_id": "CMP-3D5A03ABAE06",
+  "overall_status": "fail",
+  "failure_type": "malformed_input",
+  "findings": [
+    {
+      "code": "malformed_input",
+      "severity": "error",
+      "message": "Malformed JSON in input: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "artifact_path": "/tmp/pytest-of-runner/pytest-3/test_cli_exit_2_for_no_valid_i0/bad.json"
+    }
+  ],
+  "generated_at": "2026-03-19T10:42:25.064056+00:00"
+}
