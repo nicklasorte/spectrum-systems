@@ -514,3 +514,133 @@ Core functions:
 | `validate_provenance_fields()` | Checks provenance replay minimums |
 | `derive_bundle_summary()` | Returns concise summary dict for auditing |
 | `classify_bundle_failure()` | Returns most severe failure type |
+
+---
+
+## BE — Run Output Normalization + Evaluation
+
+### Purpose
+
+BE answers the question: **"What did this run mean, is it complete, and should we trust it enough to compare or use downstream?"**
+
+BC validates runtime compatibility. BD validates bundle contract and manifest discipline. BE sits after BD and before any downstream integration. It converts a BD-valid run bundle into a normalized, comparable, evaluation-ready result artifact.
+
+BE is **runtime-agnostic**. MATLAB is treated as a future producer only. No MATLAB-specific logic exists in BE. The module defends itself against malformed or missing output files even when BD has already passed.
+
+### Relationship: BC → BD → BE
+
+```
+BC: Is the environment capable of running this job?
+BD: Does the bundle manifest conform to the governed contract?
+BE: What did the run produce, is it complete, and can we trust it?
+```
+
+BC and BD validate before execution. BE validates after execution, transforming raw outputs into governed artifacts.
+
+### Module location
+
+```
+spectrum_systems/modules/runtime/run_output_evaluation.py
+```
+
+### Core functions
+
+| Function | Purpose |
+|---|---|
+| `load_json_file(path)` | Load and parse a JSON file safely |
+| `resolve_manifest_output_paths(manifest, bundle_root)` | Resolve declared output paths to absolute paths |
+| `extract_results_summary(outputs)` | Extract results_summary from resolved outputs |
+| `extract_provenance(outputs)` | Extract provenance from resolved outputs |
+| `infer_study_type(manifest, results_summary)` | Infer study_type from manifest or results_summary |
+| `get_required_metrics_for_study_type(study_type)` | Return required metric catalog for a study type |
+| `normalize_summary_metrics(study_type, results_summary)` | Normalize metrics to governed array shape |
+| `compute_completeness(required, normalized)` | Compute completeness status |
+| `build_threshold_assessments(study_type, metrics, manifest, rs)` | Evaluate declared thresholds |
+| `detect_outlier_flags(metrics)` | Flag NaN, infinite, and extreme-magnitude values |
+| `compute_readiness(completeness, thresholds, findings)` | Determine readiness signal |
+| `build_normalized_run_result(manifest, rs, prov, bundle_root)` | Build the NRR artifact |
+| `classify_evaluation_failure(findings)` | Classify overall status and failure_type |
+| `build_run_output_evaluation_decision(source_bundle_id, findings)` | Build the ROE decision artifact |
+| `validate_normalized_run_result(payload)` | Validate NRR against schema |
+| `validate_run_output_evaluation_decision(payload)` | Validate ROE against schema |
+| `evaluate_run_outputs(manifest_path, bundle_root, manifest_payload)` | Top-level BE entry point |
+
+### Normalized artifact structure
+
+BE emits two governed artifacts:
+
+**1. normalized_run_result** (`NRR-*`)
+Contains:
+- `artifact_id`, `artifact_type`, `schema_version`
+- `source_bundle_id` — links back to the BD-validated run_id
+- `study_type` — inferred from manifest or results_summary
+- `scenario` — scenario_id, label, frequency range, assumptions
+- `metrics` — metric_set_id, summary_metrics array, completeness
+- `evaluation_signals` — readiness, outlier_flags, threshold_assessments, trust_notes
+- `provenance` — manifest_author, source_case_ids, rng_reference, source paths
+- `generated_at`
+
+**2. run_output_evaluation_decision** (`ROE-*`)
+Contains:
+- `decision_id`, `artifact_type`, `schema_version`
+- `source_bundle_id`
+- `overall_status` — pass / warning / fail
+- `failure_type` — most severe failure type
+- `findings` — structured list of all findings with code, severity, message, artifact_path
+- `generated_at`
+
+### Study-type required metrics
+
+| study_type | Required metrics |
+|---|---|
+| `p2p_interference` | interference_power_dbm, in_ratio_db, path_loss_db |
+| `adjacency_analysis` | frequency_separation_mhz, interference_power_dbm |
+| `retuning_analysis` | incumbent_links_impacted, retune_candidate_count |
+| `sharing_study` | interference_power_dbm, affected_receivers_count |
+| `generic` | (none) |
+
+### Readiness semantics
+
+| readiness | Conditions |
+|---|---|
+| `ready_for_comparison` | Completeness complete, no errors, no threshold failures |
+| `limited_use` | Completeness partial, or threshold failure, or outlier flags present |
+| `not_ready` | Completeness insufficient, or any error-level finding |
+
+### Threshold handling
+
+BE looks for threshold definitions in:
+- `manifest["evaluation_thresholds"]`
+- `results_summary["evaluation_thresholds"]`
+
+Each threshold may define: `metric_name`, `threshold_name`, `operator` (lt/lte/gt/gte/eq), `value`.
+
+If a threshold is malformed, the assessment status is `unknown` and a finding is emitted.
+If the referenced metric is absent, the assessment status is `unknown`.
+
+### Artifacts
+
+Every call to `evaluate_run_outputs()` produces:
+
+```
+outputs/normalized_run_result.json
+outputs/run_output_evaluation_decision.json
+```
+
+Archived under:
+
+```
+data/run_output_evaluation_decisions/run_output_evaluation_decision_<timestamp>.json
+```
+
+### CLI
+
+```bash
+python scripts/run_output_evaluation.py --manifest path/to/run_bundle_manifest.json
+python scripts/run_output_evaluation.py --bundle-root path/to/bundle_dir
+```
+
+Exit codes:
+- `0` — pass
+- `1` — warning
+- `2` — fail

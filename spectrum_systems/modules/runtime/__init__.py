@@ -1,9 +1,10 @@
 """
 Runtime Module — spectrum_systems/modules/runtime/
 
-Provides the runtime compatibility enforcement layer (Prompt BC) and the
-run-bundle contract hardening layer (Prompt BD) for validating execution
-bundles BEFORE job execution.
+Provides the runtime compatibility enforcement layer (Prompt BC), the
+run-bundle contract hardening layer (Prompt BD), and the run output
+normalization and evaluation layer (Prompt BE) for validating execution
+bundles and their outputs.
 
 Every validation produces a deterministic decision artifact that is
 persisted and auditable.
@@ -15,6 +16,9 @@ runtime_compatibility
     required artifacts, entrypoint, and cache-policy compliance (BC).
 run_bundle
     Bundle contract and manifest hardening validators (BD).
+run_output_evaluation
+    Run output normalization, completeness evaluation, and decision
+    artifact emission (BE).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -38,6 +42,25 @@ from spectrum_systems.modules.runtime.run_bundle import (
     validate_provenance_fields,
     validate_run_bundle_manifest,
 )
+from spectrum_systems.modules.runtime.run_output_evaluation import (
+    build_normalized_run_result,
+    build_run_output_evaluation_decision,
+    build_threshold_assessments,
+    classify_evaluation_failure,
+    compute_completeness,
+    compute_readiness,
+    detect_outlier_flags,
+    evaluate_run_outputs,
+    extract_provenance,
+    extract_results_summary,
+    get_required_metrics_for_study_type,
+    infer_study_type,
+    load_json_file,
+    normalize_summary_metrics,
+    resolve_manifest_output_paths,
+    validate_normalized_run_result,
+    validate_run_output_evaluation_decision,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -59,4 +82,22 @@ __all__ = [
     "validate_provenance_fields",
     "derive_bundle_summary",
     "classify_bundle_failure",
+    # BE — Run Output Evaluation
+    "load_json_file",
+    "resolve_manifest_output_paths",
+    "extract_results_summary",
+    "extract_provenance",
+    "infer_study_type",
+    "get_required_metrics_for_study_type",
+    "normalize_summary_metrics",
+    "compute_completeness",
+    "build_threshold_assessments",
+    "detect_outlier_flags",
+    "compute_readiness",
+    "build_normalized_run_result",
+    "classify_evaluation_failure",
+    "build_run_output_evaluation_decision",
+    "validate_normalized_run_result",
+    "validate_run_output_evaluation_decision",
+    "evaluate_run_outputs",
 ]
