@@ -68,11 +68,12 @@
     },
     "root_artifact_ids": {
       "type": "array",
-      "description": "IDs of all root (simulation_input) ancestors reachable from this artifact.",
+      "description": "IDs of all root (simulation_input) ancestors reachable from this artifact. Must be non-empty for every artifact.",
       "items": {
         "type": "string",
         "minLength": 1
-      }
+      },
+      "minItems": 1
     },
     "lineage_valid": {
       "type": "boolean",
@@ -83,6 +84,27 @@
       "description": "List of lineage validation error messages, empty when lineage_valid is true.",
       "items": {
         "type": "string"
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "artifact_type": { "const": "simulation_input" }
+    },
+    "required": ["artifact_type"]
+  },
+  "then": {
+    "properties": {
+      "root_artifact_ids": {
+        "minItems": 1
+      }
+    },
+    "description": "simulation_input artifacts must include themselves in root_artifact_ids (enforced at runtime by validate_against_schema)."
+  },
+  "else": {
+    "properties": {
+      "root_artifact_ids": {
+        "minItems": 1
       }
     }
   }

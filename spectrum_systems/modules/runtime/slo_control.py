@@ -34,7 +34,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 _SCHEMA_DIR = Path(__file__).resolve().parents[3] / "contracts" / "schemas"
 _SLO_SCHEMA_PATH = _SCHEMA_DIR / "slo_evaluation.schema.json"
@@ -167,7 +167,7 @@ def validate_inputs_against_schema(loaded: Dict[str, Any]) -> List[str]:
     if nrr_schema_path.exists():
         try:
             nrr_schema = json.loads(nrr_schema_path.read_text(encoding="utf-8"))
-            validator = Draft202012Validator(nrr_schema)
+            validator = Draft202012Validator(nrr_schema, format_checker=FormatChecker())
             for idx, be in enumerate(loaded.get("be_artifacts") or []):
                 ve = sorted(validator.iter_errors(be), key=lambda e: e.path)
                 for err in ve:
@@ -182,7 +182,7 @@ def validate_inputs_against_schema(loaded: Dict[str, Any]) -> List[str]:
         if cri_schema_path.exists():
             try:
                 cri_schema = json.loads(cri_schema_path.read_text(encoding="utf-8"))
-                validator = Draft202012Validator(cri_schema)
+                validator = Draft202012Validator(cri_schema, format_checker=FormatChecker())
                 ve = sorted(validator.iter_errors(bf), key=lambda e: e.path)
                 for err in ve:
                     errors.append(f"bf_artifact schema error: {err.message}")
@@ -196,7 +196,7 @@ def validate_inputs_against_schema(loaded: Dict[str, Any]) -> List[str]:
         if wpe_schema_path.exists():
             try:
                 wpe_schema = json.loads(wpe_schema_path.read_text(encoding="utf-8"))
-                validator = Draft202012Validator(wpe_schema)
+                validator = Draft202012Validator(wpe_schema, format_checker=FormatChecker())
                 ve = sorted(validator.iter_errors(bg), key=lambda e: e.path)
                 for err in ve:
                     errors.append(f"bg_artifact schema error: {err.message}")
@@ -647,7 +647,7 @@ def validate_output_against_schema(artifact: Dict[str, Any]) -> List[str]:
     errors: List[str] = []
     try:
         schema = _load_schema()
-        validator = Draft202012Validator(schema)
+        validator = Draft202012Validator(schema, format_checker=FormatChecker())
         ve = sorted(validator.iter_errors(artifact), key=lambda e: e.path)
         for err in ve:
             errors.append(f"slo_evaluation schema error: {err.message}")
