@@ -1022,3 +1022,243 @@ spectrum_systems/modules/runtime/decision_gating.py
 - `run_slo_gating` accepts either a bare enforcement decision dict or the
   ``{enforcement_decision: ...}`` wrapper returned by ``run_slo_enforcement``
 - All pre-BN.3 tests continue to pass
+
+
+---
+
+## Control-Chain Orchestrator (BN.4)
+
+### Purpose
+
+BN.3 proved that gating works, but it was **advisory** — nothing required it
+to run.  BN.4 fixes this by introducing a single canonical execution path that
+makes enforcement **and** gating non-optional for decision-bearing stages.
+
+BN.4 eliminates the bypass risk identified in BN.3:
+
+> An `allow` enforcement decision alone could be misinterpreted as "safe to
+> proceed" even for decision-bearing stages, because gating was never forced.
+
+### Core Non-Negotiable Rule
+
+**Decision-bearing stages (recommend, synthesis, export) CANNOT proceed
+unless:**
+
+1. Gating has been executed (not just enforcement), **and**
+2. `gating_outcome != halt`.
+
+There is **no shortcut**, no alternate path, and no silent fallback.
+
+### Module Location
+
+```
+spectrum_systems/modules/runtime/control_chain.py
+```
+
+### Canonical Execution Path
+
+```
+evaluation → enforcement → gating → control decision
+```
+
+| Input Kind   | Chain Executed                                  |
+|--------------|------------------------------------------------|
+| `evaluation` | MUST run enforcement, MUST run gating          |
+| `enforcement`| MUST run gating                                 |
+| `gating`     | Validate and return (audit/replay mode only)   |
+
+### Why Gating is Mandatory
+
+Enforcement evaluates whether an artifact's TI metric satisfies a policy.
+It does **not** account for the downstream stage's decision-bearing status.
+
+Gating translates the enforcement result into a stage-aware binding decision.
+At decision-bearing stages, even an `allow_with_warning` enforcement result
+**halts** the pipeline — degraded lineage must not flow into recommendations
+or exports.
+
+Without mandatory gating, operators could:
+- Call `run_slo_enforcement` and treat `allow` as "safe to proceed"
+- Skip gating entirely for decision stages
+- Route artifacts through exploratory-grade validation on decision-grade stages
+
+BN.4 makes this impossible via the single entry point.
+
+### Single Public API
+
+```python
+from spectrum_systems.modules.runtime.control_chain import run_control_chain
+
+result = run_control_chain(
+    raw_input,          # evaluation, enforcement, or gating artifact
+    stage="synthesis",  # optional override
+    policy="permissive", # optional policy override (evaluation input only)
+    input_kind=None,    # optional kind override (auto-detected if None)
+)
+
+cd = result["control_chain_decision"]
+if result["continuation_allowed"]:
+    print("Continue:", cd["primary_reason_code"])
+else:
+    print("Blocked:", cd["blocking_layer"], cd["primary_reason_code"])
+```
+
+This function is documented as the **REQUIRED entry point** for
+decision-grade operation.  Calling lower-level functions directly bypasses
+the control chain and violates the governance contract.
+
+### Control-Chain Decision Artifact
+
+Schema: `contracts/schemas/slo_control_chain_decision.schema.json`
+
+Key fields:
+
+| Field                        | Type           | Description                                            |
+|------------------------------|----------------|--------------------------------------------------------|
+| `control_chain_decision_id`  | string         | Unique ID (CC-...)                                     |
+| `artifact_id`                | string         | ID of the evaluated artifact                           |
+| `stage`                      | string         | Pipeline stage                                         |
+| `input_kind`                 | enum           | evaluation / enforcement / gating                      |
+| `enforcement_decision_id`    | string         | ID of the enforcement decision                         |
+| `gating_decision_id`         | string         | ID of the gating decision                              |
+| `enforcement_policy`         | string         | Policy profile used                                    |
+| `enforcement_decision_status`| string         | allow / allow_with_warning / fail                      |
+| `gating_outcome`             | string         | proceed / proceed_with_warning / halt                  |
+| `continuation_allowed`       | boolean        | True = stage may continue                              |
+| `blocking_layer`             | enum           | none / enforcement / gating / orchestration            |
+| `primary_reason_code`        | enum           | Deterministic reason code                              |
+| `traceability_integrity_sli` | number\|null   | TI value                                               |
+| `warnings`                   | array          | Accumulated warnings                                   |
+| `errors`                     | array          | Accumulated errors                                     |
+| `recommended_action`         | enum           | Deterministic recommended action                       |
+| `schema_version`             | string         | Schema version                                         |
+| `stage_source`               | enum           | original / override (optional, BN.4 I.3)               |
+
+### Reason Codes
+
+| Code                                        | Meaning                                              |
+|---------------------------------------------|------------------------------------------------------|
+| `control_chain_continue`                    | Full chain passed; continue                          |
+| `control_chain_continue_with_warning`       | Chain passed with warnings (proceed_with_warning)    |
+| `control_chain_blocked_by_gating`           | Gating outcome was halt                              |
+| `control_chain_blocked_by_missing_gating`   | Decision stage reached without gating                |
+| `control_chain_blocked_by_malformed_input`  | Input could not be parsed                            |
+| `control_chain_blocked_by_inconsistent_state` | Internally contradictory state                     |
+
+### Blocking Layers
+
+| Layer            | When assigned                                       |
+|------------------|-----------------------------------------------------|
+| `none`           | Continuation is allowed                             |
+| `enforcement`    | Reserved; enforcement alone does not block for BN.4 |
+| `gating`         | Gating outcome was halt                             |
+| `orchestration`  | Gating was skipped for a decision-bearing stage     |
+
+### Recommended Actions
+
+| Action                       | Triggered by                                        |
+|------------------------------|-----------------------------------------------------|
+| `continue`                   | control_chain_continue                              |
+| `continue_with_monitoring`   | control_chain_continue_with_warning                 |
+| `stop_and_review`            | control_chain_blocked_by_gating (fail)              |
+| `stop_and_repair_lineage`    | blocked by gating with warning enforcement status   |
+| `stop_and_rerun_with_registry` | (reserved for degraded lineage cases)             |
+| `stop_and_escalate`          | missing gating / inconsistent state                 |
+
+### CLI Usage
+
+```
+python scripts/run_slo_control_chain.py <artifact.json> \
+    [--stage STAGE] [--policy POLICY] [--input-kind KIND] [--output PATH]
+```
+
+**Examples:**
+
+```bash
+# Gate an SLO evaluation artifact at synthesis (decision-bearing)
+python scripts/run_slo_control_chain.py outputs/slo_evaluation.json \
+    --stage synthesis
+
+# Gate an enforcement decision artifact
+python scripts/run_slo_control_chain.py outputs/slo_enforcement_decision.json
+
+# Audit mode: validate a gating decision artifact
+python scripts/run_slo_control_chain.py outputs/slo_gating_decision.json \
+    --input-kind gating
+
+# Override policy for an evaluation artifact
+python scripts/run_slo_control_chain.py outputs/slo_evaluation.json \
+    --stage recommend --policy decision_grade
+
+# Write output to a custom path
+python scripts/run_slo_control_chain.py outputs/slo_evaluation.json \
+    --stage synthesis --output /tmp/cc_decision.json
+```
+
+**Exit codes:**
+
+| Code | Meaning                                            |
+|------|----------------------------------------------------|
+| 0    | continue                                           |
+| 1    | continue_with_warning                              |
+| 2    | blocked (halt)                                     |
+| 3    | execution / malformed error                        |
+
+Exit code 2 (blocked) NEVER overlaps with exit code 3 (error).  A halt always
+returns 2 regardless of schema errors.
+
+### BN.3 Bug Fixes Applied in BN.4
+
+**I.1 — Exit code precedence (run_slo_gating.py)**
+
+Previously, schema errors caused `_outcome_exit_code` to return 3 (error) even
+when the gating outcome was `halt`.  Fixed so that `halt` always returns 2,
+and schema errors only escalate to 3 on non-halt outcomes.
+
+**I.2 — Gating config fallback visibility (decision_gating.py)**
+
+When `data/policy/slo_gating_rules.json` is unavailable, the built-in fallback
+postures are now used **and** a warning is included in the gating artifact:
+
+```
+"Gating rules config could not be loaded; built-in fallback postures are in use."
+```
+
+**I.3 — stage_source field (optional)**
+
+When stage is overridden by the caller, the control-chain artifact records
+`"stage_source": "override"`.  When taken from the artifact itself, it records
+`"stage_source": "original"`.  This field is optional in the schema.
+
+### Canonical End-to-End Flow (Updated for BN.4)
+
+```
+run_slo_control        → outputs/slo_evaluation.json
+                                       ↓
+run_slo_enforcement    → outputs/slo_enforcement_decision.json
+                                       ↓
+run_slo_gating         → outputs/slo_gating_decision.json
+                                       ↓
+run_slo_control_chain  → outputs/slo_control_chain_decision.json  ← REQUIRED for decision stages
+```
+
+For decision-grade operation, **always** use `run_slo_control_chain.py` (or
+`run_control_chain(...)` in Python).  The earlier scripts are lower-level
+tools that do not enforce mandatory gating.
+
+### Backward Compatibility Notes
+
+- All BN.1–BN.3 modules, schemas, exit codes, and artifacts are unchanged.
+- `run_slo_control`, `run_slo_enforcement`, and `run_slo_gating` remain
+  available for direct use in non-decision-bearing or testing contexts.
+- The control-chain module is additive; existing callers are unaffected.
+- `run_control_chain` accepts BN.1/BN.2/BN.3 artifacts directly.
+
+### Follow-On Recommendations
+
+1. Integrate `run_control_chain` into pipeline stage entry points to enforce
+   the control chain at the framework level (not just per-invocation).
+2. Add a governance check that warns operators when BN.1–BN.3 scripts are
+   used directly for decision-grade stages in production workflows.
+3. Consider adding a `dry_run` mode to `run_control_chain` that runs the
+   full chain but does not write output artifacts.

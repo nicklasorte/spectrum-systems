@@ -85,15 +85,19 @@ def _write_decision(decision: Dict[str, Any], output_path: Path) -> None:
 
 
 def _outcome_exit_code(gating_outcome: str, has_schema_errors: bool) -> int:
-    """Map a gating outcome (and optional schema errors) to an exit code."""
+    """Map a gating outcome (and optional schema errors) to an exit code.
+
+    Halt takes precedence over schema errors: exit 2 must never be confused
+    with exit 3 (BN.4 I.1 fix).
+    """
+    if gating_outcome == OUTCOME_HALT:
+        return EXIT_HALT
     if has_schema_errors:
         return EXIT_ERROR
     if gating_outcome == OUTCOME_PROCEED:
         return EXIT_PROCEED
     if gating_outcome == OUTCOME_PROCEED_WITH_WARNING:
         return EXIT_PROCEED_WITH_WARNING
-    if gating_outcome == OUTCOME_HALT:
-        return EXIT_HALT
     return EXIT_ERROR
 
 
