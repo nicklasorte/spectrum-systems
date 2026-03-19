@@ -1,0 +1,35 @@
+{
+  "decision_id": "fed_8b17638ff73a3617",
+  "created_at": "2026-03-19T12:02:56.795696+00:00",
+  "source_report_ref": "/tmp/pytest-of-runner/pytest-1/test_cli_behavior0/failure_first_report.json",
+  "promotion_allowed": false,
+  "system_response": "incident_flag",
+  "incident_severity": "critical",
+  "triggering_conditions": [
+    "dangerous_promote_count=1",
+    "structural_failure_rate=0.200>threshold=0.100",
+    "suppressed_components=decision_extraction"
+  ],
+  "suppressed_components": [
+    "decision_extraction"
+  ],
+  "required_actions": [
+    "block_promotion_and_open_incident",
+    "route_outputs_to_hold_or_reject",
+    "suppress_low_trust_components_from_final_outputs"
+  ],
+  "notes": "Deterministic BB+1 enforcement decision.",
+  "component_health": [
+    {
+      "component": "decision_extraction",
+      "repeat_weak_count": 6,
+      "observations": 3,
+      "dangerous_promotes": 2,
+      "high_confidence_errors": 1,
+      "structural_failures": 0,
+      "repeated_failures": 0,
+      "component_health_score": 0.383,
+      "suppressed_for_final_outputs": true
+    }
+  ]
+}
