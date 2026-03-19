@@ -1,0 +1,60 @@
+{
+  "artifact_id": "NRR-P2P-OUTLIER-001",
+  "artifact_type": "normalized_run_result",
+  "schema_version": "1.0.0",
+  "source_bundle_id": "bundle-p2p-outlier",
+  "study_type": "p2p_interference",
+  "scenario": {
+    "scenario_id": "scenario-gamma",
+    "scenario_label": "P2P Gamma Link (Outlier)",
+    "frequency_range_mhz": { "low_mhz": 3550.0, "high_mhz": 3600.0 },
+    "assumptions_summary": "Point-to-point link with extreme near-field scenario."
+  },
+  "metrics": {
+    "metric_set_id": "ms-p2p-outlier",
+    "summary_metrics": [
+      {
+        "name": "interference_power_dbm",
+        "value": -3.0,
+        "unit": "dBm",
+        "classification": "core",
+        "source_path": "outputs/results_summary.json#metrics[0]"
+      },
+      {
+        "name": "in_ratio_db",
+        "value": 45.2,
+        "unit": "dB",
+        "classification": "core",
+        "source_path": "outputs/results_summary.json#metrics[1]"
+      },
+      {
+        "name": "path_loss_db",
+        "value": 88.0,
+        "unit": "dB",
+        "classification": "core",
+        "source_path": "outputs/results_summary.json#metrics[2]"
+      }
+    ],
+    "completeness": {
+      "required_metric_count": 3,
+      "present_required_metric_count": 3,
+      "missing_required_metrics": [],
+      "status": "complete"
+    }
+  },
+  "evaluation_signals": {
+    "readiness": "ready_for_comparison",
+    "outlier_flags": [],
+    "threshold_assessments": [],
+    "trust_notes": ["Extreme near-field scenario — treat with caution."]
+  },
+  "provenance": {
+    "manifest_author": "test-author",
+    "source_case_ids": ["case-003"],
+    "creation_context": "BF test fixture — outlier run",
+    "rng_reference": { "mode": "fixed", "value": 42 },
+    "results_summary_source": "outputs/results_summary.json",
+    "provenance_source": "outputs/provenance.json"
+  },
+  "generated_at": "2026-03-01T12:00:00+00:00"
+}

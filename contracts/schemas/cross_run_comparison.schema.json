@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/cross_run_comparison.schema.json",
+  "title": "Cross-Run Comparison",
+  "description": "Governed artifact produced by BF. Aligns metrics across multiple normalized run results, computes summary statistics, ranks scenarios, and flags anomalies.",
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "comparison_id",
+    "study_type",
+    "compared_runs",
+    "metric_comparisons",
+    "scenario_rankings",
+    "anomaly_flags",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Unique identifier for this cross_run_comparison artifact.",
+      "pattern": "^CRC-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "description": "Must equal cross_run_comparison.",
+      "const": "cross_run_comparison"
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version of this schema.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "comparison_id": {
+      "type": "string",
+      "description": "Unique identifier for this comparison run.",
+      "pattern": "^CMP-[A-Z0-9][A-Z0-9._-]*$"
+    },
+    "study_type": {
+      "type": "string",
+      "description": "The type of spectrum study shared by the compared runs.",
+      "enum": ["p2p_interference", "adjacency_analysis", "retuning_analysis", "sharing_study", "generic"]
+    },
+    "compared_runs": {
+      "type": "array",
+      "description": "Descriptors for each normalized run result included in this comparison.",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_bundle_id",
+          "normalized_run_result_id",
+          "scenario_id",
+          "scenario_label",
+          "readiness",
+          "completeness_status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "source_bundle_id": { "type": "string", "minLength": 1 },
+          "normalized_run_result_id": { "type": "string", "minLength": 1 },
+          "scenario_id": { "type": "string", "minLength": 1 },
+          "scenario_label": { "type": "string", "minLength": 1 },
+          "readiness": {
+            "type": "string",
+            "enum": ["ready_for_comparison", "limited_use", "not_ready"]
+          },
+          "completeness_status": {
+            "type": "string",
+            "enum": ["complete", "partial", "insufficient"]
+          }
+        }
+      }
+    },
+    "metric_comparisons": {
+      "type": "array",
+      "description": "Per-metric comparison records across all compared runs.",
+      "items": {
+        "type": "object",
+        "required": [
+          "metric_name",
+          "unit",
+          "compared_values",
+          "summary_statistics",
+          "comparability_status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "metric_name": { "type": "string", "minLength": 1 },
+          "unit": { "type": "string" },
+          "compared_values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "source_bundle_id",
+                "scenario_id",
+                "value",
+                "classification",
+                "source_path"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "source_bundle_id": { "type": "string", "minLength": 1 },
+                "scenario_id": { "type": "string", "minLength": 1 },
+                "value": {},
+                "classification": {
+                  "type": "string",
+                  "enum": ["core", "supporting", "diagnostic"]
+                },
+                "source_path": { "type": "string" }
+              }
+            }
+          },
+          "summary_statistics": {
+            "type": "object",
+            "required": ["count", "min", "max", "range", "mean"],
+            "additionalProperties": false,
+            "properties": {
+              "count": { "type": "integer", "minimum": 0 },
+              "min": { "type": ["number", "null"] },
+              "max": { "type": ["number", "null"] },
+              "range": { "type": ["number", "null"] },
+              "mean": { "type": ["number", "null"] }
+            }
+          },
+          "comparability_status": {
+            "type": "string",
+            "enum": ["comparable", "mixed_units", "insufficient_data", "inconsistent_structure"]
+          }
+        }
+      }
+    },
+    "scenario_rankings": {
+      "type": "array",
+      "description": "Scenario rankings computed for applicable metrics.",
+      "items": {
+        "type": "object",
+        "required": ["ranking_basis", "direction", "ranked_scenarios"],
+        "additionalProperties": false,
+        "properties": {
+          "ranking_basis": { "type": "string", "minLength": 1 },
+          "direction": {
+            "type": "string",
+            "enum": ["ascending", "descending"]
+          },
+          "ranked_scenarios": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "rank",
+                "source_bundle_id",
+                "scenario_id",
+                "scenario_label",
+                "metric_name",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "rank": { "type": "integer", "minimum": 1 },
+                "source_bundle_id": { "type": "string", "minLength": 1 },
+                "scenario_id": { "type": "string", "minLength": 1 },
+                "scenario_label": { "type": "string", "minLength": 1 },
+                "metric_name": { "type": "string", "minLength": 1 },
+                "value": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "anomaly_flags": {
+      "type": "array",
+      "description": "Anomaly flags detected during cross-run comparison.",
+      "items": {
+        "type": "object",
+        "required": ["flag_type", "severity", "metric_name", "affected_runs", "detail"],
+        "additionalProperties": false,
+        "properties": {
+          "flag_type": { "type": "string", "minLength": 1 },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error"]
+          },
+          "metric_name": { "type": "string" },
+          "affected_runs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 date-time when this artifact was generated.",
+      "format": "date-time"
+    }
+  }
+}

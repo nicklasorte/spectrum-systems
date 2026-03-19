@@ -2,9 +2,10 @@
 Runtime Module — spectrum_systems/modules/runtime/
 
 Provides the runtime compatibility enforcement layer (Prompt BC), the
-run-bundle contract hardening layer (Prompt BD), and the run output
-normalization and evaluation layer (Prompt BE) for validating execution
-bundles and their outputs.
+run-bundle contract hardening layer (Prompt BD), the run output
+normalization and evaluation layer (Prompt BE), and the cross-run
+intelligence and anomaly detection layer (Prompt BF) for validating
+execution bundles and their outputs.
 
 Every validation produces a deterministic decision artifact that is
 persisted and auditable.
@@ -19,6 +20,9 @@ run_bundle
 run_output_evaluation
     Run output normalization, completeness evaluation, and decision
     artifact emission (BE).
+cross_run_intelligence
+    Cross-run metric alignment, anomaly detection, scenario ranking,
+    and intelligence decision artifact emission (BF).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -61,6 +65,24 @@ from spectrum_systems.modules.runtime.run_output_evaluation import (
     validate_normalized_run_result,
     validate_run_output_evaluation_decision,
 )
+from spectrum_systems.modules.runtime.cross_run_intelligence import (
+    build_cross_run_comparison,
+    build_cross_run_intelligence_decision,
+    build_metric_comparisons,
+    build_scenario_rankings,
+    classify_cross_run_failure,
+    collect_compared_runs,
+    compare_normalized_runs,
+    compute_summary_statistics,
+    detect_cross_run_anomalies,
+    detect_mixed_units,
+    extract_metric_index,
+    infer_comparison_study_type,
+    load_normalized_run_result,
+    validate_cross_run_comparison,
+    validate_cross_run_intelligence_decision,
+    validate_normalized_run_result_input,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -100,4 +122,21 @@ __all__ = [
     "validate_normalized_run_result",
     "validate_run_output_evaluation_decision",
     "evaluate_run_outputs",
+    # BF — Cross-Run Intelligence
+    "load_normalized_run_result",
+    "validate_normalized_run_result_input",
+    "infer_comparison_study_type",
+    "collect_compared_runs",
+    "extract_metric_index",
+    "build_metric_comparisons",
+    "compute_summary_statistics",
+    "detect_mixed_units",
+    "build_scenario_rankings",
+    "detect_cross_run_anomalies",
+    "build_cross_run_comparison",
+    "classify_cross_run_failure",
+    "build_cross_run_intelligence_decision",
+    "validate_cross_run_comparison",
+    "validate_cross_run_intelligence_decision",
+    "compare_normalized_runs",
 ]
