@@ -3,8 +3,9 @@ Runtime Module — spectrum_systems/modules/runtime/
 
 Provides the runtime compatibility enforcement layer (Prompt BC), the
 run-bundle contract hardening layer (Prompt BD), the run output
-normalization and evaluation layer (Prompt BE), and the cross-run
-intelligence and anomaly detection layer (Prompt BF) for validating
+normalization and evaluation layer (Prompt BE), the cross-run
+intelligence and anomaly detection layer (Prompt BF), and the working
+paper evidence pack synthesis layer (Prompt BG) for validating
 execution bundles and their outputs.
 
 Every validation produces a deterministic decision artifact that is
@@ -23,6 +24,9 @@ run_output_evaluation
 cross_run_intelligence
     Cross-run metric alignment, anomaly detection, scenario ranking,
     and intelligence decision artifact emission (BF).
+working_paper_synthesis
+    Evidence pack synthesis, section mapping, ranked finding derivation,
+    caveat extraction, and follow-up question generation (BG).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -83,6 +87,27 @@ from spectrum_systems.modules.runtime.cross_run_intelligence import (
     validate_cross_run_intelligence_decision,
     validate_normalized_run_result_input,
 )
+from spectrum_systems.modules.runtime.working_paper_synthesis import (
+    assign_evidence_to_sections,
+    build_evidence_items_from_be,
+    build_evidence_items_from_bf,
+    build_working_paper_evidence_pack,
+    build_working_paper_synthesis_decision,
+    classify_synthesis_failure,
+    collect_source_artifacts,
+    compute_synthesis_status,
+    derive_caveats,
+    derive_followup_questions,
+    derive_ranked_findings,
+    infer_synthesis_study_type,
+    load_governed_artifact,
+    map_evidence_sections,
+    synthesize_working_paper_evidence,
+    validate_be_input,
+    validate_bf_input,
+    validate_working_paper_evidence_pack,
+    validate_working_paper_synthesis_decision,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -139,4 +164,24 @@ __all__ = [
     "validate_cross_run_comparison",
     "validate_cross_run_intelligence_decision",
     "compare_normalized_runs",
+    # BG — Working Paper Evidence Pack Synthesis
+    "load_governed_artifact",
+    "validate_be_input",
+    "validate_bf_input",
+    "infer_synthesis_study_type",
+    "collect_source_artifacts",
+    "map_evidence_sections",
+    "build_evidence_items_from_be",
+    "build_evidence_items_from_bf",
+    "assign_evidence_to_sections",
+    "derive_ranked_findings",
+    "derive_caveats",
+    "derive_followup_questions",
+    "compute_synthesis_status",
+    "build_working_paper_evidence_pack",
+    "classify_synthesis_failure",
+    "build_working_paper_synthesis_decision",
+    "validate_working_paper_evidence_pack",
+    "validate_working_paper_synthesis_decision",
+    "synthesize_working_paper_evidence",
 ]

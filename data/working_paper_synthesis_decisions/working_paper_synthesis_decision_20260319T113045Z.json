@@ -1,0 +1,10 @@
+{
+  "artifact_type": "working_paper_synthesis_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "WPS-7C61673363AA",
+  "evidence_pack_id": "EPK-D3AD192D273B",
+  "overall_status": "pass",
+  "failure_type": "none",
+  "findings": [],
+  "generated_at": "2026-03-19T11:30:45.464546+00:00"
+}

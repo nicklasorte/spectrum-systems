@@ -1,0 +1,109 @@
+{
+  "artifact_id": "CRC-BG-TEST-001",
+  "artifact_type": "cross_run_comparison",
+  "schema_version": "1.0.0",
+  "comparison_id": "CMP-BG-TEST-001",
+  "study_type": "p2p_interference",
+  "compared_runs": [
+    {
+      "source_bundle_id": "bundle-p2p-001",
+      "normalized_run_result_id": "NRR-P2P-RUN1-001",
+      "scenario_id": "scenario-alpha",
+      "scenario_label": "P2P Alpha Link",
+      "readiness": "ready_for_comparison",
+      "completeness_status": "complete"
+    },
+    {
+      "source_bundle_id": "bundle-p2p-002",
+      "normalized_run_result_id": "NRR-P2P-RUN2-001",
+      "scenario_id": "scenario-beta",
+      "scenario_label": "P2P Beta Link",
+      "readiness": "ready_for_comparison",
+      "completeness_status": "complete"
+    }
+  ],
+  "metric_comparisons": [
+    {
+      "metric_name": "interference_power_dbm",
+      "unit": "dBm",
+      "compared_values": [
+        {
+          "source_bundle_id": "bundle-p2p-001",
+          "scenario_id": "scenario-alpha",
+          "value": -85.3,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[0]"
+        },
+        {
+          "source_bundle_id": "bundle-p2p-002",
+          "scenario_id": "scenario-beta",
+          "value": -92.1,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[0]"
+        }
+      ],
+      "summary_statistics": {
+        "count": 2,
+        "min": -92.1,
+        "max": -85.3,
+        "range": 6.8,
+        "mean": -88.7
+      },
+      "comparability_status": "comparable"
+    },
+    {
+      "metric_name": "in_ratio_db",
+      "unit": "dB",
+      "compared_values": [
+        {
+          "source_bundle_id": "bundle-p2p-001",
+          "scenario_id": "scenario-alpha",
+          "value": 12.7,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[1]"
+        },
+        {
+          "source_bundle_id": "bundle-p2p-002",
+          "scenario_id": "scenario-beta",
+          "value": 8.4,
+          "classification": "core",
+          "source_path": "outputs/results_summary.json#metrics[1]"
+        }
+      ],
+      "summary_statistics": {
+        "count": 2,
+        "min": 8.4,
+        "max": 12.7,
+        "range": 4.3,
+        "mean": 10.55
+      },
+      "comparability_status": "comparable"
+    }
+  ],
+  "scenario_rankings": [
+    {
+      "ranking_basis": "interference_power_dbm",
+      "direction": "descending",
+      "ranked_scenarios": [
+        {
+          "rank": 1,
+          "source_bundle_id": "bundle-p2p-001",
+          "scenario_id": "scenario-alpha",
+          "scenario_label": "P2P Alpha Link",
+          "metric_name": "interference_power_dbm",
+          "value": -85.3
+        },
+        {
+          "rank": 2,
+          "source_bundle_id": "bundle-p2p-002",
+          "scenario_id": "scenario-beta",
+          "scenario_label": "P2P Beta Link",
+          "metric_name": "interference_power_dbm",
+          "value": -92.1
+        }
+      ]
+    }
+  ],
+  "anomaly_flags": [],
+  "generated_at": "2026-03-01T14:00:00+00:00"
+}
