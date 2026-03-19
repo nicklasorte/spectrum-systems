@@ -34,6 +34,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.slo_control import (  # noqa: E402
+    DEGRADED_THRESHOLD,
+    HEALTHY_THRESHOLD,
     build_slo_evaluation_artifact,
     classify_violation,
     compute_completeness_sli,
@@ -304,6 +306,25 @@ def test_compute_slo_status_all_at_boundary():
 
 def test_compute_slo_status_empty_slis():
     assert compute_slo_status({}) == "healthy"
+
+
+def test_slo_status_priority():
+    """Verify SLO status priority: violated > degraded > healthy."""
+    # One violated SLI, others healthy → overall violated
+    slis_violated = {
+        "completeness": 0.5,   # clearly violated (0.5 < DEGRADED_THRESHOLD=0.85)
+        "timeliness": 1.0,     # healthy
+        "traceability": 1.0,   # healthy
+    }
+    assert compute_slo_status(slis_violated) == "violated"
+
+    # One degraded SLI, none violated → overall degraded
+    slis_degraded = {
+        "completeness": 0.90,  # degraded (0.90 in [DEGRADED_THRESHOLD=0.85, HEALTHY_THRESHOLD=0.95))
+        "timeliness": 1.0,     # healthy
+        "traceability": 1.0,   # healthy
+    }
+    assert compute_slo_status(slis_degraded) == "degraded"
 
 
 # ===========================================================================
@@ -815,13 +836,33 @@ def test_cli_exit_0_healthy():
 def test_cli_exit_1_degraded():
     with tempfile.TemporaryDirectory() as tmpd:
         tmp = Path(tmpd)
-        # Only 4 sections → completeness degraded
-        bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=4, num_findings=5))
+        # 7/8 sections → completeness = 0.875 (strictly in degraded band 0.85–<0.95)
+        # BE provided → traceability = 1.0 (healthy, not violated)
+        # Fresh BG timestamp → timeliness = 1.0 (healthy, not violated)
+        # No lineage registry → traceability_integrity = 1.0 (healthy, not violated)
+        # Overall: one degraded SLI, none violated → status = "degraded" → exit 1
+        be_p = _write_json(tmp, "nrr.json", _minimal_nrr())
+        bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=7, num_findings=5))
+        code = _run_cli([
+            "--be-input", str(be_p),
+            "--bg-input", str(bg_p),
+            "--output-dir", tmpd,
+        ])
+        assert code == 1  # strictly degraded
+
+
+def test_cli_exit_2_violated():
+    with tempfile.TemporaryDirectory() as tmpd:
+        tmp = Path(tmpd)
+        # 3/8 sections → completeness = 0.375 (clearly < 0.85, i.e., violated)
+        # No BE input → traceability defaults to 0.5 in BE-absent path (also violated)
+        # At least one SLI < DEGRADED_THRESHOLD → overall violated → exit 2
+        bg_p = _write_json(tmp, "bg.json", _minimal_bg(num_sections=3, num_findings=5))
         code = _run_cli([
             "--bg-input", str(bg_p),
             "--output-dir", tmpd,
         ])
-        assert code in (1, 2)  # degraded or violated
+        assert code == 2  # violated
 
 
 def test_cli_exit_2_no_inputs():

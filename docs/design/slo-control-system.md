@@ -404,3 +404,28 @@ python scripts/slo_control.py \
 | 0    | healthy — all SLIs ≥ 0.95 and burn\_rate ≤ 0.2 |
 | 1    | degraded — at least one SLI in the 0.85–0.95 band |
 | 2    | violated — at least one SLI < 0.85 or burn\_rate > 0.2 |
+
+---
+
+## SLO Classification Thresholds
+
+The following thresholds are authoritative and enforced as named constants
+(`HEALTHY_THRESHOLD`, `DEGRADED_THRESHOLD`) in
+`spectrum_systems/modules/runtime/slo_control.py`:
+
+| Condition                                     | Classification |
+|-----------------------------------------------|----------------|
+| SLI value ≥ 0.95 (`HEALTHY_THRESHOLD`)        | healthy        |
+| SLI value ≥ 0.85 (`DEGRADED_THRESHOLD`) and < 0.95 | degraded  |
+| SLI value < 0.85 (`DEGRADED_THRESHOLD`)       | violated       |
+
+**Overall status rule:** the overall SLO status is the worst individual SLI
+state.
+
+- If **any** SLI is violated → overall status is `violated`
+- Else if **any** SLI is degraded → overall status is `degraded`
+- Else → overall status is `healthy`
+
+Exit codes map directly from the overall status: healthy → 0, degraded → 1,
+violated → 2.  There are no fallback or default paths that mask
+classification errors.

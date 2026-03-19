@@ -57,6 +57,13 @@ _FINDINGS_MAX = 7
 
 _SCHEMA_VERSION = "1.0.0"
 
+# SLI classification thresholds
+# >=HEALTHY_THRESHOLD              → healthy
+# >=DEGRADED_THRESHOLD and <HEALTHY_THRESHOLD → degraded
+# <DEGRADED_THRESHOLD              → violated
+HEALTHY_THRESHOLD = 0.95
+DEGRADED_THRESHOLD = 0.85
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -459,10 +466,10 @@ def classify_violation(sli_name: str, value: float) -> Optional[Dict[str, Any]]:
     -------
     dict with keys ``sli``, ``severity``, ``description`` or ``None``.
     """
-    if value >= 0.95:
+    if value >= HEALTHY_THRESHOLD:
         return None
 
-    if value >= 0.85:
+    if value >= DEGRADED_THRESHOLD:
         severity = "low"
         status_label = "degraded"
     elif value >= 0.70:
