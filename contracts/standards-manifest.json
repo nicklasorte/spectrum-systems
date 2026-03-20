@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.0",
+  "standards_version": "2026.03.1",
   "record_id": "REC-STD-2026-03-14",
   "run_id": "run-20260314T101900Z",
   "created_at": "2026-03-14T10:19:00Z",
@@ -335,6 +335,21 @@
       "last_updated_in": "1.0.0",
       "example_path": null,
       "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
+    },
+    {
+      "artifact_type": "control_execution_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Governed BN.6 execution artifact capturing deterministic control-signal consumption outcomes and enforced runtime actions."
     }
   ]
 }

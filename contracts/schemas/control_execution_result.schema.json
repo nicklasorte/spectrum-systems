@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_execution_result.schema.json",
+  "title": "Control Execution Result",
+  "description": "Governed deterministic execution artifact produced by BN.6 control signal consumption.",
+  "type": "object",
+  "required": [
+    "execution_status",
+    "actions_taken",
+    "validators_run",
+    "validators_failed",
+    "repair_actions_applied",
+    "publication_blocked",
+    "decision_blocked",
+    "rerun_triggered",
+    "escalation_triggered",
+    "human_review_required"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "execution_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "blocked",
+        "escalated",
+        "repair_required"
+      ]
+    },
+    "actions_taken": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "validators_run": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validators_failed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "repair_actions_applied": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "publication_blocked": {
+      "type": "boolean"
+    },
+    "decision_blocked": {
+      "type": "boolean"
+    },
+    "rerun_triggered": {
+      "type": "boolean"
+    },
+    "escalation_triggered": {
+      "type": "boolean"
+    },
+    "human_review_required": {
+      "type": "boolean"
+    }
+  }
+}

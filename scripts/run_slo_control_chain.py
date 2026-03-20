@@ -69,6 +69,10 @@ from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
     explain_blocking_requirements,
     list_required_followups,
 )
+from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
+    summarize_execution_result,
+    explain_execution_path,
+)
 from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     KNOWN_POLICIES,
     KNOWN_STAGES,
@@ -184,6 +188,14 @@ def main(argv: Optional[List[str]] = None) -> int:
             f"Defaults to outputs/{_DEFAULT_OUTPUT_FILENAME}."
         ),
     )
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "Execute BN.6 control-signal consumption after deriving control signals "
+            "and print a deterministic execution summary."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -212,6 +224,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         stage=args.stage,
         policy=args.policy,
         input_kind=args.input_kind,
+        execute=args.execute,
     )
 
     # Print human-readable summary (includes BN.5 control signals)
@@ -231,6 +244,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("Required follow-up actions:")
         for f in followups:
             print(f"  - {f}")
+
+    if args.execute:
+        execution_result = result.get("execution_result") or {}
+        print()
+        print(summarize_execution_result(execution_result))
+        print()
+        print(
+            json.dumps(
+                explain_execution_path(cs, execution_result),
+                indent=2,
+            )
+        )
 
     # Write control-chain decision artifact
     output_path = Path(args.output) if args.output else _OUTPUT_DIR / _DEFAULT_OUTPUT_FILENAME

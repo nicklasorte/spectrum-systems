@@ -152,6 +152,9 @@ from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
     KNOWN_VALIDATORS,
     KNOWN_REPAIR_ACTIONS,
 )
+from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
+    execute_control_signals,
+)
 
 # ---------------------------------------------------------------------------
 # Decision-bearing stages (mandatory gating required)
@@ -656,6 +659,7 @@ def _run_control_chain_inner(
     policy_override: Optional[str],
     input_kind_override: Optional[str],
     evaluated_at: Optional[str],
+    execute: bool,
 ) -> Dict[str, Any]:
     """Inner control-chain pipeline — called by :func:`run_control_chain`."""
 
@@ -677,6 +681,7 @@ def _run_control_chain_inner(
             acc_errors=acc_errors,
             reason_code=REASON_BLOCKED_BY_MALFORMED_INPUT,
             evaluated_at=evaluated_at,
+            execute=execute,
         )
 
     # ------------------------------------------------------------------ #
@@ -714,6 +719,7 @@ def _run_control_chain_inner(
                 acc_errors=acc_errors,
                 reason_code=REASON_BLOCKED_BY_MALFORMED_INPUT,
                 evaluated_at=evaluated_at,
+                execute=execute,
             )
 
         # Accumulate any enforcement warnings
@@ -736,6 +742,7 @@ def _run_control_chain_inner(
                 stage=stage,
                 stage_source=stage_source,
                 evaluated_at=evaluated_at,
+                execute=execute,
             )
 
     elif input_kind == INPUT_KIND_ENFORCEMENT:
@@ -759,6 +766,7 @@ def _run_control_chain_inner(
                 stage=stage,
                 stage_source=stage_source,
                 evaluated_at=evaluated_at,
+                execute=execute,
             )
 
     elif input_kind == INPUT_KIND_GATING:
@@ -921,7 +929,7 @@ def _run_control_chain_inner(
     # ------------------------------------------------------------------ #
     schema_errors = validate_control_chain_decision(control_chain_decision)
 
-    return {
+    result = {
         "control_chain_decision": control_chain_decision,
         "continuation_allowed": continuation_allowed,
         "primary_reason_code": reason_code,
@@ -930,6 +938,16 @@ def _run_control_chain_inner(
         "enforcement_result": enforcement_result,
         "gating_result": gating_result,
     }
+    if execute:
+        result["execution_result"] = execute_control_signals(
+            cs,
+            context={
+                "artifact": control_chain_decision,
+                "stage": stage,
+                "runtime_environment": "control_chain",
+            },
+        )
+    return result
 
 
 def _resolve_policy_for_stage(stage: Optional[str]) -> str:
@@ -950,6 +968,7 @@ def _make_error_artifact(
     stage: Optional[str] = None,
     stage_source: Optional[str] = None,
     evaluated_at: Optional[str] = None,
+    execute: bool = False,
 ) -> Dict[str, Any]:
     """Construct a governed fail-closed control-chain result."""
     cs = derive_control_signals(
@@ -992,7 +1011,7 @@ def _make_error_artifact(
         evaluated_at=evaluated_at,
     )
     schema_errors = validate_control_chain_decision(decision)
-    return {
+    result = {
         "control_chain_decision": decision,
         "continuation_allowed": False,
         "primary_reason_code": reason_code,
@@ -1000,6 +1019,16 @@ def _make_error_artifact(
         "enforcement_result": None,
         "gating_result": None,
     }
+    if execute:
+        result["execution_result"] = execute_control_signals(
+            cs,
+            context={
+                "artifact": decision,
+                "stage": stage,
+                "runtime_environment": "control_chain_error",
+            },
+        )
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -1013,6 +1042,7 @@ def run_control_chain(
     policy: Optional[str] = None,
     input_kind: Optional[str] = None,
     evaluated_at: Optional[str] = None,
+    execute: bool = False,
 ) -> Dict[str, Any]:
     """Run the full SLO control chain.
 
@@ -1038,6 +1068,9 @@ def run_control_chain(
         the input shape is ambiguous.
     evaluated_at:
         Override the evaluation timestamp.  Defaults to now.
+    execute:
+        When true, executes BN.6 control-signal consumption and returns an
+        ``execution_result`` field alongside the decision artifact.
 
     Returns
     -------
@@ -1048,6 +1081,7 @@ def run_control_chain(
         ``schema_errors``            – list of schema validation errors
         ``enforcement_result``       – enforcement step result (may be None)
         ``gating_result``            – gating step result (may be None)
+        ``execution_result``         – present only when ``execute=True``
     """
     try:
         return _run_control_chain_inner(
@@ -1056,6 +1090,7 @@ def run_control_chain(
             policy_override=policy,
             input_kind_override=input_kind,
             evaluated_at=evaluated_at,
+            execute=execute,
         )
     except Exception as exc:  # noqa: BLE001
         return _make_error_artifact(
@@ -1063,4 +1098,5 @@ def run_control_chain(
             acc_errors=[f"Control chain raised unexpectedly: {exc}"],
             reason_code=REASON_BLOCKED_BY_MALFORMED_INPUT,
             evaluated_at=evaluated_at,
+            execute=execute,
         )
