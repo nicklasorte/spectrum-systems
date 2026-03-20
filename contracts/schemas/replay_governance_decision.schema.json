@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/replay_governance_decision.schema.json",
+  "title": "Replay Governance Decision",
+  "description": "Governed artifact produced by the BY Replay Governance Gate. Consumes a replay_decision_analysis artifact and emits an enforceable system_response governing downstream execution and promotion decisions. Replay drift is no longer advisory telemetry — it is an operational control signal.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "replay_analysis_artifact_id",
+    "run_id",
+    "evaluated_at",
+    "replay_status",
+    "replay_consistency_sli",
+    "governance_policy",
+    "decision",
+    "enforcement_reason",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "replay_governance_decision",
+      "description": "Identifies this artifact as a replay governance decision. Must always equal 'replay_governance_decision'."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Schema/contract version for this artifact."
+    },
+    "replay_analysis_artifact_id": {
+      "type": ["string", "null"],
+      "description": "The analysis_id from the replay_decision_analysis artifact consumed by this gate. Null when no replay artifact was provided."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the pipeline run being governed."
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this governance decision was evaluated."
+    },
+    "replay_status": {
+      "type": ["string", "null"],
+      "enum": ["consistent", "drifted", "indeterminate", null],
+      "description": "The replay consistency status from the consumed replay_decision_analysis artifact. Null when no replay artifact was provided."
+    },
+    "replay_consistency_sli": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "The reproducibility_score from the replay_decision_analysis artifact mapped to a replay consistency SLI in [0, 1]. Null when no replay artifact was provided."
+    },
+    "governance_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_name",
+        "policy_version",
+        "drift_action",
+        "indeterminate_action",
+        "missing_replay_action",
+        "require_replay"
+      ],
+      "description": "The governance policy applied to produce this decision.",
+      "properties": {
+        "policy_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the governance policy in effect."
+        },
+        "policy_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semver version of the governance policy."
+        },
+        "drift_action": {
+          "type": "string",
+          "enum": ["quarantine", "block"],
+          "description": "System response applied when replay_status is 'drifted'."
+        },
+        "indeterminate_action": {
+          "type": "string",
+          "enum": ["require_review", "block"],
+          "description": "System response applied when replay_status is 'indeterminate'."
+        },
+        "missing_replay_action": {
+          "type": "string",
+          "enum": ["allow", "require_review", "block"],
+          "description": "System response applied when no replay artifact is present and replay is not required."
+        },
+        "require_replay": {
+          "type": "boolean",
+          "description": "When true, a missing replay artifact is treated as a policy violation using missing_replay_action."
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system_response",
+        "severity",
+        "replay_governed",
+        "rationale_code",
+        "rationale"
+      ],
+      "description": "The enforceable governance decision emitted by this gate.",
+      "properties": {
+        "system_response": {
+          "type": "string",
+          "enum": ["allow", "require_review", "quarantine", "block"],
+          "description": "The enforceable system response. allow=execution may continue; require_review=must not proceed automatically; quarantine=must not promote/publish; block=execution must stop."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "elevated", "critical"],
+          "description": "Severity level corresponding to the system_response."
+        },
+        "replay_governed": {
+          "type": "boolean",
+          "description": "True when the decision was driven by replay governance (replay artifact was present and valid). False when replay was absent and not required."
+        },
+        "rationale_code": {
+          "type": "string",
+          "enum": [
+            "replay_consistent",
+            "replay_drifted",
+            "replay_indeterminate",
+            "replay_missing_required",
+            "replay_invalid_artifact",
+            "replay_unknown_status",
+            "replay_not_required"
+          ],
+          "description": "Machine-readable code explaining the basis for this governance decision."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable explanation of the governance decision."
+        }
+      }
+    },
+    "enforcement_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "details"],
+      "description": "Structured explanation of why this enforcement decision was reached.",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One-line summary of the enforcement reasoning."
+        },
+        "details": {
+          "type": "array",
+          "description": "Ordered list of detail strings explaining the enforcement decision.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "invalid_input", "policy_blocked"],
+      "description": "Operational status of this governance artifact. ok=produced normally; invalid_input=replay artifact was malformed; policy_blocked=policy explicitly blocked."
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Trace identifier linking this governance decision to the full execution trace."
+    }
+  }
+}
