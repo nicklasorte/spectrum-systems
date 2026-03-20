@@ -7,8 +7,9 @@ artifacts that promotion/release/change workflows must honor.
 Design principles
 -----------------
 - Fail closed:  any invalid or missing input raises an error immediately.
-- No silent overrides:  review/override requires an explicit structured
-  override artifact present in the call context.
+- No silent overrides:  require_review may only be unblocked via a fully
+  governed override_authorization artifact that is schema-validated and
+  verified against the active decision, scope, action, and expiry.
 - Schema-governed:  every enforcement action artifact is validated before return.
 - Deterministic:  the same inputs always produce the same outputs.
 - Auditable:  all reasons and required human actions are recorded.
@@ -18,7 +19,7 @@ Policy
     allow              → advisory,  action_type=allow,          allowed_to_proceed=True
     allow_with_warning → advisory,  action_type=warn,           allowed_to_proceed=True
     require_review     → enforced,  action_type=require_review, allowed_to_proceed=False
-                         (True only if an explicit override artifact is present)
+                         (True only if a valid, verified override_authorization is present)
     freeze_changes     → enforced,  action_type=freeze_changes, allowed_to_proceed=False
     block_release      → enforced,  action_type=block_release,  allowed_to_proceed=False
 
@@ -33,6 +34,10 @@ Data-flow
     determine_enforcement_scope(decision, context)
                 │
                 ▼
+    [optional] load_override_authorization(path)
+                │  validate_override_authorization(override)
+                │  verify_override_applicability(override, decision, action)
+                ▼
     build_enforcement_action(...)
                 │  validate_enforcement_action(action)
                 ▼
@@ -40,13 +45,16 @@ Data-flow
 
 Public API
 ----------
-load_budget_decision(path)                           → decision dict
-validate_budget_decision(decision)                   → list[str]  (empty = valid)
-determine_enforcement_scope(decision, context)       → scope str
-build_enforcement_action(...)                        → action dict
-validate_enforcement_action(action)                  → list[str]  (empty = valid)
-enforce_budget_decision(decision, context)           → action dict
-run_enforcement_bridge(path, context)                → action dict
+load_budget_decision(path)                              → decision dict
+validate_budget_decision(decision)                      → list[str]  (empty = valid)
+determine_enforcement_scope(decision, context)          → scope str
+load_override_authorization(path)                       → override dict
+validate_override_authorization(override)               → list[str]  (empty = valid)
+verify_override_applicability(override, decision, action) → None  (raises on failure)
+build_enforcement_action(...)                           → action dict
+validate_enforcement_action(action)                     → list[str]  (empty = valid)
+enforce_budget_decision(decision, context)              → action dict
+run_enforcement_bridge(path, context)                   → action dict
 """
 
 from __future__ import annotations
@@ -68,6 +76,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _BUDGET_DECISION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_budget_decision.schema.json"
 _ENFORCEMENT_ACTION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_enforcement_action.schema.json"
+_OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authorization.schema.json"
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
@@ -78,17 +87,26 @@ _VALID_SYSTEM_RESPONSES = frozenset(
     {"allow", "allow_with_warning", "require_review", "freeze_changes", "block_release"}
 )
 
-# system_response values that block downstream workflows absent an override
+# system_response values that block downstream workflows
 _BLOCKING_RESPONSES = frozenset({"freeze_changes", "block_release"})
 
-# system_response values that block unless an explicit override is present
+# system_response values that block unless a valid override_authorization is present
 _REVIEW_RESPONSES = frozenset({"require_review"})
 
 # Default enforcement scope when not provided or determinable from context
 _DEFAULT_SCOPE = "release"
 
-# Context key for an explicit human override artifact
-_OVERRIDE_KEY = "override_artifact"
+# Context key for a governed override authorization artifact
+_OVERRIDE_AUTHORIZATION_KEY = "override_authorization"
+
+# Module-level mapping of system_response → action_type (used in multiple places)
+_RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
+    "allow": "allow",
+    "allow_with_warning": "warn",
+    "require_review": "require_review",
+    "freeze_changes": "freeze_changes",
+    "block_release": "block_release",
+}
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +150,11 @@ def _validate_against_schema(artifact: Any, schema: Dict[str, Any]) -> List[str]
         validator.iter_errors(artifact), key=lambda e: list(e.absolute_path)
     )
     return [e.message for e in errors]
+
+
+def _parse_iso_timestamp(timestamp_str: str) -> datetime:
+    """Parse an ISO-8601 timestamp string, normalising the 'Z' suffix."""
+    return datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +242,157 @@ def validate_enforcement_action(action: Any) -> List[str]:
     """
     schema = _load_schema(_ENFORCEMENT_ACTION_SCHEMA_PATH)
     return _validate_against_schema(action, schema)
+
+
+def load_override_authorization(path: str | Path) -> Dict[str, Any]:
+    """Load and return an evaluation_override_authorization from *path*.
+
+    Parameters
+    ----------
+    path:
+        Path to an evaluation_override_authorization JSON file.
+
+    Returns
+    -------
+    dict
+        The parsed and schema-validated override authorization.
+
+    Raises
+    ------
+    EnforcementBridgeError
+        If the file is missing, cannot be parsed, or fails schema validation.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise EnforcementBridgeError(
+            f"override_authorization file not found: {path}"
+        )
+    try:
+        with path.open(encoding="utf-8") as fh:
+            override = json.load(fh)
+    except json.JSONDecodeError as exc:
+        raise EnforcementBridgeError(
+            f"Failed to parse override_authorization JSON at '{path}': {exc}"
+        ) from exc
+
+    errors = validate_override_authorization(override)
+    if errors:
+        raise EnforcementBridgeError(
+            "override_authorization failed schema validation: "
+            + "; ".join(errors)
+        )
+
+    logger.info(
+        "Loaded override_authorization override_id=%s decision_id=%s",
+        override.get("override_id"),
+        override.get("decision_id"),
+    )
+    return override
+
+
+def validate_override_authorization(override: Any) -> List[str]:
+    """Validate *override* against the evaluation_override_authorization JSON Schema.
+
+    Parameters
+    ----------
+    override:
+        Object to validate.
+
+    Returns
+    -------
+    list[str]
+        Validation error messages. Empty list means the override is valid.
+    """
+    schema = _load_schema(_OVERRIDE_AUTHORIZATION_SCHEMA_PATH)
+    return _validate_against_schema(override, schema)
+
+
+def verify_override_applicability(
+    override: Dict[str, Any],
+    decision: Dict[str, Any],
+    action: Dict[str, Any],
+) -> None:
+    """Verify that *override* is applicable to *decision* and *action*.
+
+    All checks are strict.  If ANY check fails the function raises
+    :class:`EnforcementBridgeError` (fail closed).
+
+    Checks performed
+    ----------------
+    1. ``override["decision_id"]`` must equal ``decision["decision_id"]``.
+    2. ``override["summary_id"]`` must equal ``decision["summary_id"]``.
+    3. ``override["action_id"]`` must equal ``action["action_id"]``.
+    4. ``override["scope"]`` must equal ``action["enforcement_scope"]``.
+    5. Current UTC time must be strictly before ``override["expires_at"]``.
+    6. ``action["action_type"]`` must be in ``override["allowed_actions"]``.
+
+    Parameters
+    ----------
+    override:
+        A schema-validated evaluation_override_authorization dict.
+    decision:
+        The evaluation_budget_decision being enforced.
+    action:
+        The evaluation_enforcement_action being produced (or a proto-action
+        dict with at least ``action_id``, ``action_type``, and
+        ``enforcement_scope`` fields).
+
+    Raises
+    ------
+    EnforcementBridgeError
+        If any applicability check fails.
+    """
+    failures: List[str] = []
+
+    if override.get("decision_id") != decision.get("decision_id"):
+        failures.append(
+            f"override decision_id '{override.get('decision_id')}' "
+            f"does not match decision decision_id '{decision.get('decision_id')}'"
+        )
+
+    if override.get("summary_id") != decision.get("summary_id"):
+        failures.append(
+            f"override summary_id '{override.get('summary_id')}' "
+            f"does not match decision summary_id '{decision.get('summary_id')}'"
+        )
+
+    if override.get("action_id") != action.get("action_id"):
+        failures.append(
+            f"override action_id '{override.get('action_id')}' "
+            f"does not match enforcement action action_id '{action.get('action_id')}'"
+        )
+
+    if override.get("scope") != action.get("enforcement_scope"):
+        failures.append(
+            f"override scope '{override.get('scope')}' "
+            f"does not match enforcement_scope '{action.get('enforcement_scope')}'"
+        )
+
+    try:
+        expires_at = _parse_iso_timestamp(str(override.get("expires_at", "")))
+        now = datetime.now(tz=timezone.utc)
+        if now >= expires_at:
+            failures.append(
+                f"override has expired (expires_at={override.get('expires_at')}, "
+                f"now={now.strftime('%Y-%m-%dT%H:%M:%SZ')})"
+            )
+    except (ValueError, TypeError):
+        failures.append(
+            f"override expires_at '{override.get('expires_at')}' is not a valid ISO timestamp"
+        )
+
+    action_type = action.get("action_type")
+    if action_type not in override.get("allowed_actions", []):
+        failures.append(
+            f"action_type '{action_type}' is not in override allowed_actions "
+            f"{override.get('allowed_actions')}"
+        )
+
+    if failures:
+        raise EnforcementBridgeError(
+            "override_authorization applicability check failed: "
+            + "; ".join(failures)
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -317,37 +491,6 @@ def _build_required_human_actions(
     return actions
 
 
-def _resolve_allow_to_proceed(
-    system_response: str,
-    context: Optional[Dict[str, Any]],
-) -> bool:
-    """Determine whether the downstream workflow is allowed to proceed.
-
-    - allow / allow_with_warning  → True (no override required)
-    - freeze_changes / block_release → False (no override available)
-    - require_review → False unless an explicit override artifact is present
-      in context[_OVERRIDE_KEY].  Override absence → fail closed.
-    """
-    if system_response in ("allow", "allow_with_warning"):
-        return True
-
-    if system_response in _BLOCKING_RESPONSES:
-        return False
-
-    if system_response in _REVIEW_RESPONSES:
-        if context and context.get(_OVERRIDE_KEY):
-            logger.info(
-                "Explicit override artifact present for require_review; "
-                "allowing to proceed."
-            )
-            return True
-        # No override present → fail closed
-        return False
-
-    # Unknown system_response → fail closed
-    return False
-
-
 def build_enforcement_action(
     decision_id: str,
     summary_id: str,
@@ -356,6 +499,7 @@ def build_enforcement_action(
     reasons: List[str],
     required_human_actions: List[str],
     allowed_to_proceed: bool,
+    action_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Assemble and schema-validate an evaluation_enforcement_action artifact.
 
@@ -375,6 +519,11 @@ def build_enforcement_action(
         Actions that a human must take.
     allowed_to_proceed:
         Whether the downstream workflow may proceed.
+    action_id:
+        Optional explicit action_id to assign.  When an override_authorization
+        is present the override's ``action_id`` must be supplied here so the
+        produced artifact carries the pre-authorized ID.  If *None* a new
+        UUID is generated.
 
     Returns
     -------
@@ -386,14 +535,11 @@ def build_enforcement_action(
     EnforcementBridgeError
         If the produced artifact fails schema validation.
     """
-    # Map system_response → action_type and enforcement status
-    _response_to_action_type = {
-        "allow": "allow",
-        "allow_with_warning": "warn",
-        "require_review": "require_review",
-        "freeze_changes": "freeze_changes",
-        "block_release": "block_release",
-    }
+    if system_response not in _VALID_SYSTEM_RESPONSES:
+        raise EnforcementBridgeError(
+            f"Unknown system_response '{system_response}'; cannot build enforcement action."
+        )
+
     _response_to_status = {
         "allow": "advisory",
         "allow_with_warning": "advisory",
@@ -402,16 +548,11 @@ def build_enforcement_action(
         "block_release": "enforced",
     }
 
-    if system_response not in _VALID_SYSTEM_RESPONSES:
-        raise EnforcementBridgeError(
-            f"Unknown system_response '{system_response}'; cannot build enforcement action."
-        )
-
-    action_type = _response_to_action_type[system_response]
+    action_type = _RESPONSE_TO_ACTION_TYPE[system_response]
     status = _response_to_status[system_response]
 
     action: Dict[str, Any] = {
-        "action_id": _new_id(),
+        "action_id": action_id if action_id is not None else _new_id(),
         "decision_id": decision_id,
         "summary_id": summary_id,
         "status": status,
@@ -454,8 +595,12 @@ def enforce_budget_decision(
     context:
         Optional caller-supplied context.  May contain:
         - ``enforcement_scope`` (str): workflow scope override.
-        - ``override_artifact`` (dict): explicit human override for
-          ``require_review`` decisions.
+        - ``override_authorization`` (dict): a schema-validated
+          evaluation_override_authorization artifact.  Required to unblock a
+          ``require_review`` decision.  The override is validated against the
+          schema and verified for applicability (decision_id, summary_id,
+          action_id, scope, expiry, allowed_actions) before proceeding is
+          permitted.  Any check failure results in fail-closed behaviour.
 
     Returns
     -------
@@ -465,7 +610,8 @@ def enforce_budget_decision(
     Raises
     ------
     EnforcementBridgeError
-        On any enforcement failure.
+        On any enforcement failure, including override validation/verification
+        failures.
     InvalidDecisionError
         If *decision* fails schema validation.
     """
@@ -478,10 +624,56 @@ def enforce_budget_decision(
 
     system_response: str = decision["system_response"]
     enforcement_scope = determine_enforcement_scope(decision, context)
-    allowed_to_proceed = _resolve_allow_to_proceed(system_response, context)
     required_human_actions = _build_required_human_actions(system_response, decision)
-
     reasons: List[str] = list(decision.get("reasons", []))
+
+    # Determine allowed_to_proceed and the action_id to use
+    allowed_to_proceed: bool
+    override_action_id: Optional[str] = None
+
+    if system_response in ("allow", "allow_with_warning"):
+        allowed_to_proceed = True
+
+    elif system_response in _BLOCKING_RESPONSES:
+        # freeze_changes / block_release — no override path
+        allowed_to_proceed = False
+
+    elif system_response in _REVIEW_RESPONSES:
+        override_auth = context.get(_OVERRIDE_AUTHORIZATION_KEY) if context else None
+        if override_auth is not None:
+            ov_errors = validate_override_authorization(override_auth)
+            if ov_errors:
+                raise EnforcementBridgeError(
+                    "override_authorization failed schema validation: "
+                    + "; ".join(ov_errors)
+                )
+
+            # Build a proto-action with the override's action_id so that the
+            # action_id applicability check is meaningful and auditable.
+            proto_action = {
+                "action_id": override_auth["action_id"],
+                "action_type": _RESPONSE_TO_ACTION_TYPE[system_response],
+                "enforcement_scope": enforcement_scope,
+            }
+
+            # Raises EnforcementBridgeError on any check failure (fail closed)
+            verify_override_applicability(override_auth, decision, proto_action)
+
+            allowed_to_proceed = True
+            override_action_id = override_auth["action_id"]
+            logger.info(
+                "Override authorization verified for require_review "
+                "override_id=%s decision_id=%s; allowing to proceed.",
+                override_auth.get("override_id"),
+                override_auth.get("decision_id"),
+            )
+        else:
+            # No override present → fail closed
+            allowed_to_proceed = False
+
+    else:
+        # Unknown system_response → fail closed
+        allowed_to_proceed = False
 
     return build_enforcement_action(
         decision_id=decision["decision_id"],
@@ -491,6 +683,7 @@ def enforce_budget_decision(
         reasons=reasons,
         required_human_actions=required_human_actions,
         allowed_to_proceed=allowed_to_proceed,
+        action_id=override_action_id,
     )
 
 

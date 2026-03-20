@@ -1,0 +1,12 @@
+{
+  "override_id": "override-auth-001",
+  "decision_id": "decision-review-001",
+  "summary_id": "summary-warning-critical-001",
+  "action_id": "action-override-review-001",
+  "approved_by": "on-call-engineer",
+  "justification": "Reviewed all triggered thresholds; risk accepted for this release window.",
+  "scope": "release",
+  "allowed_actions": ["require_review"],
+  "expires_at": "2099-12-31T23:59:59Z",
+  "created_at": "2025-01-03T01:00:00Z"
+}

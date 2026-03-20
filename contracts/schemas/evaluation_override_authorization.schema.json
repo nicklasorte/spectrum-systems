@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_override_authorization.schema.json",
+  "title": "Evaluation Override Authorization",
+  "description": "Governed override authorization artifact for the BU Evaluation Enforcement Bridge. Overrides must be explicit, verifiable, and tied to specific decisions and enforcement actions.",
+  "type": "object",
+  "required": [
+    "override_id",
+    "decision_id",
+    "summary_id",
+    "action_id",
+    "approved_by",
+    "justification",
+    "scope",
+    "allowed_actions",
+    "expires_at",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "override_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this override authorization."
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The decision_id of the evaluation_budget_decision this override applies to."
+    },
+    "summary_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The summary_id of the evaluation_monitor_summary that drove the decision."
+    },
+    "action_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The action_id that the generated enforcement action must carry when this override is applied."
+    },
+    "approved_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identity of the human approver who authorized this override."
+    },
+    "justification": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable justification for granting this override."
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["promotion", "release", "schema_change", "prompt_change", "pipeline_change"],
+      "description": "Enforcement scope this override is authorized for."
+    },
+    "allowed_actions": {
+      "type": "array",
+      "description": "Action types that this override permits to proceed.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp after which this override is no longer valid."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this override authorization was created."
+    }
+  }
+}
