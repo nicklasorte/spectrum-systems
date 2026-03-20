@@ -1553,3 +1553,56 @@ run_slo_control_chain  → outputs/slo_control_chain_decision.json
    a machine-readable task queue for repair workflows.
 4. Extend controlled vocabularies as new artifact types and repair procedures
    are introduced.  All additions must go through schema governance.
+
+---
+
+## BN.6 — Control Signal Consumption Layer (Execution Layer)
+
+BN.5 emits machine-readable `control_signals`. BN.6 consumes those signals and
+executes deterministic behavior directly. This separates **decision derivation**
+from **runtime execution**:
+
+- **Decision layer (BN.4/BN.5):** computes whether continuation is allowed and
+  emits structured control signals.
+- **Execution layer (BN.6):** consumes those signals as authoritative and
+  applies validators, repair routing, publication/decision enforcement,
+  escalation, review, and rerun requests.
+
+### Execution lifecycle
+
+1. `execute_control_signals(control_signals, context)` receives control signals
+   and runtime context.
+2. `enforce_continuation_mode(...)` maps continuation mode to execution posture.
+3. `run_required_validators(...)` executes validators in declared order; missing
+   validators fail closed.
+4. `apply_repair_actions(...)` executes repair actions when callable or emits a
+   structured repair requirement.
+5. `enforce_publication_policy(...)` and
+   `enforce_decision_grade_policy(...)` block forbidden usage.
+6. Escalation / human review / rerun handlers emit structured events/tasks.
+7. `build_execution_result(...)` returns the governed
+   `control_execution_result` artifact.
+
+### Continuation mode to action mapping
+
+| continuation_mode | Execution behavior |
+| --- | --- |
+| `continue` | Validators may run; execution can proceed if no validator/policy block occurs. |
+| `continue_with_monitoring` | Validators must run; monitoring and optional human review are enforced via structured outputs. |
+| `stop` | Execution is blocked; no continuation allowed. |
+| `stop_and_repair` | Repair actions are emitted/applied; execution remains blocked until resolved. |
+| `stop_and_rerun` | Rerun request is emitted; execution remains blocked. |
+| `stop_and_escalate` | Escalation event is emitted; execution remains blocked. |
+
+### Deterministic execution outputs
+
+BN.6 emits `control_execution_result` with:
+- status (`success`, `blocked`, `escalated`, `repair_required`),
+- action trace,
+- validator outcomes,
+- repair outcomes,
+- publication / decision blocking flags,
+- rerun / escalation / human review flags.
+
+No downstream module should re-derive control behavior from enforcement or
+gating state. Runtime behavior must consume `control_signals` directly.
