@@ -43,6 +43,18 @@ from spectrum_systems.modules.runtime.error_budget import (
     compute_burn_rate,
 )
 from spectrum_systems.modules.runtime.slo_enforcer import enforce_slo_policy
+from spectrum_systems.modules.runtime.trace_engine import (
+    SPAN_STATUS_BLOCKED,
+    SPAN_STATUS_OK,
+    SpanNotFoundError,
+    TraceNotFoundError,
+    attach_artifact,
+    end_span,
+    record_event,
+    start_span,
+    start_trace,
+    validate_trace_context,
+)
 ExecutionAction = Dict[str, Any]
 ValidatorResult = Dict[str, Any]
 
@@ -306,6 +318,8 @@ def _run_slo_pipeline(
     ve_result: Dict[str, Any],
     actions_taken: List[ExecutionAction],
     tracker: Optional[ErrorBudgetTracker] = None,
+    trace_id: Optional[str] = None,
+    parent_span_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Run the BH–BJ SLO control plane on a validator execution result.
 
@@ -327,10 +341,17 @@ def _run_slo_pipeline(
     should pass a persistent tracker via ``context["error_budget_tracker"]``
     in :func:`execute_control_signals`.
     """
+    slo_pipe_span_id: Optional[str] = None
+    if trace_id:
+        try:
+            slo_pipe_span_id = start_span(trace_id, "slo_pipeline", parent_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            slo_pipe_span_id = None
+
     try:
         run_id = ve_result.get("execution_id", "unknown")
-        slis = map_validator_results_to_slis(ve_result)
-        slo_eval = compute_slo_status(slis)
+        slis = map_validator_results_to_slis(ve_result, trace_id=trace_id, parent_span_id=slo_pipe_span_id)
+        slo_eval = compute_slo_status(slis, trace_id=trace_id, parent_span_id=slo_pipe_span_id)
         slo_status = slo_eval.get("slo_status", "breached")
         violations = slo_eval.get("violations", [])
 
@@ -338,7 +359,7 @@ def _run_slo_pipeline(
         update_error_budget(run_id, slo_status, slis, tracker=t)
         burn_rate = compute_burn_rate(tracker=t)
 
-        enforcement = enforce_slo_policy(slo_status, burn_rate)
+        enforcement = enforce_slo_policy(slo_status, burn_rate, trace_id=trace_id, parent_span_id=slo_pipe_span_id)
 
         slo_result: Dict[str, Any] = {
             "slo_status": slo_status,
@@ -348,6 +369,17 @@ def _run_slo_pipeline(
             "violations": violations,
             "enforcement_reason": enforcement.get("reason", ""),
         }
+
+        if slo_pipe_span_id:
+            try:
+                record_event(slo_pipe_span_id, "slo_pipeline_complete", {
+                    "slo_status": slo_status,
+                    "enforcement_action": slo_result["enforcement_action"],
+                })
+                pipe_span_st = SPAN_STATUS_OK if slo_status == "healthy" else SPAN_STATUS_BLOCKED
+                end_span(slo_pipe_span_id, pipe_span_st)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
 
         actions_taken.append(
             {
@@ -359,6 +391,11 @@ def _run_slo_pipeline(
         return slo_result
 
     except Exception as exc:  # noqa: BLE001 — fail closed
+        if slo_pipe_span_id:
+            try:
+                end_span(slo_pipe_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         fallback: Dict[str, Any] = {
             "slo_status": "breached",
             "slis": {
@@ -388,7 +425,45 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
     ensure_contract_runtime_available()
 
     context = dict(context or {})
+
+    # BK–BM: resolve or auto-start trace
+    trace_id: Optional[str] = context.get("trace_id")
+    parent_span_id: Optional[str] = context.get("parent_span_id")
+    if not trace_id:
+        trace_id = start_trace({"source": "control_executor", "auto_started": True})
+    else:
+        _trace_errors = validate_trace_context(trace_id)
+        if _trace_errors:
+            return build_execution_result(
+                execution_status="blocked",
+                actions_taken=[{"action_type": "malformed_trace_context", "errors": _trace_errors}],
+                validators_run=[],
+                validators_failed=[],
+                repair_actions_applied=[],
+                publication_blocked=True,
+                decision_blocked=True,
+                rerun_triggered=False,
+                escalation_triggered=True,
+                human_review_required=True,
+            )
+
+    exec_span_id: Optional[str] = None
+    try:
+        exec_span_id = start_span(trace_id, "control_execution", parent_span_id)
+    except (TraceNotFoundError, SpanNotFoundError):
+        exec_span_id = None
+
+    # Propagate trace context to downstream callees
+    context["trace_id"] = trace_id
+    context["parent_span_id"] = exec_span_id
+
     if not isinstance(control_signals, dict):
+        if exec_span_id:
+            try:
+                record_event(exec_span_id, "execution_blocked", {"reason": "control_signals_missing"})
+                end_span(exec_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         return build_execution_result(
             execution_status="blocked",
             actions_taken=[{"action_type": "control_signals_missing", "status": "blocked"}],
@@ -411,7 +486,10 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
     validators_run, validators_failed, validator_missing, ve_result = _run_validators_with_result(
         signals, context, actions_taken
     )
-    slo_evaluation = _run_slo_pipeline(ve_result, actions_taken, tracker=slo_tracker)
+    slo_evaluation = _run_slo_pipeline(
+        ve_result, actions_taken, tracker=slo_tracker,
+        trace_id=trace_id, parent_span_id=exec_span_id,
+    )
     repair_actions_applied = apply_repair_actions(signals, context, actions_taken)
     publication_blocked = enforce_publication_policy(signals, actions_taken)
     decision_blocked = enforce_decision_grade_policy(signals, actions_taken)
@@ -459,7 +537,23 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
                 "errors": schema_errors,
             }
         )
+        if exec_span_id:
+            try:
+                record_event(exec_span_id, "execution_schema_invalid", {"schema_errors": schema_errors})
+                end_span(exec_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         return blocked_result
+
+    # BK–BM: close execution span and attach artifact
+    if exec_span_id:
+        try:
+            record_event(exec_span_id, "execution_complete", {"execution_status": execution_status})
+            exec_span_st = SPAN_STATUS_OK if execution_status == "success" else SPAN_STATUS_BLOCKED
+            end_span(exec_span_id, exec_span_st)
+        except (TraceNotFoundError, SpanNotFoundError):
+            pass
+
     return result
 
 

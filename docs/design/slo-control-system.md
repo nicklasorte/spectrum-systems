@@ -2045,3 +2045,235 @@ from spectrum_systems.modules.runtime.validator_engine import (
 stubs with schema-driven implementations that consume `contracts/schemas/` for
 `validate_schema_conformance` and integrate `artifact_lineage.py` for
 `validate_traceability_integrity` and `validate_cross_artifact_consistency`.
+
+---
+
+## BK–BM — Trace + Correlation Layer
+
+### Overview
+
+The Trace + Correlation Layer adds OpenTelemetry-style traceability to every
+execution in the SLO control pipeline.  Every run now produces a structured
+trace that links:
+
+```
+run → validators → SLO evaluation → enforcement → execution → artifacts
+```
+
+Every decision and artifact is traceable, inspectable, and reconstructable.
+
+---
+
+### Trace Architecture
+
+The trace engine is implemented in:
+
+```
+spectrum_systems/modules/runtime/trace_engine.py
+```
+
+The in-process store maintains two indexes:
+- `_traces`: `trace_id → Trace dict`
+- `_span_index`: `span_id → (trace_id, Span dict)`
+
+Both are protected by a `threading.Lock` for thread safety.
+
+#### Trace Model
+
+```
+Trace:
+  trace_id        – UUID-4 string
+  root_span_id    – ID of the first span created (or None)
+  spans[]         – ordered list of Span dicts
+  artifacts[]     – list of artifact attachment records
+  start_time      – ISO-8601 UTC
+  end_time        – ISO-8601 UTC or None
+  context         – optional caller-provided metadata
+  schema_version  – "1.0.0"
+
+Span:
+  span_id         – UUID-4 string
+  trace_id        – owning trace
+  parent_span_id  – parent span ID or None (root)
+  name            – human-readable operation name
+  status          – "ok" | "error" | "blocked" | None (open)
+  start_time      – ISO-8601 UTC
+  end_time        – ISO-8601 UTC or None
+  events[]        – list of Event dicts
+
+Event:
+  event_type      – governed string
+  timestamp       – ISO-8601 UTC
+  payload         – structured dict (no free text)
+```
+
+---
+
+### Span Model
+
+| Span Name                    | Created by            | Parent             |
+|------------------------------|-----------------------|--------------------|
+| `control_chain`              | control_chain.py      | None (root)        |
+| `enforcement`                | control_chain.py      | control_chain      |
+| `gating`                     | control_chain.py      | control_chain      |
+| `control_execution`          | control_executor.py   | caller-provided    |
+| `slo_pipeline`               | control_executor.py   | control_execution  |
+| `sli_mapping`                | slo_evaluator.py      | slo_pipeline       |
+| `slo_computation`            | slo_evaluator.py      | slo_pipeline       |
+| `slo_enforcement_decision`   | slo_enforcer.py       | slo_pipeline       |
+| `validator_execution`        | validator_engine.py   | caller-provided    |
+| `validator:<name>`           | validator_engine.py   | validator_execution|
+
+---
+
+### Integration Flow
+
+```
+run_control_chain(input)
+  │
+  ├─ start_trace()                          # BK–BM: trace created here
+  ├─ start_span("control_chain")            # root span
+  │
+  ├─ start_span("enforcement", root)
+  │   └─ run_slo_enforcement(...)
+  │   └─ end_span("enforcement")
+  │
+  ├─ start_span("gating", root)
+  │   └─ run_slo_gating(...)
+  │   └─ end_span("gating")
+  │
+  ├─ build_control_chain_decision(...)      # trace_id injected
+  ├─ attach_artifact(trace_id, decision_id, "control_chain_decision")
+  └─ end_span("control_chain")
+       │
+       [if execute=True]
+       └─ execute_control_signals(context={"trace_id": ..., "parent_span_id": ...})
+              │
+              ├─ start_span("control_execution")
+              │
+              ├─ run_validators(context={"trace_id": ..., "parent_span_id": ...})
+              │     ├─ start_span("validator_execution")
+              │     ├─ start_span("validator:<name>") × N
+              │     └─ end_span() × N
+              │
+              └─ _run_slo_pipeline(trace_id=..., parent_span_id=...)
+                    ├─ start_span("slo_pipeline")
+                    ├─ map_validator_results_to_slis → start_span("sli_mapping")
+                    ├─ compute_slo_status → start_span("slo_computation")
+                    ├─ enforce_slo_policy → start_span("slo_enforcement_decision")
+                    └─ end_span("slo_pipeline")
+```
+
+---
+
+### Fail-Closed Rules
+
+| Condition                    | Effect                                      |
+|------------------------------|---------------------------------------------|
+| `trace_id` is missing/empty  | `validate_trace_context` returns errors     |
+| `trace_id` not in store      | `validate_trace_context` returns errors     |
+| Malformed trace structure    | `validate_trace_context` returns errors     |
+| Validator context malformed  | `run_validators` returns `overall_status=blocked` |
+| `execute_control_signals` receives a bad trace_id | returns `execution_status=blocked` |
+| Span operations on unknown IDs | raise `TraceNotFoundError` / `SpanNotFoundError` |
+
+All integration points wrap span operations in `try/except` so that a trace
+engine failure never crashes the control pipeline — it only suppresses tracing
+for that operation.
+
+---
+
+### Observability
+
+#### `summarize_trace(trace_id) → str`
+
+Returns a human-readable summary showing:
+- trace_id and timestamps
+- full span tree with statuses and events
+- first failure span (first span with `status=error` or `status=blocked`)
+- linked artifacts
+
+Example output:
+
+```
+Trace Summary (BK–BM)
+---------------------
+  trace_id   : 3e4a8b2c-…
+  start_time : 2025-01-01T00:00:00+00:00
+  end_time   : (open)
+
+Span Tree:
+  [ok] control_chain (span_id=3e4a8b2c…)
+    event: chain_complete @ 2025-01-01T00:00:00+00:00
+    [ok] enforcement (span_id=9f1d3c7a…)
+      event: enforcement_complete @ …
+    [ok] gating (span_id=a2c4e6f8…)
+      event: gating_complete @ …
+
+  first_failure_span : (none)
+
+Artifacts:
+  [control_chain_decision] id=DEC-001 span=3e4a8b2c…
+```
+
+#### CLI output (run_slo_control_chain.py)
+
+When the CLI runs, it now appends the full trace summary after writing the
+decision artifact.  This includes:
+- `trace_id`
+- summary of span tree
+- first failure span (for rapid debugging)
+
+---
+
+### Debugging Workflow
+
+To debug a blocked run:
+
+1. Obtain the `trace_id` from the result dict or the decision artifact.
+2. Call `get_trace(trace_id)` to retrieve the full trace.
+3. Call `summarize_trace(trace_id)` for a human-readable view.
+4. Check `first_failure_span` to identify where the failure occurred.
+5. Inspect the span's `events` for the structured failure payload.
+6. Cross-reference the `artifacts` list to confirm which artifacts were
+   produced before the failure.
+
+---
+
+### Data Contract
+
+Schema:
+
+```
+contracts/schemas/trace.schema.json
+```
+
+- `additionalProperties: false` enforced at the top level and on all nested
+  objects (spans, events, artifact attachments)
+- All timestamps use ISO-8601 with UTC timezone
+- `schema_version` is pinned to `"1.0.0"` (const)
+
+The `slo_control_chain_decision` schema has been extended to include an
+optional `trace_id` field so that every decision artifact carries a direct
+reference to its trace.
+
+---
+
+### Known Limitations
+
+- The in-process store is not persisted across process restarts.  For
+  long-lived observability, integrate with an external trace store (e.g.
+  OpenTelemetry Collector, Jaeger) in a future BN prompt.
+- `end_time` on the Trace itself is not set automatically; traces remain
+  "open" unless closed by the caller.  This is intentional to support
+  distributed or multi-step flows.
+- The `execute_control_signals` path propagates `trace_id` and
+  `parent_span_id` to validator_engine but not to repair/publication/
+  escalation handlers (those do not yet record spans).
+
+### Next Recommended Step
+
+**BN–BP — Trace Persistence + Replay**: implement a persistent trace store
+(file-backed or database-backed) and a replay mechanism that can reconstruct
+a full pipeline execution from its trace, enabling post-hoc debugging and
+provenance validation.

@@ -26,6 +26,16 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+from spectrum_systems.modules.runtime.trace_engine import (
+    SPAN_STATUS_BLOCKED,
+    SPAN_STATUS_OK,
+    SpanNotFoundError,
+    TraceNotFoundError,
+    end_span,
+    record_event,
+    start_span,
+)
+
 # Default SLO thresholds — these values are governed and intentional.
 # >= HEALTHY_THRESHOLD          → healthy
 # >= DEGRADED_THRESHOLD and < HEALTHY_THRESHOLD → degraded
@@ -55,7 +65,11 @@ _TRACEABILITY_VALIDATORS: frozenset = frozenset({
 _TRACEABILITY_INTEGRITY_VALIDATOR: str = "validate_traceability_integrity"
 
 
-def map_validator_results_to_slis(result: Dict[str, Any]) -> Dict[str, float]:
+def map_validator_results_to_slis(
+    result: Dict[str, Any],
+    trace_id: Optional[str] = None,
+    parent_span_id: Optional[str] = None,
+) -> Dict[str, float]:
     """Map a ValidatorExecutionResult to a governed SLI dict.
 
     Parameters
@@ -63,6 +77,10 @@ def map_validator_results_to_slis(result: Dict[str, Any]) -> Dict[str, float]:
     result:
         A ``ValidatorExecutionResult`` dict as produced by
         :func:`~spectrum_systems.modules.runtime.validator_engine.run_validators`.
+    trace_id:
+        Optional trace ID for BK–BM span recording.
+    parent_span_id:
+        Optional parent span ID for nesting.
 
     Returns
     -------
@@ -71,6 +89,13 @@ def map_validator_results_to_slis(result: Dict[str, Any]) -> Dict[str, float]:
         All values are in ``[0.0, 1.0]``.
         On any error the function returns all SLIs as ``0.0`` (fail-closed).
     """
+    sli_span_id: Optional[str] = None
+    if trace_id:
+        try:
+            sli_span_id = start_span(trace_id, "sli_mapping", parent_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            sli_span_id = None
+
     try:
         validator_results: List[Dict[str, Any]] = result.get("validator_results") or []
         validators_requested: List[str] = result.get("validators_requested") or []
@@ -131,14 +156,26 @@ def map_validator_results_to_slis(result: Dict[str, Any]) -> Dict[str, float]:
         else:
             traceability_integrity = 0.0
 
-        return {
+        sli_result = {
             "completeness": round(completeness, 6),
             "timeliness": round(timeliness, 6),
             "traceability": round(traceability, 6),
             "traceability_integrity": round(traceability_integrity, 6),
         }
+        if sli_span_id:
+            try:
+                record_event(sli_span_id, "sli_mapping_complete", sli_result)
+                end_span(sli_span_id, SPAN_STATUS_OK)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
+        return sli_result
 
     except Exception:  # noqa: BLE001 — fail closed
+        if sli_span_id:
+            try:
+                end_span(sli_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         return {
             "completeness": 0.0,
             "timeliness": 0.0,
@@ -150,6 +187,8 @@ def map_validator_results_to_slis(result: Dict[str, Any]) -> Dict[str, float]:
 def compute_slo_status(
     slis: Dict[str, float],
     thresholds: Optional[Dict[str, float]] = None,
+    trace_id: Optional[str] = None,
+    parent_span_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Derive SLO status from SLI measurements.
 
@@ -160,6 +199,10 @@ def compute_slo_status(
     thresholds:
         Optional override for ``healthy`` and ``degraded`` thresholds.
         Keys: ``"healthy"`` (default 0.95), ``"degraded"`` (default 0.85).
+    trace_id:
+        Optional trace ID for BK–BM span recording.
+    parent_span_id:
+        Optional parent span ID for nesting.
 
     Returns
     -------
@@ -173,6 +216,13 @@ def compute_slo_status(
 
     On any error the function returns ``slo_status="breached"`` (fail-closed).
     """
+    slo_span_id: Optional[str] = None
+    if trace_id:
+        try:
+            slo_span_id = start_span(trace_id, "slo_computation", parent_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            slo_span_id = None
+
     try:
         healthy_t = float((thresholds or {}).get("healthy", _HEALTHY_THRESHOLD))
         degraded_t = float((thresholds or {}).get("degraded", _DEGRADED_THRESHOLD))
@@ -190,13 +240,29 @@ def compute_slo_status(
         else:
             slo_status = "healthy"
 
-        return {
+        slo_result = {
             "slo_status": slo_status,
             "violations": violations,
             "scores": dict(slis),
         }
+        if slo_span_id:
+            try:
+                record_event(slo_span_id, "slo_computation_complete", {
+                    "slo_status": slo_status,
+                    "violations": violations,
+                })
+                span_st = SPAN_STATUS_OK if slo_status == "healthy" else SPAN_STATUS_BLOCKED
+                end_span(slo_span_id, span_st)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
+        return slo_result
 
     except Exception:  # noqa: BLE001 — fail closed
+        if slo_span_id:
+            try:
+                end_span(slo_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         return {
             "slo_status": "breached",
             "violations": list(_GOVERNED_SLIS),
