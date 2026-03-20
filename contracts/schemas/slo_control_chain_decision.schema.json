@@ -30,6 +30,83 @@
   ],
   "additionalProperties": false,
   "$defs": {
+    "replay_governance": {
+      "title": "Replay Governance Summary",
+      "description": "BZ: Formally declared replay governance fields on the control-chain decision artifact. Present when a replay governance artifact was supplied to the control chain. Absent (key omitted) when no replay governance was supplied and backward compatibility is required.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "replay_governed"],
+      "properties": {
+        "present": {
+          "type": "boolean",
+          "description": "True when a replay governance artifact was supplied to the control chain; false otherwise."
+        },
+        "replay_governed": {
+          "type": "boolean",
+          "description": "True when replay governance actively governed this decision; false when replay governance was present but not applied (e.g., replay not required)."
+        },
+        "replay_status": {
+          "type": "string",
+          "enum": ["consistent", "drifted", "indeterminate"],
+          "description": "Replay consistency status from the consumed replay_governance_decision artifact."
+        },
+        "replay_consistency_sli": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Replay consistency SLI score in [0, 1]."
+        },
+        "system_response": {
+          "type": "string",
+          "enum": ["allow", "require_review", "quarantine", "block"],
+          "description": "Enforced system response from replay governance."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "elevated", "critical"],
+          "description": "Governance severity level."
+        },
+        "rationale_code": {
+          "type": "string",
+          "enum": [
+            "replay_consistent",
+            "replay_drifted",
+            "replay_indeterminate",
+            "replay_missing_required",
+            "replay_invalid_artifact",
+            "replay_unknown_status",
+            "replay_not_required"
+          ],
+          "description": "Machine-readable rationale code for this governance decision."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "invalid_input", "policy_blocked"],
+          "description": "Operational status of the replay governance artifact consumed: ok=produced normally; invalid_input=artifact was malformed; policy_blocked=policy explicitly blocked."
+        },
+        "escalated_final_decision": {
+          "type": "boolean",
+          "description": "True when replay governance escalated the final continuation decision beyond the base enforcement/gating outcome."
+        }
+      },
+      "if": {
+        "properties": {
+          "present": {"const": true},
+          "replay_governed": {"const": true}
+        },
+        "required": ["present", "replay_governed"]
+      },
+      "then": {
+        "required": [
+          "replay_status",
+          "replay_consistency_sli",
+          "system_response",
+          "severity",
+          "rationale_code",
+          "status"
+        ]
+      }
+    },
     "control_signals": {
       "title": "Control Signals",
       "description": "Structured, machine-consumable control signals derived from control-chain outcomes (BN.5). Downstream systems use these signals to adapt behavior deterministically.",
@@ -199,7 +276,7 @@
     "blocking_layer": {
       "type": "string",
       "description": "Layer that blocked continuation, or 'none' when allowed.",
-      "enum": ["none", "enforcement", "gating", "orchestration"]
+      "enum": ["none", "enforcement", "gating", "orchestration", "replay_governance"]
     },
     "primary_reason_code": {
       "type": "string",
@@ -282,6 +359,10 @@
       "type": "string",
       "minLength": 1,
       "description": "BK–BM: trace identifier linking this decision to the full execution trace."
+    },
+    "replay_governance": {
+      "$ref": "#/$defs/replay_governance",
+      "description": "BZ: Formally declared replay governance summary. Present only when a replay governance artifact was supplied to the control chain. Omitting this field is valid for artifacts produced without replay governance (Option A additive compatibility)."
     }
   }
 }

@@ -940,11 +940,13 @@ class TestControlChainIntegration:
             )
 
         cc = result["control_chain_decision"]
-        assert "replay_governance_response" in cc
-        assert "replay_governance_rationale_code" in cc
-        assert "replay_status" in cc
-        assert "replay_governance_escalated_final_decision" in cc
-        assert cc["replay_governance_response"] == SYSTEM_RESPONSE_QUARANTINE
+        assert "replay_governance" in cc
+        rg = cc["replay_governance"]
+        assert rg["present"] is True
+        assert rg["replay_governed"] is True
+        assert rg["system_response"] == SYSTEM_RESPONSE_QUARANTINE
+        assert "rationale_code" in rg
+        assert "escalated_final_decision" in rg
         assert result["replay_governance_summary"] is not None
 
     def test_no_governance_when_no_replay(self):
