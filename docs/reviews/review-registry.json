@@ -205,5 +205,18 @@
         "status": "Open"
       }
     ]
+  },
+  {
+    "review_id": "2026-03-20-reliability-control-loop-review",
+    "review_date": "2026-03-20",
+    "review_type": "Targeted control-loop architecture and security review",
+    "repo": "spectrum-systems",
+    "reviewer": "Claude (Principal Systems Architect — Sonnet 4.6)",
+    "status": "Open",
+    "maturity_rating": "3/5 — Governed (partial)",
+    "artifact_path": "docs/reviews/2026-03-20-reliability-control-loop-review.md",
+    "action_tracker_path": "docs/review-actions/2026-03-20-reliability-control-loop-actions.md",
+    "scope": "BN–BP Trace Persistence + Replay Plane, BQ Replay Decision Integrity Engine, BS Continuous Evaluation Monitor, BT Evaluation Budget Governor, BU Governor Enforcement Bridge. Focus: control-loop ID linkage, fail-closed behavior, semantic consistency, enforcement strength, override/bypass risk, BT policy soundness. 8 findings (3 critical, 2 high, 2 medium, 1 low); 8 actions (4 critical, 2 high, 2 medium).",
+    "follow_up_trigger": "When CR-1 (override_artifact schema) and CR-2 (BU override validation) are complete; when CR-4 (BU CLI) is operational; re-review enforcement bridge security posture before any production-grade gating workflow is added."
   }
 ]
