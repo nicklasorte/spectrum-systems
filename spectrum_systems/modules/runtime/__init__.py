@@ -7,8 +7,9 @@ normalization and evaluation layer (Prompt BE), the cross-run
 intelligence and anomaly detection layer (Prompt BF), the working
 paper evidence pack synthesis layer (Prompt BG), the SLO control
 layer (Prompt BR) for validating execution bundles and their outputs,
-and the artifact lineage system (Prompt BS) for full pipeline
-traceability.
+the artifact lineage system (Prompt BS) for full pipeline
+traceability, and the continuous evaluation monitor (Prompt BS) for
+quality drift detection and error-budget-driven decisions.
 
 Every validation produces a deterministic decision artifact that is
 persisted and auditable.
@@ -43,6 +44,10 @@ replay_engine
 regression_harness
     Batch regression suite execution, drift detection, and CI-ready
     aggregate run result emission (BR).
+evaluation_monitor
+    Continuous monitoring layer consuming regression_run_result artifacts
+    to detect quality drift, measure reliability, and support
+    error-budget-driven decisions (BS).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -180,6 +185,18 @@ from spectrum_systems.modules.runtime.regression_harness import (
     validate_regression_run_result,
     validate_regression_suite,
 )
+from spectrum_systems.modules.runtime.evaluation_monitor import (
+    EvaluationMonitorError,
+    InvalidRegressionResultError,
+    assess_burn_rate,
+    build_monitor_record,
+    classify_trend,
+    compute_alert_recommendation,
+    run_evaluation_monitor,
+    summarize_monitor_records,
+    validate_monitor_record,
+    validate_monitor_summary,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -307,4 +324,15 @@ __all__ = [
     "aggregate_regression_results",
     "validate_regression_run_result",
     "run_regression_suite",
+    # BS — Continuous Evaluation Monitor
+    "EvaluationMonitorError",
+    "InvalidRegressionResultError",
+    "build_monitor_record",
+    "validate_monitor_record",
+    "compute_alert_recommendation",
+    "summarize_monitor_records",
+    "validate_monitor_summary",
+    "classify_trend",
+    "assess_burn_rate",
+    "run_evaluation_monitor",
 ]

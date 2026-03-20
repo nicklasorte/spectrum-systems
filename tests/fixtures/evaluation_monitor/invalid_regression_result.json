@@ -1,0 +1,10 @@
+{
+  "run_id": "MISSING_REQUIRED_FIELD",
+  "suite_id": "suite-invalid",
+  "created_at": "not-a-valid-timestamp",
+  "total_traces": "should-be-integer",
+  "passed_traces": 0,
+  "failed_traces": 0,
+  "pass_rate": 1.5,
+  "overall_status": "unknown_status"
+}
