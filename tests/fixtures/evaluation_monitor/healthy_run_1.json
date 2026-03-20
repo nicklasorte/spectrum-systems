@@ -1,0 +1,66 @@
+{
+  "run_id": "run-healthy-001",
+  "suite_id": "suite-golden-path-001",
+  "created_at": "2025-01-01T00:00:00Z",
+  "total_traces": 5,
+  "passed_traces": 5,
+  "failed_traces": 0,
+  "pass_rate": 1.0,
+  "overall_status": "pass",
+  "results": [
+    {
+      "trace_id": "trace-001",
+      "replay_result_id": "replay-001",
+      "analysis_id": "analysis-001",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.95,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-002",
+      "replay_result_id": "replay-002",
+      "analysis_id": "analysis-002",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.92,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-003",
+      "replay_result_id": "replay-003",
+      "analysis_id": "analysis-003",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.90,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-004",
+      "replay_result_id": "replay-004",
+      "analysis_id": "analysis-004",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.88,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-005",
+      "replay_result_id": "replay-005",
+      "analysis_id": "analysis-005",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.91,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    }
+  ],
+  "summary": {
+    "drift_counts": {},
+    "average_reproducibility_score": 0.912
+  }
+}

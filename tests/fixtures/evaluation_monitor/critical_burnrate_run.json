@@ -1,0 +1,116 @@
+{
+  "run_id": "run-critical-burnrate-001",
+  "suite_id": "suite-golden-path-001",
+  "created_at": "2025-01-05T00:00:00Z",
+  "total_traces": 10,
+  "passed_traces": 1,
+  "failed_traces": 9,
+  "pass_rate": 0.1,
+  "overall_status": "fail",
+  "results": [
+    {
+      "trace_id": "trace-001",
+      "replay_result_id": "replay-c01",
+      "analysis_id": "analysis-c01",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.75,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-002",
+      "replay_result_id": "replay-c02",
+      "analysis_id": "analysis-c02",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.40,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-003",
+      "replay_result_id": "replay-c03",
+      "analysis_id": "analysis-c03",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.35,
+      "drift_type": "structural_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: structural_drift"]
+    },
+    {
+      "trace_id": "trace-004",
+      "replay_result_id": "replay-c04",
+      "analysis_id": "analysis-c04",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.38,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-005",
+      "replay_result_id": "replay-c05",
+      "analysis_id": "analysis-c05",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.42,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-006",
+      "replay_result_id": "replay-c06",
+      "analysis_id": "analysis-c06",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.30,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-007",
+      "replay_result_id": "replay-c07",
+      "analysis_id": "analysis-c07",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.36,
+      "drift_type": "structural_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: structural_drift"]
+    },
+    {
+      "trace_id": "trace-008",
+      "replay_result_id": "replay-c08",
+      "analysis_id": "analysis-c08",
+      "decision_status": "indeterminate",
+      "reproducibility_score": 0.50,
+      "drift_type": "",
+      "passed": false,
+      "failure_reasons": ["Decision status is indeterminate"]
+    },
+    {
+      "trace_id": "trace-009",
+      "replay_result_id": "replay-c09",
+      "analysis_id": "analysis-c09",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.33,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-010",
+      "replay_result_id": "replay-c10",
+      "analysis_id": "analysis-c10",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.28,
+      "drift_type": "structural_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: structural_drift"]
+    }
+  ],
+  "summary": {
+    "drift_counts": {"semantic_drift": 6, "structural_drift": 3},
+    "average_reproducibility_score": 0.407
+  }
+}

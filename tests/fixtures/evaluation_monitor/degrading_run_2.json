@@ -1,0 +1,66 @@
+{
+  "run_id": "run-degrading-002",
+  "suite_id": "suite-golden-path-001",
+  "created_at": "2025-01-04T00:00:00Z",
+  "total_traces": 5,
+  "passed_traces": 2,
+  "failed_traces": 3,
+  "pass_rate": 0.4,
+  "overall_status": "fail",
+  "results": [
+    {
+      "trace_id": "trace-001",
+      "replay_result_id": "replay-301",
+      "analysis_id": "analysis-301",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.75,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-002",
+      "replay_result_id": "replay-302",
+      "analysis_id": "analysis-302",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.60,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    },
+    {
+      "trace_id": "trace-003",
+      "replay_result_id": "replay-303",
+      "analysis_id": "analysis-303",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.55,
+      "drift_type": "structural_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: structural_drift"]
+    },
+    {
+      "trace_id": "trace-004",
+      "replay_result_id": "replay-304",
+      "analysis_id": "analysis-304",
+      "decision_status": "consistent",
+      "reproducibility_score": 0.78,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": []
+    },
+    {
+      "trace_id": "trace-005",
+      "replay_result_id": "replay-305",
+      "analysis_id": "analysis-305",
+      "decision_status": "drifted",
+      "reproducibility_score": 0.50,
+      "drift_type": "semantic_drift",
+      "passed": false,
+      "failure_reasons": ["Drift detected: semantic_drift"]
+    }
+  ],
+  "summary": {
+    "drift_counts": {"semantic_drift": 2, "structural_drift": 1},
+    "average_reproducibility_score": 0.636
+  }
+}

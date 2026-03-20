@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_monitor_record.schema.json",
+  "title": "Evaluation Monitor Record",
+  "description": "Single-ingestion monitoring record derived from one regression_run_result artifact. Produced by the BS Continuous Evaluation Monitor.",
+  "type": "object",
+  "required": [
+    "monitor_record_id",
+    "source_run_id",
+    "source_suite_id",
+    "created_at",
+    "total_traces",
+    "passed_traces",
+    "failed_traces",
+    "pass_rate",
+    "average_reproducibility_score",
+    "drift_counts",
+    "indeterminate_count",
+    "overall_status",
+    "sli_snapshot",
+    "alert_recommendation",
+    "metadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "monitor_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this monitor record."
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "run_id of the regression_run_result that was ingested."
+    },
+    "source_suite_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "suite_id from the ingested regression_run_result."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this monitor record was created."
+    },
+    "total_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of traces in the source run."
+    },
+    "passed_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of traces that passed in the source run."
+    },
+    "failed_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of traces that failed in the source run."
+    },
+    "pass_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of traces that passed: passed_traces / total_traces."
+    },
+    "average_reproducibility_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Mean reproducibility score across all traces in the source run."
+    },
+    "drift_counts": {
+      "type": "object",
+      "description": "Count of each drift type observed across all traces.",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "indeterminate_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of traces with decision_status=indeterminate."
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Overall status from the source regression run."
+    },
+    "sli_snapshot": {
+      "type": "object",
+      "description": "Artifact-oriented SLI snapshot computed from the source run.",
+      "required": [
+        "regression_pass_rate",
+        "drift_rate",
+        "average_reproducibility_score"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "regression_pass_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of traces that passed all regression criteria."
+        },
+        "drift_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of traces with decision_status=drifted."
+        },
+        "average_reproducibility_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Mean reproducibility score across all traces."
+        }
+      }
+    },
+    "alert_recommendation": {
+      "type": "object",
+      "description": "Alert recommendation computed from policy rules.",
+      "required": ["level", "reasons"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["none", "warning", "critical"],
+          "description": "Alert severity level."
+        },
+        "reasons": {
+          "type": "array",
+          "description": "Human-readable reasons for this alert level.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Provenance and generator metadata.",
+      "required": ["schema_version", "generator"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Version of the evaluation_monitor_record schema used."
+        },
+        "generator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the module or script that generated this record."
+        }
+      }
+    }
+  }
+}
