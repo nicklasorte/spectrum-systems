@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.0",
+  "artifact_version": "1.0.2",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.1",
+  "standards_version": "2026.03.3",
   "record_id": "REC-STD-2026-03-14",
   "run_id": "run-20260314T101900Z",
   "created_at": "2026-03-14T10:19:00Z",
@@ -350,6 +350,110 @@
       "last_updated_in": "1.0.0",
       "example_path": null,
       "notes": "Governed BN.6 execution artifact capturing deterministic control-signal consumption outcomes and enforced runtime actions."
+    },
+    {
+      "artifact_type": "strategic_knowledge_source_ref",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/strategic_knowledge_source_ref.json",
+      "notes": "Strategic source registration reference for Strategic Knowledge Layer."
+    },
+    {
+      "artifact_type": "strategic_knowledge_artifact_ref",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/strategic_knowledge_artifact_ref.json",
+      "notes": "Shared provenance-aware reference envelope for strategic knowledge artifacts."
+    },
+    {
+      "artifact_type": "book_intelligence_pack",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/book_intelligence_pack.json",
+      "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
+    },
+    {
+      "artifact_type": "transcript_intelligence_pack",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/transcript_intelligence_pack.json",
+      "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
+    },
+    {
+      "artifact_type": "story_bank_entry",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/story_bank_entry.json",
+      "notes": "Governed strategic story narrative with source-grounded evidence anchors."
+    },
+    {
+      "artifact_type": "tactic_register",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/tactic_register.json",
+      "notes": "Governed tactic register record grounded to book/transcript evidence."
+    },
+    {
+      "artifact_type": "viewpoint_pack",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/viewpoint_pack.json",
+      "notes": "Strategic viewpoint package with supporting and counter evidence."
+    },
+    {
+      "artifact_type": "evidence_map",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/evidence_map.json",
+      "notes": "Evidence map linking strategic claims to anchored source evidence."
     }
   ]
 }
