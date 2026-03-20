@@ -1606,3 +1606,71 @@ BN.6 emits `control_execution_result` with:
 
 No downstream module should re-derive control behavior from enforcement or
 gating state. Runtime behavior must consume `control_signals` directly.
+
+
+---
+
+## BN.6.1 — Contract Enforcement Hardening (Runtime Dependency Enforcement)
+
+### Motivation
+
+BN.6 introduced executable control behaviour, but test collection failed because
+`jsonschema` was absent in the environment. That failure mode is unacceptable:
+schema validation is a hard safety guarantee for every governed artifact contract
+in the control plane. A missing runtime dependency must never allow the system to
+proceed silently.
+
+BN.6.1 makes contract validation an explicitly checked, fail-closed runtime
+requirement.
+
+### Contract runtime as a hard dependency
+
+`jsonschema` is a required runtime dependency for any entry point that enforces
+governed schemas. It is not optional, advisory, or gracefully degraded.
+`spectrum_systems/modules/runtime/contract_runtime.py` is the single source of
+truth for this check.
+
+Required functions:
+
+| Function | Behaviour |
+| --- | --- |
+| `ensure_contract_runtime_available()` | Raises `ContractRuntimeError` if `jsonschema` is not importable; returns status dict otherwise. |
+| `get_contract_runtime_status()` | Returns a structured status dict describing availability without raising. |
+| `format_contract_runtime_error(status)` | Produces a deterministic human-readable error string from a status dict. |
+
+### Fail-closed behaviour
+
+Every canonical control-plane entry point calls `ensure_contract_runtime_available()`
+before executing any schema-enforcement logic:
+
+- `run_control_chain(...)` — `control_chain.py`
+- `execute_control_signals(...)` — `control_executor.py`
+- `run_slo_control_chain.py` CLI — validates at startup before loading the artifact
+
+When `jsonschema` is unavailable:
+
+1. `ContractRuntimeError` is raised with `failure_reason = "contract_runtime_unavailable"`.
+2. No execution continues past the check.
+3. No artifact is emitted that implies schema validation succeeded.
+4. The CLI prints a human-readable diagnostic line (`contract runtime : unavailable`)
+   and exits with **code 3**.
+
+### Exit code semantics
+
+| Exit code | Meaning |
+| --- | --- |
+| 0 | Continue |
+| 1 | Continue with warning |
+| 2 | Governance halt (blocked by policy/gating) |
+| **3** | Execution/runtime failure — includes contract runtime unavailable |
+
+Exit code 3 is deliberately distinct from exit code 2. A blocked governance
+decision is not the same as a runtime environment failure.
+
+### Why this was added
+
+The control plane must be safe by default, not safe by assumption. Allowing
+schema validation to be silently skipped because a dependency is missing would
+undermine every governed artifact contract in the system. BN.6.1 ensures the
+system fails deterministically and loudly rather than producing unvalidated
+artifacts that appear valid.
