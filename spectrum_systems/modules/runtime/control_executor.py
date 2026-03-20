@@ -3,6 +3,10 @@
 Consumes BN.5 ``control_signals`` as the single source of truth for runtime
 execution behavior. This module does not re-derive gating/enforcement logic;
 it only executes the explicit instructions encoded in control signals.
+
+BN.8 integration: validator resolution and execution is delegated entirely to
+:mod:`spectrum_systems.modules.runtime.validator_engine`.  No local validator
+registry logic is maintained here.
 """
 
 from __future__ import annotations
@@ -25,6 +29,10 @@ from spectrum_systems.modules.runtime.control_signals import (
     CONTINUATION_MODE_STOP_AND_REPAIR,
     CONTINUATION_MODE_STOP_AND_RERUN,
 )
+from spectrum_systems.modules.runtime.validator_engine import (
+    run_validators,
+    summarize_validator_execution,
+)
 
 ExecutionAction = Dict[str, Any]
 ValidatorResult = Dict[str, Any]
@@ -41,41 +49,6 @@ def validate_execution_result(execution_result: Dict[str, Any]) -> List[str]:
         f"{'.'.join(str(p) for p in e.absolute_path) or '<root>'}: {e.message}"
         for e in sorted(validator.iter_errors(execution_result), key=lambda e: list(e.absolute_path))
     ]
-
-
-def _ok_validator(name: str, _artifact: Any, _context: Dict[str, Any]) -> ValidatorResult:
-    return {"validator": name, "success": True, "details": {"mode": "default"}}
-
-
-def _traceability_validator(name: str, artifact: Any, _context: Dict[str, Any]) -> ValidatorResult:
-    ok = isinstance(artifact, dict) and bool(artifact.get("artifact_id"))
-    return {
-        "validator": name,
-        "success": ok,
-        "details": {"artifact_id_present": ok},
-        "error": None if ok else "artifact_id missing for traceability check",
-    }
-
-
-def _schema_validator(name: str, artifact: Any, _context: Dict[str, Any]) -> ValidatorResult:
-    is_dict = isinstance(artifact, dict)
-    return {
-        "validator": name,
-        "success": is_dict,
-        "details": {"artifact_is_object": is_dict},
-        "error": None if is_dict else "artifact must be an object",
-    }
-
-
-def _default_validator_registry() -> Dict[str, Callable[[str, Any, Dict[str, Any]], ValidatorResult]]:
-    return {
-        "validate_runtime_compatibility": _ok_validator,
-        "validate_bundle_contract": _ok_validator,
-        "validate_traceability_integrity": _traceability_validator,
-        "validate_schema_conformance": _schema_validator,
-        "validate_artifact_completeness": _ok_validator,
-        "validate_cross_artifact_consistency": _ok_validator,
-    }
 
 
 def _repair_registry() -> Dict[str, Callable[[str, Any, Dict[str, Any]], Tuple[bool, Dict[str, Any]]]]:
@@ -132,41 +105,36 @@ def run_required_validators(
     context: Dict[str, Any],
     actions_taken: List[ExecutionAction],
 ) -> Tuple[List[str], List[str], bool]:
-    artifact = context.get("artifact")
+    """Execute required validators via BN.8 validator_engine.
+
+    Delegates resolution, ordering, and structured execution to
+    :func:`~spectrum_systems.modules.runtime.validator_engine.run_validators`.
+    Returns ``(validators_run, validators_failed, fail_closed)`` for
+    backward-compatible integration with the BN.6 execution flow.
+    """
     required_validators = list(control_signals.get("required_validators") or [])
-    registry = _default_validator_registry()
-    registry.update(context.get("validator_registry") or {})
 
-    validators_run: List[str] = []
-    validators_failed: List[str] = []
-    fail_closed = False
+    ve_result = run_validators(required_validators, context)
 
-    for validator_name in required_validators:
-        validator = registry.get(validator_name)
-        if validator is None:
-            fail_closed = True
-            validators_failed.append(validator_name)
-            actions_taken.append(
-                {
-                    "action_type": "validator_missing",
-                    "validator": validator_name,
-                    "status": "blocked",
-                }
-            )
-            continue
+    validators_run: List[str] = ve_result.get("validators_run") or []
+    validators_failed: List[str] = ve_result.get("validators_failed") or []
+    fail_closed = ve_result.get("overall_status") == "blocked"
 
-        result = validator(validator_name, artifact, context)
-        validators_run.append(validator_name)
-        success = bool(result.get("success"))
-        if not success:
-            validators_failed.append(validator_name)
+    # Emit one action per individual validator result for observability.
+    for vr in ve_result.get("validator_results") or []:
+        vname = vr.get("validator_name", "<unknown>")
+        vstatus = vr.get("status", "error")
+        if vstatus == "blocked":
+            action_type = "validator_missing"
+        else:
+            action_type = "validator_executed"
         actions_taken.append(
             {
-                "action_type": "validator_executed",
-                "validator": validator_name,
-                "success": success,
-                "details": result.get("details") or {},
-                "error": result.get("error"),
+                "action_type": action_type,
+                "validator": vname,
+                "success": vstatus == "pass",
+                "details": vr.get("details") or {},
+                "error": (vr.get("errors") or [None])[0],
             }
         )
 

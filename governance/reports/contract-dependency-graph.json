@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-20T00:07:26Z",
+  "generated_at": "2026-03-20T11:48:52Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -238,6 +238,13 @@
         {
           "repo": "spectrum-pipeline-engine",
           "system_id": "spectrum-pipeline-engine",
+          "contract": "control_execution_result",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "spectrum-pipeline-engine",
+          "system_id": "spectrum-pipeline-engine",
           "contract": "evaluation_manifest",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
@@ -471,9 +478,17 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "pass",
+      "validation_status": "warning",
       "failures": [],
-      "warnings": []
+      "warnings": [
+        {
+          "repo": "system-factory",
+          "system_id": "system-factory",
+          "contract": "control_execution_result",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest"
+        }
+      ]
     },
     {
       "repo_name": "working-paper-review-engine",

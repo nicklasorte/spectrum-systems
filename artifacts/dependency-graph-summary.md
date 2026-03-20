@@ -17,6 +17,7 @@
 - comment_resolution_matrix [review] producers: comment-resolution-engine; consumers: comment-resolution-engine; Governed artifact for contract `comment_resolution_matrix`.
 - comment_resolution_matrix_spreadsheet [review] producers: —; consumers: —; Spreadsheet representation of the governed comment resolution matrix.
 - comment_resolution_matrix_spreadsheet_contract [review] producers: comment-resolution-engine; consumers: docx-comment-injection-engine; Governed artifact for contract `comment_resolution_matrix_spreadsheet_contract`.
+- control_execution_result [coordination] producers: —; consumers: —; Governed artifact for contract `control_execution_result`.
 - coordination_loop [coordination] producers: —; consumers: —; Marker node for systems participating in the coordination loop.
 - cross_loop [coordination] producers: —; consumers: —; Marker node for systems that orchestrate or advise across loops.
 - decision_log [coordination] producers: —; consumers: —; Governed artifact for contract `decision_log`.
@@ -53,6 +54,7 @@
 - assumption_register [work] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: assumption_register
 - comment_resolution_matrix [review] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: comment_resolution_matrix
 - comment_resolution_matrix_spreadsheet_contract [review] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, system-factory; artifacts: comment_resolution_matrix_spreadsheet_contract
+- control_execution_result [coordination] intended consumers: spectrum-pipeline-engine, spectrum-systems, system-factory; artifacts: control_execution_result
 - decision_log [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: decision_log
 - evaluation_manifest [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor, spectrum-systems; artifacts: evaluation_manifest
 - external_artifact_manifest [coordination] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, study-artifact-generator; artifacts: external_artifact_manifest
