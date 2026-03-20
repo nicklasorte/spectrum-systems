@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/working_paper_bundle.schema.json",
+  "title": "Working Paper Bundle",
+  "description": "Governed output bundle produced by the working_paper_engine pipeline. Contains the full structured working paper, FAQ, gap register, validation checklist, results readiness, traceability requirements, validation results, and metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "source_artifact_ids",
+    "report",
+    "faq",
+    "gap_register",
+    "validation_checklist",
+    "results_readiness",
+    "traceability_requirements",
+    "validation",
+    "metadata"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^WPE-[A-Z0-9]+$",
+      "description": "Unique identifier for this bundle artifact."
+    },
+    "source_artifact_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Identifiers for all source artifacts ingested by the engine."
+    },
+    "report": {
+      "$ref": "#/$defs/report",
+      "description": "Structured working paper with Sections 1–7."
+    },
+    "faq": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/faq_item" },
+      "description": "Extracted FAQ items derived from study inputs."
+    },
+    "gap_register": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/gap_item" },
+      "description": "Register of identified gaps in data, methods, or information."
+    },
+    "validation_checklist": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/checklist_item" },
+      "description": "Structured validation checks for this bundle."
+    },
+    "results_readiness": {
+      "$ref": "#/$defs/results_readiness",
+      "description": "Assessment of whether quantitative results are available and what is missing."
+    },
+    "traceability_requirements": {
+      "$ref": "#/$defs/traceability_requirements",
+      "description": "Artifacts, mappings, and reproducibility inputs required for full traceability."
+    },
+    "validation": {
+      "$ref": "#/$defs/validation_summary",
+      "description": "Passes, warnings, and errors from the validation stage."
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata",
+      "description": "Engine version, timestamps, input summary, and provenance mode."
+    }
+  },
+  "$defs": {
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "sections"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Title of the working paper."
+        },
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/section" },
+          "minItems": 7,
+          "description": "Ordered list of sections (1–7)."
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "title", "content"],
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "description": "Section identifier, e.g. '1', '2', ..., '7'."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Section title."
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Section prose content. May contain [need additional information] markers."
+        }
+      }
+    },
+    "faq_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["faq_id", "section_ref", "question", "source_refs"],
+      "properties": {
+        "faq_id": {
+          "type": "string",
+          "pattern": "^FAQ-[0-9]+$",
+          "description": "Unique FAQ identifier."
+        },
+        "section_ref": {
+          "type": "string",
+          "description": "Section ID this FAQ maps to."
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The FAQ question text."
+        },
+        "answer": {
+          "type": "string",
+          "description": "Optional answer text; omit or empty if unknown."
+        },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Source artifact references for this FAQ item."
+        }
+      }
+    },
+    "gap_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gap_id",
+        "description",
+        "section_ref",
+        "gap_type",
+        "impact",
+        "blocking",
+        "suggested_resolution",
+        "source_refs"
+      ],
+      "properties": {
+        "gap_id": {
+          "type": "string",
+          "pattern": "^GAP-[0-9]+$",
+          "description": "Unique gap identifier."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description of the gap."
+        },
+        "section_ref": {
+          "type": "string",
+          "description": "Section ID most affected by this gap."
+        },
+        "gap_type": {
+          "type": "string",
+          "enum": ["Data", "Method", "Assumption", "Constraint", "Coordination", "Unknown"],
+          "description": "Classifies the type of gap."
+        },
+        "impact": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"],
+          "description": "Estimated impact on the study."
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "Whether this gap blocks forward progress."
+        },
+        "suggested_resolution": {
+          "type": "string",
+          "description": "Suggested path to resolve this gap."
+        },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Source artifact references for this gap."
+        }
+      }
+    },
+    "checklist_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check_id", "text", "category"],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "pattern": "^VAL-[0-9]+$",
+          "description": "Unique validation check identifier."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable check description."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "traceability",
+            "completeness",
+            "consistency",
+            "safety",
+            "readiness"
+          ],
+          "description": "Category of the validation check."
+        }
+      }
+    },
+    "results_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quantitative_results_available",
+        "missing_elements",
+        "readiness_notes"
+      ],
+      "properties": {
+        "quantitative_results_available": {
+          "type": "boolean",
+          "description": "True only when verified quantitative results are present."
+        },
+        "missing_elements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of elements required before quantitative results can be reported."
+        },
+        "readiness_notes": {
+          "type": "string",
+          "description": "Narrative summary of readiness status."
+        }
+      }
+    },
+    "traceability_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_artifacts",
+        "required_mappings",
+        "required_reproducibility_inputs"
+      ],
+      "properties": {
+        "required_artifacts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Artifact types that must be present for full traceability."
+        },
+        "required_mappings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Claim-to-source mappings required."
+        },
+        "required_reproducibility_inputs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Inputs required to reproduce the study."
+        }
+      }
+    },
+    "validation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passes", "warnings", "errors"],
+      "properties": {
+        "passes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Validation checks that passed."
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Validation warnings (non-blocking)."
+        },
+        "errors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Validation errors (blocking)."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_version",
+        "created_at",
+        "input_summary",
+        "provenance_mode"
+      ],
+      "properties": {
+        "engine_version": {
+          "type": "string",
+          "description": "Version string for the working_paper_engine."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of bundle creation."
+        },
+        "input_summary": {
+          "type": "object",
+          "description": "Summary of inputs ingested (counts, IDs, etc.)."
+        },
+        "provenance_mode": {
+          "type": "string",
+          "enum": ["best_effort", "strict", "none"],
+          "description": "Provenance tracking mode used during generation."
+        }
+      }
+    }
+  }
+}
