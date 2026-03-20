@@ -1,0 +1,6 @@
+{
+  "override_id": "override-001",
+  "reviewer": "on-call-engineer",
+  "approved_at": "2025-01-03T01:00:00Z",
+  "justification": "Reviewed all triggered thresholds; risk accepted for this release window."
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_enforcement_action.schema.json",
+  "title": "Evaluation Enforcement Action",
+  "description": "Governed enforcement artifact produced by the BU Governor Enforcement Bridge. Translates an evaluation_budget_decision into an explicit enforcement action that promotion/release/change workflows must honor.",
+  "type": "object",
+  "required": [
+    "action_id",
+    "decision_id",
+    "summary_id",
+    "status",
+    "action_type",
+    "enforcement_scope",
+    "allowed_to_proceed",
+    "reasons",
+    "required_human_actions",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this enforcement action."
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The decision_id of the evaluation_budget_decision that drove this enforcement action."
+    },
+    "summary_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The summary_id of the evaluation_monitor_summary that originated the governor decision."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["enforced", "advisory", "failed"],
+      "description": "Enforcement status. 'enforced' means the action is binding; 'advisory' means informational; 'failed' means the bridge itself encountered an error."
+    },
+    "action_type": {
+      "type": "string",
+      "enum": ["allow", "warn", "require_review", "freeze_changes", "block_release"],
+      "description": "The concrete enforcement action that downstream workflows must honor."
+    },
+    "enforcement_scope": {
+      "type": "string",
+      "enum": ["promotion", "release", "schema_change", "prompt_change", "pipeline_change"],
+      "description": "The workflow scope to which this enforcement action applies."
+    },
+    "allowed_to_proceed": {
+      "type": "boolean",
+      "description": "Whether the downstream workflow is permitted to proceed. False means the workflow must halt."
+    },
+    "reasons": {
+      "type": "array",
+      "description": "Human-readable explanations for the enforcement action.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_human_actions": {
+      "type": "array",
+      "description": "Explicit actions that a human must take before the workflow may continue.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this enforcement action was created."
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "decision_id": "decision-allow-001",
+  "summary_id": "summary-healthy-001",
+  "status": "healthy",
+  "system_response": "allow",
+  "reasons": [
+    "All signals within acceptable thresholds."
+  ],
+  "triggered_thresholds": [],
+  "required_actions": [
+    "No immediate action required. Continue monitoring."
+  ],
+  "created_at": "2025-01-01T00:00:00Z"
+}

@@ -1,0 +1,18 @@
+{
+  "decision_id": "decision-freeze-001",
+  "summary_id": "summary-exhausted-001",
+  "status": "exhausted",
+  "system_response": "freeze_changes",
+  "reasons": [
+    "Burn rate is exhausting: 2/4 runs failed (fraction=0.50 >= threshold=0.50)"
+  ],
+  "triggered_thresholds": [
+    "burn_rate_exhausting"
+  ],
+  "required_actions": [
+    "Freeze all system changes until budget is restored.",
+    "Conduct root-cause analysis of contributing signals.",
+    "Error budget exhausted — halt new feature deployment."
+  ],
+  "created_at": "2025-01-04T00:00:00Z"
+}
