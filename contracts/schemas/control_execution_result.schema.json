@@ -69,6 +69,11 @@
     },
     "human_review_required": {
       "type": "boolean"
+    },
+    "slo_evaluation": {
+      "type": "object",
+      "description": "BH–BJ SLO evaluation result derived from validator execution. Present when the SLO control plane ran successfully.",
+      "additionalProperties": true
     }
   }
 }

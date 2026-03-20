@@ -33,7 +33,16 @@ from spectrum_systems.modules.runtime.validator_engine import (
     run_validators,
     summarize_validator_execution,
 )
-
+from spectrum_systems.modules.runtime.slo_evaluator import (
+    map_validator_results_to_slis,
+    compute_slo_status,
+)
+from spectrum_systems.modules.runtime.error_budget import (
+    ErrorBudgetTracker,
+    update_error_budget,
+    compute_burn_rate,
+)
+from spectrum_systems.modules.runtime.slo_enforcer import enforce_slo_policy
 ExecutionAction = Dict[str, Any]
 ValidatorResult = Dict[str, Any]
 
@@ -100,27 +109,24 @@ def enforce_continuation_mode(control_signals: Dict[str, Any], actions_taken: Li
     return {"continuation_mode": mode, "allow_execution": allow_execution, "blocked": blocked}
 
 
-def run_required_validators(
+def _run_validators_with_result(
     control_signals: Dict[str, Any],
     context: Dict[str, Any],
     actions_taken: List[ExecutionAction],
-) -> Tuple[List[str], List[str], bool]:
-    """Execute required validators via BN.8 validator_engine.
+) -> Tuple[List[str], List[str], bool, Dict[str, Any]]:
+    """Execute required validators and return the full validator execution result.
 
-    Delegates resolution, ordering, and structured execution to
-    :func:`~spectrum_systems.modules.runtime.validator_engine.run_validators`.
-    Returns ``(validators_run, validators_failed, fail_closed)`` for
-    backward-compatible integration with the BN.6 execution flow.
+    Returns ``(validators_run, validators_failed, fail_closed, ve_result)``.
+    Internal use only; provides the validator execution result for downstream
+    SLO pipeline integration.
     """
     required_validators = list(control_signals.get("required_validators") or [])
-
     ve_result = run_validators(required_validators, context)
 
     validators_run: List[str] = ve_result.get("validators_run") or []
     validators_failed: List[str] = ve_result.get("validators_failed") or []
     fail_closed = ve_result.get("overall_status") == "blocked"
 
-    # Emit one action per individual validator result for observability.
     for vr in ve_result.get("validator_results") or []:
         vname = vr.get("validator_name", "<unknown>")
         vstatus = vr.get("status", "error")
@@ -138,6 +144,24 @@ def run_required_validators(
             }
         )
 
+    return validators_run, validators_failed, fail_closed, ve_result
+
+
+def run_required_validators(
+    control_signals: Dict[str, Any],
+    context: Dict[str, Any],
+    actions_taken: List[ExecutionAction],
+) -> Tuple[List[str], List[str], bool]:
+    """Execute required validators via BN.8 validator_engine.
+
+    Delegates resolution, ordering, and structured execution to
+    :func:`~spectrum_systems.modules.runtime.validator_engine.run_validators`.
+    Returns ``(validators_run, validators_failed, fail_closed)`` for
+    backward-compatible integration with the BN.6 execution flow.
+    """
+    validators_run, validators_failed, fail_closed, _ = _run_validators_with_result(
+        control_signals, context, actions_taken
+    )
     return validators_run, validators_failed, fail_closed
 
 
@@ -259,8 +283,9 @@ def build_execution_result(
     rerun_triggered: bool,
     escalation_triggered: bool,
     human_review_required: bool,
+    slo_evaluation: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    return {
+    result: Dict[str, Any] = {
         "execution_status": execution_status,
         "actions_taken": actions_taken,
         "validators_run": validators_run,
@@ -272,6 +297,89 @@ def build_execution_result(
         "escalation_triggered": escalation_triggered,
         "human_review_required": human_review_required,
     }
+    if slo_evaluation is not None:
+        result["slo_evaluation"] = slo_evaluation
+    return result
+
+
+def _run_slo_pipeline(
+    ve_result: Dict[str, Any],
+    actions_taken: List[ExecutionAction],
+    tracker: Optional[ErrorBudgetTracker] = None,
+) -> Dict[str, Any]:
+    """Run the BH–BJ SLO control plane on a validator execution result.
+
+    Steps:
+    1. Map validator results to SLIs.
+    2. Compute SLO status.
+    3. Update error budget.
+    4. Enforce SLO policy.
+    5. Return a governed SLO evaluation result.
+
+    Fail-closed: any internal error produces ``enforcement_action="block"``.
+
+    When no ``tracker`` is provided a fresh :class:`ErrorBudgetTracker` is
+    created for this call so that results are deterministic in isolation.
+    This means the burn rate reflects only the current run (window size 1),
+    which is useful for stateless or test scenarios.
+
+    For production use where rolling-window history is required, callers
+    should pass a persistent tracker via ``context["error_budget_tracker"]``
+    in :func:`execute_control_signals`.
+    """
+    try:
+        run_id = ve_result.get("execution_id", "unknown")
+        slis = map_validator_results_to_slis(ve_result)
+        slo_eval = compute_slo_status(slis)
+        slo_status = slo_eval.get("slo_status", "breached")
+        violations = slo_eval.get("violations", [])
+
+        t = tracker if tracker is not None else ErrorBudgetTracker()
+        update_error_budget(run_id, slo_status, slis, tracker=t)
+        burn_rate = compute_burn_rate(tracker=t)
+
+        enforcement = enforce_slo_policy(slo_status, burn_rate)
+
+        slo_result: Dict[str, Any] = {
+            "slo_status": slo_status,
+            "slis": slis,
+            "burn_rate": burn_rate,
+            "enforcement_action": enforcement.get("action", "block"),
+            "violations": violations,
+            "enforcement_reason": enforcement.get("reason", ""),
+        }
+
+        actions_taken.append(
+            {
+                "action_type": "slo_evaluation_completed",
+                "slo_status": slo_status,
+                "enforcement_action": slo_result["enforcement_action"],
+            }
+        )
+        return slo_result
+
+    except Exception as exc:  # noqa: BLE001 — fail closed
+        fallback: Dict[str, Any] = {
+            "slo_status": "breached",
+            "slis": {
+                "completeness": 0.0,
+                "timeliness": 0.0,
+                "traceability": 0.0,
+                "traceability_integrity": 0.0,
+            },
+            "burn_rate": {"overall": 1.0},
+            "enforcement_action": "block",
+            "violations": ["completeness", "timeliness", "traceability", "traceability_integrity"],
+            "enforcement_reason": f"slo_pipeline_error: {exc}",
+        }
+        actions_taken.append(
+            {
+                "action_type": "slo_evaluation_error",
+                "error": str(exc),
+                "enforcement_action": "block",
+            }
+        )
+        return fallback
 
 
 def execute_control_signals(control_signals: Any, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -297,8 +405,13 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
     signals = copy.deepcopy(control_signals)
     actions_taken: List[ExecutionAction] = []
 
+    slo_tracker: Optional[ErrorBudgetTracker] = context.get("error_budget_tracker")
+
     mode_state = enforce_continuation_mode(signals, actions_taken)
-    validators_run, validators_failed, validator_missing = run_required_validators(signals, context, actions_taken)
+    validators_run, validators_failed, validator_missing, ve_result = _run_validators_with_result(
+        signals, context, actions_taken
+    )
+    slo_evaluation = _run_slo_pipeline(ve_result, actions_taken, tracker=slo_tracker)
     repair_actions_applied = apply_repair_actions(signals, context, actions_taken)
     publication_blocked = enforce_publication_policy(signals, actions_taken)
     decision_blocked = enforce_decision_grade_policy(signals, actions_taken)
@@ -333,6 +446,7 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
         rerun_triggered=rerun_triggered,
         escalation_triggered=escalation_triggered,
         human_review_required=human_review_required,
+        slo_evaluation=slo_evaluation,
     )
 
     schema_errors = validate_execution_result(result)

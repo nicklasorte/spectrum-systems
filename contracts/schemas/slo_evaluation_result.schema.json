@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/slo_evaluation_result.schema.json",
+  "title": "SLO Evaluation Result",
+  "description": "Governed SLO evaluation result produced by the BH-BJ SLO control plane. Captures SLI measurements, error budget state, and enforcement decision derived from validator execution results.",
+  "type": "object",
+  "required": [
+    "slo_status",
+    "slis",
+    "burn_rate",
+    "enforcement_action"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "slo_status": {
+      "type": "string",
+      "description": "Overall SLO health derived from SLI measurements.",
+      "enum": ["healthy", "degraded", "breached"]
+    },
+    "slis": {
+      "type": "object",
+      "description": "Individual SLI measurements, each in range [0.0, 1.0].",
+      "required": [
+        "completeness",
+        "timeliness",
+        "traceability",
+        "traceability_integrity"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "completeness": {
+          "type": "number",
+          "description": "Fraction of expected validators that passed.",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "timeliness": {
+          "type": "number",
+          "description": "Timeliness SLI derived from validator execution.",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "traceability": {
+          "type": "number",
+          "description": "Traceability SLI derived from validator execution.",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "traceability_integrity": {
+          "type": "number",
+          "description": "Traceability integrity SLI derived from validator execution.",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "burn_rate": {
+      "type": "object",
+      "description": "Rolling-window error budget burn rates per SLI.",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0.0
+      }
+    },
+    "enforcement_action": {
+      "type": "string",
+      "description": "Enforcement decision: allow, warn, or block.",
+      "enum": ["allow", "warn", "block"]
+    },
+    "violations": {
+      "type": "array",
+      "description": "SLI names that breached their thresholds.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "enforcement_reason": {
+      "type": "string",
+      "description": "Human-readable reason for the enforcement decision.",
+      "minLength": 1
+    }
+  }
+}
