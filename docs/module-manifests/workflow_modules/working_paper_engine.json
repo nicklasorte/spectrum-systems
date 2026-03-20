@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "workflow_modules.working_paper_engine",
+  "module_name": "Workflow Module — Working Paper Engine",
+  "module_type": "workflow_module",
+  "owner_layer": "workflow_modules",
+  "description": "4-stage deterministic pipeline (OBSERVE → INTERPRET → SYNTHESIZE → VALIDATE) that ingests source documents, meeting transcripts, and study-plan excerpts to produce governed federal spectrum-study working papers. Outputs a WorkingPaperBundle containing Sections 1–7, an FAQ register, a gap register, a validation checklist, results-readiness status, and traceability requirements. Never fabricates quantitative results — Section 6 switches to results-framework mode when results are unavailable.",
+  "status": "planned",
+  "inputs": [
+    "SourceDocumentExcerpt",
+    "TranscriptExcerpt",
+    "StudyPlanExcerpt"
+  ],
+  "outputs": [
+    "WorkingPaperBundle",
+    "WorkingPaperGapRegister",
+    "WorkingPaperFAQ"
+  ],
+  "dependencies": [
+    "shared.artifact_models",
+    "shared.ids",
+    "shared.lineage",
+    "shared.provenance",
+    "workflow_modules.meeting_intelligence",
+    "workflow_modules.working_paper_generator"
+  ],
+  "lifecycle_stages": [
+    "inputs_loaded",
+    "observed",
+    "interpreted",
+    "synthesized",
+    "validated",
+    "bundle_assembled"
+  ],
+  "authoritative_imports": [
+    "ArtifactEnvelope from shared.artifact_models",
+    "ArtifactID from shared.ids",
+    "LineageRecord from shared.lineage",
+    "ProvenanceRecord from shared.provenance"
+  ],
+  "forbidden_responsibilities": [
+    "Defining artifact models or envelope schemas — those are owned by shared.artifact_models",
+    "Defining identifier schemes — those are owned by shared.ids",
+    "Comment resolution logic — that belongs to workflow_modules.comment_resolution",
+    "Lifecycle enforcement and governance — that belongs to the control_plane",
+    "Storing or querying domain regulatory or allocation data — that belongs to domain_modules",
+    "Producing meeting minutes from raw transcripts — that belongs to workflow_modules.meeting_intelligence",
+    "Policy recommendations — this module must not produce policy decisions",
+    "LLM or embedding-based inference — all logic must remain deterministic heuristics"
+  ]
+}

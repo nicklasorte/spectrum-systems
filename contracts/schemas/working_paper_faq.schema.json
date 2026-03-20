@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/working_paper_faq.schema.json",
+  "title": "Working Paper FAQ",
+  "description": "A standalone FAQ artifact extracted from a Working Paper Engine bundle. Each item surfaces an open question or missing-information gap with a reference to the relevant report section.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "source_bundle_id", "items", "metadata"],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "description": "Unique identifier for this FAQ artifact."
+    },
+    "source_bundle_id": {
+      "type": "string",
+      "description": "ID of the WorkingPaperBundle from which this FAQ was extracted."
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/faq_item" },
+      "description": "Ordered list of FAQ items."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "total_items"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "description": "ISO 8601 timestamp."
+        },
+        "total_items": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of FAQ items."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "faq_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["faq_id", "section_ref", "question", "source_refs"],
+      "properties": {
+        "faq_id": {
+          "type": "string",
+          "pattern": "^FAQ-[0-9]{3}$",
+          "description": "FAQ item identifier."
+        },
+        "section_ref": {
+          "type": "string",
+          "description": "ID of the report section this FAQ item relates to."
+        },
+        "question": {
+          "type": "string",
+          "minLength": 10,
+          "description": "The FAQ question text."
+        },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Source observed-item IDs that prompted this question."
+        }
+      }
+    }
+  }
+}
