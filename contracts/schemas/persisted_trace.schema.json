@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/persisted_trace.schema.json",
+  "title": "Persisted Trace",
+  "description": "Governed envelope wrapping a trace artifact for durable file-backed storage (BN). Extends the in-memory trace model with persistence metadata.",
+  "type": "object",
+  "required": [
+    "envelope_version",
+    "persisted_at",
+    "storage_path",
+    "trace"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "envelope_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for the persisted trace envelope."
+    },
+    "persisted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when the trace was written to disk."
+    },
+    "storage_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative path (from repository root) to the file where this trace is stored."
+    },
+    "trace": {
+      "type": "object",
+      "description": "The full trace object — must conform to trace.schema.json.",
+      "required": [
+        "trace_id",
+        "root_span_id",
+        "spans",
+        "artifacts",
+        "start_time",
+        "schema_version"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root_span_id": {
+          "type": ["string", "null"]
+        },
+        "spans": {
+          "type": "array"
+        },
+        "artifacts": {
+          "type": "array"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
