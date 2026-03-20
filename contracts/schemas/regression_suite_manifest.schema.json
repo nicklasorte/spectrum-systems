@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/regression_suite_manifest.schema.json",
+  "title": "Regression Suite Manifest",
+  "description": "Governed manifest declaring a set of replayable traces to be executed as a batch regression suite. Used by the BR Replay Regression Harness.",
+  "type": "object",
+  "required": [
+    "suite_id",
+    "suite_name",
+    "version",
+    "created_at",
+    "traces",
+    "description"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "suite_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this regression suite."
+    },
+    "suite_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name for this regression suite."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Semantic version of the suite manifest."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this suite manifest was created."
+    },
+    "traces": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered list of trace entries to include in this regression suite.",
+      "items": {
+        "type": "object",
+        "required": [
+          "trace_id",
+          "expected_decision_status",
+          "minimum_reproducibility_score",
+          "tags"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Identifier of the persisted trace to replay."
+          },
+          "expected_decision_status": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The decision consistency status expected from the replay analysis (e.g. consistent)."
+          },
+          "minimum_reproducibility_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Minimum acceptable reproducibility score in [0, 1]. Replay results below this threshold cause the trace to fail."
+          },
+          "tags": {
+            "type": "array",
+            "description": "Categorical labels for grouping and filtering traces.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable description of the suite purpose and scope."
+    }
+  }
+}

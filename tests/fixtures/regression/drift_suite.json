@@ -1,0 +1,21 @@
+{
+  "suite_id": "suite-drift-scenario-001",
+  "suite_name": "Drift Scenario Suite",
+  "version": "1.0.0",
+  "created_at": "2025-01-01T00:00:00Z",
+  "description": "Regression suite covering drift detection scenarios. Includes traces expected to drift.",
+  "traces": [
+    {
+      "trace_id": "trace-fixture-drift-001",
+      "expected_decision_status": "consistent",
+      "minimum_reproducibility_score": 0.5,
+      "tags": ["drift", "logic-drift"]
+    },
+    {
+      "trace_id": "trace-fixture-002",
+      "expected_decision_status": "consistent",
+      "minimum_reproducibility_score": 0.9,
+      "tags": ["golden-path"]
+    }
+  ]
+}

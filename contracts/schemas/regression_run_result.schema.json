@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/regression_run_result.schema.json",
+  "title": "Regression Run Result",
+  "description": "Governed artifact produced by the BR Replay Regression Harness after executing a full regression suite. Records per-trace outcomes and aggregate statistics.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "suite_id",
+    "created_at",
+    "total_traces",
+    "passed_traces",
+    "failed_traces",
+    "pass_rate",
+    "overall_status",
+    "results",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this regression run."
+    },
+    "suite_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the suite manifest that was executed."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this run result was created."
+    },
+    "total_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of traces in the suite."
+    },
+    "passed_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of traces whose replay analysis passed all criteria."
+    },
+    "failed_traces": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of traces whose replay analysis failed at least one criterion."
+    },
+    "pass_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fraction of traces that passed: passed_traces / total_traces."
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Overall suite status. 'pass' only when all traces pass; 'fail' if any trace fails."
+    },
+    "results": {
+      "type": "array",
+      "description": "Per-trace regression results.",
+      "items": {
+        "type": "object",
+        "required": [
+          "trace_id",
+          "replay_result_id",
+          "analysis_id",
+          "decision_status",
+          "reproducibility_score",
+          "drift_type",
+          "passed",
+          "failure_reasons"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Trace identifier."
+          },
+          "replay_result_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Replay result artifact identifier."
+          },
+          "analysis_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Replay decision analysis artifact identifier."
+          },
+          "decision_status": {
+            "type": "string",
+            "enum": ["consistent", "drifted", "indeterminate"],
+            "description": "Decision consistency status from the replay analysis."
+          },
+          "reproducibility_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Reproducibility score from the replay analysis."
+          },
+          "drift_type": {
+            "type": "string",
+            "description": "Drift classification from the analysis. Empty string when no drift was detected."
+          },
+          "passed": {
+            "type": "boolean",
+            "description": "Whether this trace passed all regression criteria."
+          },
+          "failure_reasons": {
+            "type": "array",
+            "description": "Human-readable reasons for failure. Empty when passed=true.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["drift_counts", "average_reproducibility_score"],
+      "additionalProperties": false,
+      "description": "Aggregate statistics across all traces in the suite.",
+      "properties": {
+        "drift_counts": {
+          "type": "object",
+          "description": "Count of each drift type observed across all traces.",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "average_reproducibility_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Mean reproducibility score across all traces."
+        }
+      }
+    }
+  }
+}
