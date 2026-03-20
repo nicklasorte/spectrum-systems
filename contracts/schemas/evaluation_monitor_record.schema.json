@@ -115,6 +115,17 @@
           "minimum": 0,
           "maximum": 1,
           "description": "Mean reproducibility score across all traces."
+        },
+        "replay_status": {
+          "type": "string",
+          "enum": ["consistent", "drifted", "indeterminate"],
+          "description": "Decision integrity status from the replay_decision_analysis artifact."
+        },
+        "replay_consistency_sli": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Replay consistency SLI: 1.0=consistent, 0.0=drifted, ≤0.5=indeterminate."
         }
       }
     },
