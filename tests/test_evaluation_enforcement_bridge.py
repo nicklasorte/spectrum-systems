@@ -14,7 +14,7 @@ Covers:
 11.  enforce_budget_decision — allow → advisory allow, allowed_to_proceed=True
 12.  enforce_budget_decision — allow_with_warning → advisory warn, allowed_to_proceed=True
 13.  enforce_budget_decision — require_review → enforced, allowed_to_proceed=False (no override)
-14.  enforce_budget_decision — require_review + override → enforced, allowed_to_proceed=True
+14.  enforce_budget_decision — require_review + valid override_authorization → enforced, allowed_to_proceed=True
 15.  enforce_budget_decision — freeze_changes → enforced, allowed_to_proceed=False
 16.  enforce_budget_decision — block_release → enforced, allowed_to_proceed=False
 17.  enforce_budget_decision raises InvalidDecisionError on invalid decision
@@ -24,7 +24,7 @@ Covers:
 21.  run_enforcement_bridge — allow fixture → allow action
 22.  run_enforcement_bridge — warn fixture → warn action
 23.  run_enforcement_bridge — require_review fixture → blocked action (no override)
-24.  run_enforcement_bridge — require_review fixture + override → allowed action
+24.  run_enforcement_bridge — require_review fixture + override_authorization → allowed action
 25.  run_enforcement_bridge — freeze_changes fixture → blocked action
 26.  run_enforcement_bridge — block_release fixture → blocked action
 27.  run_enforcement_bridge raises on missing file
@@ -33,12 +33,26 @@ Covers:
 30.  CLI exit 0 — allow
 31.  CLI exit 0 — warn
 32.  CLI exit 1 — require_review (no override)
-33.  CLI exit 0 — require_review with override
+33.  CLI exit 0 — require_review with override-authorization
 34.  CLI exit 2 — freeze_changes
 35.  CLI exit 2 — block_release
 36.  CLI exit 2 — invalid input
 37.  CLI writes enforcement action artifact to output-dir
 38.  All produced enforcement actions are schema-valid
+39.  load_override_authorization loads a valid override authorization
+40.  load_override_authorization raises on missing file
+41.  load_override_authorization raises on schema-invalid override
+42.  validate_override_authorization returns empty list for valid override
+43.  validate_override_authorization returns errors for invalid override
+44.  verify_override_applicability passes for matching override/decision/action
+45.  verify_override_applicability fails on decision_id mismatch
+46.  verify_override_applicability fails on summary_id mismatch
+47.  verify_override_applicability fails on action_id mismatch
+48.  verify_override_applicability fails on scope mismatch
+49.  verify_override_applicability fails when override is expired
+50.  verify_override_applicability fails when action_type not in allowed_actions
+51.  enforce_budget_decision fails closed when override_authorization is schema-invalid
+52.  enforce_budget_decision fails closed when override_authorization is expired
 """
 from __future__ import annotations
 
@@ -59,9 +73,12 @@ from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import (  # 
     determine_enforcement_scope,
     enforce_budget_decision,
     load_budget_decision,
+    load_override_authorization,
     run_enforcement_bridge,
     validate_budget_decision,
     validate_enforcement_action,
+    validate_override_authorization,
+    verify_override_applicability,
 )
 
 # ---------------------------------------------------------------------------
@@ -75,7 +92,7 @@ _REVIEW = _FIXTURE_DIR / "decision_require_review.json"
 _FREEZE = _FIXTURE_DIR / "decision_freeze_changes.json"
 _BLOCK = _FIXTURE_DIR / "decision_block_release.json"
 _INVALID = _FIXTURE_DIR / "invalid_decision.json"
-_OVERRIDE = _FIXTURE_DIR / "override_artifact.json"
+_OVERRIDE_AUTHORIZATION = _FIXTURE_DIR / "override_authorization.json"
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +124,33 @@ def _make_decision(
         "triggered_thresholds": triggered_thresholds if triggered_thresholds is not None else [],
         "required_actions": required_actions if required_actions is not None else [],
         "created_at": "2025-01-01T00:00:00Z",
+    }
+
+
+def _make_override_auth(
+    *,
+    override_id: str = "test-override-auth-001",
+    decision_id: str = "test-decision-001",
+    summary_id: str = "test-summary-001",
+    action_id: str = "test-action-override-001",
+    approved_by: str = "test-approver",
+    justification: str = "Risk accepted for test.",
+    scope: str = "release",
+    allowed_actions: list | None = None,
+    expires_at: str = "2099-12-31T23:59:59Z",
+    created_at: str = "2025-01-01T00:00:00Z",
+) -> Dict[str, Any]:
+    return {
+        "override_id": override_id,
+        "decision_id": decision_id,
+        "summary_id": summary_id,
+        "action_id": action_id,
+        "approved_by": approved_by,
+        "justification": justification,
+        "scope": scope,
+        "allowed_actions": allowed_actions if allowed_actions is not None else ["require_review"],
+        "expires_at": expires_at,
+        "created_at": created_at,
     }
 
 
@@ -224,11 +268,17 @@ def test_enforce_budget_decision_require_review_no_override():
 
 def test_enforce_budget_decision_require_review_with_override():
     decision = _make_decision(system_response="require_review", status="warning")
-    override = {"override_id": "override-001", "reviewer": "eng"}
-    action = enforce_budget_decision(decision, context={"override_artifact": override})
+    override = _make_override_auth(
+        decision_id="test-decision-001",
+        summary_id="test-summary-001",
+        scope="release",
+        action_id="test-action-override-001",
+    )
+    action = enforce_budget_decision(decision, context={"override_authorization": override})
     assert action["action_type"] == "require_review"
     assert action["status"] == "enforced"
     assert action["allowed_to_proceed"] is True
+    assert action["action_id"] == "test-action-override-001"
 
 
 def test_enforce_budget_decision_freeze_changes():
@@ -329,8 +379,8 @@ def test_run_enforcement_bridge_require_review_no_override():
 
 
 def test_run_enforcement_bridge_require_review_with_override():
-    override = _load_json(_OVERRIDE)
-    action = run_enforcement_bridge(_REVIEW, context={"override_artifact": override})
+    override = _load_json(_OVERRIDE_AUTHORIZATION)
+    action = run_enforcement_bridge(_REVIEW, context={"override_authorization": override})
     assert action["action_type"] == "require_review"
     assert action["allowed_to_proceed"] is True
 
@@ -394,7 +444,7 @@ def test_cli_exit_0_require_review_with_override(tmp_path):
     exit_code = main([
         "--input", str(_REVIEW),
         "--output-dir", str(tmp_path),
-        "--override", str(_OVERRIDE),
+        "--override-authorization", str(_OVERRIDE_AUTHORIZATION),
     ])
     assert exit_code == 0
 
@@ -446,3 +496,138 @@ def test_all_enforcement_actions_schema_valid(fixture: Path):
     action = run_enforcement_bridge(fixture)
     errors = validate_enforcement_action(action)
     assert errors == [], f"Schema errors for {fixture.name}: {errors}"
+
+
+# ---------------------------------------------------------------------------
+# 39–41. load_override_authorization
+# ---------------------------------------------------------------------------
+
+
+def test_load_override_authorization_valid():
+    override = load_override_authorization(_OVERRIDE_AUTHORIZATION)
+    assert override["override_id"] == "override-auth-001"
+    assert override["decision_id"] == "decision-review-001"
+
+
+def test_load_override_authorization_missing_file():
+    with pytest.raises(EnforcementBridgeError, match="not found"):
+        load_override_authorization("/nonexistent/path/override_authorization.json")
+
+
+def test_load_override_authorization_invalid_raises():
+    import tempfile  # noqa: PLC0415
+
+    bad = {"not": "a valid override"}
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as fh:
+        json.dump(bad, fh)
+        bad_path = fh.name
+    with pytest.raises(EnforcementBridgeError):
+        load_override_authorization(bad_path)
+
+
+# ---------------------------------------------------------------------------
+# 42–43. validate_override_authorization
+# ---------------------------------------------------------------------------
+
+
+def test_validate_override_authorization_valid():
+    override = _make_override_auth()
+    errors = validate_override_authorization(override)
+    assert errors == [], f"Unexpected errors: {errors}"
+
+
+def test_validate_override_authorization_invalid():
+    errors = validate_override_authorization({"bad": "data"})
+    assert len(errors) > 0
+
+
+# ---------------------------------------------------------------------------
+# 44–50. verify_override_applicability
+# ---------------------------------------------------------------------------
+
+
+def _make_proto_action(
+    *,
+    action_id: str = "test-action-override-001",
+    action_type: str = "require_review",
+    enforcement_scope: str = "release",
+) -> Dict[str, Any]:
+    return {
+        "action_id": action_id,
+        "action_type": action_type,
+        "enforcement_scope": enforcement_scope,
+    }
+
+
+def test_verify_override_applicability_passes():
+    override = _make_override_auth()
+    decision = _make_decision(system_response="require_review", status="warning")
+    action = _make_proto_action()
+    verify_override_applicability(override, decision, action)  # should not raise
+
+
+def test_verify_override_applicability_fails_decision_id_mismatch():
+    override = _make_override_auth(decision_id="wrong-decision-id")
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action()
+    with pytest.raises(EnforcementBridgeError, match="decision_id"):
+        verify_override_applicability(override, decision, action)
+
+
+def test_verify_override_applicability_fails_summary_id_mismatch():
+    override = _make_override_auth(summary_id="wrong-summary-id")
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action()
+    with pytest.raises(EnforcementBridgeError, match="summary_id"):
+        verify_override_applicability(override, decision, action)
+
+
+def test_verify_override_applicability_fails_action_id_mismatch():
+    override = _make_override_auth(action_id="wrong-action-id")
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action(action_id="different-action-id")
+    with pytest.raises(EnforcementBridgeError, match="action_id"):
+        verify_override_applicability(override, decision, action)
+
+
+def test_verify_override_applicability_fails_scope_mismatch():
+    override = _make_override_auth(scope="promotion")
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action(enforcement_scope="release")
+    with pytest.raises(EnforcementBridgeError, match="scope"):
+        verify_override_applicability(override, decision, action)
+
+
+def test_verify_override_applicability_fails_expired():
+    override = _make_override_auth(expires_at="2000-01-01T00:00:00Z")
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action()
+    with pytest.raises(EnforcementBridgeError, match="expired"):
+        verify_override_applicability(override, decision, action)
+
+
+def test_verify_override_applicability_fails_action_type_not_allowed():
+    override = _make_override_auth(allowed_actions=["allow"])
+    decision = _make_decision(system_response="require_review")
+    action = _make_proto_action(action_type="require_review")
+    with pytest.raises(EnforcementBridgeError, match="allowed_actions"):
+        verify_override_applicability(override, decision, action)
+
+
+# ---------------------------------------------------------------------------
+# 51–52. enforce_budget_decision fail-closed on bad override_authorization
+# ---------------------------------------------------------------------------
+
+
+def test_enforce_budget_decision_fails_closed_on_invalid_override_schema():
+    decision = _make_decision(system_response="require_review", status="warning")
+    bad_override = {"not": "a valid override"}
+    with pytest.raises(EnforcementBridgeError, match="schema validation"):
+        enforce_budget_decision(decision, context={"override_authorization": bad_override})
+
+
+def test_enforce_budget_decision_fails_closed_on_expired_override():
+    decision = _make_decision(system_response="require_review", status="warning")
+    expired_override = _make_override_auth(expires_at="2000-01-01T00:00:00Z")
+    with pytest.raises(EnforcementBridgeError, match="expired"):
+        enforce_budget_decision(decision, context={"override_authorization": expired_override})

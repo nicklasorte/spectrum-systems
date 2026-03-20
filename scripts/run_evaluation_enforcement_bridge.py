@@ -16,7 +16,7 @@ Usage
         --input path/to/evaluation_budget_decision.json \\
         [--output-dir path/to/output/] \\
         [--scope release|promotion|schema_change|prompt_change|pipeline_change] \\
-        [--override path/to/override_artifact.json]
+        [--override-authorization path/to/override_authorization.json]
 
 Examples
 --------
@@ -27,7 +27,7 @@ Examples
     python scripts/run_evaluation_enforcement_bridge.py \\
         --input outputs/evaluation_budget_governor/evaluation_budget_decision.json \\
         --scope promotion \\
-        --override path/to/override_artifact.json
+        --override-authorization path/to/override_authorization.json
 """
 from __future__ import annotations
 
@@ -43,6 +43,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import (  # noqa: E402
     EnforcementBridgeError,
     InvalidDecisionError,
+    load_override_authorization,
     run_enforcement_bridge,
     validate_enforcement_action,
 )
@@ -132,12 +133,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         ),
     )
     parser.add_argument(
-        "--override",
+        "--override-authorization",
         default=None,
         metavar="PATH",
         help=(
-            "Path to an explicit override artifact JSON file. "
-            "Required to unblock a require_review decision."
+            "Path to an evaluation_override_authorization JSON file. "
+            "Required to unblock a require_review decision. "
+            "The artifact is fully validated and verified before use."
         ),
     )
 
@@ -150,9 +152,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     context: Dict[str, Any] = {}
     if args.scope:
         context["enforcement_scope"] = args.scope
-    if args.override:
-        override = _load_json_file(args.override, "override_artifact")
-        context["override_artifact"] = override
+    if args.override_authorization:
+        try:
+            override_auth = load_override_authorization(args.override_authorization)
+        except EnforcementBridgeError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return EXIT_BLOCKED
+        context["override_authorization"] = override_auth
 
     # --- Execute enforcement bridge ---
     try:
