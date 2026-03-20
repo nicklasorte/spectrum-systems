@@ -13,6 +13,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from jsonschema import Draft202012Validator
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.contract_runtime import (
+    ContractRuntimeError,
+    ensure_contract_runtime_available,
+)
 from spectrum_systems.modules.runtime.control_signals import (
     CONTINUATION_MODE_CONTINUE,
     CONTINUATION_MODE_CONTINUE_WITH_MONITORING,
@@ -303,6 +307,10 @@ def build_execution_result(
 
 
 def execute_control_signals(control_signals: Any, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    # BN.6.1: Fail closed if contract-validation runtime is unavailable.
+    # ContractRuntimeError propagates to the caller — do not catch it here.
+    ensure_contract_runtime_available()
+
     context = dict(context or {})
     if not isinstance(control_signals, dict):
         return build_execution_result(

@@ -65,6 +65,11 @@ from spectrum_systems.modules.runtime.control_chain import (  # noqa: E402
     run_control_chain,
     summarize_control_chain_decision,
 )
+from spectrum_systems.modules.runtime.contract_runtime import (  # noqa: E402
+    ContractRuntimeError,
+    get_contract_runtime_status,
+    format_contract_runtime_error,
+)
 from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
     explain_blocking_requirements,
     list_required_followups,
@@ -199,6 +204,18 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     args = parser.parse_args(argv)
 
+    # BN.6.1: Emit diagnostics line and fail closed if contract runtime is unavailable.
+    runtime_status = get_contract_runtime_status()
+    _rt_state = "available" if runtime_status["available"] else "unavailable"
+    _rt_ver = f" (jsonschema {runtime_status['version']})" if runtime_status.get("version") else ""
+    print(f"  contract runtime           : {_rt_state}{_rt_ver}")
+    if not runtime_status["available"]:
+        print(
+            f"ERROR: {format_contract_runtime_error(runtime_status)}",
+            file=sys.stderr,
+        )
+        return EXIT_ERROR
+
     if args.artifact_path is None:
         print(
             "ERROR: artifact_path is required.",
@@ -219,13 +236,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         return EXIT_ERROR
 
     # Run control chain
-    result = run_control_chain(
-        raw_input,
-        stage=args.stage,
-        policy=args.policy,
-        input_kind=args.input_kind,
-        execute=args.execute,
-    )
+    try:
+        result = run_control_chain(
+            raw_input,
+            stage=args.stage,
+            policy=args.policy,
+            input_kind=args.input_kind,
+            execute=args.execute,
+        )
+    except ContractRuntimeError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return EXIT_ERROR
 
     # Print human-readable summary (includes BN.5 control signals)
     print(summarize_control_chain_decision(result))

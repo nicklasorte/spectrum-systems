@@ -102,6 +102,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
+from spectrum_systems.modules.runtime.contract_runtime import (  # noqa: E402
+    ContractRuntimeError,
+    ensure_contract_runtime_available,
+    format_contract_runtime_error,
+    get_contract_runtime_status,
+)
 
 # ---------------------------------------------------------------------------
 # Schema / data paths
@@ -1083,6 +1089,12 @@ def run_control_chain(
         ``gating_result``            – gating step result (may be None)
         ``execution_result``         – present only when ``execute=True``
     """
+    # BN.6.1: Fail closed if the contract-validation runtime is unavailable.
+    # This check must run before any schema enforcement logic.
+    # ContractRuntimeError is intentionally NOT caught below — it propagates
+    # to the caller so the CLI can exit with code 3.
+    ensure_contract_runtime_available()
+
     try:
         return _run_control_chain_inner(
             raw_input=raw_input,
@@ -1092,6 +1104,8 @@ def run_control_chain(
             evaluated_at=evaluated_at,
             execute=execute,
         )
+    except ContractRuntimeError:
+        raise
     except Exception as exc:  # noqa: BLE001
         return _make_error_artifact(
             acc_warnings=[],
