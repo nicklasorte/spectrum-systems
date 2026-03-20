@@ -72,7 +72,18 @@ def tmp_store(tmp_path):
 
 
 def _make_trace(trace_id: str, *, n_spans: int = 1, with_enforcement_span: bool = False) -> Dict[str, Any]:
-    """Build a minimal valid trace dict."""
+    """Build a minimal valid trace dict.
+
+    Parameters
+    ----------
+    trace_id:
+        Unique identifier for the trace.
+    n_spans:
+        Number of regular (non-enforcement) spans to include.
+    with_enforcement_span:
+        If True, append one additional slo_enforcement_decision span with a
+        recorded enforcement_decision event (action=allow).
+    """
     spans = []
     for i in range(n_spans):
         span_id = f"span-{i:03d}"
@@ -111,7 +122,8 @@ def _make_trace(trace_id: str, *, n_spans: int = 1, with_enforcement_span: bool 
             ],
         }
         spans.append(enf_span)
-        if not spans[:-1]:
+        # If there were no regular spans, the enforcement span is the only one
+        if len(spans) == 1:
             spans = [enf_span]
 
     return {

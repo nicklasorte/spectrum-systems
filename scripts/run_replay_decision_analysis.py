@@ -41,6 +41,8 @@ from spectrum_systems.modules.runtime.replay_decision_engine import (  # noqa: E
     run_replay_decision_analysis,
 )
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
+    ReplayEngineError,
+    ReplayPrerequisiteError,
     execute_replay,
 )
 
@@ -163,8 +165,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     # --- Step 1: Execute replay ---
     try:
         replay_result = execute_replay(trace_id)
-    except Exception as exc:  # noqa: BLE001
+    except (ReplayEngineError, ReplayPrerequisiteError) as exc:
         print(f"ERROR: replay failed for trace_id='{trace_id}': {exc}", file=sys.stderr)
+        return EXIT_FAILURE
+    except Exception as exc:  # noqa: BLE001  # unexpected errors must not silently pass
+        print(f"ERROR: unexpected replay failure for trace_id='{trace_id}': {exc}", file=sys.stderr)
         return EXIT_FAILURE
 
     replay_output_path = (
@@ -172,7 +177,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     try:
         _write_json(replay_result, replay_output_path)
-    except Exception as exc:  # noqa: BLE001
+    except OSError as exc:
         print(
             f"ERROR: failed to write replay result to '{replay_output_path}': {exc}",
             file=sys.stderr,
@@ -188,12 +193,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             file=sys.stderr,
         )
         return EXIT_FAILURE
-    except Exception as exc:  # noqa: BLE001
-        print(
-            f"ERROR: unexpected failure during decision analysis for trace_id='{trace_id}': {exc}",
-            file=sys.stderr,
-        )
-        return EXIT_FAILURE
 
     # --- Step 3: Write analysis output ---
     analysis_output_path = (
@@ -203,7 +202,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     try:
         _write_json(analysis, analysis_output_path)
-    except Exception as exc:  # noqa: BLE001
+    except OSError as exc:
         print(
             f"ERROR: failed to write analysis artifact to '{analysis_output_path}': {exc}",
             file=sys.stderr,

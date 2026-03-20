@@ -107,6 +107,14 @@ _RECOMMENDED_ACTION_FIELD: str = "recommended_action"
 # SLO enforcement span names emitted by the trace engine
 _SLO_ENFORCEMENT_SPAN_NAME: str = "slo_enforcement_decision"
 
+# Synthetic reason codes produced by recompute_decision_from_replay.
+# These are not comparable against the original reason code because the replay
+# pipeline cannot re-derive the full SLO reason without re-running SLO logic.
+_SYNTHETIC_REASON_CODES: frozenset = frozenset({
+    "replayed_from_step",
+    "derived_from_replay_status",
+})
+
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _ANALYSIS_SCHEMA_PATH = _SCHEMA_DIR / "replay_decision_analysis.schema.json"
@@ -391,13 +399,8 @@ def compare_decisions(
             "differences": [],
         }
 
-    # Synthetic reason codes produced by recompute_decision_from_replay are
-    # not comparable to the original reason code.
-    _SYNTHETIC_REASON_CODES: frozenset = frozenset({
-        "replayed_from_step",
-        "derived_from_replay_status",
-    })
-
+    # Synthetic reason codes — defined at module level; referenced here for clarity.
+    _synthetic = _SYNTHETIC_REASON_CODES
     differences: List[Dict[str, Any]] = []
 
     # --- Primary field: decision_status (always compared) ---
@@ -421,7 +424,7 @@ def compare_decisions(
         # Skip when either side is None or when replay carries a synthetic code
         if orig_val is None or replay_val is None:
             continue
-        if field == _REASON_CODE_FIELD and replay_val in _SYNTHETIC_REASON_CODES:
+        if field == _REASON_CODE_FIELD and replay_val in _synthetic:
             continue
 
         if orig_val != replay_val:
@@ -484,9 +487,9 @@ def classify_drift(
     if _REASON_CODE_FIELD in diffed_fields and _DECISION_STATUS_FIELD not in diffed_fields:
         return DRIFT_LOGIC
 
-    # If only policies or actions differ → environment/configuration changed
-    policy_only_drift = diffed_fields <= {_POLICY_FIELD, _RECOMMENDED_ACTION_FIELD}
-    if policy_only_drift:
+    # If only configuration fields (policy or action) differ → environment/configuration changed
+    config_only_drift = diffed_fields <= {_POLICY_FIELD, _RECOMMENDED_ACTION_FIELD}
+    if config_only_drift:
         return DRIFT_ENVIRONMENT
 
     # If the replay context explicitly marks non-determinism
