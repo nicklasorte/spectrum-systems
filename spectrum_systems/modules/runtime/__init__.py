@@ -40,6 +40,9 @@ trace_store
 replay_engine
     Deterministic replay of prior execution traces for debugging, audit,
     and learning workflows (BP).
+regression_harness
+    Batch regression suite execution, drift detection, and CI-ready
+    aggregate run result emission (BR).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -165,6 +168,18 @@ from spectrum_systems.modules.runtime.replay_engine import (
     validate_replay_prerequisites,
     validate_replay_result,
 )
+from spectrum_systems.modules.runtime.regression_harness import (
+    InvalidSuiteError,
+    MissingTraceError,
+    RegressionHarnessError,
+    aggregate_regression_results,
+    evaluate_trace_pass_fail,
+    load_regression_suite,
+    run_regression_suite,
+    run_trace_regression,
+    validate_regression_run_result,
+    validate_regression_suite,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -281,4 +296,15 @@ __all__ = [
     "execute_replay",
     "compare_replay_outputs",
     "validate_replay_result",
+    # BR — Replay Regression Harness
+    "InvalidSuiteError",
+    "MissingTraceError",
+    "RegressionHarnessError",
+    "load_regression_suite",
+    "validate_regression_suite",
+    "run_trace_regression",
+    "evaluate_trace_pass_fail",
+    "aggregate_regression_results",
+    "validate_regression_run_result",
+    "run_regression_suite",
 ]

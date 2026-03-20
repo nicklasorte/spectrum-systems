@@ -1,0 +1,15 @@
+{
+  "suite_id": "suite-golden-path-001",
+  "suite_name": "Golden Path Regression Suite",
+  "version": "1.0.0",
+  "created_at": "2025-01-01T00:00:00Z",
+  "description": "Sample regression suite exercising the happy-path trace scenario. All traces are expected to reproduce consistently.",
+  "traces": [
+    {
+      "trace_id": "trace-fixture-001",
+      "expected_decision_status": "consistent",
+      "minimum_reproducibility_score": 0.8,
+      "tags": ["golden-path", "slo-allow"]
+    }
+  ]
+}
