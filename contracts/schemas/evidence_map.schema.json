@@ -2,26 +2,87 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum.systems/contracts/schemas/evidence_map.schema.json",
   "title": "Evidence Map",
-  "allOf": [
-    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
-    {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "created_at",
+    "source",
+    "provenance",
+    "evidence_anchors",
+    "claim_id",
+    "claim_text"
+  ],
+  "properties": {
+    "artifact_type": {"const": "evidence_map"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "source": {"$ref": "#/$defs/source_ref"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "evidence_anchors": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evidence_anchor"},
+      "minItems": 1
+    },
+    "claim_id": {"type": "string", "minLength": 1},
+    "claim_text": {"type": "string", "minLength": 1},
+    "confidence": {"type": "string", "enum": ["high", "medium", "low"]}
+  },
+  "$defs": {
+    "source_ref": {
       "type": "object",
-      "unevaluatedProperties": false,
-      "required": ["artifact_type", "claim_id", "claim_text", "evidence_anchors"],
+      "additionalProperties": false,
+      "required": ["source_id", "source_type", "source_path"],
       "properties": {
-        "artifact_type": {"const": "evidence_map"},
-        "claim_id": {"type": "string", "minLength": 1},
-        "claim_text": {"type": "string", "minLength": 1},
-        "evidence_anchors": {
-          "type": "array",
-          "items": {"$ref": "strategic_knowledge_artifact_ref.schema.json#/$defs/evidence_anchor"},
-          "minItems": 1
-        },
-        "confidence": {
-          "type": "string",
-          "enum": ["high", "medium", "low"]
-        }
+        "source_id": {"type": "string", "minLength": 1},
+        "source_type": {"type": "string", "enum": ["book_pdf", "transcript", "slide_deck"]},
+        "source_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["extraction_run_id", "extractor_version"],
+      "properties": {
+        "extraction_run_id": {"type": "string", "minLength": 1},
+        "extractor_version": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }
+    },
+    "evidence_anchor": {
+      "type": "object",
+      "oneOf": [
+        {"$ref": "#/$defs/pdf_anchor"},
+        {"$ref": "#/$defs/transcript_anchor"}
+      ]
+    },
+    "pdf_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_type", "page_number"],
+      "properties": {
+        "anchor_type": {"const": "pdf"},
+        "page_number": {"type": "integer", "minimum": 1},
+        "text_span": {"type": "string"},
+        "quote_snippet": {"type": "string"}
+      }
+    },
+    "transcript_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_type", "timestamp_start", "timestamp_end"],
+      "properties": {
+        "anchor_type": {"const": "transcript"},
+        "timestamp_start": {"type": "string", "pattern": "^[0-9]{2}:[0-9]{2}:[0-9]{2}$"},
+        "timestamp_end": {"type": "string", "pattern": "^[0-9]{2}:[0-9]{2}:[0-9]{2}$"},
+        "speaker": {"type": "string"},
+        "quote_snippet": {"type": "string"}
       }
     }
-  ]
+  }
 }
