@@ -161,6 +161,18 @@ from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
     execute_control_signals,
 )
+from spectrum_systems.modules.runtime.replay_governance import (  # noqa: E402
+    SYSTEM_RESPONSE_ALLOW,
+    SYSTEM_RESPONSE_BLOCK,
+    SYSTEM_RESPONSE_QUARANTINE,
+    SYSTEM_RESPONSE_REQUIRE_REVIEW,
+    build_replay_governance_decision,
+    merge_system_responses,
+    should_block_from_replay_governance,
+    should_quarantine_from_replay_governance,
+    should_require_review_from_replay_governance,
+    summarize_replay_governance_decision,
+)
 from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
     SPAN_STATUS_BLOCKED,
     SPAN_STATUS_OK,
@@ -678,6 +690,7 @@ def _run_control_chain_inner(
     input_kind_override: Optional[str],
     evaluated_at: Optional[str],
     execute: bool,
+    replay_governance_artifact: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Inner control-chain pipeline — called by :func:`run_control_chain`."""
 
@@ -1043,6 +1056,78 @@ def _run_control_chain_inner(
     # BK–BM: attach trace_id to the decision artifact and close the root span
     control_chain_decision["trace_id"] = trace_id
     decision_id = control_chain_decision.get("decision_id") or "(unknown)"
+
+    # ------------------------------------------------------------------ #
+    # 11.5  BY — Replay governance gate
+    # Apply the replay governance artifact (if provided) and merge its
+    # system_response with the existing continuation decision using
+    # strict-precedence merging.  block > quarantine > require_review > allow.
+    # ------------------------------------------------------------------ #
+    replay_gov_result: Optional[Dict[str, Any]] = replay_governance_artifact
+    replay_gov_summary: Optional[Dict[str, Any]] = None
+
+    if replay_gov_result is not None:
+        try:
+            replay_gov_summary = summarize_replay_governance_decision(replay_gov_result)
+            rg_response = (replay_gov_result.get("decision") or {}).get("system_response", SYSTEM_RESPONSE_ALLOW)
+
+            # Map current continuation_allowed to a system_response for merging
+            current_response = SYSTEM_RESPONSE_ALLOW if continuation_allowed else SYSTEM_RESPONSE_BLOCK
+
+            merged = merge_system_responses([current_response, rg_response])
+            if merged == SYSTEM_RESPONSE_BLOCK:
+                continuation_allowed = False
+                if blocking_layer_val == BLOCKING_NONE:
+                    blocking_layer_val = "replay_governance"
+                acc_warnings.append(
+                    f"Replay governance blocked execution: "
+                    f"rationale_code={replay_gov_summary.get('replay_governance_rationale_code')}"
+                )
+            elif merged in {SYSTEM_RESPONSE_QUARANTINE, SYSTEM_RESPONSE_REQUIRE_REVIEW}:
+                # Execution must not proceed automatically; downgrade to not allowed
+                continuation_allowed = False
+                if blocking_layer_val == BLOCKING_NONE:
+                    blocking_layer_val = "replay_governance"
+                acc_warnings.append(
+                    f"Replay governance escalated to {merged}: "
+                    f"rationale_code={replay_gov_summary.get('replay_governance_rationale_code')}"
+                )
+
+            # Propagate replay governance fields into the control chain decision
+            control_chain_decision["replay_governance_response"] = rg_response
+            control_chain_decision["replay_governance_rationale_code"] = (
+                replay_gov_summary.get("replay_governance_rationale_code")
+            )
+            control_chain_decision["replay_status"] = replay_gov_summary.get("replay_status")
+            control_chain_decision["replay_consistency_sli"] = replay_gov_summary.get(
+                "replay_consistency_sli"
+            )
+            control_chain_decision["replay_governance_escalated_final_decision"] = (
+                replay_gov_summary.get("replay_governance_escalated_final_decision", False)
+            )
+            # Update continuation_allowed in the artifact to reflect merged decision
+            control_chain_decision["continuation_allowed"] = continuation_allowed
+
+            # Emit trace event for replay governance decision
+            if root_span_id:
+                try:
+                    record_event(root_span_id, "replay_governance_applied", {
+                        "replay_governance_response": rg_response,
+                        "merged_response": merged,
+                        "continuation_allowed": continuation_allowed,
+                        "rationale_code": replay_gov_summary.get("replay_governance_rationale_code"),
+                    })
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
+
+        except Exception as exc:  # noqa: BLE001
+            # Fail closed: governance integration error must not silently allow
+            continuation_allowed = False
+            acc_errors.append(
+                f"Replay governance integration raised unexpectedly: {exc}"
+            )
+            control_chain_decision["continuation_allowed"] = False
+
     if root_span_id:
         try:
             cc_span_st = SPAN_STATUS_OK if continuation_allowed else SPAN_STATUS_BLOCKED
@@ -1065,6 +1150,8 @@ def _run_control_chain_inner(
         "enforcement_result": enforcement_result,
         "gating_result": gating_result,
         "trace_id": trace_id,
+        "replay_governance_result": replay_gov_result,
+        "replay_governance_summary": replay_gov_summary,
     }
     if execute:
         result["execution_result"] = execute_control_signals(
@@ -1152,6 +1239,8 @@ def _make_error_artifact(
         "enforcement_result": None,
         "gating_result": None,
         "trace_id": trace_id,
+        "replay_governance_result": None,
+        "replay_governance_summary": None,
     }
     if execute:
         result["execution_result"] = execute_control_signals(
@@ -1178,6 +1267,7 @@ def run_control_chain(
     input_kind: Optional[str] = None,
     evaluated_at: Optional[str] = None,
     execute: bool = False,
+    replay_governance_decision: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Run the full SLO control chain.
 
@@ -1206,6 +1296,13 @@ def run_control_chain(
     execute:
         When true, executes BN.6 control-signal consumption and returns an
         ``execution_result`` field alongside the decision artifact.
+    replay_governance_decision:
+        Optional ``replay_governance_decision`` artifact from the BY Replay
+        Governance Gate.  When provided, its ``system_response`` is merged
+        with the control-chain decision using strict-precedence merging
+        (block > quarantine > require_review > allow).  A quarantine or
+        require_review response prevents automatic continuation.  A block
+        response halts execution entirely.
 
     Returns
     -------
@@ -1217,6 +1314,8 @@ def run_control_chain(
         ``enforcement_result``       – enforcement step result (may be None)
         ``gating_result``            – gating step result (may be None)
         ``execution_result``         – present only when ``execute=True``
+        ``replay_governance_result`` – replay governance artifact (may be None)
+        ``replay_governance_summary`` – concise replay governance summary (may be None)
     """
     # BN.6.1: Fail closed if the contract-validation runtime is unavailable.
     # This check must run before any schema enforcement logic.
@@ -1232,6 +1331,7 @@ def run_control_chain(
             input_kind_override=input_kind,
             evaluated_at=evaluated_at,
             execute=execute,
+            replay_governance_artifact=replay_governance_decision,
         )
     except ContractRuntimeError:
         raise
