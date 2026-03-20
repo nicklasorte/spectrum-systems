@@ -55,9 +55,23 @@ _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _MONITOR_RECORD_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_monitor_record.schema.json"
 _MONITOR_SUMMARY_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_monitor_summary.schema.json"
 _RUN_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "regression_run_result.schema.json"
+_REPLAY_ANALYSIS_SCHEMA_PATH = _SCHEMA_DIR / "replay_decision_analysis.schema.json"
 
 STATUS_DRIFTED = "drifted"
 STATUS_INDETERMINATE = "indeterminate"
+
+# Replay status constants
+REPLAY_STATUS_CONSISTENT = "consistent"
+REPLAY_STATUS_DRIFTED = "drifted"
+REPLAY_STATUS_INDETERMINATE = "indeterminate"
+
+# Replay SLI values per status (fail-closed: indeterminate must not imply success)
+_REPLAY_SLI_CONSISTENT = 1.0
+_REPLAY_SLI_DRIFTED = 0.0
+_REPLAY_SLI_INDETERMINATE = 0.5  # upper bound; must not exceed 0.5
+
+# Threshold below which low replay consistency escalates burn-rate in summary
+_REPLAY_SLI_BURN_RATE_THRESHOLD = 0.5
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_monitor"
@@ -88,6 +102,10 @@ class EvaluationMonitorError(Exception):
 
 class InvalidRegressionResultError(EvaluationMonitorError):
     """Raised when a regression_run_result fails schema validation."""
+
+
+class InvalidReplayAnalysisError(EvaluationMonitorError):
+    """Raised when a replay_decision_analysis artifact fails schema validation."""
 
 
 # ---------------------------------------------------------------------------
@@ -123,6 +141,38 @@ def _safe_divide(numerator: int, denominator: int) -> float:
     return numerator / denominator
 
 
+def _validate_replay_analysis(artifact: Any) -> List[str]:
+    """Validate *artifact* against the replay_decision_analysis schema."""
+    schema = _load_schema(_REPLAY_ANALYSIS_SCHEMA_PATH)
+    return _validate_against_schema(artifact, schema)
+
+
+def _compute_replay_consistency_sli(replay_status: str) -> float:
+    """Map a replay_status string to its numeric SLI value.
+
+    Rules
+    -----
+    - consistent    → 1.0  (full integrity confirmed)
+    - drifted       → 0.0  (decision integrity violation)
+    - indeterminate → 0.5  (conservative upper bound; must not imply success)
+
+    Raises
+    ------
+    EvaluationMonitorError
+        For any unknown replay_status value (fail-closed).
+    """
+    if replay_status == REPLAY_STATUS_CONSISTENT:
+        return _REPLAY_SLI_CONSISTENT
+    if replay_status == REPLAY_STATUS_DRIFTED:
+        return _REPLAY_SLI_DRIFTED
+    if replay_status == REPLAY_STATUS_INDETERMINATE:
+        return _REPLAY_SLI_INDETERMINATE
+    raise EvaluationMonitorError(
+        f"Unknown replay_status '{replay_status}': must be one of "
+        f"consistent, drifted, indeterminate"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public API — single-record operations
 # ---------------------------------------------------------------------------
@@ -130,6 +180,9 @@ def _safe_divide(numerator: int, denominator: int) -> float:
 
 def build_monitor_record(
     regression_run_result: Dict[str, Any],
+    replay_decision_analysis: Optional[Dict[str, Any]] = None,
+    *,
+    require_replay: bool = False,
 ) -> Dict[str, Any]:
     """Build a schema-validated evaluation_monitor_record from one run result.
 
@@ -137,6 +190,13 @@ def build_monitor_record(
     ----------
     regression_run_result:
         A regression_run_result artifact dict (must be schema-valid).
+    replay_decision_analysis:
+        Optional replay_decision_analysis artifact dict.  When provided it must
+        pass schema validation and its ``decision_consistency.status`` is used to
+        compute ``replay_status`` and ``replay_consistency_sli`` SLIs.
+    require_replay:
+        When *True*, ``replay_decision_analysis`` must not be *None*; a missing
+        artifact raises ``EvaluationMonitorError``.
 
     Returns
     -------
@@ -147,8 +207,11 @@ def build_monitor_record(
     ------
     InvalidRegressionResultError
         If *regression_run_result* fails schema validation.
+    InvalidReplayAnalysisError
+        If *replay_decision_analysis* is provided but fails schema validation.
     EvaluationMonitorError
-        If the produced record fails schema validation (should not occur).
+        If *require_replay* is True and *replay_decision_analysis* is None, or
+        if the produced record fails schema validation (should not occur).
     """
     run_id = regression_run_result.get("run_id", "<unknown>")
     suite_id = regression_run_result.get("suite_id", "<unknown>")
@@ -160,6 +223,53 @@ def build_monitor_record(
         raise InvalidRegressionResultError(
             f"regression_run_result run_id={run_id} failed schema validation: "
             + "; ".join(errors)
+        )
+
+    # --- Replay analysis ingestion ---
+    replay_status: Optional[str] = None
+    replay_consistency_sli: Optional[float] = None
+
+    if replay_decision_analysis is None:
+        if require_replay:
+            logger.error(
+                "Missing required replay_decision_analysis run_id=%s suite_id=%s",
+                run_id,
+                suite_id,
+            )
+            raise EvaluationMonitorError(
+                f"replay_decision_analysis is required but was not provided "
+                f"for run_id={run_id} suite_id={suite_id}"
+            )
+        logger.info(
+            "No replay_decision_analysis provided run_id=%s suite_id=%s — "
+            "replay SLIs will be omitted from record",
+            run_id,
+            suite_id,
+        )
+    else:
+        # Validate the replay artifact (fail-closed)
+        replay_errors = _validate_replay_analysis(replay_decision_analysis)
+        if replay_errors:
+            raise InvalidReplayAnalysisError(
+                f"replay_decision_analysis failed schema validation: "
+                + "; ".join(replay_errors)
+            )
+
+        consistency = replay_decision_analysis.get("decision_consistency", {})
+        replay_status = consistency.get("status")
+        if not replay_status:
+            raise EvaluationMonitorError(
+                "replay_decision_analysis is missing decision_consistency.status"
+            )
+        replay_consistency_sli = _compute_replay_consistency_sli(replay_status)
+
+        logger.info(
+            "Replay analysis consumed run_id=%s suite_id=%s "
+            "replay_status=%s replay_consistency_sli=%.3f",
+            run_id,
+            suite_id,
+            replay_status,
+            replay_consistency_sli,
         )
 
     results: List[Dict[str, Any]] = regression_run_result.get("results", [])
@@ -181,11 +291,14 @@ def build_monitor_record(
     )
     drift_rate = _safe_divide(drifted_count, total)
 
-    sli_snapshot = {
+    sli_snapshot: Dict[str, Any] = {
         "regression_pass_rate": pass_rate,
         "drift_rate": drift_rate,
         "average_reproducibility_score": avg_repro,
     }
+    if replay_status is not None:
+        sli_snapshot["replay_status"] = replay_status
+        sli_snapshot["replay_consistency_sli"] = replay_consistency_sli
 
     # Build partial record for alert computation (fields needed by the policy)
     partial_record: Dict[str, Any] = {
@@ -261,10 +374,13 @@ def compute_alert_recommendation(
 ) -> Dict[str, Any]:
     """Compute an alert recommendation given a (partial) monitor record.
 
-    Applies the initial conservative monitoring policy rules:
+    Applies the monitoring policy rules:
     - critical if overall_status=fail AND pass_rate < critical_pass_rate threshold
-    - warning if trend-degradation signals are present without crossing critical
-    - none otherwise
+    - critical if drift_rate exceeds critical_drift_rate threshold
+    - warning if run failed but above critical threshold
+    - warning (at minimum) if replay_status=drifted
+    - warning (at minimum) if replay_status=indeterminate
+    - replay signals combine with existing drift_rate, failure_rate signals
 
     Parameters
     ----------
@@ -287,6 +403,8 @@ def compute_alert_recommendation(
     pass_rate = record.get("pass_rate", 1.0)
     sli = record.get("sli_snapshot", {})
     drift_rate = sli.get("drift_rate", 0.0)
+    replay_status = sli.get("replay_status")
+    replay_consistency_sli = sli.get("replay_consistency_sli")
 
     reasons: List[str] = []
     level = "none"
@@ -313,6 +431,36 @@ def compute_alert_recommendation(
         reasons.append(
             f"overall_status=fail with pass_rate={pass_rate:.3f} "
             f"(above critical threshold={t['critical_pass_rate']:.3f})"
+        )
+
+    # Replay integrity signals — must influence alert decisions
+    replay_sli_str = (
+        f" replay_consistency_sli={replay_consistency_sli:.3f}"
+        if replay_consistency_sli is not None
+        else ""
+    )
+    if replay_status == REPLAY_STATUS_DRIFTED:
+        if level == "none":
+            level = "warning"
+        reasons.append(
+            f"replay_status=drifted: replay decision integrity violation detected{replay_sli_str}"
+        )
+        logger.warning(
+            "compute_alert_recommendation: replay drift drives alert escalation "
+            "replay_consistency_sli=%s",
+            replay_consistency_sli,
+        )
+    elif replay_status == REPLAY_STATUS_INDETERMINATE:
+        if level == "none":
+            level = "warning"
+        reasons.append(
+            f"replay_status=indeterminate: outcome is inconclusive, "
+            f"cannot confirm decision integrity{replay_sli_str}"
+        )
+        logger.warning(
+            "compute_alert_recommendation: indeterminate replay drives alert escalation "
+            "replay_consistency_sli=%s",
+            replay_consistency_sli,
         )
 
     return {"level": level, "reasons": reasons}
@@ -471,6 +619,26 @@ def summarize_monitor_records(
         1 for r in records if r["alert_recommendation"]["level"] == "critical"
     )
 
+    # --- Replay aggregates (only for records that include replay data) ---
+    replay_sli_values = [
+        r["sli_snapshot"]["replay_consistency_sli"]
+        for r in records
+        if "replay_consistency_sli" in r.get("sli_snapshot", {})
+    ]
+    has_replay = len(replay_sli_values) > 0
+    avg_replay_consistency_sli: Optional[float] = None
+    replay_consistency_trend: Optional[str] = None
+    if has_replay:
+        avg_replay_consistency_sli = sum(replay_sli_values) / len(replay_sli_values)
+        # For replay consistency: higher is better → classify directly
+        replay_consistency_trend = classify_trend(replay_sli_values)
+        logger.info(
+            "Replay consistency aggregates: avg_sli=%.3f trend=%s over %d records",
+            avg_replay_consistency_sli,
+            replay_consistency_trend,
+            len(replay_sli_values),
+        )
+
     # --- Trends ---
     pass_rate_trend = classify_trend(pass_rates)
     # For drift rate: higher is worse → "improving" means decreasing
@@ -479,8 +647,37 @@ def summarize_monitor_records(
 
     repro_trend = classify_trend(repro_scores)
 
-    # --- Burn rate ---
+    # --- Burn rate (with replay pressure awareness) ---
     burn_rate = assess_burn_rate(records, thresholds)
+
+    # Replay-aware burn-rate escalation: if avg replay consistency is poor,
+    # the error budget is under additional pressure — escalate one level.
+    if has_replay and avg_replay_consistency_sli is not None:
+        if avg_replay_consistency_sli < _REPLAY_SLI_BURN_RATE_THRESHOLD and burn_rate["status"] == "normal":
+            burn_rate = {
+                "status": "elevated",
+                "reasons": burn_rate["reasons"] + [
+                    f"replay-aware escalation: avg_replay_consistency_sli="
+                    f"{avg_replay_consistency_sli:.3f} below {_REPLAY_SLI_BURN_RATE_THRESHOLD}"
+                ],
+            }
+            logger.warning(
+                "summarize_monitor_records: burn rate escalated to elevated "
+                "due to replay consistency pressure avg_sli=%.3f",
+                avg_replay_consistency_sli,
+            )
+        elif avg_replay_consistency_sli == _REPLAY_SLI_DRIFTED and burn_rate["status"] == "elevated":
+            burn_rate = {
+                "status": "exhausting",
+                "reasons": burn_rate["reasons"] + [
+                    "replay-aware escalation: avg_replay_consistency_sli=0.0 "
+                    "(all replays drifted)"
+                ],
+            }
+            logger.warning(
+                "summarize_monitor_records: burn rate escalated to exhausting "
+                "due to complete replay drift avg_sli=0.000",
+            )
 
     # --- Recommended action ---
     recommended_action = _derive_recommended_action(
@@ -493,6 +690,24 @@ def summarize_monitor_records(
     # --- Source run IDs ---
     source_run_ids = [r["source_run_id"] for r in records]
 
+    aggregates: Dict[str, Any] = {
+        "average_pass_rate": avg_pass_rate,
+        "average_drift_rate": avg_drift_rate,
+        "average_reproducibility_score": avg_repro,
+        "total_failed_runs": total_failed_runs,
+        "total_critical_alerts": total_critical_alerts,
+    }
+    if avg_replay_consistency_sli is not None:
+        aggregates["average_replay_consistency_sli"] = avg_replay_consistency_sli
+
+    trend_analysis: Dict[str, Any] = {
+        "pass_rate_trend": pass_rate_trend,
+        "drift_rate_trend": drift_rate_trend,
+        "reproducibility_trend": repro_trend,
+    }
+    if replay_consistency_trend is not None:
+        trend_analysis["replay_consistency_trend"] = replay_consistency_trend
+
     summary: Dict[str, Any] = {
         "summary_id": _new_id(),
         "created_at": _now_iso(),
@@ -501,18 +716,8 @@ def summarize_monitor_records(
             "end_at": created_ats[-1],
             "total_runs": total_runs,
         },
-        "aggregates": {
-            "average_pass_rate": avg_pass_rate,
-            "average_drift_rate": avg_drift_rate,
-            "average_reproducibility_score": avg_repro,
-            "total_failed_runs": total_failed_runs,
-            "total_critical_alerts": total_critical_alerts,
-        },
-        "trend_analysis": {
-            "pass_rate_trend": pass_rate_trend,
-            "drift_rate_trend": drift_rate_trend,
-            "reproducibility_trend": repro_trend,
-        },
+        "aggregates": aggregates,
+        "trend_analysis": trend_analysis,
         "burn_rate_assessment": burn_rate,
         "recommended_action": recommended_action,
         "source_run_ids": source_run_ids,

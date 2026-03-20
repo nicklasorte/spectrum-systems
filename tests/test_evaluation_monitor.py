@@ -40,6 +40,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 from spectrum_systems.modules.runtime.evaluation_monitor import (  # noqa: E402
     EvaluationMonitorError,
     InvalidRegressionResultError,
+    InvalidReplayAnalysisError,
     assess_burn_rate,
     build_monitor_record,
     classify_trend,
@@ -728,3 +729,142 @@ def test_indeterminate_count_correct():
     )
     record = build_monitor_record(run_result)
     assert record["indeterminate_count"] == 1
+
+
+# ---------------------------------------------------------------------------
+# BX — Replay-to-Evaluation Integration tests (22–26)
+# ---------------------------------------------------------------------------
+
+def _make_replay_analysis(
+    *,
+    consistency_status: str = "consistent",
+    trace_id: str = "trace-bx-001",
+    replay_result_id: str = "replay-bx-001",
+    analysis_id: str | None = None,
+    drift_type: str | None = None,
+    reproducibility_score: float = 0.9,
+) -> Dict[str, Any]:
+    """Build a minimal valid replay_decision_analysis artifact."""
+    import uuid as _uuid
+    return {
+        "analysis_id": analysis_id or str(_uuid.uuid4()),
+        "trace_id": trace_id,
+        "replay_result_id": replay_result_id,
+        "original_decision": {
+            "decision_status": "allow",
+            "decision_reason_code": "slo_pass",
+        },
+        "replay_decision": {
+            "decision_status": "allow",
+            "decision_reason_code": "slo_pass",
+        },
+        "decision_consistency": {
+            "status": consistency_status,
+            "differences": [],
+        },
+        "drift_type": drift_type,
+        "reproducibility_score": reproducibility_score,
+        "explanation": "Test artifact.",
+        "created_at": "2025-01-01T00:00:00Z",
+    }
+
+
+# 22. Consistent replay → replay_consistency_sli = 1.0, no alert escalation
+def test_bx_consistent_replay_sli():
+    run_result = _make_run_result()
+    replay_analysis = _make_replay_analysis(consistency_status="consistent")
+    record = build_monitor_record(run_result, replay_analysis)
+
+    assert record["sli_snapshot"]["replay_status"] == "consistent"
+    assert record["sli_snapshot"]["replay_consistency_sli"] == pytest.approx(1.0)
+    # Healthy run + consistent replay → no alert
+    assert record["alert_recommendation"]["level"] == "none"
+
+
+# 23. Drifted replay → replay_consistency_sli = 0.0, alert triggered
+def test_bx_drifted_replay_triggers_alert():
+    run_result = _make_run_result(overall_status="pass")
+    replay_analysis = _make_replay_analysis(
+        consistency_status="drifted",
+        reproducibility_score=0.0,
+    )
+    record = build_monitor_record(run_result, replay_analysis)
+
+    assert record["sli_snapshot"]["replay_status"] == "drifted"
+    assert record["sli_snapshot"]["replay_consistency_sli"] == pytest.approx(0.0)
+    # Drifted replay must escalate alert to at least warning
+    assert record["alert_recommendation"]["level"] in ("warning", "critical")
+    assert any(
+        "drifted" in r for r in record["alert_recommendation"]["reasons"]
+    )
+
+
+# 24. Indeterminate replay → replay_consistency_sli ≤ 0.5, alert triggered
+def test_bx_indeterminate_replay_triggers_alert():
+    run_result = _make_run_result(overall_status="pass")
+    replay_analysis = _make_replay_analysis(
+        consistency_status="indeterminate",
+        reproducibility_score=0.5,
+    )
+    record = build_monitor_record(run_result, replay_analysis)
+
+    assert record["sli_snapshot"]["replay_status"] == "indeterminate"
+    assert record["sli_snapshot"]["replay_consistency_sli"] <= 0.5
+    # Indeterminate replay must escalate alert to at least warning
+    assert record["alert_recommendation"]["level"] in ("warning", "critical")
+    assert any(
+        "indeterminate" in r for r in record["alert_recommendation"]["reasons"]
+    )
+
+
+# 25. Missing replay when require_replay=True → raises EvaluationMonitorError
+def test_bx_missing_replay_when_required_raises():
+    run_result = _make_run_result()
+    with pytest.raises(EvaluationMonitorError, match="required but was not provided"):
+        build_monitor_record(run_result, replay_decision_analysis=None, require_replay=True)
+
+
+# 26. Invalid replay schema → raises InvalidReplayAnalysisError
+def test_bx_invalid_replay_schema_raises():
+    run_result = _make_run_result()
+    # An artifact missing required fields is invalid
+    bad_replay = {"not": "a valid replay_decision_analysis"}
+    with pytest.raises(InvalidReplayAnalysisError):
+        build_monitor_record(run_result, bad_replay)
+
+
+# 27. Summary with replay records includes aggregates and trend
+def test_bx_summary_replay_aggregates():
+    run_result_1 = _make_run_result(run_id="r1")
+    run_result_2 = _make_run_result(run_id="r2")
+    replay_consistent = _make_replay_analysis(consistency_status="consistent")
+    replay_drifted = _make_replay_analysis(
+        consistency_status="drifted", reproducibility_score=0.0
+    )
+    records = [
+        build_monitor_record(run_result_1, replay_consistent),
+        build_monitor_record(run_result_2, replay_drifted),
+    ]
+    summary = summarize_monitor_records(records)
+
+    # Average of 1.0 and 0.0 = 0.5
+    assert "average_replay_consistency_sli" in summary["aggregates"]
+    assert summary["aggregates"]["average_replay_consistency_sli"] == pytest.approx(0.5)
+    assert "replay_consistency_trend" in summary["trend_analysis"]
+    # Schema must still be valid
+    errors = validate_monitor_summary(summary)
+    assert errors == [], f"Schema errors: {errors}"
+
+
+# 28. Records without replay still produce a schema-valid summary
+def test_bx_summary_without_replay_schema_valid():
+    records = [
+        build_monitor_record(_load_json(_HEALTHY_1)),
+        build_monitor_record(_load_json(_HEALTHY_2)),
+    ]
+    summary = summarize_monitor_records(records)
+    assert "average_replay_consistency_sli" not in summary["aggregates"]
+    assert "replay_consistency_trend" not in summary["trend_analysis"]
+    errors = validate_monitor_summary(summary)
+    assert errors == [], f"Schema errors: {errors}"
+

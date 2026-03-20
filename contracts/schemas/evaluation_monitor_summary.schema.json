@@ -88,6 +88,12 @@
           "type": "integer",
           "minimum": 0,
           "description": "Number of records where alert_recommendation.level=critical."
+        },
+        "average_replay_consistency_sli": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Mean replay_consistency_sli across records that include replay data."
         }
       }
     },
@@ -115,6 +121,11 @@
           "type": "string",
           "enum": ["improving", "stable", "degrading"],
           "description": "Trend direction for average reproducibility score over the window."
+        },
+        "replay_consistency_trend": {
+          "type": "string",
+          "enum": ["improving", "stable", "degrading"],
+          "description": "Trend direction for replay_consistency_sli over the window. Only present when replay data is available."
         }
       }
     },

@@ -188,6 +188,7 @@ from spectrum_systems.modules.runtime.regression_harness import (
 from spectrum_systems.modules.runtime.evaluation_monitor import (
     EvaluationMonitorError,
     InvalidRegressionResultError,
+    InvalidReplayAnalysisError,
     assess_burn_rate,
     build_monitor_record,
     classify_trend,
@@ -327,6 +328,7 @@ __all__ = [
     # BS — Continuous Evaluation Monitor
     "EvaluationMonitorError",
     "InvalidRegressionResultError",
+    "InvalidReplayAnalysisError",
     "build_monitor_record",
     "validate_monitor_record",
     "compute_alert_recommendation",
