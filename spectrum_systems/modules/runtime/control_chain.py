@@ -1093,7 +1093,7 @@ def _run_control_chain_inner(
                     f"rationale_code={replay_gov_summary.get('replay_governance_rationale_code')}"
                 )
 
-            # BZ: Propagate replay governance into the formally declared schema shape.
+            # BZ/BAA: Propagate replay governance into the formally declared schema shape.
             # Ad-hoc flat fields replaced by the nested replay_governance object.
             replay_governed_val = bool(
                 replay_gov_summary.get("replay_governance_replay_governed", True)
@@ -1113,9 +1113,14 @@ def _run_control_chain_inner(
                 rg_obj["replay_status"] = replay_gov_summary["replay_status"]
             if replay_gov_summary.get("replay_consistency_sli") is not None:
                 rg_obj["replay_consistency_sli"] = replay_gov_summary["replay_consistency_sli"]
+            # BAA: Propagate replay_decision_status from governance artifact
+            rds = replay_gov_result.get("replay_decision_status")
+            if rds is not None:
+                rg_obj["replay_decision_status"] = rds
             control_chain_decision["replay_governance"] = rg_obj
-            # Update continuation_allowed in the artifact to reflect merged decision
+            # Update continuation_allowed and blocking_layer in the artifact to reflect merged decision
             control_chain_decision["continuation_allowed"] = continuation_allowed
+            control_chain_decision["blocking_layer"] = blocking_layer_val
 
             # Emit trace event for replay governance decision
             if root_span_id:
@@ -1125,6 +1130,7 @@ def _run_control_chain_inner(
                         "merged_response": merged,
                         "continuation_allowed": continuation_allowed,
                         "rationale_code": replay_gov_summary.get("replay_governance_rationale_code"),
+                        "replay_decision_status": rds,
                     })
                 except (TraceNotFoundError, SpanNotFoundError):
                     pass
