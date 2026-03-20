@@ -78,6 +78,10 @@ from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
     summarize_execution_result,
     explain_execution_path,
 )
+from spectrum_systems.modules.runtime.control_integration import (  # noqa: E402
+    enforce_control_before_execution,
+    summarize_control_integration,
+)
 from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     KNOWN_POLICIES,
     KNOWN_STAGES,
@@ -201,6 +205,16 @@ def main(argv: Optional[List[str]] = None) -> int:
             "and print a deterministic execution summary."
         ),
     )
+    parser.add_argument(
+        "--enforce-control",
+        action="store_true",
+        dest="enforce_control",
+        help=(
+            "BN.7: Run the full control integration layer before execution. "
+            "Blocks downstream work if control signals do not permit continuation. "
+            "Recommended default for all decision-grade entry points."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -277,6 +291,24 @@ def main(argv: Optional[List[str]] = None) -> int:
                 indent=2,
             )
         )
+
+    # BN.7: enforce_control_before_execution gate
+    if args.enforce_control:
+        stage_value = args.stage or (result.get("control_chain_decision") or {}).get("stage")
+        integration_context = {
+            "artifact": raw_input,
+            "stage": stage_value or "observe",
+            "runtime_environment": "cli",
+        }
+        try:
+            integration_result = enforce_control_before_execution(integration_context)
+        except ContractRuntimeError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+        print()
+        print(summarize_control_integration(integration_context, integration_result))
+        if not integration_result["continuation_allowed"]:
+            return EXIT_BLOCKED
 
     # Write control-chain decision artifact
     output_path = Path(args.output) if args.output else _OUTPUT_DIR / _DEFAULT_OUTPUT_FILENAME
