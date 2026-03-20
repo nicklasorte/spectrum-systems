@@ -153,12 +153,13 @@ def _make_governance_artifact(
     rationale_code: str = "replay_consistent",
     gov_status: str = GOVERNANCE_STATUS_OK,
     replay_governed: bool = True,
+    replay_analysis_artifact_id: Optional[str] = "analysis-001",
 ) -> Dict[str, Any]:
     """Build a minimal valid replay_governance_decision artifact."""
-    return {
+    artifact: Dict[str, Any] = {
         "artifact_type": "replay_governance_decision",
         "schema_version": "1.0.0",
-        "replay_analysis_artifact_id": "analysis-001",
+        "replay_analysis_artifact_id": replay_analysis_artifact_id,
         "run_id": "run-001",
         "evaluated_at": "2026-01-01T00:00:00+00:00",
         "replay_status": replay_status,
@@ -184,6 +185,12 @@ def _make_governance_artifact(
         },
         "status": gov_status,
     }
+    # BAA: Include correlation fields required by the schema when a real replay was consumed
+    if replay_analysis_artifact_id is not None:
+        artifact["trace_id"] = "trace-001"
+        artifact["replay_run_id"] = "replay-001"
+        artifact["replay_decision_status"] = "pass"
+    return artifact
 
 
 # ===========================================================================
@@ -262,14 +269,29 @@ class TestSchema:
         errors = _validate_against_schema(artifact)
         assert errors == [], errors
 
-    def test_trace_id_optional(self):
+    def test_trace_id_required_when_replay_consumed(self):
+        """BAA: trace_id is REQUIRED when replay_analysis_artifact_id is non-null."""
         artifact = _make_governance_artifact()
+        assert "trace_id" in artifact  # helper now includes it
+        errors = _validate_against_schema(artifact)
+        assert errors == []
+        # Removing trace_id should make the artifact invalid
+        del artifact["trace_id"]
+        errors = _validate_against_schema(artifact)
+        assert len(errors) > 0, "Expected schema error for missing trace_id"
+
+    def test_trace_id_optional_when_no_replay(self):
+        """trace_id is optional when no replay was consumed (null artifact_id)."""
+        artifact = _make_governance_artifact(
+            replay_analysis_artifact_id=None,
+            replay_status=None,
+            sli=None,
+            replay_governed=False,
+            rationale_code="replay_not_required",
+        )
         assert "trace_id" not in artifact
         errors = _validate_against_schema(artifact)
-        assert errors == []
-        artifact["trace_id"] = "trace-abc"
-        errors = _validate_against_schema(artifact)
-        assert errors == []
+        assert errors == [], errors
 
 
 # ===========================================================================

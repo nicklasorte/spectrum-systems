@@ -87,6 +87,11 @@
         "escalated_final_decision": {
           "type": "boolean",
           "description": "True when replay governance escalated the final continuation decision beyond the base enforcement/gating outcome."
+        },
+        "replay_decision_status": {
+          "type": "string",
+          "enum": ["pass", "drift", "indeterminate"],
+          "description": "BAA: High-level replay decision outcome propagated from the replay governance artifact. pass=replay consistent; drift=replay diverged; indeterminate=reproducibility unconfirmed."
         }
       },
       "if": {

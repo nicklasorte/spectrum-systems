@@ -1,8 +1,21 @@
-"""Replay Governance Gate (BY).
+"""Replay Governance Gate (BY) — BAA Control Loop Integration.
 
 Promotes replay from an advisory monitoring signal into an enforceable
 governance gate.  A replay governance decision can stop, quarantine, or
 force review of downstream execution.
+
+BAA additions
+-------------
+- Control chain integration: consistency_sli thresholds drive system_response.
+- Trace + provenance linkage: trace_id, original_run_id, replay_run_id,
+  replay_artifact_ids required when replay was consumed.
+- Replay independence enforcement: replay_validation_mode field.
+- Environment reproducibility contract: environment_context (matlab_release,
+  runtime_version, platform, seed_rng_state).
+- SLO + error budget hook: replay_drift_event, replay_failure_rate logging.
+- Decision artifact hardening: replay_decision_status (pass | drift |
+  indeterminate) on every governed artifact.
+- Observability events: REPLAY_START, REPLAY_COMPLETE, REPLAY_DRIFT_DETECTED.
 
 Design principles
 -----------------
@@ -31,6 +44,8 @@ Internal helpers (exported for testing)
 _validate_replay_analysis(replay_decision_analysis)  → dict
 _validate_governance_policy(policy)                  → dict
 _derive_replay_governance_decision(...)              → dict
+_replay_status_to_decision_status(replay_status)     → str
+_apply_sli_thresholds(...)                           → dict
 """
 
 from __future__ import annotations
@@ -90,6 +105,26 @@ _RATIONALE_MISSING_REQUIRED: str = "replay_missing_required"
 _RATIONALE_INVALID_ARTIFACT: str = "replay_invalid_artifact"
 _RATIONALE_UNKNOWN_STATUS: str = "replay_unknown_status"
 _RATIONALE_NOT_REQUIRED: str = "replay_not_required"
+
+# BAA: Replay decision status values (high-level outcome of replay governance)
+REPLAY_DECISION_STATUS_PASS: str = "pass"
+REPLAY_DECISION_STATUS_DRIFT: str = "drift"
+REPLAY_DECISION_STATUS_INDETERMINATE: str = "indeterminate"
+
+# BAA: Observability event types
+EVENT_REPLAY_START: str = "REPLAY_START"
+EVENT_REPLAY_COMPLETE: str = "REPLAY_COMPLETE"
+EVENT_REPLAY_DRIFT_DETECTED: str = "REPLAY_DRIFT_DETECTED"
+
+# BAA: Replay validation modes
+REPLAY_VALIDATION_MODE_INDEPENDENT: str = "independent"
+REPLAY_VALIDATION_MODE_SHARED: str = "shared"
+
+# BAA: SLI threshold defaults for control chain policy
+#   consistency_sli < REBUILD_THRESHOLD  → require_rebuild (block-equivalent)
+#   consistency_sli < REVIEW_THRESHOLD   → require_review
+_DEFAULT_SLI_REBUILD_THRESHOLD: float = 0.5
+_DEFAULT_SLI_REVIEW_THRESHOLD: float = 0.8
 
 # Default policy
 _DEFAULT_POLICY: Dict[str, Any] = {
@@ -272,7 +307,118 @@ def _validate_governance_policy(policy: Dict[str, Any]) -> Dict[str, Any]:
             f"got {type(policy['require_replay']).__name__}"
         )
 
+    # BAA: Validate optional SLI threshold fields when present
+    rebuild_threshold = policy.get("consistency_sli_rebuild_threshold")
+    if rebuild_threshold is not None:
+        if not isinstance(rebuild_threshold, (int, float)) or not (0.0 <= float(rebuild_threshold) <= 1.0):
+            raise ReplayGovernancePolicyError(
+                f"governance_policy.consistency_sli_rebuild_threshold must be a number in [0, 1]; "
+                f"got {rebuild_threshold!r}"
+            )
+
+    review_threshold = policy.get("consistency_sli_review_threshold")
+    if review_threshold is not None:
+        if not isinstance(review_threshold, (int, float)) or not (0.0 <= float(review_threshold) <= 1.0):
+            raise ReplayGovernancePolicyError(
+                f"governance_policy.consistency_sli_review_threshold must be a number in [0, 1]; "
+                f"got {review_threshold!r}"
+            )
+
     return policy
+
+
+def _replay_status_to_decision_status(replay_status: Optional[str]) -> str:
+    """BAA: Map BQ replay_status to the high-level replay_decision_status.
+
+    Parameters
+    ----------
+    replay_status:
+        One of 'consistent', 'drifted', 'indeterminate', or None.
+
+    Returns
+    -------
+    str
+        One of REPLAY_DECISION_STATUS_PASS, REPLAY_DECISION_STATUS_DRIFT,
+        REPLAY_DECISION_STATUS_INDETERMINATE.  Defaults to 'indeterminate'
+        for None or unknown values (fail-closed).
+    """
+    mapping: Dict[Optional[str], str] = {
+        REPLAY_STATUS_CONSISTENT: REPLAY_DECISION_STATUS_PASS,
+        REPLAY_STATUS_DRIFTED: REPLAY_DECISION_STATUS_DRIFT,
+        REPLAY_STATUS_INDETERMINATE: REPLAY_DECISION_STATUS_INDETERMINATE,
+    }
+    return mapping.get(replay_status, REPLAY_DECISION_STATUS_INDETERMINATE)
+
+
+def _apply_sli_thresholds(
+    replay_status: str,
+    replay_consistency_sli: float,
+    policy: Dict[str, Any],
+    base_decision: Dict[str, Any],
+) -> Dict[str, Any]:
+    """BAA: Apply SLI threshold escalation on top of the base governance decision.
+
+    When replay_status is consistent but the SLI is below configured thresholds,
+    the system_response is escalated:
+      - sli < rebuild_threshold → block (require_rebuild equivalent)
+      - sli < review_threshold  → require_review
+
+    Parameters
+    ----------
+    replay_status:
+        Replay consistency status string.
+    replay_consistency_sli:
+        SLI score in [0, 1].
+    policy:
+        Validated governance policy dict.
+    base_decision:
+        The decision dict produced by :func:`_derive_replay_governance_decision`.
+
+    Returns
+    -------
+    Updated decision dict (may escalate system_response and severity).
+    """
+    # SLI thresholds only apply when we have a concrete SLI score
+    if not isinstance(replay_consistency_sli, (int, float)):
+        return base_decision
+
+    rebuild_threshold = float(
+        policy.get("consistency_sli_rebuild_threshold", _DEFAULT_SLI_REBUILD_THRESHOLD)
+    )
+    review_threshold = float(
+        policy.get("consistency_sli_review_threshold", _DEFAULT_SLI_REVIEW_THRESHOLD)
+    )
+
+    sli = float(replay_consistency_sli)
+
+    # Only escalate if the base decision is 'allow' (threshold escalation
+    # applies to consistent replays whose SLI score is below acceptable levels)
+    current_response = base_decision.get("system_response", SYSTEM_RESPONSE_ALLOW)
+    if current_response != SYSTEM_RESPONSE_ALLOW:
+        return base_decision
+
+    if sli < rebuild_threshold:
+        escalated = dict(base_decision)
+        escalated["system_response"] = SYSTEM_RESPONSE_BLOCK
+        escalated["severity"] = "critical"
+        escalated["rationale"] = (
+            f"{base_decision.get('rationale', '')} "
+            f"SLI {sli:.3f} is below rebuild threshold {rebuild_threshold:.3f}: "
+            "blocking (require_rebuild)."
+        ).strip()
+        return escalated
+    elif sli < review_threshold:
+        escalated = dict(base_decision)
+        escalated["system_response"] = SYSTEM_RESPONSE_REQUIRE_REVIEW
+        escalated["severity"] = "warning"
+        escalated["rationale"] = (
+            f"{base_decision.get('rationale', '')} "
+            f"SLI {sli:.3f} is below review threshold {review_threshold:.3f}: "
+            "human review required."
+        ).strip()
+        return escalated
+
+    return base_decision
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +432,9 @@ def _derive_replay_governance_decision(
     replay_required: bool,
 ) -> Dict[str, Any]:
     """Deterministically map replay result + policy to a governance decision dict.
+
+    BAA: Applies SLI threshold escalation (consistency_sli_rebuild_threshold,
+    consistency_sli_review_threshold) after the base status-driven decision.
 
     Parameters
     ----------
@@ -305,7 +454,7 @@ def _derive_replay_governance_decision(
     rationale_code, rationale.
     """
     if replay_status == REPLAY_STATUS_CONSISTENT:
-        return {
+        base = {
             "system_response": SYSTEM_RESPONSE_ALLOW,
             "severity": "info",
             "replay_governed": True,
@@ -315,6 +464,8 @@ def _derive_replay_governance_decision(
                 "Governed outputs may proceed."
             ),
         }
+        # BAA: Apply SLI threshold escalation only for consistent (allow) base decisions
+        return _apply_sli_thresholds(replay_status, replay_consistency_sli, policy, base)
 
     if replay_status == REPLAY_STATUS_DRIFTED:
         response = policy["drift_action"]
@@ -369,11 +520,16 @@ def build_replay_governance_decision(
     governance_policy: Optional[Dict[str, Any]] = None,
     require_replay: bool = False,
     trace_id: Optional[str] = None,
+    original_run_id: Optional[str] = None,
+    replay_run_id: Optional[str] = None,
+    replay_artifact_ids: Optional[List[str]] = None,
+    replay_validation_mode: Optional[str] = None,
+    environment_context: Optional[Dict[str, Any]] = None,
     evaluated_at: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build a governed ``replay_governance_decision`` artifact.
 
-    This is the primary entry point for the BY Replay Governance Gate.
+    This is the primary entry point for the BY Replay Governance Gate (BAA).
 
     Parameters
     ----------
@@ -391,7 +547,24 @@ def build_replay_governance_decision(
         When ``True`` the absence of a replay artifact is treated as a policy
         violation, regardless of ``policy.require_replay``.
     trace_id:
-        Optional trace identifier for correlation.
+        Trace identifier for correlation (BAA).  Auto-extracted from the
+        analysis artifact when not provided.  Required in schema when replay
+        was consumed.
+    original_run_id:
+        BAA: Identifier of the original pipeline run that was replayed.
+        Optional; included in artifact when provided.
+    replay_run_id:
+        BAA: Identifier of the replay pipeline run.  Auto-extracted from
+        ``replay_decision_analysis["replay_result_id"]`` when not provided.
+    replay_artifact_ids:
+        BAA: List of artifact IDs produced during the replay run.  Optional.
+    replay_validation_mode:
+        BAA: ``'independent'`` or ``'shared'``.  Enforced for high-severity
+        decisions — if a critical decision is made and mode is ``'shared'``
+        the response escalates to block.
+    environment_context:
+        BAA: Environment reproducibility contract dict (matlab_release,
+        runtime_version, platform, seed_rng_state).
     evaluated_at:
         Override evaluation timestamp.  Defaults to now.
 
@@ -410,6 +583,9 @@ def build_replay_governance_decision(
         If schema validation of the produced artifact fails (internal error).
     """
     ts = evaluated_at or _now_iso()
+
+    # BAA: Emit REPLAY_START observability event
+    _emit_observability_event(EVENT_REPLAY_START, run_id=run_id, trace_id=trace_id)
 
     # Resolve and validate policy
     effective_policy: Dict[str, Any]
@@ -488,9 +664,22 @@ def build_replay_governance_decision(
             enforcement_reason=enforcement_reason,
             gov_status=gov_status,
             trace_id=trace_id,
+            original_run_id=original_run_id,
+            replay_run_id=replay_run_id,
+            replay_artifact_ids=replay_artifact_ids,
+            replay_decision_status=None,
+            replay_validation_mode=replay_validation_mode,
+            environment_context=environment_context,
         )
         _validate_or_raise(artifact)
 
+        _emit_observability_event(
+            EVENT_REPLAY_COMPLETE,
+            run_id=run_id,
+            trace_id=trace_id,
+            replay_decision_status=None,
+            system_response=decision_dict.get("system_response"),
+        )
         _log_governance_event(artifact, run_id, trace_id)
         return artifact
 
@@ -521,6 +710,13 @@ def build_replay_governance_decision(
             replay_analysis_artifact_id
             or (replay_decision_analysis.get("analysis_id") if isinstance(replay_decision_analysis, dict) else None)
         )
+        # BAA: Auto-extract correlation fields from the (potentially invalid) analysis dict
+        invalid_trace_id = trace_id or (
+            replay_decision_analysis.get("trace_id") if isinstance(replay_decision_analysis, dict) else None
+        )
+        invalid_replay_run_id = replay_run_id or (
+            replay_decision_analysis.get("replay_result_id") if isinstance(replay_decision_analysis, dict) else None
+        )
         artifact = _build_artifact_dict(
             replay_analysis_artifact_id=artifact_id,
             run_id=run_id,
@@ -531,10 +727,23 @@ def build_replay_governance_decision(
             decision_dict=decision_dict,
             enforcement_reason=enforcement_reason,
             gov_status=GOVERNANCE_STATUS_INVALID_INPUT,
-            trace_id=trace_id,
+            trace_id=invalid_trace_id,
+            original_run_id=original_run_id,
+            replay_run_id=invalid_replay_run_id,
+            replay_artifact_ids=replay_artifact_ids,
+            replay_decision_status=REPLAY_DECISION_STATUS_INDETERMINATE if artifact_id else None,
+            replay_validation_mode=replay_validation_mode,
+            environment_context=environment_context,
         )
         _validate_or_raise(artifact)
-        _log_governance_event(artifact, run_id, trace_id)
+        _emit_observability_event(
+            EVENT_REPLAY_COMPLETE,
+            run_id=run_id,
+            trace_id=invalid_trace_id,
+            replay_decision_status=REPLAY_DECISION_STATUS_INDETERMINATE if artifact_id else None,
+            system_response=SYSTEM_RESPONSE_BLOCK,
+        )
+        _log_governance_event(artifact, run_id, invalid_trace_id)
         return artifact
 
     # Extract governance-critical values from the validated artifact
@@ -546,6 +755,10 @@ def build_replay_governance_decision(
         or replay_decision_analysis.get("analysis_id")
     )
 
+    # BAA: Auto-extract trace_id and replay_run_id from analysis when not provided
+    effective_trace_id = trace_id or replay_decision_analysis.get("trace_id")
+    effective_replay_run_id = replay_run_id or replay_decision_analysis.get("replay_result_id")
+
     # ------------------------------------------------------------------ #
     # Case C: Derive decision from replay status + policy
     # ------------------------------------------------------------------ #
@@ -556,7 +769,25 @@ def build_replay_governance_decision(
         replay_required=replay_is_required,
     )
 
+    # BAA: Enforce replay_validation_mode for high-severity decisions.
+    # If system_response would be critical and replay_validation_mode is 'shared',
+    # escalate to block to enforce independence requirement.
     response = decision_dict["system_response"]
+    severity = decision_dict.get("severity", "info")
+    if (
+        replay_validation_mode == REPLAY_VALIDATION_MODE_SHARED
+        and severity in {"critical", "elevated"}
+        and _SYSTEM_RESPONSE_PRECEDENCE.get(response, 0) >= _SYSTEM_RESPONSE_PRECEDENCE[SYSTEM_RESPONSE_QUARANTINE]
+    ):
+        decision_dict = dict(decision_dict)
+        decision_dict["system_response"] = SYSTEM_RESPONSE_BLOCK
+        decision_dict["severity"] = "critical"
+        decision_dict["rationale"] = (
+            decision_dict.get("rationale", "")
+            + " Replay independence not satisfied (shared mode): blocking per BAA policy."
+        ).strip()
+        response = SYSTEM_RESPONSE_BLOCK
+
     gov_status = (
         GOVERNANCE_STATUS_POLICY_BLOCKED
         if response not in {SYSTEM_RESPONSE_ALLOW}
@@ -570,6 +801,9 @@ def build_replay_governance_decision(
         system_response=response,
     )
 
+    # BAA: Derive replay_decision_status from replay_status
+    rds = _replay_status_to_decision_status(replay_status)
+
     artifact = _build_artifact_dict(
         replay_analysis_artifact_id=artifact_id,
         run_id=run_id,
@@ -580,10 +814,47 @@ def build_replay_governance_decision(
         decision_dict=decision_dict,
         enforcement_reason=enforcement_reason,
         gov_status=gov_status,
-        trace_id=trace_id,
+        trace_id=effective_trace_id,
+        original_run_id=original_run_id,
+        replay_run_id=effective_replay_run_id,
+        replay_artifact_ids=replay_artifact_ids,
+        replay_decision_status=rds,
+        replay_validation_mode=replay_validation_mode,
+        environment_context=environment_context,
     )
+
     _validate_or_raise(artifact)
-    _log_governance_event(artifact, run_id, trace_id)
+
+    # BAA: Emit drift event and REPLAY_DRIFT_DETECTED when drift is detected
+    if rds == REPLAY_DECISION_STATUS_DRIFT:
+        drift_event = _build_drift_event(
+            run_id=run_id,
+            trace_id=effective_trace_id,
+            replay_decision_status=rds,
+            replay_consistency_sli=score,
+            drift_reason=decision_dict.get("rationale", "Drift detected"),
+            evaluated_at=ts,
+        )
+        artifact["replay_drift_event"] = drift_event
+        _emit_observability_event(
+            EVENT_REPLAY_DRIFT_DETECTED,
+            run_id=run_id,
+            trace_id=effective_trace_id,
+            replay_decision_status=rds,
+            replay_consistency_sli=score,
+            system_response=response,
+        )
+        # Re-validate after adding drift event
+        _validate_or_raise(artifact)
+
+    _emit_observability_event(
+        EVENT_REPLAY_COMPLETE,
+        run_id=run_id,
+        trace_id=effective_trace_id,
+        replay_decision_status=rds,
+        system_response=response,
+    )
+    _log_governance_event(artifact, run_id, effective_trace_id)
     return artifact
 
 
@@ -603,6 +874,12 @@ def _build_artifact_dict(
     enforcement_reason: Dict[str, Any],
     gov_status: str,
     trace_id: Optional[str],
+    original_run_id: Optional[str] = None,
+    replay_run_id: Optional[str] = None,
+    replay_artifact_ids: Optional[List[str]] = None,
+    replay_decision_status: Optional[str] = None,
+    replay_validation_mode: Optional[str] = None,
+    environment_context: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     artifact: Dict[str, Any] = {
         "artifact_type": ARTIFACT_TYPE,
@@ -619,7 +896,68 @@ def _build_artifact_dict(
     }
     if trace_id is not None:
         artifact["trace_id"] = trace_id
+    if original_run_id is not None:
+        artifact["original_run_id"] = original_run_id
+    if replay_run_id is not None:
+        artifact["replay_run_id"] = replay_run_id
+    if replay_artifact_ids is not None:
+        artifact["replay_artifact_ids"] = list(replay_artifact_ids)
+    if replay_decision_status is not None:
+        artifact["replay_decision_status"] = replay_decision_status
+    if replay_validation_mode is not None:
+        artifact["replay_validation_mode"] = replay_validation_mode
+    if environment_context is not None:
+        artifact["environment_context"] = dict(environment_context)
     return artifact
+
+
+def _build_drift_event(
+    *,
+    run_id: str,
+    trace_id: Optional[str],
+    replay_decision_status: str,
+    replay_consistency_sli: Optional[float],
+    drift_reason: str,
+    evaluated_at: str,
+) -> Dict[str, Any]:
+    """BAA: Build a replay_drift_event structured dict for error budget tracking."""
+    return {
+        "event_type": EVENT_REPLAY_DRIFT_DETECTED,
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "replay_decision_status": replay_decision_status,
+        "replay_consistency_sli": replay_consistency_sli,
+        "drift_reason": drift_reason,
+        "emitted_at": evaluated_at,
+    }
+
+
+def _emit_observability_event(
+    event_type: str,
+    *,
+    run_id: str,
+    trace_id: Optional[str],
+    replay_decision_status: Optional[str] = None,
+    replay_consistency_sli: Optional[float] = None,
+    system_response: Optional[str] = None,
+) -> None:
+    """BAA: Emit a structured observability event to the logger."""
+    extra: Dict[str, Any] = {
+        "event": event_type,
+        "run_id": run_id,
+        "trace_id": trace_id,
+    }
+    if replay_decision_status is not None:
+        extra["replay_decision_status"] = replay_decision_status
+    if replay_consistency_sli is not None:
+        extra["replay_consistency_sli"] = replay_consistency_sli
+    if system_response is not None:
+        extra["system_response"] = system_response
+
+    if event_type == EVENT_REPLAY_DRIFT_DETECTED:
+        logger.warning(event_type, extra=extra)
+    else:
+        logger.debug(event_type, extra=extra)
 
 
 def _build_enforcement_reason(
