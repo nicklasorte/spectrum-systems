@@ -48,6 +48,19 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from jsonschema import Draft202012Validator
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.trace_engine import (
+    SPAN_STATUS_BLOCKED,
+    SPAN_STATUS_ERROR,
+    SPAN_STATUS_OK,
+    SpanNotFoundError,
+    TraceNotFoundError,
+    attach_artifact,
+    end_span,
+    record_event,
+    start_span,
+    start_trace,
+    validate_trace_context,
+)
 
 # ---------------------------------------------------------------------------
 # Types
@@ -393,7 +406,8 @@ def run_validators(
         Validator names requested by the caller.
     context:
         Execution context dict.  Recognised keys: ``artifact``,
-        ``stage``, ``runtime_environment``, ``parent_artifact_ids``.
+        ``stage``, ``runtime_environment``, ``parent_artifact_ids``,
+        ``trace_id``, ``parent_span_id``.
 
     Returns
     -------
@@ -402,6 +416,46 @@ def run_validators(
     """
     context = dict(context or {})
     artifact = context.get("artifact")
+
+    # BK–BM: resolve trace context; auto-start trace if absent (backward-compat)
+    trace_id: Optional[str] = context.get("trace_id")
+    parent_span_id: Optional[str] = context.get("parent_span_id")
+    _trace_auto_started = False
+    if not trace_id:
+        trace_id = start_trace({"source": "validator_engine", "auto_started": True})
+        _trace_auto_started = True
+
+    # Validate trace context — fail closed on malformed trace
+    _trace_errors = validate_trace_context(trace_id)
+    if _trace_errors:
+        # Malformed trace: return a blocked result immediately
+        blocked_result: ValidatorExecutionResult = {
+            "execution_id": str(uuid.uuid4()),
+            "validators_requested": list(required_validators or []),
+            "validators_run": [],
+            "validators_passed": [],
+            "validators_failed": ["<trace_engine>"],
+            "validator_results": [
+                _make_blocked_result(
+                    "<trace_engine>",
+                    reason_codes=["malformed_trace_context"],
+                    errors=_trace_errors,
+                )
+            ],
+            "overall_status": "blocked",
+            "failure_reason_codes": ["malformed_trace_context"],
+            "evaluated_at": datetime.now(tz=timezone.utc).isoformat(),
+            "schema_version": SCHEMA_VERSION,
+            "trace_id": trace_id,
+            "parent_span_id": parent_span_id,
+        }
+        return blocked_result
+
+    # Create a span for the validator execution batch
+    try:
+        ve_span_id = start_span(trace_id, "validator_execution", parent_span_id)
+    except (TraceNotFoundError, SpanNotFoundError):
+        ve_span_id = None
 
     validators_requested = list(required_validators or [])
 
@@ -417,6 +471,14 @@ def run_validators(
     all_reason_codes: List[str] = []
 
     for name in ordered_validators:
+        # BK–BM: create per-validator span
+        v_span_id: Optional[str] = None
+        try:
+            if ve_span_id is not None:
+                v_span_id = start_span(trace_id, f"validator:{name}", ve_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            v_span_id = None
+
         # --- Resolve ---
         try:
             fn, entry = resolve_validator(name)
@@ -429,6 +491,12 @@ def run_validators(
             validators_failed.append(name)
             all_reason_codes.append("unknown_validator")
             validator_results.append(vr)
+            if v_span_id:
+                try:
+                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "unknown_validator"})
+                    end_span(v_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             continue
 
         # --- Execute ---
@@ -444,6 +512,12 @@ def run_validators(
             validators_failed.append(name)
             all_reason_codes.append("validator_exception")
             validator_results.append(vr)
+            if v_span_id:
+                try:
+                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "validator_exception"})
+                    end_span(v_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             continue
 
         # --- Validate result structure ---
@@ -458,6 +532,12 @@ def run_validators(
             validators_failed.append(name)
             all_reason_codes.append("malformed_validator_result")
             validator_results.append(vr)
+            if v_span_id:
+                try:
+                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "malformed_validator_result"})
+                    end_span(v_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             continue
 
         validators_run.append(name)
@@ -469,6 +549,20 @@ def run_validators(
             all_reason_codes.extend(vr.get("reason_codes") or [])
 
         validator_results.append(vr)
+
+        # BK–BM: record validator result event and close span
+        if v_span_id:
+            try:
+                v_status = vr.get("status", "blocked")
+                record_event(v_span_id, "validator_result", {
+                    "validator_name": name,
+                    "status": v_status,
+                    "reason_codes": vr.get("reason_codes") or [],
+                })
+                span_status = SPAN_STATUS_OK if v_status == "pass" else SPAN_STATUS_BLOCKED
+                end_span(v_span_id, span_status)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
 
     # --- Compute overall status ---
     if any(
@@ -515,6 +609,20 @@ def run_validators(
                 errors=schema_errors,
             )
         )
+
+    # BK–BM: close the validator execution batch span and attach the artifact
+    if ve_span_id:
+        try:
+            ve_span_status = SPAN_STATUS_OK if overall_status == "pass" else SPAN_STATUS_BLOCKED
+            record_event(ve_span_id, "validator_execution_complete", {
+                "overall_status": result["overall_status"],
+                "validators_run": validators_run,
+                "validators_failed": validators_failed,
+            })
+            end_span(ve_span_id, ve_span_status)
+            attach_artifact(trace_id, result["execution_id"], "validator_execution_result", ve_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            pass
 
     return result
 

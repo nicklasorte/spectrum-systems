@@ -86,6 +86,10 @@ from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     KNOWN_POLICIES,
     KNOWN_STAGES,
 )
+from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
+    TraceNotFoundError,
+    summarize_trace,
+)
 
 # ---------------------------------------------------------------------------
 # Exit codes
@@ -318,6 +322,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: failed to write control-chain decision artifact: {exc}", file=sys.stderr)
         return EXIT_ERROR
+
+    # BK–BM: print trace summary
+    trace_id = result.get("trace_id")
+    if trace_id:
+        print()
+        try:
+            print(summarize_trace(trace_id))
+        except TraceNotFoundError:
+            print(f"  trace_id                 : {trace_id} (trace not found in store)")
 
     schema_errors: List[str] = result.get("schema_errors") or []
     exit_code = _outcome_exit_code(

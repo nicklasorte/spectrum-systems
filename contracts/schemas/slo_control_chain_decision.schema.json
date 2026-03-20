@@ -277,6 +277,11 @@
       "type": "string",
       "description": "Whether the stage was taken from the artifact ('original') or overridden by the caller ('override').",
       "enum": ["original", "override"]
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "BK–BM: trace identifier linking this decision to the full execution trace."
     }
   }
 }

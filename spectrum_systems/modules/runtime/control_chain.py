@@ -161,6 +161,18 @@ from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
     execute_control_signals,
 )
+from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
+    SPAN_STATUS_BLOCKED,
+    SPAN_STATUS_OK,
+    SpanNotFoundError,
+    TraceNotFoundError,
+    attach_artifact,
+    end_span,
+    record_event,
+    start_span,
+    start_trace,
+    summarize_trace,
+)
 
 # ---------------------------------------------------------------------------
 # Decision-bearing stages (mandatory gating required)
@@ -673,6 +685,18 @@ def _run_control_chain_inner(
     acc_errors: List[str] = []
 
     # ------------------------------------------------------------------ #
+    # BK–BM: Start trace for this control chain run
+    # ------------------------------------------------------------------ #
+    trace_id = start_trace({"source": "control_chain"})
+    root_span_id: Optional[str] = None
+    enforcement_span_id: Optional[str] = None
+    gating_span_id: Optional[str] = None
+    try:
+        root_span_id = start_span(trace_id, "control_chain")
+    except (TraceNotFoundError, SpanNotFoundError):
+        root_span_id = None
+
+    # ------------------------------------------------------------------ #
     # 1. Normalise inputs and detect kind
     # ------------------------------------------------------------------ #
     input_kind, norm, detect_errors = normalize_control_chain_inputs(
@@ -682,12 +706,19 @@ def _run_control_chain_inner(
 
     if input_kind is None:
         # Malformed / undetectable input — fail closed immediately
+        if root_span_id:
+            try:
+                record_event(root_span_id, "chain_blocked", {"reason": "malformed_input"})
+                end_span(root_span_id, SPAN_STATUS_BLOCKED)
+            except (TraceNotFoundError, SpanNotFoundError):
+                pass
         return _make_error_artifact(
             acc_warnings=acc_warnings,
             acc_errors=acc_errors,
             reason_code=REASON_BLOCKED_BY_MALFORMED_INPUT,
             evaluated_at=evaluated_at,
             execute=execute,
+            trace_id=trace_id,
         )
 
     # ------------------------------------------------------------------ #
@@ -715,17 +746,41 @@ def _run_control_chain_inner(
         # Must run enforcement then gating.
         policy = policy_override or _resolve_policy_for_stage(stage)
         try:
+            # BK–BM: span for enforcement
+            try:
+                enforcement_span_id = start_span(trace_id, "enforcement", root_span_id)
+            except (TraceNotFoundError, SpanNotFoundError):
+                enforcement_span_id = None
             enforcement_result = run_slo_enforcement(
                 norm, policy=policy, stage=stage
             )
+            if enforcement_span_id:
+                try:
+                    enf_status = (enforcement_result.get("enforcement_decision") or {}).get("decision_status", "unknown")
+                    record_event(enforcement_span_id, "enforcement_complete", {"decision_status": enf_status})
+                    end_span(enforcement_span_id, SPAN_STATUS_OK)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
         except Exception as exc:  # noqa: BLE001
+            if enforcement_span_id:
+                try:
+                    end_span(enforcement_span_id, SPAN_STATUS_ERROR)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             acc_errors.append(f"Enforcement step raised unexpectedly: {exc}")
+            if root_span_id:
+                try:
+                    record_event(root_span_id, "chain_blocked", {"reason": "enforcement_exception"})
+                    end_span(root_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
                 reason_code=REASON_BLOCKED_BY_MALFORMED_INPUT,
                 evaluated_at=evaluated_at,
                 execute=execute,
+                trace_id=trace_id,
             )
 
         # Accumulate any enforcement warnings
@@ -735,12 +790,36 @@ def _run_control_chain_inner(
 
         # Now run gating on the enforcement result
         try:
+            # BK–BM: span for gating
+            try:
+                gating_span_id = start_span(trace_id, "gating", root_span_id)
+            except (TraceNotFoundError, SpanNotFoundError):
+                gating_span_id = None
             gating_result = run_slo_gating(
                 enforcement_result, stage=stage, evaluated_at=evaluated_at
             )
             gating_executed = True
+            if gating_span_id:
+                try:
+                    g_outcome = gating_result.get("gating_outcome") or "(unknown)"
+                    record_event(gating_span_id, "gating_complete", {"gating_outcome": g_outcome})
+                    g_span_st = SPAN_STATUS_OK if g_outcome != "halt" else SPAN_STATUS_BLOCKED
+                    end_span(gating_span_id, g_span_st)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
         except Exception as exc:  # noqa: BLE001
+            if gating_span_id:
+                try:
+                    end_span(gating_span_id, SPAN_STATUS_ERROR)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             acc_errors.append(f"Gating step raised unexpectedly: {exc}")
+            if root_span_id:
+                try:
+                    record_event(root_span_id, "chain_blocked", {"reason": "gating_exception"})
+                    end_span(root_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
@@ -749,6 +828,7 @@ def _run_control_chain_inner(
                 stage_source=stage_source,
                 evaluated_at=evaluated_at,
                 execute=execute,
+                trace_id=trace_id,
             )
 
     elif input_kind == INPUT_KIND_ENFORCEMENT:
@@ -759,12 +839,36 @@ def _run_control_chain_inner(
                 "(policy is already embedded in the enforcement artifact)."
             )
         try:
+            # BK–BM: span for gating
+            try:
+                gating_span_id = start_span(trace_id, "gating", root_span_id)
+            except (TraceNotFoundError, SpanNotFoundError):
+                gating_span_id = None
             gating_result = run_slo_gating(
                 norm, stage=stage_override or stage, evaluated_at=evaluated_at
             )
             gating_executed = True
+            if gating_span_id:
+                try:
+                    g_outcome = gating_result.get("gating_outcome") or "(unknown)"
+                    record_event(gating_span_id, "gating_complete", {"gating_outcome": g_outcome})
+                    g_span_st = SPAN_STATUS_OK if g_outcome != "halt" else SPAN_STATUS_BLOCKED
+                    end_span(gating_span_id, g_span_st)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
         except Exception as exc:  # noqa: BLE001
+            if gating_span_id:
+                try:
+                    end_span(gating_span_id, SPAN_STATUS_ERROR)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             acc_errors.append(f"Gating step raised unexpectedly: {exc}")
+            if root_span_id:
+                try:
+                    record_event(root_span_id, "chain_blocked", {"reason": "gating_exception"})
+                    end_span(root_span_id, SPAN_STATUS_BLOCKED)
+                except (TraceNotFoundError, SpanNotFoundError):
+                    pass
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
@@ -773,6 +877,7 @@ def _run_control_chain_inner(
                 stage_source=stage_source,
                 evaluated_at=evaluated_at,
                 execute=execute,
+                trace_id=trace_id,
             )
 
     elif input_kind == INPUT_KIND_GATING:
@@ -935,6 +1040,22 @@ def _run_control_chain_inner(
     # ------------------------------------------------------------------ #
     schema_errors = validate_control_chain_decision(control_chain_decision)
 
+    # BK–BM: attach trace_id to the decision artifact and close the root span
+    control_chain_decision["trace_id"] = trace_id
+    decision_id = control_chain_decision.get("decision_id") or "(unknown)"
+    if root_span_id:
+        try:
+            cc_span_st = SPAN_STATUS_OK if continuation_allowed else SPAN_STATUS_BLOCKED
+            record_event(root_span_id, "chain_complete", {
+                "continuation_allowed": continuation_allowed,
+                "primary_reason_code": reason_code,
+                "decision_id": decision_id,
+            })
+            end_span(root_span_id, cc_span_st)
+            attach_artifact(trace_id, decision_id, "control_chain_decision", root_span_id)
+        except (TraceNotFoundError, SpanNotFoundError):
+            pass
+
     result = {
         "control_chain_decision": control_chain_decision,
         "continuation_allowed": continuation_allowed,
@@ -943,6 +1064,7 @@ def _run_control_chain_inner(
         # Surface intermediate artifacts for caller inspection
         "enforcement_result": enforcement_result,
         "gating_result": gating_result,
+        "trace_id": trace_id,
     }
     if execute:
         result["execution_result"] = execute_control_signals(
@@ -951,6 +1073,8 @@ def _run_control_chain_inner(
                 "artifact": control_chain_decision,
                 "stage": stage,
                 "runtime_environment": "control_chain",
+                "trace_id": trace_id,
+                "parent_span_id": root_span_id,
             },
         )
     return result
@@ -975,6 +1099,7 @@ def _make_error_artifact(
     stage_source: Optional[str] = None,
     evaluated_at: Optional[str] = None,
     execute: bool = False,
+    trace_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Construct a governed fail-closed control-chain result."""
     cs = derive_control_signals(
@@ -1016,6 +1141,8 @@ def _make_error_artifact(
         stage_source=stage_source,
         evaluated_at=evaluated_at,
     )
+    if trace_id:
+        decision["trace_id"] = trace_id
     schema_errors = validate_control_chain_decision(decision)
     result = {
         "control_chain_decision": decision,
@@ -1024,6 +1151,7 @@ def _make_error_artifact(
         "schema_errors": schema_errors,
         "enforcement_result": None,
         "gating_result": None,
+        "trace_id": trace_id,
     }
     if execute:
         result["execution_result"] = execute_control_signals(
@@ -1032,6 +1160,7 @@ def _make_error_artifact(
                 "artifact": decision,
                 "stage": stage,
                 "runtime_environment": "control_chain_error",
+                "trace_id": trace_id,
             },
         )
     return result

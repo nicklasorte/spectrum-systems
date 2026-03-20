@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trace.schema.json",
+  "title": "Trace",
+  "description": "Governed trace artifact produced by the BK–BM Trace + Correlation Layer. Links run → validators → SLO evaluation → enforcement → execution → artifacts.",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "root_span_id",
+    "spans",
+    "artifacts",
+    "start_time",
+    "schema_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique trace identifier (UUID-4)."
+    },
+    "root_span_id": {
+      "type": ["string", "null"],
+      "description": "span_id of the first span created for this trace, or null if no spans exist yet."
+    },
+    "spans": {
+      "type": "array",
+      "description": "Ordered list of spans in creation order.",
+      "items": {
+        "type": "object",
+        "required": [
+          "span_id",
+          "trace_id",
+          "parent_span_id",
+          "name",
+          "status",
+          "start_time",
+          "end_time",
+          "events"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "span_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique span identifier (UUID-4)."
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Owning trace identifier."
+          },
+          "parent_span_id": {
+            "type": ["string", "null"],
+            "description": "Parent span ID, or null for the root span."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable operation name."
+          },
+          "status": {
+            "type": ["string", "null"],
+            "enum": ["ok", "error", "blocked", null],
+            "description": "Span completion status. Null while the span is still open."
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO-8601 UTC timestamp when the span started."
+          },
+          "end_time": {
+            "type": ["string", "null"],
+            "description": "ISO-8601 UTC timestamp when the span ended, or null if still open."
+          },
+          "events": {
+            "type": "array",
+            "description": "Structured events recorded within this span.",
+            "items": {
+              "type": "object",
+              "required": [
+                "event_type",
+                "timestamp",
+                "payload"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "event_type": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Governed event type identifier."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "ISO-8601 UTC timestamp of the event."
+                },
+                "payload": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Structured event payload."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Artifacts linked to this trace.",
+      "items": {
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "attached_at",
+          "parent_span_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique artifact identifier."
+          },
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Governed artifact type (e.g. control_chain_decision, validator_execution_result)."
+          },
+          "attached_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO-8601 UTC timestamp when the artifact was attached."
+          },
+          "parent_span_id": {
+            "type": ["string", "null"],
+            "description": "Span that produced the artifact, or null if not associated with a specific span."
+          }
+        }
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when the trace was created."
+    },
+    "end_time": {
+      "type": ["string", "null"],
+      "description": "ISO-8601 UTC timestamp when the trace completed, or null if still open."
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional metadata provided by the caller when starting the trace."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for this trace artifact contract."
+    }
+  }
+}
