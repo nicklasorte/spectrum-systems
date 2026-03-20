@@ -1,0 +1,17 @@
+{
+  "decision_id": "decision-warn-001",
+  "summary_id": "summary-warning-001",
+  "status": "warning",
+  "system_response": "allow_with_warning",
+  "reasons": [
+    "Drift rate (15%) \u2265 warning threshold (10%)"
+  ],
+  "triggered_thresholds": [
+    "drift_rate_warning"
+  ],
+  "required_actions": [
+    "Review warning signals before the next release.",
+    "Investigate elevated drift rate in recent runs."
+  ],
+  "created_at": "2025-01-02T00:00:00Z"
+}
