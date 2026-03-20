@@ -323,15 +323,28 @@ def recompute_decision_from_replay(
     if enforcement_steps:
         # Use the first enforcement step outcome
         step = enforcement_steps[0]
-        step_status = step.get("status", "ok")
-        # Map replay step statuses to decision vocabulary
+        step_status = step.get("status")
+        if step_status is None:
+            raise ReplayDecisionError(
+                f"recompute_decision_from_replay: enforcement step has no status field "
+                f"for trace_id='{trace_id}', replay_id='{replay_id}'. "
+                f"Missing replay fields are not treated as allowed."
+            )
+        # Map replay step statuses to decision vocabulary.
+        # Unknown step statuses must never silently map to allow.
         status_map = {
             "ok": "allow",
             "blocked": "fail",
             "error": "fail",
             "skipped": "allow",
         }
-        decision_status = status_map.get(step_status, "allow")
+        decision_status = status_map.get(step_status)
+        if decision_status is None:
+            raise ReplayDecisionError(
+                f"recompute_decision_from_replay: unknown enforcement step status "
+                f"'{step_status}' for trace_id='{trace_id}', replay_id='{replay_id}'. "
+                f"Unknown statuses cannot be treated as allowed (fail-closed)."
+            )
         return {
             "decision_status": decision_status,
             "decision_reason_code": "replayed_from_step",
@@ -340,14 +353,22 @@ def recompute_decision_from_replay(
             "traceability_integrity_sli": None,
         }
 
-    # No enforcement steps — derive from overall replay status
+    # No enforcement steps — derive from overall replay status.
+    # Unknown or missing statuses must never silently map to allow (fail-closed).
     overall_status_map = {
         "success": "allow",
         "partial": "allow_with_warning",
         "failed": "fail",
         "blocked": "fail",
     }
-    decision_status = overall_status_map.get(status or "", "allow")
+    normalised_status = status or ""
+    decision_status = overall_status_map.get(normalised_status)
+    if decision_status is None:
+        raise ReplayDecisionError(
+            f"recompute_decision_from_replay: unknown replay status "
+            f"'{status}' for trace_id='{trace_id}', replay_id='{replay_id}'. "
+            f"Unknown statuses cannot be treated as allowed (fail-closed)."
+        )
     logger.info(
         "recompute_decision_from_replay: no enforcement span in replay steps; "
         "derived decision from overall status=%s → decision_status=%s trace_id=%s",
@@ -516,13 +537,21 @@ def compute_reproducibility_score(
     Scoring logic
     -------------
     - CONSISTENCY_CONSISTENT → 1.0
-    - CONSISTENCY_INDETERMINATE → 0.5
+    - CONSISTENCY_INDETERMINATE → 0.5  (conservative upper bound; never implies success)
     - CONSISTENCY_DRIFTED:
         - NON_DETERMINISTIC_DRIFT → 0.5  (expected non-determinism)
         - ENVIRONMENT_DRIFT → 0.3        (configuration changed)
         - INPUT_DRIFT → 0.2              (inputs changed)
         - LOGIC_DRIFT → 0.0              (logic changed — worst case)
         - unknown drift type → 0.1
+
+    Indeterminate semantics
+    -----------------------
+    When ``status`` is ``indeterminate`` the score is capped at 0.5.  A score of
+    0.5 is not a success indicator; it signals that comparison could not be
+    completed and the result must be treated as non-reproducible until proven
+    otherwise.  Callers must not promote an indeterminate result to an allowed
+    state.
 
     Parameters
     ----------
@@ -665,8 +694,10 @@ def run_replay_decision_analysis(
     Raises
     ------
     ReplayDecisionError
-        For any failure: missing decision, replay failure, schema validation
-        failure.  No silent degradation.
+        For hard failures: missing original decision, replay prerequisites not
+        met, schema validation failure on the analysis artifact.  A failed
+        replay execution is NOT a hard failure — it produces an indeterminate
+        analysis artifact instead.
     """
     logger.info("run_replay_decision_analysis: starting trace_id=%s", trace_id)
 
@@ -678,7 +709,7 @@ def run_replay_decision_analysis(
         original_decision["decision_status"],
     )
 
-    # Step 2: Execute replay (fail closed on replay failure)
+    # Step 2: Execute replay (fail closed on prerequisite failure)
     try:
         replay_result = execute_replay(
             trace_id,
@@ -695,39 +726,93 @@ def run_replay_decision_analysis(
             f"run_replay_decision_analysis: replay failed for trace_id='{trace_id}': {exc}"
         ) from exc
 
-    replay_result_id = replay_result["replay_id"]
+    replay_result_id = replay_result.get("replay_id") or _new_id()
+    replay_exec_status = replay_result.get("status")
     logger.info(
         "run_replay_decision_analysis: replay completed trace_id=%s replay_id=%s status=%s",
         trace_id,
         replay_result_id,
-        replay_result.get("status"),
+        replay_exec_status,
     )
 
-    # Step 3: Recompute decision from replay (fail closed on failure)
-    replay_decision = recompute_decision_from_replay(replay_result)
-    logger.info(
-        "run_replay_decision_analysis: replay decision derived trace_id=%s status=%s",
-        trace_id,
-        replay_decision["decision_status"],
-    )
+    # Step 3: Recompute decision from replay.
+    # A failed replay execution is treated as indeterminate — the analysis can
+    # still be emitted with a conservative score so that callers receive a
+    # structured artifact rather than an unhandled exception.  Blocked replays
+    # (prerequisites not met) are a hard error raised above.
+    indeterminate_cause: Optional[str] = None
+    try:
+        replay_decision = recompute_decision_from_replay(replay_result)
+        logger.info(
+            "run_replay_decision_analysis: replay decision derived trace_id=%s status=%s",
+            trace_id,
+            replay_decision["decision_status"],
+        )
+    except ReplayDecisionError as exc:
+        indeterminate_cause = str(exc)
+        logger.warning(
+            "run_replay_decision_analysis: cannot recompute decision — "
+            "producing indeterminate artifact trace_id=%s replay_id=%s cause=%s",
+            trace_id,
+            replay_result_id,
+            indeterminate_cause,
+        )
+        replay_decision = {
+            "decision_status": "indeterminate",
+            "decision_reason_code": "replay_failed",
+            "enforcement_policy": None,
+            "recommended_action": None,
+            "traceability_integrity_sli": None,
+        }
 
     # Step 4: Compare decisions
-    consistency = compare_decisions(original_decision, replay_decision)
+    if indeterminate_cause is not None:
+        # Decision recomputation failed — comparison is not possible
+        consistency = {"status": CONSISTENCY_INDETERMINATE, "differences": []}
+        logger.warning(
+            "run_replay_decision_analysis: drift classification skipped — "
+            "indeterminate outcome trace_id=%s replay_id=%s",
+            trace_id,
+            replay_result_id,
+        )
+    else:
+        consistency = compare_decisions(original_decision, replay_decision)
 
-    # Step 5: Classify drift
-    drift_type = classify_drift(original_decision, replay_decision, replay_context)
+    # Step 5: Classify drift (only when comparison was possible)
+    if indeterminate_cause is not None:
+        drift_type = None
+    else:
+        drift_type = classify_drift(original_decision, replay_decision, replay_context)
+        if drift_type is None and consistency["status"] == CONSISTENCY_DRIFTED:
+            logger.warning(
+                "run_replay_decision_analysis: drift detected but classification "
+                "could not be completed trace_id=%s replay_id=%s",
+                trace_id,
+                replay_result_id,
+            )
 
     # Step 6: Compute reproducibility score
     score = compute_reproducibility_score(consistency, drift_type)
 
+    # Observability: log final status with all key identifiers
     logger.info(
-        "run_replay_decision_analysis: analysis complete trace_id=%s "
-        "consistency=%s drift_type=%s reproducibility_score=%.3f",
+        "run_replay_decision_analysis: analysis complete "
+        "trace_id=%s replay_result_id=%s final_status=%s "
+        "drift_type=%s reproducibility_score=%.3f",
         trace_id,
+        replay_result_id,
         consistency["status"],
         drift_type,
         score,
     )
+    if consistency["status"] == CONSISTENCY_INDETERMINATE:
+        logger.warning(
+            "run_replay_decision_analysis: INDETERMINATE result — "
+            "cause=%s trace_id=%s replay_result_id=%s",
+            indeterminate_cause or "comparison_not_possible",
+            trace_id,
+            replay_result_id,
+        )
 
     # Step 7: Build explanation
     if consistency["status"] == CONSISTENCY_CONSISTENT:
@@ -747,10 +832,12 @@ def run_replay_decision_analysis(
             f"Reproducibility score: {score:.3f}."
         )
     else:
+        cause_detail = f" Cause: {indeterminate_cause}." if indeterminate_cause else ""
         explanation = (
-            f"Comparison of decisions for trace '{trace_id}' was indeterminate. "
+            f"Comparison of decisions for trace '{trace_id}' was indeterminate.{cause_detail} "
             f"The replay may not have contained sufficient enforcement data to conclude "
-            f"whether the decision was reproduced."
+            f"whether the decision was reproduced. "
+            f"Reproducibility score: {score:.3f} (conservative upper bound)."
         )
 
     # Step 8: Build and validate artifact (fail closed on schema validation failure)
