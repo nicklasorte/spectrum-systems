@@ -130,7 +130,7 @@
     "drift_type": {
       "type": ["string", "null"],
       "enum": ["INPUT_DRIFT", "LOGIC_DRIFT", "ENVIRONMENT_DRIFT", "NON_DETERMINISTIC_DRIFT", null],
-      "description": "Classification of detected drift. Null when no drift is detected."
+      "description": "Classification of detected drift. Null when no drift is detected or when status is indeterminate (comparison could not be completed)."
     },
     "reproducibility_score": {
       "type": "number",

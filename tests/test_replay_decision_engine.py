@@ -729,3 +729,306 @@ class TestRunAnalysisSchemaValid:
         analysis = run_replay_decision_analysis("trace-orig-match", base_dir=tmp_store)
         # The original decision should reflect the enforcement span event (action=allow)
         assert analysis["original_decision"]["decision_status"] == "allow"
+
+
+# ---------------------------------------------------------------------------
+# Test 21: unknown replay status fails closed (never allows)
+# ---------------------------------------------------------------------------
+
+
+class TestUnknownReplayStatus:
+    """Unknown or missing statuses must never silently map to 'allow'."""
+
+    def test_unknown_overall_status_raises(self):
+        result = _make_valid_replay_result(status="unknown_status_xyz")
+        with pytest.raises(ReplayDecisionError, match="unknown replay status"):
+            recompute_decision_from_replay(result)
+
+    def test_empty_overall_status_raises(self):
+        result = _make_valid_replay_result(status="")
+        with pytest.raises(ReplayDecisionError, match="unknown replay status"):
+            recompute_decision_from_replay(result)
+
+    def test_whitespace_only_status_raises(self):
+        result = _make_valid_replay_result(status="   ")
+        with pytest.raises(ReplayDecisionError, match="unknown replay status"):
+            recompute_decision_from_replay(result)
+
+    def test_none_overall_status_raises(self):
+        result = _make_valid_replay_result(status="success")
+        result["status"] = None
+        with pytest.raises(ReplayDecisionError, match="unknown replay status"):
+            recompute_decision_from_replay(result)
+
+    def test_unknown_step_status_raises(self):
+        result = _make_valid_replay_result(status="success")
+        result["steps_executed"] = [
+            {
+                "span_name": "slo_enforcement_decision",
+                "status": "UNKNOWN_STEP_STATUS_XYZ",
+            }
+        ]
+        with pytest.raises(ReplayDecisionError, match="unknown enforcement step status"):
+            recompute_decision_from_replay(result)
+
+    def test_missing_step_status_field_raises(self):
+        result = _make_valid_replay_result(status="success")
+        result["steps_executed"] = [
+            {
+                "span_name": "slo_enforcement_decision",
+                # no 'status' key
+            }
+        ]
+        with pytest.raises(ReplayDecisionError, match="no status field"):
+            recompute_decision_from_replay(result)
+
+    def test_unknown_status_does_not_produce_allow(self):
+        """Verify fail-closed: unknown status must never silently become 'allow'."""
+        result = _make_valid_replay_result(status="mystery_status")
+        raised = False
+        try:
+            decision = recompute_decision_from_replay(result)
+            # If it somehow doesn't raise, the decision_status must not be "allow"
+            assert decision.get("decision_status") != "allow", (
+                "Unknown replay status was silently mapped to 'allow' — fail-open bug."
+            )
+        except ReplayDecisionError:
+            raised = True
+        assert raised, "Expected ReplayDecisionError for unknown replay status"
+
+
+# ---------------------------------------------------------------------------
+# Test 22: replay execution failure → indeterminate analysis artifact
+# ---------------------------------------------------------------------------
+
+
+class TestReplayExecutionFailureIndeterminate:
+    """A failed replay execution must produce an indeterminate artifact,
+    not raise an unhandled exception from the analysis pipeline."""
+
+    def test_failed_replay_result_produces_indeterminate(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace("trace-failed-replay", n_spans=1, with_enforcement_span=True)
+        persist_trace(trace, base_dir=tmp_store)
+        failed_result = _make_valid_replay_result(
+            replay_id="replay-failed-001",
+            trace_id="trace-failed-replay",
+            status="failed",
+        )
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            return_value=failed_result,
+        ):
+            analysis = run_replay_decision_analysis(
+                "trace-failed-replay", base_dir=tmp_store
+            )
+        assert analysis["decision_consistency"]["status"] == CONSISTENCY_INDETERMINATE
+
+    def test_failed_replay_result_score_bounded(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace("trace-failed-score", n_spans=1, with_enforcement_span=True)
+        persist_trace(trace, base_dir=tmp_store)
+        failed_result = _make_valid_replay_result(
+            replay_id="replay-failed-002",
+            trace_id="trace-failed-score",
+            status="failed",
+        )
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            return_value=failed_result,
+        ):
+            analysis = run_replay_decision_analysis(
+                "trace-failed-score", base_dir=tmp_store
+            )
+        score = analysis["reproducibility_score"]
+        # Indeterminate score must not imply success (must be < 1.0)
+        assert score < 1.0
+        assert 0.0 <= score <= 0.5
+
+    def test_failed_replay_artifact_is_schema_valid(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace("trace-failed-schema", n_spans=1, with_enforcement_span=True)
+        persist_trace(trace, base_dir=tmp_store)
+        failed_result = _make_valid_replay_result(
+            replay_id="replay-failed-003",
+            trace_id="trace-failed-schema",
+            status="failed",
+        )
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            return_value=failed_result,
+        ):
+            analysis = run_replay_decision_analysis(
+                "trace-failed-schema", base_dir=tmp_store
+            )
+        errors = validate_analysis(analysis)
+        assert errors == [], f"Schema errors for indeterminate artifact: {errors}"
+
+    def test_failed_replay_explanation_contains_cause(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace(
+            "trace-failed-expl", n_spans=1, with_enforcement_span=True
+        )
+        persist_trace(trace, base_dir=tmp_store)
+        failed_result = _make_valid_replay_result(
+            replay_id="replay-failed-004",
+            trace_id="trace-failed-expl",
+            status="failed",
+        )
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            return_value=failed_result,
+        ):
+            analysis = run_replay_decision_analysis(
+                "trace-failed-expl", base_dir=tmp_store
+            )
+        # Explanation must mention indeterminate and include a cause
+        explanation = analysis["explanation"]
+        assert "indeterminate" in explanation.lower()
+
+    def test_failed_replay_drift_type_is_null(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace(
+            "trace-failed-drift", n_spans=1, with_enforcement_span=True
+        )
+        persist_trace(trace, base_dir=tmp_store)
+        failed_result = _make_valid_replay_result(
+            replay_id="replay-failed-005",
+            trace_id="trace-failed-drift",
+            status="failed",
+        )
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            return_value=failed_result,
+        ):
+            analysis = run_replay_decision_analysis(
+                "trace-failed-drift", base_dir=tmp_store
+            )
+        assert analysis["drift_type"] is None
+
+
+# ---------------------------------------------------------------------------
+# Test 23: schema-invalid replay result → failure
+# ---------------------------------------------------------------------------
+
+
+class TestSchemaInvalidReplayResult:
+    """A replay result without required fields must not silently allow."""
+
+    def test_missing_status_field_raises(self):
+        result = _make_valid_replay_result(status="success")
+        del result["status"]
+        with pytest.raises(ReplayDecisionError):
+            recompute_decision_from_replay(result)
+
+    def test_missing_replay_id_does_not_silently_allow(self):
+        result = _make_valid_replay_result(status="success")
+        del result["replay_id"]
+        # Pipeline should still work (replay_id is optional for recompute, used elsewhere)
+        # but status-derived decision must not be "allow" if status is missing/unknown
+        result["status"] = "unknown_missing"
+        with pytest.raises(ReplayDecisionError):
+            recompute_decision_from_replay(result)
+
+
+# ---------------------------------------------------------------------------
+# Test 24: CLI exit codes (consistent→0, drifted→1, indeterminate→2)
+# ---------------------------------------------------------------------------
+
+
+class TestCLIExitCodes:
+    """Verify that the CLI helper maps consistency status to the correct exit code."""
+
+    def _import_cli(self):
+        import importlib.util
+        from pathlib import Path
+
+        cli_path = Path(__file__).resolve().parents[1] / "scripts" / "run_replay_decision_analysis.py"
+        spec = importlib.util.spec_from_file_location("run_replay_decision_analysis_cli", cli_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_consistent_exit_code_is_zero(self):
+        cli = self._import_cli()
+        analysis = _make_valid_analysis(consistency_status="consistent")
+        code = cli._consistency_exit_code(analysis)
+        assert code == 0
+
+    def test_drifted_exit_code_is_one(self):
+        cli = self._import_cli()
+        analysis = _make_valid_analysis(consistency_status="drifted")
+        code = cli._consistency_exit_code(analysis)
+        assert code == 1
+
+    def test_indeterminate_exit_code_is_two(self):
+        cli = self._import_cli()
+        analysis = _make_valid_analysis(consistency_status="indeterminate")
+        code = cli._consistency_exit_code(analysis)
+        assert code == 2
+
+    def test_unknown_status_exit_code_is_two(self):
+        """Any unrecognized status must produce exit code 2 (fail-closed)."""
+        cli = self._import_cli()
+        analysis = _make_valid_analysis(consistency_status="consistent")
+        analysis["decision_consistency"]["status"] = "unrecognized_status"
+        code = cli._consistency_exit_code(analysis)
+        assert code == 2
+
+    def test_missing_consistency_exit_code_is_two(self):
+        """Missing decision_consistency must produce exit code 2 (fail-closed)."""
+        cli = self._import_cli()
+        analysis = _make_valid_analysis()
+        del analysis["decision_consistency"]
+        code = cli._consistency_exit_code(analysis)
+        assert code == 2
+
+
+# ---------------------------------------------------------------------------
+# Test 25: drift detected but classification could not be completed
+# ---------------------------------------------------------------------------
+
+
+class TestDriftDetectedClassificationSkipped:
+    """When drift is detected but classify_drift returns None (e.g. mocked edge
+    case), the pipeline must not crash and must log a warning."""
+
+    def test_pipeline_tolerates_none_drift_type_with_drifted_consistency(self, tmp_store):
+        from unittest.mock import patch
+
+        trace = _make_trace("trace-drift-none", n_spans=1, with_enforcement_span=True)
+        persist_trace(trace, base_dir=tmp_store)
+
+        orig = _make_decision_summary(status="allow")
+        replay_d = _make_decision_summary(status="fail")
+        drifted_consistency = {
+            "status": CONSISTENCY_DRIFTED,
+            "differences": [
+                {
+                    "field": "decision_status",
+                    "original_value": "allow",
+                    "replay_value": "fail",
+                }
+            ],
+        }
+
+        with patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.compare_decisions",
+            return_value=drifted_consistency,
+        ), patch(
+            "spectrum_systems.modules.runtime.replay_decision_engine.classify_drift",
+            return_value=None,
+        ):
+            analysis = run_replay_decision_analysis("trace-drift-none", base_dir=tmp_store)
+
+        # Pipeline must complete and return a schema-valid artifact
+        errors = validate_analysis(analysis)
+        assert errors == [], f"Schema errors: {errors}"
+        assert analysis["decision_consistency"]["status"] == CONSISTENCY_DRIFTED
+        # drift_type is None — score uses unknown-drift fallback (0.1)
+        assert analysis["drift_type"] is None
