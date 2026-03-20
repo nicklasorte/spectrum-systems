@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/replay_decision_analysis.schema.json",
+  "title": "Replay Decision Analysis",
+  "description": "Governed artifact produced by the BQ Replay Decision Integrity Engine. Evaluates whether a replayed execution reproduces the same SLO decision and enforcement outcome as the original run, establishing decision reproducibility and enabling drift detection.",
+  "type": "object",
+  "required": [
+    "analysis_id",
+    "trace_id",
+    "replay_result_id",
+    "original_decision",
+    "replay_decision",
+    "decision_consistency",
+    "reproducibility_score",
+    "explanation",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "analysis_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this decision analysis run (UUID-4)."
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The trace_id of the original execution being analyzed."
+    },
+    "replay_result_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The replay_id from the replay_result artifact this analysis is based on."
+    },
+    "original_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_status", "decision_reason_code"],
+      "description": "Summary of the SLO enforcement decision from the original execution.",
+      "properties": {
+        "decision_status": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Enforcement outcome from the original run (e.g. allow, fail)."
+        },
+        "decision_reason_code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reason code from the original enforcement decision."
+        },
+        "enforcement_policy": {
+          "type": ["string", "null"],
+          "description": "Policy profile used in the original enforcement decision."
+        },
+        "recommended_action": {
+          "type": ["string", "null"],
+          "description": "Recommended action from the original enforcement decision."
+        },
+        "traceability_integrity_sli": {
+          "type": ["number", "null"],
+          "description": "TI SLI value from the original decision."
+        }
+      }
+    },
+    "replay_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_status", "decision_reason_code"],
+      "description": "Summary of the SLO enforcement decision recomputed from the replay.",
+      "properties": {
+        "decision_status": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Enforcement outcome from the replay (e.g. allow, fail)."
+        },
+        "decision_reason_code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reason code from the replayed enforcement decision."
+        },
+        "enforcement_policy": {
+          "type": ["string", "null"],
+          "description": "Policy profile used in the replayed enforcement decision."
+        },
+        "recommended_action": {
+          "type": ["string", "null"],
+          "description": "Recommended action from the replayed enforcement decision."
+        },
+        "traceability_integrity_sli": {
+          "type": ["number", "null"],
+          "description": "TI SLI value from the replayed decision."
+        }
+      }
+    },
+    "decision_consistency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "differences"],
+      "description": "Assessment of whether original and replay decisions are consistent.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["consistent", "drifted", "indeterminate"],
+          "description": "Consistency verdict: 'consistent' if decisions match, 'drifted' if they differ, 'indeterminate' if comparison could not be completed."
+        },
+        "differences": {
+          "type": "array",
+          "description": "List of detected decision differences. Empty when status is consistent.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "original_value", "replay_value"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Decision field where the difference was found."
+              },
+              "original_value": {
+                "description": "Value from the original decision."
+              },
+              "replay_value": {
+                "description": "Value from the replay decision."
+              }
+            }
+          }
+        }
+      }
+    },
+    "drift_type": {
+      "type": ["string", "null"],
+      "enum": ["INPUT_DRIFT", "LOGIC_DRIFT", "ENVIRONMENT_DRIFT", "NON_DETERMINISTIC_DRIFT", null],
+      "description": "Classification of detected drift. Null when no drift is detected."
+    },
+    "reproducibility_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Score in [0, 1] quantifying the degree to which the decision was reproduced. 1.0 = fully consistent, 0.0 = completely inconsistent."
+    },
+    "explanation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable explanation of the analysis result, including drift rationale if applicable."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when this analysis artifact was created."
+    }
+  }
+}
