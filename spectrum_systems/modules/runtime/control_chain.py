@@ -1093,18 +1093,27 @@ def _run_control_chain_inner(
                     f"rationale_code={replay_gov_summary.get('replay_governance_rationale_code')}"
                 )
 
-            # Propagate replay governance fields into the control chain decision
-            control_chain_decision["replay_governance_response"] = rg_response
-            control_chain_decision["replay_governance_rationale_code"] = (
-                replay_gov_summary.get("replay_governance_rationale_code")
+            # BZ: Propagate replay governance into the formally declared schema shape.
+            # Ad-hoc flat fields replaced by the nested replay_governance object.
+            replay_governed_val = bool(
+                replay_gov_summary.get("replay_governance_replay_governed", True)
             )
-            control_chain_decision["replay_status"] = replay_gov_summary.get("replay_status")
-            control_chain_decision["replay_consistency_sli"] = replay_gov_summary.get(
-                "replay_consistency_sli"
-            )
-            control_chain_decision["replay_governance_escalated_final_decision"] = (
-                replay_gov_summary.get("replay_governance_escalated_final_decision", False)
-            )
+            rg_obj: Dict[str, Any] = {
+                "present": True,
+                "replay_governed": replay_governed_val,
+                "system_response": rg_response,
+                "severity": replay_gov_summary.get("replay_governance_severity"),
+                "rationale_code": replay_gov_summary.get("replay_governance_rationale_code"),
+                "status": replay_gov_summary.get("artifact_status"),
+                "escalated_final_decision": replay_gov_summary.get(
+                    "replay_governance_escalated_final_decision", False
+                ),
+            }
+            if replay_gov_summary.get("replay_status") is not None:
+                rg_obj["replay_status"] = replay_gov_summary["replay_status"]
+            if replay_gov_summary.get("replay_consistency_sli") is not None:
+                rg_obj["replay_consistency_sli"] = replay_gov_summary["replay_consistency_sli"]
+            control_chain_decision["replay_governance"] = rg_obj
             # Update continuation_allowed in the artifact to reflect merged decision
             control_chain_decision["continuation_allowed"] = continuation_allowed
 
