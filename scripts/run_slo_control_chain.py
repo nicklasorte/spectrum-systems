@@ -65,6 +65,10 @@ from spectrum_systems.modules.runtime.control_chain import (  # noqa: E402
     run_control_chain,
     summarize_control_chain_decision,
 )
+from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
+    explain_blocking_requirements,
+    list_required_followups,
+)
 from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     KNOWN_POLICIES,
     KNOWN_STAGES,
@@ -210,8 +214,23 @@ def main(argv: Optional[List[str]] = None) -> int:
         input_kind=args.input_kind,
     )
 
-    # Print human-readable summary
+    # Print human-readable summary (includes BN.5 control signals)
     print(summarize_control_chain_decision(result))
+
+    # Print blocking requirements when continuation is not allowed
+    cd = result.get("control_chain_decision") or {}
+    cs = cd.get("control_signals") or {}
+    blocking_explanation = explain_blocking_requirements(cs)
+    if blocking_explanation:
+        print()
+        print(blocking_explanation)
+
+    followups = list_required_followups(cs)
+    if followups:
+        print()
+        print("Required follow-up actions:")
+        for f in followups:
+            print(f"  - {f}")
 
     # Write control-chain decision artifact
     output_path = Path(args.output) if args.output else _OUTPUT_DIR / _DEFAULT_OUTPUT_FILENAME

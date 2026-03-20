@@ -1262,3 +1262,294 @@ tools that do not enforce mandatory gating.
    used directly for decision-grade stages in production workflows.
 3. Consider adding a `dry_run` mode to `run_control_chain` that runs the
    full chain but does not write output artifacts.
+
+---
+
+## Control-Signal Emission Layer (BN.5)
+
+### Why Control Signals Exist
+
+BN.4 established the canonical execution path:
+
+```
+evaluation → enforcement → gating → control-chain decision
+```
+
+This was necessary, but still reactive: the system could stop bad flows but
+could not translate failure or degraded states into *upstream instructions*.
+
+BN.5 adds a governed **control-signal layer** so that downstream simulation,
+artifact generation, and orchestration steps can respond **deterministically**
+to control-chain outcomes.  A blocked or degraded run no longer just says "no"
+— it says:
+
+- what is missing
+- what must be repaired
+- what validators are required
+- whether rerun is appropriate
+- whether escalation or human review is required
+
+No free-form text.  Structured signals only.
+
+### How Control Signals Differ from Gating/Control-Chain Decisions
+
+| Layer | Purpose | Output |
+|-------|---------|--------|
+| BN.3 Gating | Determine whether a stage may proceed | `gating_outcome` enum |
+| BN.4 Control Chain | Aggregate full chain, enforce mandatory gating | `continuation_allowed` bool + `primary_reason_code` |
+| BN.5 Control Signals | Translate outcome into actionable next-step instructions | `control_signals` structured object |
+
+Gating and the control chain answer "can this stage continue?"
+Control signals answer "what exactly must happen next?"
+
+### Control Signal Fields
+
+The `control_signals` sub-object is embedded in every
+`slo_control_chain_decision` artifact.  All fields are required.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `continuation_mode` | enum | How the stage should proceed (see Continuation Modes below) |
+| `required_inputs` | string[] | Missing/required input identifiers |
+| `required_validators` | string[] | Validator names that must run before continuation/rerun |
+| `repair_actions` | string[] | Governed actions that must be taken before retry |
+| `rerun_recommended` | bool | True when rerunning after repair is the recommended next step |
+| `human_review_required` | bool | True when a human must review before the stage may continue |
+| `escalation_required` | bool | True when governance escalation is required |
+| `publication_allowed` | bool | True when publishing this artifact as output is permitted |
+| `decision_grade_allowed` | bool | True when the artifact meets the bar for decision-grade use |
+| `traceability_required` | bool | True when traceability/lineage must be established or repaired |
+| `control_signal_reason_codes` | string[] | Governed codes explaining why these signals were emitted |
+
+### Continuation Modes
+
+| Mode | Meaning |
+|------|---------|
+| `continue` | Clean pass; proceed normally |
+| `continue_with_monitoring` | Chain passed with warnings; proceed but monitor |
+| `stop` | Halted; cause unclear; do not proceed |
+| `stop_and_repair` | Halted; specific repair actions required before retry |
+| `stop_and_rerun` | Halted; repair and rerun the chain |
+| `stop_and_escalate` | Halted; malformed or inconsistent state; escalate to governance |
+
+### Required Validators
+
+Controlled vocabulary of validator names that may appear in `required_validators`:
+
+| Validator | Purpose |
+|-----------|---------|
+| `validate_runtime_compatibility` | Check runtime environment matches artifact requirements |
+| `validate_bundle_contract` | Verify artifact bundle conforms to contract |
+| `validate_traceability_integrity` | Validate lineage and traceability chain |
+| `validate_schema_conformance` | Confirm artifact schema is conformant |
+| `validate_artifact_completeness` | Ensure all required artifact fields are present |
+| `validate_cross_artifact_consistency` | Verify consistency across related artifacts |
+
+### Repair Actions
+
+Controlled vocabulary of repair action names that may appear in `repair_actions`:
+
+| Action | Purpose |
+|--------|---------|
+| `rebuild_with_registry` | Rebuild artifact using the lineage registry |
+| `restore_missing_lineage` | Restore missing or defaulted lineage information |
+| `rerun_with_strict_validation` | Rerun the pipeline with strict validation enabled |
+| `repair_schema_errors` | Correct schema conformance errors in the artifact |
+| `repair_missing_inputs` | Supply the missing required inputs |
+| `escalate_for_manual_review` | Escalate to human/governance for manual resolution |
+
+### Controlled Reason Codes
+
+| Code | Meaning |
+|------|---------|
+| `missing_required_input` | Required input was not supplied |
+| `missing_traceability` | Traceability/lineage is absent or defaulted |
+| `degraded_lineage_not_allowed` | Degraded lineage is not permitted at this stage |
+| `invalid_lineage` | Lineage validation failed |
+| `malformed_control_input` | Control chain received malformed or unparseable input |
+| `schema_nonconformance` | Artifact does not conform to its schema |
+| `gating_halt` | Gating engine returned `halt` |
+| `decision_stage_requires_strict_validation` | Decision-bearing stage requires strict validation |
+| `rerun_possible_after_repair` | The chain may be rerun after repair actions are taken |
+| `escalation_required_for_decision_stage` | Governance escalation required for decision stage |
+| `human_review_required_for_warning_state` | Human review required due to warning state |
+
+### Signal Derivation Rules
+
+The following deterministic mappings are implemented in
+`spectrum_systems/modules/runtime/control_signals.py`:
+
+**Rule 1: Clean proceed**
+- `continuation_allowed = True`, `gating_outcome = proceed`, `primary_reason_code = control_chain_continue`
+- → `continuation_mode = continue`
+- → `publication_allowed = True` if stage is decision-bearing and gating was `proceed`
+- → `decision_grade_allowed = True` under same conditions
+
+**Rule 2: Proceed with warning**
+- `continuation_allowed = True`, `gating_outcome = proceed_with_warning`
+- → `continuation_mode = continue_with_monitoring`
+- → `human_review_required = True` if decision-bearing stage
+- → `publication_allowed = False` (not a clean continue)
+
+**Rule 3: Blocked with repairable lineage (degraded)**
+- `continuation_allowed = False`, `lineage_defaulted = True`, `enforcement_status = allow_with_warning`
+- → `continuation_mode = stop_and_rerun`
+- → `traceability_required = True`
+- → `repair_actions` includes `restore_missing_lineage`, `rebuild_with_registry`, `rerun_with_strict_validation`
+
+**Rule 4: Blocked with invalid lineage**
+- `continuation_allowed = False`, `lineage_valid = False`
+- → `continuation_mode = stop_and_repair`
+- → `traceability_required = True`
+
+**Rule 5: Malformed or inconsistent state**
+- `primary_reason_code = control_chain_blocked_by_malformed_input` or `*inconsistent_state`
+- → `continuation_mode = stop_and_escalate`
+- → `escalation_required = True`
+- → `publication_allowed = False`
+- → `decision_grade_allowed = False`
+
+**Rule 6: Missing mandatory gating (decision-bearing stage)**
+- `primary_reason_code = control_chain_blocked_by_missing_gating`
+- → `continuation_mode = stop_and_escalate`
+- → `escalation_required = True`
+
+### Examples
+
+#### Example A: Clean proceed at synthesis
+
+```json
+{
+  "continuation_mode": "continue",
+  "required_inputs": [],
+  "required_validators": [],
+  "repair_actions": [],
+  "rerun_recommended": false,
+  "human_review_required": false,
+  "escalation_required": false,
+  "publication_allowed": true,
+  "decision_grade_allowed": true,
+  "traceability_required": false,
+  "control_signal_reason_codes": []
+}
+```
+
+#### Example B: Warning state at observe (non-decision-bearing)
+
+```json
+{
+  "continuation_mode": "continue_with_monitoring",
+  "required_inputs": [],
+  "required_validators": ["validate_traceability_integrity"],
+  "repair_actions": [],
+  "rerun_recommended": false,
+  "human_review_required": false,
+  "escalation_required": false,
+  "publication_allowed": false,
+  "decision_grade_allowed": false,
+  "traceability_required": true,
+  "control_signal_reason_codes": ["human_review_required_for_warning_state"]
+}
+```
+
+#### Example C: Blocked — repair lineage and rerun
+
+```json
+{
+  "continuation_mode": "stop_and_rerun",
+  "required_inputs": [],
+  "required_validators": ["validate_traceability_integrity", "validate_runtime_compatibility"],
+  "repair_actions": ["restore_missing_lineage", "rebuild_with_registry", "rerun_with_strict_validation"],
+  "rerun_recommended": true,
+  "human_review_required": false,
+  "escalation_required": false,
+  "publication_allowed": false,
+  "decision_grade_allowed": false,
+  "traceability_required": true,
+  "control_signal_reason_codes": ["gating_halt", "missing_traceability", "rerun_possible_after_repair"]
+}
+```
+
+#### Example D: Blocked — escalate (malformed input)
+
+```json
+{
+  "continuation_mode": "stop_and_escalate",
+  "required_inputs": [],
+  "required_validators": ["validate_schema_conformance", "validate_bundle_contract"],
+  "repair_actions": ["escalate_for_manual_review"],
+  "rerun_recommended": false,
+  "human_review_required": true,
+  "escalation_required": true,
+  "publication_allowed": false,
+  "decision_grade_allowed": false,
+  "traceability_required": false,
+  "control_signal_reason_codes": ["malformed_control_input", "escalation_required_for_decision_stage"]
+}
+```
+
+### How Downstream Systems Should Consume Control Signals
+
+Downstream orchestration, simulation, paper-generation, and review modules
+**must** check `control_signals` before taking any action on the artifact:
+
+1. **Check `continuation_mode` first.**  This is the primary gate.
+   - `continue` → proceed normally.
+   - `continue_with_monitoring` → proceed but activate monitoring and log the warning state.
+   - Any `stop_*` mode → halt immediately; do not attempt to publish or use the artifact.
+
+2. **Check `publication_allowed` before writing output.**
+   Never publish an artifact when `publication_allowed = false`.
+
+3. **Check `decision_grade_allowed` before decision-grade use.**
+   Do not use an artifact for recommend, synthesis, or export stages
+   unless `decision_grade_allowed = true`.
+
+4. **Act on `repair_actions` deterministically.**
+   Each action name is a machine-readable instruction from the controlled
+   vocabulary; map it to the appropriate handler in your orchestration system.
+
+5. **Run `required_validators` before rerun.**
+   When rerunning after repair, execute all validators in `required_validators`
+   before re-submitting the artifact to the control chain.
+
+6. **Escalate when `escalation_required = true`.**
+   Route the artifact and its control-chain decision to the governance queue.
+
+7. **Trigger human review when `human_review_required = true`.**
+   Do not automatically approve or publish; require explicit human sign-off.
+
+### Canonical End-to-End Flow (Updated for BN.5)
+
+```
+run_slo_control        → outputs/slo_evaluation.json
+                                       ↓
+run_slo_enforcement    → outputs/slo_enforcement_decision.json
+                                       ↓
+run_slo_gating         → outputs/slo_gating_decision.json
+                                       ↓
+run_slo_control_chain  → outputs/slo_control_chain_decision.json
+                          └── control_signals  ← BN.5: machine-consumable next-step instructions
+```
+
+### Backward Compatibility Notes
+
+- All BN.1–BN.4 modules, schemas, exit codes, and artifacts are unchanged.
+- `control_signals` is a new required field in the schema (additive change).
+- All existing callers receive enriched artifacts automatically.
+- The `control_signals` field defaults to `{}` when derivation fails (crash-proof).
+- Existing exit code semantics (0/1/2/3) are unchanged.
+- `summarize_control_chain_decision` now includes the control signals section.
+
+### Follow-On Recommendations
+
+1. Integrate `control_signals` consumption into pipeline orchestration entry
+   points so downstream stages cannot proceed when `continuation_mode` is a
+   stop variant.
+2. Add a `required_inputs` population step to `run_control_chain` that
+   inspects the artifact for known missing fields and populates the list
+   automatically.
+3. Consider exposing `list_required_followups(...)` in operator dashboards as
+   a machine-readable task queue for repair workflows.
+4. Extend controlled vocabularies as new artifact types and repair procedures
+   are introduced.  All additions must go through schema governance.

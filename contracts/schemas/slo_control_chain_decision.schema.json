@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/slo_control_chain_decision.schema.json",
   "title": "SLO Control-Chain Decision",
-  "description": "Governed machine-readable artifact produced by the Control-Chain Orchestrator (BN.4). Records the full evaluation → enforcement → gating chain and the final continuation eligibility decision for a pipeline stage.",
+  "description": "Governed machine-readable artifact produced by the Control-Chain Orchestrator (BN.4/BN.5). Records the full evaluation → enforcement → gating chain, the final continuation eligibility decision, and structured control signals for downstream closed-loop control.",
   "type": "object",
   "required": [
     "control_chain_decision_id",
@@ -24,10 +24,128 @@
     "warnings",
     "errors",
     "recommended_action",
+    "control_signals",
     "evaluated_at",
     "schema_version"
   ],
   "additionalProperties": false,
+  "$defs": {
+    "control_signals": {
+      "title": "Control Signals",
+      "description": "Structured, machine-consumable control signals derived from control-chain outcomes (BN.5). Downstream systems use these signals to adapt behavior deterministically.",
+      "type": "object",
+      "required": [
+        "continuation_mode",
+        "required_inputs",
+        "required_validators",
+        "repair_actions",
+        "rerun_recommended",
+        "human_review_required",
+        "escalation_required",
+        "publication_allowed",
+        "decision_grade_allowed",
+        "traceability_required",
+        "control_signal_reason_codes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "continuation_mode": {
+          "type": "string",
+          "description": "Machine-consumable instruction for how the downstream stage should continue (or not).",
+          "enum": [
+            "continue",
+            "continue_with_monitoring",
+            "stop",
+            "stop_and_repair",
+            "stop_and_rerun",
+            "stop_and_escalate"
+          ]
+        },
+        "required_inputs": {
+          "type": "array",
+          "description": "Controlled list of missing or required input identifiers that must be supplied before continuation or rerun.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required_validators": {
+          "type": "array",
+          "description": "Controlled validator names that must run before continuation or rerun is permitted.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "validate_runtime_compatibility",
+              "validate_bundle_contract",
+              "validate_traceability_integrity",
+              "validate_schema_conformance",
+              "validate_artifact_completeness",
+              "validate_cross_artifact_consistency"
+            ]
+          }
+        },
+        "repair_actions": {
+          "type": "array",
+          "description": "Controlled repair action names describing what must be fixed before continuation.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "rebuild_with_registry",
+              "restore_missing_lineage",
+              "rerun_with_strict_validation",
+              "repair_schema_errors",
+              "repair_missing_inputs",
+              "escalate_for_manual_review"
+            ]
+          }
+        },
+        "rerun_recommended": {
+          "type": "boolean",
+          "description": "True when rerunning the pipeline after repair is the recommended next step."
+        },
+        "human_review_required": {
+          "type": "boolean",
+          "description": "True when a human must review this artifact before the stage may continue."
+        },
+        "escalation_required": {
+          "type": "boolean",
+          "description": "True when governance escalation is required before the stage may continue."
+        },
+        "publication_allowed": {
+          "type": "boolean",
+          "description": "True when publishing this artifact as an output is permitted by the control chain."
+        },
+        "decision_grade_allowed": {
+          "type": "boolean",
+          "description": "True when this artifact meets the bar for decision-grade use (recommend, synthesis, export stages)."
+        },
+        "traceability_required": {
+          "type": "boolean",
+          "description": "True when traceability/lineage must be established or repaired before continuation."
+        },
+        "control_signal_reason_codes": {
+          "type": "array",
+          "description": "Ordered list of governed control-signal reason codes explaining why these signals were emitted.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "missing_required_input",
+              "missing_traceability",
+              "degraded_lineage_not_allowed",
+              "invalid_lineage",
+              "malformed_control_input",
+              "schema_nonconformance",
+              "gating_halt",
+              "decision_stage_requires_strict_validation",
+              "rerun_possible_after_repair",
+              "escalation_required_for_decision_stage",
+              "human_review_required_for_warning_state"
+            ]
+          }
+        }
+      }
+    }
+  },
   "properties": {
     "control_chain_decision_id": {
       "type": "string",
@@ -141,6 +259,9 @@
         "stop_and_rerun_with_registry",
         "stop_and_escalate"
       ]
+    },
+    "control_signals": {
+      "$ref": "#/$defs/control_signals"
     },
     "evaluated_at": {
       "type": "string",

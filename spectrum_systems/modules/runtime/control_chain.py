@@ -141,6 +141,17 @@ from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     KNOWN_STAGES,
     resolve_effective_slo_policy,
 )
+from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
+    derive_control_signals,
+    summarize_control_signals,
+    explain_blocking_requirements,
+    list_required_followups,
+    validate_control_signals,
+    KNOWN_CONTINUATION_MODES,
+    KNOWN_CS_REASON_CODES,
+    KNOWN_VALIDATORS,
+    KNOWN_REPAIR_ACTIONS,
+)
 
 # ---------------------------------------------------------------------------
 # Decision-bearing stages (mandatory gating required)
@@ -508,6 +519,7 @@ def build_control_chain_decision(
     warnings: List[str],
     errors: List[str],
     recommended_action: str,
+    control_signals: Optional[Dict[str, Any]] = None,
     stage_source: Optional[str] = None,
     evaluated_at: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -544,6 +556,7 @@ def build_control_chain_decision(
         "warnings": list(warnings),
         "errors": list(errors),
         "recommended_action": recommended_action,
+        "control_signals": control_signals if control_signals is not None else {},
         "evaluated_at": ts,
         "schema_version": CONTRACT_VERSION,
     }
@@ -587,8 +600,8 @@ def summarize_control_chain_decision(result: Dict[str, Any]) -> str:
     """Return a human-readable multi-line summary of a control-chain result."""
     cd = result.get("control_chain_decision") or {}
     lines = [
-        "SLO Control-Chain Decision (BN.4)",
-        "----------------------------------",
+        "SLO Control-Chain Decision (BN.4 / BN.5)",
+        "-----------------------------------------",
         f"  continuation_allowed     : {cd.get('continuation_allowed')}",
         f"  primary_reason_code      : {cd.get('primary_reason_code', '(unknown)')}",
         f"  recommended_action       : {cd.get('recommended_action', '(unknown)')}",
@@ -622,6 +635,13 @@ def summarize_control_chain_decision(result: Dict[str, Any]) -> str:
         lines.append("  schema_errors:")
         for se in schema_errs:
             lines.append(f"    - {se}")
+
+    # BN.5 control signals summary
+    cs = cd.get("control_signals") or {}
+    if cs:
+        lines.append("")
+        lines.append(summarize_control_signals(cs))
+
     return "\n".join(lines)
 
 
@@ -854,7 +874,23 @@ def _run_control_chain_inner(
     )
 
     # ------------------------------------------------------------------ #
-    # 9. Build artifact
+    # 9. Derive control signals (BN.5)
+    # ------------------------------------------------------------------ #
+    cs = derive_control_signals(
+        continuation_allowed=continuation_allowed,
+        primary_reason_code=reason_code,
+        gating_outcome=gating_outcome_str,
+        enforcement_status=enforcement_decision_status_str,
+        lineage_defaulted=lineage_defaulted if isinstance(lineage_defaulted, bool) else None,
+        lineage_valid=lineage_valid if isinstance(lineage_valid, bool) else None,
+        stage=stage,
+        has_schema_errors=False,  # schema errors discovered in step 10; pre-flight clean
+        required_inputs=None,
+        traceability_integrity_sli=ti_value if isinstance(ti_value, (int, float)) else None,
+    )
+
+    # ------------------------------------------------------------------ #
+    # 10. Build artifact
     # ------------------------------------------------------------------ #
     control_chain_decision = build_control_chain_decision(
         artifact_id=artifact_id_str,
@@ -875,12 +911,13 @@ def _run_control_chain_inner(
         warnings=acc_warnings,
         errors=acc_errors,
         recommended_action=recommended_action,
+        control_signals=cs,
         stage_source=stage_source,
         evaluated_at=evaluated_at,
     )
 
     # ------------------------------------------------------------------ #
-    # 10. Schema validation
+    # 11. Schema validation
     # ------------------------------------------------------------------ #
     schema_errors = validate_control_chain_decision(control_chain_decision)
 
@@ -915,6 +952,18 @@ def _make_error_artifact(
     evaluated_at: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Construct a governed fail-closed control-chain result."""
+    cs = derive_control_signals(
+        continuation_allowed=False,
+        primary_reason_code=reason_code,
+        gating_outcome=None,
+        enforcement_status=None,
+        lineage_defaulted=None,
+        lineage_valid=None,
+        stage=stage,
+        has_schema_errors=False,
+        required_inputs=None,
+        traceability_integrity_sli=None,
+    )
     decision = build_control_chain_decision(
         artifact_id="(unknown)",
         stage=stage,
@@ -938,6 +987,7 @@ def _make_error_artifact(
             enforcement_status=None,
             gating_outcome=None,
         ),
+        control_signals=cs,
         stage_source=stage_source,
         evaluated_at=evaluated_at,
     )
