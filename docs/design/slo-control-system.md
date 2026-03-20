@@ -1869,3 +1869,179 @@ Control Integration Result (BN.7)
 **BN.8 — Pipeline-engine orchestration hooks**: extend the integration layer to
 accept a pipeline run manifest and enforce control at each pipeline stage
 boundary, propagating `execution_id` across stages for end-to-end traceability.
+
+---
+
+## BN.8 — Validator Execution Engine
+
+### Purpose
+
+BN.8 turns `required_validators` from a list of strings into a **governed,
+machine-executable validator subsystem**.  It centralises validator
+registration, name resolution, canonical ordering, structured execution, and
+result capture so that no downstream module may invent its own validator
+resolution logic.
+
+---
+
+### Validator registry model
+
+Every validator is an entry in a central registry
+(`spectrum_systems/modules/runtime/validator_engine.py`).
+
+Each entry carries:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `validator_name` | str | Canonical machine-readable name |
+| `callable_ref` | callable | Python function implementing the validator |
+| `description` | str | Human-readable description of what is validated |
+| `stage_applicability` | list[str] | Stages where this validator applies (`"*"` = all) |
+| `blocking_by_default` | bool | Whether a failure blocks the overall execution |
+| `output_schema` | str or None | Schema name for the structured result contract |
+
+Registered validators (BN.8 baseline):
+
+| Validator name | Description |
+| --- | --- |
+| `validate_runtime_compatibility` | Verifies runtime environment is present |
+| `validate_bundle_contract` | Verifies artifact satisfies the bundle contract |
+| `validate_schema_conformance` | Verifies artifact is a structured object |
+| `validate_traceability_integrity` | Verifies artifact carries a non-empty `artifact_id` |
+| `validate_artifact_completeness` | Verifies artifact payload field is present and non-null |
+| `validate_cross_artifact_consistency` | Verifies no cross-artifact self-reference in lineage |
+
+---
+
+### Canonical validator order
+
+Validators always execute in this deterministic order regardless of the order
+the caller requests them:
+
+```
+1. validate_runtime_compatibility
+2. validate_bundle_contract
+3. validate_schema_conformance
+4. validate_traceability_integrity
+5. validate_artifact_completeness
+6. validate_cross_artifact_consistency
+```
+
+If the caller provides validators in a different order, the engine normalises
+to canonical order before execution.  The original caller-requested order is
+preserved in `validators_requested` for observability.
+
+---
+
+### Structured validator results
+
+Every execution of `run_validators()` returns a
+`ValidatorExecutionResult` dict governed by
+`contracts/schemas/validator_execution_result.schema.json`.
+
+Top-level fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `execution_id` | str | UUID unique per run |
+| `validators_requested` | list[str] | Caller-supplied names (before normalisation) |
+| `validators_run` | list[str] | Names actually executed (canonical order) |
+| `validators_passed` | list[str] | Names that passed |
+| `validators_failed` | list[str] | Names that failed or were blocked |
+| `validator_results` | list[object] | Per-validator structured results |
+| `overall_status` | enum | `pass`, `fail`, or `blocked` |
+| `failure_reason_codes` | list[str] | Aggregate reason codes from failed validators |
+| `evaluated_at` | datetime | ISO 8601 timestamp |
+| `schema_version` | str | Contract version (`"1.0.0"`) |
+
+Per-validator result fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `validator_name` | str | Name of the validator |
+| `status` | enum | `pass`, `fail`, `blocked`, or `error` |
+| `blocking` | bool | Whether this validator gates execution |
+| `reason_codes` | list[str] | Machine-readable failure codes |
+| `warnings` | list[str] | Non-fatal warnings |
+| `errors` | list[str] | Error messages |
+| `details` | object | Structured diagnostic context |
+
+---
+
+### Fail-closed semantics
+
+| Condition | Result |
+| --- | --- |
+| Unknown validator name | `blocked` — not silently skipped |
+| Missing callable in registry | `blocked` |
+| Validator raises an exception | `blocked` |
+| Malformed validator result (missing required keys / invalid status) | `blocked` |
+| Not-yet-implemented validator (stub) | `blocked` — stubs never silently pass |
+| Schema validation failure on overall result | `overall_status` forced to `blocked` |
+
+No validator failure is ever silently ignored.  All failures are recorded in
+`validator_results` with structured reason codes.
+
+---
+
+### Integration with control_executor (BN.6)
+
+`control_executor.run_required_validators()` now delegates entirely to
+`validator_engine.run_validators()`.  No local validator registry or
+resolution logic exists in `control_executor`.
+
+The BN.6 public API is unchanged:
+
+- `execute_control_signals(control_signals, context)` — unchanged signature
+- `build_execution_result(...)` — unchanged
+- `validate_execution_result(result)` — unchanged
+- `summarize_execution_result(result)` — unchanged
+- `explain_execution_path(control_signals, result)` — unchanged
+
+The execution result includes `validators_run` and `validators_failed` as
+before, populated from the `ValidatorExecutionResult` returned by BN.8.
+
+`summarize_execution_result()` output includes:
+
+```
+Control Execution Result (BN.6)
+-----------------------------
+  execution_status      : success
+  validators_run        : ['validate_schema_conformance']
+  validators_failed     : []
+  …
+```
+
+---
+
+### Public API
+
+```python
+from spectrum_systems.modules.runtime.validator_engine import (
+    get_validator_registry,      # → Dict[str, entry]
+    list_registered_validators,  # → List[str] (canonical order first)
+    resolve_validator,           # → (callable, metadata) or raises KeyError
+    run_validators,              # → ValidatorExecutionResult
+    validate_validator_result,   # → List[str] errors
+    summarize_validator_execution,  # → str
+)
+```
+
+---
+
+### Known limitations
+
+- Validator implementations are functional stubs for some checks (e.g.
+  `validate_artifact_completeness` checks payload presence, not deep schema
+  conformance).  Full implementations should be added as the artifact model
+  matures.
+- Cross-artifact consistency check is limited to self-reference detection.
+  Full multi-artifact consistency requires a lineage registry.
+- There is no caching of validator results across calls.
+
+### Next recommended step
+
+**BN.9 — Full validator implementations**: replace the lightweight functional
+stubs with schema-driven implementations that consume `contracts/schemas/` for
+`validate_schema_conformance` and integrate `artifact_lineage.py` for
+`validate_traceability_integrity` and `validate_cross_artifact_consistency`.

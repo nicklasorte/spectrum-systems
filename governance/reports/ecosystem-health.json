@@ -1,18 +1,18 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-20T00:07:28Z",
+  "generated_at": "2026-03-20T11:48:54Z",
   "summary": {
     "overall_health": "warning",
     "total_repos": 13,
     "governance_compliance": {
-      "compliant": 10,
-      "warning": 3,
+      "compliant": 13,
+      "warning": 0,
       "fail": 0,
       "partial": 0
     },
     "contract_alignment": {
-      "pass": 9,
-      "warning": 3,
+      "pass": 8,
+      "warning": 4,
       "governance-repo": 1
     },
     "schema_integrity": {
@@ -133,7 +133,7 @@
       "repo_type": "operational_engine",
       "architecture_layer": "Layer 3",
       "status": "active",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -208,7 +208,7 @@
       "repo_type": "advisory",
       "architecture_layer": "Layer 5",
       "status": "experimental",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "partial",
@@ -258,7 +258,7 @@
       "repo_type": "governance",
       "architecture_layer": "Layer 2",
       "status": "active",
-      "governance_status": "warning",
+      "governance_status": "compliant",
       "contract_status": "governance-repo",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -309,22 +309,22 @@
       "architecture_layer": "Layer 1",
       "status": "active",
       "governance_status": "compliant",
-      "contract_status": "pass",
+      "contract_status": "warning",
       "schema_status": "compliant",
       "ci_status": "compliant",
       "maturity_score": {
-        "raw": 18,
+        "raw": 16,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "compliant",
+          "contract_compliance": "partial",
           "schema_alignment": "compliant",
           "ci_enforcement": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 9,
+      "maturity_level": 8,
       "notes": ""
     },
     {

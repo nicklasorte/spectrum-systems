@@ -232,6 +232,13 @@
       ]
     },
     {
+      "artifact_type": "control_execution_result",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `control_execution_result`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "coordination_loop",
       "artifact_class": "coordination",
       "description": "Marker node for systems participating in the coordination loop.",
@@ -549,6 +556,18 @@
       ]
     },
     {
+      "contract_name": "control_execution_result",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-systems",
+        "system-factory"
+      ],
+      "related_artifact_types": [
+        "control_execution_result"
+      ]
+    },
+    {
       "contract_name": "decision_log",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -784,6 +803,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "control_execution_result",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "control_execution_result"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "decision_log",
       "relation": "governed_by",
       "to_type": "contract",
@@ -928,6 +954,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "comment_resolution_matrix_spreadsheet_contract"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "control_execution_result",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "control_execution_result"
     },
     {
       "from_type": "contract",

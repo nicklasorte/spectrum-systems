@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-20T00:07:28Z",
+  "generated_at": "2026-03-20T11:48:54Z",
   "nodes": {
     "repositories": [
       {
@@ -123,6 +123,12 @@
       },
       {
         "id": "comment_resolution_matrix_spreadsheet_contract",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "control_execution_result",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

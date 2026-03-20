@@ -13,6 +13,7 @@ flowchart TD
   art_comment_resolution_matrix["comment_resolution_matrix\nreview"]
   art_comment_resolution_matrix_spreadsheet["comment_resolution_matrix_spreadsheet\nreview"]
   art_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\nreview"]
+  art_control_execution_result["control_execution_result\ncoordination"]
   art_coordination_loop["coordination_loop\ncoordination"]
   art_cross_loop["cross_loop\ncoordination"]
   art_decision_log["decision_log\ncoordination"]
@@ -47,6 +48,7 @@ flowchart TD
   con_assumption_register["assumption_register\ncontract"]
   con_comment_resolution_matrix["comment_resolution_matrix\ncontract"]
   con_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\ncontract"]
+  con_control_execution_result["control_execution_result\ncontract"]
   con_decision_log["decision_log\ncontract"]
   con_evaluation_manifest["evaluation_manifest\ncontract"]
   con_external_artifact_manifest["external_artifact_manifest\ncontract"]
@@ -68,6 +70,7 @@ flowchart TD
   art_assumption_register -. governed_by .-> con_assumption_register
   art_comment_resolution_matrix -. governed_by .-> con_comment_resolution_matrix
   art_comment_resolution_matrix_spreadsheet_contract -. governed_by .-> con_comment_resolution_matrix_spreadsheet_contract
+  art_control_execution_result -. governed_by .-> con_control_execution_result
   art_decision_log -. governed_by .-> con_decision_log
   art_evaluation_manifest -. governed_by .-> con_evaluation_manifest
   art_external_artifact_manifest -. governed_by .-> con_external_artifact_manifest
@@ -89,6 +92,7 @@ flowchart TD
   con_assumption_register -->|validates| art_assumption_register
   con_comment_resolution_matrix -->|validates| art_comment_resolution_matrix
   con_comment_resolution_matrix_spreadsheet_contract -->|validates| art_comment_resolution_matrix_spreadsheet_contract
+  con_control_execution_result -->|validates| art_control_execution_result
   con_decision_log -->|validates| art_decision_log
   con_evaluation_manifest -->|validates| art_evaluation_manifest
   con_external_artifact_manifest -->|validates| art_external_artifact_manifest

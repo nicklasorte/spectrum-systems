@@ -1,15 +1,15 @@
 # Cross-Repo Contract Enforcement Report
 
-Generated: 2026-03-20T00:07:26Z
+Generated: 2026-03-20T11:48:52Z
 Source: `contracts/standards-manifest.json`
 
 ## Summary
 
 | Status | Count |
 |--------|-------|
-| Pass | 9 |
+| Pass | 8 |
 | Fail | 0 |
-| Warning | 3 |
+| Warning | 4 |
 | Not Yet Enforceable | 0 |
 | Total Inspected | 13 |
 
@@ -26,7 +26,7 @@ Source: `contracts/standards-manifest.json`
 - **spectrum-study-compiler** `spectrum-study-compiler` — ✅ PASS
 - **spectrum-systems** — 🏛 GOVERNANCE REPO
 - **study-artifact-generator** `study-artifact-generator` — ✅ PASS
-- **system-factory** `system-factory` — ✅ PASS
+- **system-factory** `system-factory` — ⚠️ WARNING
 - **working-paper-review-engine** `working-paper-review-engine` — ⚠️ WARNING
 
 ## Enforcement Failures
@@ -35,6 +35,8 @@ None.
 
 ## Warnings
 
+- `[contract-enforcement] repo=spectrum-pipeline-engine system_id=spectrum-pipeline-engine contract=control_execution_result rule=consumer-consistency error=repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest`
+- `[contract-enforcement] repo=system-factory system_id=system-factory contract=control_execution_result rule=consumer-consistency error=repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest`
 - `[contract-enforcement] repo=spectrum-pipeline-engine system_id=spectrum-pipeline-engine contract=evaluation_manifest rule=consumer-consistency error=repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest`
 - `[contract-enforcement] repo=spectrum-program-advisor system_id=spectrum-program-advisor contract=evaluation_manifest rule=consumer-consistency error=repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest`
 - `[contract-enforcement] repo=working-paper-review-engine system_id=working-paper-review-engine contract=slide_deck rule=consumer-consistency error=repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest`
@@ -49,6 +51,8 @@ All governed repos have governance manifests.
 ## Remediation Actions
 
 ### Warnings (recommended)
+- **spectrum-pipeline-engine**: `consumer-consistency` on `control_execution_result` — repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest.
+- **system-factory**: `consumer-consistency` on `control_execution_result` — repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest.
 - **spectrum-pipeline-engine**: `consumer-consistency` on `evaluation_manifest` — repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest.
 - **spectrum-program-advisor**: `consumer-consistency` on `evaluation_manifest` — repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest.
 - **working-paper-review-engine**: `consumer-consistency` on `slide_deck` — repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest.

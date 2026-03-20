@@ -32,6 +32,7 @@ graph LR
     assumption_register(["assumption_register"])
     comment_resolution_matrix(["comment_resolution_matrix"])
     comment_resolution_matrix_spreadsheet_contract(["comment_resolution_matrix_spreadsheet_contract"])
+    control_execution_result(["control_execution_result"])
     decision_log(["decision_log"])
     evaluation_manifest(["evaluation_manifest"])
     external_artifact_manifest(["external_artifact_manifest"])
@@ -43,8 +44,7 @@ graph LR
     pdf_anchored_docx_comment_injection_contract(["pdf_anchored_docx_comment_injection_contract"])
     program_brief(["program_brief"])
     provenance_record(["provenance_record"])
-    reviewer_comment_set(["reviewer_comment_set"])
-    more_contracts["... and 6 more"]
+    more_contracts["... and 7 more"]
   end
 
   comment_resolution_engine -->|consumes| comment_resolution_matrix
@@ -53,7 +53,6 @@ graph LR
   comment_resolution_engine -->|consumes| meeting_agenda_contract
   comment_resolution_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
   comment_resolution_engine -->|consumes| provenance_record
-  comment_resolution_engine -->|consumes| reviewer_comment_set
   docx_comment_injection_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
   meeting_minutes_engine -->|consumes| meeting_agenda_contract
   meeting_minutes_engine -->|consumes| meeting_minutes
@@ -86,8 +85,6 @@ graph LR
   system_factory -->|consumes| pdf_anchored_docx_comment_injection_contract
   system_factory -->|consumes| program_brief
   system_factory -->|consumes| provenance_record
-  system_factory -->|consumes| reviewer_comment_set
   working_paper_review_engine -->|consumes| comment_resolution_matrix
   working_paper_review_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
   working_paper_review_engine -->|consumes| provenance_record
-  working_paper_review_engine -->|consumes| reviewer_comment_set
