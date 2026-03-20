@@ -35,6 +35,11 @@ slo_control
 artifact_lineage
     Strict deterministic lineage system connecting all pipeline artifacts
     with full traceability and integrity enforcement (BS).
+trace_store
+    Durable file-backed trace persistence, retrieval, and validation (BN).
+replay_engine
+    Deterministic replay of prior execution traces for debugging, audit,
+    and learning workflows (BP).
 """
 
 from spectrum_systems.modules.runtime.runtime_compatibility import (
@@ -146,6 +151,20 @@ from spectrum_systems.modules.runtime.artifact_lineage import (
     validate_full_registry,
     validate_lineage_chain,
 )
+from spectrum_systems.modules.runtime.trace_store import (
+    delete_trace,
+    list_traces,
+    load_trace,
+    persist_trace,
+    validate_persisted_trace,
+)
+from spectrum_systems.modules.runtime.replay_engine import (
+    build_replay_record,
+    compare_replay_outputs,
+    execute_replay,
+    validate_replay_prerequisites,
+    validate_replay_result,
+)
 
 __all__ = [
     # BC — Runtime Compatibility
@@ -250,4 +269,16 @@ __all__ = [
     "enforce_no_orphans",
     "validate_lineage_against_schema",
     "validate_full_registry",
+    # BN — Trace Persistence (trace_store)
+    "persist_trace",
+    "load_trace",
+    "list_traces",
+    "delete_trace",
+    "validate_persisted_trace",
+    # BP — Replay Engine
+    "build_replay_record",
+    "validate_replay_prerequisites",
+    "execute_replay",
+    "compare_replay_outputs",
+    "validate_replay_result",
 ]

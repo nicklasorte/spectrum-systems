@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/replay_result.schema.json",
+  "title": "Replay Result",
+  "description": "Governed artifact produced by the BN–BP Replay Engine describing the outcome of replaying a prior execution trace.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "replay_id",
+    "source_trace_id",
+    "replayed_at",
+    "status",
+    "prerequisites_valid",
+    "prerequisite_errors",
+    "steps_executed",
+    "output_comparison",
+    "determinism_notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "replay_result",
+      "description": "Governed artifact type identifier."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version for the replay result artifact."
+    },
+    "replay_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this replay run (UUID-4)."
+    },
+    "source_trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The trace_id of the original execution being replayed."
+    },
+    "replayed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp when the replay was executed."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "partial", "failed", "blocked"],
+      "description": "Overall replay outcome. 'blocked' means prerequisites were not met."
+    },
+    "prerequisites_valid": {
+      "type": "boolean",
+      "description": "Whether all prerequisites were satisfied before replay execution began."
+    },
+    "prerequisite_errors": {
+      "type": "array",
+      "description": "List of prerequisite validation errors. Empty when prerequisites_valid is true.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "steps_executed": {
+      "type": "array",
+      "description": "Ordered list of replay steps that were executed.",
+      "items": {
+        "type": "object",
+        "required": [
+          "step_index",
+          "span_name",
+          "original_span_id",
+          "status",
+          "replayed_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-based index of this step within the replay."
+          },
+          "span_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Name of the span being replayed."
+          },
+          "original_span_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "span_id from the original trace."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ok", "error", "blocked", "skipped"],
+            "description": "Outcome of this replay step."
+          },
+          "replayed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO-8601 UTC timestamp when this step was replayed."
+          },
+          "error_message": {
+            "type": ["string", "null"],
+            "description": "Error detail when status is error or blocked."
+          }
+        }
+      }
+    },
+    "output_comparison": {
+      "type": "object",
+      "description": "Comparison of replay outputs against original outputs.",
+      "required": [
+        "compared",
+        "matched",
+        "differences"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "compared": {
+          "type": "boolean",
+          "description": "Whether an output comparison was performed."
+        },
+        "matched": {
+          "type": ["boolean", "null"],
+          "description": "Whether replay outputs matched original outputs. Null if not compared."
+        },
+        "differences": {
+          "type": "array",
+          "description": "List of detected differences. Empty when matched is true.",
+          "items": {
+            "type": "object",
+            "required": [
+              "field",
+              "original_value",
+              "replay_value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string",
+                "minLength": 1,
+                "description": "JSON path or field name where the difference was found."
+              },
+              "original_value": {
+                "description": "Value from the original trace."
+              },
+              "replay_value": {
+                "description": "Value from the replay trace."
+              }
+            }
+          }
+        }
+      }
+    },
+    "determinism_notes": {
+      "type": "array",
+      "description": "Notes about non-deterministic elements encountered during replay.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional replay context metadata (e.g. triggered_by, replay_mode)."
+    }
+  }
+}

@@ -62,3 +62,6 @@ artifacts/policy-engine-summary.md
 # Runtime decision archive files (transient operational artifacts)
 data/run_bundle_decisions/*.json
 data/run_output_evaluation_decisions/*.json
+
+# Persisted traces (runtime data, not committed)
+data/traces/*.json
