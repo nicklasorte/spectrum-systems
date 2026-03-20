@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/strategic_knowledge_source_ref.schema.json",
+  "title": "Strategic Knowledge Source Reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "source_id",
+    "source_type",
+    "source_path",
+    "source_status",
+    "registered_at",
+    "metadata"
+  ],
+  "properties": {
+    "artifact_type": {"const": "strategic_knowledge_source_ref"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "source_id": {"type": "string", "minLength": 1},
+    "source_type": {"type": "string", "enum": ["book_pdf", "transcript", "slide_deck"]},
+    "source_path": {"type": "string", "minLength": 1},
+    "source_status": {"type": "string", "enum": ["registered", "ready", "blocked", "archived"]},
+    "registered_at": {"type": "string", "format": "date-time"},
+    "tags": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "author": {"type": "string"},
+        "meeting_id": {"type": "string"},
+        "recorded_at": {"type": "string", "format": "date-time"},
+        "language": {"type": "string"},
+        "description": {"type": "string"}
+      }
+    }
+  }
+}

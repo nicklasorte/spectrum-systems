@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/story_bank_entry.schema.json",
+  "title": "Story Bank Entry",
+  "allOf": [
+    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
+    {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": ["artifact_type", "headline", "narrative", "strategic_relevance"],
+      "properties": {
+        "artifact_type": {"const": "story_bank_entry"},
+        "headline": {"type": "string", "minLength": 1},
+        "narrative": {"type": "string", "minLength": 1},
+        "strategic_relevance": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}

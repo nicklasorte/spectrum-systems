@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/book_intelligence_pack.schema.json",
+  "title": "Book Intelligence Pack",
+  "allOf": [
+    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
+    {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": ["artifact_type", "insights", "themes", "key_claims"],
+      "properties": {
+        "artifact_type": {"const": "book_intelligence_pack"},
+        "insights": {"type": "array", "items": {"type": "string"}},
+        "themes": {"type": "array", "items": {"type": "string"}},
+        "key_claims": {"type": "array", "items": {"type": "string"}},
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Qualitative confidence only; no pseudo-precision scores."
+        }
+      }
+    }
+  ]
+}

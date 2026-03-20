@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/tactic_register.schema.json",
+  "title": "Tactic Register",
+  "allOf": [
+    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
+    {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": ["artifact_type", "tactic_name", "context", "recommended_use"],
+      "properties": {
+        "artifact_type": {"const": "tactic_register"},
+        "tactic_name": {"type": "string", "minLength": 1},
+        "context": {"type": "string", "minLength": 1},
+        "recommended_use": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}

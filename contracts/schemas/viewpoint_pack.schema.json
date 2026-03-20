@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/viewpoint_pack.schema.json",
+  "title": "Viewpoint Pack",
+  "allOf": [
+    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
+    {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": ["artifact_type", "viewpoint", "supporting_arguments"],
+      "properties": {
+        "artifact_type": {"const": "viewpoint_pack"},
+        "viewpoint": {"type": "string", "minLength": 1},
+        "supporting_arguments": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "counterpoints": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/transcript_intelligence_pack.schema.json",
+  "title": "Transcript Intelligence Pack",
+  "allOf": [
+    {"$ref": "strategic_knowledge_artifact_ref.schema.json"},
+    {
+      "type": "object",
+      "unevaluatedProperties": false,
+      "required": ["artifact_type", "decisions", "open_questions", "action_signals"],
+      "properties": {
+        "artifact_type": {"const": "transcript_intelligence_pack"},
+        "decisions": {"type": "array", "items": {"type": "string"}},
+        "open_questions": {"type": "array", "items": {"type": "string"}},
+        "action_signals": {"type": "array", "items": {"type": "string"}},
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        }
+      }
+    }
+  ]
+}
