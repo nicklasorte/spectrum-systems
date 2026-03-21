@@ -37,6 +37,11 @@ def main() -> int:
     )
     parser.add_argument("--trace-id", type=str, default=None, help="Optional trace identifier override.")
     parser.add_argument("--span-id", type=str, default=None, help="Optional span identifier override.")
+    parser.add_argument(
+        "--emit-trace",
+        action="store_true",
+        help="Emit trace_spans in CLI JSON output (validator still computes trace metadata).",
+    )
     args = parser.parse_args()
 
     try:
@@ -58,7 +63,10 @@ def main() -> int:
     except json.JSONDecodeError as exc:
         print(f"ERROR: artifact JSON parse failed: {exc}", file=sys.stderr)
         return 2
-    print(json.dumps(decision, indent=2))
+    output = dict(decision)
+    if not args.emit_trace:
+        output.pop("trace_spans", None)
+    print(json.dumps(output, indent=2))
     return EXIT_CODES[decision["system_response"]]
 
 

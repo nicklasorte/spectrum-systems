@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 import uuid
 from typing import Any
 
+from .trace_emitter import emit_validation_trace_spans
+
 VALIDATOR_VERSION = "1.0.0"
 ARTIFACT_TYPES = frozenset(
     {
@@ -379,6 +381,7 @@ def validate_strategic_knowledge_artifact(
 
     context_payload = _coerce_context(context)
     trace_id, span_id = _resolve_trace_context(context_payload)
+    root_span_id = _coerce_trace_value(context_payload.get("root_span_id")) or str(uuid.uuid4())
     issues: list[ValidationIssue] = []
 
     schema_signal = context_payload.get("schema_valid")
@@ -422,6 +425,25 @@ def validate_strategic_knowledge_artifact(
         trust_score=trust_score,
     )
 
+    evaluated_at = str(context_payload.get("evaluated_at") or _utc_now_iso())
+    collected_issues = collect_validation_issues(
+        schema_valid=schema_valid,
+        source_refs_valid=source_refs_valid,
+        artifact_refs_valid=artifact_refs_valid,
+        evidence_anchor_coverage=evidence_anchor_coverage,
+        provenance_completeness=provenance_completeness,
+        issues=issues,
+    )
+    trace_spans = emit_validation_trace_spans(
+        trace_id=trace_id,
+        root_span_id=root_span_id,
+        decision_span_id=span_id,
+        timestamp=evaluated_at,
+        system_response=system_response,
+        trust_score=trust_score,
+        issue_count=len(collected_issues),
+    )
+
     return {
         "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
         "trace_id": trace_id,
@@ -429,7 +451,7 @@ def validate_strategic_knowledge_artifact(
         "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
         "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
         "schema_version": str(input_artifact.get("schema_version", "unknown")),
-        "evaluated_at": str(context_payload.get("evaluated_at") or _utc_now_iso()),
+        "evaluated_at": evaluated_at,
         "validator_version": str(context_payload.get("validator_version") or VALIDATOR_VERSION),
         "schema_valid": schema_valid,
         "source_refs_valid": source_refs_valid,
@@ -437,14 +459,8 @@ def validate_strategic_knowledge_artifact(
         "evidence_anchor_coverage": evidence_anchor_coverage,
         "provenance_completeness": provenance_completeness,
         "trust_score": trust_score,
-        "issues": collect_validation_issues(
-            schema_valid=schema_valid,
-            source_refs_valid=source_refs_valid,
-            artifact_refs_valid=artifact_refs_valid,
-            evidence_anchor_coverage=evidence_anchor_coverage,
-            provenance_completeness=provenance_completeness,
-            issues=issues,
-        ),
+        "issues": collected_issues,
+        "trace_spans": trace_spans,
         "system_response": system_response,
     }
 
