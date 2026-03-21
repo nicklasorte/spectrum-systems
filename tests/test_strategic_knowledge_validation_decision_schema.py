@@ -29,6 +29,24 @@ VALID_DECISION = {
             "message": "Artifact satisfied all strategic knowledge validation gate checks.",
         }
     ],
+    "trace_spans": [
+        {
+            "span_id": "span-001",
+            "trace_id": "trace-001",
+            "parent_span_id": None,
+            "name": "strategic_knowledge_validation",
+            "status": "ok",
+            "start_time": "2026-03-21T11:59:00Z",
+            "end_time": "2026-03-21T12:00:00Z",
+            "events": [
+                {
+                    "event_type": "validator_result",
+                    "timestamp": "2026-03-21T12:00:00Z",
+                    "attributes": {"system_response": "allow"},
+                }
+            ],
+        }
+    ],
     "system_response": "allow",
 }
 
