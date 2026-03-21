@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.8",
+  "artifact_version": "1.0.9",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.10",
-  "record_id": "REC-STD-2026-03-21-AGENT-EXEC",
-  "run_id": "run-20260321T210000Z",
+  "record_id": "REC-STD-2026-03-21-BBA-EVAL-CONTROL",
+  "run_id": "run-20260321T220000Z",
   "created_at": "2026-03-21T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -594,6 +594,19 @@
       "last_updated_in": "1.0.8",
       "example_path": "contracts/examples/agent_execution_trace.json",
       "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
+    },
+    {
+      "artifact_type": "evaluation_control_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.9",
+      "last_updated_in": "1.0.9",
+      "example_path": "contracts/examples/evaluation_control_decision.json",
+      "notes": "Governed deterministic control decision derived from eval_summary reliability, drift, trust, and indeterminate-failure control signals."
     }
   ]
 }

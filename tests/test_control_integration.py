@@ -631,3 +631,34 @@ def test_cli_enforce_control_handles_contract_runtime_error(tmp_path, capsys):
             ]
         )
     assert code == 3  # EXIT_ERROR
+
+
+def _eval_summary_artifact() -> Dict[str, Any]:
+    return {
+        "artifact_type": "eval_summary",
+        "schema_version": "1.0.0",
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "eval_run_id": "eval-run-20260321T120000Z",
+        "pass_rate": 0.95,
+        "failure_rate": 0.05,
+        "drift_rate": 0.05,
+        "reproducibility_score": 0.95,
+        "system_status": "healthy",
+    }
+
+
+def test_eval_summary_path_allows_and_emits_decision() -> None:
+    result = enforce_control_before_execution(_ctx(artifact=_eval_summary_artifact()))
+    assert result["continuation_allowed"] is True
+    assert result["execution_status"] == "success"
+    assert result["evaluation_control_decision"]["system_response"] == "allow"
+
+
+def test_eval_summary_freeze_blocks_continuation() -> None:
+    artifact = _eval_summary_artifact()
+    artifact["drift_rate"] = 0.8
+
+    result = enforce_control_before_execution(_ctx(artifact=artifact))
+    assert result["continuation_allowed"] is False
+    assert result["execution_status"] == "blocked"
+    assert result["evaluation_control_decision"]["system_response"] == "freeze"

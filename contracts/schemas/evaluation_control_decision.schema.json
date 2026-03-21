@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_control_decision.schema.json",
+  "title": "Evaluation Control Decision",
+  "description": "Governed control-loop decision artifact derived from eval_summary signals.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "eval_run_id",
+    "system_status",
+    "system_response",
+    "triggered_signals",
+    "threshold_snapshot",
+    "trace_id",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "evaluation_control_decision" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "decision_id": { "type": "string", "minLength": 1 },
+    "eval_run_id": { "type": "string", "minLength": 1 },
+    "system_status": {
+      "type": "string",
+      "enum": ["healthy", "warning", "exhausted", "blocked"]
+    },
+    "system_response": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "triggered_signals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "reliability_breach",
+          "stability_breach",
+          "trust_breach",
+          "indeterminate_failure",
+          "malformed_eval_summary",
+          "missing_required_signal"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "threshold_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reliability_threshold",
+        "drift_threshold",
+        "trust_threshold"
+      ],
+      "properties": {
+        "reliability_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "drift_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "trust_threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "system_status": {
+            "enum": ["warning", "exhausted", "blocked"]
+          }
+        },
+        "required": ["system_status"]
+      },
+      "then": {
+        "properties": {
+          "system_response": { "not": { "const": "allow" } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "system_response": { "enum": ["warn", "freeze", "block"] }
+        },
+        "required": ["system_response"]
+      },
+      "then": {
+        "properties": {
+          "triggered_signals": {
+            "minItems": 1
+          }
+        },
+        "required": ["triggered_signals"]
+      }
+    }
+  ]
+}
