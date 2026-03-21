@@ -37,6 +37,11 @@ def main() -> int:
     )
     parser.add_argument("--trace-id", type=str, default=None, help="Optional trace identifier override.")
     parser.add_argument("--span-id", type=str, default=None, help="Optional span identifier override.")
+    parser.add_argument(
+        "--emit-trace",
+        action="store_true",
+        help="Emit structured trace output alongside the decision payload.",
+    )
     args = parser.parse_args()
 
     try:
@@ -58,7 +63,20 @@ def main() -> int:
     except json.JSONDecodeError as exc:
         print(f"ERROR: artifact JSON parse failed: {exc}", file=sys.stderr)
         return 2
-    print(json.dumps(decision, indent=2))
+
+    if args.emit_trace:
+        payload = {
+            "decision": decision,
+            "trace": {
+                "trace_id": decision["trace_id"],
+                "root_span_id": decision["span_id"],
+                "spans": decision["trace_spans"],
+            },
+        }
+        print(json.dumps(payload, indent=2))
+    else:
+        print(json.dumps(decision, indent=2))
+
     return EXIT_CODES[decision["system_response"]]
 
 

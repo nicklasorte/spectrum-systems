@@ -98,3 +98,28 @@ def test_explicit_trace_context_is_preserved() -> None:
     )
     assert decision["trace_id"] == "trace-explicit-001"
     assert decision["span_id"] == "span-explicit-001"
+
+
+def test_trace_spans_present_with_expected_order_and_consistent_trace_id() -> None:
+    decision = validate_strategic_knowledge_artifact(_valid_artifact(), _context())
+    spans = decision["trace_spans"]
+    names = [span["name"] for span in spans]
+    assert names == [
+        "strategic_knowledge_validation",
+        "schema_validation",
+        "source_reference_validation",
+        "artifact_reference_validation",
+        "evidence_validation",
+        "provenance_validation",
+        "trust_score_computation",
+        "decision_generation",
+    ]
+    assert all(span["trace_id"] == decision["trace_id"] for span in spans)
+    assert spans[0]["span_id"] == decision["span_id"]
+
+
+def test_root_span_emits_lifecycle_events() -> None:
+    decision = validate_strategic_knowledge_artifact(_valid_artifact(), _context())
+    root_events = [event["event_name"] for event in decision["trace_spans"][0]["events"]]
+    assert root_events[0] == "validation_started"
+    assert root_events[-1] in {"validation_completed", "validation_failed"}

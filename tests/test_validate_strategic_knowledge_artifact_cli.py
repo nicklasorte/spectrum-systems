@@ -60,6 +60,7 @@ def _run_cli(
     *,
     trace_id: str | None = None,
     span_id: str | None = None,
+    emit_trace: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     artifact_path = tmp_path / "artifact.json"
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
@@ -75,6 +76,8 @@ def _run_cli(
         args.extend(["--trace-id", trace_id])
     if span_id is not None:
         args.extend(["--span-id", span_id])
+    if emit_trace:
+        args.append("--emit-trace")
     return subprocess.run(
         args,
         cwd=REPO_ROOT,
@@ -92,6 +95,7 @@ def test_cli_allow_returns_success_exit(tmp_path: Path) -> None:
     assert payload["system_response"] == "allow"
     assert payload["trace_id"]
     assert payload["span_id"]
+    assert payload["trace_spans"]
 
 
 def test_cli_require_review_is_non_blocking(tmp_path: Path) -> None:
@@ -133,3 +137,14 @@ def test_cli_honors_explicit_trace_context(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert payload["trace_id"] == "trace-cli-explicit-001"
     assert payload["span_id"] == "span-cli-explicit-001"
+
+
+def test_cli_emit_trace_outputs_decision_and_trace(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    result = _run_cli(tmp_path, _artifact_payload(), emit_trace=True)
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert payload["decision"]["system_response"] == "allow"
+    assert payload["trace"]["trace_id"] == payload["decision"]["trace_id"]
+    assert payload["trace"]["root_span_id"] == payload["decision"]["span_id"]
+    assert payload["trace"]["spans"] == payload["decision"]["trace_spans"]

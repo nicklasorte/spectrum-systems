@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/trace_span.schema.json",
+  "title": "Trace Span",
+  "description": "Structured execution span emitted during deterministic strategic knowledge validation runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trace_id",
+    "span_id",
+    "parent_span_id",
+    "name",
+    "start_time",
+    "end_time",
+    "status",
+    "attributes",
+    "events"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "span_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_span_id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failure"]
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_name", "timestamp", "attributes"],
+      "properties": {
+        "event_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

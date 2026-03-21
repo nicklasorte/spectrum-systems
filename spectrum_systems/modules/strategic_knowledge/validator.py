@@ -7,7 +7,15 @@ from datetime import datetime, timezone
 import uuid
 from typing import Any
 
-VALIDATOR_VERSION = "1.0.0"
+from spectrum_systems.modules.runtime.trace_emitter import (
+    SPAN_STATUS_FAILURE,
+    SPAN_STATUS_SUCCESS,
+    add_event,
+    end_span,
+    start_span,
+)
+
+VALIDATOR_VERSION = "1.1.0"
 ARTIFACT_TYPES = frozenset(
     {
         "book_intelligence_pack",
@@ -371,6 +379,31 @@ def collect_validation_issues(
     return [issue.as_dict() for issue in collected]
 
 
+def _emit_step_span(
+    *,
+    spans: list[dict[str, Any]],
+    trace_id: str,
+    root_span_id: str,
+    name: str,
+    success: bool,
+    attributes: dict[str, Any],
+    detail: dict[str, Any],
+) -> None:
+    step_span = start_span(
+        trace_id=trace_id,
+        parent_span_id=root_span_id,
+        name=name,
+        attributes=attributes,
+    )
+    add_event(
+        step_span,
+        event_name="validation_completed" if success else "validation_failed",
+        attributes=detail,
+    )
+    end_span(step_span, status=SPAN_STATUS_SUCCESS if success else SPAN_STATUS_FAILURE)
+    spans.append(step_span)
+
+
 def validate_strategic_knowledge_artifact(
     input_artifact: dict[str, Any],
     context: dict[str, Any] | None = None,
@@ -380,6 +413,18 @@ def validate_strategic_knowledge_artifact(
     context_payload = _coerce_context(context)
     trace_id, span_id = _resolve_trace_context(context_payload)
     issues: list[ValidationIssue] = []
+    trace_spans: list[dict[str, Any]] = []
+
+    root_span = start_span(
+        trace_id=trace_id,
+        span_id=span_id,
+        name="strategic_knowledge_validation",
+        attributes={
+            "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
+            "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
+        },
+    )
+    add_event(root_span, event_name="validation_started", attributes={"validator_version": VALIDATOR_VERSION})
 
     schema_signal = context_payload.get("schema_valid")
     if isinstance(schema_signal, bool):
@@ -395,15 +440,69 @@ def validate_strategic_knowledge_artifact(
     else:
         schema_valid = _validate_schema(input_artifact, issues)
 
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="schema_validation",
+        success=schema_valid,
+        attributes={"issues_count": len(issues)},
+        detail={"schema_valid": schema_valid},
+    )
+
     source_refs_valid = _check_source_refs(input_artifact, context_payload.get("source_catalog"), issues)
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="source_reference_validation",
+        success=source_refs_valid,
+        attributes={"issues_count": len(issues)},
+        detail={"source_refs_valid": source_refs_valid},
+    )
+
+    artifact_refs = _extract_artifact_refs(input_artifact)
     artifact_refs_valid = _check_artifact_refs(
-        _extract_artifact_refs(input_artifact),
+        artifact_refs,
         context_payload.get("artifact_registry"),
         issues,
     )
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="artifact_reference_validation",
+        success=artifact_refs_valid,
+        attributes={"artifact_ref_count": len(artifact_refs), "issues_count": len(issues)},
+        detail={"artifact_refs_valid": artifact_refs_valid},
+    )
 
     evidence_anchor_coverage = _compute_evidence_anchor_coverage(input_artifact)
+    evidence_valid = evidence_anchor_coverage >= EVIDENCE_REVIEW_THRESHOLD
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="evidence_validation",
+        success=evidence_valid,
+        attributes={
+            "anchor_count": len(input_artifact.get("evidence_anchors") or []),
+            "coverage": evidence_anchor_coverage,
+        },
+        detail={"evidence_anchor_coverage": evidence_anchor_coverage},
+    )
+
     provenance_completeness = _compute_provenance_completeness(input_artifact)
+    provenance_valid = provenance_completeness >= PROVENANCE_REBUILD_THRESHOLD
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="provenance_validation",
+        success=provenance_valid,
+        attributes={"provenance_completeness": provenance_completeness},
+        detail={"provenance_valid": provenance_valid},
+    )
 
     trust_score = compute_trust_score(
         schema_valid=schema_valid,
@@ -411,6 +510,16 @@ def validate_strategic_knowledge_artifact(
         artifact_refs_valid=artifact_refs_valid,
         evidence_anchor_coverage=evidence_anchor_coverage,
         provenance_completeness=provenance_completeness,
+    )
+    trust_valid = trust_score >= ALLOW_TRUST_THRESHOLD
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="trust_score_computation",
+        success=trust_valid,
+        attributes={"trust_score": trust_score, "allow_threshold": ALLOW_TRUST_THRESHOLD},
+        detail={"trust_score": trust_score},
     )
 
     system_response = _derive_system_response(
@@ -422,10 +531,33 @@ def validate_strategic_knowledge_artifact(
         trust_score=trust_score,
     )
 
+    decision_allows = system_response == "allow"
+    _emit_step_span(
+        spans=trace_spans,
+        trace_id=trace_id,
+        root_span_id=root_span["span_id"],
+        name="decision_generation",
+        success=decision_allows,
+        attributes={"system_response": system_response},
+        detail={"system_response": system_response},
+    )
+
+    add_event(
+        root_span,
+        event_name="validation_completed" if decision_allows else "validation_failed",
+        attributes={
+            "system_response": system_response,
+            "trust_score": trust_score,
+            "issue_count": len(issues),
+        },
+    )
+    end_span(root_span, status=SPAN_STATUS_SUCCESS if decision_allows else SPAN_STATUS_FAILURE)
+
     return {
         "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
         "trace_id": trace_id,
-        "span_id": span_id,
+        "span_id": root_span["span_id"],
+        "trace_spans": [root_span, *trace_spans],
         "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
         "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
         "schema_version": str(input_artifact.get("schema_version", "unknown")),

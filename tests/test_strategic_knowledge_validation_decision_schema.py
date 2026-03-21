@@ -11,6 +11,25 @@ VALID_DECISION = {
     "decision_id": "SK-VAL-ART-001",
     "trace_id": "trace-001",
     "span_id": "span-001",
+    "trace_spans": [
+        {
+            "trace_id": "trace-001",
+            "span_id": "span-001",
+            "parent_span_id": None,
+            "name": "strategic_knowledge_validation",
+            "start_time": "2026-03-21T12:00:00Z",
+            "end_time": "2026-03-21T12:00:01Z",
+            "status": "success",
+            "attributes": {"artifact_id": "ART-001"},
+            "events": [
+                {
+                    "event_name": "validation_started",
+                    "timestamp": "2026-03-21T12:00:00Z",
+                    "attributes": {"validator_version": "1.1.0"}
+                }
+            ]
+        }
+    ],
     "artifact_id": "ART-001",
     "artifact_type": "book_intelligence_pack",
     "schema_version": "1.0.0",
@@ -65,5 +84,12 @@ def test_invalid_system_response_fails() -> None:
 def test_extra_field_fails_when_additional_properties_false() -> None:
     payload = copy.deepcopy(VALID_DECISION)
     payload["unexpected"] = "not-allowed"
+    with pytest.raises(ValidationError):
+        _validator().validate(payload)
+
+
+def test_missing_trace_spans_fails() -> None:
+    payload = copy.deepcopy(VALID_DECISION)
+    payload.pop("trace_spans")
     with pytest.raises(ValidationError):
         _validator().validate(payload)
