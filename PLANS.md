@@ -96,6 +96,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BN.6-2026-03-20.md | BN.6 — Control Signal Consumption Layer | Active |
 | docs/review-actions/PLAN-BPA-2026-03-20.md | Prompt BPA — Strategic Knowledge Layer Foundation | Active |
 | docs/review-actions/PLAN-BPA-FIX-2026-03-20.md | Prompt BPA — CI/Registry/Contract Hardening Fixes | Active |
+| docs/review-actions/PLAN-BPB-2026-03-21.md | Prompt BPB — Strategic Knowledge Validation Gate | Active |
 
 Update this table when plans are created or completed.
 
