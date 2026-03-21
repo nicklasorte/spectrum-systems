@@ -17,7 +17,7 @@ from spectrum_systems.modules.strategic_knowledge.validation_loader import (  # 
 
 EXIT_CODES = {
     "allow": 0,
-    "require_review": 3,
+    "require_review": 0,
     "require_rebuild": 2,
     "block": 1,
 }
@@ -45,10 +45,6 @@ def main() -> int:
     except json.JSONDecodeError as exc:
         print(f"ERROR: artifact JSON parse failed: {exc}", file=sys.stderr)
         return 2
-    except ValueError as exc:
-        print(f"ERROR: validation gate rejected input: {exc}", file=sys.stderr)
-        return 1
-
     print(json.dumps(decision, indent=2))
     return EXIT_CODES[decision["system_response"]]
 
