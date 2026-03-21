@@ -90,7 +90,7 @@ def _run_legacy_manifest_validation(manifest_arg: str, bundle_root_arg: str | No
         print(f"ERROR: Cannot load bundle manifest: {exc}", file=sys.stderr)
         return 2
 
-    bundle_root = Path(bundle_root_arg).resolve() if bundle_root_arg else manifest_path.parent
+    bundle_root = Path(bundle_root_arg).resolve() if bundle_root_arg else None
 
     try:
         decision = validate_bundle_contract(manifest, bundle_root=bundle_root)
@@ -175,7 +175,13 @@ def main(argv: list[str] | None = None) -> int:
         return _run_new_bundle_validation(args.bundle)
 
     if args.bundle_manifest:
-        return _run_legacy_manifest_validation(args.bundle_manifest, args.bundle_root)
+        candidate = Path(args.bundle_manifest).resolve()
+        if candidate.is_dir():
+            return _run_new_bundle_validation(str(candidate))
+        if candidate.is_file() and candidate.suffix.lower() == ".json":
+            return _run_legacy_manifest_validation(str(candidate), args.bundle_root)
+        print(f"ERROR: unsupported input path type: {candidate}", file=sys.stderr)
+        return 2
 
     print("ERROR: missing input path; provide --bundle <dir> or positional manifest path", file=sys.stderr)
     return 2
