@@ -458,7 +458,7 @@
     {
       "artifact_type": "strategic_knowledge_validation_decision",
       "artifact_class": "review",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems",
@@ -466,9 +466,24 @@
         "spectrum-program-advisor"
       ],
       "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
+      "last_updated_in": "1.2.0",
       "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
-      "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
+      "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses. Includes deterministic trace spans for root and child validation operations."
+    },
+    {
+      "artifact_type": "trace_span",
+      "artifact_class": "telemetry",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/trace_span.json",
+      "notes": "Canonical deterministic trace span emitted by validators and runtime governance flows."
     }
   ]
 }

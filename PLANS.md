@@ -99,6 +99,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BPB-2026-03-21.md | Prompt BPB — Strategic Knowledge Validation Gate | Active |
 | docs/review-actions/PLAN-BPB-BOUNDARY-FIX-2026-03-21.md | Prompt BPB — Boundary Compliance Fix | Active |
 | docs/review-actions/PLAN-BAB-2026-03-21.md | Prompt BAB — Trace Context Injection | Active |
+| docs/review-actions/PLAN-BAC-2026-03-21.md | Prompt BAC — Strategic Validation Trace Span + CLI Trace Output Fix | Active |
 
 Update this table when plans are created or completed.
 

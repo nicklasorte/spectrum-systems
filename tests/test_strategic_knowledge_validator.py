@@ -43,6 +43,12 @@ def test_valid_artifact_returns_allow() -> None:
     assert decision["schema_valid"] is True
     assert decision["trace_id"]
     assert decision["span_id"]
+    assert [span["span_name"] for span in decision["trace_spans"]] == [
+        "strategic_knowledge_validation",
+        "schema_validation",
+        "reference_validation",
+        "trust_evaluation",
+    ]
 
 
 def test_schema_failure_returns_block() -> None:
@@ -53,6 +59,12 @@ def test_schema_failure_returns_block() -> None:
     assert decision["schema_valid"] is False
     assert decision["trace_id"]
     assert decision["span_id"]
+    assert [span["span_name"] for span in decision["trace_spans"]] == [
+        "strategic_knowledge_validation",
+        "schema_validation",
+        "reference_validation",
+        "trust_evaluation",
+    ]
 
 
 def test_missing_provenance_returns_require_rebuild() -> None:
@@ -98,3 +110,12 @@ def test_explicit_trace_context_is_preserved() -> None:
     )
     assert decision["trace_id"] == "trace-explicit-001"
     assert decision["span_id"] == "span-explicit-001"
+
+
+def test_trace_spans_are_deterministic_when_evaluated_at_is_fixed() -> None:
+    context = {**_context(), "evaluated_at": "2026-03-21T12:00:00Z", "trace_id": "trace-fixed", "span_id": "span-fixed"}
+    decision = validate_strategic_knowledge_artifact(_valid_artifact(), context)
+    assert all(span["start_time"] == "2026-03-21T12:00:00Z" for span in decision["trace_spans"])
+    assert all(span["end_time"] == "2026-03-21T12:00:00Z" for span in decision["trace_spans"])
+    assert decision["trace_spans"][0]["span_id"] == "span-fixed"
+    assert decision["trace_spans"][1]["parent_span_id"] == "span-fixed"

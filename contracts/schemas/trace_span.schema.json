@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/trace_span.schema.json",
+  "title": "Trace Span",
+  "description": "Canonical deterministic trace span emitted by governed validators.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trace_id",
+    "span_id",
+    "parent_span_id",
+    "span_name",
+    "start_time",
+    "end_time",
+    "status",
+    "attributes",
+    "events"
+  ],
+  "properties": {
+    "trace_id": {"type": "string", "minLength": 1},
+    "span_id": {"type": "string", "minLength": 1},
+    "parent_span_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "span_name": {"type": "string", "minLength": 1},
+    "start_time": {"type": "string", "format": "date-time"},
+    "end_time": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["ok", "error", "blocked"]},
+    "attributes": {"type": "object"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_name", "timestamp", "attributes"],
+        "properties": {
+          "event_name": {"type": "string", "minLength": 1},
+          "timestamp": {"type": "string", "format": "date-time"},
+          "attributes": {"type": "object"}
+        }
+      }
+    }
+  }
+}

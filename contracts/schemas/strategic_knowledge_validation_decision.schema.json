@@ -21,6 +21,7 @@
     "provenance_completeness",
     "trust_score",
     "issues",
+    "trace_spans",
     "system_response"
   ],
   "properties": {
@@ -110,15 +111,32 @@
     },
     "system_response": {
       "type": "string",
-      "enum": ["allow", "require_review", "require_rebuild", "block"],
+      "enum": [
+        "allow",
+        "require_review",
+        "require_rebuild",
+        "block"
+      ],
       "description": "Admission control outcome for the candidate artifact."
+    },
+    "trace_spans": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Deterministic root + child trace spans for this validation decision.",
+      "items": {
+        "$ref": "https://spectrum.systems/contracts/schemas/trace_span.schema.json"
+      }
     }
   },
   "$defs": {
     "issue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["code", "severity", "message"],
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
       "properties": {
         "code": {
           "type": "string",
@@ -127,7 +145,11 @@
         },
         "severity": {
           "type": "string",
-          "enum": ["info", "warning", "error"],
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
           "description": "Issue severity classification."
         },
         "message": {

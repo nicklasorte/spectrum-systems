@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 import uuid
 from typing import Any
 
+from spectrum_systems.modules.runtime.trace_emitter import build_validation_trace_spans
+
 VALIDATOR_VERSION = "1.0.0"
 ARTIFACT_TYPES = frozenset(
     {
@@ -422,14 +424,16 @@ def validate_strategic_knowledge_artifact(
         trust_score=trust_score,
     )
 
-    return {
+    evaluated_at = str(context_payload.get("evaluated_at") or _utc_now_iso())
+
+    decision = {
         "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
         "trace_id": trace_id,
         "span_id": span_id,
         "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
         "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
         "schema_version": str(input_artifact.get("schema_version", "unknown")),
-        "evaluated_at": str(context_payload.get("evaluated_at") or _utc_now_iso()),
+        "evaluated_at": evaluated_at,
         "validator_version": str(context_payload.get("validator_version") or VALIDATOR_VERSION),
         "schema_valid": schema_valid,
         "source_refs_valid": source_refs_valid,
@@ -447,6 +451,19 @@ def validate_strategic_knowledge_artifact(
         ),
         "system_response": system_response,
     }
+    decision["trace_spans"] = build_validation_trace_spans(
+        trace_id=trace_id,
+        root_span_id=span_id,
+        evaluated_at=evaluated_at,
+        system_response=system_response,
+        schema_valid=schema_valid,
+        source_refs_valid=source_refs_valid,
+        artifact_refs_valid=artifact_refs_valid,
+        evidence_anchor_coverage=evidence_anchor_coverage,
+        provenance_completeness=provenance_completeness,
+        trust_score=trust_score,
+    )
+    return decision
 
 
 __all__ = [
