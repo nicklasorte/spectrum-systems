@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-21T10:41:08Z",
+  "generated_at": "2026-03-21T15:04:56Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -232,38 +232,9 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "warning",
+      "validation_status": "pass",
       "failures": [],
-      "warnings": [
-        {
-          "repo": "spectrum-pipeline-engine",
-          "system_id": "spectrum-pipeline-engine",
-          "contract": "control_execution_result",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-pipeline-engine",
-          "system_id": "spectrum-pipeline-engine",
-          "contract": "evaluation_manifest",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-pipeline-engine",
-          "system_id": "spectrum-pipeline-engine",
-          "contract": "slide_deck",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-pipeline-engine",
-          "system_id": "spectrum-pipeline-engine",
-          "contract": "strategic_knowledge_validation_decision",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'strategic_knowledge_validation_decision' (canonical v1.0.0) but does not declare it in its governance manifest"
-        }
-      ]
+      "warnings": []
     },
     {
       "repo_name": "spectrum-program-advisor",
@@ -326,31 +297,9 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "warning",
+      "validation_status": "pass",
       "failures": [],
-      "warnings": [
-        {
-          "repo": "spectrum-program-advisor",
-          "system_id": "spectrum-program-advisor",
-          "contract": "evaluation_manifest",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'evaluation_manifest' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-program-advisor",
-          "system_id": "spectrum-program-advisor",
-          "contract": "slide_intelligence_packet",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'slide_intelligence_packet' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "spectrum-program-advisor",
-          "system_id": "spectrum-program-advisor",
-          "contract": "strategic_knowledge_validation_decision",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'strategic_knowledge_validation_decision' (canonical v1.0.0) but does not declare it in its governance manifest"
-        }
-      ]
+      "warnings": []
     },
     {
       "repo_name": "spectrum-study-compiler",
@@ -492,17 +441,9 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "warning",
+      "validation_status": "pass",
       "failures": [],
-      "warnings": [
-        {
-          "repo": "system-factory",
-          "system_id": "system-factory",
-          "contract": "control_execution_result",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'control_execution_result' (canonical v1.0.0) but does not declare it in its governance manifest"
-        }
-      ]
+      "warnings": []
     },
     {
       "repo_name": "working-paper-review-engine",
@@ -541,24 +482,9 @@
         }
       ],
       "contracts_produced": [],
-      "validation_status": "warning",
+      "validation_status": "pass",
       "failures": [],
-      "warnings": [
-        {
-          "repo": "working-paper-review-engine",
-          "system_id": "working-paper-review-engine",
-          "contract": "slide_deck",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest"
-        },
-        {
-          "repo": "working-paper-review-engine",
-          "system_id": "working-paper-review-engine",
-          "contract": "slide_intelligence_packet",
-          "rule": "consumer-consistency",
-          "message": "repo is listed as intended_consumer of 'slide_intelligence_packet' (canonical v1.0.0) but does not declare it in its governance manifest"
-        }
-      ]
+      "warnings": []
     }
   ],
   "contract_index": {
