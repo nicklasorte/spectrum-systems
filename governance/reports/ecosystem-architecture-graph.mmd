@@ -30,11 +30,13 @@ graph LR
 
   subgraph Contracts["Governed Contracts"]
     assumption_register(["assumption_register"])
+    book_intelligence_pack(["book_intelligence_pack"])
     comment_resolution_matrix(["comment_resolution_matrix"])
     comment_resolution_matrix_spreadsheet_contract(["comment_resolution_matrix_spreadsheet_contract"])
     control_execution_result(["control_execution_result"])
     decision_log(["decision_log"])
     evaluation_manifest(["evaluation_manifest"])
+    evidence_map(["evidence_map"])
     external_artifact_manifest(["external_artifact_manifest"])
     meeting_agenda_contract(["meeting_agenda_contract"])
     meeting_minutes(["meeting_minutes"])
@@ -42,9 +44,7 @@ graph LR
     milestone_plan(["milestone_plan"])
     next_best_action_memo(["next_best_action_memo"])
     pdf_anchored_docx_comment_injection_contract(["pdf_anchored_docx_comment_injection_contract"])
-    program_brief(["program_brief"])
-    provenance_record(["provenance_record"])
-    more_contracts["... and 7 more"]
+    more_contracts["... and 16 more"]
   end
 
   comment_resolution_engine -->|consumes| comment_resolution_matrix
@@ -52,7 +52,6 @@ graph LR
   comment_resolution_engine -->|consumes| external_artifact_manifest
   comment_resolution_engine -->|consumes| meeting_agenda_contract
   comment_resolution_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
-  comment_resolution_engine -->|consumes| provenance_record
   docx_comment_injection_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
   meeting_minutes_engine -->|consumes| meeting_agenda_contract
   meeting_minutes_engine -->|consumes| meeting_minutes
@@ -65,14 +64,12 @@ graph LR
   spectrum_pipeline_engine -->|consumes| meeting_minutes
   spectrum_pipeline_engine -->|consumes| milestone_plan
   spectrum_pipeline_engine -->|consumes| next_best_action_memo
-  spectrum_pipeline_engine -->|consumes| program_brief
   spectrum_program_advisor -->|consumes| assumption_register
   spectrum_program_advisor -->|consumes| decision_log
   spectrum_program_advisor -->|consumes| meeting_minutes
   spectrum_program_advisor -->|consumes| meeting_minutes_record
   spectrum_program_advisor -->|consumes| milestone_plan
   spectrum_program_advisor -->|consumes| next_best_action_memo
-  spectrum_program_advisor -->|consumes| program_brief
   study_artifact_generator -->|consumes| external_artifact_manifest
   system_factory -->|consumes| assumption_register
   system_factory -->|consumes| comment_resolution_matrix
@@ -83,8 +80,5 @@ graph LR
   system_factory -->|consumes| milestone_plan
   system_factory -->|consumes| next_best_action_memo
   system_factory -->|consumes| pdf_anchored_docx_comment_injection_contract
-  system_factory -->|consumes| program_brief
-  system_factory -->|consumes| provenance_record
   working_paper_review_engine -->|consumes| comment_resolution_matrix
   working_paper_review_engine -->|consumes| pdf_anchored_docx_comment_injection_contract
-  working_paper_review_engine -->|consumes| provenance_record

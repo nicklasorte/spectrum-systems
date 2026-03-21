@@ -10,6 +10,7 @@ flowchart TD
   sys_working_paper_review_engine["working-paper-review-engine\noperational_engine"]
   art_adjudicated_matrix["adjudicated_matrix\nreview"]
   art_assumption_register["assumption_register\nwork"]
+  art_book_intelligence_pack["book_intelligence_pack\nwork"]
   art_comment_resolution_matrix["comment_resolution_matrix\nreview"]
   art_comment_resolution_matrix_spreadsheet["comment_resolution_matrix_spreadsheet\nreview"]
   art_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\nreview"]
@@ -19,6 +20,7 @@ flowchart TD
   art_decision_log["decision_log\ncoordination"]
   art_document_production_loop["document_production_loop\nwork"]
   art_evaluation_manifest["evaluation_manifest\ncoordination"]
+  art_evidence_map["evidence_map\nwork"]
   art_external_artifact_manifest["external_artifact_manifest\ncoordination"]
   art_governance_guidance["governance_guidance\ncoordination"]
   art_governance_loop["governance_loop\ncoordination"]
@@ -40,17 +42,26 @@ flowchart TD
   art_slide_deck["slide_deck\nwork"]
   art_slide_intelligence_packet["slide_intelligence_packet\nwork"]
   art_standards_manifest["standards_manifest\ncoordination"]
+  art_story_bank_entry["story_bank_entry\nwork"]
+  art_strategic_knowledge_artifact_ref["strategic_knowledge_artifact_ref\ncoordination"]
+  art_strategic_knowledge_source_ref["strategic_knowledge_source_ref\ncoordination"]
+  art_strategic_knowledge_validation_decision["strategic_knowledge_validation_decision\ncoordination"]
   art_study_readiness_assessment["study_readiness_assessment\ncoordination"]
+  art_tactic_register["tactic_register\nwork"]
   art_transcript["transcript\ncoordination"]
+  art_transcript_intelligence_pack["transcript_intelligence_pack\nwork"]
   art_updated_working_paper["updated_working_paper\nwork"]
   art_updated_working_paper_docx["updated_working_paper_docx\nwork"]
+  art_viewpoint_pack["viewpoint_pack\nwork"]
   art_working_paper_input["working_paper_input\nwork"]
   con_assumption_register["assumption_register\ncontract"]
+  con_book_intelligence_pack["book_intelligence_pack\ncontract"]
   con_comment_resolution_matrix["comment_resolution_matrix\ncontract"]
   con_comment_resolution_matrix_spreadsheet_contract["comment_resolution_matrix_spreadsheet_contract\ncontract"]
   con_control_execution_result["control_execution_result\ncontract"]
   con_decision_log["decision_log\ncontract"]
   con_evaluation_manifest["evaluation_manifest\ncontract"]
+  con_evidence_map["evidence_map\ncontract"]
   con_external_artifact_manifest["external_artifact_manifest\ncontract"]
   con_meeting_agenda_contract["meeting_agenda_contract\ncontract"]
   con_meeting_minutes["meeting_minutes\ncontract"]
@@ -65,14 +76,23 @@ flowchart TD
   con_slide_deck["slide_deck\ncontract"]
   con_slide_intelligence_packet["slide_intelligence_packet\ncontract"]
   con_standards_manifest["standards_manifest\ncontract"]
+  con_story_bank_entry["story_bank_entry\ncontract"]
+  con_strategic_knowledge_artifact_ref["strategic_knowledge_artifact_ref\ncontract"]
+  con_strategic_knowledge_source_ref["strategic_knowledge_source_ref\ncontract"]
+  con_strategic_knowledge_validation_decision["strategic_knowledge_validation_decision\ncontract"]
   con_study_readiness_assessment["study_readiness_assessment\ncontract"]
+  con_tactic_register["tactic_register\ncontract"]
+  con_transcript_intelligence_pack["transcript_intelligence_pack\ncontract"]
+  con_viewpoint_pack["viewpoint_pack\ncontract"]
   con_working_paper_input["working_paper_input\ncontract"]
   art_assumption_register -. governed_by .-> con_assumption_register
+  art_book_intelligence_pack -. governed_by .-> con_book_intelligence_pack
   art_comment_resolution_matrix -. governed_by .-> con_comment_resolution_matrix
   art_comment_resolution_matrix_spreadsheet_contract -. governed_by .-> con_comment_resolution_matrix_spreadsheet_contract
   art_control_execution_result -. governed_by .-> con_control_execution_result
   art_decision_log -. governed_by .-> con_decision_log
   art_evaluation_manifest -. governed_by .-> con_evaluation_manifest
+  art_evidence_map -. governed_by .-> con_evidence_map
   art_external_artifact_manifest -. governed_by .-> con_external_artifact_manifest
   art_meeting_agenda_contract -. governed_by .-> con_meeting_agenda_contract
   art_meeting_minutes -. governed_by .-> con_meeting_minutes
@@ -87,14 +107,23 @@ flowchart TD
   art_slide_deck -. governed_by .-> con_slide_deck
   art_slide_intelligence_packet -. governed_by .-> con_slide_intelligence_packet
   art_standards_manifest -. governed_by .-> con_standards_manifest
+  art_story_bank_entry -. governed_by .-> con_story_bank_entry
+  art_strategic_knowledge_artifact_ref -. governed_by .-> con_strategic_knowledge_artifact_ref
+  art_strategic_knowledge_source_ref -. governed_by .-> con_strategic_knowledge_source_ref
+  art_strategic_knowledge_validation_decision -. governed_by .-> con_strategic_knowledge_validation_decision
   art_study_readiness_assessment -. governed_by .-> con_study_readiness_assessment
+  art_tactic_register -. governed_by .-> con_tactic_register
+  art_transcript_intelligence_pack -. governed_by .-> con_transcript_intelligence_pack
+  art_viewpoint_pack -. governed_by .-> con_viewpoint_pack
   art_working_paper_input -. governed_by .-> con_working_paper_input
   con_assumption_register -->|validates| art_assumption_register
+  con_book_intelligence_pack -->|validates| art_book_intelligence_pack
   con_comment_resolution_matrix -->|validates| art_comment_resolution_matrix
   con_comment_resolution_matrix_spreadsheet_contract -->|validates| art_comment_resolution_matrix_spreadsheet_contract
   con_control_execution_result -->|validates| art_control_execution_result
   con_decision_log -->|validates| art_decision_log
   con_evaluation_manifest -->|validates| art_evaluation_manifest
+  con_evidence_map -->|validates| art_evidence_map
   con_external_artifact_manifest -->|validates| art_external_artifact_manifest
   con_meeting_agenda_contract -->|validates| art_meeting_agenda_contract
   con_meeting_minutes -->|validates| art_meeting_minutes
@@ -109,7 +138,14 @@ flowchart TD
   con_slide_deck -->|validates| art_slide_deck
   con_slide_intelligence_packet -->|validates| art_slide_intelligence_packet
   con_standards_manifest -->|validates| art_standards_manifest
+  con_story_bank_entry -->|validates| art_story_bank_entry
+  con_strategic_knowledge_artifact_ref -->|validates| art_strategic_knowledge_artifact_ref
+  con_strategic_knowledge_source_ref -->|validates| art_strategic_knowledge_source_ref
+  con_strategic_knowledge_validation_decision -->|validates| art_strategic_knowledge_validation_decision
   con_study_readiness_assessment -->|validates| art_study_readiness_assessment
+  con_tactic_register -->|validates| art_tactic_register
+  con_transcript_intelligence_pack -->|validates| art_transcript_intelligence_pack
+  con_viewpoint_pack -->|validates| art_viewpoint_pack
   con_working_paper_input -->|validates| art_working_paper_input
   art_comment_resolution_matrix -->|consumes| sys_comment_resolution_engine
   art_reviewer_comment_set -->|consumes| sys_comment_resolution_engine

@@ -203,6 +203,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "book_intelligence_pack",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `book_intelligence_pack`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "comment_resolution_matrix",
       "artifact_class": "review",
       "description": "Governed artifact for contract `comment_resolution_matrix`.",
@@ -270,6 +277,13 @@
       "artifact_type": "evaluation_manifest",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `evaluation_manifest`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "evidence_map",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `evidence_map`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -471,6 +485,34 @@
       ]
     },
     {
+      "artifact_type": "story_bank_entry",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `story_bank_entry`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "strategic_knowledge_artifact_ref",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `strategic_knowledge_artifact_ref`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "strategic_knowledge_source_ref",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `strategic_knowledge_source_ref`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "strategic_knowledge_validation_decision",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `strategic_knowledge_validation_decision`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "study_readiness_assessment",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `study_readiness_assessment`.",
@@ -482,6 +524,13 @@
       ]
     },
     {
+      "artifact_type": "tactic_register",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `tactic_register`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "transcript",
       "artifact_class": "coordination",
       "description": "Raw meeting transcript captured before governance processing.",
@@ -489,6 +538,13 @@
       "consuming_systems": [
         "meeting-minutes-engine"
       ]
+    },
+    {
+      "artifact_type": "transcript_intelligence_pack",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `transcript_intelligence_pack`.",
+      "producing_systems": [],
+      "consuming_systems": []
     },
     {
       "artifact_type": "updated_working_paper",
@@ -504,6 +560,13 @@
       "producing_systems": [
         "docx-comment-injection-engine"
       ],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "viewpoint_pack",
+      "artifact_class": "work",
+      "description": "Governed artifact for contract `viewpoint_pack`.",
+      "producing_systems": [],
       "consuming_systems": []
     },
     {
@@ -529,6 +592,16 @@
       ],
       "related_artifact_types": [
         "assumption_register"
+      ]
+    },
+    {
+      "contract_name": "book_intelligence_pack",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "book_intelligence_pack"
       ]
     },
     {
@@ -588,6 +661,16 @@
       ],
       "related_artifact_types": [
         "evaluation_manifest"
+      ]
+    },
+    {
+      "contract_name": "evidence_map",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "evidence_map"
       ]
     },
     {
@@ -757,6 +840,48 @@
       ]
     },
     {
+      "contract_name": "story_bank_entry",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "story_bank_entry"
+      ]
+    },
+    {
+      "contract_name": "strategic_knowledge_artifact_ref",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "strategic_knowledge_artifact_ref"
+      ]
+    },
+    {
+      "contract_name": "strategic_knowledge_source_ref",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "strategic_knowledge_source_ref"
+      ]
+    },
+    {
+      "contract_name": "strategic_knowledge_validation_decision",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor",
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "strategic_knowledge_validation_decision"
+      ]
+    },
+    {
       "contract_name": "study_readiness_assessment",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -765,6 +890,36 @@
       ],
       "related_artifact_types": [
         "study_readiness_assessment"
+      ]
+    },
+    {
+      "contract_name": "tactic_register",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "tactic_register"
+      ]
+    },
+    {
+      "contract_name": "transcript_intelligence_pack",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "transcript_intelligence_pack"
+      ]
+    },
+    {
+      "contract_name": "viewpoint_pack",
+      "artifact_class": "work",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "viewpoint_pack"
       ]
     },
     {
@@ -789,6 +944,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "book_intelligence_pack",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "book_intelligence_pack"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "comment_resolution_matrix",
       "relation": "governed_by",
       "to_type": "contract",
@@ -821,6 +983,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "evaluation_manifest"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "evidence_map",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "evidence_map"
     },
     {
       "from_type": "artifact",
@@ -922,10 +1091,59 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "story_bank_entry",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "story_bank_entry"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "strategic_knowledge_artifact_ref",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "strategic_knowledge_artifact_ref"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "strategic_knowledge_source_ref",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "strategic_knowledge_source_ref"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "strategic_knowledge_validation_decision",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "strategic_knowledge_validation_decision"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "study_readiness_assessment",
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "tactic_register",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "tactic_register"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "transcript_intelligence_pack",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "transcript_intelligence_pack"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "viewpoint_pack",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "viewpoint_pack"
     },
     {
       "from_type": "artifact",
@@ -943,6 +1161,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "book_intelligence_pack",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "book_intelligence_pack"
+    },
+    {
+      "from_type": "contract",
       "from_id": "comment_resolution_matrix",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -975,6 +1200,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "evaluation_manifest"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "evidence_map",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "evidence_map"
     },
     {
       "from_type": "contract",
@@ -1076,10 +1308,59 @@
     },
     {
       "from_type": "contract",
+      "from_id": "story_bank_entry",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "story_bank_entry"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "strategic_knowledge_artifact_ref",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "strategic_knowledge_artifact_ref"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "strategic_knowledge_source_ref",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "strategic_knowledge_source_ref"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "strategic_knowledge_validation_decision",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "strategic_knowledge_validation_decision"
+    },
+    {
+      "from_type": "contract",
       "from_id": "study_readiness_assessment",
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "study_readiness_assessment"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "tactic_register",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "tactic_register"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "transcript_intelligence_pack",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "transcript_intelligence_pack"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "viewpoint_pack",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "viewpoint_pack"
     },
     {
       "from_type": "contract",

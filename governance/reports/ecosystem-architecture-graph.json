@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-20T21:27:37Z",
+  "generated_at": "2026-03-21T10:41:10Z",
   "nodes": {
     "repositories": [
       {
@@ -116,6 +116,12 @@
         "stability": ""
       },
       {
+        "id": "book_intelligence_pack",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "comment_resolution_matrix",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -141,6 +147,12 @@
       },
       {
         "id": "evaluation_manifest",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "evidence_map",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -230,7 +242,49 @@
         "stability": ""
       },
       {
+        "id": "story_bank_entry",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "strategic_knowledge_artifact_ref",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "strategic_knowledge_source_ref",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "strategic_knowledge_validation_decision",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "study_readiness_assessment",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "tactic_register",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "transcript_intelligence_pack",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "viewpoint_pack",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

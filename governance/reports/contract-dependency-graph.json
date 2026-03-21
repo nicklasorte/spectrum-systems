@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-20T21:27:34Z",
+  "generated_at": "2026-03-21T10:41:08Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -255,6 +255,13 @@
           "contract": "slide_deck",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'slide_deck' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "spectrum-pipeline-engine",
+          "system_id": "spectrum-pipeline-engine",
+          "contract": "strategic_knowledge_validation_decision",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'strategic_knowledge_validation_decision' (canonical v1.0.0) but does not declare it in its governance manifest"
         }
       ]
     },
@@ -335,6 +342,13 @@
           "contract": "slide_intelligence_packet",
           "rule": "consumer-consistency",
           "message": "repo is listed as intended_consumer of 'slide_intelligence_packet' (canonical v1.0.0) but does not declare it in its governance manifest"
+        },
+        {
+          "repo": "spectrum-program-advisor",
+          "system_id": "spectrum-program-advisor",
+          "contract": "strategic_knowledge_validation_decision",
+          "rule": "consumer-consistency",
+          "message": "repo is listed as intended_consumer of 'strategic_knowledge_validation_decision' (canonical v1.0.0) but does not declare it in its governance manifest"
         }
       ]
     },
