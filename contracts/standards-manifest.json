@@ -378,6 +378,19 @@
       "notes": "Shared provenance-aware reference envelope for strategic knowledge artifacts."
     },
     {
+      "artifact_type": "strategic_knowledge_validation_decision",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Validation gate decision artifact for Strategic Knowledge ingestion and admission checks."
+    },
+    {
       "artifact_type": "book_intelligence_pack",
       "artifact_class": "work",
       "schema_version": "1.0.0",
