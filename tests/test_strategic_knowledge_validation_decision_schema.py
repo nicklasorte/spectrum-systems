@@ -33,6 +33,7 @@ VALID_DECISION = {
 }
 
 
+
 def _validator() -> Draft202012Validator:
     return Draft202012Validator(load_schema("strategic_knowledge_validation_decision"))
 
