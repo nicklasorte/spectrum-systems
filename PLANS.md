@@ -104,6 +104,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-RUN-BUNDLE-VALIDATION-2026-03-21.md | RUN-BUNDLE-VALIDATION — MVP foundation enforcement boundary | Active |
 | docs/review-actions/PLAN-CONTROL-LOOP-INTEGRATION-2026-03-21.md | CONTROL LOOP INTEGRATION — MVP Phase 2 | Active |
 | docs/review-actions/PLAN-BAF-2026-03-21.md | Prompt BAF — Enforcement Wiring (MVP Phase 3) | Active |
+| docs/review-actions/PLAN-BAG-REPLAY-ENGINE-MVP-PHASE-4-2026-03-21.md | BAG — Replay Engine (MVP Phase 4) | Active |
 
 Update this table when plans are created or completed.
 

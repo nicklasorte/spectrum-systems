@@ -49,6 +49,7 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (
     summarize_validation_monitor_records,
 )
 from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
+from spectrum_systems.modules.runtime.replay_engine import replay_run
 from spectrum_systems.modules.runtime.slo_enforcer import enforce_slo_policy
 from spectrum_systems.modules.runtime.trace_engine import (
     SPAN_STATUS_BLOCKED,
@@ -608,3 +609,25 @@ def execute_with_enforcement(bundle_path: str) -> Dict[str, Any]:
     monitor_summary = summarize_validation_monitor_records([monitor_record])
     budget_decision = build_validation_budget_decision(monitor_summary)
     return enforce_budget_decision(budget_decision)
+
+
+def execute_with_replay(bundle_path: str) -> Dict[str, Any]:
+    """Run enforced execution and deterministic replay for a bundle path.
+
+    Flow:
+    1) execute_with_enforcement (BAF)
+    2) capture original decision artifacts from the same pipeline
+    3) run replay_run against original decision
+    4) return replay_execution_record
+    """
+    original_enforcement = execute_with_enforcement(bundle_path)
+
+    validation_decision = validate_and_emit_decision(bundle_path)
+    monitor_record = build_validation_monitor_record(validation_decision)
+    monitor_summary = summarize_validation_monitor_records([monitor_record])
+    budget_decision = build_validation_budget_decision(monitor_summary)
+
+    original_decision = dict(budget_decision)
+    original_decision["enforcement_action"] = original_enforcement.get("enforcement_action", "block")
+
+    return replay_run(bundle_path, original_decision)

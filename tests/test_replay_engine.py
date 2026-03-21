@@ -586,3 +586,140 @@ class TestReplayArtifactType:
         persist_trace(trace, base_dir=tmp_store)
         result = execute_replay("trace-art-type", base_dir=tmp_store)
         assert result["artifact_type"] == "replay_result"
+
+# ---------------------------------------------------------------------------
+# BAG — Replay Engine (MVP Phase 4)
+# ---------------------------------------------------------------------------
+
+import json
+import subprocess
+
+from spectrum_systems.modules.runtime.control_executor import execute_with_replay  # noqa: E402
+from spectrum_systems.modules.runtime.replay_engine import replay_run  # noqa: E402
+
+
+def _bundle_manifest_for_replay(valid: bool = True) -> Dict[str, Any]:
+    manifest = {
+        "run_id": "run-replay-001",
+        "matlab_release": "R2024b",
+        "runtime_version_required": "R2024b",
+        "platform": "linux-x86_64",
+        "worker_entrypoint": "bin/run.sh",
+        "inputs": [{"path": "inputs/cases.json", "required": True}],
+        "expected_outputs": [
+            {"path": "outputs/results_summary.json", "required": True},
+            {"path": "outputs/provenance.json", "required": True},
+        ],
+    }
+    if not valid:
+        manifest.pop("platform")
+    return manifest
+
+
+def _build_replay_bundle(tmp_path: Path, *, valid: bool = True) -> Path:
+    bundle = tmp_path / "bundle"
+    (bundle / "inputs").mkdir(parents=True)
+    (bundle / "outputs").mkdir(parents=True)
+    (bundle / "logs").mkdir(parents=True)
+    (bundle / "inputs" / "cases.json").write_text("{}", encoding="utf-8")
+    (bundle / "run_bundle_manifest.json").write_text(
+        json.dumps(_bundle_manifest_for_replay(valid=valid)), encoding="utf-8"
+    )
+    return bundle
+
+
+def test_replay_run_consistent_for_valid_bundle(tmp_path: Path) -> None:
+    bundle = _build_replay_bundle(tmp_path, valid=True)
+    original = {
+        "run_id": "run-replay-001",
+        "trace_id": "trace-original-001",
+        "status": "healthy",
+        "system_response": "allow",
+        "enforcement_action": "allow",
+    }
+    replay = replay_run(str(bundle), original)
+    assert replay["replay_status"] == "success"
+    assert replay["consistency_check_passed"] is True
+
+
+def test_replay_run_forced_mismatch_fails(tmp_path: Path) -> None:
+    bundle = _build_replay_bundle(tmp_path, valid=True)
+    original = {
+        "run_id": "run-replay-001",
+        "trace_id": "trace-original-001",
+        "status": "blocked",
+        "system_response": "block",
+        "enforcement_action": "block",
+    }
+    replay = replay_run(str(bundle), original)
+    assert replay["replay_status"] == "failed"
+    assert replay["consistency_check_passed"] is False
+
+
+def test_replay_run_invalid_bundle_input_is_indeterminate() -> None:
+    original = {
+        "run_id": "run-replay-001",
+        "trace_id": "trace-original-001",
+        "status": "healthy",
+        "system_response": "allow",
+        "enforcement_action": "allow",
+    }
+    replay = replay_run("", original)
+    assert replay["replay_status"] == "indeterminate"
+    assert replay["consistency_check_passed"] is False
+
+
+def test_replay_run_malformed_original_decision_fail_closed(tmp_path: Path) -> None:
+    bundle = _build_replay_bundle(tmp_path, valid=True)
+    replay = replay_run(str(bundle), {"run_id": "x"})
+    assert replay["replay_status"] == "indeterminate"
+    assert replay["consistency_check_passed"] is False
+
+
+def test_execute_with_replay_cli_exit_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    script = _REPO_ROOT / "scripts" / "run_replay_execution.py"
+
+    valid_bundle = _build_replay_bundle(tmp_path / "success", valid=True)
+    proc_ok = subprocess.run([sys.executable, str(script), "--bundle", str(valid_bundle)], check=False)
+    assert proc_ok.returncode == 0
+
+    mismatch_bundle = _build_replay_bundle(tmp_path / "mismatch", valid=True)
+    original = {
+        "run_id": "run-replay-001",
+        "trace_id": "trace-original-001",
+        "status": "blocked",
+        "system_response": "block",
+        "enforcement_action": "block",
+    }
+    replay = replay_run(str(mismatch_bundle), original)
+    assert replay["replay_status"] == "failed"
+
+    monkeypatch.setattr("scripts.run_replay_execution.execute_with_replay", lambda _bundle: replay)
+    # direct CLI logic check through imported main
+    from scripts.run_replay_execution import main as replay_main  # noqa: E402
+
+    assert replay_main(["--bundle", str(mismatch_bundle)]) == 1
+
+    monkeypatch.setattr(
+        "scripts.run_replay_execution.execute_with_replay",
+        lambda _bundle: {
+            "replay_id": "r-1",
+            "original_run_id": "o-1",
+            "replay_run_id": "n/a",
+            "original_trace_id": "t-1",
+            "replay_trace_id": "t-2",
+            "timestamp": "2026-03-21T00:00:00Z",
+            "replay_status": "indeterminate",
+            "consistency_check_passed": False,
+            "compared_artifacts": ["system_response", "enforcement_action", "validation_status"],
+            "reasons": ["indeterminate fixture"],
+        },
+    )
+    assert replay_main(["--bundle", str(mismatch_bundle)]) == 2
+
+
+def test_execute_with_replay_returns_lineage_record(tmp_path: Path) -> None:
+    bundle = _build_replay_bundle(tmp_path, valid=True)
+    record = execute_with_replay(str(bundle))
+    assert "original_trace_id" in record
+    assert "replay_trace_id" in record
