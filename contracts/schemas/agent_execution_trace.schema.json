@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/agent_execution_trace.schema.json",
+  "title": "Agent Execution Trace",
+  "description": "Governed bounded-execution trace artifact for agent step execution with replay-compatible tool and step logging.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent_run_id",
+    "context_bundle_id",
+    "trace_id",
+    "step_sequence",
+    "tool_calls",
+    "intermediate_artifacts",
+    "final_output_artifact_id",
+    "execution_status",
+    "failure_reason",
+    "started_at",
+    "completed_at"
+  ],
+  "properties": {
+    "agent_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "step_type", "status"],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1},
+          "step_type": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["planned", "completed", "failed", "blocked"]},
+          "input_ref": {"type": ["string", "null"]},
+          "output_ref": {"type": ["string", "null"]},
+          "error": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "tool_name", "input_ref", "output_ref", "status"],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1},
+          "tool_name": {"type": "string", "minLength": 1},
+          "input_ref": {"type": "string", "minLength": 1},
+          "output_ref": {"type": ["string", "null"]},
+          "status": {"type": "string", "enum": ["completed", "failed", "blocked"]},
+          "error": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "intermediate_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "artifact_type", "schema_name"],
+        "properties": {
+          "artifact_id": {"type": "string", "minLength": 1},
+          "artifact_type": {"type": "string", "minLength": 1},
+          "schema_name": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "final_output_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["completed", "failed", "blocked"]
+    },
+    "failure_reason": {
+      "type": ["string", "null"]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "enum": ["failed", "blocked"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "failure_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

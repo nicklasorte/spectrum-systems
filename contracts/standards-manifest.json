@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.7",
+  "artifact_version": "1.0.8",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.9",
-  "record_id": "REC-STD-2026-03-21-DRIFT",
-  "run_id": "run-20260321T180000Z",
+  "standards_version": "2026.03.10",
+  "record_id": "REC-STD-2026-03-21-AGENT-EXEC",
+  "run_id": "run-20260321T210000Z",
   "created_at": "2026-03-21T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -581,6 +581,19 @@
       "last_updated_in": "1.0.7",
       "example_path": "contracts/examples/eval_summary.json",
       "notes": "Governed aggregate eval summary capturing pass/failure/drift and reproducibility posture."
+    },
+    {
+      "artifact_type": "agent_execution_trace",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.8",
+      "last_updated_in": "1.0.8",
+      "example_path": "contracts/examples/agent_execution_trace.json",
+      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
     }
   ]
 }
