@@ -76,6 +76,51 @@ def test_numeric_exceeds_tolerance_detected():
     assert "numeric_tolerance_exceeded" in result["thresholds_triggered"]
 
 
+def test_config_without_required_fields_is_valid():
+    replay = _artifact(replay_id="replay-102a", value=10.01)
+    baseline = _artifact(replay_id="replay-001", value=10.0)
+    result = run_drift_detection(replay, baseline, config={"abs_tolerance": 0.05, "rel_tolerance": 0.02})
+    assert result["drift_status"] == "no_drift"
+
+
+def test_config_required_fields_empty_list_is_valid():
+    replay = _artifact(replay_id="replay-102b", value=10.01)
+    baseline = _artifact(replay_id="replay-001", value=10.0)
+    result = run_drift_detection(
+        replay,
+        baseline,
+        config={"abs_tolerance": 0.05, "rel_tolerance": 0.02, "required_fields": []},
+    )
+    assert result["drift_status"] == "no_drift"
+
+
+def test_config_required_fields_none_normalized_to_empty_list():
+    replay = _artifact(replay_id="replay-102c", value=10.01)
+    baseline = _artifact(replay_id="replay-001", value=10.0)
+    result = run_drift_detection(
+        replay,
+        baseline,
+        config={"abs_tolerance": 0.05, "rel_tolerance": 0.02, "required_fields": None},
+    )
+    assert result["drift_status"] == "no_drift"
+
+
+@pytest.mark.parametrize("invalid_required_fields", [(), "field.path"])
+def test_config_invalid_required_fields_type_fails(invalid_required_fields):
+    replay = _artifact(replay_id="replay-102d", value=10.01)
+    baseline = _artifact(replay_id="replay-001", value=10.0)
+    with pytest.raises(DriftDetectionError, match="config.required_fields must be a list of field paths"):
+        run_drift_detection(
+            replay,
+            baseline,
+            config={
+                "abs_tolerance": 0.05,
+                "rel_tolerance": 0.02,
+                "required_fields": invalid_required_fields,
+            },
+        )
+
+
 def test_missing_field_detected():
     replay = _artifact(replay_id="replay-103", value=10.0)
     baseline = _artifact(replay_id="replay-001", value=10.0)

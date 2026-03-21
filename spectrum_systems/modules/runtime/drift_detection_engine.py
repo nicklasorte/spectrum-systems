@@ -94,7 +94,9 @@ def _to_config(config: Optional[Dict[str, Any]]) -> DriftConfig:
 
     abs_tol = config.get("abs_tolerance", 0.0)
     rel_tol = config.get("rel_tolerance", 0.0)
-    required_fields = config.get("required_fields", ())
+    required_fields = config.get("required_fields", [])
+    if required_fields is None:
+        required_fields = []
 
     if not isinstance(abs_tol, (int, float)) or abs_tol < 0:
         raise DriftDetectionError("config.abs_tolerance must be a non-negative number")
