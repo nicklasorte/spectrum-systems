@@ -53,6 +53,9 @@ from spectrum_systems.modules.runtime.contract_runtime import (
     ContractRuntimeError,
     ensure_contract_runtime_available,
 )
+from spectrum_systems.modules.runtime.evaluation_control import (
+    build_evaluation_control_decision,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +110,35 @@ _BYPASS_BLOCKED_RESULT: Dict[str, Any] = {
     "validators_failed": [],
     "repair_actions_applied": [],
 }
+
+
+def _evaluation_control_execution_result(decision: Dict[str, Any]) -> Dict[str, Any]:
+    """Translate evaluation_control_decision into BN.7 execution_result shape."""
+    response = decision.get("system_response", "block")
+    blocked = response in {"freeze", "block"}
+    review_required = response in {"warn"}
+    execution_status = "blocked" if blocked else "success"
+
+    return {
+        "execution_status": execution_status,
+        "continuation_allowed": not blocked,
+        "publication_blocked": blocked,
+        "decision_blocked": blocked,
+        "rerun_triggered": False,
+        "escalation_triggered": blocked,
+        "human_review_required": review_required,
+        "actions_taken": [
+            {
+                "action_type": "evaluation_control_decision_applied",
+                "status": response,
+                "detail": "eval_summary mapped to deterministic control decision",
+                "decision_id": decision.get("decision_id"),
+            }
+        ],
+        "validators_run": ["evaluation_control_mapper"],
+        "validators_failed": [],
+        "repair_actions_applied": [],
+    }
 
 
 def _context_error_result(errors: List[str]) -> Dict[str, Any]:
@@ -190,12 +222,25 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         execution_id,
     )
 
-    # Run the full control chain with BN.6 execution enabled.
-    chain_result = run_control_chain(artifact, stage=stage, execute=True)
+    chain_result: Dict[str, Any] = {}
+    control_signals: Dict[str, Any] = {}
 
-    cd = chain_result.get("control_chain_decision") or {}
-    control_signals = cd.get("control_signals") or {}
-    execution_result: Dict[str, Any] = chain_result.get("execution_result") or {}
+    # BBA path: eval_summary is consumed before runtime execution and mapped
+    # into a governed evaluation_control_decision.
+    if isinstance(artifact, dict) and artifact.get("artifact_type") == "eval_summary":
+        eval_decision = build_evaluation_control_decision(artifact)
+        execution_result = _evaluation_control_execution_result(eval_decision)
+        chain_result = {
+            "control_chain_decision": {"control_signals": control_signals},
+            "execution_result": execution_result,
+            "evaluation_control_decision": eval_decision,
+        }
+    else:
+        # Run the full control chain with BN.6 execution enabled.
+        chain_result = run_control_chain(artifact, stage=stage, execute=True)
+        cd = chain_result.get("control_chain_decision") or {}
+        control_signals = cd.get("control_signals") or {}
+        execution_result = chain_result.get("execution_result") or {}
 
     # Derive continuation_allowed strictly from execution_result — never
     # re-derive from gating / enforcement directly.
@@ -243,6 +288,8 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         "runtime_environment": runtime_environment,
         "control_signals": control_signals,
     }
+    if chain_result.get("evaluation_control_decision") is not None:
+        integration_result["evaluation_control_decision"] = chain_result["evaluation_control_decision"]
     if human_review_task is not None:
         integration_result["human_review_task"] = human_review_task
 

@@ -1,0 +1,188 @@
+"""Evaluation → Control Decision Mapper (BBA).
+
+Consumes ``eval_summary`` artifacts and emits deterministic,
+schema-governed ``evaluation_control_decision`` artifacts.
+
+Design rules
+------------
+- Fail closed: malformed/missing input never yields ``allow``.
+- Deterministic: threshold-based signal mapping only.
+- No autonomy: no heuristic overrides or free-form policy reasoning.
+- Governed output: every emitted decision validates against
+  ``evaluation_control_decision.schema.json``.
+"""
+
+from __future__ import annotations
+
+import json
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from jsonschema import Draft202012Validator, FormatChecker
+
+from spectrum_systems.contracts import load_schema
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
+_DECISION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_control_decision.schema.json"
+
+DEFAULT_THRESHOLDS: Dict[str, float] = {
+    "reliability_threshold": 0.85,
+    "drift_threshold": 0.20,
+    "trust_threshold": 0.80,
+}
+
+SEVERE_SIGNALS = frozenset({"stability_breach", "trust_breach", "indeterminate_failure"})
+
+
+class EvaluationControlError(Exception):
+    """Raised for any evaluation control mapping failure."""
+
+
+def _now_iso() -> str:
+    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _new_id() -> str:
+    return f"ECD-{uuid.uuid4().hex[:12].upper()}"
+
+
+def _load_decision_schema() -> Dict[str, Any]:
+    return json.loads(_DECISION_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def _validate(artifact: Any, schema: Dict[str, Any]) -> List[str]:
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(artifact), key=lambda e: list(e.absolute_path))
+    return [e.message for e in errors]
+
+
+def _extract_indeterminate_failure_count(summary: Dict[str, Any]) -> int:
+    for key in ("indeterminate_failure_count", "indeterminate_count"):
+        value = summary.get(key)
+        if isinstance(value, int) and value > 0:
+            return value
+    return 0
+
+
+def _fail_closed_decision(
+    *,
+    eval_run_id: str,
+    trace_id: str,
+    thresholds: Dict[str, float],
+    signal: str,
+) -> Dict[str, Any]:
+    return {
+        "artifact_type": "evaluation_control_decision",
+        "schema_version": "1.0.0",
+        "decision_id": _new_id(),
+        "eval_run_id": eval_run_id,
+        "system_status": "blocked",
+        "system_response": "block",
+        "triggered_signals": [signal],
+        "threshold_snapshot": thresholds,
+        "trace_id": trace_id,
+        "created_at": _now_iso(),
+    }
+
+
+def build_evaluation_control_decision(
+    eval_summary: Dict[str, Any],
+    *,
+    thresholds: Optional[Dict[str, float]] = None,
+) -> Dict[str, Any]:
+    """Build a deterministic evaluation_control_decision from an eval_summary.
+
+    Fail-closed behavior:
+    - malformed ``eval_summary`` -> blocked/block decision
+    - missing required signals -> blocked/block decision
+    """
+    t = dict(DEFAULT_THRESHOLDS)
+    if thresholds:
+        t.update(thresholds)
+
+    eval_schema = load_schema("eval_summary")
+    if _validate(eval_summary, eval_schema):
+        decision = _fail_closed_decision(
+            eval_run_id=str(eval_summary.get("eval_run_id") or "unknown-eval-run"),
+            trace_id=str(eval_summary.get("trace_id") or "unknown-trace"),
+            thresholds=t,
+            signal="malformed_eval_summary",
+        )
+        decision_errors = _validate(decision, _load_decision_schema())
+        if decision_errors:
+            raise EvaluationControlError("; ".join(decision_errors))
+        return decision
+
+    required_signals = ("pass_rate", "drift_rate", "reproducibility_score")
+    if any(signal not in eval_summary for signal in required_signals):
+        decision = _fail_closed_decision(
+            eval_run_id=str(eval_summary.get("eval_run_id") or "unknown-eval-run"),
+            trace_id=str(eval_summary.get("trace_id") or "unknown-trace"),
+            thresholds=t,
+            signal="missing_required_signal",
+        )
+        decision_errors = _validate(decision, _load_decision_schema())
+        if decision_errors:
+            raise EvaluationControlError("; ".join(decision_errors))
+        return decision
+
+    pass_rate = float(eval_summary["pass_rate"])
+    drift_rate = float(eval_summary["drift_rate"])
+    reproducibility = float(eval_summary["reproducibility_score"])
+    indeterminate_failures = _extract_indeterminate_failure_count(eval_summary)
+
+    triggered_signals: List[str] = []
+    if pass_rate < t["reliability_threshold"]:
+        triggered_signals.append("reliability_breach")
+    if drift_rate > t["drift_threshold"]:
+        triggered_signals.append("stability_breach")
+    if reproducibility < t["trust_threshold"]:
+        triggered_signals.append("trust_breach")
+    if indeterminate_failures > 0:
+        triggered_signals.append("indeterminate_failure")
+
+    severe_hits = [s for s in triggered_signals if s in SEVERE_SIGNALS]
+
+    if not triggered_signals:
+        system_status = "healthy"
+        system_response = "allow"
+    elif "trust_breach" in triggered_signals:
+        # Trust breach is always hard-blocking.
+        system_status = "blocked"
+        system_response = "block"
+    elif len(severe_hits) >= 2:
+        system_status = "blocked"
+        system_response = "block"
+    elif "stability_breach" in triggered_signals:
+        system_status = "exhausted"
+        system_response = "freeze"
+    else:
+        system_status = "warning"
+        system_response = "warn"
+
+    decision = {
+        "artifact_type": "evaluation_control_decision",
+        "schema_version": "1.0.0",
+        "decision_id": _new_id(),
+        "eval_run_id": eval_summary["eval_run_id"],
+        "system_status": system_status,
+        "system_response": system_response,
+        "triggered_signals": triggered_signals,
+        "threshold_snapshot": {
+            "reliability_threshold": t["reliability_threshold"],
+            "drift_threshold": t["drift_threshold"],
+            "trust_threshold": t["trust_threshold"],
+        },
+        "trace_id": eval_summary["trace_id"],
+        "created_at": _now_iso(),
+    }
+
+    decision_errors = _validate(decision, _load_decision_schema())
+    if decision_errors:
+        raise EvaluationControlError(
+            "evaluation_control_decision failed schema validation: " + "; ".join(decision_errors)
+        )
+    return decision
