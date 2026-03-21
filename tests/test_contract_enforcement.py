@@ -28,6 +28,9 @@ from run_contract_enforcement import (  # noqa: E402
     check_consumer_consistency,
     check_repo_contracts,
     run_enforcement,
+    load_ecosystem_registry,
+    load_governance_manifests,
+    load_standards_contracts,
 )
 
 
@@ -434,3 +437,19 @@ def test_enforcement_no_error_failures_on_example_manifests() -> None:
             for f in failures
         )
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Integration test: canonical consumer-consistency drift guard
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_canonical_intended_consumers_are_declared_by_governed_repos() -> None:
+    """Every intended consumer with an enforceable manifest must pin the contract."""
+    standards = load_standards_contracts()
+    registry = load_ecosystem_registry()
+    manifests = load_governance_manifests()
+
+    _, warnings = check_consumer_consistency(standards, manifests, registry)
+
+    consumer_warnings = [w for w in warnings if w.get("rule") == "consumer-consistency"]
+    assert consumer_warnings == []
