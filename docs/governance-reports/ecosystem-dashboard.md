@@ -1,6 +1,6 @@
 # Ecosystem Dashboard
 
-Generated: 2026-03-20T21:27:37Z
+Generated: 2026-03-21T10:41:10Z
 
 Quick visibility into ecosystem health. Full detail: [ecosystem-health-report.md](ecosystem-health-report.md)
 

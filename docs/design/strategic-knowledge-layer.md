@@ -80,3 +80,33 @@ Contracts support both:
 3. **Indexing and retrieval**: populate `strategic_knowledge/indexes/` with deterministic retrieval indexes and lookup manifests.
 
 This foundation intentionally excludes extraction intelligence, ranking logic, embedding infrastructure, or retrieval runtime services.
+
+
+## Strategic Knowledge Validation Gate
+
+The next layer step is a deterministic admission gate that evaluates candidate strategic artifacts before any downstream use.
+The gate emits a governed `strategic_knowledge_validation_decision` artifact instead of informal booleans so trust/governance outcomes are explicit, traceable, and machine-auditable.
+
+### Decision artifact purpose
+- records schema and reference validity signals
+- records evidence/provenance completeness ratios
+- computes a bounded trust score from explicit weighted sub-signals
+- emits one canonical `system_response`: `allow`, `require_review`, `require_rebuild`, or `block`
+
+### Trust scoring model
+Trust is deterministic and bounded to `[0,1]`, with explicit weighted inputs:
+- schema validity
+- source reference validity
+- artifact reference validity
+- evidence anchor coverage
+- provenance completeness
+
+### Fail-closed admission behavior
+- invalid schema or unresolved source catalog references => `block`
+- structurally valid artifacts with weak evidence or unresolved soft governance concerns => `require_review`
+- incomplete provenance requiring artifact repair => `require_rebuild`
+- only structurally valid, strongly grounded artifacts with high trust => `allow`
+
+### Why extraction is intentionally deferred
+Extraction and ingestion are deferred until admission control exists so the system does not scale ungoverned artifacts.
+This preserves contract-first architecture and keeps Strategic Knowledge as a governed decision surface, not just storage.

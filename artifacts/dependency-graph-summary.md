@@ -14,6 +14,7 @@
 ## Artifacts
 - adjudicated_matrix [review] producers: —; consumers: —; Approved adjudication state for reviewer comments.
 - assumption_register [work] producers: —; consumers: —; Governed artifact for contract `assumption_register`.
+- book_intelligence_pack [work] producers: —; consumers: —; Governed artifact for contract `book_intelligence_pack`.
 - comment_resolution_matrix [review] producers: comment-resolution-engine; consumers: comment-resolution-engine; Governed artifact for contract `comment_resolution_matrix`.
 - comment_resolution_matrix_spreadsheet [review] producers: —; consumers: —; Spreadsheet representation of the governed comment resolution matrix.
 - comment_resolution_matrix_spreadsheet_contract [review] producers: comment-resolution-engine; consumers: docx-comment-injection-engine; Governed artifact for contract `comment_resolution_matrix_spreadsheet_contract`.
@@ -23,6 +24,7 @@
 - decision_log [coordination] producers: —; consumers: —; Governed artifact for contract `decision_log`.
 - document_production_loop [work] producers: —; consumers: —; Marker node for systems participating in the document production loop.
 - evaluation_manifest [coordination] producers: —; consumers: —; Governed artifact for contract `evaluation_manifest`.
+- evidence_map [work] producers: —; consumers: —; Governed artifact for contract `evidence_map`.
 - external_artifact_manifest [coordination] producers: spectrum-data-lake; consumers: —; Governed artifact for contract `external_artifact_manifest`.
 - governance_guidance [coordination] producers: spectrum-systems; consumers: —; Narrative governance instructions emitted by spectrum-systems.
 - governance_loop [coordination] producers: —; consumers: —; Marker node for control-plane and governance functions.
@@ -44,19 +46,28 @@
 - slide_deck [work] producers: —; consumers: —; Governed artifact for contract `slide_deck`.
 - slide_intelligence_packet [work] producers: —; consumers: —; Governed artifact for contract `slide_intelligence_packet`.
 - standards_manifest [coordination] producers: spectrum-systems, system-factory; consumers: spectrum-pipeline-engine, spectrum-systems, system-factory; Governed artifact for contract `standards_manifest`.
+- story_bank_entry [work] producers: —; consumers: —; Governed artifact for contract `story_bank_entry`.
+- strategic_knowledge_artifact_ref [coordination] producers: —; consumers: —; Governed artifact for contract `strategic_knowledge_artifact_ref`.
+- strategic_knowledge_source_ref [coordination] producers: —; consumers: —; Governed artifact for contract `strategic_knowledge_source_ref`.
+- strategic_knowledge_validation_decision [coordination] producers: —; consumers: —; Governed artifact for contract `strategic_knowledge_validation_decision`.
 - study_readiness_assessment [coordination] producers: spectrum-pipeline-engine; consumers: spectrum-program-advisor; Governed artifact for contract `study_readiness_assessment`.
+- tactic_register [work] producers: —; consumers: —; Governed artifact for contract `tactic_register`.
 - transcript [coordination] producers: —; consumers: meeting-minutes-engine; Raw meeting transcript captured before governance processing.
+- transcript_intelligence_pack [work] producers: —; consumers: —; Governed artifact for contract `transcript_intelligence_pack`.
 - updated_working_paper [work] producers: —; consumers: —; Working paper revision after adjudication or injection.
 - updated_working_paper_docx [work] producers: docx-comment-injection-engine; consumers: —; DOCX export of the updated working paper.
+- viewpoint_pack [work] producers: —; consumers: —; Governed artifact for contract `viewpoint_pack`.
 - working_paper_input [work] producers: —; consumers: comment-resolution-engine, docx-comment-injection-engine, spectrum-data-lake, working-paper-review-engine; Governed artifact for contract `working_paper_input`.
 
 ## Contracts
 - assumption_register [work] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: assumption_register
+- book_intelligence_pack [work] intended consumers: spectrum-systems; artifacts: book_intelligence_pack
 - comment_resolution_matrix [review] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: comment_resolution_matrix
 - comment_resolution_matrix_spreadsheet_contract [review] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, system-factory; artifacts: comment_resolution_matrix_spreadsheet_contract
 - control_execution_result [coordination] intended consumers: spectrum-pipeline-engine, spectrum-systems, system-factory; artifacts: control_execution_result
 - decision_log [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: decision_log
 - evaluation_manifest [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor, spectrum-systems; artifacts: evaluation_manifest
+- evidence_map [work] intended consumers: spectrum-systems; artifacts: evidence_map
 - external_artifact_manifest [coordination] intended consumers: comment-resolution-engine, spectrum-pipeline-engine, study-artifact-generator; artifacts: external_artifact_manifest
 - meeting_agenda_contract [coordination] intended consumers: comment-resolution-engine, meeting-minutes-engine, spectrum-pipeline-engine, system-factory; artifacts: meeting_agenda_contract
 - meeting_minutes [coordination] intended consumers: meeting-minutes-engine, spectrum-pipeline-engine, spectrum-program-advisor, system-factory; artifacts: meeting_minutes
@@ -71,7 +82,14 @@
 - slide_deck [work] intended consumers: slide-intelligence-engine, spectrum-pipeline-engine, working-paper-review-engine; artifacts: slide_deck
 - slide_intelligence_packet [work] intended consumers: assumptions-registry-engine, knowledge-graph-engine, spectrum-program-advisor, working-paper-review-engine; artifacts: slide_intelligence_packet
 - standards_manifest [coordination] intended consumers: downstream schema loaders, system-factory; artifacts: standards_manifest
+- story_bank_entry [work] intended consumers: spectrum-systems; artifacts: story_bank_entry
+- strategic_knowledge_artifact_ref [coordination] intended consumers: spectrum-systems; artifacts: strategic_knowledge_artifact_ref
+- strategic_knowledge_source_ref [coordination] intended consumers: spectrum-systems; artifacts: strategic_knowledge_source_ref
+- strategic_knowledge_validation_decision [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor, spectrum-systems; artifacts: strategic_knowledge_validation_decision
 - study_readiness_assessment [coordination] intended consumers: spectrum-pipeline-engine, spectrum-program-advisor; artifacts: study_readiness_assessment
+- tactic_register [work] intended consumers: spectrum-systems; artifacts: tactic_register
+- transcript_intelligence_pack [work] intended consumers: spectrum-systems; artifacts: transcript_intelligence_pack
+- viewpoint_pack [work] intended consumers: spectrum-systems; artifacts: viewpoint_pack
 - working_paper_input [work] intended consumers: system-factory, working-paper-review-engine; artifacts: working_paper_input
 
 ## Loop Participation
