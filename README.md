@@ -145,10 +145,14 @@ The ecosystem maintains a maturity model, a playbook, and a canonical 100-step r
 - Architecture guidance: `docs/system_architecture_philosophy.md`.
 
 ## Testing
-- `pytest` validates governance artifacts, schemas, registries, and review action examples.
-- Run locally after installing dev dependencies:
+- Required local runtimes: Python 3.11+ and Node.js (used by JavaScript-based governance scanners, including cross-repo compliance checks).
+- Codespaces/devcontainers install Python dependencies automatically from the repo-managed devcontainer config.
+- Run this preflight to verify environment prerequisites with clear fail signals:
   ```bash
-  pip install -r requirements-dev.txt
+  python scripts/verify_environment.py
+  ```
+- Then run tests:
+  ```bash
   pytest
   ```
 

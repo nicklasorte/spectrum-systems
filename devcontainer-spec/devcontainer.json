@@ -1,18 +1,19 @@
 {
   "name": "spectrum-systems-dev",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-
   "settings": {
     "python.defaultInterpreterPath": "/usr/local/bin/python"
   },
-
   "extensions": [
     "ms-python.python",
     "ms-python.vscode-pylance",
     "ms-toolsai.jupyter"
   ],
-
-  "postCreateCommand": "pip install -r requirements-base.txt",
-
-  "remoteUser": "vscode"
+  "postCreateCommand": "python -m pip install -r requirements-base.txt",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  }
 }
