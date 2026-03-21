@@ -1,0 +1,21 @@
+{
+  "record_id": "record-example-001",
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001",
+  "source_decision_id": "decision-example-001",
+  "timestamp": "2026-03-21T00:00:00Z",
+  "status": "healthy",
+  "validation_status": "valid",
+  "system_response": "allow",
+  "slis": {
+    "manifest_valid": 1,
+    "inputs_present": 1,
+    "expected_outputs_declared": 1,
+    "output_paths_valid": 1,
+    "provenance_required": 1,
+    "bundle_validation_success_rate": 1
+  },
+  "reasons": [
+    "bundle validation succeeded"
+  ]
+}

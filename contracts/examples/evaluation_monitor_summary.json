@@ -1,0 +1,20 @@
+{
+  "summary_id": "summary-example-001",
+  "trace_id": "trace-example-001",
+  "generated_at": "2026-03-21T00:00:00Z",
+  "window": {
+    "record_count": 1
+  },
+  "aggregated_slis": {
+    "manifest_valid_rate": 1,
+    "inputs_present_rate": 1,
+    "expected_outputs_declared_rate": 1,
+    "output_paths_valid_rate": 1,
+    "provenance_required_rate": 1,
+    "bundle_validation_success_rate": 1
+  },
+  "overall_status": "healthy",
+  "reasons": [
+    "all bundle validations succeeded"
+  ]
+}

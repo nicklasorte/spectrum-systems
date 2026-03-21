@@ -2,171 +2,155 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/evaluation_monitor_record.schema.json",
   "title": "Evaluation Monitor Record",
-  "description": "Single-ingestion monitoring record derived from one regression_run_result artifact. Produced by the BS Continuous Evaluation Monitor.",
-  "type": "object",
-  "required": [
-    "monitor_record_id",
-    "source_run_id",
-    "source_suite_id",
-    "created_at",
-    "total_traces",
-    "passed_traces",
-    "failed_traces",
-    "pass_rate",
-    "average_reproducibility_score",
-    "drift_counts",
-    "indeterminate_count",
-    "overall_status",
-    "sli_snapshot",
-    "alert_recommendation",
-    "metadata"
+  "description": "Schema supporting both legacy regression monitor records and control-loop run-bundle monitor records.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/legacy_monitor_record"
+    },
+    {
+      "$ref": "#/$defs/control_loop_monitor_record"
+    }
   ],
-  "additionalProperties": false,
-  "properties": {
-    "monitor_record_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Unique identifier for this monitor record."
-    },
-    "source_run_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "run_id of the regression_run_result that was ingested."
-    },
-    "source_suite_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "suite_id from the ingested regression_run_result."
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO-8601 UTC timestamp when this monitor record was created."
-    },
-    "total_traces": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Total number of traces in the source run."
-    },
-    "passed_traces": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Number of traces that passed in the source run."
-    },
-    "failed_traces": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Number of traces that failed in the source run."
-    },
-    "pass_rate": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1,
-      "description": "Fraction of traces that passed: passed_traces / total_traces."
-    },
-    "average_reproducibility_score": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1,
-      "description": "Mean reproducibility score across all traces in the source run."
-    },
-    "drift_counts": {
+  "$defs": {
+    "legacy_monitor_record": {
       "type": "object",
-      "description": "Count of each drift type observed across all traces.",
-      "additionalProperties": {
-        "type": "integer",
-        "minimum": 0
-      }
-    },
-    "indeterminate_count": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Number of traces with decision_status=indeterminate."
-    },
-    "overall_status": {
-      "type": "string",
-      "enum": ["pass", "fail"],
-      "description": "Overall status from the source regression run."
-    },
-    "sli_snapshot": {
-      "type": "object",
-      "description": "Artifact-oriented SLI snapshot computed from the source run.",
       "required": [
-        "regression_pass_rate",
-        "drift_rate",
-        "average_reproducibility_score"
+        "monitor_record_id",
+        "source_run_id",
+        "source_suite_id",
+        "created_at",
+        "total_traces",
+        "passed_traces",
+        "failed_traces",
+        "pass_rate",
+        "average_reproducibility_score",
+        "drift_counts",
+        "indeterminate_count",
+        "overall_status",
+        "sli_snapshot",
+        "alert_recommendation",
+        "metadata"
       ],
       "additionalProperties": false,
       "properties": {
-        "regression_pass_rate": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Fraction of traces that passed all regression criteria."
+        "monitor_record_id": {"type": "string", "minLength": 1},
+        "source_run_id": {"type": "string", "minLength": 1},
+        "source_suite_id": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"},
+        "total_traces": {"type": "integer", "minimum": 0},
+        "passed_traces": {"type": "integer", "minimum": 0},
+        "failed_traces": {"type": "integer", "minimum": 0},
+        "pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "average_reproducibility_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "drift_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
         },
-        "drift_rate": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Fraction of traces with decision_status=drifted."
+        "indeterminate_count": {"type": "integer", "minimum": 0},
+        "overall_status": {"type": "string", "enum": ["pass", "fail"]},
+        "sli_snapshot": {
+          "type": "object",
+          "required": ["regression_pass_rate", "drift_rate", "average_reproducibility_score"],
+          "additionalProperties": false,
+          "properties": {
+            "regression_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "drift_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "average_reproducibility_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "replay_status": {"type": "string", "enum": ["consistent", "drifted", "indeterminate"]},
+            "replay_consistency_sli": {"type": "number", "minimum": 0, "maximum": 1}
+          }
         },
-        "average_reproducibility_score": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Mean reproducibility score across all traces."
+        "alert_recommendation": {
+          "type": "object",
+          "required": ["level", "reasons"],
+          "additionalProperties": false,
+          "properties": {
+            "level": {"type": "string", "enum": ["none", "warning", "critical"]},
+            "reasons": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
         },
-        "replay_status": {
-          "type": "string",
-          "enum": ["consistent", "drifted", "indeterminate"],
-          "description": "Decision integrity status from the replay_decision_analysis artifact."
-        },
-        "replay_consistency_sli": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Replay consistency SLI: 1.0=consistent, 0.0=drifted, ≤0.5=indeterminate."
-        }
-      }
-    },
-    "alert_recommendation": {
-      "type": "object",
-      "description": "Alert recommendation computed from policy rules.",
-      "required": ["level", "reasons"],
-      "additionalProperties": false,
-      "properties": {
-        "level": {
-          "type": "string",
-          "enum": ["none", "warning", "critical"],
-          "description": "Alert severity level."
-        },
-        "reasons": {
-          "type": "array",
-          "description": "Human-readable reasons for this alert level.",
-          "items": {
-            "type": "string",
-            "minLength": 1
+        "metadata": {
+          "type": "object",
+          "required": ["schema_version", "generator"],
+          "additionalProperties": false,
+          "properties": {
+            "schema_version": {"type": "string", "minLength": 1},
+            "generator": {"type": "string", "minLength": 1}
           }
         }
       }
     },
-    "metadata": {
+    "control_loop_monitor_record": {
       "type": "object",
-      "description": "Provenance and generator metadata.",
-      "required": ["schema_version", "generator"],
+      "required": [
+        "record_id",
+        "run_id",
+        "trace_id",
+        "source_decision_id",
+        "timestamp",
+        "status",
+        "validation_status",
+        "system_response",
+        "slis",
+        "reasons"
+      ],
       "additionalProperties": false,
       "properties": {
-        "schema_version": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Version of the evaluation_monitor_record schema used."
+        "record_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1},
+        "source_decision_id": {"type": "string", "minLength": 1},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "status": {"type": "string", "enum": ["healthy", "failed", "indeterminate"]},
+        "validation_status": {"type": "string", "enum": ["valid", "invalid"]},
+        "system_response": {"type": "string", "enum": ["allow", "block", "require_rebuild"]},
+        "slis": {
+          "type": "object",
+          "required": [
+            "manifest_valid",
+            "inputs_present",
+            "expected_outputs_declared",
+            "output_paths_valid",
+            "provenance_required",
+            "bundle_validation_success_rate"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "manifest_valid": {"type": "number", "enum": [0, 1]},
+            "inputs_present": {"type": "number", "enum": [0, 1]},
+            "expected_outputs_declared": {"type": "number", "enum": [0, 1]},
+            "output_paths_valid": {"type": "number", "enum": [0, 1]},
+            "provenance_required": {"type": "number", "enum": [0, 1]},
+            "bundle_validation_success_rate": {"type": "number", "minimum": 0, "maximum": 1}
+          }
         },
-        "generator": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Identifier of the module or script that generated this record."
+        "reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "validation_status": {"const": "invalid"}
+            },
+            "required": ["validation_status"]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "status": {"const": "healthy"},
+                "system_response": {"const": "allow"}
+              },
+              "required": ["status", "system_response"]
+            }
+          }
+        }
+      ]
     }
   }
 }

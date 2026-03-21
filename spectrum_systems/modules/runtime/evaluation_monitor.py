@@ -855,3 +855,164 @@ def run_evaluation_monitor(
 
     summary = summarize_monitor_records(records, thresholds=thresholds)
     return records, summary
+
+
+# ---------------------------------------------------------------------------
+# Public API — run-bundle control-loop operations
+# ---------------------------------------------------------------------------
+
+
+def build_validation_monitor_record(
+    artifact_validation_decision: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Convert an artifact_validation_decision into an evaluation_monitor_record.
+
+    This is the MVP control-loop mapping for run-bundle validation.
+    """
+    decision = artifact_validation_decision if isinstance(artifact_validation_decision, dict) else {}
+    validation_results = decision.get("validation_results")
+    malformed = not isinstance(validation_results, dict)
+
+    def _bit(key: str) -> float:
+        if malformed:
+            return 0.0
+        return 1.0 if bool(validation_results.get(key) is True) else 0.0
+
+    slis = {
+        "manifest_valid": _bit("manifest_valid"),
+        "inputs_present": _bit("inputs_present"),
+        "expected_outputs_declared": _bit("expected_outputs_declared"),
+        "output_paths_valid": _bit("output_paths_valid"),
+        "provenance_required": _bit("provenance_required"),
+        "bundle_validation_success_rate": 0.0,
+    }
+
+    decision_status = decision.get("status")
+    decision_response = decision.get("system_response")
+
+    if malformed or decision_status not in {"valid", "invalid"}:
+        status = "indeterminate"
+        validation_status = "invalid"
+        system_response = "block"
+        reasons = ["malformed artifact_validation_decision; fail-closed to indeterminate"]
+    elif decision_status == "valid" and decision_response == "allow":
+        status = "healthy"
+        validation_status = "valid"
+        system_response = "allow"
+        reasons = list(decision.get("reasons") or ["bundle validation succeeded"])
+    elif decision_status == "invalid" and decision_response in {"require_rebuild", "block"}:
+        status = "failed"
+        validation_status = "invalid"
+        system_response = decision_response
+        reasons = list(decision.get("reasons") or ["bundle validation failed"])
+    else:
+        status = "indeterminate"
+        validation_status = "invalid"
+        system_response = "block"
+        reasons = list(decision.get("reasons") or [])
+        reasons.append("unknown decision status/response combination; fail-closed to indeterminate")
+
+    all_validation_flags_true = all(
+        slis[name] == 1.0
+        for name in (
+            "manifest_valid",
+            "inputs_present",
+            "expected_outputs_declared",
+            "output_paths_valid",
+            "provenance_required",
+        )
+    )
+    slis["bundle_validation_success_rate"] = (
+        1.0 if all_validation_flags_true and validation_status == "valid" else 0.0
+    )
+
+    record = {
+        "record_id": _new_id(),
+        "run_id": str(decision.get("run_id") or "unknown"),
+        "trace_id": str(decision.get("trace_id") or "unknown-trace"),
+        "source_decision_id": str(decision.get("decision_id") or "unknown-decision"),
+        "timestamp": str(decision.get("timestamp") or _now_iso()),
+        "status": status,
+        "validation_status": validation_status,
+        "system_response": system_response,
+        "slis": slis,
+        "reasons": reasons if reasons else ["no reason provided"],
+    }
+
+    errors = validate_monitor_record(record)
+    if errors:
+        raise EvaluationMonitorError(
+            "Produced control-loop monitor record failed schema validation: " + "; ".join(errors)
+        )
+    return record
+
+
+def summarize_validation_monitor_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Aggregate one or more control-loop monitor records into a summary."""
+    if not records:
+        raise EvaluationMonitorError("Cannot summarize an empty monitor record list (fail-closed).")
+
+    for record in records:
+        errors = validate_monitor_record(record)
+        if errors:
+            raise EvaluationMonitorError(
+                "Input monitor record failed schema validation: " + "; ".join(errors)
+            )
+        if "record_id" not in record:
+            raise EvaluationMonitorError(
+                "Only control-loop monitor records are supported by summarize_validation_monitor_records."
+            )
+
+    count = len(records)
+    def _mean(key: str) -> float:
+        return sum(float(r["slis"][key]) for r in records) / count
+
+    aggregated_slis = {
+        "manifest_valid_rate": _mean("manifest_valid"),
+        "inputs_present_rate": _mean("inputs_present"),
+        "expected_outputs_declared_rate": _mean("expected_outputs_declared"),
+        "output_paths_valid_rate": _mean("output_paths_valid"),
+        "provenance_required_rate": _mean("provenance_required"),
+        "bundle_validation_success_rate": _mean("bundle_validation_success_rate"),
+    }
+
+    if any(r["status"] == "indeterminate" for r in records):
+        overall_status = "indeterminate"
+    elif all(r["slis"]["bundle_validation_success_rate"] == 1.0 for r in records):
+        overall_status = "healthy"
+    elif aggregated_slis["bundle_validation_success_rate"] >= 0.8:
+        overall_status = "warning"
+    elif 0 < aggregated_slis["bundle_validation_success_rate"] < 0.8:
+        overall_status = "exhausted"
+    else:
+        overall_status = "blocked"
+
+    first_trace_id = str(records[0]["trace_id"])
+    reasons = [f"aggregated {count} monitor record(s)"]
+    if overall_status == "indeterminate":
+        reasons.append("at least one input monitor record is indeterminate")
+    elif overall_status == "healthy":
+        reasons.append("all bundle validations succeeded")
+    elif overall_status == "warning":
+        reasons.append("bundle_validation_success_rate is below 1.0 and above/equal warning threshold")
+    elif overall_status == "exhausted":
+        reasons.append("bundle_validation_success_rate is above 0 and below warning threshold")
+    else:
+        reasons.append("bundle_validation_success_rate is 0.0")
+
+    summary = {
+        "summary_id": _new_id(),
+        "trace_id": first_trace_id,
+        "generated_at": _now_iso(),
+        "window": {"record_count": count},
+        "aggregated_slis": aggregated_slis,
+        "overall_status": overall_status,
+        "reasons": reasons,
+    }
+
+    errors = validate_monitor_summary(summary)
+    if errors:
+        raise EvaluationMonitorError(
+            "Produced control-loop monitor summary failed schema validation: " + "; ".join(errors)
+        )
+    return summary
