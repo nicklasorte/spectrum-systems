@@ -7,6 +7,8 @@
   "additionalProperties": false,
   "required": [
     "decision_id",
+    "trace_id",
+    "span_id",
     "artifact_id",
     "artifact_type",
     "schema_version",
@@ -26,6 +28,16 @@
       "type": "string",
       "minLength": 1,
       "description": "Deterministic identifier for this validation decision artifact."
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Trace identifier linking this decision to the broader workflow trace."
+    },
+    "span_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Span identifier for the strategic knowledge validation decision operation."
     },
     "artifact_id": {
       "type": "string",

@@ -54,18 +54,29 @@ def _write_catalog(root: Path, source_id: str) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def _run_cli(tmp_path: Path, artifact: dict) -> subprocess.CompletedProcess[str]:
+def _run_cli(
+    tmp_path: Path,
+    artifact: dict,
+    *,
+    trace_id: str | None = None,
+    span_id: str | None = None,
+) -> subprocess.CompletedProcess[str]:
     artifact_path = tmp_path / "artifact.json"
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    args = [
+        sys.executable,
+        str(SCRIPT_PATH),
+        "--artifact-path",
+        str(artifact_path),
+        "--data-lake-root",
+        str(tmp_path),
+    ]
+    if trace_id is not None:
+        args.extend(["--trace-id", trace_id])
+    if span_id is not None:
+        args.extend(["--span-id", span_id])
     return subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT_PATH),
-            "--artifact-path",
-            str(artifact_path),
-            "--data-lake-root",
-            str(tmp_path),
-        ],
+        args,
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -76,8 +87,11 @@ def _run_cli(tmp_path: Path, artifact: dict) -> subprocess.CompletedProcess[str]
 def test_cli_allow_returns_success_exit(tmp_path: Path) -> None:
     _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
     result = _run_cli(tmp_path, _artifact_payload())
+    payload = json.loads(result.stdout)
     assert result.returncode == 0
-    assert json.loads(result.stdout)["system_response"] == "allow"
+    assert payload["system_response"] == "allow"
+    assert payload["trace_id"]
+    assert payload["span_id"]
 
 
 def test_cli_require_review_is_non_blocking(tmp_path: Path) -> None:
@@ -105,3 +119,17 @@ def test_cli_block_returns_nonzero_exit(tmp_path: Path) -> None:
     result = _run_cli(tmp_path, artifact)
     assert result.returncode != 0
     assert json.loads(result.stdout)["system_response"] == "block"
+
+
+def test_cli_honors_explicit_trace_context(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    result = _run_cli(
+        tmp_path,
+        _artifact_payload(),
+        trace_id="trace-cli-explicit-001",
+        span_id="span-cli-explicit-001",
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert payload["trace_id"] == "trace-cli-explicit-001"
+    assert payload["span_id"] == "span-cli-explicit-001"

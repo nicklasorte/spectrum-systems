@@ -9,6 +9,8 @@ from spectrum_systems.contracts import load_schema
 
 VALID_DECISION = {
     "decision_id": "SK-VAL-ART-001",
+    "trace_id": "trace-001",
+    "span_id": "span-001",
     "artifact_id": "ART-001",
     "artifact_type": "book_intelligence_pack",
     "schema_version": "1.0.0",
@@ -41,7 +43,14 @@ def test_valid_decision_artifact_passes() -> None:
 
 def test_missing_required_field_fails() -> None:
     payload = copy.deepcopy(VALID_DECISION)
-    payload.pop("trust_score")
+    payload.pop("trace_id")
+    with pytest.raises(ValidationError):
+        _validator().validate(payload)
+
+
+def test_empty_trace_field_fails() -> None:
+    payload = copy.deepcopy(VALID_DECISION)
+    payload["span_id"] = ""
     with pytest.raises(ValidationError):
         _validator().validate(payload)
 
