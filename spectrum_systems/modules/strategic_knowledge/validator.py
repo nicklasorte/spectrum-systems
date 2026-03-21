@@ -1,17 +1,10 @@
-"""Deterministic Strategic Knowledge Validation Gate decision logic."""
+"""Deterministic Strategic Knowledge Validation Gate decision logic (pure)."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
-
-from jsonschema import Draft202012Validator
-from jsonschema.exceptions import ValidationError
-
-from spectrum_systems.contracts import load_schema
-
-from .contracts import validate
 
 VALIDATOR_VERSION = "1.0.0"
 ARTIFACT_TYPES = frozenset(
@@ -37,6 +30,27 @@ EVIDENCE_REVIEW_THRESHOLD = 0.80
 PROVENANCE_REBUILD_THRESHOLD = 1.00
 ALLOW_TRUST_THRESHOLD = 0.90
 
+COMMON_ARTIFACT_FIELDS = {
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "created_at",
+    "source",
+    "provenance",
+    "evidence_anchors",
+    "artifact_refs",
+}
+
+ARTIFACT_SPECIFIC_FIELDS = {
+    "book_intelligence_pack": {"insights", "themes", "key_claims", "confidence"},
+    "transcript_intelligence_pack": {"decisions", "open_questions", "action_signals"},
+    "story_bank_entry": {"headline", "narrative", "strategic_relevance"},
+    "tactic_register": {"tactic_name", "context", "recommended_use"},
+    "viewpoint_pack": {"viewpoint", "supporting_arguments", "counterpoints"},
+    "evidence_map": {"claim_id", "claim_text", "confidence"},
+}
+
 
 @dataclass(frozen=True)
 class ValidationIssue:
@@ -56,8 +70,12 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def _validate_schema(artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:
-    artifact_type = artifact.get("artifact_type")
+def _coerce_context(context: dict[str, Any] | None) -> dict[str, Any]:
+    return context if isinstance(context, dict) else {}
+
+
+def _validate_schema(input_artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:
+    artifact_type = input_artifact.get("artifact_type")
     if artifact_type not in ARTIFACT_TYPES:
         issues.append(
             ValidationIssue(
@@ -68,14 +86,35 @@ def _validate_schema(artifact: dict[str, Any], issues: list[ValidationIssue]) ->
         )
         return False
 
-    try:
-        validate(artifact, artifact_type)
-    except (ValidationError, ValueError) as exc:
+    required_fields = {
+        "artifact_type",
+        "artifact_id",
+        "artifact_version",
+        "schema_version",
+        "created_at",
+        "source",
+        "provenance",
+        "evidence_anchors",
+    }
+    missing_required = sorted(field for field in required_fields if field not in input_artifact)
+    if missing_required:
         issues.append(
             ValidationIssue(
-                code="SCHEMA_VALIDATION_FAILED",
+                code="SCHEMA_REQUIRED_FIELDS_MISSING",
                 severity="error",
-                message=f"Artifact failed schema validation for {artifact_type}: {getattr(exc, 'message', str(exc))}",
+                message=f"Missing required fields: {', '.join(missing_required)}",
+            )
+        )
+        return False
+
+    allowed_fields = COMMON_ARTIFACT_FIELDS | ARTIFACT_SPECIFIC_FIELDS[artifact_type]
+    unknown = sorted(set(input_artifact.keys()) - allowed_fields)
+    if unknown:
+        issues.append(
+            ValidationIssue(
+                code="SCHEMA_UNKNOWN_FIELDS",
+                severity="error",
+                message=f"Unknown fields are not allowed: {', '.join(unknown)}",
             )
         )
         return False
@@ -84,11 +123,11 @@ def _validate_schema(artifact: dict[str, Any], issues: list[ValidationIssue]) ->
 
 
 def _check_source_refs(
-    artifact: dict[str, Any],
+    input_artifact: dict[str, Any],
     source_catalog: dict[str, Any] | None,
     issues: list[ValidationIssue],
 ) -> bool:
-    source = artifact.get("source")
+    source = input_artifact.get("source")
     if not isinstance(source, dict):
         issues.append(
             ValidationIssue(
@@ -144,8 +183,8 @@ def _check_source_refs(
     return False
 
 
-def _extract_artifact_refs(artifact: dict[str, Any]) -> list[dict[str, Any]]:
-    refs = artifact.get("artifact_refs", [])
+def _extract_artifact_refs(input_artifact: dict[str, Any]) -> list[dict[str, Any]]:
+    refs = input_artifact.get("artifact_refs", [])
     if refs is None or not isinstance(refs, list):
         return []
     return [ref for ref in refs if isinstance(ref, dict)]
@@ -190,8 +229,8 @@ def _check_artifact_refs(
     return all_resolved
 
 
-def _compute_evidence_anchor_coverage(artifact: dict[str, Any]) -> float:
-    anchors = artifact.get("evidence_anchors")
+def _compute_evidence_anchor_coverage(input_artifact: dict[str, Any]) -> float:
+    anchors = input_artifact.get("evidence_anchors")
     if not isinstance(anchors, list) or not anchors:
         return 0.0
 
@@ -210,8 +249,8 @@ def _compute_evidence_anchor_coverage(artifact: dict[str, Any]) -> float:
     return round(valid / len(anchors), 4)
 
 
-def _compute_provenance_completeness(artifact: dict[str, Any]) -> float:
-    provenance = artifact.get("provenance")
+def _compute_provenance_completeness(input_artifact: dict[str, Any]) -> float:
+    provenance = input_artifact.get("provenance")
     required = ("extraction_run_id", "extractor_version")
     if not isinstance(provenance, dict):
         return 0.0
@@ -254,8 +293,6 @@ def _derive_system_response(
         return "block"
     if not source_refs_valid:
         return "block"
-    if provenance_completeness <= 0.0:
-        return "block"
     if provenance_completeness < PROVENANCE_REBUILD_THRESHOLD:
         return "require_rebuild"
     if not artifact_refs_valid:
@@ -290,51 +327,61 @@ def collect_validation_issues(
             )
         )
     if provenance_completeness < PROVENANCE_REBUILD_THRESHOLD:
-        severity = "error" if provenance_completeness <= 0 else "warning"
         collected.append(
             ValidationIssue(
                 code="PROVENANCE_INCOMPLETE",
-                severity=severity,
+                severity="warning",
                 message=(
                     "Provenance completeness below required threshold "
                     f"({provenance_completeness:.4f} < {PROVENANCE_REBUILD_THRESHOLD:.2f})."
                 ),
             )
         )
-    if schema_valid and source_refs_valid and artifact_refs_valid and not collected:
-        collected.append(
-            ValidationIssue(
-                code="VALIDATION_PASSED",
-                severity="info",
-                message="Artifact satisfied all strategic knowledge validation gate checks.",
+    if schema_valid and source_refs_valid and artifact_refs_valid and evidence_anchor_coverage >= EVIDENCE_REVIEW_THRESHOLD:
+        if provenance_completeness >= PROVENANCE_REBUILD_THRESHOLD:
+            collected.append(
+                ValidationIssue(
+                    code="VALIDATION_PASSED",
+                    severity="info",
+                    message="Artifact satisfied all strategic knowledge validation gate checks.",
+                )
             )
-        )
 
     return [issue.as_dict() for issue in collected]
 
 
 def validate_strategic_knowledge_artifact(
-    *,
-    artifact: dict[str, Any],
-    source_catalog: dict[str, Any] | None,
-    artifact_registry: dict[str, Any] | None = None,
-    evaluated_at: str | None = None,
-    validator_version: str = VALIDATOR_VERSION,
+    input_artifact: dict[str, Any],
+    context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Evaluate strategic knowledge candidate artifact with fail-closed policy logic."""
+
+    context_payload = _coerce_context(context)
     issues: list[ValidationIssue] = []
 
-    artifact_type = artifact.get("artifact_type")
-    if artifact_type not in ARTIFACT_TYPES:
-        raise ValueError(f"Unsupported artifact_type for strategic validation gate: {artifact_type!r}")
+    schema_signal = context_payload.get("schema_valid")
+    if isinstance(schema_signal, bool):
+        schema_valid = schema_signal
+        if not schema_valid:
+            issues.append(
+                ValidationIssue(
+                    code="SCHEMA_VALIDATION_FAILED",
+                    severity="error",
+                    message="Artifact failed contract schema validation signal from context.",
+                )
+            )
+    else:
+        schema_valid = _validate_schema(input_artifact, issues)
 
-    schema_valid = _validate_schema(artifact, issues)
-    source_refs_valid = _check_source_refs(artifact, source_catalog, issues)
+    source_refs_valid = _check_source_refs(input_artifact, context_payload.get("source_catalog"), issues)
+    artifact_refs_valid = _check_artifact_refs(
+        _extract_artifact_refs(input_artifact),
+        context_payload.get("artifact_registry"),
+        issues,
+    )
 
-    artifact_refs = _extract_artifact_refs(artifact)
-    artifact_refs_valid = _check_artifact_refs(artifact_refs, artifact_registry, issues)
-
-    evidence_anchor_coverage = _compute_evidence_anchor_coverage(artifact)
-    provenance_completeness = _compute_provenance_completeness(artifact)
+    evidence_anchor_coverage = _compute_evidence_anchor_coverage(input_artifact)
+    provenance_completeness = _compute_provenance_completeness(input_artifact)
 
     trust_score = compute_trust_score(
         schema_valid=schema_valid,
@@ -353,13 +400,13 @@ def validate_strategic_knowledge_artifact(
         trust_score=trust_score,
     )
 
-    decision = {
-        "decision_id": f"SK-VAL-{artifact.get('artifact_id', 'UNKNOWN')}",
-        "artifact_id": str(artifact.get("artifact_id", "UNKNOWN")),
-        "artifact_type": str(artifact.get("artifact_type")),
-        "schema_version": str(artifact.get("schema_version", "unknown")),
-        "evaluated_at": evaluated_at or _utc_now_iso(),
-        "validator_version": validator_version,
+    return {
+        "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
+        "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
+        "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
+        "schema_version": str(input_artifact.get("schema_version", "unknown")),
+        "evaluated_at": str(context_payload.get("evaluated_at") or _utc_now_iso()),
+        "validator_version": str(context_payload.get("validator_version") or VALIDATOR_VERSION),
         "schema_valid": schema_valid,
         "source_refs_valid": source_refs_valid,
         "artifact_refs_valid": artifact_refs_valid,
@@ -376,10 +423,6 @@ def validate_strategic_knowledge_artifact(
         ),
         "system_response": system_response,
     }
-
-    decision_schema = load_schema("strategic_knowledge_validation_decision")
-    Draft202012Validator(decision_schema).validate(decision)
-    return decision
 
 
 __all__ = [

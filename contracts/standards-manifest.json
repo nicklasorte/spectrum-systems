@@ -457,7 +457,7 @@
     },
     {
       "artifact_type": "strategic_knowledge_validation_decision",
-      "artifact_class": "coordination",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [

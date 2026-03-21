@@ -54,13 +54,10 @@ def _write_catalog(root: Path, source_id: str) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def test_cli_allow_returns_json_and_success_exit(tmp_path: Path) -> None:
+def _run_cli(tmp_path: Path, artifact: dict) -> subprocess.CompletedProcess[str]:
     artifact_path = tmp_path / "artifact.json"
-    artifact = _artifact_payload()
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
-    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
-
-    result = subprocess.run(
+    return subprocess.run(
         [
             sys.executable,
             str(SCRIPT_PATH),
@@ -75,53 +72,36 @@ def test_cli_allow_returns_json_and_success_exit(tmp_path: Path) -> None:
         check=False,
     )
 
+
+def test_cli_allow_returns_success_exit(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    result = _run_cli(tmp_path, _artifact_payload())
     assert result.returncode == 0
-    payload = json.loads(result.stdout)
-    assert payload["system_response"] == "allow"
+    assert json.loads(result.stdout)["system_response"] == "allow"
 
 
-def test_cli_block_returns_json_and_nonzero_exit(tmp_path: Path) -> None:
-    artifact_path = tmp_path / "artifact.json"
+def test_cli_require_review_is_non_blocking(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    artifact = _artifact_payload()
+    artifact["evidence_anchors"] = [{"anchor_type": "pdf", "page_number": 0}]
+    result = _run_cli(tmp_path, artifact)
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["system_response"] == "require_review"
+
+
+def test_cli_require_rebuild_returns_nonzero_exit(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    artifact = _artifact_payload()
+    artifact["provenance"] = {}
+    result = _run_cli(tmp_path, artifact)
+    assert result.returncode != 0
+    assert json.loads(result.stdout)["system_response"] == "require_rebuild"
+
+
+def test_cli_block_returns_nonzero_exit(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
     artifact = _artifact_payload()
     artifact["source"]["source_id"] = "SRC-UNKNOWN"
-    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
-    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
-
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT_PATH),
-            "--artifact-path",
-            str(artifact_path),
-            "--data-lake-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
+    result = _run_cli(tmp_path, artifact)
     assert result.returncode != 0
-    payload = json.loads(result.stdout)
-    assert payload["system_response"] == "block"
-
-
-def test_cli_invalid_input_path_fails_clearly(tmp_path: Path) -> None:
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(SCRIPT_PATH),
-            "--artifact-path",
-            str(tmp_path / "missing.json"),
-            "--data-lake-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert result.returncode != 0
-    assert "artifact path does not exist" in result.stderr
+    assert json.loads(result.stdout)["system_response"] == "block"

@@ -38,9 +38,11 @@ def validate_strategic_knowledge_artifact_from_paths(
     source_catalog = load_source_catalog_payload(data_lake_root)
     artifact_registry = load_artifact_registry_payload(data_lake_root)
     return validate_strategic_knowledge_artifact(
-        artifact=artifact,
-        source_catalog=source_catalog,
-        artifact_registry=artifact_registry,
+        artifact,
+        {
+            "source_catalog": source_catalog,
+            "artifact_registry": artifact_registry,
+        },
     )
 
 
