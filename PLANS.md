@@ -106,6 +106,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BAF-2026-03-21.md | Prompt BAF — Enforcement Wiring (MVP Phase 3) | Active |
 | docs/review-actions/PLAN-BAG-REPLAY-ENGINE-MVP-PHASE-4-2026-03-21.md | BAG — Replay Engine (MVP Phase 4) | Active |
 | docs/review-actions/PLAN-BAH-2026-03-21.md | Prompt BAH — Drift Detection System | Active |
+| docs/review-actions/PLAN-BAZ-2026-03-21.md | Prompt BAZ — Agent Execution Module | Active |
 
 Update this table when plans are created or completed.
 

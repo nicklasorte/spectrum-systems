@@ -1,0 +1,37 @@
+{
+  "agent_run_id": "agent-run-example-001",
+  "context_bundle_id": "ctx-1234abcd5678ef90",
+  "trace_id": "trace-example-001",
+  "step_sequence": [
+    {
+      "step_id": "step-001",
+      "step_type": "tool",
+      "status": "completed",
+      "input_ref": "context://ctx-1234abcd5678ef90",
+      "output_ref": "artifact://step-001",
+      "error": null
+    }
+  ],
+  "tool_calls": [
+    {
+      "step_id": "step-001",
+      "tool_name": "example_tool",
+      "input_ref": "context://ctx-1234abcd5678ef90",
+      "output_ref": "artifact://step-001",
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "intermediate_artifacts": [
+    {
+      "artifact_id": "artifact-step-001",
+      "artifact_type": "tool_output",
+      "schema_name": "artifact_envelope"
+    }
+  ],
+  "final_output_artifact_id": "agent-output://agent-run-example-001",
+  "execution_status": "completed",
+  "failure_reason": null,
+  "started_at": "2026-03-21T00:00:00+00:00",
+  "completed_at": "2026-03-21T00:00:01+00:00"
+}
