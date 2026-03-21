@@ -306,11 +306,7 @@
       "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
-      "intended_consumers": [
-        "slide-intelligence-engine",
-        "working-paper-review-engine",
-        "spectrum-pipeline-engine"
-      ],
+      "intended_consumers": [],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": null,
@@ -321,12 +317,7 @@
       "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
-      "intended_consumers": [
-        "working-paper-review-engine",
-        "assumptions-registry-engine",
-        "knowledge-graph-engine",
-        "spectrum-program-advisor"
-      ],
+      "intended_consumers": [],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": null,
