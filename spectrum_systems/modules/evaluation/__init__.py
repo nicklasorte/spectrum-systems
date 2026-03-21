@@ -19,4 +19,6 @@ regression
 eval_runner
     End-to-end evaluation orchestrator: runs golden cases, captures metrics,
     produces structured EvalResult records.
+eval_engine
+    Governed eval artifact execution APIs for eval_case/eval_run workflows.
 """

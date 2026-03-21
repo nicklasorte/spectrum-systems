@@ -1,0 +1,11 @@
+{
+  "artifact_type": "eval_summary",
+  "schema_version": "1.0.0",
+  "trace_id": "44444444-4444-4444-8444-444444444444",
+  "eval_run_id": "eval-run-20260321T120000Z",
+  "pass_rate": 0.5,
+  "failure_rate": 0.5,
+  "drift_rate": 0.1,
+  "reproducibility_score": 0.9,
+  "system_status": "degraded"
+}

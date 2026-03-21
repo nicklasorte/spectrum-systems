@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_run.schema.json",
+  "title": "Eval Run",
+  "description": "Governed evaluation run artifact for a set of eval cases.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "eval_run_id",
+    "eval_case_ids",
+    "system_version",
+    "dataset_version",
+    "timestamp"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_run" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "format": "uuid" },
+    "eval_run_id": { "type": "string", "minLength": 1 },
+    "eval_case_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "system_version": { "type": "string", "minLength": 1 },
+    "dataset_version": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" }
+  }
+}

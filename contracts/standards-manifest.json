@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.6",
+  "artifact_version": "1.0.7",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.8",
+  "standards_version": "2026.03.9",
   "record_id": "REC-STD-2026-03-21-DRIFT",
   "run_id": "run-20260321T180000Z",
   "created_at": "2026-03-21T00:00:00Z",
@@ -529,6 +529,58 @@
       "last_updated_in": "1.0.6",
       "example_path": "contracts/examples/drift_detection_result.json",
       "notes": "Deterministic drift comparison artifact for replay-versus-baseline regression detection and control-loop gating."
+    },
+    {
+      "artifact_type": "eval_case",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_case.json",
+      "notes": "Governed eval-case specification with trace-linked inputs, expected outputs, and scoring rubric."
+    },
+    {
+      "artifact_type": "eval_run",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_run.json",
+      "notes": "Governed eval-run record covering case set, system version, dataset version, and run timestamp."
+    },
+    {
+      "artifact_type": "eval_result",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_result.json",
+      "notes": "Governed case-level evaluation result with mandatory eval_case_id and trace_id linkage."
+    },
+    {
+      "artifact_type": "eval_summary",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_summary.json",
+      "notes": "Governed aggregate eval summary capturing pass/failure/drift and reproducibility posture."
     }
   ]
 }

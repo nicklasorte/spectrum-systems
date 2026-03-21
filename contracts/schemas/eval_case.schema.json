@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_case.schema.json",
+  "title": "Eval Case",
+  "description": "Governed evaluation case artifact defining expected behavior and scoring criteria.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "eval_case_id",
+    "input_artifact_refs",
+    "expected_output_spec",
+    "scoring_rubric",
+    "evaluation_type",
+    "created_from"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_case" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "format": "uuid" },
+    "eval_case_id": { "type": "string", "minLength": 1 },
+    "input_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "expected_output_spec": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "scoring_rubric": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evaluation_type": {
+      "type": "string",
+      "enum": ["deterministic", "heuristic", "model_based"]
+    },
+    "created_from": {
+      "type": "string",
+      "enum": ["manual", "failure_trace", "synthetic"]
+    }
+  }
+}
