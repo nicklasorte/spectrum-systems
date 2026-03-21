@@ -341,11 +341,7 @@
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems",
-        "spectrum-pipeline-engine",
-        "system-factory"
-      ],
+      "intended_consumers": [],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
       "example_path": null,
