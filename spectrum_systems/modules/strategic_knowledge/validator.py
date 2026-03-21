@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import uuid
 from typing import Any
 
 VALIDATOR_VERSION = "1.0.0"
@@ -72,6 +73,26 @@ def _utc_now_iso() -> str:
 
 def _coerce_context(context: dict[str, Any] | None) -> dict[str, Any]:
     return context if isinstance(context, dict) else {}
+
+
+def _coerce_trace_value(value: Any) -> str | None:
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped:
+            return stripped
+    return None
+
+
+def _resolve_trace_context(context_payload: dict[str, Any]) -> tuple[str, str]:
+    trace_id = _coerce_trace_value(context_payload.get("trace_id"))
+    span_id = _coerce_trace_value(context_payload.get("span_id"))
+
+    if trace_id is None:
+        trace_id = str(uuid.uuid4())
+    if span_id is None:
+        span_id = str(uuid.uuid4())
+
+    return trace_id, span_id
 
 
 def _validate_schema(input_artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:
@@ -357,6 +378,7 @@ def validate_strategic_knowledge_artifact(
     """Evaluate strategic knowledge candidate artifact with fail-closed policy logic."""
 
     context_payload = _coerce_context(context)
+    trace_id, span_id = _resolve_trace_context(context_payload)
     issues: list[ValidationIssue] = []
 
     schema_signal = context_payload.get("schema_valid")
@@ -402,6 +424,8 @@ def validate_strategic_knowledge_artifact(
 
     return {
         "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
+        "trace_id": trace_id,
+        "span_id": span_id,
         "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
         "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
         "schema_version": str(input_artifact.get("schema_version", "unknown")),

@@ -41,6 +41,8 @@ def test_valid_artifact_returns_allow() -> None:
     decision = validate_strategic_knowledge_artifact(_valid_artifact(), _context())
     assert decision["system_response"] == "allow"
     assert decision["schema_valid"] is True
+    assert decision["trace_id"]
+    assert decision["span_id"]
 
 
 def test_schema_failure_returns_block() -> None:
@@ -49,6 +51,8 @@ def test_schema_failure_returns_block() -> None:
     decision = validate_strategic_knowledge_artifact(artifact, _context())
     assert decision["system_response"] == "block"
     assert decision["schema_valid"] is False
+    assert decision["trace_id"]
+    assert decision["span_id"]
 
 
 def test_missing_provenance_returns_require_rebuild() -> None:
@@ -81,3 +85,16 @@ def test_unknown_field_causes_schema_failure_and_block() -> None:
     decision = validate_strategic_knowledge_artifact(artifact, _context())
     assert decision["schema_valid"] is False
     assert decision["system_response"] == "block"
+
+
+def test_explicit_trace_context_is_preserved() -> None:
+    decision = validate_strategic_knowledge_artifact(
+        _valid_artifact(),
+        {
+            **_context(),
+            "trace_id": "trace-explicit-001",
+            "span_id": "span-explicit-001",
+        },
+    )
+    assert decision["trace_id"] == "trace-explicit-001"
+    assert decision["span_id"] == "span-explicit-001"
