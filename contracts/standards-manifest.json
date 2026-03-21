@@ -532,7 +532,7 @@
     },
     {
       "artifact_type": "eval_case",
-      "artifact_class": "evaluation",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -545,7 +545,7 @@
     },
     {
       "artifact_type": "eval_run",
-      "artifact_class": "evaluation",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -558,7 +558,7 @@
     },
     {
       "artifact_type": "eval_result",
-      "artifact_class": "evaluation",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -571,7 +571,7 @@
     },
     {
       "artifact_type": "eval_summary",
-      "artifact_class": "evaluation",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
