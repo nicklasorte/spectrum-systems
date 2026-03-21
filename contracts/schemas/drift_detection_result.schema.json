@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/drift_detection_result.schema.json",
+  "title": "Drift Detection Result",
+  "description": "Governed artifact produced by the runtime drift detection engine comparing replay outputs against approved baselines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "drift_id",
+    "trace_id",
+    "baseline_id",
+    "replay_run_id",
+    "drift_status",
+    "drift_metrics",
+    "thresholds_triggered",
+    "comparison_summary",
+    "timestamp"
+  ],
+  "properties": {
+    "drift_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "drift_status": {
+      "type": "string",
+      "enum": [
+        "no_drift",
+        "drift_detected",
+        "indeterminate"
+      ]
+    },
+    "drift_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "numeric_drift",
+        "field_mismatches",
+        "missing_fields"
+      ],
+      "properties": {
+        "numeric_drift": {
+          "type": "number",
+          "minimum": 0
+        },
+        "field_mismatches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "thresholds_triggered": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "comparison_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

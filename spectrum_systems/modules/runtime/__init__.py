@@ -185,6 +185,12 @@ from spectrum_systems.modules.runtime.regression_harness import (
     validate_regression_run_result,
     validate_regression_suite,
 )
+from spectrum_systems.modules.runtime.drift_detection_engine import (
+    DriftDetectionError,
+    run_drift_detection,
+    validate_drift_detection_result,
+    validate_replay_artifact as validate_drift_replay_artifact,
+)
 from spectrum_systems.modules.runtime.evaluation_monitor import (
     EvaluationMonitorError,
     InvalidRegressionResultError,
@@ -325,6 +331,11 @@ __all__ = [
     "aggregate_regression_results",
     "validate_regression_run_result",
     "run_regression_suite",
+    # BAH — Drift Detection
+    "DriftDetectionError",
+    "validate_drift_replay_artifact",
+    "validate_drift_detection_result",
+    "run_drift_detection",
     # BS — Continuous Evaluation Monitor
     "EvaluationMonitorError",
     "InvalidRegressionResultError",
