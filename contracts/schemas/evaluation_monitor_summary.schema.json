@@ -2,165 +2,136 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/evaluation_monitor_summary.schema.json",
   "title": "Evaluation Monitor Summary",
-  "description": "Aggregated monitoring summary across multiple evaluation_monitor_records. Produced by the BS Continuous Evaluation Monitor after ingesting a batch of regression run results.",
-  "type": "object",
-  "required": [
-    "summary_id",
-    "created_at",
-    "window",
-    "aggregates",
-    "trend_analysis",
-    "burn_rate_assessment",
-    "recommended_action",
-    "source_run_ids"
+  "description": "Schema supporting both legacy regression monitor summaries and control-loop run-bundle summaries.",
+  "oneOf": [
+    {"$ref": "#/$defs/legacy_monitor_summary"},
+    {"$ref": "#/$defs/control_loop_monitor_summary"}
   ],
-  "additionalProperties": false,
-  "properties": {
-    "summary_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Unique identifier for this monitoring summary."
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO-8601 UTC timestamp when this summary was created."
-    },
-    "window": {
+  "$defs": {
+    "legacy_monitor_summary": {
       "type": "object",
-      "description": "Time window covered by this summary.",
-      "required": ["start_at", "end_at", "total_runs"],
-      "additionalProperties": false,
-      "properties": {
-        "start_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 UTC timestamp of the earliest record in this window."
-        },
-        "end_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 UTC timestamp of the latest record in this window."
-        },
-        "total_runs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total number of monitor records aggregated."
-        }
-      }
-    },
-    "aggregates": {
-      "type": "object",
-      "description": "Aggregate metrics computed across all records in the window.",
       "required": [
-        "average_pass_rate",
-        "average_drift_rate",
-        "average_reproducibility_score",
-        "total_failed_runs",
-        "total_critical_alerts"
+        "summary_id",
+        "created_at",
+        "window",
+        "aggregates",
+        "trend_analysis",
+        "burn_rate_assessment",
+        "recommended_action",
+        "source_run_ids"
       ],
       "additionalProperties": false,
       "properties": {
-        "average_pass_rate": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Mean pass_rate across all monitor records."
+        "summary_id": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"},
+        "window": {
+          "type": "object",
+          "required": ["start_at", "end_at", "total_runs"],
+          "additionalProperties": false,
+          "properties": {
+            "start_at": {"type": "string", "format": "date-time"},
+            "end_at": {"type": "string", "format": "date-time"},
+            "total_runs": {"type": "integer", "minimum": 0}
+          }
         },
-        "average_drift_rate": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Mean drift_rate across all monitor records."
+        "aggregates": {
+          "type": "object",
+          "required": [
+            "average_pass_rate",
+            "average_drift_rate",
+            "average_reproducibility_score",
+            "total_failed_runs",
+            "total_critical_alerts"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "average_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "average_drift_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "average_reproducibility_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "total_failed_runs": {"type": "integer", "minimum": 0},
+            "total_critical_alerts": {"type": "integer", "minimum": 0},
+            "average_replay_consistency_sli": {"type": "number", "minimum": 0, "maximum": 1}
+          }
         },
-        "average_reproducibility_score": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Mean average_reproducibility_score across all monitor records."
+        "trend_analysis": {
+          "type": "object",
+          "required": ["pass_rate_trend", "drift_rate_trend", "reproducibility_trend"],
+          "additionalProperties": false,
+          "properties": {
+            "pass_rate_trend": {"type": "string", "enum": ["improving", "stable", "degrading"]},
+            "drift_rate_trend": {"type": "string", "enum": ["improving", "stable", "degrading"]},
+            "reproducibility_trend": {"type": "string", "enum": ["improving", "stable", "degrading"]},
+            "replay_consistency_trend": {"type": "string", "enum": ["improving", "stable", "degrading"]}
+          }
         },
-        "total_failed_runs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of records where overall_status=fail."
+        "burn_rate_assessment": {
+          "type": "object",
+          "required": ["status", "reasons"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {"type": "string", "enum": ["normal", "elevated", "exhausting"]},
+            "reasons": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
         },
-        "total_critical_alerts": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of records where alert_recommendation.level=critical."
-        },
-        "average_replay_consistency_sli": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Mean replay_consistency_sli across records that include replay data."
+        "recommended_action": {"type": "string", "enum": ["none", "watch", "freeze_changes", "rollback_candidate"]},
+        "source_run_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
         }
       }
     },
-    "trend_analysis": {
+    "control_loop_monitor_summary": {
       "type": "object",
-      "description": "Trend direction for key SLI metrics across the window.",
       "required": [
-        "pass_rate_trend",
-        "drift_rate_trend",
-        "reproducibility_trend"
+        "summary_id",
+        "trace_id",
+        "generated_at",
+        "window",
+        "aggregated_slis",
+        "overall_status",
+        "reasons"
       ],
       "additionalProperties": false,
       "properties": {
-        "pass_rate_trend": {
-          "type": "string",
-          "enum": ["improving", "stable", "degrading"],
-          "description": "Trend direction for regression pass rate over the window."
+        "summary_id": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1},
+        "generated_at": {"type": "string", "format": "date-time"},
+        "window": {
+          "type": "object",
+          "required": ["record_count"],
+          "additionalProperties": false,
+          "properties": {
+            "record_count": {"type": "integer", "minimum": 1}
+          }
         },
-        "drift_rate_trend": {
-          "type": "string",
-          "enum": ["improving", "stable", "degrading"],
-          "description": "Trend direction for drift rate over the window."
+        "aggregated_slis": {
+          "type": "object",
+          "required": [
+            "manifest_valid_rate",
+            "inputs_present_rate",
+            "expected_outputs_declared_rate",
+            "output_paths_valid_rate",
+            "provenance_required_rate",
+            "bundle_validation_success_rate"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "manifest_valid_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "inputs_present_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "expected_outputs_declared_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "output_paths_valid_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "provenance_required_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "bundle_validation_success_rate": {"type": "number", "minimum": 0, "maximum": 1}
+          }
         },
-        "reproducibility_trend": {
-          "type": "string",
-          "enum": ["improving", "stable", "degrading"],
-          "description": "Trend direction for average reproducibility score over the window."
-        },
-        "replay_consistency_trend": {
-          "type": "string",
-          "enum": ["improving", "stable", "degrading"],
-          "description": "Trend direction for replay_consistency_sli over the window. Only present when replay data is available."
-        }
-      }
-    },
-    "burn_rate_assessment": {
-      "type": "object",
-      "description": "Error-budget burn-rate assessment for the window.",
-      "required": ["status", "reasons"],
-      "additionalProperties": false,
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": ["normal", "elevated", "exhausting"],
-          "description": "Burn-rate status: normal, elevated, or exhausting."
-        },
+        "overall_status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "blocked", "indeterminate"]},
         "reasons": {
           "type": "array",
-          "description": "Human-readable reasons for this burn-rate status.",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": {"type": "string", "minLength": 1}
         }
-      }
-    },
-    "recommended_action": {
-      "type": "string",
-      "enum": ["none", "watch", "freeze_changes", "rollback_candidate"],
-      "description": "Recommended action given the current monitoring state."
-    },
-    "source_run_ids": {
-      "type": "array",
-      "description": "List of source regression run IDs covered by this summary.",
-      "items": {
-        "type": "string",
-        "minLength": 1
       }
     }
   }

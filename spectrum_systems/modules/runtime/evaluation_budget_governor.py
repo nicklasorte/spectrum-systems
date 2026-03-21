@@ -574,3 +574,77 @@ def run_budget_governor(
         system_response,
     )
     return decision
+
+
+def build_validation_budget_decision(
+    monitor_summary: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Build an enforcement-ready control-loop budget decision.
+
+    Converts control-loop ``evaluation_monitor_summary`` artifacts into
+    control-loop ``evaluation_budget_decision`` artifacts.
+    """
+    summary_errors = validate_summary(monitor_summary)
+    if summary_errors:
+        raise InvalidSummaryError(
+            "evaluation_monitor_summary failed schema validation: " + "; ".join(summary_errors)
+        )
+
+    if "overall_status" not in monitor_summary or "aggregated_slis" not in monitor_summary:
+        status = "blocked"
+        system_response = "block"
+        reasons = ["malformed summary input; fail-closed to blocked decision"]
+        triggered = ["malformed_summary_input"]
+    else:
+        raw_status = monitor_summary["overall_status"]
+        aggregated = monitor_summary["aggregated_slis"]
+        reasons = list(monitor_summary.get("reasons") or [])
+        triggered: List[str] = []
+
+        if raw_status == "healthy":
+            status = "healthy"
+            system_response = "allow"
+        elif raw_status == "warning":
+            status = "warning"
+            system_response = "warn"
+            triggered.append("bundle_validation_success_rate_below_1_0")
+        elif raw_status == "exhausted":
+            status = "exhausted"
+            system_response = "freeze"
+            triggered.append("bundle_validation_success_rate_below_0_8")
+        elif raw_status == "blocked":
+            status = "blocked"
+            system_response = "block"
+            triggered.append("bundle_validation_success_rate_zero")
+        elif raw_status == "indeterminate":
+            status = "blocked"
+            system_response = "block"
+            triggered.append("indeterminate_monitor_state")
+            reasons.append("indeterminate summary input fail-closed to blocked")
+        else:
+            status = "blocked"
+            system_response = "block"
+            triggered.append("unknown_monitor_status")
+            reasons.append("unknown summary status fail-closed to blocked")
+
+        if float(aggregated.get("output_paths_valid_rate", 0.0)) < 1.0:
+            triggered.append("output_paths_valid_rate_below_threshold")
+
+    decision = {
+        "decision_id": _new_id(),
+        "summary_id": str(monitor_summary.get("summary_id") or "unknown-summary"),
+        "trace_id": str(monitor_summary.get("trace_id") or "unknown-trace"),
+        "timestamp": _now_iso(),
+        "status": status,
+        "system_response": system_response,
+        "triggered_thresholds": sorted(set(triggered)),
+        "reasons": reasons if reasons else ["no reasons provided by summary"],
+    }
+
+    decision_errors = validate_decision(decision)
+    if decision_errors:
+        raise EvaluationBudgetGovernorError(
+            "Produced control-loop budget decision failed schema validation: "
+            + "; ".join(decision_errors)
+        )
+    return decision

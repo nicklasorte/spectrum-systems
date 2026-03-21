@@ -2,68 +2,62 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/evaluation_budget_decision.schema.json",
   "title": "Evaluation Budget Decision",
-  "description": "Governed decision artifact produced by the BT Evaluation Budget Governor. Consumes an evaluation_monitor_summary and enforces a deterministic policy that controls system behavior.",
-  "type": "object",
-  "required": [
-    "decision_id",
-    "summary_id",
-    "status",
-    "system_response",
-    "reasons",
-    "triggered_thresholds",
-    "required_actions",
-    "created_at"
+  "description": "Schema supporting both legacy evaluation budget decisions and control-loop enforcement-ready decisions.",
+  "oneOf": [
+    {"$ref": "#/$defs/legacy_budget_decision"},
+    {"$ref": "#/$defs/control_loop_budget_decision"}
   ],
-  "additionalProperties": false,
-  "properties": {
-    "decision_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Unique identifier for this budget decision."
-    },
-    "summary_id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "The summary_id of the evaluation_monitor_summary that drove this decision."
-    },
-    "status": {
-      "type": "string",
-      "enum": ["healthy", "warning", "exhausted", "blocked"],
-      "description": "Budget health status derived from the monitor summary."
-    },
-    "system_response": {
-      "type": "string",
-      "enum": ["allow", "allow_with_warning", "freeze_changes", "block_release", "require_review"],
-      "description": "Governed system action to take based on the budget status."
-    },
-    "reasons": {
-      "type": "array",
-      "description": "Human-readable explanations for the budget status and system response.",
-      "items": {
-        "type": "string",
-        "minLength": 1
+  "$defs": {
+    "legacy_budget_decision": {
+      "type": "object",
+      "required": [
+        "decision_id",
+        "summary_id",
+        "status",
+        "system_response",
+        "reasons",
+        "triggered_thresholds",
+        "required_actions",
+        "created_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {"type": "string", "minLength": 1},
+        "summary_id": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "blocked"]},
+        "system_response": {
+          "type": "string",
+          "enum": ["allow", "allow_with_warning", "freeze_changes", "block_release", "require_review"]
+        },
+        "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "triggered_thresholds": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "required_actions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "created_at": {"type": "string", "format": "date-time"}
       }
     },
-    "triggered_thresholds": {
-      "type": "array",
-      "description": "Names of policy thresholds that were triggered in this evaluation.",
-      "items": {
-        "type": "string",
-        "minLength": 1
+    "control_loop_budget_decision": {
+      "type": "object",
+      "required": [
+        "decision_id",
+        "summary_id",
+        "trace_id",
+        "timestamp",
+        "status",
+        "system_response",
+        "triggered_thresholds",
+        "reasons"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {"type": "string", "minLength": 1},
+        "summary_id": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "blocked"]},
+        "system_response": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+        "triggered_thresholds": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}
       }
-    },
-    "required_actions": {
-      "type": "array",
-      "description": "Specific actions that must be taken in response to this decision.",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO-8601 UTC timestamp when this decision was created."
     }
   }
 }
