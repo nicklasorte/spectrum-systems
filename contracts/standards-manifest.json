@@ -443,11 +443,7 @@
       "artifact_class": "review",
       "schema_version": "1.1.0",
       "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems",
-        "spectrum-pipeline-engine",
-        "spectrum-program-advisor"
-      ],
+      "intended_consumers": [],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
