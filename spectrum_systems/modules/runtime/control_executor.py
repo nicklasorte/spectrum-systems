@@ -628,6 +628,7 @@ def execute_with_replay(bundle_path: str) -> Dict[str, Any]:
     budget_decision = build_validation_budget_decision(monitor_summary)
 
     original_decision = dict(budget_decision)
+    original_decision["run_id"] = validation_decision.get("run_id")
     original_decision["enforcement_action"] = original_enforcement.get("enforcement_action", "block")
 
     return replay_run(bundle_path, original_decision)
