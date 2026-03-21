@@ -9,6 +9,8 @@ from .pathing import (
     source_absolute_path,
 )
 from .provenance import build_provenance, pdf_anchor, transcript_anchor, utc_now_iso
+from .validation_loader import validate_strategic_knowledge_artifact_from_paths
+from .validator import collect_validation_issues, compute_trust_score, validate_strategic_knowledge_artifact
 
 __all__ = [
     "ARTIFACT_DIR_BY_TYPE",
@@ -21,4 +23,8 @@ __all__ = [
     "source_absolute_path",
     "transcript_anchor",
     "utc_now_iso",
+    "validate_strategic_knowledge_artifact",
+    "validate_strategic_knowledge_artifact_from_paths",
+    "compute_trust_score",
+    "collect_validation_issues",
 ]

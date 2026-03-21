@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/schemas/strategic_knowledge_validation_decision.schema.json",
+  "title": "Strategic Knowledge Validation Decision",
+  "description": "Governed admission decision for a strategic knowledge artifact candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_id",
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "evaluated_at",
+    "validator_version",
+    "schema_valid",
+    "source_refs_valid",
+    "artifact_refs_valid",
+    "evidence_anchor_coverage",
+    "provenance_completeness",
+    "trust_score",
+    "issues",
+    "system_response"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic identifier for this validation decision artifact."
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the strategic knowledge artifact that was evaluated."
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "book_intelligence_pack",
+        "transcript_intelligence_pack",
+        "story_bank_entry",
+        "tactic_register",
+        "viewpoint_pack",
+        "evidence_map"
+      ],
+      "description": "Strategic knowledge artifact family for the candidate artifact."
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Schema version declared by the candidate artifact."
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp for when gate evaluation completed."
+    },
+    "validator_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the Strategic Knowledge Validation Gate implementation."
+    },
+    "schema_valid": {
+      "type": "boolean",
+      "description": "Whether the candidate artifact conforms to its declared artifact contract schema."
+    },
+    "source_refs_valid": {
+      "type": "boolean",
+      "description": "Whether all declared source references resolve to registered source catalog entries with admissible status."
+    },
+    "artifact_refs_valid": {
+      "type": "boolean",
+      "description": "Whether declared artifact references resolve to known artifacts when references are present."
+    },
+    "evidence_anchor_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Coverage ratio of structurally valid evidence anchors required for trust evaluation."
+    },
+    "provenance_completeness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Completeness ratio for required provenance fields in the artifact payload."
+    },
+    "trust_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Deterministic trust score computed from governed sub-signals."
+    },
+    "issues": {
+      "type": "array",
+      "description": "Structured governance and validation findings collected during evaluation.",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    },
+    "system_response": {
+      "type": "string",
+      "enum": ["allow", "require_review", "require_rebuild", "block"],
+      "description": "Admission control outcome for the candidate artifact."
+    }
+  },
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable machine-readable issue code."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["info", "warning", "error"],
+          "description": "Issue severity classification."
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable issue description for operators/reviewers."
+        }
+      }
+    }
+  }
+}

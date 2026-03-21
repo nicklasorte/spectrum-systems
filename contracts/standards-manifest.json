@@ -454,6 +454,21 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/evidence_map.json",
       "notes": "Evidence map linking strategic claims to anchored source evidence."
+    },
+    {
+      "artifact_type": "strategic_knowledge_validation_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "spectrum-pipeline-engine",
+        "spectrum-program-advisor"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
+      "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
     }
   ]
 }
