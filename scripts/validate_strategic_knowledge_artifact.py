@@ -11,7 +11,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from spectrum_systems.modules.strategic_knowledge.validator import validate_strategic_knowledge_artifact
+from spectrum_systems.modules.strategic_knowledge.validation_loader import (  # noqa: E402
+    validate_strategic_knowledge_artifact_from_paths,
+)
 
 EXIT_CODES = {
     "allow": 0,
@@ -32,21 +34,17 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if not args.artifact_path.exists():
-        print(f"ERROR: artifact path does not exist: {args.artifact_path}", file=sys.stderr)
-        return 2
-
     try:
-        artifact = json.loads(args.artifact_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        print(f"ERROR: artifact JSON parse failed at {args.artifact_path}: {exc}", file=sys.stderr)
-        return 2
-
-    try:
-        decision = validate_strategic_knowledge_artifact(
-            artifact=artifact,
+        decision = validate_strategic_knowledge_artifact_from_paths(
+            artifact_path=args.artifact_path,
             data_lake_root=args.data_lake_root,
         )
+    except FileNotFoundError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as exc:
+        print(f"ERROR: artifact JSON parse failed: {exc}", file=sys.stderr)
+        return 2
     except ValueError as exc:
         print(f"ERROR: validation gate rejected input: {exc}", file=sys.stderr)
         return 1

@@ -68,7 +68,7 @@ def _write_registry(root: Path) -> None:
 
 def test_fully_valid_artifact_returns_allow(tmp_path: Path) -> None:
     _write_catalog(tmp_path)
-    decision = validate_strategic_knowledge_artifact(artifact=_valid_artifact(), data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=_valid_artifact(), source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
     assert decision["system_response"] == "allow"
     assert decision["schema_valid"] is True
 
@@ -77,7 +77,7 @@ def test_malformed_artifact_schema_returns_block(tmp_path: Path) -> None:
     _write_catalog(tmp_path)
     artifact = _valid_artifact()
     artifact.pop("artifact_id")
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
     assert decision["system_response"] == "block"
     assert decision["schema_valid"] is False
 
@@ -86,7 +86,7 @@ def test_unknown_source_ref_returns_block(tmp_path: Path) -> None:
     _write_catalog(tmp_path)
     artifact = _valid_artifact()
     artifact["source"]["source_id"] = "SRC-UNKNOWN"
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
     assert decision["system_response"] == "block"
     assert decision["source_refs_valid"] is False
 
@@ -95,7 +95,7 @@ def test_missing_required_evidence_anchors_returns_block(tmp_path: Path) -> None
     _write_catalog(tmp_path)
     artifact = _valid_artifact()
     artifact["evidence_anchors"] = []
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
     assert decision["system_response"] == "block"
     assert decision["evidence_anchor_coverage"] == 0.0
 
@@ -104,7 +104,7 @@ def test_missing_required_provenance_fields_returns_block(tmp_path: Path) -> Non
     _write_catalog(tmp_path)
     artifact = _valid_artifact()
     artifact["provenance"].pop("extractor_version")
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
     assert decision["system_response"] == "block"
     assert decision["provenance_completeness"] == 0.5
 
@@ -114,7 +114,11 @@ def test_unresolved_artifact_ref_returns_block(tmp_path: Path) -> None:
     _write_registry(tmp_path)
     artifact = _valid_artifact()
     artifact["artifact_refs"] = [{"artifact_type": "story_bank_entry", "artifact_id": "MISSING-STORY"}]
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(
+        artifact=artifact,
+        source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")),
+        artifact_registry=json.loads((tmp_path / "strategic_knowledge" / "lineage" / "artifact_registry.json").read_text(encoding="utf-8")),
+    )
     assert decision["system_response"] == "block"
     assert decision["artifact_refs_valid"] is False
 
@@ -124,11 +128,25 @@ def test_unknown_artifact_type_fails_closed(tmp_path: Path) -> None:
     artifact = _valid_artifact()
     artifact["artifact_type"] = "unknown_artifact"
     with pytest.raises(ValueError, match="Unsupported artifact_type"):
-        validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+        validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=json.loads((tmp_path / "strategic_knowledge" / "metadata" / "source_catalog.json").read_text(encoding="utf-8")))
 
 
 def test_missing_catalog_returns_block(tmp_path: Path) -> None:
     artifact = _valid_artifact()
-    decision = validate_strategic_knowledge_artifact(artifact=artifact, data_lake_root=tmp_path)
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=None)
     assert decision["system_response"] == "block"
     assert any(issue["code"] == "SOURCE_CATALOG_UNAVAILABLE" for issue in decision["issues"])
+
+
+def test_validator_is_pure_with_in_memory_inputs() -> None:
+    artifact = _valid_artifact()
+    source_catalog = {
+        "sources": [
+            {
+                "source_id": "SRC-BOOK-001",
+                "source_status": "ready",
+            }
+        ]
+    }
+    decision = validate_strategic_knowledge_artifact(artifact=artifact, source_catalog=source_catalog)
+    assert decision["system_response"] == "allow"

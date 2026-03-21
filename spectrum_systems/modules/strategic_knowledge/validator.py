@@ -1,11 +1,9 @@
-"""Deterministic Strategic Knowledge Validation Gate for admission decisions."""
+"""Deterministic Strategic Knowledge Validation Gate decision logic."""
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -58,29 +56,6 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-
-def _load_json_file(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _load_source_catalog(catalog_path: Path) -> dict[str, Any]:
-    if not catalog_path.exists():
-        raise FileNotFoundError(f"Missing source catalog: {catalog_path}")
-    catalog = _load_json_file(catalog_path)
-    if not isinstance(catalog, dict) or "sources" not in catalog:
-        raise ValueError("source catalog payload is malformed")
-    return catalog
-
-
-def _load_artifact_registry(registry_path: Path) -> dict[str, Any]:
-    if not registry_path.exists():
-        raise FileNotFoundError(f"Missing artifact registry: {registry_path}")
-    registry = _load_json_file(registry_path)
-    if not isinstance(registry, dict) or "artifacts" not in registry:
-        raise ValueError("artifact registry payload is malformed")
-    return registry
-
-
 def _validate_schema(artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:
     artifact_type = artifact.get("artifact_type")
     if artifact_type not in ARTIFACT_TYPES:
@@ -110,7 +85,7 @@ def _validate_schema(artifact: dict[str, Any], issues: list[ValidationIssue]) ->
 
 def _check_source_refs(
     artifact: dict[str, Any],
-    source_catalog_path: Path,
+    source_catalog: dict[str, Any] | None,
     issues: list[ValidationIssue],
 ) -> bool:
     source = artifact.get("source")
@@ -135,15 +110,18 @@ def _check_source_refs(
         )
         return False
 
-    try:
-        catalog = _load_source_catalog(source_catalog_path)
-    except (FileNotFoundError, ValueError) as exc:
-        issues.append(ValidationIssue(code="SOURCE_CATALOG_UNAVAILABLE", severity="error", message=str(exc)))
+    if not isinstance(source_catalog, dict) or not isinstance(source_catalog.get("sources"), list):
+        issues.append(
+            ValidationIssue(
+                code="SOURCE_CATALOG_UNAVAILABLE",
+                severity="error",
+                message="source catalog payload is unavailable or malformed",
+            )
+        )
         return False
 
-    sources = catalog.get("sources", [])
-    for entry in sources:
-        if entry.get("source_id") == source_id:
+    for entry in source_catalog["sources"]:
+        if isinstance(entry, dict) and entry.get("source_id") == source_id:
             status = entry.get("source_status")
             if status in {"blocked", "archived"}:
                 issues.append(
@@ -168,42 +146,45 @@ def _check_source_refs(
 
 def _extract_artifact_refs(artifact: dict[str, Any]) -> list[dict[str, Any]]:
     refs = artifact.get("artifact_refs", [])
-    if refs is None:
-        return []
-    if not isinstance(refs, list):
+    if refs is None or not isinstance(refs, list):
         return []
     return [ref for ref in refs if isinstance(ref, dict)]
 
 
 def _check_artifact_refs(
     artifact_refs: list[dict[str, Any]],
-    artifact_registry_path: Path,
+    artifact_registry: dict[str, Any] | None,
     issues: list[ValidationIssue],
 ) -> bool:
     if not artifact_refs:
         return True
 
-    try:
-        registry = _load_artifact_registry(artifact_registry_path)
-    except (FileNotFoundError, ValueError) as exc:
-        issues.append(ValidationIssue(code="ARTIFACT_REGISTRY_UNAVAILABLE", severity="error", message=str(exc)))
+    if not isinstance(artifact_registry, dict) or not isinstance(artifact_registry.get("artifacts"), list):
+        issues.append(
+            ValidationIssue(
+                code="ARTIFACT_REGISTRY_UNAVAILABLE",
+                severity="error",
+                message="artifact registry payload is unavailable or malformed",
+            )
+        )
         return False
 
     known = {
         (item.get("artifact_type"), item.get("artifact_id"))
-        for item in registry.get("artifacts", [])
+        for item in artifact_registry["artifacts"]
         if isinstance(item, dict)
     }
+
     all_resolved = True
     for ref in artifact_refs:
-        ref_key = (ref.get("artifact_type"), ref.get("artifact_id"))
-        if ref_key not in known:
+        key = (ref.get("artifact_type"), ref.get("artifact_id"))
+        if key not in known:
             all_resolved = False
             issues.append(
                 ValidationIssue(
                     code="ARTIFACT_REF_UNRESOLVED",
                     severity="warning",
-                    message=f"artifact ref {ref_key!r} was not found in artifact registry.",
+                    message=f"artifact ref {key!r} was not found in artifact registry.",
                 )
             )
     return all_resolved
@@ -225,6 +206,7 @@ def _compute_evidence_anchor_coverage(artifact: dict[str, Any]) -> float:
             anchor.get("timestamp_end"), str
         ):
             valid += 1
+
     return round(valid / len(anchors), 4)
 
 
@@ -295,6 +277,7 @@ def collect_validation_issues(
     issues: list[ValidationIssue],
 ) -> list[dict[str, str]]:
     collected = list(issues)
+
     if evidence_anchor_coverage < EVIDENCE_REVIEW_THRESHOLD:
         collected.append(
             ValidationIssue(
@@ -326,29 +309,29 @@ def collect_validation_issues(
                 message="Artifact satisfied all strategic knowledge validation gate checks.",
             )
         )
+
     return [issue.as_dict() for issue in collected]
 
 
 def validate_strategic_knowledge_artifact(
     *,
     artifact: dict[str, Any],
-    data_lake_root: Path,
+    source_catalog: dict[str, Any] | None,
+    artifact_registry: dict[str, Any] | None = None,
     evaluated_at: str | None = None,
     validator_version: str = VALIDATOR_VERSION,
 ) -> dict[str, Any]:
     issues: list[ValidationIssue] = []
+
     artifact_type = artifact.get("artifact_type")
     if artifact_type not in ARTIFACT_TYPES:
         raise ValueError(f"Unsupported artifact_type for strategic validation gate: {artifact_type!r}")
 
     schema_valid = _validate_schema(artifact, issues)
-
-    source_catalog_path = data_lake_root / "strategic_knowledge" / "metadata" / "source_catalog.json"
-    source_refs_valid = _check_source_refs(artifact, source_catalog_path, issues)
+    source_refs_valid = _check_source_refs(artifact, source_catalog, issues)
 
     artifact_refs = _extract_artifact_refs(artifact)
-    artifact_registry_path = data_lake_root / "strategic_knowledge" / "lineage" / "artifact_registry.json"
-    artifact_refs_valid = _check_artifact_refs(artifact_refs, artifact_registry_path, issues)
+    artifact_refs_valid = _check_artifact_refs(artifact_refs, artifact_registry, issues)
 
     evidence_anchor_coverage = _compute_evidence_anchor_coverage(artifact)
     provenance_completeness = _compute_provenance_completeness(artifact)
