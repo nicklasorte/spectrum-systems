@@ -1,22 +1,9 @@
 #!/usr/bin/env python3
-"""Run BD bundle contract + manifest hardening validation for an execution bundle.
+"""Backward-compatible CLI for run-bundle validation workflows.
 
-Usage
------
-    python scripts/run_bundle_validation.py <bundle_manifest_path> \
-        [--bundle-root <directory>]
-
-Outputs
--------
-- Prints a concise summary to stdout.
-- Writes the full decision artifact to outputs/run_bundle_validation_decision.json.
-- Archives a timestamped copy under data/run_bundle_decisions/.
-
-Exit code
----------
-0   Valid — bundle contract satisfied.
-1   Invalid manifest or contract violation.
-2   Runtime/path-related error (bad input, schema load failure).
+Supports both:
+1) Legacy Prompt BD manifest validation (positional path argument).
+2) New bundle-directory validator path (`--bundle <dir>`).
 """
 
 from __future__ import annotations
@@ -24,38 +11,35 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO_ROOT))
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.run_bundle import (  # noqa: E402
     load_run_bundle_manifest,
     normalize_run_bundle_manifest,
     validate_bundle_contract,
-    derive_bundle_summary,
+)
+from spectrum_systems.modules.runtime.run_bundle_validator import (  # noqa: E402
+    validate_and_emit_decision,
 )
 
 _DEFAULT_OUTPUT_PATH = _REPO_ROOT / "outputs" / "run_bundle_validation_decision.json"
-_ARCHIVE_DIR = _REPO_ROOT / "data" / "run_bundle_decisions"
+_DEFAULT_ARCHIVE_DIR = _REPO_ROOT / "data" / "run_bundle_decisions"
+_ARCHIVE_DIR = _DEFAULT_ARCHIVE_DIR
 _DECISION_SCHEMA_PATH = (
     _REPO_ROOT / "contracts" / "schemas" / "run_bundle_validation_decision.schema.json"
 )
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _validate_decision_against_schema(decision: Dict[str, Any]) -> None:
-    """Lightweight structural check against the decision schema required fields."""
+def _validate_legacy_decision_against_schema(decision: Dict[str, Any]) -> None:
     schema = _load_json(_DECISION_SCHEMA_PATH)
     required = schema.get("required", [])
     for field in required:
@@ -70,79 +54,34 @@ def _validate_decision_against_schema(decision: Dict[str, Any]) -> None:
         )
 
 
-def _persist_archive(decision: Dict[str, Any]) -> Path:
-    _ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    target = _ARCHIVE_DIR / f"run_bundle_validation_decision_{stamp}.json"
-    suffix = 1
-    while target.exists():
-        target = _ARCHIVE_DIR / f"run_bundle_validation_decision_{stamp}_{suffix}.json"
-        suffix += 1
-    target.write_text(json.dumps(decision, indent=2), encoding="utf-8")
-    return target
-
-
 def _persist_output(decision: Dict[str, Any]) -> Path:
     _DEFAULT_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _DEFAULT_OUTPUT_PATH.write_text(json.dumps(decision, indent=2), encoding="utf-8")
+    _DEFAULT_OUTPUT_PATH.write_text(json.dumps(decision, indent=2, sort_keys=True), encoding="utf-8")
     return _DEFAULT_OUTPUT_PATH
 
 
-def _print_summary(decision: Dict[str, Any]) -> None:
-    print(f"valid:                 {decision['valid']}")
-    print(f"failure_type:          {decision['failure_type']}")
-    conditions = decision.get("triggering_conditions") or []
-    if conditions:
-        print("triggering_conditions:")
-        for cond in conditions:
-            print(f"  - {cond}")
-    else:
-        print("triggering_conditions: []")
-    summary = decision.get("bundle_summary") or {}
-    print("bundle_summary:")
-    for k, v in summary.items():
-        print(f"  {k}: {v}")
+def _persist_archive(decision: Dict[str, Any]) -> Path:
+    archive_dir = _ARCHIVE_DIR
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    decision_id = str(decision.get("decision_id") or "decision")
+    safe_id = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in decision_id)
+    target = archive_dir / f"{safe_id}.json"
+    target.write_text(json.dumps(decision, indent=2, sort_keys=True), encoding="utf-8")
+    return target
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Validate a run-bundle manifest against the governed bundle contract (Prompt BD)."
-    )
-    parser.add_argument(
-        "bundle_manifest",
-        help="Path to a JSON file containing the run-bundle manifest, or to the bundle root directory.",
-    )
-    parser.add_argument(
-        "--bundle-root",
-        dest="bundle_root",
-        default=None,
-        help=(
-            "Optional base directory used to resolve relative input file paths declared "
-            "in the bundle manifest.  When omitted, on-disk input existence checks are skipped."
-        ),
-    )
-
-    args = parser.parse_args(argv)
-
-    manifest_path = Path(args.bundle_manifest).resolve()
-
-    # Accept either a manifest file or a bundle root directory
+def _resolve_legacy_manifest_path(raw_path: str) -> Path:
+    manifest_path = Path(raw_path).resolve()
     if manifest_path.is_dir():
-        candidate = manifest_path / "run_bundle_manifest.json"
-        if not candidate.exists():
-            print(
-                f"ERROR: Directory provided but no run_bundle_manifest.json found in: {manifest_path}",
-                file=sys.stderr,
-            )
-            return 2
-        manifest_path = candidate
-        if args.bundle_root is None:
-            args.bundle_root = str(manifest_path.parent)
+        manifest_path = manifest_path / "run_bundle_manifest.json"
+    return manifest_path
+
+
+def _run_legacy_manifest_validation(manifest_arg: str, bundle_root_arg: str | None) -> int:
+    manifest_path = _resolve_legacy_manifest_path(manifest_arg)
+    if not manifest_path.is_file():
+        print(f"ERROR: manifest not found: {manifest_path}", file=sys.stderr)
+        return 2
 
     try:
         manifest = load_run_bundle_manifest(manifest_path)
@@ -151,28 +90,124 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: Cannot load bundle manifest: {exc}", file=sys.stderr)
         return 2
 
-    bundle_root = Path(args.bundle_root).resolve() if args.bundle_root else None
+    bundle_root = Path(bundle_root_arg).resolve() if bundle_root_arg else None
 
     try:
         decision = validate_bundle_contract(manifest, bundle_root=bundle_root)
-        _validate_decision_against_schema(decision)
+        _validate_legacy_decision_against_schema(decision)
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: Validation failed unexpectedly: {exc}", file=sys.stderr)
         return 2
 
     try:
-        archive_path = _persist_archive(decision)
-        output_path = _persist_output(decision)
+        _persist_output(decision)
+        _persist_archive(decision)
     except OSError as exc:
         print(f"ERROR: Cannot persist decision artifacts: {exc}", file=sys.stderr)
         return 2
 
-    _print_summary(decision)
-    print(f"\ndecision_id:           {decision['decision_id']}")
-    print(f"archived at:           {archive_path}")
-    print(f"output written to:     {output_path}")
+    print(json.dumps(decision, indent=2, sort_keys=True))
+    return 0 if decision.get("valid") else 1
 
-    return 0 if decision["valid"] else 1
+
+def _run_new_bundle_validation(bundle_path: str) -> int:
+    bundle = Path(bundle_path).resolve()
+    if not bundle.exists():
+        print(f"ERROR: bundle path not found: {bundle}", file=sys.stderr)
+        return 2
+
+    try:
+        decision = validate_and_emit_decision(bundle)
+    except Exception as exc:  # noqa: BLE001
+        print(f"ERROR: bundle validation failed: {exc}", file=sys.stderr)
+        return 2
+
+    try:
+        _persist_output(decision)
+        _persist_archive(decision)
+    except OSError as exc:
+        print(f"ERROR: Cannot persist decision artifacts: {exc}", file=sys.stderr)
+        return 2
+
+    print(json.dumps(decision, indent=2, sort_keys=True))
+
+    mapping = {
+        "allow": 0,
+        "require_rebuild": 1,
+        "block": 2,
+    }
+    response = decision.get("system_response")
+    if response not in mapping:
+        print(f"ERROR: unknown system_response: {response}", file=sys.stderr)
+        return 2
+    return mapping[response]
+
+
+
+
+def _directory_mode_from_manifest(directory: Path) -> str:
+    manifest_path = directory / "run_bundle_manifest.json"
+    if not manifest_path.is_file():
+        return "strict"
+
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "legacy"
+
+    if not isinstance(payload, dict):
+        return "legacy"
+
+    legacy_markers = {"bundle_version", "provenance", "execution_policy", "component_cache", "startup_options"}
+    if legacy_markers.intersection(payload.keys()):
+        return "legacy"
+    return "strict"
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run bundle validation CLI (legacy + new modes).")
+    parser.add_argument(
+        "bundle_manifest",
+        nargs="?",
+        help="Legacy mode: path to run_bundle_manifest.json, or to directory containing it.",
+    )
+    parser.add_argument(
+        "--bundle-root",
+        dest="bundle_root",
+        default=None,
+        help="Legacy mode: optional base dir for resolving relative input paths.",
+    )
+    parser.add_argument(
+        "--bundle",
+        dest="bundle",
+        default=None,
+        help="New mode: path to bundle directory for schema-first artifact validation.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
+
+    if args.bundle:
+        if args.bundle_manifest is not None:
+            print("ERROR: provide either --bundle or positional bundle_manifest, not both", file=sys.stderr)
+            return 2
+        return _run_new_bundle_validation(args.bundle)
+
+    if args.bundle_manifest:
+        candidate = Path(args.bundle_manifest).resolve()
+        if candidate.is_dir():
+            mode = _directory_mode_from_manifest(candidate)
+            if mode == "legacy":
+                return _run_legacy_manifest_validation(str(candidate / "run_bundle_manifest.json"), args.bundle_root)
+            return _run_new_bundle_validation(str(candidate))
+        if candidate.is_file() and candidate.suffix.lower() == ".json":
+            return _run_legacy_manifest_validation(str(candidate), args.bundle_root)
+        print(f"ERROR: unsupported input path type: {candidate}", file=sys.stderr)
+        return 2
+
+    print("ERROR: missing input path; provide --bundle <dir> or positional manifest path", file=sys.stderr)
+    return 2
 
 
 if __name__ == "__main__":
