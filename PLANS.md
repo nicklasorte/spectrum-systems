@@ -101,6 +101,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BAB-2026-03-21.md | Prompt BAB — Trace Context Injection | Active |
 | docs/review-actions/PLAN-GOVERNANCE-CONSUMER-DRIFT-2026-03-21.md | GOV-CONSUMER-DRIFT — Consumer consistency remediation | Active |
 | docs/review-actions/PLAN-DEV-ENV-CONTRACT-2026-03-21.md | DEV-ENV-CONTRACT — Dev environment runtime contract hardening | Active |
+| docs/review-actions/PLAN-RUN-BUNDLE-VALIDATION-2026-03-21.md | RUN-BUNDLE-VALIDATION — MVP foundation enforcement boundary | Active |
 
 Update this table when plans are created or completed.
 

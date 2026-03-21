@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/artifact_validation_decision.schema.json",
+  "title": "Artifact Validation Decision",
+  "description": "Fail-closed run-bundle artifact validation decision.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "run_id",
+    "trace_id",
+    "status",
+    "system_response",
+    "validation_results",
+    "missing_artifacts",
+    "invalid_fields",
+    "reasons",
+    "timestamp"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["valid", "invalid"]
+    },
+    "system_response": {
+      "type": "string",
+      "enum": ["allow", "block", "require_rebuild"]
+    },
+    "validation_results": {
+      "type": "object",
+      "required": [
+        "manifest_valid",
+        "inputs_present",
+        "expected_outputs_declared",
+        "output_paths_valid",
+        "provenance_required"
+      ],
+      "properties": {
+        "manifest_valid": { "type": "boolean" },
+        "inputs_present": { "type": "boolean" },
+        "expected_outputs_declared": { "type": "boolean" },
+        "output_paths_valid": { "type": "boolean" },
+        "provenance_required": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "missing_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "invalid_fields": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "valid" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "system_response": { "const": "allow" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "invalid" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "system_response": {
+            "enum": ["block", "require_rebuild"]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
