@@ -143,6 +143,26 @@ def _run_new_bundle_validation(bundle_path: str) -> int:
     return mapping[response]
 
 
+
+
+def _directory_mode_from_manifest(directory: Path) -> str:
+    manifest_path = directory / "run_bundle_manifest.json"
+    if not manifest_path.is_file():
+        return "strict"
+
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "legacy"
+
+    if not isinstance(payload, dict):
+        return "legacy"
+
+    legacy_markers = {"bundle_version", "provenance", "execution_policy", "component_cache", "startup_options"}
+    if legacy_markers.intersection(payload.keys()):
+        return "legacy"
+    return "strict"
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run bundle validation CLI (legacy + new modes).")
     parser.add_argument(
@@ -177,6 +197,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.bundle_manifest:
         candidate = Path(args.bundle_manifest).resolve()
         if candidate.is_dir():
+            mode = _directory_mode_from_manifest(candidate)
+            if mode == "legacy":
+                return _run_legacy_manifest_validation(str(candidate / "run_bundle_manifest.json"), args.bundle_root)
             return _run_new_bundle_validation(str(candidate))
         if candidate.is_file() and candidate.suffix.lower() == ".json":
             return _run_legacy_manifest_validation(str(candidate), args.bundle_root)
