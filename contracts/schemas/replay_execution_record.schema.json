@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/replay_execution_record.schema.json",
+  "title": "Replay Execution Record",
+  "description": "Deterministic replay execution artifact capturing lineage between original and replayed run-bundle control-plane outputs.",
+  "type": "object",
+  "required": [
+    "replay_id",
+    "original_run_id",
+    "replay_run_id",
+    "original_trace_id",
+    "replay_trace_id",
+    "timestamp",
+    "replay_status",
+    "consistency_check_passed",
+    "compared_artifacts",
+    "reasons"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "replay_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original_trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "replay_status": {
+      "type": "string",
+      "enum": ["success", "failed", "indeterminate"]
+    },
+    "consistency_check_passed": {
+      "type": "boolean"
+    },
+    "compared_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

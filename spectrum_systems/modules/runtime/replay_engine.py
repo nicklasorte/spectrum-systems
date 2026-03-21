@@ -51,6 +51,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
 
+from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
     TraceStoreError,
@@ -540,3 +541,144 @@ class ReplayEngineError(Exception):
 
 class ReplayPrerequisiteError(ReplayEngineError):
     """Raised when replay prerequisites are not satisfied."""
+
+
+def validate_replay_execution_record(record: Dict[str, Any]) -> List[str]:
+    """Validate a replay execution record artifact against contract schema."""
+    if not isinstance(record, dict):
+        return ["validate_replay_execution_record: record must be an object"]
+    try:
+        schema = load_schema("replay_execution_record")
+    except (OSError, FileNotFoundError, ValueError) as exc:
+        return [f"validate_replay_execution_record: schema unavailable: {exc}"]
+
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(record), key=lambda e: list(e.path))
+    return [e.message for e in errors]
+
+
+def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str, Any]:
+    """Deterministically replay run-bundle control-plane execution.
+
+    Replays the same pipeline used for original execution:
+    validation -> monitor record -> summary -> budget decision -> enforcement.
+    Returns a schema-valid replay_execution_record with lineage and consistency
+    check outcomes. Fail-closed behavior is applied for invalid inputs or
+    malformed comparison surfaces.
+    """
+    replay_id = _new_id()
+    timestamp = _now_iso()
+    compared_artifacts = [
+        "system_response",
+        "enforcement_action",
+        "validation_status",
+    ]
+
+    def _indeterminate(reason: str, replay_run_id: str = "unknown", replay_trace_id: str = "unknown") -> Dict[str, Any]:
+        base = {
+            "replay_id": replay_id,
+            "original_run_id": str((original_decision or {}).get("run_id") or "unknown"),
+            "replay_run_id": replay_run_id,
+            "original_trace_id": str((original_decision or {}).get("trace_id") or "unknown"),
+            "replay_trace_id": replay_trace_id,
+            "timestamp": timestamp,
+            "replay_status": "indeterminate",
+            "consistency_check_passed": False,
+            "compared_artifacts": compared_artifacts,
+            "reasons": [reason],
+        }
+        schema_errors = validate_replay_execution_record(base)
+        if schema_errors:
+            base["reasons"].extend([f"schema_validation_failed: {e}" for e in schema_errors])
+        return base
+
+    if not isinstance(bundle_path, str) or not bundle_path.strip():
+        return _indeterminate("invalid replay input: bundle_path must be a non-empty string")
+
+    if not isinstance(original_decision, dict):
+        return _indeterminate("original decision malformed: must be an object")
+
+    required_original_keys = {"run_id", "trace_id", "system_response", "status", "enforcement_action"}
+    missing = sorted(k for k in required_original_keys if not original_decision.get(k))
+    if missing:
+        return _indeterminate(f"original decision malformed: missing required fields {missing}")
+
+    try:
+        from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
+        from spectrum_systems.modules.runtime.evaluation_budget_governor import build_validation_budget_decision
+        from spectrum_systems.modules.runtime.evaluation_monitor import (
+            build_validation_monitor_record,
+            summarize_validation_monitor_records,
+        )
+        from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
+    except Exception as exc:  # noqa: BLE001
+        return _indeterminate(f"replay cannot execute: pipeline import failure: {exc}")
+
+    try:
+        replay_validation_decision = validate_and_emit_decision(bundle_path)
+        replay_monitor = build_validation_monitor_record(replay_validation_decision)
+        replay_summary = summarize_validation_monitor_records([replay_monitor])
+        replay_decision = build_validation_budget_decision(replay_summary)
+        replay_enforcement = enforce_budget_decision(replay_decision)
+    except Exception as exc:  # noqa: BLE001
+        return _indeterminate(f"replay cannot execute: {exc}")
+
+    replay_run_id = str(replay_decision.get("run_id") or replay_validation_decision.get("run_id") or "unknown")
+    replay_trace_id = str(replay_decision.get("trace_id") or replay_validation_decision.get("trace_id") or "unknown")
+
+    reasons: List[str] = []
+    consistency_check_passed = True
+    replay_status = "success"
+
+    original_system_response = str(original_decision.get("system_response"))
+    replay_system_response = str(replay_decision.get("system_response"))
+    if original_system_response != replay_system_response:
+        consistency_check_passed = False
+        replay_status = "failed"
+        reasons.append(
+            f"system_response mismatch: original={original_system_response} replay={replay_system_response}"
+        )
+
+    original_enforcement_action = str(original_decision.get("enforcement_action"))
+    replay_enforcement_action = str(replay_enforcement.get("enforcement_action"))
+    if original_enforcement_action != replay_enforcement_action:
+        consistency_check_passed = False
+        replay_status = "failed"
+        reasons.append(
+            "enforcement_action mismatch: "
+            f"original={original_enforcement_action} replay={replay_enforcement_action}"
+        )
+
+    original_validation_status = str(original_decision.get("status"))
+    replay_validation_status = str(replay_decision.get("status"))
+    if original_validation_status != replay_validation_status:
+        consistency_check_passed = False
+        replay_status = "failed"
+        reasons.append(
+            f"validation_status mismatch: original={original_validation_status} replay={replay_validation_status}"
+        )
+
+    if not reasons:
+        reasons.append("replay matched original control-plane outputs")
+
+    record = {
+        "replay_id": replay_id,
+        "original_run_id": str(original_decision.get("run_id")),
+        "replay_run_id": replay_run_id,
+        "original_trace_id": str(original_decision.get("trace_id")),
+        "replay_trace_id": replay_trace_id,
+        "timestamp": timestamp,
+        "replay_status": replay_status,
+        "consistency_check_passed": consistency_check_passed,
+        "compared_artifacts": compared_artifacts,
+        "reasons": reasons,
+    }
+
+    schema_errors = validate_replay_execution_record(record)
+    if schema_errors:
+        return _indeterminate(
+            "comparison cannot be performed: replay_execution_record schema validation failed",
+            replay_run_id=replay_run_id,
+            replay_trace_id=replay_trace_id,
+        )
+    return record
