@@ -1,0 +1,12 @@
+{
+  "enforcement_id": "enf-001",
+  "decision_id": "dec-001",
+  "trace_id": "trace-001",
+  "timestamp": "2026-03-21T00:00:00Z",
+  "enforcement_action": "allow",
+  "execution_permitted": true,
+  "enforcement_status": "executed",
+  "reasons": [
+    "control-loop decision allows execution"
+  ]
+}

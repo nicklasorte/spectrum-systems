@@ -42,6 +42,13 @@ from spectrum_systems.modules.runtime.error_budget import (
     update_error_budget,
     compute_burn_rate,
 )
+from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
+from spectrum_systems.modules.runtime.evaluation_budget_governor import build_validation_budget_decision
+from spectrum_systems.modules.runtime.evaluation_monitor import (
+    build_validation_monitor_record,
+    summarize_validation_monitor_records,
+)
+from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
 from spectrum_systems.modules.runtime.slo_enforcer import enforce_slo_policy
 from spectrum_systems.modules.runtime.trace_engine import (
     SPAN_STATUS_BLOCKED,
@@ -584,3 +591,20 @@ def explain_execution_path(control_signals: Dict[str, Any], execution_result: Di
         "decision_blocked": execution_result.get("decision_blocked"),
         "events_emitted": [a["action_type"] for a in execution_result.get("actions_taken") or []],
     }
+
+
+def execute_with_enforcement(bundle_path: str) -> Dict[str, Any]:
+    """Run validation control loop and enforce the resulting budget decision.
+
+    Pipeline:
+    1) validate_and_emit_decision
+    2) build monitor record
+    3) summarize monitor records
+    4) build evaluation budget decision
+    5) enforce budget decision
+    """
+    validation_decision = validate_and_emit_decision(bundle_path)
+    monitor_record = build_validation_monitor_record(validation_decision)
+    monitor_summary = summarize_validation_monitor_records([monitor_record])
+    budget_decision = build_validation_budget_decision(monitor_summary)
+    return enforce_budget_decision(budget_decision)

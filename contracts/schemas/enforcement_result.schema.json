@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_result.schema.json",
+  "title": "Enforcement Result",
+  "description": "Deterministic enforcement outcome produced from an evaluation_budget_decision artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enforcement_id",
+    "decision_id",
+    "trace_id",
+    "timestamp",
+    "enforcement_action",
+    "execution_permitted",
+    "enforcement_status",
+    "reasons"
+  ],
+  "properties": {
+    "enforcement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "enforcement_action": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "execution_permitted": {
+      "type": "boolean"
+    },
+    "enforcement_status": {
+      "type": "string",
+      "enum": ["executed", "blocked", "frozen"]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

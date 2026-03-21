@@ -103,6 +103,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-DEV-ENV-CONTRACT-2026-03-21.md | DEV-ENV-CONTRACT — Dev environment runtime contract hardening | Active |
 | docs/review-actions/PLAN-RUN-BUNDLE-VALIDATION-2026-03-21.md | RUN-BUNDLE-VALIDATION — MVP foundation enforcement boundary | Active |
 | docs/review-actions/PLAN-CONTROL-LOOP-INTEGRATION-2026-03-21.md | CONTROL LOOP INTEGRATION — MVP Phase 2 | Active |
+| docs/review-actions/PLAN-BAF-2026-03-21.md | Prompt BAF — Enforcement Wiring (MVP Phase 3) | Active |
 
 Update this table when plans are created or completed.
 
