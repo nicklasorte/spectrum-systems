@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_summary.schema.json",
+  "title": "Eval Summary",
+  "description": "Governed aggregate summary across an evaluation run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "eval_run_id",
+    "pass_rate",
+    "failure_rate",
+    "drift_rate",
+    "reproducibility_score",
+    "system_status"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_summary" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "format": "uuid" },
+    "eval_run_id": { "type": "string", "minLength": 1 },
+    "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "failure_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "drift_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "reproducibility_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "system_status": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "failing"]
+    }
+  }
+}

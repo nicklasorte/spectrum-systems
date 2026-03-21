@@ -1,0 +1,13 @@
+{
+  "artifact_type": "eval_run",
+  "schema_version": "1.0.0",
+  "trace_id": "22222222-2222-4222-8222-222222222222",
+  "eval_run_id": "eval-run-20260321T120000Z",
+  "eval_case_ids": [
+    "eval-case-001",
+    "eval-case-002"
+  ],
+  "system_version": "spectrum-systems@1.0.0",
+  "dataset_version": "golden-dataset@2026.03.21",
+  "timestamp": "2026-03-21T12:00:00Z"
+}

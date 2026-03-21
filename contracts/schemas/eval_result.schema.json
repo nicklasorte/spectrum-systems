@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_result.schema.json",
+  "title": "Eval Result",
+  "description": "Governed case-level evaluation result linked to execution trace.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_case_id",
+    "trace_id",
+    "result_status",
+    "score",
+    "failure_modes",
+    "provenance_refs"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "eval_case_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "format": "uuid" },
+    "result_status": {
+      "type": "string",
+      "enum": ["pass", "fail", "indeterminate"]
+    },
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "failure_modes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "provenance_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

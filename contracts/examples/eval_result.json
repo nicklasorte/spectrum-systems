@@ -1,0 +1,12 @@
+{
+  "artifact_type": "eval_result",
+  "schema_version": "1.0.0",
+  "eval_case_id": "eval-case-001",
+  "trace_id": "33333333-3333-4333-8333-333333333333",
+  "result_status": "pass",
+  "score": 0.95,
+  "failure_modes": [],
+  "provenance_refs": [
+    "trace://33333333-3333-4333-8333-333333333333"
+  ]
+}
