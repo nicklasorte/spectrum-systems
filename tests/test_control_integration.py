@@ -676,6 +676,7 @@ def test_eval_summary_path_allows_and_emits_decision() -> None:
     assert result["continuation_allowed"] is True
     assert result["execution_status"] == "success"
     assert result["evaluation_control_decision"]["system_response"] == "allow"
+    assert result["enforcement_result"]["final_status"] == "allow"
     assert result["control_trace"]["signal_type"] == "eval_summary"
 
 
@@ -687,6 +688,7 @@ def test_eval_summary_freeze_blocks_continuation() -> None:
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
     assert result["evaluation_control_decision"]["system_response"] == "freeze"
+    assert result["enforcement_result"]["final_status"] == "deny"
     assert result["control_trace"]["decision"] == "deny"
 
 
@@ -698,6 +700,7 @@ def test_eval_signals_use_control_loop_and_never_bypass() -> None:
         result = enforce_control_before_execution(_ctx(artifact=artifact))
     chain_mock.assert_not_called()
     assert "evaluation_control_decision" in result
+    assert "enforcement_result" in result
     assert "control_trace" in result
 
 
@@ -705,6 +708,7 @@ def test_failure_eval_case_path_denies_and_blocks() -> None:
     result = enforce_control_before_execution(_ctx(artifact=_failure_eval_case_artifact()))
     assert result["continuation_allowed"] is False
     assert result["evaluation_control_decision"]["decision"] == "deny"
+    assert result["enforcement_result"]["final_status"] == "deny"
     assert result["control_trace"]["signal_type"] == "failure_eval_case"
 
 
@@ -771,3 +775,35 @@ def test_allow_paths_do_not_emit_generated_failure_eval_case():
 
     assert result["continuation_allowed"] is True
     assert "generated_failure_eval_case" not in result
+
+
+def test_eval_path_uses_enforcement_engine_for_bn7_status() -> None:
+    artifact = _eval_summary_artifact()
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision"
+    ) as enforce_mock:
+        enforce_mock.return_value = {
+            "artifact_type": "enforcement_result",
+            "schema_version": "1.1.0",
+            "enforcement_result_id": "ENF-123",
+            "timestamp": "2026-03-22T00:00:00Z",
+            "trace_id": artifact["trace_id"],
+            "run_id": artifact["eval_run_id"],
+            "input_decision_reference": "ecd-1",
+            "enforcement_action": "require_manual_review",
+            "final_status": "require_review",
+            "rationale_code": "require_review_warning_signal",
+            "fail_closed": True,
+            "enforcement_path": "baf_single_path",
+            "provenance": {
+                "source_artifact_type": "evaluation_control_decision",
+                "source_artifact_id": "ecd-1",
+            },
+        }
+        result = enforce_control_before_execution(_ctx(artifact=artifact))
+
+    enforce_mock.assert_called_once()
+    assert result["enforcement_result"]["final_status"] == "require_review"
+    assert result["execution_status"] == "blocked"
+    assert result["human_review_required"] is True
+    assert result["continuation_allowed"] is False
