@@ -102,6 +102,7 @@ class WorkItem:
     gating_decision_artifact_path: Optional[str] = None
     execution_result_artifact_path: Optional[str] = None
     post_execution_decision_artifact_path: Optional[str] = None
+    next_step_action_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -182,6 +183,7 @@ def make_work_item(
         gating_decision_artifact_path=None,
         execution_result_artifact_path=None,
         post_execution_decision_artifact_path=None,
+        next_step_action_artifact_path=None,
     ).to_dict()
 
 
