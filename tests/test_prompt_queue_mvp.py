@@ -214,4 +214,10 @@ def test_findings_parsed_to_repair_prompt_generated_transition():
     review_complete = transition_work_item(review_complete, WorkItemStatus.REVIEW_COMPLETE.value, clock=FixedClock(["2026-03-22T00:00:03Z"]))
     findings_parsed = transition_work_item(review_complete, WorkItemStatus.FINDINGS_PARSED.value, clock=FixedClock(["2026-03-22T00:00:04Z"]))
     repair_generated = transition_work_item(findings_parsed, WorkItemStatus.REPAIR_PROMPT_GENERATED.value, clock=FixedClock(["2026-03-22T00:00:05Z"]))
+    repair_child_created = transition_work_item(
+        repair_generated,
+        WorkItemStatus.REPAIR_CHILD_CREATED.value,
+        clock=FixedClock(["2026-03-22T00:00:06Z"]),
+    )
     assert repair_generated["status"] == WorkItemStatus.REPAIR_PROMPT_GENERATED.value
+    assert repair_child_created["status"] == WorkItemStatus.REPAIR_CHILD_CREATED.value

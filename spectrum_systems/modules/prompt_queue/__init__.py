@@ -21,6 +21,14 @@ from spectrum_systems.modules.prompt_queue.repair_prompt_generator import (
 from spectrum_systems.modules.prompt_queue.repair_prompt_queue_integration import (
     attach_repair_prompt_to_work_item,
 )
+from spectrum_systems.modules.prompt_queue.repair_child_creator import (
+    RepairChildCreationError,
+    build_repair_child_work_item,
+)
+from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import (
+    RepairChildQueueIntegrationError,
+    spawn_repair_child_in_queue,
+)
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_queue_state,
     validate_review_attempt,
@@ -39,6 +47,10 @@ from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
 
 __all__ = [
+    "spawn_repair_child_in_queue",
+    "RepairChildQueueIntegrationError",
+    "build_repair_child_work_item",
+    "RepairChildCreationError",
     "write_repair_prompt_artifact",
     "validate_repair_prompt_artifact",
     "generate_repair_prompt_artifact",

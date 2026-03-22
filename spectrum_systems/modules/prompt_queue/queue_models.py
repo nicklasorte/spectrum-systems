@@ -17,6 +17,7 @@ class WorkItemStatus(str, Enum):
     REVIEW_COMPLETE = "review_complete"
     FINDINGS_PARSED = "findings_parsed"
     REPAIR_PROMPT_GENERATED = "repair_prompt_generated"
+    REPAIR_CHILD_CREATED = "repair_child_created"
     BLOCKED = "blocked"
 
 
@@ -90,6 +91,11 @@ class WorkItem:
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
+    spawned_from_repair_prompt_artifact_path: Optional[str] = None
+    spawned_from_findings_artifact_path: Optional[str] = None
+    spawned_from_review_artifact_path: Optional[str] = None
+    repair_loop_generation: int = 0
+    child_work_item_ids: list[str] | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -132,8 +138,8 @@ def make_work_item(
     work_item_id: str,
     prompt_id: str,
     title: str,
-    priority: Priority,
-    risk_level: RiskLevel,
+    priority: Priority | str,
+    risk_level: RiskLevel | str,
     repo: str,
     branch: str,
     scope_paths: list[str],
@@ -147,13 +153,18 @@ def make_work_item(
         prompt_id=prompt_id,
         title=title,
         status=WorkItemStatus.QUEUED.value,
-        priority=priority.value,
-        risk_level=risk_level.value,
+        priority=priority.value if isinstance(priority, Priority) else priority,
+        risk_level=risk_level.value if isinstance(risk_level, RiskLevel) else risk_level,
         repo=repo,
         branch=branch,
         scope_paths=scope_paths,
         created_at=now,
         updated_at=now,
+        spawned_from_repair_prompt_artifact_path=None,
+        spawned_from_findings_artifact_path=None,
+        spawned_from_review_artifact_path=None,
+        repair_loop_generation=0,
+        child_work_item_ids=[],
     ).to_dict()
 
 
