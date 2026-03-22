@@ -125,6 +125,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REPAIR-PROMPT-2026-03-22.md | Governed prompt queue repair prompt generation — findings→repair artifact | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REPAIR-CHILD-CREATION-2026-03-22.md | Governed prompt queue repair child creation — repair artifact→child queue item | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-EXECUTION-GATING-2026-03-22.md | Governed prompt queue execution gating — repair-loop control policy | Active |
+| docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-CONTROLLED-EXECUTION-2026-03-22.md | Governed Prompt Queue — bounded controlled execution MVP | Active |
 
 Update this table when plans are created or completed.
 

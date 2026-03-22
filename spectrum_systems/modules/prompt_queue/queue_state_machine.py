@@ -43,7 +43,13 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.RUNNABLE.value,
         WorkItemStatus.BLOCKED.value,
     },
-    WorkItemStatus.RUNNABLE.value: set(),
+    WorkItemStatus.RUNNABLE.value: {WorkItemStatus.EXECUTING.value},
+    WorkItemStatus.EXECUTING.value: {
+        WorkItemStatus.EXECUTED_SUCCESS.value,
+        WorkItemStatus.EXECUTED_FAILURE.value,
+    },
+    WorkItemStatus.EXECUTED_SUCCESS.value: set(),
+    WorkItemStatus.EXECUTED_FAILURE.value: set(),
     WorkItemStatus.BLOCKED.value: set(),
 }
 

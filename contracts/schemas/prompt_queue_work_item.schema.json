@@ -28,7 +28,8 @@
     "spawned_from_findings_artifact_path",
     "spawned_from_review_artifact_path",
     "repair_loop_generation",
-    "child_work_item_ids"
+    "child_work_item_ids",
+    "execution_result_artifact_path"
   ],
   "properties": {
     "work_item_id": {
@@ -65,7 +66,10 @@
         "execution_gated",
         "runnable",
         "approval_required",
-        "blocked"
+        "blocked",
+        "executing",
+        "executed_success",
+        "executed_failure"
       ]
     },
     "priority": {
@@ -193,6 +197,13 @@
       }
     },
     "gating_decision_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "execution_result_artifact_path": {
       "type": [
         "string",
         "null"

@@ -1,0 +1,19 @@
+{
+  "execution_result_artifact_id": "execres-wi-001-attempt-1",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": "wi-parent-001",
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-parent-001.repair_prompt.json",
+  "gating_decision_artifact_path": "artifacts/prompt_queue/gating/wi-001.execution_gating_decision.json",
+  "spawned_from_findings_artifact_path": "artifacts/prompt_queue/findings/wi-parent-001.findings.json",
+  "spawned_from_review_artifact_path": "docs/reviews/2026-03-22-parent-review.md",
+  "execution_mode": "simulated",
+  "execution_status": "success",
+  "started_at": "2026-03-22T02:00:00Z",
+  "completed_at": "2026-03-22T02:00:01Z",
+  "output_reference": "artifacts/prompt_queue/simulated_outputs/wi-001.output.json",
+  "error_summary": null,
+  "generated_at": "2026-03-22T02:00:01Z",
+  "generator_version": "prompt-queue-execution-mvp-1",
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "execution_attempt_id": "wi-001-attempt-1"
+}
