@@ -1,0 +1,59 @@
+{
+  "findings_artifact_id": "findings-wi-001-20260322T000100Z",
+  "work_item_id": "wi-001",
+  "source_review_artifact_path": "docs/reviews/2026-03-22-baf-closure-review.md",
+  "review_provider": "claude",
+  "fallback_used": false,
+  "fallback_reason": null,
+  "review_decision": "FAIL",
+  "trust_assessment": "NO",
+  "critical_findings": [
+    {
+      "finding_id": "critical_findings-1",
+      "summary": "Legacy entrypoint reachable from non-approved callers",
+      "body": "Legacy enforcement entrypoint can still be called from undeclared surfaces and weakens fail-closed boundaries.",
+      "severity": "critical",
+      "file_references": [
+        "spectrum_systems/modules/runtime/enforcement_engine.py"
+      ],
+      "source_section": "critical_findings"
+    }
+  ],
+  "required_fixes": [
+    {
+      "finding_id": "required_fixes-1",
+      "summary": "Add explicit caller-boundary guard",
+      "body": "Constrain legacy entrypoint to approved callers and hard-fail for all others.",
+      "severity": "high",
+      "file_references": [
+        "spectrum_systems/modules/runtime/enforcement_engine.py",
+        "tests/test_enforcement_engine.py"
+      ],
+      "source_section": "required_fixes"
+    }
+  ],
+  "optional_improvements": [
+    {
+      "finding_id": "optional_improvements-1",
+      "summary": "Retire legacy compatibility path",
+      "body": "Plan follow-on migration to remove deprecated compatibility surfaces once downstream consumers are migrated.",
+      "severity": "low",
+      "file_references": [
+        "spectrum_systems/modules/runtime/control_executor.py"
+      ],
+      "source_section": "optional_improvements"
+    }
+  ],
+  "failure_mode_summary": "Boundary asymmetry between replay and runtime could allow malformed enforcement flow if not corrected.",
+  "raw_sections": {
+    "metadata": "- Review Date: 2026-03-22\n- Reviewer: Claude",
+    "decision": "FAIL",
+    "critical_findings": "1. Legacy entrypoint reachable from non-approved callers.",
+    "required_fixes": "1. Add explicit caller-boundary guard.",
+    "optional_improvements": "1. Retire compatibility path after migration.",
+    "trust_assessment": "NO",
+    "failure_mode_summary": "Boundary asymmetry between replay and runtime could allow malformed enforcement flow if not corrected."
+  },
+  "parsed_at": "2026-03-22T00:01:00Z",
+  "parser_version": "1.0.0"
+}

@@ -15,6 +15,7 @@ class WorkItemStatus(str, Enum):
     REVIEW_PROVIDER_FAILED = "review_provider_failed"
     REVIEW_FALLBACK_RUNNING = "review_fallback_running"
     REVIEW_COMPLETE = "review_complete"
+    FINDINGS_PARSED = "findings_parsed"
     BLOCKED = "blocked"
 
 
@@ -83,6 +84,7 @@ class WorkItem:
     review_attempt_count: int = 0
     review_fallback_used: bool = False
     review_fallback_reason: Optional[str] = None
+    findings_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
