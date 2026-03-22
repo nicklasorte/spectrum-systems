@@ -57,7 +57,22 @@
         "system_response": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
         "triggered_thresholds": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {"enum": ["warning", "exhausted", "blocked"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "triggered_thresholds": {"minItems": 1},
+              "reasons": {"minItems": 1}
+            }
+          }
+        }
+      ]
     }
   }
 }

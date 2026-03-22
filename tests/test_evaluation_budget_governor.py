@@ -466,3 +466,26 @@ def test_all_decisions_schema_valid(fixture: Path):
     decision = run_budget_governor(fixture)
     errors = validate_decision(decision)
     assert errors == [], f"Schema errors for {fixture.name}: {errors}"
+
+
+def test_decision_determinism():
+    summary = _make_summary(total_runs=4, total_failed_runs=2, avg_drift_rate=0.30)
+    first = evaluate_budget_status(summary)
+    second = evaluate_budget_status(summary)
+    assert first == second
+
+
+def test_threshold_precedence():
+    summary = _make_summary(
+        total_runs=10,
+        total_failed_runs=6,
+        total_critical_alerts=2,
+        avg_drift_rate=0.35,
+        burn_status="exhausting",
+        pass_rate_trend="degrading",
+    )
+    status, reasons, triggered = evaluate_budget_status(summary)
+    assert status == "blocked"
+    assert "critical_alerts_with_critical_failure_rate" in triggered
+    assert "burn_rate_exhausting" not in triggered
+    assert reasons

@@ -14,10 +14,8 @@ Design rules
 
 from __future__ import annotations
 
-import json
 import hashlib
-import uuid
-from datetime import datetime, timezone
+import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -36,14 +34,22 @@ DEFAULT_THRESHOLDS: Dict[str, float] = {
 }
 
 SEVERE_SIGNALS = frozenset({"stability_breach", "trust_breach", "indeterminate_failure"})
+STATUS_RESPONSE_MAP = {
+    "healthy": "allow",
+    "warning": "warn",
+    "exhausted": "freeze",
+    "blocked": "block",
+}
 
 
 class EvaluationControlError(Exception):
     """Raised for any evaluation control mapping failure."""
 
 
-def _now_iso() -> str:
-    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def _canonical_timestamp(value: Any) -> str:
+    if isinstance(value, str) and value:
+        return value
+    return "1970-01-01T00:00:00Z"
 
 
 def _deterministic_decision_id(
@@ -56,6 +62,13 @@ def _deterministic_decision_id(
     seed = f"{eval_run_id}|{signal_seed}|{schema_version}"
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
     return f"ECD-{digest}"
+
+
+def map_status_to_response(status: Any) -> tuple[str, str]:
+    status_text = str(status)
+    if status_text not in STATUS_RESPONSE_MAP:
+        status_text = "blocked"
+    return status_text, STATUS_RESPONSE_MAP[status_text]
 
 
 def _load_decision_schema() -> Dict[str, Any]:
@@ -104,7 +117,7 @@ def _fail_closed_decision(
         "triggered_signals": triggered_signals,
         "threshold_snapshot": thresholds,
         "trace_id": trace_id,
-        "created_at": _now_iso(),
+        "created_at": "1970-01-01T00:00:00Z",
         "decision": "deny",
         "rationale_code": rationale_code,
         "input_signal_reference": {
@@ -119,8 +132,9 @@ def _fallback_eval_run_id(eval_summary: Dict[str, Any]) -> str:
     eval_run_id = eval_summary.get("eval_run_id")
     if isinstance(eval_run_id, str) and eval_run_id.strip():
         return eval_run_id
-    trace_id = str(eval_summary.get("trace_id") or "unknown-trace")
-    return f"malformed-{trace_id}-{uuid.uuid4().hex[:12]}"
+    summary_seed = json.dumps(eval_summary, sort_keys=True, separators=(",", ":"), default=str)
+    digest = hashlib.sha256(summary_seed.encode("utf-8")).hexdigest()[:12]
+    return f"malformed-{digest}"
 
 
 def build_evaluation_control_decision(
@@ -183,20 +197,13 @@ def build_evaluation_control_decision(
 
     if not triggered_signals:
         system_status = "healthy"
-        system_response = "allow"
-    elif "trust_breach" in triggered_signals:
-        # Trust breach is always hard-blocking.
+    elif "trust_breach" in triggered_signals or len(severe_hits) >= 2:
         system_status = "blocked"
-        system_response = "block"
-    elif len(severe_hits) >= 2:
-        system_status = "blocked"
-        system_response = "block"
     elif "stability_breach" in triggered_signals:
         system_status = "exhausted"
-        system_response = "freeze"
     else:
         system_status = "warning"
-        system_response = "warn"
+    system_status, system_response = map_status_to_response(system_status)
 
     if system_response == "allow":
         decision_label = "allow"
@@ -236,7 +243,7 @@ def build_evaluation_control_decision(
             "trust_threshold": t["trust_threshold"],
         },
         "trace_id": eval_summary["trace_id"],
-        "created_at": _now_iso(),
+        "created_at": _canonical_timestamp(eval_summary.get("created_at")),
         "decision": decision_label,
         "rationale_code": rationale_code,
         "input_signal_reference": {
