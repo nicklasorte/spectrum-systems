@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.22",
+  "artifact_version": "1.0.23",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-LOOP-CONTROL",
-  "run_id": "run-20260322T000000Z",
-  "created_at": "2026-03-22T00:00:00Z",
+  "standards_version": "2026.03.23",
+  "record_id": "REC-STD-2026-03-23-GOVERNED-PROMPT-QUEUE-REVIEW-TRIGGER",
+  "run_id": "run-20260323T000000Z",
+  "created_at": "2026-03-23T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -702,26 +702,26 @@
     {
       "artifact_type": "prompt_queue_work_item",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.6.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.21",
+      "last_updated_in": "1.0.23",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
     },
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.6.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.21",
+      "last_updated_in": "1.0.23",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
     },
@@ -828,6 +828,19 @@
       "last_updated_in": "1.0.22",
       "example_path": "contracts/examples/prompt_queue_loop_control_decision.json",
       "notes": "Deterministic fail-closed repair loop budget decision artifact enforcing bounded generation depth, canonical enforcement tuple mapping, and lineage-aware queue re-entry control."
+    },
+    {
+      "artifact_type": "prompt_queue_review_trigger",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.23",
+      "last_updated_in": "1.0.23",
+      "example_path": "contracts/examples/prompt_queue_review_trigger.json",
+      "notes": "Deterministic fail-closed review trigger artifact mapping post-execution and loop-control decisions into bounded governed review work-item spawning with full lineage preservation."
     }
   ]
 }

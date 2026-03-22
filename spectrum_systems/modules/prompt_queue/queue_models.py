@@ -27,6 +27,7 @@ class WorkItemStatus(str, Enum):
     REVIEW_REQUIRED = "review_required"
     REENTRY_BLOCKED = "reentry_blocked"
     REENTRY_ELIGIBLE = "reentry_eligible"
+    REVIEW_TRIGGERED = "review_triggered"
     APPROVAL_REQUIRED = "approval_required"
     BLOCKED = "blocked"
 
@@ -103,12 +104,16 @@ class WorkItem:
     execution_result_artifact_path: Optional[str] = None
     post_execution_decision_artifact_path: Optional[str] = None
     next_step_action_artifact_path: Optional[str] = None
+    review_trigger_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
     spawned_from_repair_prompt_artifact_path: Optional[str] = None
     spawned_from_findings_artifact_path: Optional[str] = None
     spawned_from_review_artifact_path: Optional[str] = None
+    spawned_from_execution_result_artifact_path: Optional[str] = None
+    spawned_from_post_execution_decision_artifact_path: Optional[str] = None
+    spawned_from_loop_control_decision_artifact_path: Optional[str] = None
     generation_count: int = 0
     repair_loop_generation: int = 0
     child_work_item_ids: list[str] | None = None
@@ -188,6 +193,10 @@ def make_work_item(
         execution_result_artifact_path=None,
         post_execution_decision_artifact_path=None,
         next_step_action_artifact_path=None,
+        review_trigger_artifact_path=None,
+        spawned_from_execution_result_artifact_path=None,
+        spawned_from_post_execution_decision_artifact_path=None,
+        spawned_from_loop_control_decision_artifact_path=None,
     ).to_dict()
 
 
