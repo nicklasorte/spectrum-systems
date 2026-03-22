@@ -44,7 +44,8 @@ def _provenance_record(run_id: str, workflow_step: str, timestamp: str) -> dict:
         "generated_by_system": "SYS-004 Spectrum Study Compiler",
         "generated_by_repo": "nicklasorte/spectrum-systems",
         "generated_by_version": "design-notebook",
-        "schema_version": "1.0.0",
+        "policy_id": "study-output-governance-v1.0.0",
+        "schema_version": "1.1.0",
         "created_at": timestamp,
         "updated_at": timestamp,
     }
@@ -156,7 +157,7 @@ def write_study_summary(
         "map_path": str(map_path),
         "schemas": {
             "study_output_schema": "1.1.0",
-            "provenance_schema": "1.0.0",
+            "provenance_schema": "1.1.0",
         },
         "config_inputs": config.as_dict(),
     }

@@ -46,7 +46,8 @@ Override resolution order
 -------------------------
 1. Explicit caller-provided policy (beats everything)
 2. Stage-bound default (if stage is provided and has a binding)
-3. System default policy (``permissive``) as final fallback
+3. No implicit fallback. If neither explicit policy nor valid stage
+   binding resolve a policy, raise ``PolicyResolutionError``.
 """
 
 from __future__ import annotations
@@ -171,6 +172,10 @@ class UnknownStageError(PolicyRegistryError):
 
 class MalformedRegistryError(PolicyRegistryError):
     """Raised when the registry data is structurally invalid."""
+
+
+class PolicyResolutionError(PolicyRegistryError):
+    """Raised when no explicit or stage-bound policy can be resolved."""
 
 
 # ---------------------------------------------------------------------------
@@ -404,7 +409,8 @@ def resolve_effective_slo_policy(
     Resolution order:
     1. Explicit caller-provided policy (beats everything)
     2. Stage-bound default (if stage is provided and has a binding)
-    3. System default policy (``permissive``) as final fallback
+    3. No implicit fallback; resolution fails closed when no policy can be
+       resolved from explicit policy or stage binding.
 
     Parameters
     ----------
@@ -419,8 +425,7 @@ def resolve_effective_slo_policy(
     -------
     (effective_policy, resolution_source)
         effective_policy   – the resolved policy name
-        resolution_source  – one of ``"explicit"``, ``"stage_binding"``,
-                             ``"system_default"``
+        resolution_source  – one of ``"explicit"``, ``"stage_binding"``
 
     Raises
     ------
@@ -428,6 +433,8 @@ def resolve_effective_slo_policy(
         If *requested_policy* is provided but unknown.
     UnknownStageError
         If *stage* is provided but unknown.
+    PolicyResolutionError
+        If neither an explicit policy nor a valid stage binding is provided.
     """
     reg = registry or load_slo_policy_registry()
 
@@ -440,8 +447,10 @@ def resolve_effective_slo_policy(
         bound_policy = get_stage_bound_policy(stage, reg)
         return bound_policy, "stage_binding"
 
-    system_default: str = reg.get("default_policy", DEFAULT_POLICY)
-    return system_default, "system_default"
+    raise PolicyResolutionError(
+        "Policy resolution failed closed: explicit policy_id is required when "
+        "no stage binding is provided."
+    )
 
 
 # ---------------------------------------------------------------------------

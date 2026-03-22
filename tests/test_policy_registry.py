@@ -56,6 +56,7 @@ from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     STAGE_RECOMMEND,
     STAGE_SYNTHESIS,
     MalformedRegistryError,
+    PolicyResolutionError,
     UnknownPolicyError,
     UnknownStageError,
     describe_effective_policy,
@@ -404,15 +405,14 @@ class TestStageBindingBeatsSystemDefault:
 
 
 # ---------------------------------------------------------------------------
-# 10. No-stage resolution uses system default
+# 10. Missing policy_id with no stage binding fails closed
 # ---------------------------------------------------------------------------
 
 
 class TestNoStageResolution:
-    def test_no_policy_no_stage_returns_default(self) -> None:
-        effective, source = resolve_effective_slo_policy(None, None)
-        assert effective == DEFAULT_POLICY
-        assert source == "system_default"
+    def test_no_policy_no_stage_raises_policy_resolution_error(self) -> None:
+        with pytest.raises(PolicyResolutionError):
+            resolve_effective_slo_policy(None, None)
 
     def test_default_policy_is_permissive(self) -> None:
         assert DEFAULT_POLICY == POLICY_PERMISSIVE
@@ -420,12 +420,13 @@ class TestNoStageResolution:
     def test_registry_default_matches_constant(self, canonical_registry: Dict[str, Any]) -> None:
         assert canonical_registry["default_policy"] == DEFAULT_POLICY
 
-    def test_slo_enforcement_no_policy_no_stage_is_permissive(
+    def test_slo_enforcement_no_policy_no_stage_fails_closed(
         self, valid_artifact_ti_0_5: Dict[str, Any]
     ) -> None:
         result = run_slo_enforcement(valid_artifact_ti_0_5)
-        assert result["enforcement_decision"]["enforcement_policy"] == POLICY_PERMISSIVE
-        assert result["decision_status"] == DECISION_ALLOW_WITH_WARNING
+        assert result["decision_status"] == DECISION_FAIL
+        assert "Policy resolution failed closed" in result["errors"][0]
+        assert result["enforcement_decision"]["enforcement_policy"] == "policy_resolution_failed"
 
 
 # ---------------------------------------------------------------------------
@@ -492,7 +493,8 @@ class TestSloEnforcementIntegration:
         assert evaluate_traceability_policy(0.0, POLICY_EXPLORATORY) == DECISION_FAIL
 
     def test_resolve_enforcement_policy_delegates(self) -> None:
-        assert resolve_enforcement_policy(None, None) == DEFAULT_POLICY
+        with pytest.raises(PolicyResolutionError):
+            resolve_enforcement_policy(None, None)
         assert resolve_enforcement_policy(None, STAGE_SYNTHESIS) == POLICY_DECISION_GRADE
         assert resolve_enforcement_policy(POLICY_EXPLORATORY, STAGE_SYNTHESIS) == POLICY_EXPLORATORY
 
@@ -567,17 +569,17 @@ class TestCLIListStages:
 
 
 class TestCLIShowEffectivePolicy:
-    def test_show_effective_policy_exit_code_0(self) -> None:
+    def test_show_effective_policy_exit_code_error_when_unresolvable(self) -> None:
         exit_code, _, _ = _run_cli(["--show-effective-policy"])
-        assert exit_code == 0
+        assert exit_code == 3
 
-    def test_show_effective_policy_default_is_permissive(self) -> None:
-        _, stdout, _ = _run_cli(["--show-effective-policy"])
-        assert "permissive" in stdout
+    def test_show_effective_policy_default_path_fails_closed(self) -> None:
+        _, _, stderr = _run_cli(["--show-effective-policy"])
+        assert "Policy resolution failed closed" in stderr
 
-    def test_show_effective_policy_resolution_source_system_default(self) -> None:
+    def test_show_effective_policy_resolution_source_not_system_default(self) -> None:
         _, stdout, _ = _run_cli(["--show-effective-policy"])
-        assert "system_default" in stdout
+        assert "system_default" not in stdout
 
     def test_show_effective_policy_explicit_override(self) -> None:
         _, stdout, _ = _run_cli(["--show-effective-policy", "--policy", "decision_grade"])
@@ -639,9 +641,10 @@ class TestDeterministicResolution:
         results = [resolve_effective_slo_policy(None, STAGE_SYNTHESIS) for _ in range(5)]
         assert all(r == results[0] for r in results)
 
-    def test_resolution_is_deterministic_default(self) -> None:
-        results = [resolve_effective_slo_policy(None, None) for _ in range(5)]
-        assert all(r == results[0] for r in results)
+    def test_resolution_is_deterministic_fail_closed_error(self) -> None:
+        for _ in range(5):
+            with pytest.raises(PolicyResolutionError):
+                resolve_effective_slo_policy(None, None)
 
     def test_profile_lookup_is_deterministic(self) -> None:
         profiles = [get_policy_profile(POLICY_PERMISSIVE) for _ in range(5)]
@@ -713,7 +716,8 @@ class TestBackwardCompatibility:
 
     def test_resolve_enforcement_policy_still_works(self) -> None:
         from spectrum_systems.modules.runtime.slo_enforcement import resolve_enforcement_policy
-        assert resolve_enforcement_policy(None, None) == POLICY_PERMISSIVE
+        with pytest.raises(PolicyResolutionError):
+            resolve_enforcement_policy(None, None)
         assert resolve_enforcement_policy(None, STAGE_SYNTHESIS) == POLICY_DECISION_GRADE
 
     def test_describe_effective_policy_diagnostics(self) -> None:
@@ -721,4 +725,3 @@ class TestBackwardCompatibility:
         assert info["effective_policy"] == POLICY_DECISION_GRADE
         assert info["resolution_source"] == "stage_binding"
         assert info["error"] is None
-

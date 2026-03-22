@@ -18,7 +18,8 @@
   "properties": {
     "policy_id": {
       "type": "string",
-      "description": "Unique identifier for this regression policy."
+      "pattern": "^regression-policy-v\\d+\\.\\d+\\.\\d+$",
+      "description": "Unique regression policy identifier with explicit namespace and semantic version suffix."
     },
     "version": {
       "type": "string",

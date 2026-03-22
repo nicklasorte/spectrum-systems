@@ -30,7 +30,7 @@
     "enforcement_policy": {
       "type": "string",
       "description": "Named policy profile used to derive this decision.",
-      "enum": ["permissive", "decision_grade", "exploratory"]
+      "enum": ["permissive", "decision_grade", "exploratory", "policy_resolution_failed"]
     },
     "enforcement_scope": {
       "type": "string",
@@ -53,7 +53,8 @@
         "malformed_traceability_integrity",
         "missing_lineage_mode",
         "malformed_lineage_mode",
-        "inconsistent_lineage_state"
+        "inconsistent_lineage_state",
+        "policy_resolution_failed"
       ]
     },
     "traceability_integrity_sli": {

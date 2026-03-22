@@ -8,6 +8,7 @@
   "required": [
     "run_id",
     "artifact_id",
+    "policy_id",
     "generated_by_engine",
     "engine_version",
     "source_artifacts",
@@ -24,6 +25,11 @@
     "artifact_id": {
       "type": "string",
       "description": "Identifier for the generated artifact."
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+$",
+      "description": "Explicit governing policy identifier including semantic version suffix."
     },
     "generated_by_engine": {
       "type": "string",

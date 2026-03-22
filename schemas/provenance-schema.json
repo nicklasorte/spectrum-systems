@@ -15,6 +15,7 @@
     "generated_by_system",
     "generated_by_repo",
     "generated_by_version",
+    "policy_id",
     "schema_version",
     "created_at",
     "updated_at"
@@ -76,13 +77,18 @@
       "type": "string",
       "description": "Version tag or commit of the implementation repository."
     },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+$",
+      "description": "Explicit governing policy identifier with semantic version suffix."
+    },
     "prompt_version": {
       "type": "string",
       "description": "Version of the prompt template used, when applicable."
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0",
+      "const": "1.1.0",
       "description": "Version of the provenance schema enforced when producing this artifact."
     },
     "derived_from": {
