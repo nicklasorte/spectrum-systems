@@ -39,6 +39,14 @@ def validate_findings_reentry(findings_reentry: dict) -> None:
     _validate(findings_reentry, "prompt_queue_findings_reentry")
 
 
+def validate_repair_prompt_artifact(repair_prompt_artifact: dict) -> None:
+    _validate(repair_prompt_artifact, "prompt_queue_repair_prompt")
+
+
+def validate_loop_continuation(loop_continuation: dict) -> None:
+    _validate(loop_continuation, "prompt_queue_loop_continuation")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

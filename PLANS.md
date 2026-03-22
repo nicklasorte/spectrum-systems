@@ -135,6 +135,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REVIEW-PARSING-HANDOFF-2026-03-22.md | Governed Prompt Queue — invocation output→review parsing handoff integration | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-FINDINGS-REENTRY-2026-03-22.md | Governed Prompt Queue — findings-to-repair reentry wiring | Active |
 
+| docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-LOOP-CONTINUATION-POLISH-2026-03-22.md | Governed Prompt Queue — loop continuation child spawn + continuation polish | Active |
+
 Update this table when plans are created or completed.
 
 ---
