@@ -53,8 +53,9 @@ from spectrum_systems.modules.runtime.contract_runtime import (
     ContractRuntimeError,
     ensure_contract_runtime_available,
 )
-from spectrum_systems.modules.runtime.evaluation_control import (
-    build_evaluation_control_decision,
+from spectrum_systems.modules.runtime.control_loop import (
+    ControlLoopError,
+    run_control_loop,
 )
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (
     EvalCaseGenerationError,
@@ -135,11 +136,11 @@ def _evaluation_control_execution_result(decision: Dict[str, Any]) -> Dict[str, 
             {
                 "action_type": "evaluation_control_decision_applied",
                 "status": response,
-                "detail": "eval_summary mapped to deterministic control decision",
+                "detail": "governed signal mapped to deterministic control decision",
                 "decision_id": decision.get("decision_id"),
             }
         ],
-        "validators_run": ["evaluation_control_mapper"],
+        "validators_run": ["control_loop_engine"],
         "validators_failed": [],
         "repair_actions_applied": [],
     }
@@ -229,15 +230,27 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
     chain_result: Dict[str, Any] = {}
     control_signals: Dict[str, Any] = {}
 
-    # BBA path: eval_summary is consumed before runtime execution and mapped
-    # into a governed evaluation_control_decision.
-    if isinstance(artifact, dict) and artifact.get("artifact_type") == "eval_summary":
-        eval_decision = build_evaluation_control_decision(artifact)
+    # BAE path: governed evaluation signals are consumed exclusively by
+    # the unified control loop engine before runtime execution.
+    if isinstance(artifact, dict) and artifact.get("artifact_type") in {"eval_summary", "failure_eval_case"}:
+        try:
+            loop_result = run_control_loop(
+                artifact,
+                {
+                    "execution_id": execution_id,
+                    "stage": stage,
+                    "runtime_environment": runtime_environment,
+                },
+            )
+        except ControlLoopError as exc:
+            raise ContractRuntimeError(f"control loop evaluation failed: {exc}") from exc
+        eval_decision = loop_result["evaluation_control_decision"]
         execution_result = _evaluation_control_execution_result(eval_decision)
         chain_result = {
             "control_chain_decision": {"control_signals": control_signals},
             "execution_result": execution_result,
             "evaluation_control_decision": eval_decision,
+            "control_trace": loop_result["control_trace"],
         }
     else:
         # Run the full control chain with BN.6 execution enabled.
@@ -294,6 +307,8 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
     }
     if chain_result.get("evaluation_control_decision") is not None:
         integration_result["evaluation_control_decision"] = chain_result["evaluation_control_decision"]
+    if chain_result.get("control_trace") is not None:
+        integration_result["control_trace"] = chain_result["control_trace"]
     if human_review_task is not None:
         integration_result["human_review_task"] = human_review_task
 

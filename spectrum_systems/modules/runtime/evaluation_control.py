@@ -74,9 +74,14 @@ def _fail_closed_decision(
     thresholds: Dict[str, float],
     signal: str,
 ) -> Dict[str, Any]:
+    rationale_code = (
+        "deny_missing_required_signal"
+        if signal == "missing_required_signal"
+        else "deny_malformed_signal"
+    )
     return {
         "artifact_type": "evaluation_control_decision",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "decision_id": _new_id(),
         "eval_run_id": eval_run_id,
         "system_status": "blocked",
@@ -85,6 +90,13 @@ def _fail_closed_decision(
         "threshold_snapshot": thresholds,
         "trace_id": trace_id,
         "created_at": _now_iso(),
+        "decision": "deny",
+        "rationale_code": rationale_code,
+        "input_signal_reference": {
+            "signal_type": "eval_summary",
+            "source_artifact_id": eval_run_id,
+        },
+        "run_id": eval_run_id,
     }
 
 
@@ -163,9 +175,28 @@ def build_evaluation_control_decision(
         system_status = "warning"
         system_response = "warn"
 
+    if system_response == "allow":
+        decision_label = "allow"
+        rationale_code = "allow_healthy_eval_summary"
+    elif system_response == "warn":
+        decision_label = "require_review"
+        rationale_code = "require_review_warning_signal"
+    elif "trust_breach" in triggered_signals:
+        decision_label = "deny"
+        rationale_code = "deny_trust_breach"
+    elif "stability_breach" in triggered_signals:
+        decision_label = "deny"
+        rationale_code = "deny_stability_breach"
+    elif "indeterminate_failure" in triggered_signals:
+        decision_label = "deny"
+        rationale_code = "deny_indeterminate_failure"
+    else:
+        decision_label = "deny"
+        rationale_code = "deny_reliability_breach"
+
     decision = {
         "artifact_type": "evaluation_control_decision",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "decision_id": _new_id(),
         "eval_run_id": eval_summary["eval_run_id"],
         "system_status": system_status,
@@ -178,6 +209,13 @@ def build_evaluation_control_decision(
         },
         "trace_id": eval_summary["trace_id"],
         "created_at": _now_iso(),
+        "decision": decision_label,
+        "rationale_code": rationale_code,
+        "input_signal_reference": {
+            "signal_type": "eval_summary",
+            "source_artifact_id": eval_summary["eval_run_id"],
+        },
+        "run_id": eval_summary["eval_run_id"],
     }
 
     decision_errors = _validate(decision, _load_decision_schema())

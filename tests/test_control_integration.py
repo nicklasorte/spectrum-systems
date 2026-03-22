@@ -647,11 +647,36 @@ def _eval_summary_artifact() -> Dict[str, Any]:
     }
 
 
+def _failure_eval_case_artifact() -> Dict[str, Any]:
+    return {
+        "artifact_type": "failure_eval_case",
+        "schema_version": "1.0.0",
+        "trace_id": "11111111-1111-4111-8111-111111111111",
+        "eval_case_id": "failure-eval-case-001",
+        "input_artifact_refs": ["artifact://runtime/evaluation_summary/trace-1"],
+        "expected_output_spec": {
+            "failure_modes": ["threshold_breach", "indeterminate"],
+            "required_response": "block_and_escalate",
+            "minimum_decision_count": 1,
+        },
+        "scoring_rubric": {
+            "weights": {
+                "corrective_action_completeness": 0.6,
+                "reproducibility": 0.4,
+            },
+            "pass_threshold": 1.0,
+        },
+        "evaluation_type": "deterministic",
+        "created_from": "failure_trace",
+    }
+
+
 def test_eval_summary_path_allows_and_emits_decision() -> None:
     result = enforce_control_before_execution(_ctx(artifact=_eval_summary_artifact()))
     assert result["continuation_allowed"] is True
     assert result["execution_status"] == "success"
     assert result["evaluation_control_decision"]["system_response"] == "allow"
+    assert result["control_trace"]["signal_type"] == "eval_summary"
 
 
 def test_eval_summary_freeze_blocks_continuation() -> None:
@@ -662,6 +687,25 @@ def test_eval_summary_freeze_blocks_continuation() -> None:
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
     assert result["evaluation_control_decision"]["system_response"] == "freeze"
+    assert result["control_trace"]["decision"] == "deny"
+
+
+def test_eval_signals_use_control_loop_and_never_bypass() -> None:
+    artifact = _eval_summary_artifact()
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain"
+    ) as chain_mock:
+        result = enforce_control_before_execution(_ctx(artifact=artifact))
+    chain_mock.assert_not_called()
+    assert "evaluation_control_decision" in result
+    assert "control_trace" in result
+
+
+def test_failure_eval_case_path_denies_and_blocks() -> None:
+    result = enforce_control_before_execution(_ctx(artifact=_failure_eval_case_artifact()))
+    assert result["continuation_allowed"] is False
+    assert result["evaluation_control_decision"]["decision"] == "deny"
+    assert result["control_trace"]["signal_type"] == "failure_eval_case"
 
 
 def test_blocked_paths_emit_generated_failure_eval_case():
