@@ -569,9 +569,9 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
     replay_id = _new_id()
     timestamp = _now_iso()
     compared_artifacts = [
-        "system_response",
+        "decision",
         "enforcement_action",
-        "validation_status",
+        "final_status",
     ]
 
     def _indeterminate(reason: str, replay_run_id: str = "unknown", replay_trace_id: str = "unknown") -> Dict[str, Any]:
@@ -598,14 +598,14 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
     if not isinstance(original_decision, dict):
         return _indeterminate("original decision malformed: must be an object")
 
-    required_original_keys = {"run_id", "trace_id", "system_response", "status", "enforcement_action"}
+    required_original_keys = {"run_id", "trace_id"}
     missing = sorted(k for k in required_original_keys if not original_decision.get(k))
     if missing:
         return _indeterminate(f"original decision malformed: missing required fields {missing}")
 
     try:
-        from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
-        from spectrum_systems.modules.runtime.evaluation_budget_governor import build_validation_budget_decision
+        from spectrum_systems.modules.runtime.control_loop import run_control_loop
+        from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
         from spectrum_systems.modules.runtime.evaluation_monitor import (
             build_validation_monitor_record,
             summarize_validation_monitor_records,
@@ -618,8 +618,46 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
         replay_validation_decision = validate_and_emit_decision(bundle_path)
         replay_monitor = build_validation_monitor_record(replay_validation_decision)
         replay_summary = summarize_validation_monitor_records([replay_monitor])
-        replay_decision = build_validation_budget_decision(replay_summary)
-        replay_enforcement = enforce_budget_decision(replay_decision)
+
+        replay_trace_id = str(replay_validation_decision.get("trace_id") or "")
+        try:
+            uuid.UUID(replay_trace_id)
+        except (TypeError, ValueError):
+            replay_trace_id = str(uuid.uuid5(uuid.NAMESPACE_URL, replay_trace_id or "unknown-trace"))
+
+        success_rate = float(
+            (replay_summary.get("aggregated_slis") or {}).get("bundle_validation_success_rate", 0.0)
+        )
+        reproducibility_score = float(
+            (replay_summary.get("aggregated_slis") or {}).get("provenance_required_rate", 0.0)
+        )
+        replay_eval_summary = {
+            "artifact_type": "eval_summary",
+            "schema_version": "1.0.0",
+            "trace_id": replay_trace_id,
+            "eval_run_id": str(replay_validation_decision.get("run_id") or "unknown-run"),
+            "pass_rate": success_rate,
+            "failure_rate": max(0.0, min(1.0, 1.0 - success_rate)),
+            "drift_rate": max(0.0, min(1.0, 1.0 - success_rate)),
+            "reproducibility_score": reproducibility_score,
+            "system_status": (
+                "healthy"
+                if success_rate >= 0.95
+                else "degraded"
+                if success_rate > 0.0
+                else "failing"
+            ),
+        }
+
+        replay_decision = run_control_loop(
+            replay_eval_summary,
+            {
+                "trace_id": replay_trace_id,
+                "run_id": replay_eval_summary["eval_run_id"],
+                "replay_id": replay_id,
+            },
+        )["evaluation_control_decision"]
+        replay_enforcement = enforce_control_decision(replay_decision)
     except Exception as exc:  # noqa: BLE001
         return _indeterminate(f"replay cannot execute: {exc}")
 
@@ -630,16 +668,39 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
     consistency_check_passed = True
     replay_status = "success"
 
-    original_system_response = str(original_decision.get("system_response"))
-    replay_system_response = str(replay_decision.get("system_response"))
-    if original_system_response != replay_system_response:
+    original_decision_status = str(original_decision.get("decision") or "")
+    if not original_decision_status:
+        mapped_response = {
+            "allow": "allow",
+            "warn": "require_review",
+            "freeze": "deny",
+            "block": "deny",
+        }.get(str(original_decision.get("system_response") or ""), "")
+        original_decision_status = mapped_response
+    replay_decision_status = str(replay_decision.get("decision"))
+    if original_decision_status != replay_decision_status:
         consistency_check_passed = False
         replay_status = "failed"
         reasons.append(
-            f"system_response mismatch: original={original_system_response} replay={replay_system_response}"
+            f"decision mismatch: original={original_decision_status} replay={replay_decision_status}"
         )
 
-    original_enforcement_action = str(original_decision.get("enforcement_action"))
+    original_enforcement_action = str(original_decision.get("enforcement_action") or "")
+    legacy_action_map = {
+        "allow": "allow_execution",
+        "warn": "require_manual_review",
+        "freeze": "deny_execution",
+        "block": "deny_execution",
+    }
+    if original_enforcement_action in legacy_action_map:
+        original_enforcement_action = legacy_action_map[original_enforcement_action]
+    if not original_enforcement_action:
+        original_enforcement_action = {
+            "allow": "allow_execution",
+            "warn": "require_manual_review",
+            "freeze": "deny_execution",
+            "block": "deny_execution",
+        }.get(str(original_decision.get("system_response") or ""), "deny_execution")
     replay_enforcement_action = str(replay_enforcement.get("enforcement_action"))
     if original_enforcement_action != replay_enforcement_action:
         consistency_check_passed = False
@@ -649,8 +710,8 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
             f"original={original_enforcement_action} replay={replay_enforcement_action}"
         )
 
-    original_validation_status = str(original_decision.get("status"))
-    replay_validation_status = str(replay_decision.get("status"))
+    original_validation_status = str(original_decision.get("final_status") or original_decision_status)
+    replay_validation_status = str(replay_enforcement.get("final_status"))
     if original_validation_status != replay_validation_status:
         consistency_check_passed = False
         replay_status = "failed"

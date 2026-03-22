@@ -633,13 +633,14 @@ def test_replay_run_consistent_for_valid_bundle(tmp_path: Path) -> None:
     original = {
         "run_id": "run-replay-001",
         "trace_id": "trace-original-001",
-        "status": "healthy",
-        "system_response": "allow",
-        "enforcement_action": "allow",
+        "decision": "allow",
+        "final_status": "allow",
+        "enforcement_action": "allow_execution",
     }
     replay = replay_run(str(bundle), original)
     assert replay["replay_status"] == "success"
     assert replay["consistency_check_passed"] is True
+    assert replay["compared_artifacts"] == ["decision", "enforcement_action", "final_status"]
 
 
 def test_replay_run_forced_mismatch_fails(tmp_path: Path) -> None:
@@ -647,9 +648,9 @@ def test_replay_run_forced_mismatch_fails(tmp_path: Path) -> None:
     original = {
         "run_id": "run-replay-001",
         "trace_id": "trace-original-001",
-        "status": "blocked",
-        "system_response": "block",
-        "enforcement_action": "block",
+        "decision": "deny",
+        "final_status": "deny",
+        "enforcement_action": "require_manual_review",
     }
     replay = replay_run(str(bundle), original)
     assert replay["replay_status"] == "failed"
@@ -660,9 +661,9 @@ def test_replay_run_invalid_bundle_input_is_indeterminate() -> None:
     original = {
         "run_id": "run-replay-001",
         "trace_id": "trace-original-001",
-        "status": "healthy",
-        "system_response": "allow",
-        "enforcement_action": "allow",
+        "decision": "allow",
+        "final_status": "allow",
+        "enforcement_action": "allow_execution",
     }
     replay = replay_run("", original)
     assert replay["replay_status"] == "indeterminate"
@@ -687,9 +688,9 @@ def test_execute_with_replay_cli_exit_codes(tmp_path: Path, monkeypatch: pytest.
     original = {
         "run_id": "run-replay-001",
         "trace_id": "trace-original-001",
-        "status": "blocked",
-        "system_response": "block",
-        "enforcement_action": "block",
+        "decision": "deny",
+        "final_status": "deny",
+        "enforcement_action": "require_manual_review",
     }
     replay = replay_run(str(mismatch_bundle), original)
     assert replay["replay_status"] == "failed"
@@ -711,7 +712,7 @@ def test_execute_with_replay_cli_exit_codes(tmp_path: Path, monkeypatch: pytest.
             "timestamp": "2026-03-21T00:00:00Z",
             "replay_status": "indeterminate",
             "consistency_check_passed": False,
-            "compared_artifacts": ["system_response", "enforcement_action", "validation_status"],
+            "compared_artifacts": ["decision", "enforcement_action", "final_status"],
             "reasons": ["indeterminate fixture"],
         },
     )
