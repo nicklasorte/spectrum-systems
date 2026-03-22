@@ -1,0 +1,16 @@
+{
+  "retry_decision_artifact_id": "retry-wi-001-2026-03-22T00:00:00Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": null,
+  "current_status": "executed_failure",
+  "failure_reason_code": "execution_failure_non_lineage_non_schema",
+  "retry_status": "retry_allowed",
+  "retry_action": "retry",
+  "retry_count": 0,
+  "retry_budget": 2,
+  "retry_reason_code": "retry_allowed_under_budget_retryable_failure",
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "warnings": [],
+  "generated_at": "2026-03-22T00:00:00Z",
+  "generator_version": "prompt_queue_retry_policy.v1"
+}

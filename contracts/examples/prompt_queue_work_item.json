@@ -40,5 +40,8 @@
   "review_parsing_handoff_artifact_path": null,
   "findings_reentry_artifact_path": null,
   "loop_continuation_artifact_path": null,
-  "blocked_recovery_decision_artifact_path": null
+  "blocked_recovery_decision_artifact_path": null,
+  "retry_count": 0,
+  "retry_budget": 2,
+  "retry_decision_artifact_path": null
 }
