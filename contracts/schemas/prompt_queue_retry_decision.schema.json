@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_retry_decision.schema.json",
+  "title": "Prompt Queue Retry Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "retry_decision_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "current_status",
+    "failure_reason_code",
+    "retry_status",
+    "retry_action",
+    "retry_count",
+    "retry_budget",
+    "retry_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "retry_decision_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "current_status": {
+      "type": "string",
+      "enum": [
+        "executed_failure",
+        "review_provider_failed",
+        "review_invocation_failed",
+        "blocked"
+      ]
+    },
+    "failure_reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retry_status": {
+      "type": "string",
+      "enum": ["retry_allowed", "retry_blocked", "retry_exhausted"]
+    },
+    "retry_action": {
+      "type": "string",
+      "enum": ["retry", "no_action"]
+    },
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_queue_state_path": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

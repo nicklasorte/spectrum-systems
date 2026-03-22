@@ -113,6 +113,9 @@ class WorkItem:
     findings_reentry_artifact_path: Optional[str] = None
     loop_continuation_artifact_path: Optional[str] = None
     blocked_recovery_decision_artifact_path: Optional[str] = None
+    retry_decision_artifact_path: Optional[str] = None
+    retry_count: int = 0
+    retry_budget: int = 2
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -207,6 +210,9 @@ def make_work_item(
         findings_reentry_artifact_path=None,
         loop_continuation_artifact_path=None,
         blocked_recovery_decision_artifact_path=None,
+        retry_decision_artifact_path=None,
+        retry_count=0,
+        retry_budget=2,
         spawned_from_execution_result_artifact_path=None,
         spawned_from_post_execution_decision_artifact_path=None,
         spawned_from_loop_control_decision_artifact_path=None,

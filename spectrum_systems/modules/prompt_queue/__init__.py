@@ -16,6 +16,22 @@ from spectrum_systems.modules.prompt_queue.blocked_recovery_queue_integration im
     BlockedRecoveryQueueIntegrationError,
     apply_blocked_recovery_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.retry_artifact_io import (
+    RetryArtifactIOError,
+    RetryArtifactValidationError,
+    default_retry_decision_path,
+    validate_retry_decision_artifact,
+    write_retry_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.retry_policy import (
+    RetryPolicyConfig,
+    RetryPolicyError,
+    evaluate_retry_policy,
+)
+from spectrum_systems.modules.prompt_queue.retry_queue_integration import (
+    RetryQueueIntegrationError,
+    apply_retry_decision_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.execution_artifact_io import (
     default_execution_result_path,
     validate_execution_result_artifact,
@@ -220,6 +236,16 @@ __all__ = [
     "default_blocked_recovery_decision_path",
     "BlockedRecoveryArtifactValidationError",
     "BlockedRecoveryArtifactIOError",
+    "apply_retry_decision_to_queue",
+    "RetryQueueIntegrationError",
+    "evaluate_retry_policy",
+    "RetryPolicyError",
+    "RetryPolicyConfig",
+    "write_retry_decision_artifact",
+    "validate_retry_decision_artifact",
+    "default_retry_decision_path",
+    "RetryArtifactValidationError",
+    "RetryArtifactIOError",
     "default_execution_result_path",
     "validate_execution_result_artifact",
     "write_execution_result_artifact",

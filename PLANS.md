@@ -143,6 +143,7 @@ Update this table when plans are created or completed.
 
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REVIEW-TRIGGER-2026-03-22.md | Governed Prompt Queue — automatic review triggering | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-BLOCKED-RECOVERY-2026-03-22.md | Governed Prompt Queue — blocked-item recovery policy | Active |
+| docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-RETRY-POLICY-2026-03-22.md | Governed Prompt Queue — deterministic retry policy slice | Active |
 ## Plan lifecycle
 
 ```
