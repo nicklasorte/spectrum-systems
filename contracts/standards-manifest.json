@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.25",
+  "artifact_version": "1.0.26",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-REVIEW-INVOCATION-FOUNDATION",
+  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-REVIEW-PARSING-HANDOFF",
   "run_id": "run-20260322T000000Z",
   "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
@@ -702,26 +702,26 @@
     {
       "artifact_type": "prompt_queue_work_item",
       "artifact_class": "coordination",
-      "schema_version": "1.6.0",
+      "schema_version": "1.7.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.23",
+      "last_updated_in": "1.7.0",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
     },
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.6.0",
+      "schema_version": "1.7.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.23",
+      "last_updated_in": "1.7.0",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
     },
@@ -750,6 +750,19 @@
       "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/prompt_queue_review_invocation_result.json",
       "notes": "Persisted audit-grade record of bounded review invocation outcome and provider/fallback metadata for governed prompt queue."
+    },
+    {
+      "artifact_type": "prompt_queue_review_parsing_handoff",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.26",
+      "last_updated_in": "1.0.26",
+      "example_path": "contracts/examples/prompt_queue_review_parsing_handoff.json",
+      "notes": "Deterministic fail-closed handoff artifact linking successful review invocation output_reference consumption to emitted findings artifacts and queue mutation lineage."
     },
     {
       "artifact_type": "prompt_queue_review_findings",

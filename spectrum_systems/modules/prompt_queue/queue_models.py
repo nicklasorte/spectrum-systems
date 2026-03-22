@@ -109,6 +109,7 @@ class WorkItem:
     next_step_action_artifact_path: Optional[str] = None
     review_trigger_artifact_path: Optional[str] = None
     review_invocation_result_artifact_path: Optional[str] = None
+    review_parsing_handoff_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -199,6 +200,7 @@ def make_work_item(
         next_step_action_artifact_path=None,
         review_trigger_artifact_path=None,
         review_invocation_result_artifact_path=None,
+        review_parsing_handoff_artifact_path=None,
         spawned_from_execution_result_artifact_path=None,
         spawned_from_post_execution_decision_artifact_path=None,
         spawned_from_loop_control_decision_artifact_path=None,
