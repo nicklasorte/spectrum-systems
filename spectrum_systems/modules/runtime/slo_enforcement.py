@@ -49,6 +49,7 @@ malformed_traceability_integrity – TI value is not a recognised float
 missing_lineage_mode          – lineage_validation_mode absent from input
 malformed_lineage_mode        – lineage_validation_mode is not an allowed value
 inconsistent_lineage_state    – internally contradictory combination of fields
+policy_resolution_failed      – explicit policy/stage resolution failed closed
 
 Exit codes (CLI)
 ----------------
@@ -95,6 +96,7 @@ from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
     POLICY_DECISION_GRADE,
     POLICY_EXPLORATORY,
     POLICY_PERMISSIVE,
+    PolicyRegistryError,
     STAGE_DEFAULT_POLICIES,
     STAGE_EXPORT,
     STAGE_INTERPRET,
@@ -132,6 +134,7 @@ REASON_MALFORMED_TI: str = "malformed_traceability_integrity"
 REASON_MISSING_LINEAGE_MODE: str = "missing_lineage_mode"
 REASON_MALFORMED_LINEAGE_MODE: str = "malformed_lineage_mode"
 REASON_INCONSISTENT_LINEAGE_STATE: str = "inconsistent_lineage_state"
+REASON_POLICY_RESOLUTION_FAILED: str = "policy_resolution_failed"
 
 KNOWN_REASON_CODES: frozenset = frozenset({
     REASON_STRICT_VALID_LINEAGE,
@@ -142,6 +145,7 @@ KNOWN_REASON_CODES: frozenset = frozenset({
     REASON_MISSING_LINEAGE_MODE,
     REASON_MALFORMED_LINEAGE_MODE,
     REASON_INCONSISTENT_LINEAGE_STATE,
+    REASON_POLICY_RESOLUTION_FAILED,
 })
 
 # ---------------------------------------------------------------------------
@@ -688,6 +692,31 @@ def run_slo_enforcement(
             stage=stage,
             evaluated_at=evaluated_at,
         )
+    except PolicyRegistryError as exc:
+        err_msg = f"Policy resolution error: {exc}"
+        decision = build_slo_enforcement_decision(
+            artifact_id=None,
+            policy=policy or "policy_resolution_failed",
+            stage=stage,
+            decision_status=DECISION_FAIL,
+            reason_code=REASON_POLICY_RESOLUTION_FAILED,
+            ti_value=None,
+            lineage_mode=None,
+            lineage_defaulted=None,
+            lineage_valid=None,
+            recommended_action=ACTION_FIX_INPUT,
+            warnings=[],
+            errors=[err_msg],
+            evaluated_at=evaluated_at,
+        )
+        return {
+            "enforcement_decision": decision,
+            "decision_status": DECISION_FAIL,
+            "decision_reason_code": REASON_POLICY_RESOLUTION_FAILED,
+            "schema_errors": [],
+            "warnings": [],
+            "errors": [err_msg],
+        }
     except Exception as exc:  # noqa: BLE001
         # Last-resort crash protection: if the inner pipeline itself fails,
         # return a governed fail decision.

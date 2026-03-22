@@ -55,6 +55,7 @@ from spectrum_systems.modules.runtime.slo_enforcement import (  # noqa: E402
     REASON_MALFORMED_LINEAGE_MODE,
     REASON_MALFORMED_TI,
     REASON_MISSING_LINEAGE_MODE,
+    REASON_POLICY_RESOLUTION_FAILED,
     REASON_MISSING_TI,
     REASON_STRICT_INVALID_LINEAGE,
     REASON_STRICT_VALID_LINEAGE,
@@ -74,6 +75,11 @@ from spectrum_systems.modules.runtime.slo_enforcement import (  # noqa: E402
     run_slo_enforcement,
     validate_enforcement_inputs,
     validate_slo_enforcement_decision,
+)
+from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
+    PolicyResolutionError,
+    UnknownPolicyError,
+    UnknownStageError,
 )
 
 # Import run_slo_control for backward-compat tests
@@ -189,20 +195,20 @@ class TestMissingTI:
     def test_missing_ti_field(self):
         artifact = _artifact()
         del artifact["traceability_integrity_sli"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MISSING_TI
 
     def test_missing_ti_has_error_message(self):
         artifact = _artifact()
         del artifact["traceability_integrity_sli"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert any("traceability_integrity_sli" in e for e in result["errors"])
 
     def test_missing_ti_returns_governed_decision(self):
         artifact = _artifact()
         del artifact["traceability_integrity_sli"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert "enforcement_decision" in result
         d = result["enforcement_decision"]
         assert d["decision_status"] == DECISION_FAIL
@@ -218,14 +224,14 @@ class TestMalformedTI:
     def test_ti_is_string(self):
         artifact = _artifact()
         artifact["traceability_integrity_sli"] = "high"
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MALFORMED_TI
 
     def test_ti_is_none(self):
         artifact = _artifact()
         artifact["traceability_integrity_sli"] = None
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MISSING_TI
 
@@ -233,14 +239,14 @@ class TestMalformedTI:
         """A float that is not a governed band (e.g. 0.75) → malformed."""
         artifact = _artifact()
         artifact["traceability_integrity_sli"] = 0.75
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MALFORMED_TI
 
     def test_ti_negative_value(self):
         artifact = _artifact()
         artifact["traceability_integrity_sli"] = -0.1
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MALFORMED_TI
 
@@ -254,14 +260,14 @@ class TestMissingLineageMode:
     def test_missing_lineage_mode(self):
         artifact = _artifact()
         del artifact["lineage_validation_mode"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MISSING_LINEAGE_MODE
 
     def test_missing_lineage_mode_has_error(self):
         artifact = _artifact()
         del artifact["lineage_validation_mode"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert any("lineage_validation_mode" in e for e in result["errors"])
 
 
@@ -274,14 +280,14 @@ class TestMalformedLineageMode:
     def test_invalid_lineage_mode_value(self):
         artifact = _artifact()
         artifact["lineage_validation_mode"] = "ultra-strict"
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MALFORMED_LINEAGE_MODE
 
     def test_numeric_lineage_mode(self):
         artifact = _artifact()
         artifact["lineage_validation_mode"] = 1
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_MALFORMED_LINEAGE_MODE
 
@@ -295,7 +301,7 @@ class TestInconsistentStateDetection:
     def test_ti_1_with_degraded_mode(self):
         """TI 1.0 but mode is degraded — contradiction."""
         artifact = _artifact(ti=1.0, mode="degraded", defaulted=True, lineage_valid=None)
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_INCONSISTENT_LINEAGE_STATE
         assert any("1.0" in w or "degraded" in w for w in result["warnings"])
@@ -303,14 +309,14 @@ class TestInconsistentStateDetection:
     def test_ti_0_5_with_defaulted_false(self):
         """TI 0.5 but lineage_defaulted is False — contradiction."""
         artifact = _artifact(ti=0.5, mode="degraded", defaulted=False, lineage_valid=None)
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_INCONSISTENT_LINEAGE_STATE
 
     def test_ti_0_0_with_lineage_valid_true(self):
         """TI 0.0 but lineage_valid is True — contradiction."""
         artifact = _artifact(ti=0.0, mode="strict", defaulted=False, lineage_valid=True)
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert result["decision_reason_code"] == REASON_INCONSISTENT_LINEAGE_STATE
 
@@ -318,13 +324,13 @@ class TestInconsistentStateDetection:
         """Strict mode with TI=1.0 but lineage_valid absent."""
         artifact = _artifact(ti=1.0, mode="strict", defaulted=False)
         del artifact["lineage_valid"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         # lineage_valid is None → inconsistency detected
         assert result["decision_reason_code"] == REASON_INCONSISTENT_LINEAGE_STATE
 
     def test_inconsistency_appears_in_warnings(self):
         artifact = _artifact(ti=1.0, mode="degraded", defaulted=True, lineage_valid=None)
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert len(result["warnings"]) >= 1
 
 
@@ -335,15 +341,15 @@ class TestInconsistentStateDetection:
 
 class TestDeterministicReasonCodes:
     def test_strict_valid_gives_strict_valid_reason(self):
-        result = run_slo_enforcement(_artifact(ti=1.0, mode="strict", lineage_valid=True))
+        result = run_slo_enforcement(_artifact(ti=1.0, mode="strict", lineage_valid=True), policy=POLICY_PERMISSIVE)
         assert result["decision_reason_code"] == REASON_STRICT_VALID_LINEAGE
 
     def test_strict_invalid_gives_strict_invalid_reason(self):
-        result = run_slo_enforcement(_invalid_artifact())
+        result = run_slo_enforcement(_invalid_artifact(), policy=POLICY_PERMISSIVE)
         assert result["decision_reason_code"] == REASON_STRICT_INVALID_LINEAGE
 
     def test_degraded_gives_degraded_reason(self):
-        result = run_slo_enforcement(_degraded_artifact())
+        result = run_slo_enforcement(_degraded_artifact(), policy=POLICY_PERMISSIVE)
         assert result["decision_reason_code"] == REASON_DEGRADED_NO_REGISTRY
 
     def test_reason_codes_are_governed_values(self):
@@ -353,14 +359,14 @@ class TestDeterministicReasonCodes:
             (0.0, "strict", False, False),
         ]:
             art = _artifact(ti=ti, mode=mode, defaulted=defaulted, lineage_valid=valid)
-            result = run_slo_enforcement(art)
+            result = run_slo_enforcement(art, policy=POLICY_PERMISSIVE)
             assert result["decision_reason_code"] in KNOWN_REASON_CODES
 
     def test_same_input_same_reason_code(self):
         """Repeated calls produce the same reason code (deterministic)."""
         art = _artifact(ti=1.0)
-        r1 = run_slo_enforcement(art, evaluated_at="2026-01-01T00:00:00+00:00")
-        r2 = run_slo_enforcement(art, evaluated_at="2026-01-01T00:00:00+00:00")
+        r1 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE, evaluated_at="2026-01-01T00:00:00+00:00")
+        r2 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE, evaluated_at="2026-01-01T00:00:00+00:00")
         assert r1["decision_reason_code"] == r2["decision_reason_code"]
         assert r1["decision_status"] == r2["decision_status"]
 
@@ -372,38 +378,38 @@ class TestDeterministicReasonCodes:
 
 class TestSchemaValidation:
     def test_valid_allow_artifact_passes_schema(self):
-        result = run_slo_enforcement(_artifact(ti=1.0))
+        result = run_slo_enforcement(_artifact(ti=1.0), policy=POLICY_PERMISSIVE)
         assert result["schema_errors"] == []
 
     def test_valid_warn_artifact_passes_schema(self):
-        result = run_slo_enforcement(_degraded_artifact())
+        result = run_slo_enforcement(_degraded_artifact(), policy=POLICY_PERMISSIVE)
         assert result["schema_errors"] == []
 
     def test_valid_fail_artifact_passes_schema(self):
-        result = run_slo_enforcement(_invalid_artifact())
+        result = run_slo_enforcement(_invalid_artifact(), policy=POLICY_PERMISSIVE)
         assert result["schema_errors"] == []
 
     def test_missing_ti_artifact_passes_schema(self):
         """Even error-path artifacts should be schema-valid."""
         artifact = _artifact()
         del artifact["traceability_integrity_sli"]
-        result = run_slo_enforcement(artifact)
+        result = run_slo_enforcement(artifact, policy=POLICY_PERMISSIVE)
         assert result["schema_errors"] == []
 
     def test_decision_id_matches_pattern(self):
-        result = run_slo_enforcement(_artifact())
+        result = run_slo_enforcement(_artifact(), policy=POLICY_PERMISSIVE)
         d = result["enforcement_decision"]
         assert d["decision_id"].startswith("ENF-")
 
     def test_contract_version_present(self):
-        result = run_slo_enforcement(_artifact())
+        result = run_slo_enforcement(_artifact(), policy=POLICY_PERMISSIVE)
         d = result["enforcement_decision"]
         assert d["contract_version"] == CONTRACT_VERSION
 
     def test_all_required_fields_present(self):
         schema = _load_enforcement_schema()
         required_fields = set(schema["required"])
-        result = run_slo_enforcement(_artifact())
+        result = run_slo_enforcement(_artifact(), policy=POLICY_PERMISSIVE)
         d = result["enforcement_decision"]
         for field in required_fields:
             assert field in d, f"Required field '{field}' missing from decision artifact"
@@ -412,7 +418,7 @@ class TestSchemaValidation:
         assert _ENFORCEMENT_SCHEMA_PATH.exists()
 
     def test_validate_function_detects_missing_field(self):
-        result = run_slo_enforcement(_artifact())
+        result = run_slo_enforcement(_artifact(), policy=POLICY_PERMISSIVE)
         bad = dict(result["enforcement_decision"])
         del bad["decision_id"]
         errors = validate_slo_enforcement_decision(bad)
@@ -503,7 +509,7 @@ class TestSummaryOutput:
         art_path.write_text(json.dumps(_artifact(ti=1.0)), encoding="utf-8")
         output_path = tmp_path / "decision.json"
         from scripts.run_slo_enforcement import main
-        main([str(art_path), "--output", str(output_path)])
+        main([str(art_path), "--policy", POLICY_PERMISSIVE, "--output", str(output_path)])
         captured = capsys.readouterr()
         assert "allow" in captured.out
 
@@ -512,7 +518,7 @@ class TestSummaryOutput:
         art_path.write_text(json.dumps(_artifact(ti=1.0)), encoding="utf-8")
         output_path = tmp_path / "decision.json"
         from scripts.run_slo_enforcement import main
-        main([str(art_path), "--output", str(output_path)])
+        main([str(art_path), "--policy", POLICY_PERMISSIVE, "--output", str(output_path)])
         captured = capsys.readouterr()
         assert "1.0" in captured.out
 
@@ -521,7 +527,7 @@ class TestSummaryOutput:
         art_path.write_text(json.dumps(_artifact(ti=1.0)), encoding="utf-8")
         output_path = tmp_path / "decision.json"
         from scripts.run_slo_enforcement import main
-        main([str(art_path), "--output", str(output_path)])
+        main([str(art_path), "--policy", POLICY_PERMISSIVE, "--output", str(output_path)])
         captured = capsys.readouterr()
         assert "strict_valid_lineage" in captured.out
 
@@ -541,14 +547,14 @@ class TestBackwardCompatibility:
 
     def test_slo_control_output_accepted_by_enforcement(self):
         slo_artifact = self._slo_evaluation_artifact()
-        result = run_slo_enforcement(slo_artifact)
+        result = run_slo_enforcement(slo_artifact, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] in {
             DECISION_ALLOW, DECISION_ALLOW_WITH_WARNING, DECISION_FAIL
         }
 
     def test_slo_control_output_produces_valid_schema(self):
         slo_artifact = self._slo_evaluation_artifact()
-        result = run_slo_enforcement(slo_artifact)
+        result = run_slo_enforcement(slo_artifact, policy=POLICY_PERMISSIVE)
         assert result["schema_errors"] == []
 
     def test_slo_control_degraded_enforcement_decision(self):
@@ -625,7 +631,7 @@ class TestStageOverride:
         assert d.get("enforcement_scope") == STAGE_SYNTHESIS
 
     def test_no_stage_enforcement_scope_absent(self):
-        result = run_slo_enforcement(_artifact())
+        result = run_slo_enforcement(_artifact(), policy=POLICY_PERMISSIVE)
         d = result["enforcement_decision"]
         assert "enforcement_scope" not in d
 
@@ -637,29 +643,29 @@ class TestStageOverride:
 
 class TestCrashProofing:
     def test_none_input(self):
-        result = run_slo_enforcement(None)
+        result = run_slo_enforcement(None, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert "enforcement_decision" in result
 
     def test_empty_dict_input(self):
-        result = run_slo_enforcement({})
+        result = run_slo_enforcement({}, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
         assert "enforcement_decision" in result
 
     def test_list_input(self):
-        result = run_slo_enforcement([1, 2, 3])
+        result = run_slo_enforcement([1, 2, 3], policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
 
     def test_string_input(self):
-        result = run_slo_enforcement("not an artifact")
+        result = run_slo_enforcement("not an artifact", policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
 
     def test_integer_input(self):
-        result = run_slo_enforcement(42)
+        result = run_slo_enforcement(42, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
 
     def test_deeply_nested_dict_no_ti(self):
-        result = run_slo_enforcement({"nested": {"a": 1}})
+        result = run_slo_enforcement({"nested": {"a": 1}}, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
 
     def test_artifact_with_all_none_values(self):
@@ -669,14 +675,14 @@ class TestCrashProofing:
             "lineage_validation_mode": None,
             "lineage_defaulted": None,
             "lineage_valid": None,
-        })
+        }, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_FAIL
 
     def test_no_exception_on_garbage_input(self):
         """Absolutely no uncaught exception regardless of input."""
         for bad_input in [None, "", 0, [], {}, {"ti": "abc"}, object()]:
             try:
-                result = run_slo_enforcement(bad_input)
+                result = run_slo_enforcement(bad_input, policy=POLICY_PERMISSIVE)
                 assert isinstance(result, dict)
                 assert "decision_status" in result
             except Exception as exc:
@@ -788,17 +794,30 @@ class TestResolveEnforcementPolicy:
         resolved = resolve_enforcement_policy(None, STAGE_SYNTHESIS)
         assert resolved == STAGE_DEFAULT_POLICIES[STAGE_SYNTHESIS]
 
-    def test_default_fallback(self):
-        resolved = resolve_enforcement_policy(None, None)
-        assert resolved == DEFAULT_POLICY
+    def test_missing_policy_and_stage_raises(self):
+        with pytest.raises(PolicyResolutionError):
+            resolve_enforcement_policy(None, None)
 
-    def test_unknown_policy_falls_through_to_stage(self):
-        resolved = resolve_enforcement_policy("unknown_policy", STAGE_SYNTHESIS)
-        assert resolved == STAGE_DEFAULT_POLICIES[STAGE_SYNTHESIS]
+    def test_unknown_policy_raises(self):
+        with pytest.raises(UnknownPolicyError):
+            resolve_enforcement_policy("unknown_policy", STAGE_SYNTHESIS)
 
-    def test_unknown_stage_falls_through_to_default(self):
-        resolved = resolve_enforcement_policy(None, "nonexistent_stage")
-        assert resolved == DEFAULT_POLICY
+    def test_unknown_stage_raises(self):
+        with pytest.raises(UnknownStageError):
+            resolve_enforcement_policy(None, "nonexistent_stage")
+
+
+class TestPolicyResolutionFailures:
+    def test_missing_policy_failure_is_distinct_from_malformed_artifact(self):
+        unresolved = run_slo_enforcement(_artifact())
+        malformed = run_slo_enforcement({"artifact_id": "X"}, policy=POLICY_PERMISSIVE)
+        assert unresolved["decision_reason_code"] == REASON_POLICY_RESOLUTION_FAILED
+        assert malformed["decision_reason_code"] == REASON_MISSING_TI
+
+    def test_unknown_policy_failure_preserves_policy_error(self):
+        result = run_slo_enforcement(_artifact(), policy="unknown_policy")
+        assert result["decision_reason_code"] == REASON_POLICY_RESOLUTION_FAILED
+        assert "Unknown policy name" in result["errors"][0]
 
 
 class TestEvaluateTraceabilityPolicy:
@@ -957,7 +976,7 @@ class TestIntegration:
             "lineage_defaulted": False,
             "lineage_valid": True,
         }
-        result = run_slo_enforcement(raw)
+        result = run_slo_enforcement(raw, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_ALLOW
 
     def test_ti_from_outer_wrapper_slo_evaluation(self):
@@ -973,20 +992,20 @@ class TestIntegration:
             "lineage_defaulted": False,
             "lineage_valid": True,
         }
-        result = run_slo_enforcement(raw)
+        result = run_slo_enforcement(raw, policy=POLICY_PERMISSIVE)
         assert result["decision_status"] == DECISION_ALLOW
 
     def test_decision_id_is_unique_across_calls(self):
         art = _artifact()
-        r1 = run_slo_enforcement(art)
-        r2 = run_slo_enforcement(art)
+        r1 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE)
+        r2 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE)
         assert r1["enforcement_decision"]["decision_id"] != r2["enforcement_decision"]["decision_id"]
 
     def test_evaluated_at_override_is_deterministic(self):
         art = _artifact()
         ts = "2026-06-01T12:00:00+00:00"
-        r1 = run_slo_enforcement(art, evaluated_at=ts)
-        r2 = run_slo_enforcement(art, evaluated_at=ts)
+        r1 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE, evaluated_at=ts)
+        r2 = run_slo_enforcement(art, policy=POLICY_PERMISSIVE, evaluated_at=ts)
         assert r1["enforcement_decision"]["evaluated_at"] == ts
         assert r2["enforcement_decision"]["evaluated_at"] == ts
 
