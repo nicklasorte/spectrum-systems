@@ -1,0 +1,31 @@
+{
+  "repair_prompt_artifact_id": "repair-prompt-wi-001-20260322T001000Z",
+  "work_item_id": "wi-001",
+  "source_findings_artifact_path": "artifacts/prompt_queue/findings/wi-001.findings.json",
+  "source_review_artifact_path": "docs/reviews/2026-03-22-baf-closure-review.md",
+  "review_provider": "claude",
+  "fallback_used": false,
+  "fallback_reason": null,
+  "review_decision": "FAIL",
+  "prompt_generation_status": "generated",
+  "prompt_scope_summary": "Implement required fixes from FAIL findings for work item wi-001 in a single bounded patch.",
+  "prompt_text": "Motivation\n- Repair FAIL review findings for work item wi-001 using a single bounded implementation pass.\n\nScope\n- Apply required fixes and include only critical context that materially explains those fixes.\n\nRequired fixes\n1. [required_fixes-1] Add explicit caller-boundary guard in `spectrum_systems/modules/runtime/enforcement_engine.py`.\n\nLikely files involved\n- `spectrum_systems/modules/runtime/enforcement_engine.py`\n- `tests/test_enforcement_engine.py`\n\nTests to run\n- pytest -q tests/test_enforcement_engine.py\n\nImplementation constraints\n- Keep changes deterministic and scoped to listed required fixes.\n- Do not claim full closure of optional improvements in this patch.\n\nNot in scope\n- `optional_improvements-1`: Plan migration to retire legacy compatibility paths in a follow-up prompt.\n\nMandatory delivery contract\n- Return intent, architecture, guarantees, tests mapped to guarantees, and remaining gaps.",
+  "required_fixes_count": 1,
+  "critical_findings_count": 1,
+  "likely_files": [
+    "spectrum_systems/modules/runtime/enforcement_engine.py",
+    "tests/test_enforcement_engine.py"
+  ],
+  "suggested_test_commands": [
+    "pytest -q tests/test_enforcement_engine.py"
+  ],
+  "bounded_not_in_scope": [
+    "optional_improvements-1: Plan migration to retire legacy compatibility paths in a follow-up prompt."
+  ],
+  "finding_ids_included": [
+    "required_fixes-1",
+    "critical_findings-1"
+  ],
+  "generated_at": "2026-03-22T00:10:00Z",
+  "generator_version": "1.0.0"
+}

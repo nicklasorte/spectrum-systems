@@ -68,7 +68,8 @@
         "review_fallback_reason",
         "findings_artifact_path",
         "created_at",
-        "updated_at"
+        "updated_at",
+        "repair_prompt_artifact_path"
       ],
       "properties": {
         "work_item_id": {
@@ -100,6 +101,7 @@
             "review_fallback_running",
             "review_complete",
             "findings_parsed",
+            "repair_prompt_generated",
             "blocked"
           ]
         },
@@ -181,6 +183,13 @@
           "format": "date-time"
         },
         "findings_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "repair_prompt_artifact_path": {
           "type": [
             "string",
             "null"

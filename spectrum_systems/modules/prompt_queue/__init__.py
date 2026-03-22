@@ -9,6 +9,18 @@ from spectrum_systems.modules.prompt_queue.findings_normalizer import (
     default_findings_path,
 )
 from spectrum_systems.modules.prompt_queue.findings_queue_integration import attach_findings_to_work_item
+from spectrum_systems.modules.prompt_queue.repair_prompt_artifact_io import (
+    validate_repair_prompt_artifact,
+    write_repair_prompt_artifact,
+)
+from spectrum_systems.modules.prompt_queue.repair_prompt_generator import (
+    RepairPromptGenerationError,
+    default_repair_prompt_path,
+    generate_repair_prompt_artifact,
+)
+from spectrum_systems.modules.prompt_queue.repair_prompt_queue_integration import (
+    attach_repair_prompt_to_work_item,
+)
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_queue_state,
     validate_review_attempt,
@@ -27,6 +39,12 @@ from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
 
 __all__ = [
+    "write_repair_prompt_artifact",
+    "validate_repair_prompt_artifact",
+    "generate_repair_prompt_artifact",
+    "default_repair_prompt_path",
+    "attach_repair_prompt_to_work_item",
+    "RepairPromptGenerationError",
     "IllegalTransitionError",
     "Priority",
     "ProviderResult",
