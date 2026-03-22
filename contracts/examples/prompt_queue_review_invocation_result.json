@@ -1,5 +1,6 @@
 {
   "review_invocation_result_artifact_id": "review-invocation-result-001",
+  "invocation_id": "inv-2bbf7d6b40301d9b",
   "work_item_id": "wi-001",
   "parent_work_item_id": null,
   "review_trigger_artifact_path": "artifacts/prompt_queue/review_triggers/wi-001.review_trigger.json",

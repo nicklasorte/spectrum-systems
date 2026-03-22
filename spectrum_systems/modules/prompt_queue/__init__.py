@@ -128,6 +128,29 @@ from spectrum_systems.modules.prompt_queue.queue_models import (
 from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
 from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_review_markdown
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
+from spectrum_systems.modules.prompt_queue.review_invocation_entry_validation import (
+    ReviewInvocationEntryValidationError,
+    validate_review_invocation_entry,
+)
+from spectrum_systems.modules.prompt_queue.review_invocation_provider_adapter import (
+    InvocationProviderOutcome,
+    InvocationProviderResult,
+    ReviewInvocationProviderError,
+    invoke_review_provider,
+)
+from spectrum_systems.modules.prompt_queue.review_invocation_runner import (
+    build_invocation_id,
+    run_live_review_invocation,
+)
+from spectrum_systems.modules.prompt_queue.review_invocation_artifact_io import (
+    ReviewInvocationArtifactIOError,
+    default_review_invocation_result_path,
+    write_review_invocation_result_artifact,
+)
+from spectrum_systems.modules.prompt_queue.review_invocation_queue_integration import (
+    ReviewInvocationQueueIntegrationError,
+    apply_live_review_invocation,
+)
 from spectrum_systems.modules.prompt_queue.review_invocation_guard import (
     DuplicateReviewInvocationError,
     assert_no_duplicate_review_invocation,
@@ -215,4 +238,17 @@ __all__ = [
     "validate_work_item",
     "write_artifact",
     "write_findings_artifact",
+    "ReviewInvocationEntryValidationError",
+    "validate_review_invocation_entry",
+    "InvocationProviderOutcome",
+    "InvocationProviderResult",
+    "ReviewInvocationProviderError",
+    "invoke_review_provider",
+    "build_invocation_id",
+    "run_live_review_invocation",
+    "ReviewInvocationArtifactIOError",
+    "default_review_invocation_result_path",
+    "write_review_invocation_result_artifact",
+    "ReviewInvocationQueueIntegrationError",
+    "apply_live_review_invocation",
 ]

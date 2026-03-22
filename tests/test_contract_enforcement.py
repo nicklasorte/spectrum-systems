@@ -483,7 +483,7 @@ def test_standards_manifest_registers_prompt_queue_review_findings_contract() ->
 def test_standards_manifest_registers_prompt_queue_review_invocation_result_contract() -> None:
     standards = load_standards_contracts()
     assert "prompt_queue_review_invocation_result" in standards
-    assert standards["prompt_queue_review_invocation_result"]["schema_version"] == "1.0.0"
+    assert standards["prompt_queue_review_invocation_result"]["schema_version"] == "1.1.0"
     assert standards["prompt_queue_review_invocation_result"]["example_path"] == (
         "contracts/examples/prompt_queue_review_invocation_result.json"
     )
