@@ -1,0 +1,14 @@
+{
+  "review_attempt_id": "attempt-001",
+  "work_item_id": "wi-001",
+  "provider_requested": "claude",
+  "provider_used": "claude",
+  "fallback_used": false,
+  "fallback_reason": null,
+  "attempt_number": 1,
+  "outcome_status": "success",
+  "started_at": "2026-03-22T00:01:00Z",
+  "ended_at": "2026-03-22T00:02:00Z",
+  "review_artifact_path": "artifacts/prompt_queue/review-attempt-001.json",
+  "error_message": null
+}

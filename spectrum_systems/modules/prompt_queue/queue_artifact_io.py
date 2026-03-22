@@ -1,0 +1,44 @@
+"""Artifact validation and IO for governed prompt queue MVP."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from jsonschema import Draft202012Validator, FormatChecker
+
+from spectrum_systems.contracts import load_schema
+
+
+class ArtifactValidationError(ValueError):
+    """Raised when artifact validation fails."""
+
+
+def validate_work_item(work_item: dict) -> None:
+    _validate(work_item, "prompt_queue_work_item")
+
+
+def validate_queue_state(queue_state: dict) -> None:
+    _validate(queue_state, "prompt_queue_state")
+
+
+def validate_review_attempt(review_attempt: dict) -> None:
+    _validate(review_attempt, "prompt_queue_review_attempt")
+
+
+def _validate(instance: Any, schema_name: str) -> None:
+    schema = load_schema(schema_name)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(instance), key=lambda e: str(e.path))
+    if errors:
+        raise ArtifactValidationError(
+            "; ".join(error.message for error in errors)
+        )
+
+
+def write_artifact(artifact: dict, output_path: Path) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(artifact, handle, indent=2)
+    return output_path

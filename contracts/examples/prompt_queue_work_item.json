@@ -1,0 +1,22 @@
+{
+  "work_item_id": "wi-001",
+  "parent_work_item_id": null,
+  "prompt_id": "prompt-gpq-001",
+  "title": "Governed queue MVP review",
+  "status": "queued",
+  "priority": "high",
+  "risk_level": "medium",
+  "repo": "spectrum-systems",
+  "branch": "feature/prompt-queue",
+  "scope_paths": [
+    "spectrum_systems/modules/prompt_queue",
+    "contracts/schemas"
+  ],
+  "review_provider_primary": "claude",
+  "review_provider_actual": null,
+  "review_attempt_count": 0,
+  "review_fallback_used": false,
+  "review_fallback_reason": null,
+  "created_at": "2026-03-22T00:00:00Z",
+  "updated_at": "2026-03-22T00:00:00Z"
+}
