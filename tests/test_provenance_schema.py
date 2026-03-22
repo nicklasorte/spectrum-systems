@@ -29,6 +29,8 @@ def test_governance_provenance_missing_policy_id_fails_validation() -> None:
 def test_shared_provenance_requires_policy_id_and_version_bump() -> None:
     schema = _load_json(REPO_ROOT / "schemas" / "provenance-schema.json")
     assert "policy_id" in schema["required"]
+    assert "trace_id" in schema["required"]
+    assert "span_id" in schema["required"]
     assert schema["properties"]["schema_version"]["const"] == "1.1.0"
 
 
@@ -44,6 +46,29 @@ def test_shared_provenance_missing_policy_id_fails_validation() -> None:
         "generated_by_system": "SYS-TEST",
         "generated_by_repo": "nicklasorte/spectrum-systems",
         "generated_by_version": "abc1234",
+        "trace_id": "11111111-1111-4111-8111-111111111111",
+        "span_id": "22222222-2222-4222-8222-222222222222",
+        "schema_version": "1.1.0",
+        "created_at": "2026-03-22T00:00:00Z",
+        "updated_at": "2026-03-22T00:00:00Z",
+    }
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(instance=payload, schema=schema)
+
+
+def test_shared_provenance_missing_trace_context_fails_validation() -> None:
+    schema = _load_json(REPO_ROOT / "schemas" / "provenance-schema.json")
+    payload = {
+        "record_id": "PRV-TEST-001",
+        "record_type": "artifact",
+        "source_document": "unit-test",
+        "source_revision": "rev1",
+        "workflow_name": "test-workflow",
+        "workflow_step": "test-step",
+        "generated_by_system": "SYS-TEST",
+        "generated_by_repo": "nicklasorte/spectrum-systems",
+        "generated_by_version": "abc1234",
+        "policy_id": "regression-policy-v1.0.0",
         "schema_version": "1.1.0",
         "created_at": "2026-03-22T00:00:00Z",
         "updated_at": "2026-03-22T00:00:00Z",

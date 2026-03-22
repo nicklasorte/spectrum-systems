@@ -14,6 +14,9 @@ import csv
 import json
 import hashlib
 
+from shared.adapters.artifact_emitter import create_provenance_record
+from spectrum_systems.modules.runtime.trace_engine import validate_trace_context
+
 from .load_config import StudyConfig
 from .pipeline import Deployment, InterferenceResult, PathLossResult, ProtectionZone
 
@@ -33,22 +36,35 @@ def _build_run_id(config: StudyConfig) -> str:
     return f"run-{digest}"
 
 
-def _provenance_record(run_id: str, workflow_step: str, timestamp: str) -> dict:
-    return {
-        "record_id": f"PRV-{run_id}-{workflow_step}",
-        "record_type": "artifact",
-        "source_document": "study_config",
-        "source_revision": "rev0",
-        "workflow_name": "spectrum-study-compiler",
-        "workflow_step": workflow_step,
-        "generated_by_system": "SYS-004 Spectrum Study Compiler",
-        "generated_by_repo": "nicklasorte/spectrum-systems",
-        "generated_by_version": "design-notebook",
-        "policy_id": "study-output-governance-v1.0.0",
-        "schema_version": "1.1.0",
-        "created_at": timestamp,
-        "updated_at": timestamp,
-    }
+def _provenance_record(
+    *,
+    run_id: str,
+    workflow_step: str,
+    source_document: str,
+    source_revision: str,
+    generated_by_version: str,
+    policy_id: str,
+    trace_id: str,
+    span_id: str,
+    timestamp: str,
+) -> dict:
+    normalized_run_id = run_id.upper()
+    return create_provenance_record(
+        record_id=f"PRV-{normalized_run_id}-{workflow_step.upper()}",
+        record_type="artifact",
+        source_document=source_document,
+        source_revision=source_revision,
+        workflow_name="spectrum-study-compiler",
+        workflow_step=workflow_step,
+        generated_by_system="SYS-004 Spectrum Study Compiler",
+        generated_by_repo="nicklasorte/spectrum-systems",
+        generated_by_version=generated_by_version,
+        policy_id=policy_id,
+        trace_id=trace_id,
+        span_id=span_id,
+        created_at=timestamp,
+        updated_at=timestamp,
+    )
 
 
 def _write_csv(rows: List[dict], output_path: Path) -> None:
@@ -164,11 +180,38 @@ def write_study_summary(
     study_summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def write_outputs(config: StudyConfig, pipeline_outputs: dict, logger) -> Dict[str, str]:
+def write_outputs(
+    config: StudyConfig,
+    pipeline_outputs: dict,
+    logger,
+    *,
+    policy_id: str,
+    generated_by_version: str,
+    source_revision: str,
+    trace_id: str,
+    span_id: str,
+) -> Dict[str, str]:
+    trace_errors = validate_trace_context(trace_id, span_id)
+    if trace_errors:
+        raise ValueError(
+            "artifact_writer requires valid trace context before writing outputs: "
+            + "; ".join(trace_errors)
+        )
+
     base_dirs = _ensure_dirs(Path("outputs"))
     timestamp = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
     run_id = _build_run_id(config)
-    provenance = _provenance_record(run_id, "run_pipeline", timestamp)
+    provenance = _provenance_record(
+        run_id=run_id,
+        workflow_step="run_pipeline",
+        source_document=str(config.config_path),
+        source_revision=source_revision,
+        generated_by_version=generated_by_version,
+        policy_id=policy_id,
+        trace_id=trace_id,
+        span_id=span_id,
+        timestamp=timestamp,
+    )
 
     tables_metadata = write_tables(
         pipeline_outputs["tables"], base_dirs["tables"], provenance=provenance

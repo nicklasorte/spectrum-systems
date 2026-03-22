@@ -30,6 +30,7 @@ Usage::
         module_origin="spectrum-pipeline-engine",
         lifecycle_state="evaluated",
         contract_version="1.0.0",
+        policy_id="regression-policy-v1.0.0",
     )
     lineage = create_lineage_record(
         artifact_id="EVAL-PIPELINE-2026-001",
@@ -44,13 +45,19 @@ Usage::
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from jsonschema import Draft202012Validator, FormatChecker
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _DATA_ROOT = _REPO_ROOT / "data"
+_AUTHORITATIVE_PROVENANCE_SCHEMA_PATH = _REPO_ROOT / "schemas" / "provenance-schema.json"
+_ARTIFACT_METADATA_SCHEMA_PATH = _REPO_ROOT / "shared" / "artifact_models" / "artifact_metadata.schema.json"
+_POLICY_ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]*-v\d+\.\d+\.\d+$")
 
 # Valid lifecycle states (mirrors lifecycle_states.json)
 _VALID_LIFECYCLE_STATES = frozenset({
@@ -76,6 +83,7 @@ def create_artifact_metadata(
     module_origin: str,
     lifecycle_state: str,
     contract_version: str,
+    policy_id: str,
     schema_version: str = "1.0.0",
     run_id: Optional[str] = None,
     created_at: Optional[str] = None,
@@ -91,6 +99,7 @@ def create_artifact_metadata(
     _require_non_empty("artifact_type", artifact_type)
     _require_non_empty("module_origin", module_origin)
     _require_non_empty("contract_version", contract_version)
+    _require_policy_id(policy_id)
     _require_lifecycle_state(lifecycle_state)
 
     record: Dict[str, Any] = {
@@ -100,10 +109,65 @@ def create_artifact_metadata(
         "created_at": created_at or _now_iso(),
         "lifecycle_state": lifecycle_state,
         "contract_version": contract_version,
+        "policy_id": policy_id,
         "schema_version": schema_version,
     }
     if run_id:
         record["run_id"] = run_id
+    _validate_artifact_metadata_record(record)
+    return record
+
+
+def create_provenance_record(
+    *,
+    record_id: str,
+    record_type: str,
+    source_document: str,
+    source_revision: str,
+    workflow_name: str,
+    workflow_step: str,
+    generated_by_system: str,
+    generated_by_repo: str,
+    generated_by_version: str,
+    policy_id: str,
+    trace_id: str,
+    span_id: str,
+    created_at: Optional[str] = None,
+    updated_at: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Build and validate provenance for the primary runtime emission path."""
+    _require_non_empty("record_id", record_id)
+    _require_non_empty("record_type", record_type)
+    _require_non_empty("source_document", source_document)
+    _require_non_empty("source_revision", source_revision)
+    _require_non_empty("workflow_name", workflow_name)
+    _require_non_empty("workflow_step", workflow_step)
+    _require_non_empty("generated_by_system", generated_by_system)
+    _require_non_empty("generated_by_repo", generated_by_repo)
+    _require_non_empty("generated_by_version", generated_by_version)
+    _require_policy_id(policy_id)
+    _require_non_empty("trace_id", trace_id)
+    _require_non_empty("span_id", span_id)
+
+    now = _now_iso()
+    record: Dict[str, Any] = {
+        "record_id": record_id,
+        "record_type": record_type,
+        "source_document": source_document,
+        "source_revision": source_revision,
+        "workflow_name": workflow_name,
+        "workflow_step": workflow_step,
+        "generated_by_system": generated_by_system,
+        "generated_by_repo": generated_by_repo,
+        "generated_by_version": generated_by_version,
+        "policy_id": policy_id,
+        "trace_id": trace_id,
+        "span_id": span_id,
+        "schema_version": "1.1.0",
+        "created_at": created_at or now,
+        "updated_at": updated_at or now,
+    }
+    _validate_provenance_record(record)
     return record
 
 
@@ -361,3 +425,28 @@ def _require_lifecycle_state(state: str) -> None:
             f"lifecycle_state '{state}' is not recognised. "
             f"Valid states: {sorted(_VALID_LIFECYCLE_STATES)}"
         )
+
+
+def _require_policy_id(policy_id: str) -> None:
+    _require_non_empty("policy_id", policy_id)
+    if _POLICY_ID_PATTERN.fullmatch(policy_id) is None:
+        raise ValueError(
+            "policy_id must match pattern "
+            "'^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+$'"
+        )
+
+
+def _validate_artifact_metadata_record(record: Dict[str, Any]) -> None:
+    schema = json.loads(_ARTIFACT_METADATA_SCHEMA_PATH.read_text(encoding="utf-8"))
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(record), key=lambda err: list(err.path))
+    if errors:
+        raise ValueError(f"artifact metadata schema validation failed: {errors[0].message}")
+
+
+def _validate_provenance_record(record: Dict[str, Any]) -> None:
+    schema = json.loads(_AUTHORITATIVE_PROVENANCE_SCHEMA_PATH.read_text(encoding="utf-8"))
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(record), key=lambda err: list(err.path))
+    if errors:
+        raise ValueError(f"provenance schema validation failed: {errors[0].message}")

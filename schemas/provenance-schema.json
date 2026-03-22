@@ -16,6 +16,8 @@
     "generated_by_repo",
     "generated_by_version",
     "policy_id",
+    "trace_id",
+    "span_id",
     "schema_version",
     "created_at",
     "updated_at"
@@ -81,6 +83,16 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+$",
       "description": "Explicit governing policy identifier with semantic version suffix."
+    },
+    "trace_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Trace identifier linking this record to runtime trace context."
+    },
+    "span_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Span identifier that produced the artifact in the runtime trace."
     },
     "prompt_version": {
       "type": "string",
