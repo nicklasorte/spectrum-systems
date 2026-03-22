@@ -5,6 +5,7 @@ import pytest
 from spectrum_systems.modules.evaluation.eval_dataset_registry import (
     EvalDatasetRegistryError,
     build_eval_dataset,
+    build_registry_snapshot,
     evaluate_dataset_membership,
 )
 
@@ -145,6 +146,21 @@ def test_policy_rejection_of_manual_cases() -> None:
     assert result["admission_reason_code"] == "retired_source"
 
 
+def test_policy_rejection_of_manual_failure_cases() -> None:
+    policy = _policy()
+    policy["allow_manual_cases"] = False
+    member = {
+        "artifact_type": "failure_eval_case",
+        "artifact_id": "fail-manual",
+        "artifact_version": "1.0.0",
+        "source": "manual",
+        "provenance_ref": "trace://fail-manual",
+    }
+    result = evaluate_dataset_membership(member, policy, seen_keys=set())
+    assert result["admission_status"] == "rejected"
+    assert result["admission_reason_code"] == "retired_source"
+
+
 def test_deterministic_summary_counts() -> None:
     dataset = build_eval_dataset(_dataset(), _policy())
     assert dataset["summary"] == {
@@ -153,6 +169,106 @@ def test_deterministic_summary_counts() -> None:
         "rejected_members": 0,
         "contains_failure_generated_cases": True,
     }
+
+
+def test_duplicate_resolution_is_permutation_invariant() -> None:
+    members = [
+        {
+            "artifact_type": "eval_case",
+            "artifact_id": "dup-1",
+            "artifact_version": "1.0.0",
+            "source": "manual",
+            "provenance_ref": "trace://z-manual",
+        },
+        {
+            "artifact_type": "eval_case",
+            "artifact_id": "dup-1",
+            "artifact_version": "1.0.0",
+            "source": "imported",
+            "provenance_ref": "trace://a-imported",
+        },
+        {
+            "artifact_type": "failure_eval_case",
+            "artifact_id": "fail-1",
+            "artifact_version": "1.0.0",
+            "source": "generated_failure",
+            "provenance_ref": "trace://fail-1",
+        },
+    ]
+    dataset_a = _dataset()
+    dataset_b = _dataset()
+    dataset_a["members"] = members
+    dataset_b["members"] = list(reversed(members))
+
+    built_a = build_eval_dataset(dataset_a, _policy())
+    built_b = build_eval_dataset(dataset_b, _policy())
+
+    assert built_a["summary"] == built_b["summary"]
+    assert built_a["members"] == built_b["members"]
+
+
+def test_contains_failure_generated_cases_tracks_admitted_generated_source() -> None:
+    dataset = _dataset()
+    dataset["members"] = [
+        {
+            "artifact_type": "failure_eval_case",
+            "artifact_id": "fail-imported",
+            "artifact_version": "1.0.0",
+            "source": "imported",
+            "provenance_ref": "trace://fail-imported",
+        }
+    ]
+    built = build_eval_dataset(dataset, _policy())
+    assert built["summary"]["contains_failure_generated_cases"] is False
+
+
+def test_contains_failure_generated_cases_excludes_rejected_generated_source() -> None:
+    dataset = _dataset()
+    dataset["members"] = [
+        {
+            "artifact_type": "eval_case",
+            "artifact_id": "eval-allowed",
+            "artifact_version": "1.0.0",
+            "source": "manual",
+            "provenance_ref": "trace://eval-allowed",
+        },
+        {
+            "artifact_type": "failure_eval_case",
+            "artifact_id": "fail-generated",
+            "artifact_version": "1.0.0",
+            "source": "generated_failure",
+            "provenance_ref": "trace://fail-generated",
+        },
+    ]
+    policy = _policy()
+    policy["allow_failure_generated_cases"] = False
+    built = build_eval_dataset(dataset, policy)
+    assert built["summary"]["contains_failure_generated_cases"] is False
+
+
+def test_membership_rejects_unsupported_source_at_admission_boundary() -> None:
+    member = {
+        "artifact_type": "eval_case",
+        "artifact_id": "eval-malformed",
+        "artifact_version": "1.0.0",
+        "source": "unknown_source",
+        "provenance_ref": "trace://eval-malformed",
+    }
+    result = evaluate_dataset_membership(member, _policy(), seen_keys=set())
+    assert result["admission_status"] == "rejected"
+    assert result["admission_reason_code"] == "invalid_contract"
+
+
+def test_snapshot_rejects_active_policy_mismatch() -> None:
+    dataset = build_eval_dataset(_dataset(), _policy())
+    with pytest.raises(EvalDatasetRegistryError, match="active_policy_id mismatch"):
+        build_registry_snapshot(
+            snapshot_id="snapshot-1",
+            trace_id="trace-1",
+            run_id="run-1",
+            active_policy_id="policy-other",
+            datasets=[dataset],
+        )
 
 
 def test_fail_closed_on_malformed_input() -> None:

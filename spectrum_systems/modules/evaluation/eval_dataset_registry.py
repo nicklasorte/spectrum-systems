@@ -53,11 +53,15 @@ def evaluate_dataset_membership(
     source = str(member["source"])
     provenance_ref = str(member["provenance_ref"])
     key = f"{artifact_type}:{member['artifact_id']}:{member['artifact_version']}"
+    allowed_sources = {"manual", "generated_failure", "imported"}
 
     status = "admitted"
     reason = "meets_policy"
 
-    if artifact_type not in set(policy["applies_to_artifact_types"]):
+    if source not in allowed_sources:
+        status = "rejected"
+        reason = "invalid_contract"
+    elif artifact_type not in set(policy["applies_to_artifact_types"]):
         status = "rejected"
         reason = "invalid_contract"
     elif policy["require_provenance"] and not provenance_ref.strip():
@@ -66,7 +70,7 @@ def evaluate_dataset_membership(
     elif source == "generated_failure" and not policy["allow_failure_generated_cases"]:
         status = "rejected"
         reason = "retired_source"
-    elif source == "manual" and artifact_type == "eval_case" and not policy["allow_manual_cases"]:
+    elif source == "manual" and not policy["allow_manual_cases"]:
         status = "rejected"
         reason = "retired_source"
     elif seen_keys is not None and key in seen_keys and policy["duplicate_handling"] == "reject":
@@ -116,15 +120,35 @@ def build_eval_dataset(dataset: dict[str, Any], policy: dict[str, Any]) -> dict[
     if not isinstance(members, list) or not members:
         raise EvalDatasetRegistryError("dataset members must be a non-empty list")
 
+    # Canonicalize members before duplicate evaluation so duplicate outcomes are
+    # permutation-invariant for the same logical member set. Duplicate identity
+    # fields are (artifact_type, artifact_id, artifact_version), and we use
+    # source + provenance_ref as explicit deterministic tie-breakers for members
+    # that share the duplicate key.
+    canonical_members = sorted(
+        members,
+        key=lambda member: (
+            str(member.get("artifact_type", "")),
+            str(member.get("artifact_id", "")),
+            str(member.get("artifact_version", "")),
+            str(member.get("source", "")),
+            str(member.get("provenance_ref", "")),
+        ),
+    )
+
     seen_keys: set[str] = set()
     evaluated_members = [
         evaluate_dataset_membership(member, policy, seen_keys=seen_keys)
-        for member in members
+        for member in canonical_members
     ]
 
     admitted = sum(1 for m in evaluated_members if m["admission_status"] == "admitted")
     rejected = len(evaluated_members) - admitted
-    contains_failure = any(m["artifact_type"] == "failure_eval_case" for m in evaluated_members)
+    # This field tracks admitted generated-failure provenance, not artifact type.
+    contains_failure = any(
+        m["admission_status"] == "admitted" and m["source"] == "generated_failure"
+        for m in evaluated_members
+    )
 
     artifact = {
         "artifact_type": "eval_dataset",
@@ -196,6 +220,13 @@ def build_registry_snapshot(
             raise EvalDatasetRegistryError("registry snapshot received invalid dataset") from exc
 
         summary = dataset["summary"]
+        dataset_policy_id = str(dataset["admission_policy_id"])
+        if dataset_policy_id != active_policy_id:
+            raise EvalDatasetRegistryError(
+                "registry snapshot active_policy_id mismatch: "
+                f"dataset {dataset['dataset_id']} uses {dataset_policy_id}, "
+                f"snapshot requested {active_policy_id}"
+            )
         approved_for_use = dataset["status"] == "approved" and summary["admitted_members"] >= 1
         dataset_entries.append(
             {
