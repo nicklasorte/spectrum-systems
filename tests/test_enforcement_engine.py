@@ -108,6 +108,33 @@ def test_legacy_enforce_budget_decision_emits_deprecation_warning() -> None:
     assert any(issubclass(w.category, DeprecationWarning) for w in caught)
 
 
+def test_legacy_enforce_budget_decision_rejects_unapproved_callers() -> None:
+    legacy_decision = {
+        "artifact_type": "evaluation_budget_decision",
+        "schema_version": "1.0.0",
+        "decision_id": "legacy-2",
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "run_id": "run-2",
+        "system_status": "healthy",
+        "system_response": "allow",
+        "reasons": ["legacy"],
+    }
+
+    module_source = """
+from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
+
+def call_legacy(decision):
+    return enforce_budget_decision(decision)
+"""
+    namespace: dict = {"__name__": "manual_script"}
+    exec(module_source, namespace)
+    with pytest.raises(
+        EnforcementError,
+        match="restricted to explicitly approved legacy callers",
+    ):
+        namespace["call_legacy"](legacy_decision)
+
+
 def test_no_non_test_callers_of_legacy_enforcement_path() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     callers = []

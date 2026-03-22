@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import uuid
 import warnings
+from inspect import stack
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
 
@@ -134,6 +135,27 @@ _LEGACY_ACTION_MAP: Dict[str, Tuple[str, bool, str]] = {
     "block": ("block", False, "blocked"),
 }
 
+_LEGACY_CALLER_ALLOWLIST = (
+    "spectrum_systems.modules.runtime.control_executor",
+    "tests.",
+)
+
+
+def _legacy_caller_is_allowed() -> bool:
+    for frame in stack(context=0):
+        module_name = frame.frame.f_globals.get("__name__")
+        if not isinstance(module_name, str):
+            continue
+        if module_name == __name__:
+            continue
+        if module_name.startswith("test_"):
+            return True
+        return any(
+            module_name == allowed or module_name.startswith(allowed)
+            for allowed in _LEGACY_CALLER_ALLOWLIST
+        )
+    return False
+
 
 def _validate_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
     errors = _validate(decision, "evaluation_budget_decision")
@@ -142,6 +164,10 @@ def _validate_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
 
 def enforce_budget_decision(decision: dict) -> dict:
     """Legacy budget-decision mapper retained for backward compatibility."""
+    if not _legacy_caller_is_allowed():
+        raise EnforcementError(
+            "enforce_budget_decision is restricted to explicitly approved legacy callers"
+        )
     warnings.warn(
         "enforce_budget_decision is deprecated; use enforce_control_decision for canonical BAF enforcement.",
         DeprecationWarning,
