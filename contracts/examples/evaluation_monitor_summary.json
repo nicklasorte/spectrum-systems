@@ -1,6 +1,12 @@
 {
   "summary_id": "summary-example-001",
   "trace_id": "trace-example-001",
+  "source_record_ids": [
+    "record-example-001"
+  ],
+  "source_trace_ids": [
+    "trace-example-001"
+  ],
   "generated_at": "2026-03-21T00:00:00Z",
   "window": {
     "record_count": 1

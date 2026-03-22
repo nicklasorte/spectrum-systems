@@ -121,6 +121,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BAF-ENFORCEMENT-WIRING-FIX-2026-03-22.md | Prompt BAF — Enforcement Wiring trust-boundary remediation | Active |
 | docs/review-actions/PLAN-BAJ-PROVENANCE-HARDENING-PHASE1-2026-03-22.md | BAJ Provenance Hardening — Phase 1 narrow spine fix | Active |
 | docs/review-actions/PLAN-BAE-HARDENING-2026-03-22.md | BAE hardening patch — observe/enforce fail-closed fixes | Active |
+| docs/review-actions/PLAN-BAE-INTERPRET-HARDENING-2026-03-22.md | BAE interpret hardening patch — semantics and provenance integrity | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-MVP-2026-03-22.md | Governed Prompt Queue MVP — orchestration backbone | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REVIEW-PARSING-2026-03-22.md | Governed prompt queue review parsing — structured findings extraction | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-REPAIR-PROMPT-2026-03-22.md | Governed prompt queue repair prompt generation — findings→repair artifact | Active |
