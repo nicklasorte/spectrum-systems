@@ -42,6 +42,16 @@ from spectrum_systems.modules.prompt_queue.loop_control_queue_integration import
     LoopControlQueueIntegrationError,
     apply_loop_control_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.loop_continuation import LoopContinuationError, run_loop_continuation
+from spectrum_systems.modules.prompt_queue.loop_continuation_artifact_io import (
+    LoopContinuationArtifactIOError,
+    default_loop_continuation_path,
+    write_loop_continuation_artifact,
+)
+from spectrum_systems.modules.prompt_queue.loop_continuation_queue_integration import (
+    LoopContinuationQueueIntegrationError,
+    apply_loop_continuation_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.post_execution_artifact_io import (
     validate_post_execution_decision_artifact,
     write_post_execution_decision_artifact,
@@ -136,6 +146,7 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_findings_reentry,
+    validate_loop_continuation,
     validate_queue_state,
     validate_review_parsing_handoff,
     validate_review_invocation_result,
@@ -207,6 +218,13 @@ __all__ = [
     "LoopControlPolicyError",
     "apply_loop_control_decision_to_queue",
     "LoopControlQueueIntegrationError",
+    "run_loop_continuation",
+    "LoopContinuationError",
+    "default_loop_continuation_path",
+    "write_loop_continuation_artifact",
+    "LoopContinuationArtifactIOError",
+    "apply_loop_continuation_to_queue",
+    "LoopContinuationQueueIntegrationError",
     "write_post_execution_decision_artifact",
     "write_review_trigger_artifact",
     "validate_review_trigger_artifact",
@@ -266,6 +284,7 @@ __all__ = [
     "has_duplicate_review_invocation_result",
     "validate_findings_artifact",
     "validate_findings_reentry",
+    "validate_loop_continuation",
     "validate_queue_state",
     "validate_review_parsing_handoff",
     "validate_review_invocation_result",

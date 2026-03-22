@@ -1,0 +1,16 @@
+{
+  "loop_continuation_artifact_id": "loop-continuation-wi-001-20260322T000200Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": null,
+  "findings_reentry_artifact_path": "artifacts/prompt_queue/findings_reentries/wi-001.findings_reentry.json",
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-001.repair_prompt.json",
+  "loop_control_decision_artifact_path": "artifacts/prompt_queue/loop_control/wi-001.loop_control_decision.json",
+  "spawned_child_work_item_id": "wi-001.repair.1",
+  "continuation_status": "child_spawned",
+  "continuation_reason_code": "continuation_child_spawned",
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "warnings": [],
+  "blocking_conditions": [],
+  "generated_at": "2026-03-22T00:02:00Z",
+  "generator_version": "prompt_queue_loop_continuation.v1"
+}

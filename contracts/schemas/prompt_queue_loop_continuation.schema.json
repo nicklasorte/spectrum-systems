@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_loop_continuation.schema.json",
+  "title": "Prompt Queue Loop Continuation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "loop_continuation_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "findings_reentry_artifact_path",
+    "repair_prompt_artifact_path",
+    "loop_control_decision_artifact_path",
+    "spawned_child_work_item_id",
+    "continuation_status",
+    "continuation_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "loop_continuation_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "findings_reentry_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repair_prompt_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loop_control_decision_artifact_path": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "spawned_child_work_item_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "continuation_status": {
+      "type": "string",
+      "enum": [
+        "child_spawned",
+        "continuation_blocked",
+        "continuation_not_needed",
+        "continuation_failed"
+      ]
+    },
+    "continuation_reason_code": {
+      "type": "string",
+      "enum": [
+        "continuation_child_spawned",
+        "continuation_blocked_loop_control",
+        "continuation_blocked_duplicate_spawn",
+        "continuation_not_needed_reentry_not_completed",
+        "continuation_failed_invalid_lineage",
+        "continuation_failed_child_creation"
+      ]
+    },
+    "source_queue_state_path": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

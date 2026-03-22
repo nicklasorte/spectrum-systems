@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.27",
+  "artifact_version": "1.0.28",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-FINDINGS-REENTRY",
+  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-LOOP-CONTINUATION",
   "run_id": "run-20260322T000000Z",
   "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
@@ -702,26 +702,26 @@
     {
       "artifact_type": "prompt_queue_work_item",
       "artifact_class": "coordination",
-      "schema_version": "1.8.0",
+      "schema_version": "1.9.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.8.0",
+      "last_updated_in": "1.9.0",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
     },
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.8.0",
+      "schema_version": "1.9.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.8.0",
+      "last_updated_in": "1.9.0",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
     },
@@ -802,6 +802,19 @@
       "last_updated_in": "1.0.27",
       "example_path": "contracts/examples/prompt_queue_findings_reentry.json",
       "notes": "Deterministic fail-closed lineage artifact wiring live review findings reentry into existing repair prompt generation path and queue mutation."
+    },
+    {
+      "artifact_type": "prompt_queue_loop_continuation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.28",
+      "last_updated_in": "1.0.28",
+      "example_path": "contracts/examples/prompt_queue_loop_continuation.json",
+      "notes": "Deterministic fail-closed continuation artifact linking findings reentry repair prompts to guarded repair child spawn outcomes with duplicate prevention and loop-control enforcement lineage."
     },
     {
       "artifact_type": "prompt_queue_execution_gating_decision",
