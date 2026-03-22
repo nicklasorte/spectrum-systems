@@ -662,3 +662,36 @@ def test_eval_summary_freeze_blocks_continuation() -> None:
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
     assert result["evaluation_control_decision"]["system_response"] == "freeze"
+
+
+def test_generated_eval_case_present_on_failure_path() -> None:
+    blocked_exec = {
+        "execution_status": "blocked",
+        "status": "deny",
+        "publication_blocked": True,
+        "decision_blocked": True,
+        "rerun_triggered": False,
+        "escalation_triggered": True,
+        "human_review_required": False,
+        "actions_taken": [],
+        "validators_run": [],
+        "validators_failed": [],
+        "repair_actions_applied": [],
+    }
+    blocked_chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "execution_result": blocked_exec,
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=blocked_chain,
+    ):
+        result = enforce_control_before_execution(_blocked_ctx())
+
+    assert "generated_eval_case" in result
+    assert result["generated_eval_case"]["expected_behavior"] == "deny"
+
+
+def test_generated_eval_case_absent_on_clean_allow_path() -> None:
+    result = enforce_control_before_execution(_ctx())
+    assert "generated_eval_case" not in result

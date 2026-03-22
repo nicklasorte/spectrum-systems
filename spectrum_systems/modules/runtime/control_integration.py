@@ -53,6 +53,10 @@ from spectrum_systems.modules.runtime.contract_runtime import (
     ContractRuntimeError,
     ensure_contract_runtime_available,
 )
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (
+    EvalCaseGenerationError,
+    generate_eval_case_from_failure,
+)
 from spectrum_systems.modules.runtime.evaluation_control import (
     build_evaluation_control_decision,
 )
@@ -292,6 +296,49 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         integration_result["evaluation_control_decision"] = chain_result["evaluation_control_decision"]
     if human_review_task is not None:
         integration_result["human_review_task"] = human_review_task
+
+    decision = None
+    if isinstance(artifact, dict):
+        decision = artifact.get("decision")
+
+    execution_status_for_eval = execution_result.get("status")
+    if execution_status_for_eval is None:
+        if exec_status in _BLOCKED_STATUSES:
+            execution_status_for_eval = "deny"
+        elif human_review_required:
+            execution_status_for_eval = "require_review"
+        else:
+            execution_status_for_eval = "allow"
+
+    should_generate_eval_case = (
+        execution_status_for_eval != "allow"
+        or decision == "deny"
+        or decision == "indeterminate"
+    )
+
+    if should_generate_eval_case:
+        trace_context = {
+            "trace_id": ctx.get("trace_id")
+            or (artifact.get("trace_id") if isinstance(artifact, dict) else None),
+            "run_id": execution_id,
+        }
+        generation_execution_result = dict(execution_result)
+        if generation_execution_result.get("status") is None:
+            generation_execution_result["status"] = execution_status_for_eval
+
+        try:
+            integration_result["generated_eval_case"] = generate_eval_case_from_failure(
+                artifact if isinstance(artifact, dict) else {},
+                generation_execution_result,
+                trace_context,
+            )
+        except EvalCaseGenerationError as exc:
+            logger.error(
+                "control_integration: eval_case generation failed (execution_id=%s): %s",
+                execution_id,
+                exc,
+            )
+            raise
 
     # Log outcome for observability (G section)
     _log_integration_outcome(integration_result)

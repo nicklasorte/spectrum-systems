@@ -2,45 +2,169 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/eval_case.schema.json",
   "title": "Eval Case",
-  "description": "Governed evaluation case artifact defining expected behavior and scoring criteria.",
+  "description": "Governed eval-case artifact auto-generated from deterministic runtime failures.",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "artifact_type",
-    "schema_version",
-    "trace_id",
     "eval_case_id",
-    "input_artifact_refs",
-    "expected_output_spec",
-    "scoring_rubric",
-    "evaluation_type",
-    "created_from"
+    "source_artifact_type",
+    "source_artifact_id",
+    "failure_mode",
+    "input_snapshot",
+    "expected_behavior",
+    "observed_behavior",
+    "generation_timestamp",
+    "provenance",
+    "reproducibility"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "eval_case" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
-    "trace_id": { "type": "string", "format": "uuid" },
-    "eval_case_id": { "type": "string", "minLength": 1 },
-    "input_artifact_refs": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "type": "string", "minLength": 1 }
-    },
-    "expected_output_spec": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "scoring_rubric": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "evaluation_type": {
+    "eval_case_id": {
       "type": "string",
-      "enum": ["deterministic", "heuristic", "model_based"]
+      "format": "uuid"
     },
-    "created_from": {
+    "source_artifact_type": {
       "type": "string",
-      "enum": ["manual", "failure_trace", "synthetic"]
+      "minLength": 1
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_mode": {
+      "type": "string",
+      "enum": [
+        "schema_violation",
+        "execution_failure",
+        "indeterminate",
+        "threshold_breach",
+        "drift_detected"
+      ]
+    },
+    "input_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "key_metrics",
+        "decision_inputs"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key_metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pass_rate": { "type": "number" },
+            "drift_rate": { "type": "number" },
+            "reproducibility_score": { "type": "number" }
+          }
+        },
+        "decision_inputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pass_rate": { "type": "number" },
+            "drift_rate": { "type": "number" },
+            "reproducibility_score": { "type": "number" },
+            "indeterminate_failure_count": { "type": "integer" },
+            "indeterminate_count": { "type": "integer" },
+            "decision": {
+              "type": "string",
+              "enum": ["allow", "deny", "indeterminate", "require_review"]
+            }
+          }
+        }
+      }
+    },
+    "expected_behavior": {
+      "type": "string",
+      "enum": ["allow", "deny", "require_review"]
+    },
+    "observed_behavior": {
+      "type": "string",
+      "enum": ["allow", "deny", "require_review", "indeterminate"]
+    },
+    "generation_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deterministic", "requires_seed", "seed_value"],
+      "properties": {
+        "deterministic": { "type": "boolean" },
+        "requires_seed": { "type": "boolean" },
+        "seed_value": {
+          "type": ["number", "null"]
+        }
+      }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "reproducibility": {
+            "properties": {
+              "deterministic": { "const": true }
+            },
+            "required": ["deterministic"]
+          }
+        },
+        "required": ["reproducibility"]
+      },
+      "then": {
+        "properties": {
+          "reproducibility": {
+            "properties": {
+              "seed_value": { "type": "null" }
+            },
+            "required": ["seed_value"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reproducibility": {
+            "properties": {
+              "requires_seed": { "const": true }
+            },
+            "required": ["requires_seed"]
+          }
+        },
+        "required": ["reproducibility"]
+      },
+      "then": {
+        "properties": {
+          "reproducibility": {
+            "properties": {
+              "seed_value": { "type": "number" }
+            },
+            "required": ["seed_value"]
+          }
+        }
+      }
+    }
+  ]
 }

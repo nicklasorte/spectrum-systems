@@ -1,22 +1,67 @@
-{
-  "artifact_type": "eval_case",
-  "schema_version": "1.0.0",
-  "trace_id": "11111111-1111-4111-8111-111111111111",
-  "eval_case_id": "eval-case-001",
-  "input_artifact_refs": [
-    "artifact://golden/case-001/input"
-  ],
-  "expected_output_spec": {
-    "required_fields": ["decisions", "action_items"],
-    "minimum_decision_count": 1
-  },
-  "scoring_rubric": {
-    "weights": {
-      "correctness": 0.7,
-      "completeness": 0.3
+[
+  {
+    "eval_case_id": "11111111-1111-4111-8111-111111111111",
+    "source_artifact_type": "eval_summary",
+    "source_artifact_id": "eval-run-20260321T120000Z",
+    "failure_mode": "threshold_breach",
+    "input_snapshot": {
+      "artifact_type": "eval_summary",
+      "key_metrics": {
+        "pass_rate": 0.72,
+        "drift_rate": 0.19,
+        "reproducibility_score": 0.78
+      },
+      "decision_inputs": {
+        "pass_rate": 0.72,
+        "drift_rate": 0.19,
+        "reproducibility_score": 0.78,
+        "decision": "deny"
+      }
     },
-    "pass_threshold": 0.8
+    "expected_behavior": "deny",
+    "observed_behavior": "deny",
+    "generation_timestamp": "2026-03-21T12:00:00Z",
+    "provenance": {
+      "trace_id": "trace-threshold-breach-001",
+      "run_id": "run-20260321T120000Z"
+    },
+    "reproducibility": {
+      "deterministic": true,
+      "requires_seed": false,
+      "seed_value": null
+    }
   },
-  "evaluation_type": "deterministic",
-  "created_from": "manual"
-}
+  {
+    "eval_case_id": "22222222-2222-4222-8222-222222222222",
+    "source_artifact_type": "eval_summary",
+    "source_artifact_id": "eval-run-20260321T121500Z",
+    "failure_mode": "indeterminate",
+    "input_snapshot": {
+      "artifact_type": "eval_summary",
+      "key_metrics": {
+        "pass_rate": 0.89,
+        "drift_rate": 0.08,
+        "reproducibility_score": 0.93
+      },
+      "decision_inputs": {
+        "pass_rate": 0.89,
+        "drift_rate": 0.08,
+        "reproducibility_score": 0.93,
+        "indeterminate_failure_count": 1,
+        "decision": "indeterminate"
+      }
+    },
+    "expected_behavior": "deny",
+    "observed_behavior": "indeterminate",
+    "generation_timestamp": "2026-03-21T12:15:00Z",
+    "provenance": {
+      "trace_id": "trace-indeterminate-001",
+      "run_id": "run-20260321T121500Z"
+    },
+    "reproducibility": {
+      "deterministic": false,
+      "requires_seed": true,
+      "seed_value": 42
+    }
+  }
+]
