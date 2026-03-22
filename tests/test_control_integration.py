@@ -662,3 +662,68 @@ def test_eval_summary_freeze_blocks_continuation() -> None:
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
     assert result["evaluation_control_decision"]["system_response"] == "freeze"
+
+
+def test_blocked_paths_emit_generated_failure_eval_case():
+    blocked_exec = {
+        "execution_status": "blocked",
+        "publication_blocked": True,
+        "decision_blocked": True,
+        "rerun_triggered": False,
+        "escalation_triggered": False,
+        "human_review_required": False,
+        "actions_taken": [],
+        "validators_run": [],
+        "validators_failed": [],
+        "repair_actions_applied": [],
+    }
+    blocked_chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "continuation_allowed": False,
+        "primary_reason_code": "control_chain_blocked_by_gating",
+        "schema_errors": [],
+        "enforcement_result": None,
+        "gating_result": None,
+        "execution_result": blocked_exec,
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=blocked_chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+
+    assert result["continuation_allowed"] is False
+    assert "generated_failure_eval_case" in result
+    assert result["generated_failure_eval_case"]["artifact_type"] == "failure_eval_case"
+
+
+def test_allow_paths_do_not_emit_generated_failure_eval_case():
+    allowed_exec = {
+        "execution_status": "success",
+        "publication_blocked": False,
+        "decision_blocked": False,
+        "rerun_triggered": False,
+        "escalation_triggered": False,
+        "human_review_required": False,
+        "actions_taken": [],
+        "validators_run": [],
+        "validators_failed": [],
+        "repair_actions_applied": [],
+    }
+    allowed_chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "continuation_allowed": True,
+        "primary_reason_code": "allowed",
+        "schema_errors": [],
+        "enforcement_result": None,
+        "gating_result": None,
+        "execution_result": allowed_exec,
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=allowed_chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+
+    assert result["continuation_allowed"] is True
+    assert "generated_failure_eval_case" not in result

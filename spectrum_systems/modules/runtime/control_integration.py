@@ -56,6 +56,10 @@ from spectrum_systems.modules.runtime.contract_runtime import (
 from spectrum_systems.modules.runtime.evaluation_control import (
     build_evaluation_control_decision,
 )
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (
+    EvalCaseGenerationError,
+    generate_eval_case_from_failure,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -292,6 +296,20 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         integration_result["evaluation_control_decision"] = chain_result["evaluation_control_decision"]
     if human_review_task is not None:
         integration_result["human_review_task"] = human_review_task
+
+    if not continuation_allowed:
+        try:
+            integration_result["generated_failure_eval_case"] = generate_eval_case_from_failure(
+                ctx,
+                integration_result,
+            )
+        except EvalCaseGenerationError as exc:
+            logger.warning(
+                "enforce_control_before_execution: failed to generate failure_eval_case "
+                "(execution_id=%s): %s",
+                execution_id,
+                exc,
+            )
 
     # Log outcome for observability (G section)
     _log_integration_outcome(integration_result)
