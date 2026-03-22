@@ -239,11 +239,10 @@
     "repo": "spectrum-systems",
     "reviewer": "Claude (Reasoning Agent — Sonnet 4.6)",
     "status": "Open",
-    "verdict": "FAIL",
-    "trust_assessment": "NO — policy governance cannot be trusted to never drift silently",
     "artifact_path": "docs/reviews/2026-03-22-policy-versioning-audit.md",
     "action_tracker_path": "docs/review-actions/2026-03-22-policy-versioning-audit-actions.md",
-    "scope": "Policy immutability, policy identity strength, artifact-to-policy linkage, snapshot consistency, silent policy drift, version history traceability, fail-closed policy resolution, policy scope clarity. 5 findings (3 critical, 2 high); 7 actions (3 critical, 2 high, 2 medium, 2 low). Sources: policy-registry.json, slo_policy_registry.json, regression_policy.json, eval_admission_policy.schema.json, provenance.schema.json, policy_registry.py.",
+    "scope": "Policy immutability, policy identity strength, artifact-to-policy linkage, snapshot consistency, silent policy drift, version history traceability, fail-closed policy resolution, policy scope clarity. Verdict: FAIL. Trust assessment: NO. 5 findings (3 critical, 2 high); 7 actions (PV-CR-1 through PV-LI-2). Sources: policy-registry.json, slo_policy_registry.json, regression_policy.json, eval_admission_policy.schema.json, provenance.schema.json, policy_registry.py.",
+    "notes": "Verdict: FAIL. Trust assessment: NO — policy governance cannot be trusted to never drift silently. Critical failures: fail-open permissive fallback in policy_registry.py; mutable policy registry files with no immutability enforcement; policy_id: 'default' in regression_policy.json. High failures: missing policy_id in provenance schema; no version history on governance policy definitions.",
     "follow_up_trigger": "When PV-CR-1 (fail-closed resolution) is implemented: re-audit policy_registry.py callers for explicit policy_id propagation. When PV-CR-2 (immutability) is implemented: verify CI rejects in-place edits. When PV-HI-1 (provenance policy_id field) is merged: audit existing records for backfill. When Phase 2 CI is activated: re-run snapshot consistency check."
   }
 ]
