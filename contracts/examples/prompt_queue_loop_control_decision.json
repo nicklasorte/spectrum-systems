@@ -1,0 +1,14 @@
+{
+  "loop_control_decision_artifact_id": "loop-control-wi-002-2026-03-22T00:30:00Z",
+  "work_item_id": "wi-002",
+  "parent_work_item_id": "wi-001",
+  "generation_count": 1,
+  "max_generation_allowed": 2,
+  "loop_control_status": "within_budget",
+  "enforcement_action": "allow_reentry",
+  "reason_code": "within_budget_allow_reentry",
+  "generated_at": "2026-03-22T00:30:00Z",
+  "generator_version": "prompt_queue_loop_control_policy.v1",
+  "source_queue_state_path": "artifacts/prompt_queue/state/queue-01.json",
+  "warnings": []
+}

@@ -29,5 +29,7 @@
   "gating_decision_artifact_path": null,
   "execution_result_artifact_path": null,
   "post_execution_decision_artifact_path": null,
-  "next_step_action_artifact_path": null
+  "next_step_action_artifact_path": null,
+  "generation_count": 0,
+  "loop_control_decision_artifact_path": null
 }

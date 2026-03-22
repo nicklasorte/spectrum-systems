@@ -129,6 +129,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-CONTROLLED-EXECUTION-2026-03-22.md | Governed Prompt Queue — bounded controlled execution MVP | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-POST-EXECUTION-2026-03-22.md | Governed prompt queue post-execution policy — execution-result decision loop | Active |
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-NEXT-STEP-2026-03-22.md | Governed Prompt Queue — Next-step orchestration from post-execution decision artifacts | Active |
+| docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-LOOP-CONTROL-2026-03-22.md | Governed Prompt Queue — deterministic repair loop control and budget enforcement | Active |
 
 Update this table when plans are created or completed.
 

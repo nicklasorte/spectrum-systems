@@ -109,8 +109,10 @@ class WorkItem:
     spawned_from_repair_prompt_artifact_path: Optional[str] = None
     spawned_from_findings_artifact_path: Optional[str] = None
     spawned_from_review_artifact_path: Optional[str] = None
+    generation_count: int = 0
     repair_loop_generation: int = 0
     child_work_item_ids: list[str] | None = None
+    loop_control_decision_artifact_path: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -178,9 +180,11 @@ def make_work_item(
         spawned_from_repair_prompt_artifact_path=None,
         spawned_from_findings_artifact_path=None,
         spawned_from_review_artifact_path=None,
+        generation_count=0,
         repair_loop_generation=0,
         child_work_item_ids=[],
         gating_decision_artifact_path=None,
+        loop_control_decision_artifact_path=None,
         execution_result_artifact_path=None,
         post_execution_decision_artifact_path=None,
         next_step_action_artifact_path=None,
