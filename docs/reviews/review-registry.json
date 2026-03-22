@@ -218,5 +218,18 @@
     "action_tracker_path": "docs/review-actions/2026-03-20-reliability-control-loop-actions.md",
     "scope": "BN–BP Trace Persistence + Replay Plane, BQ Replay Decision Integrity Engine, BS Continuous Evaluation Monitor, BT Evaluation Budget Governor, BU Governor Enforcement Bridge. Focus: control-loop ID linkage, fail-closed behavior, semantic consistency, enforcement strength, override/bypass risk, BT policy soundness. 8 findings (3 critical, 2 high, 2 medium, 1 low); 8 actions (4 critical, 2 high, 2 medium).",
     "follow_up_trigger": "When CR-1 (override_artifact schema) and CR-2 (BU override validation) are complete; when CR-4 (BU CLI) is operational; re-review enforcement bridge security posture before any production-grade gating workflow is added."
+  },
+  {
+    "review_id": "2026-03-22-replay-engine-review",
+    "review_date": "2026-03-22",
+    "review_type": "Focused replay engine architecture and correctness review",
+    "repo": "spectrum-systems",
+    "reviewer": "Claude (Reasoning Agent — Opus 4.6)",
+    "status": "Open",
+    "maturity_rating": "3/5 — Governed (partial)",
+    "artifact_path": "docs/reviews/2026-03-22-replay-engine-review.md",
+    "action_tracker_path": "docs/review-actions/2026-03-22-replay-engine-actions.md",
+    "scope": "BAG replay engine (run_replay), replay_result.schema.json, test_replay_engine.py. Focus: canonical path integrity, determinism, comparison correctness, fail-closed behavior, contract compliance, test coverage. 4 findings (1 critical, 1 high, 1 medium, 1 low); 4 actions.",
+    "follow_up_trigger": "When CR-1 (drift_result schema fix) and HI-1 (exception handler fail-closed fix) are complete; re-review before replay results are consumed by downstream audit or drift pipelines."
   }
 ]
