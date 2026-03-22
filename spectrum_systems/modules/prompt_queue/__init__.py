@@ -86,6 +86,16 @@ from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
     validate_findings_artifact,
     write_findings_artifact,
 )
+from spectrum_systems.modules.prompt_queue.findings_reentry import FindingsReentryError, run_findings_reentry
+from spectrum_systems.modules.prompt_queue.findings_reentry_artifact_io import (
+    FindingsReentryArtifactIOError,
+    default_findings_reentry_path,
+    write_findings_reentry_artifact,
+)
+from spectrum_systems.modules.prompt_queue.findings_reentry_queue_integration import (
+    FindingsReentryQueueIntegrationError,
+    apply_findings_reentry_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.findings_normalizer import (
     build_findings_artifact,
     default_findings_path,
@@ -125,6 +135,7 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
     spawn_repair_child_in_queue,
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
+    validate_findings_reentry,
     validate_queue_state,
     validate_review_parsing_handoff,
     validate_review_invocation_result,
@@ -236,6 +247,13 @@ __all__ = [
     "RiskLevel",
     "WorkItemStatus",
     "attach_findings_to_work_item",
+    "run_findings_reentry",
+    "FindingsReentryError",
+    "default_findings_reentry_path",
+    "write_findings_reentry_artifact",
+    "FindingsReentryArtifactIOError",
+    "apply_findings_reentry_to_queue",
+    "FindingsReentryQueueIntegrationError",
     "apply_review_parsing_handoff_to_queue",
     "build_findings_artifact",
     "default_findings_path",
@@ -247,6 +265,7 @@ __all__ = [
     "assert_no_duplicate_review_invocation",
     "has_duplicate_review_invocation_result",
     "validate_findings_artifact",
+    "validate_findings_reentry",
     "validate_queue_state",
     "validate_review_parsing_handoff",
     "validate_review_invocation_result",

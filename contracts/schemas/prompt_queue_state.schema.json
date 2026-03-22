@@ -84,6 +84,7 @@
         "review_trigger_artifact_path",
         "review_invocation_result_artifact_path",
         "review_parsing_handoff_artifact_path",
+        "findings_reentry_artifact_path",
         "spawned_from_execution_result_artifact_path",
         "spawned_from_post_execution_decision_artifact_path",
         "spawned_from_loop_control_decision_artifact_path"
@@ -336,6 +337,13 @@
           "minLength": 1
         },
         "review_parsing_handoff_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "findings_reentry_artifact_path": {
           "type": [
             "string",
             "null"

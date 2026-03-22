@@ -1,0 +1,16 @@
+{
+  "findings_reentry_artifact_id": "findings-reentry-wi-001-20260322T001200Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": null,
+  "review_parsing_handoff_artifact_path": "artifacts/prompt_queue/review_parsing_handoffs/queue_state.wi-001.review_parsing_handoff.json",
+  "review_invocation_result_artifact_path": "artifacts/prompt_queue/review_invocation_results/queue_state.wi-001.review_invocation_result.json",
+  "findings_artifact_path": "artifacts/prompt_queue/findings/wi-001.findings.json",
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-001.repair_prompt.json",
+  "reentry_status": "reentry_completed",
+  "reentry_reason_code": "reentry_completed_repair_prompt_generated",
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "warnings": [],
+  "blocking_conditions": [],
+  "generated_at": "2026-03-22T00:12:00Z",
+  "generator_version": "prompt_queue_findings_reentry.v1"
+}
