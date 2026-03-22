@@ -47,6 +47,10 @@ def validate_loop_continuation(loop_continuation: dict) -> None:
     _validate(loop_continuation, "prompt_queue_loop_continuation")
 
 
+def validate_observability_snapshot(observability_snapshot: dict) -> None:
+    _validate(observability_snapshot, "prompt_queue_observability_snapshot")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

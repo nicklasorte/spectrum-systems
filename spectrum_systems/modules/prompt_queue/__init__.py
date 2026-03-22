@@ -179,12 +179,17 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_findings_reentry,
     validate_loop_continuation,
+    validate_observability_snapshot,
     validate_queue_state,
     validate_review_parsing_handoff,
     validate_review_invocation_result,
     validate_review_attempt,
     validate_work_item,
     write_artifact,
+)
+from spectrum_systems.modules.prompt_queue.queue_observability import (
+    generate_queue_snapshot,
+    validate_queue_invariants,
 )
 from spectrum_systems.modules.prompt_queue.queue_models import (
     Priority,
@@ -336,8 +341,11 @@ __all__ = [
     "has_duplicate_review_invocation_result",
     "validate_findings_artifact",
     "validate_findings_reentry",
+    "generate_queue_snapshot",
     "validate_loop_continuation",
+    "validate_observability_snapshot",
     "validate_queue_state",
+    "validate_queue_invariants",
     "validate_review_parsing_handoff",
     "validate_review_invocation_result",
     "validate_review_attempt",

@@ -1,0 +1,23 @@
+{
+  "snapshot_id": "pqo-4a07af737e5b95da",
+  "timestamp": "2026-03-22T00:00:00Z",
+  "total_items": 5,
+  "items_by_status": {
+    "queued": 1,
+    "running": 1,
+    "completed": 1,
+    "failed": 1,
+    "blocked": 1
+  },
+  "retry_counts_summary": {
+    "total_retry_count": 4,
+    "max_retry_count": 2,
+    "items_with_retries": 3
+  },
+  "blocked_items_count": 1,
+  "exhausted_retry_count": 1,
+  "active_run_ids": [
+    "run-100"
+  ],
+  "invariant_violations": []
+}
