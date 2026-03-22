@@ -8,12 +8,14 @@
     "run_id": "run-bbc-snapshot-20260322"
   },
   "active_policy_id": "policy-bbc-core",
+  "active_canonicalization_policy_id": "canon-bbc-v1",
   "datasets": [
     {
       "dataset_id": "dataset-bbc-core",
       "dataset_version": "1.0.0",
       "status": "approved",
       "intended_use": "pre_merge_gate",
+      "canonicalization_policy_id": "canon-bbc-v1",
       "approved_for_use": true
     },
     {
@@ -21,6 +23,7 @@
       "dataset_version": "1.0.1",
       "status": "candidate",
       "intended_use": "development",
+      "canonicalization_policy_id": "canon-bbc-v1",
       "approved_for_use": false
     }
   ]

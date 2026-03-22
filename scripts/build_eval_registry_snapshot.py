@@ -15,6 +15,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from spectrum_systems.modules.evaluation.eval_dataset_loader import (  # noqa: E402
     load_eval_admission_policy,
+    load_eval_canonicalization_policy,
     load_eval_dataset,
 )
 from spectrum_systems.modules.evaluation.eval_dataset_registry import (  # noqa: E402
@@ -25,6 +26,11 @@ from spectrum_systems.modules.evaluation.eval_dataset_registry import (  # noqa:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build an eval_registry_snapshot artifact")
     parser.add_argument("--policy", required=True, help="Path to eval_admission_policy JSON")
+    parser.add_argument(
+        "--canonicalization-policy",
+        required=True,
+        help="Path to eval_canonicalization_policy JSON",
+    )
     parser.add_argument("--datasets", nargs="+", required=True, help="One or more eval_dataset JSON paths")
     parser.add_argument("--snapshot-id", required=True, help="Snapshot identifier")
     parser.add_argument("--trace-id", required=True, help="Trace identifier")
@@ -33,6 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     policy = load_eval_admission_policy(args.policy)
+    canonicalization_policy = load_eval_canonicalization_policy(args.canonicalization_policy)
     datasets = [load_eval_dataset(path) for path in args.datasets]
 
     snapshot = build_registry_snapshot(
@@ -40,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
         trace_id=args.trace_id,
         run_id=args.run_id,
         active_policy_id=policy["policy_id"],
+        active_canonicalization_policy_id=canonicalization_policy["policy_id"],
         datasets=datasets,
     )
 

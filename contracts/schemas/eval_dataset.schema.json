@@ -14,6 +14,7 @@
     "status",
     "intended_use",
     "admission_policy_id",
+    "canonicalization_policy_id",
     "created_at",
     "created_by",
     "provenance",
@@ -35,6 +36,7 @@
       "enum": ["development", "pre_merge_gate", "runtime_gate", "replay", "audit"]
     },
     "admission_policy_id": { "type": "string", "minLength": 1 },
+    "canonicalization_policy_id": { "type": "string", "minLength": 1 },
     "created_at": { "type": "string", "format": "date-time" },
     "created_by": { "type": "string", "minLength": 1 },
     "provenance": {
