@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_review_parsing_handoff.schema.json",
+  "title": "Prompt Queue Review Parsing Handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_parsing_handoff_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "review_invocation_result_artifact_path",
+    "review_trigger_artifact_path",
+    "output_reference",
+    "findings_artifact_path",
+    "handoff_status",
+    "handoff_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "review_parsing_handoff_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "review_invocation_result_artifact_path": {"type": "string", "minLength": 1},
+    "review_trigger_artifact_path": {"type": "string", "minLength": 1},
+    "output_reference": {"type": "string", "minLength": 1},
+    "findings_artifact_path": {"type": "string", "minLength": 1},
+    "handoff_status": {
+      "type": "string",
+      "enum": ["handoff_completed", "handoff_blocked", "handoff_failed"]
+    },
+    "handoff_reason_code": {
+      "type": "string",
+      "enum": [
+        "handoff_completed_findings_emitted",
+        "handoff_failed_invocation_not_success",
+        "handoff_failed_missing_output_reference",
+        "handoff_failed_missing_output_artifact",
+        "handoff_failed_unreadable_output_artifact",
+        "handoff_failed_invalid_lineage",
+        "handoff_failed_review_parse_error",
+        "handoff_failed_findings_validation",
+        "handoff_blocked_duplicate_handoff"
+      ]
+    },
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1}
+  }
+}

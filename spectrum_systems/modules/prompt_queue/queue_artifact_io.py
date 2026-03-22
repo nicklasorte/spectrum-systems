@@ -31,6 +31,10 @@ def validate_review_invocation_result(review_invocation_result: dict) -> None:
     _validate(review_invocation_result, "prompt_queue_review_invocation_result")
 
 
+def validate_review_parsing_handoff(review_parsing_handoff: dict) -> None:
+    _validate(review_parsing_handoff, "prompt_queue_review_parsing_handoff")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

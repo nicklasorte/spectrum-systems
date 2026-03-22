@@ -1,0 +1,16 @@
+{
+  "review_parsing_handoff_artifact_id": "review-parsing-handoff-wi-001-20260322T001100Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": null,
+  "review_invocation_result_artifact_path": "artifacts/prompt_queue/review_invocation_results/queue_state.wi-001.review_invocation_result.json",
+  "review_trigger_artifact_path": "artifacts/prompt_queue/review_triggers/wi-001.review_trigger.json",
+  "output_reference": "artifacts/prompt_queue/reviews/wi-001.review.md",
+  "findings_artifact_path": "artifacts/prompt_queue/findings/wi-001.findings.json",
+  "handoff_status": "handoff_completed",
+  "handoff_reason_code": "handoff_completed_findings_emitted",
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "warnings": [],
+  "blocking_conditions": [],
+  "generated_at": "2026-03-22T00:11:00Z",
+  "generator_version": "prompt_queue_review_parsing_handoff.v1"
+}

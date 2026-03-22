@@ -36,5 +36,6 @@
   "spawned_from_execution_result_artifact_path": null,
   "spawned_from_post_execution_decision_artifact_path": null,
   "spawned_from_loop_control_decision_artifact_path": null,
-  "review_invocation_result_artifact_path": null
+  "review_invocation_result_artifact_path": null,
+  "review_parsing_handoff_artifact_path": null
 }

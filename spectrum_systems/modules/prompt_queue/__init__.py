@@ -91,6 +91,19 @@ from spectrum_systems.modules.prompt_queue.findings_normalizer import (
     default_findings_path,
 )
 from spectrum_systems.modules.prompt_queue.findings_queue_integration import attach_findings_to_work_item
+from spectrum_systems.modules.prompt_queue.review_parsing_handoff import (
+    ReviewParsingHandoffError,
+    run_review_parsing_handoff,
+)
+from spectrum_systems.modules.prompt_queue.review_parsing_handoff_artifact_io import (
+    ReviewParsingHandoffArtifactIOError,
+    default_review_parsing_handoff_path,
+    write_review_parsing_handoff_artifact,
+)
+from spectrum_systems.modules.prompt_queue.review_parsing_handoff_queue_integration import (
+    ReviewParsingHandoffQueueIntegrationError,
+    apply_review_parsing_handoff_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.repair_prompt_artifact_io import (
     validate_repair_prompt_artifact,
     write_repair_prompt_artifact,
@@ -113,6 +126,7 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_queue_state,
+    validate_review_parsing_handoff,
     validate_review_invocation_result,
     validate_review_attempt,
     validate_work_item,
@@ -222,6 +236,7 @@ __all__ = [
     "RiskLevel",
     "WorkItemStatus",
     "attach_findings_to_work_item",
+    "apply_review_parsing_handoff_to_queue",
     "build_findings_artifact",
     "default_findings_path",
     "make_queue_state",
@@ -233,6 +248,7 @@ __all__ = [
     "has_duplicate_review_invocation_result",
     "validate_findings_artifact",
     "validate_queue_state",
+    "validate_review_parsing_handoff",
     "validate_review_invocation_result",
     "validate_review_attempt",
     "validate_work_item",
@@ -251,4 +267,10 @@ __all__ = [
     "write_review_invocation_result_artifact",
     "ReviewInvocationQueueIntegrationError",
     "apply_live_review_invocation",
+    "ReviewParsingHandoffError",
+    "run_review_parsing_handoff",
+    "ReviewParsingHandoffArtifactIOError",
+    "default_review_parsing_handoff_path",
+    "write_review_parsing_handoff_artifact",
+    "ReviewParsingHandoffQueueIntegrationError",
 ]

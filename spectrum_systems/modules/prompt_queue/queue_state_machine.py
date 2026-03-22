@@ -66,7 +66,10 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.REVIEW_INVOCATION_FAILED.value,
         WorkItemStatus.BLOCKED.value,
     },
-    WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value: set(),
+    WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value: {
+        WorkItemStatus.FINDINGS_PARSED.value,
+        WorkItemStatus.BLOCKED.value,
+    },
     WorkItemStatus.REVIEW_INVOCATION_FAILED.value: set(),
     WorkItemStatus.REENTRY_ELIGIBLE.value: set(),
     WorkItemStatus.COMPLETE.value: set(),
