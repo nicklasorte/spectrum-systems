@@ -806,13 +806,13 @@
     {
       "artifact_type": "prompt_queue_next_step_action",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.0.1",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.21",
-      "last_updated_in": "1.0.21",
+      "last_updated_in": "1.0.22",
       "example_path": "contracts/examples/prompt_queue_next_step_action.json",
       "notes": "Deterministic, fail-closed next-step orchestration action artifact mapping post-execution decisions to governed queue updates with optional bounded child spawn lineage."
     }

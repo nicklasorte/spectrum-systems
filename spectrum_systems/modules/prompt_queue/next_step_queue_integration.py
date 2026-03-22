@@ -19,6 +19,30 @@ class NextStepQueueIntegrationError(ValueError):
     """Raised when next-step queue integration fails closed."""
 
 
+_DECISION_TO_CANONICAL_QUEUE_ACTION = {
+    "complete": {
+        "target_status": WorkItemStatus.COMPLETE.value,
+        "action_status": "marked_complete",
+        "action_reason_code": "marked_complete_from_post_execution_complete",
+    },
+    "review_required": {
+        "target_status": WorkItemStatus.REVIEW_REQUIRED.value,
+        "action_status": "spawn_review",
+        "action_reason_code": "spawn_review_from_post_execution_review_required",
+    },
+    "reentry_eligible": {
+        "target_status": WorkItemStatus.REENTRY_ELIGIBLE.value,
+        "action_status": "spawn_reentry_child",
+        "action_reason_code": "spawn_reentry_child_from_post_execution_reentry_eligible",
+    },
+    "reentry_blocked": {
+        "target_status": WorkItemStatus.REENTRY_BLOCKED.value,
+        "action_status": "blocked_no_action",
+        "action_reason_code": "blocked_no_action_from_post_execution_reentry_blocked",
+    },
+}
+
+
 def _find_work_item_index(queue_state: dict, work_item_id: str) -> int:
     for idx, item in enumerate(queue_state.get("work_items", [])):
         if item.get("work_item_id") == work_item_id:
@@ -27,15 +51,28 @@ def _find_work_item_index(queue_state: dict, work_item_id: str) -> int:
 
 
 def _decision_to_target_status(decision_status: str) -> str:
-    mapping = {
-        "complete": WorkItemStatus.COMPLETE.value,
-        "review_required": WorkItemStatus.REVIEW_REQUIRED.value,
-        "reentry_eligible": WorkItemStatus.REENTRY_ELIGIBLE.value,
-        "reentry_blocked": WorkItemStatus.REENTRY_BLOCKED.value,
-    }
-    if decision_status not in mapping:
+    if decision_status not in _DECISION_TO_CANONICAL_QUEUE_ACTION:
         raise NextStepQueueIntegrationError(f"Unsupported decision_status for queue integration: {decision_status}")
-    return mapping[decision_status]
+    return _DECISION_TO_CANONICAL_QUEUE_ACTION[decision_status]["target_status"]
+
+
+def _validate_canonical_next_step_tuple(next_step_action_artifact: dict) -> dict:
+    decision_status = next_step_action_artifact.get("decision_status")
+    canonical = _DECISION_TO_CANONICAL_QUEUE_ACTION.get(decision_status)
+    if canonical is None:
+        raise NextStepQueueIntegrationError(f"Unsupported decision_status for queue integration: {decision_status}")
+
+    if next_step_action_artifact.get("action_status") != canonical["action_status"]:
+        raise NextStepQueueIntegrationError(
+            "next-step action tuple mismatch: action_status is not canonical for decision_status."
+        )
+
+    if next_step_action_artifact.get("action_reason_code") != canonical["action_reason_code"]:
+        raise NextStepQueueIntegrationError(
+            "next-step action tuple mismatch: action_reason_code is not canonical for decision_status/action_status."
+        )
+
+    return canonical
 
 
 def _build_spawned_work_item(parent: dict, spawn_kind: str, clock=utc_now) -> dict:
@@ -122,6 +159,7 @@ def apply_next_step_action_to_queue(
     if next_step_action_artifact.get("execution_result_artifact_path") != target.get("execution_result_artifact_path"):
         raise NextStepQueueIntegrationError("next-step action execution_result_artifact_path mismatch.")
 
+    canonical = _validate_canonical_next_step_tuple(next_step_action_artifact)
     target_status = _decision_to_target_status(next_step_action_artifact["decision_status"])
     try:
         target = transition_work_item(target, target_status, clock=clock)
@@ -133,7 +171,7 @@ def apply_next_step_action_to_queue(
     target["updated_at"] = iso_now(clock)
 
     spawned_child = None
-    action_status = next_step_action_artifact.get("action_status")
+    action_status = canonical["action_status"]
     if action_status in {"spawn_review", "spawn_reentry_child"}:
         _detect_duplicate_spawn(queue_copy, work_item_id, next_step_action_artifact_path)
         spawned_child = _build_spawned_work_item(target, action_status, clock=clock)

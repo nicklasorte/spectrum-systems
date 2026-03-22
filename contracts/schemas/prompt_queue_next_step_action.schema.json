@@ -56,5 +56,63 @@
       "items": {"type": "string", "minLength": 1}
     },
     "source_queue_state_path": {"type": ["string", "null"], "minLength": 1}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision_status": {"const": "complete"}
+        },
+        "required": ["decision_status"]
+      },
+      "then": {
+        "properties": {
+          "action_status": {"const": "marked_complete"},
+          "action_reason_code": {"const": "marked_complete_from_post_execution_complete"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {"const": "review_required"}
+        },
+        "required": ["decision_status"]
+      },
+      "then": {
+        "properties": {
+          "action_status": {"const": "spawn_review"},
+          "action_reason_code": {"const": "spawn_review_from_post_execution_review_required"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {"const": "reentry_eligible"}
+        },
+        "required": ["decision_status"]
+      },
+      "then": {
+        "properties": {
+          "action_status": {"const": "spawn_reentry_child"},
+          "action_reason_code": {"const": "spawn_reentry_child_from_post_execution_reentry_eligible"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {"const": "reentry_blocked"}
+        },
+        "required": ["decision_status"]
+      },
+      "then": {
+        "properties": {
+          "action_status": {"const": "blocked_no_action"},
+          "action_reason_code": {"const": "blocked_no_action_from_post_execution_reentry_blocked"}
+        }
+      }
+    }
+  ]
 }

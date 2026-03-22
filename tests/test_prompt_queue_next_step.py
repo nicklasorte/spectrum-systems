@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -296,3 +297,121 @@ def test_queue_and_work_item_updates_are_deterministic_and_schema_valid():
     validate_work_item(updated_item)
     validate_work_item(spawned_child)
     validate_queue_state(updated_queue)
+
+
+def _assert_integration_fails_closed_without_mutation(
+    *,
+    queue_state: dict,
+    item: dict,
+    action: dict,
+    expected_error: str | None = None,
+) -> None:
+    queue_before = copy.deepcopy(queue_state)
+    if expected_error is None:
+        with pytest.raises(NextStepQueueIntegrationError):
+            apply_next_step_action_to_queue(
+                queue_state=queue_state,
+                work_item_id=item["work_item_id"],
+                next_step_action_artifact=action,
+                next_step_action_artifact_path="artifacts/prompt_queue/next_step_actions/queue-01.wi-parent.repair.1.next_step_action.json",
+                clock=FixedClock(["2026-03-22T04:03:00Z", "2026-03-22T04:03:01Z", "2026-03-22T04:03:02Z"]),
+            )
+    else:
+        with pytest.raises(NextStepQueueIntegrationError, match=expected_error):
+            apply_next_step_action_to_queue(
+                queue_state=queue_state,
+                work_item_id=item["work_item_id"],
+                next_step_action_artifact=action,
+                next_step_action_artifact_path="artifacts/prompt_queue/next_step_actions/queue-01.wi-parent.repair.1.next_step_action.json",
+                clock=FixedClock(["2026-03-22T04:03:00Z", "2026-03-22T04:03:01Z", "2026-03-22T04:03:02Z"]),
+            )
+    assert queue_state == queue_before
+    assert len(queue_state["work_items"]) == len(queue_before["work_items"]) == 1
+    assert queue_state["work_items"][0]["child_work_item_ids"] == []
+    assert queue_state["work_items"][0]["next_step_action_artifact_path"] is None
+
+
+def test_integration_rejects_complete_with_spawn_review_tuple_mismatch():
+    item = _executed_item(status=WorkItemStatus.EXECUTED_SUCCESS.value)
+    decision = _post_execution_decision("complete")
+    queue = make_queue_state(queue_id="queue-01", work_items=[item], clock=FixedClock(["2026-03-22T04:00:00Z"]))
+    action = determine_next_step_action(
+        work_item=item,
+        post_execution_decision_artifact=decision,
+        post_execution_decision_artifact_path=item["post_execution_decision_artifact_path"],
+        execution_result_artifact_path=item["execution_result_artifact_path"],
+        source_queue_state_path="artifacts/prompt_queue/queue-01.state.json",
+        clock=FixedClock(["2026-03-22T04:02:00Z", "2026-03-22T04:02:01Z"]),
+    )
+    action["action_status"] = "spawn_review"
+    action["action_reason_code"] = "spawn_review_from_post_execution_review_required"
+
+    _assert_integration_fails_closed_without_mutation(
+        queue_state=queue,
+        item=item,
+        action=action,
+    )
+
+
+def test_integration_rejects_review_required_with_marked_complete_tuple_mismatch():
+    item = _executed_item()
+    decision = _post_execution_decision("review_required")
+    queue = make_queue_state(queue_id="queue-01", work_items=[item], clock=FixedClock(["2026-03-22T04:00:00Z"]))
+    action = determine_next_step_action(
+        work_item=item,
+        post_execution_decision_artifact=decision,
+        post_execution_decision_artifact_path=item["post_execution_decision_artifact_path"],
+        execution_result_artifact_path=item["execution_result_artifact_path"],
+        source_queue_state_path="artifacts/prompt_queue/queue-01.state.json",
+        clock=FixedClock(["2026-03-22T04:02:00Z", "2026-03-22T04:02:01Z"]),
+    )
+    action["action_status"] = "marked_complete"
+    action["action_reason_code"] = "marked_complete_from_post_execution_complete"
+
+    _assert_integration_fails_closed_without_mutation(
+        queue_state=queue,
+        item=item,
+        action=action,
+    )
+
+
+def test_integration_rejects_reentry_blocked_with_non_blocked_reason_code():
+    item = _executed_item()
+    decision = _post_execution_decision("reentry_blocked")
+    queue = make_queue_state(queue_id="queue-01", work_items=[item], clock=FixedClock(["2026-03-22T04:00:00Z"]))
+    action = determine_next_step_action(
+        work_item=item,
+        post_execution_decision_artifact=decision,
+        post_execution_decision_artifact_path=item["post_execution_decision_artifact_path"],
+        execution_result_artifact_path=item["execution_result_artifact_path"],
+        source_queue_state_path="artifacts/prompt_queue/queue-01.state.json",
+        clock=FixedClock(["2026-03-22T04:02:00Z", "2026-03-22T04:02:01Z"]),
+    )
+    action["action_reason_code"] = "spawn_review_from_post_execution_review_required"
+
+    _assert_integration_fails_closed_without_mutation(
+        queue_state=queue,
+        item=item,
+        action=action,
+    )
+
+
+def test_integration_rejects_mismatched_reason_code_for_valid_decision_action_pair():
+    item = _executed_item()
+    decision = _post_execution_decision("review_required")
+    queue = make_queue_state(queue_id="queue-01", work_items=[item], clock=FixedClock(["2026-03-22T04:00:00Z"]))
+    action = determine_next_step_action(
+        work_item=item,
+        post_execution_decision_artifact=decision,
+        post_execution_decision_artifact_path=item["post_execution_decision_artifact_path"],
+        execution_result_artifact_path=item["execution_result_artifact_path"],
+        source_queue_state_path="artifacts/prompt_queue/queue-01.state.json",
+        clock=FixedClock(["2026-03-22T04:02:00Z", "2026-03-22T04:02:01Z"]),
+    )
+    action["action_reason_code"] = "spawn_reentry_child_from_post_execution_reentry_eligible"
+
+    _assert_integration_fails_closed_without_mutation(
+        queue_state=queue,
+        item=item,
+        action=action,
+    )
