@@ -2,169 +2,329 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/replay_result.schema.json",
   "title": "Replay Result",
-  "description": "Governed artifact produced by the BN–BP Replay Engine describing the outcome of replaying a prior execution trace.",
+  "description": "Deterministic BAG replay artifact for canonical control-loop + enforcement re-execution.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
     "replay_id",
-    "source_trace_id",
-    "replayed_at",
-    "status",
-    "prerequisites_valid",
-    "prerequisite_errors",
-    "steps_executed",
-    "output_comparison",
-    "determinism_notes"
+    "original_run_id",
+    "replay_run_id",
+    "timestamp",
+    "trace_id",
+    "input_artifact_reference",
+    "original_decision_reference",
+    "original_enforcement_reference",
+    "replay_decision_reference",
+    "replay_enforcement_reference",
+    "replay_decision",
+    "replay_enforcement_action",
+    "replay_final_status",
+    "original_enforcement_action",
+    "original_final_status",
+    "consistency_status",
+    "drift_detected",
+    "failure_reason",
+    "replay_path",
+    "provenance"
   ],
-  "additionalProperties": false,
   "properties": {
     "artifact_type": {
       "type": "string",
-      "const": "replay_result",
-      "description": "Governed artifact type identifier."
+      "const": "replay_result"
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0",
-      "description": "Schema version for the replay result artifact."
+      "minLength": 1
     },
     "replay_id": {
       "type": "string",
-      "minLength": 1,
-      "description": "Unique identifier for this replay run (UUID-4)."
+      "minLength": 1
     },
-    "source_trace_id": {
+    "original_run_id": {
       "type": "string",
-      "minLength": 1,
-      "description": "The trace_id of the original execution being replayed."
+      "minLength": 1
     },
-    "replayed_at": {
+    "replay_run_id": {
       "type": "string",
-      "format": "date-time",
-      "description": "ISO-8601 UTC timestamp when the replay was executed."
+      "minLength": 1
     },
-    "status": {
+    "timestamp": {
       "type": "string",
-      "enum": ["success", "partial", "failed", "blocked"],
-      "description": "Overall replay outcome. 'blocked' means prerequisites were not met."
+      "format": "date-time"
     },
-    "prerequisites_valid": {
-      "type": "boolean",
-      "description": "Whether all prerequisites were satisfied before replay execution began."
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
     },
-    "prerequisite_errors": {
-      "type": "array",
-      "description": "List of prerequisite validation errors. Empty when prerequisites_valid is true.",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+    "input_artifact_reference": {
+      "type": "string",
+      "minLength": 1
     },
-    "steps_executed": {
-      "type": "array",
-      "description": "Ordered list of replay steps that were executed.",
-      "items": {
-        "type": "object",
-        "required": [
-          "step_index",
-          "span_name",
-          "original_span_id",
-          "status",
-          "replayed_at"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "step_index": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Zero-based index of this step within the replay."
-          },
-          "span_name": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Name of the span being replayed."
-          },
-          "original_span_id": {
-            "type": "string",
-            "minLength": 1,
-            "description": "span_id from the original trace."
-          },
-          "status": {
-            "type": "string",
-            "enum": ["ok", "error", "blocked", "skipped"],
-            "description": "Outcome of this replay step."
-          },
-          "replayed_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "ISO-8601 UTC timestamp when this step was replayed."
-          },
-          "error_message": {
-            "type": ["string", "null"],
-            "description": "Error detail when status is error or blocked."
-          }
-        }
-      }
+    "original_decision_reference": {
+      "type": "string",
+      "minLength": 1
     },
-    "output_comparison": {
-      "type": "object",
-      "description": "Comparison of replay outputs against original outputs.",
-      "required": [
-        "compared",
-        "matched",
-        "differences"
+    "original_enforcement_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_decision_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_enforcement_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny",
+        "require_review"
+      ]
+    },
+    "replay_enforcement_action": {
+      "type": "string",
+      "enum": [
+        "allow_execution",
+        "deny_execution",
+        "require_manual_review"
+      ]
+    },
+    "replay_final_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny",
+        "require_review"
+      ]
+    },
+    "original_enforcement_action": {
+      "type": "string",
+      "enum": [
+        "allow_execution",
+        "deny_execution",
+        "require_manual_review"
+      ]
+    },
+    "original_final_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny",
+        "require_review"
+      ]
+    },
+    "consistency_status": {
+      "type": "string",
+      "enum": [
+        "match",
+        "mismatch",
+        "indeterminate"
+      ]
+    },
+    "drift_detected": {
+      "type": "boolean"
+    },
+    "failure_reason": {
+      "type": [
+        "string",
+        "null"
       ],
+      "minLength": 1
+    },
+    "replay_path": {
+      "type": "string",
+      "const": "bag_replay_engine"
+    },
+    "provenance": {
+      "type": "object",
       "additionalProperties": false,
+      "required": [
+        "source_artifact_type",
+        "source_artifact_id"
+      ],
       "properties": {
-        "compared": {
-          "type": "boolean",
-          "description": "Whether an output comparison was performed."
+        "source_artifact_type": {
+          "type": "string",
+          "minLength": 1
         },
-        "matched": {
-          "type": ["boolean", "null"],
-          "description": "Whether replay outputs matched original outputs. Null if not compared."
+        "source_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "match"
+          }
         },
-        "differences": {
-          "type": "array",
-          "description": "List of detected differences. Empty when matched is true.",
-          "items": {
-            "type": "object",
-            "required": [
-              "field",
-              "original_value",
-              "replay_value"
-            ],
-            "additionalProperties": false,
-            "properties": {
-              "field": {
-                "type": "string",
-                "minLength": 1,
-                "description": "JSON path or field name where the difference was found."
-              },
-              "original_value": {
-                "description": "Value from the original trace."
-              },
-              "replay_value": {
-                "description": "Value from the replay trace."
-              }
-            }
+        "required": [
+          "consistency_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "drift_detected": {
+            "const": false
+          },
+          "failure_reason": {
+            "const": null
+          }
+        },
+        "required": [
+          "drift_detected",
+          "failure_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "mismatch"
+          }
+        },
+        "required": [
+          "consistency_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "drift_detected": {
+            "const": true
+          },
+          "failure_reason": {
+            "const": null
+          }
+        },
+        "required": [
+          "drift_detected",
+          "failure_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "indeterminate"
+          }
+        },
+        "required": [
+          "consistency_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "drift_detected": {
+            "const": false
+          },
+          "failure_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "drift_detected",
+          "failure_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "match"
+          },
+          "original_final_status": {
+            "const": "allow"
+          }
+        },
+        "required": [
+          "consistency_status",
+          "original_final_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "replay_final_status": {
+            "const": "allow"
+          },
+          "original_enforcement_action": {
+            "const": "allow_execution"
+          },
+          "replay_enforcement_action": {
+            "const": "allow_execution"
           }
         }
       }
     },
-    "determinism_notes": {
-      "type": "array",
-      "description": "Notes about non-deterministic elements encountered during replay.",
-      "items": {
-        "type": "string",
-        "minLength": 1
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "match"
+          },
+          "original_final_status": {
+            "const": "deny"
+          }
+        },
+        "required": [
+          "consistency_status",
+          "original_final_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "replay_final_status": {
+            "const": "deny"
+          },
+          "original_enforcement_action": {
+            "const": "deny_execution"
+          },
+          "replay_enforcement_action": {
+            "const": "deny_execution"
+          }
+        }
       }
     },
-    "context": {
-      "type": "object",
-      "additionalProperties": true,
-      "description": "Optional replay context metadata (e.g. triggered_by, replay_mode)."
+    {
+      "if": {
+        "properties": {
+          "consistency_status": {
+            "const": "match"
+          },
+          "original_final_status": {
+            "const": "require_review"
+          }
+        },
+        "required": [
+          "consistency_status",
+          "original_final_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "replay_final_status": {
+            "const": "require_review"
+          },
+          "original_enforcement_action": {
+            "const": "require_manual_review"
+          },
+          "replay_enforcement_action": {
+            "const": "require_manual_review"
+          }
+        }
+      }
     }
-  }
+  ]
 }

@@ -74,6 +74,40 @@ _REPLAY_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
 _NON_DETERMINISTIC_FIELDS = frozenset({"start_time", "end_time"})
 
 
+_LEGACY_REPLAY_RESULT_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "artifact_type",
+        "schema_version",
+        "replay_id",
+        "source_trace_id",
+        "replayed_at",
+        "status",
+        "prerequisites_valid",
+        "prerequisite_errors",
+        "steps_executed",
+        "output_comparison",
+        "determinism_notes",
+        "context",
+    ],
+    "properties": {
+        "artifact_type": {"const": "replay_result"},
+        "schema_version": {"const": "1.0.0"},
+        "replay_id": {"type": "string", "minLength": 1},
+        "source_trace_id": {"type": "string", "minLength": 1},
+        "replayed_at": {"type": "string", "format": "date-time"},
+        "status": {"type": "string"},
+        "prerequisites_valid": {"type": "boolean"},
+        "prerequisite_errors": {"type": "array"},
+        "steps_executed": {"type": "array"},
+        "output_comparison": {"type": "object"},
+        "determinism_notes": {"type": "array"},
+        "context": {"type": "object"},
+    },
+}
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -406,30 +440,27 @@ def compare_replay_outputs(
 
 
 def validate_replay_result(result: Dict[str, Any]) -> List[str]:
-    """Validate *result* against the ``replay_result.schema.json`` contract.
-
-    Parameters
-    ----------
-    result:
-        The replay result dict to validate.
-
-    Returns
-    -------
-    list[str]
-        Empty list if valid.  Non-empty list of error messages if invalid.
-        Callers MUST treat any non-empty result as a hard failure.
-    """
+    """Validate replay_result payloads across BAG and legacy BP surfaces."""
     if not isinstance(result, dict):
         return ["validate_replay_result: result must be a dict"]
 
     try:
-        schema = _load_replay_result_schema()
+        primary_schema = _load_replay_result_schema()
     except (OSError, json.JSONDecodeError) as exc:
         return [f"validate_replay_result: could not load replay result schema: {exc}"]
 
-    validator = Draft202012Validator(schema, format_checker=FormatChecker())
-    errors = sorted(validator.iter_errors(result), key=lambda e: list(e.path))
-    return [e.message for e in errors]
+    checker = FormatChecker()
+    primary_validator = Draft202012Validator(primary_schema, format_checker=checker)
+    primary_errors = sorted(primary_validator.iter_errors(result), key=lambda e: list(e.path))
+    if not primary_errors:
+        return []
+
+    legacy_validator = Draft202012Validator(_LEGACY_REPLAY_RESULT_SCHEMA, format_checker=checker)
+    legacy_errors = sorted(legacy_validator.iter_errors(result), key=lambda e: list(e.path))
+    if not legacy_errors:
+        return []
+
+    return [e.message for e in primary_errors]
 
 
 # ---------------------------------------------------------------------------
@@ -743,3 +774,196 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
             replay_trace_id=replay_trace_id,
         )
     return record
+
+# ---------------------------------------------------------------------------
+# BAG replay engine (canonical trust-loop replay)
+# ---------------------------------------------------------------------------
+
+
+def _validate_schema_or_raise(payload: Dict[str, Any], schema_name: str, *, context: str) -> None:
+    schema = load_schema(schema_name)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
+    if errors:
+        details = "; ".join(e.message for e in errors)
+        raise ReplayEngineError(f"{context} failed validation: {details}")
+
+
+def _validate_governed_artifact_or_raise(artifact: Dict[str, Any]) -> None:
+    artifact_type = artifact.get("artifact_type")
+    if not isinstance(artifact_type, str) or not artifact_type:
+        raise ReplayEngineError("REPLAY_INVALID_INPUT_ARTIFACT: missing artifact_type")
+    try:
+        _validate_schema_or_raise(artifact, artifact_type, context="input artifact")
+    except FileNotFoundError as exc:
+        raise ReplayEngineError(
+            f"REPLAY_UNSUPPORTED_INPUT_ARTIFACT: schema not found for artifact_type={artifact_type}"
+        ) from exc
+
+
+def _stable_replay_id(original_run_id: str, trace_id: str, source_ref: str) -> str:
+    seed = f"{original_run_id}|{trace_id}|{source_ref}"
+    return f"RPL-{uuid.uuid5(uuid.NAMESPACE_URL, seed).hex[:12]}"
+
+
+def _classify_consistency(
+    replay_enforcement: Dict[str, Any],
+    original_enforcement: Dict[str, Any],
+) -> str:
+    replay_action = replay_enforcement.get("enforcement_action")
+    original_action = original_enforcement.get("enforcement_action")
+    replay_status = replay_enforcement.get("final_status")
+    original_status = original_enforcement.get("final_status")
+    if replay_action == original_action and replay_status == original_status:
+        return "match"
+    return "mismatch"
+
+
+def _build_replay_result(
+    *,
+    artifact: Dict[str, Any],
+    original_decision: Dict[str, Any],
+    original_enforcement: Dict[str, Any],
+    replay_decision: Dict[str, Any],
+    replay_enforcement: Dict[str, Any],
+    trace_id: str,
+    consistency_status: str,
+    failure_reason: Optional[str],
+) -> Dict[str, Any]:
+    source_id = str(
+        artifact.get("eval_run_id")
+        or artifact.get("eval_case_id")
+        or artifact.get("run_id")
+        or artifact.get("artifact_id")
+        or trace_id
+    )
+    original_run_id = str(original_decision.get("run_id") or source_id)
+    replay_run_id = str(replay_decision.get("run_id") or source_id)
+    source_ref = f"{artifact.get('artifact_type', 'unknown')}:{source_id}"
+    drift_detected = consistency_status == "mismatch"
+
+    result = {
+        "artifact_type": "replay_result",
+        "schema_version": "1.1.0",
+        "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
+        "original_run_id": original_run_id,
+        "replay_run_id": replay_run_id,
+        "timestamp": _now_iso(),
+        "trace_id": trace_id,
+        "input_artifact_reference": source_ref,
+        "original_decision_reference": str(original_decision.get("decision_id") or "unknown-decision"),
+        "original_enforcement_reference": str(
+            original_enforcement.get("enforcement_result_id") or "unknown-enforcement"
+        ),
+        "replay_decision_reference": str(replay_decision.get("decision_id") or "unknown-replay-decision"),
+        "replay_enforcement_reference": str(
+            replay_enforcement.get("enforcement_result_id") or "unknown-replay-enforcement"
+        ),
+        "replay_decision": replay_decision.get("decision", "deny"),
+        "replay_enforcement_action": replay_enforcement.get("enforcement_action", "deny_execution"),
+        "replay_final_status": replay_enforcement.get("final_status", "deny"),
+        "original_enforcement_action": original_enforcement.get("enforcement_action", "deny_execution"),
+        "original_final_status": original_enforcement.get("final_status", "deny"),
+        "consistency_status": consistency_status,
+        "drift_detected": drift_detected,
+        "failure_reason": failure_reason,
+        "replay_path": "bag_replay_engine",
+        "provenance": {
+            "source_artifact_type": str(artifact.get("artifact_type") or "unknown"),
+            "source_artifact_id": source_id,
+        },
+    }
+    errors = validate_replay_result(result)
+    if errors:
+        raise ReplayEngineError("replay_result failed validation: " + "; ".join(errors))
+    return result
+
+
+def run_replay(
+    artifact: dict,
+    original_decision: dict,
+    original_enforcement: dict,
+    trace_context: dict,
+) -> dict:
+    """Replay canonical trust-loop execution deterministically for a governed artifact.
+
+    Canonical path only:
+        artifact -> run_control_loop(...) -> enforce_control_decision(...)
+    """
+    if not isinstance(artifact, dict):
+        raise ReplayEngineError("REPLAY_INVALID_ARTIFACT: artifact must be a dict")
+    if not isinstance(original_decision, dict):
+        raise ReplayEngineError("REPLAY_MISSING_ORIGINAL_DECISION: original_decision must be a dict")
+    if not isinstance(original_enforcement, dict):
+        raise ReplayEngineError("REPLAY_MISSING_ORIGINAL_ENFORCEMENT: original_enforcement must be a dict")
+    if not isinstance(trace_context, dict):
+        raise ReplayEngineError("REPLAY_INVALID_TRACE_CONTEXT: trace_context must be a dict")
+
+    artifact_input = deepcopy(artifact)
+    original_decision_input = deepcopy(original_decision)
+    original_enforcement_input = deepcopy(original_enforcement)
+    trace_context_input = deepcopy(trace_context)
+
+    _validate_governed_artifact_or_raise(artifact_input)
+    _validate_schema_or_raise(
+        original_decision_input,
+        "evaluation_control_decision",
+        context="original_decision",
+    )
+    _validate_schema_or_raise(
+        original_enforcement_input,
+        "enforcement_result",
+        context="original_enforcement",
+    )
+
+    trace_id = str(
+        trace_context_input.get("trace_id")
+        or original_decision_input.get("trace_id")
+        or artifact_input.get("trace_id")
+        or "unknown-trace"
+    )
+
+    try:
+        from spectrum_systems.modules.runtime.control_loop import run_control_loop
+        from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
+
+        replay_decision = run_control_loop(artifact_input, trace_context_input)[
+            "evaluation_control_decision"
+        ]
+        replay_enforcement = enforce_control_decision(replay_decision)
+        consistency_status = _classify_consistency(replay_enforcement, original_enforcement_input)
+        return _build_replay_result(
+            artifact=artifact_input,
+            original_decision=original_decision_input,
+            original_enforcement=original_enforcement_input,
+            replay_decision=replay_decision,
+            replay_enforcement=replay_enforcement,
+            trace_id=trace_id,
+            consistency_status=consistency_status,
+            failure_reason=None,
+        )
+    except ReplayEngineError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        fallback_decision = {
+            "decision_id": str(original_decision_input.get("decision_id") or "replay-indeterminate-decision"),
+            "run_id": str(original_decision_input.get("run_id") or "replay-indeterminate-run"),
+            "decision": str(original_decision_input.get("decision") or "deny"),
+        }
+        fallback_enforcement = {
+            "enforcement_result_id": str(
+                original_enforcement_input.get("enforcement_result_id") or "replay-indeterminate-enforcement"
+            ),
+            "enforcement_action": str(original_enforcement_input.get("enforcement_action") or "deny_execution"),
+            "final_status": str(original_enforcement_input.get("final_status") or "deny"),
+        }
+        return _build_replay_result(
+            artifact=artifact_input,
+            original_decision=original_decision_input,
+            original_enforcement=original_enforcement_input,
+            replay_decision=fallback_decision,
+            replay_enforcement=fallback_enforcement,
+            trace_id=trace_id,
+            consistency_status="indeterminate",
+            failure_reason=f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}",
+        )

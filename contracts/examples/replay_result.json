@@ -1,0 +1,27 @@
+{
+  "artifact_type": "replay_result",
+  "schema_version": "1.1.0",
+  "replay_id": "RPL-trace-eval-001",
+  "original_run_id": "eval-run-001",
+  "replay_run_id": "eval-run-001",
+  "timestamp": "2026-03-22T00:00:00Z",
+  "trace_id": "trace-eval-001",
+  "input_artifact_reference": "eval_summary:eval-run-001",
+  "original_decision_reference": "ECD-eval-run-001-ALLOW",
+  "original_enforcement_reference": "ENF-000000000001",
+  "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+  "replay_enforcement_reference": "ENF-000000000002",
+  "replay_decision": "allow",
+  "replay_enforcement_action": "allow_execution",
+  "replay_final_status": "allow",
+  "original_enforcement_action": "allow_execution",
+  "original_final_status": "allow",
+  "consistency_status": "match",
+  "drift_detected": false,
+  "failure_reason": null,
+  "replay_path": "bag_replay_engine",
+  "provenance": {
+    "source_artifact_type": "eval_summary",
+    "source_artifact_id": "eval-run-001"
+  }
+}

@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional, Set
 
 from jsonschema import Draft202012Validator, FormatChecker
 
+from spectrum_systems.modules.runtime.replay_engine import validate_replay_result
+
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _REPLAY_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
@@ -61,7 +63,11 @@ def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
 
 
 def validate_replay_artifact(artifact: Dict[str, Any]) -> List[str]:
-    """Validate replay/baseline input artifacts against replay_result schema."""
+    """Validate replay/baseline artifacts (BAG and legacy-compatible)."""
+    errors = validate_replay_result(artifact)
+    if not errors:
+        return []
+    # Fallback direct schema validation for explicit diagnostics.
     return _validate(artifact, _load_schema(_REPLAY_SCHEMA_PATH))
 
 
@@ -77,13 +83,15 @@ def _extract_required_field(artifact: Dict[str, Any], field: str) -> Any:
 
 
 def _extract_run_id(replay_artifact: Dict[str, Any]) -> str:
+    run_id = replay_artifact.get("replay_run_id")
+    if isinstance(run_id, str) and run_id:
+        return run_id
     context = replay_artifact.get("context")
-    if not isinstance(context, dict):
-        raise DriftDetectionError("replay_artifact.context must be an object")
-    run_id = context.get("run_id")
-    if not run_id or not isinstance(run_id, str):
-        raise DriftDetectionError("replay_artifact.context.run_id must be a non-empty string")
-    return run_id
+    if isinstance(context, dict):
+        context_run_id = context.get("run_id")
+        if isinstance(context_run_id, str) and context_run_id:
+            return context_run_id
+    raise DriftDetectionError("replay artifact is missing replay run identifier")
 
 
 def _to_config(config: Optional[Dict[str, Any]]) -> DriftConfig:
@@ -220,10 +228,14 @@ def run_drift_detection(
             "replay_artifact failed schema validation: " + "; ".join(replay_errors)
         )
 
-    trace_id = str(_extract_required_field(replay_artifact, "source_trace_id"))
+    trace_id = str(replay_artifact.get("trace_id") or replay_artifact.get("source_trace_id") or "")
+    if not trace_id:
+        raise DriftDetectionError("replay artifact missing trace_id/source_trace_id")
     baseline_id = ""
     replay_run_id = _extract_run_id(replay_artifact)
-    timestamp = str(_extract_required_field(replay_artifact, "replayed_at"))
+    timestamp = str(replay_artifact.get("timestamp") or replay_artifact.get("replayed_at") or "")
+    if not timestamp:
+        raise DriftDetectionError("replay artifact missing timestamp/replayed_at")
 
     if baseline_artifact is None:
         baseline_id = "baseline_missing"
