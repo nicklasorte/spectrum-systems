@@ -111,6 +111,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BBB-CONTRACT-COLLISION-FIX-2026-03-22.md | BBB Contract Collision Fix — eval_case → failure_eval_case split | Active |
 | docs/review-actions/PLAN-BBC-2026-03-22.md | Prompt BBC — Eval Registry + Dataset Governance | Active |
 | docs/review-actions/PLAN-BAE-2026-03-22.md | Prompt BAE — Control Loop Integration | Active |
+| docs/review-actions/PLAN-BAF-2026-03-22.md | Prompt BAF — Enforcement Wiring (single-path evaluation_control_decision enforcement) | Active |
 
 Update this table when plans are created or completed.
 

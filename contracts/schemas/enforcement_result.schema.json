@@ -2,29 +2,34 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/enforcement_result.schema.json",
   "title": "Enforcement Result",
-  "description": "Deterministic enforcement outcome produced from an evaluation_budget_decision artifact.",
+  "description": "Deterministic enforced outcome derived from an evaluation_control_decision artifact via the BAF single-path enforcement engine.",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "enforcement_id",
-    "decision_id",
-    "trace_id",
+    "artifact_type",
+    "schema_version",
+    "enforcement_result_id",
     "timestamp",
+    "trace_id",
+    "run_id",
+    "input_decision_reference",
     "enforcement_action",
-    "execution_permitted",
-    "enforcement_status",
-    "reasons"
+    "final_status",
+    "rationale_code",
+    "fail_closed",
+    "enforcement_path",
+    "provenance"
   ],
   "properties": {
-    "enforcement_id": {
+    "artifact_type": {
       "type": "string",
-      "minLength": 1
+      "const": "enforcement_result"
     },
-    "decision_id": {
+    "schema_version": {
       "type": "string",
-      "minLength": 1
+      "const": "1.1.0"
     },
-    "trace_id": {
+    "enforcement_result_id": {
       "type": "string",
       "minLength": 1
     },
@@ -32,23 +37,138 @@
       "type": "string",
       "format": "date-time"
     },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_decision_reference": {
+      "type": "string",
+      "minLength": 1
+    },
     "enforcement_action": {
       "type": "string",
-      "enum": ["allow", "warn", "freeze", "block"]
+      "enum": [
+        "allow_execution",
+        "deny_execution",
+        "require_manual_review"
+      ]
     },
-    "execution_permitted": {
+    "final_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "deny",
+        "require_review"
+      ]
+    },
+    "rationale_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fail_closed": {
       "type": "boolean"
     },
-    "enforcement_status": {
+    "enforcement_path": {
       "type": "string",
-      "enum": ["executed", "blocked", "frozen"]
+      "const": "baf_single_path"
     },
-    "reasons": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_artifact_type",
+        "source_artifact_id"
+      ],
+      "properties": {
+        "source_artifact_type": {
+          "type": "string",
+          "const": "evaluation_control_decision"
+        },
+        "source_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "enforcement_action": {
+            "const": "allow_execution"
+          }
+        },
+        "required": [
+          "enforcement_action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "final_status": {
+            "const": "allow"
+          }
+        },
+        "required": [
+          "final_status"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "enforcement_action": {
+            "const": "deny_execution"
+          }
+        },
+        "required": [
+          "enforcement_action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "final_status": {
+            "const": "deny"
+          },
+          "fail_closed": {
+            "const": true
+          }
+        },
+        "required": [
+          "final_status",
+          "fail_closed"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "enforcement_action": {
+            "const": "require_manual_review"
+          }
+        },
+        "required": [
+          "enforcement_action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "final_status": {
+            "const": "require_review"
+          },
+          "fail_closed": {
+            "const": true
+          }
+        },
+        "required": [
+          "final_status",
+          "fail_closed"
+        ]
+      }
+    }
+  ]
 }

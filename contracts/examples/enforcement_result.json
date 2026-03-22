@@ -1,12 +1,18 @@
 {
-  "enforcement_id": "enf-001",
-  "decision_id": "dec-001",
-  "trace_id": "trace-001",
-  "timestamp": "2026-03-21T00:00:00Z",
-  "enforcement_action": "allow",
-  "execution_permitted": true,
-  "enforcement_status": "executed",
-  "reasons": [
-    "control-loop decision allows execution"
-  ]
+  "artifact_type": "enforcement_result",
+  "schema_version": "1.1.0",
+  "enforcement_result_id": "enf-20260322T000000Z",
+  "timestamp": "2026-03-22T00:00:00Z",
+  "trace_id": "44444444-4444-4444-8444-444444444444",
+  "run_id": "eval-run-20260321T120000Z",
+  "input_decision_reference": "ecd-20260321T000000Z",
+  "enforcement_action": "require_manual_review",
+  "final_status": "require_review",
+  "rationale_code": "require_review_warning_signal",
+  "fail_closed": true,
+  "enforcement_path": "baf_single_path",
+  "provenance": {
+    "source_artifact_type": "evaluation_control_decision",
+    "source_artifact_id": "ecd-20260321T000000Z"
+  }
 }

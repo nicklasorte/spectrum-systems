@@ -57,6 +57,10 @@ from spectrum_systems.modules.runtime.control_loop import (
     ControlLoopError,
     run_control_loop,
 )
+from spectrum_systems.modules.runtime.enforcement_engine import (
+    EnforcementError,
+    enforce_control_decision,
+)
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (
     EvalCaseGenerationError,
     generate_eval_case_from_failure,
@@ -117,16 +121,16 @@ _BYPASS_BLOCKED_RESULT: Dict[str, Any] = {
 }
 
 
-def _evaluation_control_execution_result(decision: Dict[str, Any]) -> Dict[str, Any]:
-    """Translate evaluation_control_decision into BN.7 execution_result shape."""
-    response = decision.get("system_response", "block")
-    blocked = response in {"freeze", "block"}
-    review_required = response in {"warn"}
-    execution_status = "blocked" if blocked else "success"
+def _execution_result_from_enforcement_result(enforcement_result: Dict[str, Any]) -> Dict[str, Any]:
+    """Translate finalized enforcement_result into BN.7 execution_result shape."""
+    final_status = enforcement_result["final_status"]
+    blocked = final_status == "deny"
+    review_required = final_status == "require_review"
+    execution_status = "blocked" if (blocked or review_required) else "success"
 
     return {
         "execution_status": execution_status,
-        "continuation_allowed": not blocked,
+        "continuation_allowed": final_status == "allow",
         "publication_blocked": blocked,
         "decision_blocked": blocked,
         "rerun_triggered": False,
@@ -134,13 +138,14 @@ def _evaluation_control_execution_result(decision: Dict[str, Any]) -> Dict[str, 
         "human_review_required": review_required,
         "actions_taken": [
             {
-                "action_type": "evaluation_control_decision_applied",
-                "status": response,
-                "detail": "governed signal mapped to deterministic control decision",
-                "decision_id": decision.get("decision_id"),
+                "action_type": "evaluation_enforcement_applied",
+                "status": final_status,
+                "detail": "bn.7 outcome derived from governed enforcement_result",
+                "input_decision_reference": enforcement_result.get("input_decision_reference"),
+                "enforcement_result_id": enforcement_result.get("enforcement_result_id"),
             }
         ],
-        "validators_run": ["control_loop_engine"],
+        "validators_run": ["control_loop_engine", "enforcement_engine"],
         "validators_failed": [],
         "repair_actions_applied": [],
     }
@@ -245,11 +250,17 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         except ControlLoopError as exc:
             raise ContractRuntimeError(f"control loop evaluation failed: {exc}") from exc
         eval_decision = loop_result["evaluation_control_decision"]
-        execution_result = _evaluation_control_execution_result(eval_decision)
+        try:
+            enforcement_result = enforce_control_decision(eval_decision)
+        except EnforcementError as exc:
+            raise ContractRuntimeError(f"enforcement mapping failed: {exc}") from exc
+
+        execution_result = _execution_result_from_enforcement_result(enforcement_result)
         chain_result = {
             "control_chain_decision": {"control_signals": control_signals},
             "execution_result": execution_result,
             "evaluation_control_decision": eval_decision,
+            "enforcement_result": enforcement_result,
             "control_trace": loop_result["control_trace"],
         }
     else:
@@ -309,6 +320,8 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         integration_result["evaluation_control_decision"] = chain_result["evaluation_control_decision"]
     if chain_result.get("control_trace") is not None:
         integration_result["control_trace"] = chain_result["control_trace"]
+    if chain_result.get("enforcement_result") is not None:
+        integration_result["enforcement_result"] = chain_result["enforcement_result"]
     if human_review_task is not None:
         integration_result["human_review_task"] = human_review_task
 

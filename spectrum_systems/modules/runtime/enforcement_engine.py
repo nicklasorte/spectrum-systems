@@ -1,37 +1,47 @@
-"""Runtime enforcement engine for evaluation budget decisions.
+"""Runtime enforcement engine for deterministic governed decisions.
 
-This module converts control-loop ``evaluation_budget_decision`` artifacts into
-schema-valid ``enforcement_result`` artifacts that directly govern whether
-execution may proceed.
+BAF single-path surface
+-----------------------
+``enforce_control_decision`` is the canonical enforcement mapper for
+``evaluation_control_decision`` artifacts and emits schema-valid
+``enforcement_result`` artifacts.
+
+Legacy compatibility surface
+----------------------------
+``enforce_budget_decision`` remains available for existing run-bundle and replay
+flows that still consume ``evaluation_budget_decision`` artifacts.
 """
 
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_SCHEMA_PATH = _REPO_ROOT / "contracts" / "schemas" / "enforcement_result.schema.json"
-_DECISION_SCHEMA_PATH = _REPO_ROOT / "contracts" / "schemas" / "evaluation_budget_decision.schema.json"
+from spectrum_systems.contracts import load_schema
 
-_ACTION_MAP: Dict[str, Tuple[str, bool, str]] = {
-    "allow": ("allow", True, "executed"),
-    "warn": ("warn", True, "executed"),
-    "freeze": ("freeze", False, "frozen"),
-    "block": ("block", False, "blocked"),
+
+_ACTION_MAP: Dict[str, str] = {
+    "allow": "allow_execution",
+    "deny": "deny_execution",
+    "require_review": "require_manual_review",
+}
+
+_STATUS_MAP: Dict[str, str] = {
+    "allow_execution": "allow",
+    "deny_execution": "deny",
+    "require_manual_review": "require_review",
 }
 
 
-def _load_schema(path: Path) -> Dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+class EnforcementError(Exception):
+    """Raised when enforcement mapping cannot produce a valid governed result."""
 
 
-def _validate(payload: Any, schema: Dict[str, Any]) -> List[str]:
+def _validate(payload: Any, schema_name: str) -> List[str]:
+    schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(payload), key=lambda err: list(err.path))
     return [
@@ -41,29 +51,96 @@ def _validate(payload: Any, schema: Dict[str, Any]) -> List[str]:
 
 
 def validate_enforcement_result(result: Any) -> List[str]:
-    """Validate an enforcement result against its JSON schema."""
-    return _validate(result, _load_schema(_SCHEMA_PATH))
-
-
-def _is_valid_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
-    errors = _validate(decision, _load_schema(_DECISION_SCHEMA_PATH))
-    return (len(errors) == 0, errors)
+    """Validate an enforcement result against ``enforcement_result`` schema."""
+    return _validate(result, "enforcement_result")
 
 
 def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _new_id() -> str:
-    return str(uuid.uuid4())
+def _new_id(prefix: str) -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:12]}"
+
+
+def enforce_control_decision(decision_artifact: dict) -> dict:
+    """Map ``evaluation_control_decision`` to deterministic ``enforcement_result``.
+
+    Fail-closed behavior:
+    - malformed decision artifact -> ``EnforcementError``
+    - missing/unknown decision value -> ``EnforcementError``
+    - invalid output artifact shape -> ``EnforcementError``
+    """
+    if not isinstance(decision_artifact, dict):
+        raise EnforcementError("decision_artifact must be a dict")
+
+    decision_errors = _validate(decision_artifact, "evaluation_control_decision")
+    if decision_errors:
+        raise EnforcementError(
+            "evaluation_control_decision failed validation: " + "; ".join(decision_errors)
+        )
+
+    decision_label = decision_artifact.get("decision")
+    if not isinstance(decision_label, str) or not decision_label:
+        raise EnforcementError("missing decision in evaluation_control_decision")
+
+    enforcement_action = _ACTION_MAP.get(decision_label)
+    if enforcement_action is None:
+        raise EnforcementError(f"unsupported decision value: {decision_label}")
+
+    final_status = _STATUS_MAP[enforcement_action]
+    source_decision_id = str(decision_artifact.get("decision_id") or "")
+    if not source_decision_id:
+        raise EnforcementError("evaluation_control_decision missing decision_id")
+
+    fail_closed = final_status in {"deny", "require_review"}
+
+    result = {
+        "artifact_type": "enforcement_result",
+        "schema_version": "1.1.0",
+        "enforcement_result_id": _new_id("ENF"),
+        "timestamp": _now_iso(),
+        "trace_id": decision_artifact["trace_id"],
+        "run_id": decision_artifact["run_id"],
+        "input_decision_reference": source_decision_id,
+        "enforcement_action": enforcement_action,
+        "final_status": final_status,
+        "rationale_code": decision_artifact["rationale_code"],
+        "fail_closed": fail_closed,
+        "enforcement_path": "baf_single_path",
+        "provenance": {
+            "source_artifact_type": "evaluation_control_decision",
+            "source_artifact_id": source_decision_id,
+        },
+    }
+
+    result_errors = validate_enforcement_result(result)
+    if result_errors:
+        raise EnforcementError(
+            "enforcement_result failed validation: " + "; ".join(result_errors)
+        )
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Legacy compatibility path (used by existing budget/replay entry points)
+# ---------------------------------------------------------------------------
+
+_LEGACY_ACTION_MAP: Dict[str, Tuple[str, bool, str]] = {
+    "allow": ("allow", True, "executed"),
+    "warn": ("warn", True, "executed"),
+    "freeze": ("freeze", False, "frozen"),
+    "block": ("block", False, "blocked"),
+}
+
+
+def _validate_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
+    errors = _validate(decision, "evaluation_budget_decision")
+    return (len(errors) == 0, errors)
 
 
 def enforce_budget_decision(decision: dict) -> dict:
-    """Convert ``evaluation_budget_decision`` into enforced execution behavior.
-
-    Fail-closed behavior is mandatory. Any malformed input or unknown
-    ``system_response`` results in a blocked enforcement artifact.
-    """
+    """Legacy budget-decision mapper retained for backward compatibility."""
     default_decision_id = str((decision or {}).get("decision_id") or "unknown-decision")
     default_trace_id = str((decision or {}).get("trace_id") or "unknown-trace")
     reasons: List[str] = []
@@ -72,25 +149,21 @@ def enforce_budget_decision(decision: dict) -> dict:
     execution_permitted = False
     enforcement_status = "blocked"
 
-    valid_decision, decision_errors = _is_valid_budget_decision_shape(decision)
+    valid_decision, decision_errors = _validate_budget_decision_shape(decision)
     if not valid_decision:
         reasons.append("malformed evaluation_budget_decision; fail-closed block applied")
         reasons.extend(decision_errors)
     else:
         system_response = str(decision.get("system_response"))
-        mapped = _ACTION_MAP.get(system_response)
+        mapped = _LEGACY_ACTION_MAP.get(system_response)
         if mapped is None:
-            reasons.append(
-                f"unknown system_response '{system_response}'; fail-closed block applied"
-            )
+            reasons.append(f"unknown system_response '{system_response}'; fail-closed block applied")
         else:
             action, execution_permitted, enforcement_status = mapped
-            reasons = list(decision.get("reasons") or [])
-            if not reasons:
-                reasons = [f"system_response={system_response}"]
+            reasons = list(decision.get("reasons") or []) or [f"system_response={system_response}"]
 
-    result = {
-        "enforcement_id": _new_id(),
+    return {
+        "enforcement_id": _new_id("enf"),
         "decision_id": default_decision_id,
         "trace_id": default_trace_id,
         "timestamp": _now_iso(),
@@ -99,20 +172,3 @@ def enforce_budget_decision(decision: dict) -> dict:
         "enforcement_status": enforcement_status,
         "reasons": reasons,
     }
-
-    schema_errors = validate_enforcement_result(result)
-    if schema_errors:
-        return {
-            "enforcement_id": _new_id(),
-            "decision_id": default_decision_id,
-            "trace_id": default_trace_id,
-            "timestamp": _now_iso(),
-            "enforcement_action": "block",
-            "execution_permitted": False,
-            "enforcement_status": "blocked",
-            "reasons": [
-                "enforcement_result schema validation failed; fail-closed block applied",
-                *schema_errors,
-            ],
-        }
-    return result
