@@ -898,16 +898,36 @@ def build_validation_monitor_record(
     decision_status = decision.get("status")
     decision_response = decision.get("system_response")
 
+    required_validation_keys = (
+        "manifest_valid",
+        "inputs_present",
+        "expected_outputs_declared",
+        "output_paths_valid",
+        "provenance_required",
+    )
+    all_required_validation_flags_true = (not malformed) and all(
+        validation_results.get(key) is True for key in required_validation_keys
+    )
+
     if malformed or decision_status not in {"valid", "invalid"}:
         status = "indeterminate"
         validation_status = "invalid"
         system_response = "block"
         reasons = ["malformed artifact_validation_decision; fail-closed to indeterminate"]
     elif decision_status == "valid" and decision_response == "allow":
-        status = "healthy"
-        validation_status = "valid"
-        system_response = "allow"
-        reasons = list(decision.get("reasons") or ["bundle validation succeeded"])
+        if not all_required_validation_flags_true:
+            status = "failed"
+            validation_status = "invalid"
+            system_response = "block"
+            reasons = list(decision.get("reasons") or [])
+            reasons.append(
+                "decision claims valid/allow but required validation_results flags are missing or false; fail-closed"
+            )
+        else:
+            status = "healthy"
+            validation_status = "valid"
+            system_response = "allow"
+            reasons = list(decision.get("reasons") or ["bundle validation succeeded"])
     elif decision_status == "invalid" and decision_response in {"require_rebuild", "block"}:
         status = "failed"
         validation_status = "invalid"
@@ -920,18 +940,8 @@ def build_validation_monitor_record(
         reasons = list(decision.get("reasons") or [])
         reasons.append("unknown decision status/response combination; fail-closed to indeterminate")
 
-    all_validation_flags_true = all(
-        slis[name] == 1.0
-        for name in (
-            "manifest_valid",
-            "inputs_present",
-            "expected_outputs_declared",
-            "output_paths_valid",
-            "provenance_required",
-        )
-    )
     slis["bundle_validation_success_rate"] = (
-        1.0 if all_validation_flags_true and validation_status == "valid" else 0.0
+        1.0 if all_required_validation_flags_true and validation_status == "valid" else 0.0
     )
 
     record = {
@@ -972,6 +982,7 @@ def summarize_validation_monitor_records(records: List[Dict[str, Any]]) -> Dict[
             )
 
     count = len(records)
+
     def _mean(key: str) -> float:
         return sum(float(r["slis"][key]) for r in records) / count
 
@@ -995,7 +1006,10 @@ def summarize_validation_monitor_records(records: List[Dict[str, Any]]) -> Dict[
     else:
         overall_status = "blocked"
 
-    first_trace_id = str(records[0]["trace_id"])
+    source_record_ids = sorted({str(record["record_id"]) for record in records})
+    source_trace_ids = sorted({str(record["trace_id"]) for record in records})
+    trace_id = source_trace_ids[0] if len(source_trace_ids) == 1 else "multiple"
+
     reasons = [f"aggregated {count} monitor record(s)"]
     if overall_status == "indeterminate":
         reasons.append("at least one input monitor record is indeterminate")
@@ -1010,7 +1024,9 @@ def summarize_validation_monitor_records(records: List[Dict[str, Any]]) -> Dict[
 
     summary = {
         "summary_id": _new_id(),
-        "trace_id": first_trace_id,
+        "trace_id": trace_id,
+        "source_record_ids": source_record_ids,
+        "source_trace_ids": source_trace_ids,
         "generated_at": _now_iso(),
         "window": {"record_count": count},
         "aggregated_slis": aggregated_slis,

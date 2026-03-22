@@ -22,20 +22,30 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (  # noqa: E402
 from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision  # noqa: E402
 
 
-def _artifact_decision(*, status: str = "valid", system_response: str = "allow") -> Dict[str, Any]:
+def _artifact_decision(
+    *,
+    status: str = "valid",
+    system_response: str = "allow",
+    validation_results: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    resolved_validation_results = (
+        validation_results
+        if validation_results is not None
+        else {
+            "manifest_valid": status == "valid",
+            "inputs_present": status == "valid",
+            "expected_outputs_declared": status == "valid",
+            "output_paths_valid": status == "valid",
+            "provenance_required": status == "valid",
+        }
+    )
     return {
         "decision_id": "dec-001",
         "run_id": "run-001",
         "trace_id": "trace-001",
         "status": status,
         "system_response": system_response,
-        "validation_results": {
-            "manifest_valid": status == "valid",
-            "inputs_present": status == "valid",
-            "expected_outputs_declared": status == "valid",
-            "output_paths_valid": status == "valid",
-            "provenance_required": status == "valid",
-        },
+        "validation_results": resolved_validation_results,
         "missing_artifacts": [],
         "invalid_fields": [],
         "reasons": ["fixture decision"],
@@ -84,6 +94,45 @@ def test_monitor_record_valid_decision_healthy() -> None:
     assert record["slis"]["bundle_validation_success_rate"] == 1.0
 
 
+def test_monitor_record_valid_allow_with_missing_required_flag_fails_closed() -> None:
+    record = build_validation_monitor_record(
+        _artifact_decision(
+            status="valid",
+            system_response="allow",
+            validation_results={
+                "manifest_valid": True,
+                "inputs_present": True,
+                "expected_outputs_declared": True,
+                "output_paths_valid": True,
+            },
+        )
+    )
+    assert record["status"] != "healthy"
+    assert record["validation_status"] == "invalid"
+    assert record["system_response"] == "block"
+    assert record["slis"]["bundle_validation_success_rate"] == 0.0
+
+
+def test_monitor_record_valid_allow_with_false_required_flag_fails_closed() -> None:
+    record = build_validation_monitor_record(
+        _artifact_decision(
+            status="valid",
+            system_response="allow",
+            validation_results={
+                "manifest_valid": True,
+                "inputs_present": True,
+                "expected_outputs_declared": True,
+                "output_paths_valid": True,
+                "provenance_required": False,
+            },
+        )
+    )
+    assert record["status"] != "healthy"
+    assert record["validation_status"] == "invalid"
+    assert record["system_response"] == "block"
+    assert record["slis"]["bundle_validation_success_rate"] == 0.0
+
+
 def test_monitor_record_invalid_block_failed() -> None:
     record = build_validation_monitor_record(_artifact_decision(status="invalid", system_response="block"))
     assert record["status"] == "failed"
@@ -126,6 +175,37 @@ def test_summary_mixed_records_warning_at_or_above_point_8() -> None:
     summary = summarize_validation_monitor_records(records)
     assert summary["aggregated_slis"]["bundle_validation_success_rate"] == pytest.approx(0.8)
     assert summary["overall_status"] == "warning"
+
+
+def test_summary_multirecord_provenance_complete_and_not_single_source() -> None:
+    first = build_validation_monitor_record(_artifact_decision(status="valid", system_response="allow"))
+    second = build_validation_monitor_record(
+        {
+            **_artifact_decision(status="invalid", system_response="block"),
+            "decision_id": "dec-002",
+            "trace_id": "trace-002",
+        }
+    )
+    summary = summarize_validation_monitor_records([first, second])
+    assert summary["trace_id"] == "multiple"
+    assert summary["source_record_ids"] == sorted([first["record_id"], second["record_id"]])
+    assert summary["source_trace_ids"] == ["trace-001", "trace-002"]
+
+
+def test_summary_provenance_order_stable_for_equivalent_inputs() -> None:
+    first = build_validation_monitor_record(_artifact_decision(status="valid", system_response="allow"))
+    second = build_validation_monitor_record(
+        {
+            **_artifact_decision(status="invalid", system_response="block"),
+            "decision_id": "dec-002",
+            "trace_id": "trace-002",
+        }
+    )
+    forward = summarize_validation_monitor_records([first, second])
+    reverse = summarize_validation_monitor_records([second, first])
+    assert forward["source_record_ids"] == reverse["source_record_ids"]
+    assert forward["source_trace_ids"] == reverse["source_trace_ids"]
+    assert forward["trace_id"] == reverse["trace_id"] == "multiple"
 
 
 def test_summary_success_rate_between_zero_and_point_8_exhausted() -> None:
@@ -185,6 +265,8 @@ def test_budget_decision_status_mapping(
     summary = {
         "summary_id": "sum-001",
         "trace_id": "trace-001",
+        "source_record_ids": ["record-001"],
+        "source_trace_ids": ["trace-001"],
         "generated_at": "2026-03-21T00:00:00Z",
         "window": {"record_count": 1},
         "aggregated_slis": {
