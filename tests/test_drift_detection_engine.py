@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -49,7 +50,14 @@ def _replay_result() -> dict:
 
 
 def _expected_id(source_run_id: str, replay_run_id: str, drift_type: str) -> str:
-    return hashlib.sha256(f"{source_run_id}{replay_run_id}{drift_type}".encode("utf-8")).hexdigest()
+    payload = {
+        "source_run_id": source_run_id,
+        "replay_run_id": replay_run_id,
+        "drift_type": drift_type,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def test_perfect_match_returns_no_drift() -> None:
@@ -125,4 +133,19 @@ def test_invalid_input_raises_error() -> None:
     replay["replay_final_status"] = "unknown-status"
 
     with pytest.raises(DriftDetectionError):
+        detect_drift(replay)
+
+
+def test_drift_result_id_preimage_is_unambiguous() -> None:
+    collision_left = _expected_id("ab", "c", "d")
+    collision_right = _expected_id("a", "bc", "d")
+
+    assert collision_left != collision_right
+
+
+def test_unknown_consistency_status_raises_error() -> None:
+    replay = _replay_result()
+    replay["consistency_status"] = "unknown"
+
+    with pytest.raises(DriftDetectionError, match="replay_result failed validation"):
         detect_drift(replay)
