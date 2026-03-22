@@ -77,7 +77,8 @@
         "repair_loop_generation",
         "child_work_item_ids",
         "execution_result_artifact_path",
-        "post_execution_decision_artifact_path"
+        "post_execution_decision_artifact_path",
+        "next_step_action_artifact_path"
       ],
       "properties": {
         "work_item_id": {
@@ -263,6 +264,13 @@
           "minLength": 1
         },
         "post_execution_decision_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "next_step_action_artifact_path": {
           "type": [
             "string",
             "null"

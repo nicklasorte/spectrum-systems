@@ -41,6 +41,20 @@ from spectrum_systems.modules.prompt_queue.post_execution_queue_integration impo
     PostExecutionQueueIntegrationError,
     apply_post_execution_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.next_step_action_artifact_io import (
+    default_next_step_action_path,
+    validate_next_step_action_artifact,
+    write_next_step_action_artifact,
+)
+from spectrum_systems.modules.prompt_queue.next_step_orchestrator import (
+    NextStepOrchestrationConfig,
+    NextStepOrchestrationError,
+    determine_next_step_action,
+)
+from spectrum_systems.modules.prompt_queue.next_step_queue_integration import (
+    NextStepQueueIntegrationError,
+    apply_next_step_action_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
     validate_findings_artifact,
     write_findings_artifact,
@@ -111,6 +125,14 @@ __all__ = [
     "apply_post_execution_decision_to_queue",
     "PostExecutionQueueIntegrationError",
     "PostExecutionPolicyConfig",
+    "default_next_step_action_path",
+    "validate_next_step_action_artifact",
+    "write_next_step_action_artifact",
+    "NextStepOrchestrationConfig",
+    "NextStepOrchestrationError",
+    "determine_next_step_action",
+    "NextStepQueueIntegrationError",
+    "apply_next_step_action_to_queue",
     "spawn_repair_child_in_queue",
     "RepairChildQueueIntegrationError",
     "build_repair_child_work_item",

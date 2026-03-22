@@ -1,0 +1,16 @@
+{
+  "next_step_action_artifact_id": "nextstep-wi-parent.repair.1-2026-03-22T04:00:00Z",
+  "work_item_id": "wi-parent.repair.1",
+  "parent_work_item_id": "wi-parent",
+  "post_execution_decision_artifact_path": "artifacts/prompt_queue/post_execution_decisions/queue-01.wi-parent.repair.1.post_execution_decision.json",
+  "execution_result_artifact_path": "artifacts/prompt_queue/execution_results/wi-parent.repair.1.execution_result.json",
+  "action_status": "spawn_review",
+  "action_reason_code": "spawn_review_from_post_execution_review_required",
+  "decision_status": "review_required",
+  "generated_at": "2026-03-22T04:00:00Z",
+  "generator_version": "prompt_queue_next_step_orchestrator.v1",
+  "spawned_work_item_id": "wi-parent.repair.1.review.1",
+  "blocking_conditions": [],
+  "warnings": [],
+  "source_queue_state_path": "artifacts/prompt_queue/queue-01.state.json"
+}

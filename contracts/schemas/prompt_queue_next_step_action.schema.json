@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_next_step_action.schema.json",
+  "title": "Prompt Queue Next Step Action",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "next_step_action_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "post_execution_decision_artifact_path",
+    "execution_result_artifact_path",
+    "action_status",
+    "action_reason_code",
+    "decision_status",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "next_step_action_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "post_execution_decision_artifact_path": {"type": "string", "minLength": 1},
+    "execution_result_artifact_path": {"type": "string", "minLength": 1},
+    "action_status": {
+      "type": "string",
+      "enum": [
+        "marked_complete",
+        "spawn_review",
+        "spawn_reentry_child",
+        "blocked_no_action"
+      ]
+    },
+    "action_reason_code": {
+      "type": "string",
+      "enum": [
+        "marked_complete_from_post_execution_complete",
+        "spawn_review_from_post_execution_review_required",
+        "spawn_reentry_child_from_post_execution_reentry_eligible",
+        "blocked_no_action_from_post_execution_reentry_blocked"
+      ]
+    },
+    "decision_status": {
+      "type": "string",
+      "enum": ["complete", "review_required", "reentry_eligible", "reentry_blocked"]
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1},
+    "spawned_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1}
+  }
+}
