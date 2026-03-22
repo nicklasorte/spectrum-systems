@@ -27,5 +27,6 @@
   "repair_loop_generation": 0,
   "child_work_item_ids": [],
   "gating_decision_artifact_path": null,
-  "execution_result_artifact_path": null
+  "execution_result_artifact_path": null,
+  "post_execution_decision_artifact_path": null
 }

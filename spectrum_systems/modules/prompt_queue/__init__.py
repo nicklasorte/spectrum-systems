@@ -28,6 +28,19 @@ from spectrum_systems.modules.prompt_queue.execution_gating_queue_integration im
     ExecutionGatingQueueIntegrationError,
     apply_execution_gating_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.post_execution_artifact_io import (
+    validate_post_execution_decision_artifact,
+    write_post_execution_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.post_execution_policy import (
+    PostExecutionPolicyConfig,
+    default_post_execution_decision_path,
+    evaluate_post_execution_policy,
+)
+from spectrum_systems.modules.prompt_queue.post_execution_queue_integration import (
+    PostExecutionQueueIntegrationError,
+    apply_post_execution_decision_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
     validate_findings_artifact,
     write_findings_artifact,
@@ -91,6 +104,13 @@ __all__ = [
     "apply_execution_gating_decision_to_queue",
     "ExecutionGatingQueueIntegrationError",
     "ExecutionGatingPolicyConfig",
+    "write_post_execution_decision_artifact",
+    "validate_post_execution_decision_artifact",
+    "evaluate_post_execution_policy",
+    "default_post_execution_decision_path",
+    "apply_post_execution_decision_to_queue",
+    "PostExecutionQueueIntegrationError",
+    "PostExecutionPolicyConfig",
     "spawn_repair_child_in_queue",
     "RepairChildQueueIntegrationError",
     "build_repair_child_work_item",

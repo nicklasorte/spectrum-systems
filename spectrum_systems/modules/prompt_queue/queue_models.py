@@ -23,6 +23,10 @@ class WorkItemStatus(str, Enum):
     EXECUTING = "executing"
     EXECUTED_SUCCESS = "executed_success"
     EXECUTED_FAILURE = "executed_failure"
+    COMPLETE = "complete"
+    REVIEW_REQUIRED = "review_required"
+    REENTRY_BLOCKED = "reentry_blocked"
+    REENTRY_ELIGIBLE = "reentry_eligible"
     APPROVAL_REQUIRED = "approval_required"
     BLOCKED = "blocked"
 
@@ -97,6 +101,7 @@ class WorkItem:
     repair_prompt_artifact_path: Optional[str] = None
     gating_decision_artifact_path: Optional[str] = None
     execution_result_artifact_path: Optional[str] = None
+    post_execution_decision_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -176,6 +181,7 @@ def make_work_item(
         child_work_item_ids=[],
         gating_decision_artifact_path=None,
         execution_result_artifact_path=None,
+        post_execution_decision_artifact_path=None,
     ).to_dict()
 
 

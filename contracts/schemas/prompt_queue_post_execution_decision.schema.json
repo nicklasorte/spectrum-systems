@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_post_execution_decision.schema.json",
+  "title": "Prompt Queue Post Execution Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "post_execution_decision_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "execution_result_artifact_path",
+    "gating_decision_artifact_path",
+    "repair_prompt_artifact_path",
+    "decision_status",
+    "decision_reason_code",
+    "execution_status",
+    "repair_loop_generation",
+    "max_generation_allowed",
+    "approval_required",
+    "approval_present",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "post_execution_decision_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "execution_result_artifact_path": {"type": "string", "minLength": 1},
+    "gating_decision_artifact_path": {"type": "string", "minLength": 1},
+    "repair_prompt_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "decision_status": {
+      "type": "string",
+      "enum": ["complete", "review_required", "reentry_blocked", "reentry_eligible"]
+    },
+    "decision_reason_code": {
+      "type": "string",
+      "enum": [
+        "complete_execution_success",
+        "review_required_execution_failure_within_generation_limit",
+        "reentry_blocked_generation_limit_reached",
+        "reentry_blocked_invalid_artifact",
+        "reentry_blocked_invalid_lineage",
+        "reentry_blocked_ineligible_status"
+      ]
+    },
+    "execution_status": {"type": "string", "enum": ["success", "failure"]},
+    "repair_loop_generation": {"type": "integer", "minimum": 0},
+    "max_generation_allowed": {"type": "integer", "minimum": 0},
+    "approval_required": {"type": "boolean"},
+    "approval_present": {"type": "boolean"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1},
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "review_trigger_recommended": {"type": "boolean"}
+  }
+}

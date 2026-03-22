@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.19",
+  "artifact_version": "1.0.20",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-CONTROLLED-EXECUTION",
+  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-POST-EXECUTION",
   "run_id": "run-20260322T000000Z",
   "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
@@ -702,26 +702,26 @@
     {
       "artifact_type": "prompt_queue_work_item",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.19",
+      "last_updated_in": "1.0.20",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
     },
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.19",
+      "last_updated_in": "1.0.20",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
     },
@@ -789,6 +789,19 @@
       "last_updated_in": "1.0.19",
       "example_path": "contracts/examples/prompt_queue_execution_result.json",
       "notes": "Bounded controlled execution result artifact with deterministic simulated execution outcome, lifecycle timestamps, and repair-loop lineage references."
+    },
+    {
+      "artifact_type": "prompt_queue_post_execution_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.20",
+      "last_updated_in": "1.0.20",
+      "example_path": "contracts/examples/prompt_queue_post_execution_decision.json",
+      "notes": "Deterministic fail-closed post-execution decision artifact for governed prompt queue execution outcomes, review re-entry policy, and lineage-preserving lifecycle transitions."
     }
   ]
 }
