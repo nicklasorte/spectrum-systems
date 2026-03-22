@@ -110,6 +110,13 @@ class ContractSchemaTests(unittest.TestCase):
             header_row = next(reader)
         self.assertEqual(header_row, CRM_SPREADSHEET_HEADERS)
 
+
+
+    def test_bbc_eval_governance_examples_validate(self) -> None:
+        for name in ("eval_dataset", "eval_admission_policy", "eval_registry_snapshot"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]

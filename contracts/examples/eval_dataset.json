@@ -1,0 +1,46 @@
+{
+  "artifact_type": "eval_dataset",
+  "schema_version": "1.0.0",
+  "dataset_id": "dataset-bbc-core",
+  "dataset_version": "1.0.0",
+  "dataset_name": "BBC Baseline Eval Dataset",
+  "status": "candidate",
+  "intended_use": "pre_merge_gate",
+  "admission_policy_id": "policy-bbc-core",
+  "created_at": "2026-03-22T00:00:00Z",
+  "created_by": "spectrum-governance",
+  "provenance": {
+    "trace_id": "trace-bbc-core",
+    "run_id": "run-bbc-20260322",
+    "source_artifact_ids": [
+      "eval-case-001",
+      "failure-eval-case-001"
+    ]
+  },
+  "members": [
+    {
+      "artifact_type": "eval_case",
+      "artifact_id": "eval-case-001",
+      "artifact_version": "1.0.0",
+      "source": "manual",
+      "admission_status": "admitted",
+      "admission_reason_code": "meets_policy",
+      "provenance_ref": "trace://eval-case-001"
+    },
+    {
+      "artifact_type": "failure_eval_case",
+      "artifact_id": "failure-eval-case-001",
+      "artifact_version": "1.0.0",
+      "source": "generated_failure",
+      "admission_status": "rejected",
+      "admission_reason_code": "duplicate",
+      "provenance_ref": "trace://failure-eval-case-001"
+    }
+  ],
+  "summary": {
+    "total_members": 2,
+    "admitted_members": 1,
+    "rejected_members": 1,
+    "contains_failure_generated_cases": true
+  }
+}

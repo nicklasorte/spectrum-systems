@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.9",
+  "artifact_version": "1.0.10",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.10",
-  "record_id": "REC-STD-2026-03-21-BBA-EVAL-CONTROL",
-  "run_id": "run-20260321T220000Z",
-  "created_at": "2026-03-21T00:00:00Z",
+  "standards_version": "2026.03.22",
+  "record_id": "REC-STD-2026-03-22-BBC-EVAL-REGISTRY",
+  "run_id": "run-20260322T000000Z",
+  "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -555,6 +555,45 @@
       "last_updated_in": "1.0.8",
       "example_path": "contracts/examples/failure_eval_case.json",
       "notes": "BBB failure-derived eval artifact generated deterministically from blocked, threshold-breach, or indeterminate runtime outcomes."
+    },
+    {
+      "artifact_type": "eval_dataset",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.10",
+      "example_path": "contracts/examples/eval_dataset.json",
+      "notes": "BBC governed versioned dataset of eval_case and failure_eval_case members with deterministic admission summary and policy linkage."
+    },
+    {
+      "artifact_type": "eval_admission_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.10",
+      "example_path": "contracts/examples/eval_admission_policy.json",
+      "notes": "BBC deterministic policy contract defining artifact admissibility, provenance requirements, duplicate handling, and threshold gates."
+    },
+    {
+      "artifact_type": "eval_registry_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.10",
+      "example_path": "contracts/examples/eval_registry_snapshot.json",
+      "notes": "BBC immutable registry snapshot of active admission policy and dataset approval posture for governed downstream consumption."
     },
     {
       "artifact_type": "eval_run",

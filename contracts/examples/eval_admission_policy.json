@@ -1,0 +1,22 @@
+{
+  "artifact_type": "eval_admission_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "policy-bbc-core",
+  "policy_version": "1.0.0",
+  "policy_name": "BBC Core Admission Policy",
+  "status": "active",
+  "applies_to_artifact_types": [
+    "eval_case",
+    "failure_eval_case"
+  ],
+  "require_provenance": true,
+  "allow_failure_generated_cases": true,
+  "allow_manual_cases": true,
+  "duplicate_handling": "reject",
+  "created_at": "2026-03-22T00:00:00Z",
+  "created_by": "spectrum-governance",
+  "thresholds": {
+    "minimum_admitted_members": 1,
+    "maximum_rejected_ratio": 0.5
+  }
+}

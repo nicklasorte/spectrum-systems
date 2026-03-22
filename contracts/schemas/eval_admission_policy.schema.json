@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_admission_policy.schema.json",
+  "title": "Eval Admission Policy",
+  "description": "Governed policy that deterministically controls admission of eval artifacts into eval datasets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "policy_name",
+    "status",
+    "applies_to_artifact_types",
+    "require_provenance",
+    "allow_failure_generated_cases",
+    "allow_manual_cases",
+    "duplicate_handling",
+    "created_at",
+    "created_by",
+    "thresholds"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_admission_policy" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "policy_name": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "retired"]
+    },
+    "applies_to_artifact_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["eval_case", "failure_eval_case"]
+      }
+    },
+    "require_provenance": { "type": "boolean" },
+    "allow_failure_generated_cases": { "type": "boolean" },
+    "allow_manual_cases": { "type": "boolean" },
+    "duplicate_handling": {
+      "type": "string",
+      "enum": ["reject", "allow_with_warning"]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "created_by": { "type": "string", "minLength": 1 },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_admitted_members",
+        "maximum_rejected_ratio"
+      ],
+      "properties": {
+        "minimum_admitted_members": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maximum_rejected_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}
