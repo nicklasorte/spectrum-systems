@@ -26,5 +26,6 @@
   "spawned_from_review_artifact_path": null,
   "repair_loop_generation": 0,
   "child_work_item_ids": [],
-  "gating_decision_artifact_path": null
+  "gating_decision_artifact_path": null,
+  "execution_result_artifact_path": null
 }

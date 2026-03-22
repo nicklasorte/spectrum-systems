@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_execution_result.schema.json",
+  "title": "Prompt Queue Execution Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "execution_result_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "repair_prompt_artifact_path",
+    "gating_decision_artifact_path",
+    "spawned_from_findings_artifact_path",
+    "spawned_from_review_artifact_path",
+    "execution_mode",
+    "execution_status",
+    "started_at",
+    "completed_at",
+    "output_reference",
+    "error_summary",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "execution_result_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "repair_prompt_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "gating_decision_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "spawned_from_findings_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "spawned_from_review_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "execution_mode": {"type": "string", "const": "simulated"},
+    "execution_status": {"type": "string", "enum": ["success", "failure"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "output_reference": {"type": ["string", "null"], "minLength": 1},
+    "error_summary": {"type": ["string", "null"], "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1},
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "execution_attempt_id": {"type": ["string", "null"], "minLength": 1}
+  }
+}

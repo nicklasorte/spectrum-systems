@@ -20,6 +20,9 @@ class WorkItemStatus(str, Enum):
     REPAIR_CHILD_CREATED = "repair_child_created"
     EXECUTION_GATED = "execution_gated"
     RUNNABLE = "runnable"
+    EXECUTING = "executing"
+    EXECUTED_SUCCESS = "executed_success"
+    EXECUTED_FAILURE = "executed_failure"
     APPROVAL_REQUIRED = "approval_required"
     BLOCKED = "blocked"
 
@@ -93,6 +96,7 @@ class WorkItem:
     findings_artifact_path: Optional[str] = None
     repair_prompt_artifact_path: Optional[str] = None
     gating_decision_artifact_path: Optional[str] = None
+    execution_result_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -171,6 +175,7 @@ def make_work_item(
         repair_loop_generation=0,
         child_work_item_ids=[],
         gating_decision_artifact_path=None,
+        execution_result_artifact_path=None,
     ).to_dict()
 
 
