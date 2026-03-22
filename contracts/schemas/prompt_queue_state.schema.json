@@ -74,8 +74,10 @@
         "spawned_from_repair_prompt_artifact_path",
         "spawned_from_findings_artifact_path",
         "spawned_from_review_artifact_path",
+        "generation_count",
         "repair_loop_generation",
         "child_work_item_ids",
+        "loop_control_decision_artifact_path",
         "execution_result_artifact_path",
         "post_execution_decision_artifact_path",
         "next_step_action_artifact_path"
@@ -271,6 +273,17 @@
           "minLength": 1
         },
         "next_step_action_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "generation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loop_control_decision_artifact_path": {
           "type": [
             "string",
             "null"

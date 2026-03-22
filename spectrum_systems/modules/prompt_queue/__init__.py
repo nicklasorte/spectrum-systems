@@ -28,6 +28,20 @@ from spectrum_systems.modules.prompt_queue.execution_gating_queue_integration im
     ExecutionGatingQueueIntegrationError,
     apply_execution_gating_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.loop_control_artifact_io import (
+    default_loop_control_decision_path,
+    validate_loop_control_decision_artifact,
+    write_loop_control_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.loop_control_policy import (
+    LoopControlPolicyConfig,
+    LoopControlPolicyError,
+    evaluate_loop_control_policy,
+)
+from spectrum_systems.modules.prompt_queue.loop_control_queue_integration import (
+    LoopControlQueueIntegrationError,
+    apply_loop_control_decision_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.post_execution_artifact_io import (
     validate_post_execution_decision_artifact,
     write_post_execution_decision_artifact,
@@ -118,6 +132,14 @@ __all__ = [
     "apply_execution_gating_decision_to_queue",
     "ExecutionGatingQueueIntegrationError",
     "ExecutionGatingPolicyConfig",
+    "write_loop_control_decision_artifact",
+    "validate_loop_control_decision_artifact",
+    "default_loop_control_decision_path",
+    "evaluate_loop_control_policy",
+    "LoopControlPolicyConfig",
+    "LoopControlPolicyError",
+    "apply_loop_control_decision_to_queue",
+    "LoopControlQueueIntegrationError",
     "write_post_execution_decision_artifact",
     "validate_post_execution_decision_artifact",
     "evaluate_post_execution_policy",

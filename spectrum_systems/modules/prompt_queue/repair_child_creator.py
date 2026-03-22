@@ -19,6 +19,18 @@ def _derive_repair_generation(parent_work_item: dict) -> int:
     return parent_generation + 1
 
 
+def _derive_generation_count(parent_work_item: dict) -> int:
+    if "generation_count" not in parent_work_item:
+        raise RepairChildCreationError("Parent work item missing required generation_count.")
+    try:
+        parent_generation = int(parent_work_item["generation_count"])
+    except (TypeError, ValueError) as exc:
+        raise RepairChildCreationError("Parent work item generation_count must be an integer.") from exc
+    if parent_generation < 0:
+        raise RepairChildCreationError("Parent work item generation_count must be >= 0.")
+    return parent_generation + 1
+
+
 def _derive_child_prompt_id(parent_work_item: dict, generation: int) -> str:
     return f"{parent_work_item['prompt_id']}:repair:{generation}"
 
@@ -63,6 +75,7 @@ def build_repair_child_work_item(
 
     _validate_spawn_preconditions(parent_work_item, repair_prompt_artifact)
 
+    generation_count = _derive_generation_count(parent_work_item)
     generation = _derive_repair_generation(parent_work_item)
     child_work_item = make_work_item(
         work_item_id=f"{parent_work_item['work_item_id']}.repair.{generation}",
@@ -83,6 +96,7 @@ def build_repair_child_work_item(
             "spawned_from_repair_prompt_artifact_path": repair_prompt_artifact_path,
             "spawned_from_findings_artifact_path": repair_prompt_artifact["source_findings_artifact_path"],
             "spawned_from_review_artifact_path": repair_prompt_artifact["source_review_artifact_path"],
+            "generation_count": generation_count,
             "repair_loop_generation": generation,
             "child_work_item_ids": [],
             "updated_at": now,

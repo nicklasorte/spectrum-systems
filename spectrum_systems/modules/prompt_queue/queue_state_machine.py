@@ -53,6 +53,7 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.REVIEW_REQUIRED.value,
         WorkItemStatus.REENTRY_BLOCKED.value,
         WorkItemStatus.REENTRY_ELIGIBLE.value,
+        WorkItemStatus.BLOCKED.value,
     },
     WorkItemStatus.REVIEW_REQUIRED.value: set(),
     WorkItemStatus.REENTRY_BLOCKED.value: set(),
