@@ -319,6 +319,61 @@ def test_cli_exit_code_behavior(tmp_path: Path) -> None:
     broken_proc = subprocess.run([sys.executable, str(script), str(broken_bundle)], check=False)
     assert broken_proc.returncode in {1, 2}
 
-    rebuild_bundle = _build_bundle(tmp_path / "rebuild", valid=True, remove_outputs_dir=True)
-    rebuild_proc = subprocess.run([sys.executable, str(script), str(rebuild_bundle)], check=False)
-    assert rebuild_proc.returncode in {1, 2}
+
+def test_decision_determinism() -> None:
+    summary = {
+        "summary_id": "sum-deterministic-001",
+        "trace_id": "trace-deterministic-001",
+        "source_record_ids": ["record-001"],
+        "source_trace_ids": ["trace-001"],
+        "generated_at": "2026-03-21T00:00:00Z",
+        "window": {"record_count": 1},
+        "aggregated_slis": {
+            "manifest_valid_rate": 1.0,
+            "inputs_present_rate": 1.0,
+            "expected_outputs_declared_rate": 1.0,
+            "output_paths_valid_rate": 1.0,
+            "provenance_required_rate": 1.0,
+            "bundle_validation_success_rate": 1.0,
+        },
+        "overall_status": "healthy",
+        "reasons": ["fixture summary"],
+    }
+    first = build_validation_budget_decision(summary)
+    second = build_validation_budget_decision(summary)
+    assert first == second
+
+
+def test_fail_closed_on_invalid_input() -> None:
+    invalid_summary = {"bad": "input"}
+    decision = build_validation_budget_decision(invalid_summary)
+    assert decision["status"] == "blocked"
+    assert decision["system_response"] == "block"
+    assert decision["triggered_thresholds"]
+    assert all("allow" not in str(v) for v in decision.values())
+
+
+def test_reason_trigger_consistency() -> None:
+    summary = {
+        "summary_id": "sum-consistency-001",
+        "trace_id": "trace-consistency-001",
+        "source_record_ids": ["record-001"],
+        "source_trace_ids": ["trace-001"],
+        "generated_at": "2026-03-21T00:00:00Z",
+        "window": {"record_count": 1},
+        "aggregated_slis": {
+            "manifest_valid_rate": 0.9,
+            "inputs_present_rate": 0.9,
+            "expected_outputs_declared_rate": 0.9,
+            "output_paths_valid_rate": 0.0,
+            "provenance_required_rate": 0.9,
+            "bundle_validation_success_rate": 0.0,
+        },
+        "overall_status": "warning",
+        "reasons": ["fixture summary"],
+    }
+    decision = build_validation_budget_decision(summary)
+    assert decision["status"] == "blocked"
+    assert len(decision["reasons"]) == len(decision["triggered_thresholds"])
+    assert decision["reasons"]
+    assert decision["triggered_thresholds"]

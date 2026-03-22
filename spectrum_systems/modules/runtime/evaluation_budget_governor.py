@@ -52,6 +52,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
+from spectrum_systems.modules.runtime.evaluation_control import map_status_to_response
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -107,6 +108,25 @@ def _now_iso() -> str:
 
 def _new_id() -> str:
     return str(uuid.uuid4())
+
+
+def _deterministic_control_decision_id(summary: Dict[str, Any], status: str, triggered: List[str]) -> str:
+    seed_payload = {
+        "summary_id": summary.get("summary_id"),
+        "trace_id": summary.get("trace_id"),
+        "overall_status": summary.get("overall_status"),
+        "status": status,
+        "triggered_thresholds": sorted(triggered),
+    }
+    seed = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"), default=str)
+    digest = uuid.uuid5(uuid.NAMESPACE_URL, seed).hex[:12]
+    return f"EBD-{digest}"
+
+
+def _canonical_timestamp(value: Any) -> str:
+    if isinstance(value, str) and value:
+        return value
+    return "1970-01-01T00:00:00Z"
 
 
 def _load_schema(path: Path) -> Dict[str, Any]:
@@ -585,60 +605,84 @@ def build_validation_budget_decision(
     control-loop ``evaluation_budget_decision`` artifacts.
     """
     summary_errors = validate_summary(monitor_summary)
+    triggered_by_status: Dict[str, List[str]] = {
+        "blocked": [],
+        "exhausted": [],
+        "warning": [],
+    }
+    reason_map: Dict[str, str] = {}
+
     if summary_errors:
-        raise InvalidSummaryError(
-            "evaluation_monitor_summary failed schema validation: " + "; ".join(summary_errors)
-        )
-
-    if "overall_status" not in monitor_summary or "aggregated_slis" not in monitor_summary:
-        status = "blocked"
-        system_response = "block"
-        reasons = ["malformed summary input; fail-closed to blocked decision"]
-        triggered = ["malformed_summary_input"]
+        trigger = "malformed_monitor_summary"
+        triggered_by_status["blocked"].append(trigger)
+        reason_map[trigger] = "Monitor summary failed schema validation; fail-closed to blocked."
     else:
-        raw_status = monitor_summary["overall_status"]
-        aggregated = monitor_summary["aggregated_slis"]
-        reasons = list(monitor_summary.get("reasons") or [])
-        triggered: List[str] = []
+        raw_status = str(monitor_summary.get("overall_status") or "")
+        aggregated = monitor_summary.get("aggregated_slis") if isinstance(monitor_summary.get("aggregated_slis"), dict) else {}
 
-        if raw_status == "healthy":
-            status = "healthy"
-            system_response = "allow"
-        elif raw_status == "warning":
-            status = "warning"
-            system_response = "warn"
-            triggered.append("bundle_validation_success_rate_below_1_0")
-        elif raw_status == "exhausted":
-            status = "exhausted"
-            system_response = "freeze"
-            triggered.append("bundle_validation_success_rate_below_0_8")
+        if raw_status == "indeterminate":
+            trigger = "indeterminate_monitor_state"
+            triggered_by_status["blocked"].append(trigger)
+            reason_map[trigger] = "Monitor summary status is indeterminate; fail-closed to blocked."
         elif raw_status == "blocked":
-            status = "blocked"
-            system_response = "block"
-            triggered.append("bundle_validation_success_rate_zero")
-        elif raw_status == "indeterminate":
-            status = "blocked"
-            system_response = "block"
-            triggered.append("indeterminate_monitor_state")
-            reasons.append("indeterminate summary input fail-closed to blocked")
+            trigger = "summary_reported_blocked"
+            triggered_by_status["blocked"].append(trigger)
+            reason_map[trigger] = "Monitor summary reported blocked status."
+        elif raw_status == "exhausted":
+            trigger = "summary_reported_exhausted"
+            triggered_by_status["exhausted"].append(trigger)
+            reason_map[trigger] = "Monitor summary reported exhausted status."
+        elif raw_status == "warning":
+            trigger = "summary_reported_warning"
+            triggered_by_status["warning"].append(trigger)
+            reason_map[trigger] = "Monitor summary reported warning status."
+        elif raw_status == "healthy":
+            pass
         else:
-            status = "blocked"
-            system_response = "block"
-            triggered.append("unknown_monitor_status")
-            reasons.append("unknown summary status fail-closed to blocked")
+            trigger = "unknown_monitor_status"
+            triggered_by_status["blocked"].append(trigger)
+            reason_map[trigger] = "Monitor summary status missing or unrecognized; fail-closed to blocked."
 
-        if float(aggregated.get("output_paths_valid_rate", 0.0)) < 1.0:
-            triggered.append("output_paths_valid_rate_below_threshold")
+        output_paths_rate = aggregated.get("output_paths_valid_rate")
+        if not isinstance(output_paths_rate, (int, float)):
+            trigger = "invalid_output_paths_valid_rate"
+            triggered_by_status["blocked"].append(trigger)
+            reason_map[trigger] = "output_paths_valid_rate missing or non-numeric; fail-closed to blocked."
+        elif float(output_paths_rate) < 1.0:
+            trigger = "output_paths_valid_rate_below_threshold"
+            triggered_by_status["blocked"].append(trigger)
+            reason_map[trigger] = "output_paths_valid_rate below 1.0 requires blocked response."
+
+    if triggered_by_status["blocked"]:
+        status = "blocked"
+    elif triggered_by_status["exhausted"]:
+        status = "exhausted"
+    elif triggered_by_status["warning"]:
+        status = "warning"
+    else:
+        status = "healthy"
+    status, system_response = map_status_to_response(status)
+
+    triggered_thresholds = (
+        sorted(set(triggered_by_status["blocked"]))
+        if status == "blocked"
+        else sorted(set(triggered_by_status["exhausted"]))
+        if status == "exhausted"
+        else sorted(set(triggered_by_status["warning"]))
+    )
+    reasons = [reason_map[trigger] for trigger in triggered_thresholds]
+    if status == "healthy":
+        reasons = ["All monitored thresholds are healthy."]
 
     decision = {
-        "decision_id": _new_id(),
+        "decision_id": _deterministic_control_decision_id(monitor_summary, status, triggered_thresholds),
         "summary_id": str(monitor_summary.get("summary_id") or "unknown-summary"),
         "trace_id": str(monitor_summary.get("trace_id") or "unknown-trace"),
-        "timestamp": _now_iso(),
+        "timestamp": _canonical_timestamp(monitor_summary.get("generated_at")),
         "status": status,
         "system_response": system_response,
-        "triggered_thresholds": sorted(set(triggered)),
-        "reasons": reasons if reasons else ["no reasons provided by summary"],
+        "triggered_thresholds": triggered_thresholds,
+        "reasons": reasons,
     }
 
     decision_errors = validate_decision(decision)
