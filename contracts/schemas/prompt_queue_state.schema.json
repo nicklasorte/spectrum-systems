@@ -88,7 +88,8 @@
         "spawned_from_execution_result_artifact_path",
         "spawned_from_post_execution_decision_artifact_path",
         "spawned_from_loop_control_decision_artifact_path",
-        "loop_continuation_artifact_path"
+        "loop_continuation_artifact_path",
+        "blocked_recovery_decision_artifact_path"
       ],
       "properties": {
         "work_item_id": {
@@ -352,6 +353,13 @@
           "minLength": 1
         },
         "loop_continuation_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "blocked_recovery_decision_artifact_path": {
           "type": [
             "string",
             "null"

@@ -1,5 +1,21 @@
 """Governed prompt queue MVP module."""
 
+from spectrum_systems.modules.prompt_queue.blocked_recovery_artifact_io import (
+    BlockedRecoveryArtifactIOError,
+    BlockedRecoveryArtifactValidationError,
+    default_blocked_recovery_decision_path,
+    validate_blocked_recovery_decision_artifact,
+    write_blocked_recovery_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.blocked_recovery_policy import (
+    BlockedRecoveryPolicyConfig,
+    BlockedRecoveryPolicyError,
+    evaluate_blocked_recovery_policy,
+)
+from spectrum_systems.modules.prompt_queue.blocked_recovery_queue_integration import (
+    BlockedRecoveryQueueIntegrationError,
+    apply_blocked_recovery_decision_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.execution_artifact_io import (
     default_execution_result_path,
     validate_execution_result_artifact,
@@ -194,6 +210,16 @@ from spectrum_systems.modules.prompt_queue.review_invocation_guard import (
 )
 
 __all__ = [
+    "apply_blocked_recovery_decision_to_queue",
+    "BlockedRecoveryQueueIntegrationError",
+    "evaluate_blocked_recovery_policy",
+    "BlockedRecoveryPolicyError",
+    "BlockedRecoveryPolicyConfig",
+    "write_blocked_recovery_decision_artifact",
+    "validate_blocked_recovery_decision_artifact",
+    "default_blocked_recovery_decision_path",
+    "BlockedRecoveryArtifactValidationError",
+    "BlockedRecoveryArtifactIOError",
     "default_execution_result_path",
     "validate_execution_result_artifact",
     "write_execution_result_artifact",

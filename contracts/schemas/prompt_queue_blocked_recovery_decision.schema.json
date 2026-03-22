@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_blocked_recovery_decision.schema.json",
+  "title": "Prompt Queue Blocked Recovery Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "blocked_recovery_decision_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "blocking_state",
+    "blocking_reason_code",
+    "source_blocking_artifact_path",
+    "recovery_status",
+    "recovery_action",
+    "recovery_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "blocked_recovery_decision_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "blocking_state": {
+      "type": "string",
+      "enum": [
+        "blocked"
+      ]
+    },
+    "blocking_reason_code": {
+      "type": "string",
+      "enum": [
+        "blocked_transient_artifact_write_failure",
+        "blocked_transient_artifact_update_failure",
+        "blocked_lineage_mismatch",
+        "blocked_duplicate_protection_conflict",
+        "blocked_partial_provider_result",
+        "blocked_missing_critical_lineage",
+        "blocked_state_corruption",
+        "blocked_unsupported_reason"
+      ]
+    },
+    "source_blocking_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "recovery_status": {
+      "type": "string",
+      "enum": [
+        "recoverable",
+        "manual_review_required",
+        "non_recoverable"
+      ]
+    },
+    "recovery_action": {
+      "type": "string",
+      "enum": [
+        "return_to_prior_state",
+        "return_to_review_triggered",
+        "return_to_runnable",
+        "no_action"
+      ]
+    },
+    "recovery_reason_code": {
+      "type": "string",
+      "enum": [
+        "recoverable_transient_artifact_failure_return_to_prior_state",
+        "manual_review_required_lineage_mismatch",
+        "manual_review_required_duplicate_conflict",
+        "manual_review_required_partial_provider_result",
+        "non_recoverable_missing_critical_lineage",
+        "non_recoverable_state_corruption",
+        "non_recoverable_unsupported_blocked_reason"
+      ]
+    },
+    "source_queue_state_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_manual_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prior_state": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "queued",
+        "review_queued",
+        "review_triggered",
+        "execution_gated",
+        "approval_required",
+        "runnable",
+        null
+      ]
+    }
+  }
+}
