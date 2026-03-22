@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_review_attempt.schema.json",
+  "title": "Prompt Queue Review Attempt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_attempt_id",
+    "work_item_id",
+    "provider_requested",
+    "provider_used",
+    "fallback_used",
+    "fallback_reason",
+    "attempt_number",
+    "outcome_status",
+    "started_at",
+    "ended_at",
+    "review_artifact_path",
+    "error_message"
+  ],
+  "properties": {
+    "review_attempt_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "provider_requested": {"type": "string", "enum": ["claude", "codex"]},
+    "provider_used": {"type": "string", "enum": ["claude", "codex"]},
+    "fallback_used": {"type": "boolean"},
+    "fallback_reason": {
+      "type": ["string", "null"],
+      "enum": ["usage_limit", "rate_limited", "auth_failure", "timeout", "provider_unavailable", null]
+    },
+    "attempt_number": {"type": "integer", "minimum": 1},
+    "outcome_status": {"type": "string", "enum": ["success", "failed"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": "string", "format": "date-time"},
+    "review_artifact_path": {"type": ["string", "null"]},
+    "error_message": {"type": ["string", "null"]}
+  }
+}
