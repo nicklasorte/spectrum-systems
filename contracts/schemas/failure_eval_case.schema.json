@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/eval_case.schema.json",
-  "title": "Eval Case",
-  "description": "Legacy executable evaluation-case artifact used by eval engine workflows.",
+  "$id": "https://spectrum-systems.org/contracts/failure_eval_case.schema.json",
+  "title": "Failure Eval Case",
+  "description": "Governed failure-derived evaluation case artifact defining expected behavior and scoring criteria.",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
@@ -17,7 +17,7 @@
     "created_from"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "eval_case" },
+    "artifact_type": { "type": "string", "const": "failure_eval_case" },
     "schema_version": { "type": "string", "const": "1.0.0" },
     "trace_id": { "type": "string", "format": "uuid" },
     "eval_case_id": { "type": "string", "minLength": 1 },
