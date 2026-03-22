@@ -136,6 +136,21 @@
         {
           "if": {
             "properties": {
+              "status": {"const": "healthy"}
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "validation_status": {"const": "valid"},
+              "system_response": {"const": "allow"}
+            },
+            "required": ["validation_status", "system_response"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
               "validation_status": {"const": "invalid"}
             },
             "required": ["validation_status"]

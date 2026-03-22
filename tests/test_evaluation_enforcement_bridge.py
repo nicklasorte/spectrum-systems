@@ -231,10 +231,10 @@ def test_determine_enforcement_scope_from_context():
     assert scope == "promotion"
 
 
-def test_determine_enforcement_scope_unknown_falls_back():
+def test_determine_enforcement_scope_unknown_raises():
     decision = _make_decision()
-    scope = determine_enforcement_scope(decision, context={"enforcement_scope": "unknown_scope"})
-    assert scope == "release"
+    with pytest.raises(EnforcementBridgeError, match="Unknown enforcement_scope"):
+        determine_enforcement_scope(decision, context={"enforcement_scope": "unknown_scope"})
 
 
 # ---------------------------------------------------------------------------
@@ -365,6 +365,37 @@ def test_build_enforcement_action_rejects_blocking_allowed_to_proceed_true():
             required_human_actions=["Stop release"],
             allowed_to_proceed=True,
         )
+
+
+def test_build_enforcement_action_rejects_blocking_with_empty_reasons():
+    with pytest.raises(EnforcementBridgeError, match="must include at least one reason"):
+        build_enforcement_action(
+            decision_id="dec-001",
+            summary_id="sum-001",
+            system_response="block_release",
+            enforcement_scope="release",
+            reasons=[],
+            required_human_actions=["Escalate now."],
+            allowed_to_proceed=False,
+        )
+
+
+def test_validate_enforcement_action_schema_rejects_blocking_without_reasons():
+    errors = validate_enforcement_action(
+        {
+            "action_id": "act-001",
+            "decision_id": "dec-001",
+            "summary_id": "sum-001",
+            "status": "enforced",
+            "action_type": "freeze_changes",
+            "enforcement_scope": "release",
+            "allowed_to_proceed": False,
+            "reasons": [],
+            "required_human_actions": ["Escalate"],
+            "created_at": "2026-03-21T00:00:00Z",
+        }
+    )
+    assert errors, "expected schema to reject blocking enforcement action with empty reasons"
 
 
 # ---------------------------------------------------------------------------

@@ -406,8 +406,9 @@ def determine_enforcement_scope(
 ) -> str:
     """Determine the enforcement scope for this decision.
 
-    The scope is read from ``context["enforcement_scope"]`` when present and
-    valid.  Otherwise the default scope (``"release"``) is used.
+    The scope is read from ``context["enforcement_scope"]`` when present.
+    An unknown explicit scope is rejected (fail-closed). If scope is absent,
+    the default scope (``"release"``) is used.
 
     Parameters
     ----------
@@ -431,10 +432,9 @@ def determine_enforcement_scope(
         if scope in valid_scopes:
             return scope
         if scope is not None:
-            logger.warning(
-                "Unknown enforcement_scope '%s' in context; falling back to default '%s'",
-                scope,
-                _DEFAULT_SCOPE,
+            raise EnforcementBridgeError(
+                f"Unknown enforcement_scope '{scope}' in context; "
+                f"must be one of {sorted(valid_scopes)}."
             )
 
     return _DEFAULT_SCOPE
@@ -543,6 +543,10 @@ def build_enforcement_action(
         raise EnforcementBridgeError(
             "Invalid enforcement action invariant: blocking system_response "
             f"'{system_response}' cannot set allowed_to_proceed=True."
+        )
+    if not allowed_to_proceed and not reasons:
+        raise EnforcementBridgeError(
+            "Invalid enforcement action invariant: blocking actions must include at least one reason."
         )
 
     _response_to_status = {

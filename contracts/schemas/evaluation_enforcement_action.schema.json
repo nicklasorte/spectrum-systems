@@ -65,6 +65,23 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": false
+          }
+        },
+        "required": ["allowed_to_proceed"]
+      },
+      "then": {
+        "properties": {
+          "reasons": {
+            "minItems": 1
+          }
+        }
+      }
     }
   ],
   "properties": {

@@ -351,8 +351,8 @@ def test_burn_rate_exhausting():
 
 
 def test_burn_rate_empty_records():
-    result = assess_burn_rate([])
-    assert result["status"] == "normal"
+    with pytest.raises(EvaluationMonitorError, match="at least one record"):
+        assess_burn_rate([])
 
 
 # ---------------------------------------------------------------------------
@@ -426,6 +426,31 @@ def test_alert_critical_drift_threshold_override():
     )
     assert alert["level"] == "critical"
     assert any("drift_rate" in r for r in alert["reasons"])
+
+
+@pytest.mark.parametrize(
+    "partial_record",
+    [
+        {},
+        {"overall_status": "pass", "sli_snapshot": {"drift_rate": 0.0}},
+        {"pass_rate": 1.0, "sli_snapshot": {"drift_rate": 0.0}},
+        {"overall_status": "pass", "pass_rate": 1.0},
+    ],
+)
+def test_compute_alert_recommendation_partial_input_raises(partial_record):
+    with pytest.raises(EvaluationMonitorError, match="missing required field"):
+        compute_alert_recommendation(partial_record)
+
+
+def test_compute_alert_recommendation_invalid_sli_snapshot_raises():
+    with pytest.raises(EvaluationMonitorError, match="drift_rate"):
+        compute_alert_recommendation(
+            {
+                "overall_status": "pass",
+                "pass_rate": 1.0,
+                "sli_snapshot": {},
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -867,4 +892,3 @@ def test_bx_summary_without_replay_schema_valid():
     assert "replay_consistency_trend" not in summary["trend_analysis"]
     errors = validate_monitor_summary(summary)
     assert errors == [], f"Schema errors: {errors}"
-

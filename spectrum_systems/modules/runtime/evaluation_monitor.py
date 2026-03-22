@@ -372,7 +372,7 @@ def compute_alert_recommendation(
     record: Dict[str, Any],
     thresholds: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
-    """Compute an alert recommendation given a (partial) monitor record.
+    """Compute an alert recommendation given a monitor record.
 
     Applies the monitoring policy rules:
     - critical if overall_status=fail AND pass_rate < critical_pass_rate threshold
@@ -385,7 +385,7 @@ def compute_alert_recommendation(
     Parameters
     ----------
     record:
-        Must contain ``overall_status``, ``pass_rate``, and ``sli_snapshot``.
+        Must contain valid ``overall_status``, ``pass_rate``, and ``sli_snapshot``.
     thresholds:
         Optional override for policy thresholds. Missing keys fall back to
         ``_DEFAULT_THRESHOLDS``.
@@ -399,10 +399,58 @@ def compute_alert_recommendation(
     if thresholds:
         t.update(thresholds)
 
-    overall_status = record.get("overall_status", "pass")
-    pass_rate = record.get("pass_rate", 1.0)
-    sli = record.get("sli_snapshot", {})
-    drift_rate = sli.get("drift_rate", 0.0)
+    if not isinstance(record, dict):
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires record to be a dict."
+        )
+
+    missing_fields = [
+        field for field in ("overall_status", "pass_rate", "sli_snapshot")
+        if field not in record
+    ]
+    if missing_fields:
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation missing required field(s): "
+            + ", ".join(missing_fields)
+        )
+
+    overall_status = record["overall_status"]
+    if overall_status not in {"pass", "fail"}:
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires overall_status to be 'pass' or 'fail'."
+        )
+
+    pass_rate = record["pass_rate"]
+    if not isinstance(pass_rate, (int, float)) or isinstance(pass_rate, bool):
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires pass_rate to be a number."
+        )
+    pass_rate = float(pass_rate)
+    if pass_rate < 0.0 or pass_rate > 1.0:
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires pass_rate in [0, 1]."
+        )
+
+    sli = record["sli_snapshot"]
+    if not isinstance(sli, dict):
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires sli_snapshot to be an object."
+        )
+    if "drift_rate" not in sli:
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation missing required sli_snapshot field: drift_rate"
+        )
+    drift_rate = sli["drift_rate"]
+    if not isinstance(drift_rate, (int, float)) or isinstance(drift_rate, bool):
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires drift_rate to be a number."
+        )
+    drift_rate = float(drift_rate)
+    if drift_rate < 0.0 or drift_rate > 1.0:
+        raise EvaluationMonitorError(
+            "compute_alert_recommendation requires drift_rate in [0, 1]."
+        )
+
     replay_status = sli.get("replay_status")
     replay_consistency_sli = sli.get("replay_consistency_sli")
 
@@ -543,7 +591,9 @@ def assess_burn_rate(
         t.update(thresholds)
 
     if not records:
-        return {"status": "normal", "reasons": ["No records to assess."]}
+        raise EvaluationMonitorError(
+            "assess_burn_rate requires at least one record (fail-closed)."
+        )
 
     total = len(records)
     failed_count = sum(1 for r in records if r.get("overall_status") == "fail")

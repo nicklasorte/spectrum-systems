@@ -18,6 +18,7 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (  # noqa: E402
     EvaluationMonitorError,
     build_validation_monitor_record,
     summarize_validation_monitor_records,
+    validate_monitor_record,
 )
 from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision  # noqa: E402
 
@@ -90,6 +91,20 @@ def test_monitor_record_invalid_block_failed() -> None:
     assert record["validation_status"] == "invalid"
     assert record["system_response"] == "block"
     assert record["slis"]["bundle_validation_success_rate"] == 0.0
+
+
+def test_monitor_record_schema_rejects_healthy_invalid_combination() -> None:
+    record = build_validation_monitor_record(_artifact_decision(status="valid", system_response="allow"))
+    record["validation_status"] = "invalid"
+    errors = validate_monitor_record(record)
+    assert errors, "expected schema to reject healthy record with validation_status=invalid"
+
+
+def test_monitor_record_schema_rejects_healthy_block_combination() -> None:
+    record = build_validation_monitor_record(_artifact_decision(status="valid", system_response="allow"))
+    record["system_response"] = "block"
+    errors = validate_monitor_record(record)
+    assert errors, "expected schema to reject healthy record with system_response=block"
 
 
 def test_monitor_record_malformed_indeterminate() -> None:
