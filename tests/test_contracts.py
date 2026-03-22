@@ -132,6 +132,11 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("replay_result")
         validate_artifact(instance, "replay_result")
 
+    def test_prompt_queue_review_findings_example_validates(self) -> None:
+        instance = load_example("prompt_queue_review_findings")
+        validate_artifact(instance, "prompt_queue_review_findings")
+
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]

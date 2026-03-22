@@ -27,7 +27,8 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.REVIEW_COMPLETE.value,
         WorkItemStatus.BLOCKED.value,
     },
-    WorkItemStatus.REVIEW_COMPLETE.value: set(),
+    WorkItemStatus.REVIEW_COMPLETE.value: {WorkItemStatus.FINDINGS_PARSED.value},
+    WorkItemStatus.FINDINGS_PARSED.value: set(),
     WorkItemStatus.BLOCKED.value: set(),
 }
 

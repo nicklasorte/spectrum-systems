@@ -471,3 +471,10 @@ def test_standards_manifest_registers_enforcement_result_contract() -> None:
     assert "enforcement_result" in standards
     assert standards["enforcement_result"]["schema_version"] == "1.1.0"
     assert standards["enforcement_result"]["example_path"] == "contracts/examples/enforcement_result.json"
+
+
+def test_standards_manifest_registers_prompt_queue_review_findings_contract() -> None:
+    standards = load_standards_contracts()
+    assert "prompt_queue_review_findings" in standards
+    assert standards["prompt_queue_review_findings"]["schema_version"] == "1.0.0"
+    assert standards["prompt_queue_review_findings"]["example_path"] == "contracts/examples/prompt_queue_review_findings.json"

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_review_findings.schema.json",
+  "title": "Prompt Queue Review Findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "findings_artifact_id",
+    "work_item_id",
+    "source_review_artifact_path",
+    "review_provider",
+    "fallback_used",
+    "fallback_reason",
+    "review_decision",
+    "trust_assessment",
+    "critical_findings",
+    "required_fixes",
+    "optional_improvements",
+    "failure_mode_summary",
+    "raw_sections",
+    "parsed_at",
+    "parser_version"
+  ],
+  "properties": {
+    "findings_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "source_review_artifact_path": {"type": "string", "minLength": 1},
+    "review_provider": {"type": "string", "enum": ["claude", "codex"]},
+    "fallback_used": {"type": "boolean"},
+    "fallback_reason": {
+      "type": ["string", "null"],
+      "enum": ["usage_limit", "rate_limited", "auth_failure", "timeout", "provider_unavailable", null]
+    },
+    "review_decision": {"type": "string", "enum": ["PASS", "FAIL"]},
+    "trust_assessment": {"type": ["string", "null"], "enum": ["YES", "NO", null]},
+    "critical_findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding_item"}
+    },
+    "required_fixes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding_item"}
+    },
+    "optional_improvements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding_item"}
+    },
+    "failure_mode_summary": {"type": "string", "minLength": 1},
+    "raw_sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metadata",
+        "decision",
+        "critical_findings",
+        "required_fixes",
+        "optional_improvements",
+        "trust_assessment",
+        "failure_mode_summary"
+      ],
+      "properties": {
+        "metadata": {"type": "string"},
+        "decision": {"type": "string", "minLength": 1},
+        "critical_findings": {"type": "string"},
+        "required_fixes": {"type": "string"},
+        "optional_improvements": {"type": "string"},
+        "trust_assessment": {"type": "string"},
+        "failure_mode_summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "parsed_at": {"type": "string", "format": "date-time"},
+    "parser_version": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "finding_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "summary",
+        "body",
+        "severity",
+        "file_references",
+        "source_section"
+      ],
+      "properties": {
+        "finding_id": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "body": {"type": "string", "minLength": 1},
+        "severity": {
+          "type": ["string", "null"],
+          "enum": ["critical", "high", "medium", "low", null]
+        },
+        "file_references": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "source_section": {
+          "type": "string",
+          "enum": ["critical_findings", "required_fixes", "optional_improvements"]
+        }
+      }
+    }
+  }
+}

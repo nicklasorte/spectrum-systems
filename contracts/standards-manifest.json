@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.15",
+  "artifact_version": "1.0.16",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
   "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-MVP",
@@ -737,6 +737,19 @@
       "last_updated_in": "1.0.15",
       "example_path": "contracts/examples/prompt_queue_review_attempt.json",
       "notes": "Per-attempt provider execution record including fallback metadata and failure details."
+    },
+    {
+      "artifact_type": "prompt_queue_review_findings",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.16",
+      "last_updated_in": "1.0.16",
+      "example_path": "contracts/examples/prompt_queue_review_findings.json",
+      "notes": "Normalized, fail-closed review findings artifact parsed from committed review markdown and attached to governed prompt queue work items."
     }
   ]
 }
