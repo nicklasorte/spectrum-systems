@@ -18,6 +18,9 @@ class WorkItemStatus(str, Enum):
     FINDINGS_PARSED = "findings_parsed"
     REPAIR_PROMPT_GENERATED = "repair_prompt_generated"
     REPAIR_CHILD_CREATED = "repair_child_created"
+    EXECUTION_GATED = "execution_gated"
+    RUNNABLE = "runnable"
+    APPROVAL_REQUIRED = "approval_required"
     BLOCKED = "blocked"
 
 
@@ -39,6 +42,7 @@ class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    CRITICAL = "critical"
 
 
 class ReviewProvider(str, Enum):
@@ -88,6 +92,7 @@ class WorkItem:
     review_fallback_reason: Optional[str] = None
     findings_artifact_path: Optional[str] = None
     repair_prompt_artifact_path: Optional[str] = None
+    gating_decision_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -165,6 +170,7 @@ def make_work_item(
         spawned_from_review_artifact_path=None,
         repair_loop_generation=0,
         child_work_item_ids=[],
+        gating_decision_artifact_path=None,
     ).to_dict()
 
 

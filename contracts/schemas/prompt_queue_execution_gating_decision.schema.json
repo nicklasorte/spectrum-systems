@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_execution_gating_decision.schema.json",
+  "title": "Prompt Queue Execution Gating Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "gating_decision_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "repair_prompt_artifact_path",
+    "findings_artifact_path",
+    "review_artifact_path",
+    "repair_loop_generation",
+    "risk_level",
+    "decision_status",
+    "decision_reason_code",
+    "approval_required",
+    "approval_present",
+    "max_generation_allowed",
+    "gating_policy_id",
+    "generated_at",
+    "generator_version",
+    "blocking_conditions",
+    "warnings",
+    "lineage_summary",
+    "source_queue_state_path"
+  ],
+  "properties": {
+    "gating_decision_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "repair_prompt_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "findings_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "review_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "repair_loop_generation": {"type": "integer", "minimum": 0},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "decision_status": {"type": "string", "enum": ["runnable", "approval_required", "blocked"]},
+    "decision_reason_code": {
+      "type": "string",
+      "enum": [
+        "runnable_within_policy",
+        "approval_required_high_risk",
+        "blocked_generation_limit_exceeded",
+        "blocked_missing_required_input",
+        "blocked_invalid_work_item",
+        "blocked_invalid_repair_prompt_artifact",
+        "blocked_invalid_lineage",
+        "blocked_ineligible_status"
+      ]
+    },
+    "approval_required": {"type": "boolean"},
+    "approval_present": {"type": "boolean"},
+    "max_generation_allowed": {"type": "integer", "minimum": 0},
+    "gating_policy_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1},
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "lineage_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "has_parent",
+        "has_repair_prompt_lineage",
+        "has_findings_lineage",
+        "has_review_lineage"
+      ],
+      "properties": {
+        "has_parent": {"type": "boolean"},
+        "has_repair_prompt_lineage": {"type": "boolean"},
+        "has_findings_lineage": {"type": "boolean"},
+        "has_review_lineage": {"type": "boolean"}
+      }
+    },
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1}
+  }
+}
