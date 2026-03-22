@@ -332,6 +332,26 @@ def test_replay_run_raises_hard_failure_on_enforcement_error(monkeypatch: pytest
         replay_run("bundle/path.json", {"run_id": "run-2", "trace_id": "trace-2", "decision": "allow"})
 
 
+def test_run_replay_rejects_unknown_enforcement_status_without_defaulting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    def _bad_enforcement(_decision: dict) -> dict:
+        malformed = copy.deepcopy(original_enforcement)
+        malformed["final_status"] = "unknown"
+        return malformed
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.enforcement_engine.enforce_control_decision",
+        _bad_enforcement,
+    )
+
+    with pytest.raises(ReplayEngineError, match="unsupported final_status"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])
 def test_run_replay_rejects_invalid_artifact_types(invalid_value: object) -> None:
     original_decision, original_enforcement = _originals()

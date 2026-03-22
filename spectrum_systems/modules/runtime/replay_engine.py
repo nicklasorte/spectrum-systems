@@ -841,6 +841,33 @@ def _build_replay_result(
     consistency_status: str,
     failure_reason: Optional[str],
 ) -> Dict[str, Any]:
+    replay_decision_value = replay_decision.get("decision")
+    if replay_decision_value not in {"allow", "deny", "require_review"}:
+        raise ReplayEngineError(
+            f"replay_decision contains unsupported decision value: {replay_decision_value!r}"
+        )
+
+    replay_action = replay_enforcement.get("enforcement_action")
+    replay_status = replay_enforcement.get("final_status")
+    original_action = original_enforcement.get("enforcement_action")
+    original_status = original_enforcement.get("final_status")
+    if replay_action not in {"allow_execution", "deny_execution", "require_manual_review"}:
+        raise ReplayEngineError(
+            f"replay_enforcement contains unsupported enforcement_action: {replay_action!r}"
+        )
+    if original_action not in {"allow_execution", "deny_execution", "require_manual_review"}:
+        raise ReplayEngineError(
+            f"original_enforcement contains unsupported enforcement_action: {original_action!r}"
+        )
+    if replay_status not in {"allow", "deny", "require_review"}:
+        raise ReplayEngineError(
+            f"replay_enforcement contains unsupported final_status: {replay_status!r}"
+        )
+    if original_status not in {"allow", "deny", "require_review"}:
+        raise ReplayEngineError(
+            f"original_enforcement contains unsupported final_status: {original_status!r}"
+        )
+
     source_id = str(
         artifact.get("eval_run_id")
         or artifact.get("eval_case_id")
@@ -870,11 +897,11 @@ def _build_replay_result(
         "replay_enforcement_reference": str(
             replay_enforcement.get("enforcement_result_id") or "unknown-replay-enforcement"
         ),
-        "replay_decision": replay_decision.get("decision", "deny"),
-        "replay_enforcement_action": replay_enforcement.get("enforcement_action", "deny_execution"),
-        "replay_final_status": replay_enforcement.get("final_status", "deny"),
-        "original_enforcement_action": original_enforcement.get("enforcement_action", "deny_execution"),
-        "original_final_status": original_enforcement.get("final_status", "deny"),
+        "replay_decision": replay_decision_value,
+        "replay_enforcement_action": replay_action,
+        "replay_final_status": replay_status,
+        "original_enforcement_action": original_action,
+        "original_final_status": original_status,
         "consistency_status": consistency_status,
         "drift_detected": drift_detected,
         "failure_reason": failure_reason,
