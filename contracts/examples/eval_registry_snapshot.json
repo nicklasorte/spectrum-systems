@@ -1,0 +1,27 @@
+{
+  "artifact_type": "eval_registry_snapshot",
+  "schema_version": "1.0.0",
+  "snapshot_id": "snapshot-bbc-20260322",
+  "created_at": "2026-03-22T00:00:00Z",
+  "provenance": {
+    "trace_id": "trace-bbc-snapshot",
+    "run_id": "run-bbc-snapshot-20260322"
+  },
+  "active_policy_id": "policy-bbc-core",
+  "datasets": [
+    {
+      "dataset_id": "dataset-bbc-core",
+      "dataset_version": "1.0.0",
+      "status": "approved",
+      "intended_use": "pre_merge_gate",
+      "approved_for_use": true
+    },
+    {
+      "dataset_id": "dataset-bbc-staging",
+      "dataset_version": "1.0.1",
+      "status": "candidate",
+      "intended_use": "development",
+      "approved_for_use": false
+    }
+  ]
+}

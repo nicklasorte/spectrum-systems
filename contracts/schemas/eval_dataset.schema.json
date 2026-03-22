@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_dataset.schema.json",
+  "title": "Eval Dataset",
+  "description": "Governed, versioned dataset made of admitted/rejected eval artifacts under a declared admission policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "dataset_id",
+    "dataset_version",
+    "dataset_name",
+    "status",
+    "intended_use",
+    "admission_policy_id",
+    "created_at",
+    "created_by",
+    "provenance",
+    "members",
+    "summary"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_dataset" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "dataset_id": { "type": "string", "minLength": 1 },
+    "dataset_version": { "type": "string", "minLength": 1 },
+    "dataset_name": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "candidate", "approved", "retired"]
+    },
+    "intended_use": {
+      "type": "string",
+      "enum": ["development", "pre_merge_gate", "runtime_gate", "replay", "audit"]
+    },
+    "admission_policy_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "created_by": { "type": "string", "minLength": 1 },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id", "source_artifact_ids"],
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 },
+        "source_artifact_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "members": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_type",
+          "artifact_id",
+          "artifact_version",
+          "source",
+          "admission_status",
+          "admission_reason_code",
+          "provenance_ref"
+        ],
+        "properties": {
+          "artifact_type": {
+            "type": "string",
+            "enum": ["eval_case", "failure_eval_case"]
+          },
+          "artifact_id": { "type": "string", "minLength": 1 },
+          "artifact_version": { "type": "string", "minLength": 1 },
+          "source": {
+            "type": "string",
+            "enum": ["manual", "generated_failure", "imported"]
+          },
+          "admission_status": {
+            "type": "string",
+            "enum": ["admitted", "rejected"]
+          },
+          "admission_reason_code": {
+            "type": "string",
+            "enum": [
+              "meets_policy",
+              "missing_provenance",
+              "invalid_contract",
+              "duplicate",
+              "retired_source"
+            ]
+          },
+          "provenance_ref": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_members",
+        "admitted_members",
+        "rejected_members",
+        "contains_failure_generated_cases"
+      ],
+      "properties": {
+        "total_members": { "type": "integer", "minimum": 1 },
+        "admitted_members": { "type": "integer", "minimum": 0 },
+        "rejected_members": { "type": "integer", "minimum": 0 },
+        "contains_failure_generated_cases": { "type": "boolean" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "approved" }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "admitted_members": { "type": "integer", "minimum": 1 }
+            },
+            "required": ["admitted_members"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "members": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "admission_status": { "const": "admitted" },
+                "admission_reason_code": {
+                  "enum": ["missing_provenance", "invalid_contract", "duplicate", "retired_source"]
+                }
+              },
+              "required": ["admission_status", "admission_reason_code"]
+            }
+          }
+        },
+        "required": ["members"]
+      },
+      "then": false
+    },
+    {
+      "$comment": "summary arithmetic is enforced in runtime validation (build_eval_dataset) to fail closed deterministically."
+    }
+  ]
+}

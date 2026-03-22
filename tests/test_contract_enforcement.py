@@ -453,3 +453,14 @@ def test_canonical_intended_consumers_are_declared_by_governed_repos() -> None:
 
     consumer_warnings = [w for w in warnings if w.get("rule") == "consumer-consistency"]
     assert consumer_warnings == []
+
+
+def test_standards_manifest_registers_bbc_eval_governance_contracts() -> None:
+    standards = load_standards_contracts()
+    for contract in (
+        "eval_dataset",
+        "eval_admission_policy",
+        "eval_registry_snapshot",
+    ):
+        assert contract in standards
+        assert standards[contract]["schema_version"] == "1.0.0"
