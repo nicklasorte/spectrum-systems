@@ -870,6 +870,14 @@ def build_validation_monitor_record(
     This is the MVP control-loop mapping for run-bundle validation.
     """
     decision = artifact_validation_decision if isinstance(artifact_validation_decision, dict) else {}
+    required_ids = ("run_id", "trace_id", "decision_id")
+    missing_ids = [field for field in required_ids if not decision.get(field)]
+    if missing_ids:
+        raise EvaluationMonitorError(
+            "artifact_validation_decision missing required non-empty field(s): "
+            + ", ".join(missing_ids)
+        )
+
     validation_results = decision.get("validation_results")
     malformed = not isinstance(validation_results, dict)
 
@@ -928,9 +936,9 @@ def build_validation_monitor_record(
 
     record = {
         "record_id": _new_id(),
-        "run_id": str(decision.get("run_id") or "unknown"),
-        "trace_id": str(decision.get("trace_id") or "unknown-trace"),
-        "source_decision_id": str(decision.get("decision_id") or "unknown-decision"),
+        "run_id": str(decision["run_id"]),
+        "trace_id": str(decision["trace_id"]),
+        "source_decision_id": str(decision["decision_id"]),
         "timestamp": str(decision.get("timestamp") or _now_iso()),
         "status": status,
         "validation_status": validation_status,

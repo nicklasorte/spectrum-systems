@@ -539,6 +539,11 @@ def build_enforcement_action(
         raise EnforcementBridgeError(
             f"Unknown system_response '{system_response}'; cannot build enforcement action."
         )
+    if system_response in _BLOCKING_RESPONSES and allowed_to_proceed:
+        raise EnforcementBridgeError(
+            "Invalid enforcement action invariant: blocking system_response "
+            f"'{system_response}' cannot set allowed_to_proceed=True."
+        )
 
     _response_to_status = {
         "allow": "advisory",

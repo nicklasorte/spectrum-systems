@@ -93,9 +93,24 @@ def test_monitor_record_invalid_block_failed() -> None:
 
 
 def test_monitor_record_malformed_indeterminate() -> None:
-    record = build_validation_monitor_record({"bad": "input"})
+    record = build_validation_monitor_record(
+        {
+            "decision_id": "dec-malformed-001",
+            "run_id": "run-malformed-001",
+            "trace_id": "trace-malformed-001",
+            "bad": "input",
+        }
+    )
     assert record["status"] == "indeterminate"
     assert record["system_response"] == "block"
+
+
+@pytest.mark.parametrize("missing_field", ["run_id", "trace_id", "decision_id"])
+def test_monitor_record_missing_required_traceability_ids_fail_closed(missing_field: str) -> None:
+    decision = _artifact_decision(status="valid", system_response="allow")
+    decision.pop(missing_field)
+    with pytest.raises(EvaluationMonitorError, match=missing_field):
+        build_validation_monitor_record(decision)
 
 
 def test_summary_one_healthy_record_healthy() -> None:
@@ -132,7 +147,18 @@ def test_summary_zero_success_rate_blocked() -> None:
 
 
 def test_summary_indeterminate_record_indeterminate() -> None:
-    summary = summarize_validation_monitor_records([build_validation_monitor_record({"bad": "input"})])
+    summary = summarize_validation_monitor_records(
+        [
+            build_validation_monitor_record(
+                {
+                    "decision_id": "dec-malformed-002",
+                    "run_id": "run-malformed-002",
+                    "trace_id": "trace-malformed-002",
+                    "bad": "input",
+                }
+            )
+        ]
+    )
     assert summary["overall_status"] == "indeterminate"
 
 

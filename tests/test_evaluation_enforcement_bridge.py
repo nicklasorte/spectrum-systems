@@ -354,6 +354,19 @@ def test_build_enforcement_action_raises_on_unknown_response():
         )
 
 
+def test_build_enforcement_action_rejects_blocking_allowed_to_proceed_true():
+    with pytest.raises(EnforcementBridgeError, match="cannot set allowed_to_proceed=True"):
+        build_enforcement_action(
+            decision_id="dec-004",
+            summary_id="sum-004",
+            system_response="block_release",
+            enforcement_scope="release",
+            reasons=["Critical failures"],
+            required_human_actions=["Stop release"],
+            allowed_to_proceed=True,
+        )
+
+
 # ---------------------------------------------------------------------------
 # 21–29. run_enforcement_bridge
 # ---------------------------------------------------------------------------
@@ -467,6 +480,28 @@ def test_cli_exit_2_invalid_input(tmp_path):
     from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
 
     exit_code = main(["--input", str(_INVALID), "--output-dir", str(tmp_path)])
+    assert exit_code == 2
+
+
+def test_cli_exit_2_catch_all_when_not_allowed_even_with_unexpected_action_type(tmp_path, monkeypatch):
+    from scripts import run_evaluation_enforcement_bridge as cli  # noqa: PLC0415
+
+    def _fake_run_enforcement_bridge(*args, **kwargs):  # noqa: ANN002, ANN003
+        return {
+            "action_id": "action-weird-001",
+            "decision_id": "decision-weird-001",
+            "summary_id": "summary-weird-001",
+            "status": "enforced",
+            "action_type": "unexpected_type",
+            "enforcement_scope": "release",
+            "allowed_to_proceed": False,
+            "reasons": ["fixture"],
+            "required_human_actions": [],
+            "created_at": "2026-03-22T00:00:00Z",
+        }
+
+    monkeypatch.setattr(cli, "run_enforcement_bridge", _fake_run_enforcement_bridge)
+    exit_code = cli.main(["--input", str(_ALLOW), "--output-dir", str(tmp_path)])
     assert exit_code == 2
 
 
