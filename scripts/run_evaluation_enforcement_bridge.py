@@ -227,6 +227,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         return EXIT_REVIEW
 
+    if not allowed_to_proceed:
+        print(
+            "\nExit 2: workflow blocked (allowed_to_proceed=false catch-all, "
+            f"action_type={action_type})",
+            file=sys.stderr,
+        )
+        return EXIT_BLOCKED
+
     return EXIT_ALLOW
 
 

@@ -17,6 +17,56 @@
     "created_at"
   ],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "enum": ["freeze_changes", "block_release"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "allow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "warn"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": true
+          }
+        }
+      }
+    }
+  ],
   "properties": {
     "action_id": {
       "type": "string",
