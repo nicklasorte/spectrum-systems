@@ -113,7 +113,12 @@ class ContractSchemaTests(unittest.TestCase):
 
 
     def test_bbc_eval_governance_examples_validate(self) -> None:
-        for name in ("eval_dataset", "eval_admission_policy", "eval_registry_snapshot"):
+        for name in (
+            "eval_dataset",
+            "eval_admission_policy",
+            "eval_canonicalization_policy",
+            "eval_registry_snapshot",
+        ):
             instance = load_example(name)
             validate_artifact(instance, name)
 

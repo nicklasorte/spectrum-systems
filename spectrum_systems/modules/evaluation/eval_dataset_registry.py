@@ -18,6 +18,10 @@ class EvalAdmissionPolicyError(Exception):
     """Raised when eval admission policy artifacts are malformed."""
 
 
+class EvalCanonicalizationPolicyError(Exception):
+    """Raised when eval canonicalization policy artifacts are malformed."""
+
+
 def _validate(instance: dict[str, Any], schema_name: str) -> None:
     schema = load_schema(schema_name)
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(instance)
@@ -93,12 +97,31 @@ def evaluate_dataset_membership(
     return result
 
 
-def build_eval_dataset(dataset: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+def _canonical_sort_members(
+    members: list[dict[str, Any]],
+    canonicalization_policy: dict[str, Any],
+) -> list[dict[str, Any]]:
+    ordering_fields = list(canonicalization_policy["canonical_ordering_fields"])
+    return sorted(
+        members,
+        key=lambda member: tuple(str(member.get(field, "")) for field in ordering_fields),
+    )
+
+
+def build_eval_dataset(
+    dataset: dict[str, Any],
+    policy: dict[str, Any],
+    canonicalization_policy: dict[str, Any],
+) -> dict[str, Any]:
     """Build a fully evaluated eval_dataset artifact and validate fail-closed."""
     try:
         _validate(policy, "eval_admission_policy")
     except Exception as exc:
         raise EvalAdmissionPolicyError("Invalid eval admission policy") from exc
+    try:
+        _validate(canonicalization_policy, "eval_canonicalization_policy")
+    except Exception as exc:
+        raise EvalCanonicalizationPolicyError("Invalid eval canonicalization policy") from exc
 
     if not isinstance(dataset, dict):
         raise EvalDatasetRegistryError("dataset must be a dict")
@@ -110,31 +133,37 @@ def build_eval_dataset(dataset: dict[str, Any], policy: dict[str, Any]) -> dict[
         "status",
         "intended_use",
         "created_by",
+        "admission_policy_id",
+        "canonicalization_policy_id",
         "provenance",
         "members",
     ):
         if field not in dataset:
             raise EvalDatasetRegistryError(f"dataset missing required field: {field}")
 
+    dataset_policy_id = str(dataset["admission_policy_id"])
+    if dataset_policy_id != str(policy["policy_id"]):
+        raise EvalDatasetRegistryError(
+            "dataset admission_policy_id mismatch: "
+            f"dataset declares {dataset_policy_id}, policy provided {policy['policy_id']}"
+        )
+    dataset_canonicalization_policy_id = str(dataset["canonicalization_policy_id"])
+    if dataset_canonicalization_policy_id != str(canonicalization_policy["policy_id"]):
+        raise EvalDatasetRegistryError(
+            "dataset canonicalization_policy_id mismatch: "
+            f"dataset declares {dataset_canonicalization_policy_id}, "
+            f"policy provided {canonicalization_policy['policy_id']}"
+        )
+    if set(canonicalization_policy["applies_to_artifact_types"]) != set(policy["applies_to_artifact_types"]):
+        raise EvalDatasetRegistryError(
+            "canonicalization policy artifact type scope mismatch with admission policy"
+        )
+
     members = dataset.get("members")
     if not isinstance(members, list) or not members:
         raise EvalDatasetRegistryError("dataset members must be a non-empty list")
 
-    # Canonicalize members before duplicate evaluation so duplicate outcomes are
-    # permutation-invariant for the same logical member set. Duplicate identity
-    # fields are (artifact_type, artifact_id, artifact_version), and we use
-    # source + provenance_ref as explicit deterministic tie-breakers for members
-    # that share the duplicate key.
-    canonical_members = sorted(
-        members,
-        key=lambda member: (
-            str(member.get("artifact_type", "")),
-            str(member.get("artifact_id", "")),
-            str(member.get("artifact_version", "")),
-            str(member.get("source", "")),
-            str(member.get("provenance_ref", "")),
-        ),
-    )
+    canonical_members = _canonical_sort_members(members, canonicalization_policy)
 
     seen_keys: set[str] = set()
     evaluated_members = [
@@ -159,6 +188,7 @@ def build_eval_dataset(dataset: dict[str, Any], policy: dict[str, Any]) -> dict[
         "status": str(dataset["status"]),
         "intended_use": str(dataset["intended_use"]),
         "admission_policy_id": str(policy["policy_id"]),
+        "canonicalization_policy_id": str(canonicalization_policy["policy_id"]),
         "created_at": str(dataset.get("created_at") or _now_iso()),
         "created_by": str(dataset["created_by"]),
         "provenance": dict(dataset["provenance"]),
@@ -206,6 +236,7 @@ def build_registry_snapshot(
     trace_id: str,
     run_id: str,
     active_policy_id: str,
+    active_canonicalization_policy_id: str,
     datasets: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Build a deterministic registry snapshot over supplied dataset artifacts."""
@@ -227,6 +258,18 @@ def build_registry_snapshot(
                 f"dataset {dataset['dataset_id']} uses {dataset_policy_id}, "
                 f"snapshot requested {active_policy_id}"
             )
+        dataset_canonicalization_policy_id = str(dataset.get("canonicalization_policy_id", ""))
+        if not dataset_canonicalization_policy_id:
+            raise EvalDatasetRegistryError(
+                "registry snapshot dataset missing canonicalization_policy_id: "
+                f"{dataset['dataset_id']}"
+            )
+        if dataset_canonicalization_policy_id != active_canonicalization_policy_id:
+            raise EvalDatasetRegistryError(
+                "registry snapshot active_canonicalization_policy_id mismatch: "
+                f"dataset {dataset['dataset_id']} uses {dataset_canonicalization_policy_id}, "
+                f"snapshot requested {active_canonicalization_policy_id}"
+            )
         approved_for_use = dataset["status"] == "approved" and summary["admitted_members"] >= 1
         dataset_entries.append(
             {
@@ -234,6 +277,7 @@ def build_registry_snapshot(
                 "dataset_version": dataset["dataset_version"],
                 "status": dataset["status"],
                 "intended_use": dataset["intended_use"],
+                "canonicalization_policy_id": dataset_canonicalization_policy_id,
                 "approved_for_use": approved_for_use,
             }
         )
@@ -248,6 +292,7 @@ def build_registry_snapshot(
             "run_id": run_id,
         },
         "active_policy_id": active_policy_id,
+        "active_canonicalization_policy_id": active_canonicalization_policy_id,
         "datasets": dataset_entries,
     }
 

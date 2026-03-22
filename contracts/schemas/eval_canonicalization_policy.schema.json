@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_canonicalization_policy.schema.json",
+  "title": "Eval Canonicalization Policy",
+  "description": "Governed policy that explicitly defines deterministic canonical ordering and duplicate selection behavior for eval dataset membership evaluation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "policy_name",
+    "status",
+    "applies_to_artifact_types",
+    "canonical_member_identity_fields",
+    "canonical_ordering_fields",
+    "canonicalization_strategy",
+    "duplicate_selection_rule",
+    "created_at",
+    "created_by"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_canonicalization_policy" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "policy_name": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "retired"]
+    },
+    "applies_to_artifact_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["eval_case", "failure_eval_case"]
+      }
+    },
+    "canonical_member_identity_fields": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        { "const": "artifact_type" },
+        { "const": "artifact_id" },
+        { "const": "artifact_version" }
+      ],
+      "items": false
+    },
+    "canonical_ordering_fields": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        { "const": "artifact_type" },
+        { "const": "artifact_id" },
+        { "const": "artifact_version" },
+        { "const": "source" },
+        { "const": "provenance_ref" }
+      ],
+      "items": false
+    },
+    "canonicalization_strategy": {
+      "type": "string",
+      "const": "sort_then_evaluate"
+    },
+    "duplicate_selection_rule": {
+      "type": "string",
+      "const": "first_member_wins"
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "created_by": { "type": "string", "minLength": 1 }
+  }
+}

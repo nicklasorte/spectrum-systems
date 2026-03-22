@@ -28,6 +28,11 @@ def load_eval_dataset(path: str) -> dict[str, Any]:
     return _load_and_validate(path, "eval_dataset")
 
 
+def load_eval_canonicalization_policy(path: str) -> dict[str, Any]:
+    """Load and validate an eval_canonicalization_policy artifact from disk."""
+    return _load_and_validate(path, "eval_canonicalization_policy")
+
+
 def load_eval_registry_snapshot(path: str) -> dict[str, Any]:
     """Load and validate an eval_registry_snapshot artifact from disk."""
     return _load_and_validate(path, "eval_registry_snapshot")
