@@ -15,6 +15,7 @@ flows that still consume ``evaluation_budget_decision`` artifacts.
 from __future__ import annotations
 
 import uuid
+import warnings
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
 
@@ -141,6 +142,11 @@ def _validate_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
 
 def enforce_budget_decision(decision: dict) -> dict:
     """Legacy budget-decision mapper retained for backward compatibility."""
+    warnings.warn(
+        "enforce_budget_decision is deprecated; use enforce_control_decision for canonical BAF enforcement.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     default_decision_id = str((decision or {}).get("decision_id") or "unknown-decision")
     default_trace_id = str((decision or {}).get("trace_id") or "unknown-trace")
     reasons: List[str] = []

@@ -97,3 +97,13 @@ def test_decision_id_changes_when_triggered_signals_change() -> None:
     breached_summary["reproducibility_score"] = 0.2
     breached = build_evaluation_control_decision(breached_summary)
     assert healthy["decision_id"] != breached["decision_id"]
+
+
+def test_malformed_inputs_without_eval_run_id_do_not_share_decision_id() -> None:
+    malformed_one = {"artifact_type": "eval_summary", "trace_id": "trace-one"}
+    malformed_two = {"artifact_type": "eval_summary", "trace_id": "trace-two"}
+
+    first = build_evaluation_control_decision(malformed_one)
+    second = build_evaluation_control_decision(malformed_two)
+
+    assert first["decision_id"] != second["decision_id"]

@@ -45,7 +45,6 @@ import logging
 import uuid
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from spectrum_systems.modules.runtime.control_chain import run_control_chain
 from spectrum_systems.modules.runtime.control_executor import (
     summarize_execution_result,
 )
@@ -73,6 +72,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REQUIRED_CONTEXT_KEYS: Tuple[str, ...] = ("artifact", "stage", "runtime_environment")
+_SUPPORTED_GOVERNED_ARTIFACT_TYPES: Tuple[str, ...] = ("eval_summary", "failure_eval_case")
 
 
 def _validate_context(context: Dict[str, Any]) -> List[str]:
@@ -101,9 +101,22 @@ def _normalize_context(context: Dict[str, Any]) -> Dict[str, Any]:
 def _execution_result_from_enforcement_result(enforcement_result: Dict[str, Any]) -> Dict[str, Any]:
     """Translate finalized enforcement_result into BN.7 execution_result shape."""
     final_status = enforcement_result["final_status"]
-    blocked = final_status == "deny"
-    review_required = final_status == "require_review"
-    execution_status = "blocked" if (blocked or review_required) else "success"
+    if final_status == "allow":
+        blocked = False
+        review_required = False
+        execution_status = "success"
+    elif final_status == "deny":
+        blocked = True
+        review_required = False
+        execution_status = "blocked"
+    elif final_status == "require_review":
+        blocked = False
+        review_required = True
+        execution_status = "blocked"
+    else:
+        raise ContractRuntimeError(
+            f"unsupported enforcement_result.final_status: {final_status}"
+        )
 
     return {
         "execution_status": execution_status,
@@ -214,38 +227,40 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
 
     # BAE path: governed evaluation signals are consumed exclusively by
     # the unified control loop engine before runtime execution.
-    if isinstance(artifact, dict) and artifact.get("artifact_type") in {"eval_summary", "failure_eval_case"}:
-        try:
-            loop_result = run_control_loop(
-                artifact,
-                {
-                    "execution_id": execution_id,
-                    "stage": stage,
-                    "runtime_environment": runtime_environment,
-                },
-            )
-        except ControlLoopError as exc:
-            raise ContractRuntimeError(f"control loop evaluation failed: {exc}") from exc
-        eval_decision = loop_result["evaluation_control_decision"]
-        try:
-            enforcement_result = enforce_control_decision(eval_decision)
-        except EnforcementError as exc:
-            raise ContractRuntimeError(f"enforcement mapping failed: {exc}") from exc
+    if not isinstance(artifact, dict):
+        raise ContractRuntimeError("artifact must be a dict")
+    artifact_type = artifact.get("artifact_type")
+    if artifact_type not in _SUPPORTED_GOVERNED_ARTIFACT_TYPES:
+        raise ContractRuntimeError(
+            "unsupported governed artifact_type; expected one of "
+            f"{_SUPPORTED_GOVERNED_ARTIFACT_TYPES}, got {artifact_type!r}"
+        )
 
-        execution_result = _execution_result_from_enforcement_result(enforcement_result)
-        chain_result = {
-            "control_chain_decision": {"control_signals": control_signals},
-            "execution_result": execution_result,
-            "evaluation_control_decision": eval_decision,
-            "enforcement_result": enforcement_result,
-            "control_trace": loop_result["control_trace"],
-        }
-    else:
-        # Run the full control chain with BN.6 execution enabled.
-        chain_result = run_control_chain(artifact, stage=stage, execute=True)
-        cd = chain_result.get("control_chain_decision") or {}
-        control_signals = cd.get("control_signals") or {}
-        execution_result = chain_result.get("execution_result") or {}
+    try:
+        loop_result = run_control_loop(
+            artifact,
+            {
+                "execution_id": execution_id,
+                "stage": stage,
+                "runtime_environment": runtime_environment,
+            },
+        )
+    except ControlLoopError as exc:
+        raise ContractRuntimeError(f"control loop evaluation failed: {exc}") from exc
+    eval_decision = loop_result["evaluation_control_decision"]
+    try:
+        enforcement_result = enforce_control_decision(eval_decision)
+    except EnforcementError as exc:
+        raise ContractRuntimeError(f"enforcement mapping failed: {exc}") from exc
+
+    execution_result = _execution_result_from_enforcement_result(enforcement_result)
+    chain_result = {
+        "control_chain_decision": {"control_signals": control_signals},
+        "execution_result": execution_result,
+        "evaluation_control_decision": eval_decision,
+        "enforcement_result": enforcement_result,
+        "control_trace": loop_result["control_trace"],
+    }
 
     # Derive continuation_allowed from strict positive allowlist:
     # only exact execution_status == "success" may continue.
