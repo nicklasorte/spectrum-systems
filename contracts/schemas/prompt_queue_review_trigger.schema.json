@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_review_trigger.schema.json",
+  "title": "Prompt Queue Review Trigger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_trigger_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "post_execution_decision_artifact_path",
+    "loop_control_decision_artifact_path",
+    "execution_result_artifact_path",
+    "trigger_status",
+    "trigger_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "review_trigger_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "post_execution_decision_artifact_path": {"type": "string", "minLength": 1},
+    "loop_control_decision_artifact_path": {"type": ["string", "null"], "minLength": 1},
+    "execution_result_artifact_path": {"type": "string", "minLength": 1},
+    "trigger_status": {
+      "type": "string",
+      "enum": ["review_triggered", "no_review_needed", "blocked_no_trigger"]
+    },
+    "trigger_reason_code": {
+      "type": "string",
+      "enum": [
+        "review_triggered_post_execution_review_required",
+        "no_review_needed_post_execution_complete",
+        "blocked_post_execution_reentry_blocked",
+        "blocked_loop_control_block_reentry",
+        "blocked_invalid_artifact",
+        "blocked_invalid_lineage",
+        "blocked_policy_ineligible"
+      ]
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1},
+    "spawned_review_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

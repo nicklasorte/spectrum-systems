@@ -1,0 +1,16 @@
+{
+  "review_trigger_artifact_id": "review-trigger-wi-parent.repair.1-2026-03-22T05:00:00Z",
+  "work_item_id": "wi-parent.repair.1",
+  "parent_work_item_id": "wi-parent",
+  "post_execution_decision_artifact_path": "artifacts/prompt_queue/post_execution_decisions/queue-01.wi-parent.repair.1.post_execution_decision.json",
+  "loop_control_decision_artifact_path": "artifacts/prompt_queue/loop_control/queue-01.wi-parent.repair.1.loop_control_decision.json",
+  "execution_result_artifact_path": "artifacts/prompt_queue/execution_results/wi-parent.repair.1.execution_result.json",
+  "trigger_status": "review_triggered",
+  "trigger_reason_code": "review_triggered_post_execution_review_required",
+  "generated_at": "2026-03-22T05:00:00Z",
+  "generator_version": "prompt_queue_review_trigger_policy.v1",
+  "spawned_review_work_item_id": "wi-parent.repair.1.review.1",
+  "source_queue_state_path": "artifacts/prompt_queue/queue-01.state.json",
+  "warnings": [],
+  "blocking_conditions": []
+}

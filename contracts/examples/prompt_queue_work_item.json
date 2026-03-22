@@ -31,5 +31,9 @@
   "post_execution_decision_artifact_path": null,
   "next_step_action_artifact_path": null,
   "generation_count": 0,
-  "loop_control_decision_artifact_path": null
+  "loop_control_decision_artifact_path": null,
+  "review_trigger_artifact_path": null,
+  "spawned_from_execution_result_artifact_path": null,
+  "spawned_from_post_execution_decision_artifact_path": null,
+  "spawned_from_loop_control_decision_artifact_path": null
 }

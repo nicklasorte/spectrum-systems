@@ -80,7 +80,11 @@
         "loop_control_decision_artifact_path",
         "execution_result_artifact_path",
         "post_execution_decision_artifact_path",
-        "next_step_action_artifact_path"
+        "next_step_action_artifact_path",
+        "review_trigger_artifact_path",
+        "spawned_from_execution_result_artifact_path",
+        "spawned_from_post_execution_decision_artifact_path",
+        "spawned_from_loop_control_decision_artifact_path"
       ],
       "properties": {
         "work_item_id": {
@@ -122,6 +126,7 @@
             "executed_success",
             "executed_failure",
             "complete",
+            "review_triggered",
             "review_required",
             "reentry_blocked",
             "reentry_eligible"
@@ -284,6 +289,34 @@
           "minimum": 0
         },
         "loop_control_decision_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "review_trigger_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "spawned_from_execution_result_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "spawned_from_post_execution_decision_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "spawned_from_loop_control_decision_artifact_path": {
           "type": [
             "string",
             "null"

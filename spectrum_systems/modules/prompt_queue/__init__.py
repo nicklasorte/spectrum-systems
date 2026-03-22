@@ -55,6 +55,19 @@ from spectrum_systems.modules.prompt_queue.post_execution_queue_integration impo
     PostExecutionQueueIntegrationError,
     apply_post_execution_decision_to_queue,
 )
+from spectrum_systems.modules.prompt_queue.review_trigger_artifact_io import (
+    default_review_trigger_path,
+    validate_review_trigger_artifact,
+    write_review_trigger_artifact,
+)
+from spectrum_systems.modules.prompt_queue.review_trigger_policy import (
+    ReviewTriggerPolicyConfig,
+    evaluate_review_trigger_policy,
+)
+from spectrum_systems.modules.prompt_queue.review_trigger_queue_integration import (
+    ReviewTriggerQueueIntegrationError,
+    apply_review_trigger_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.next_step_action_artifact_io import (
     default_next_step_action_path,
     validate_next_step_action_artifact,
@@ -141,6 +154,13 @@ __all__ = [
     "apply_loop_control_decision_to_queue",
     "LoopControlQueueIntegrationError",
     "write_post_execution_decision_artifact",
+    "write_review_trigger_artifact",
+    "validate_review_trigger_artifact",
+    "default_review_trigger_path",
+    "ReviewTriggerPolicyConfig",
+    "evaluate_review_trigger_policy",
+    "ReviewTriggerQueueIntegrationError",
+    "apply_review_trigger_to_queue",
     "validate_post_execution_decision_artifact",
     "evaluate_post_execution_policy",
     "default_post_execution_decision_path",
