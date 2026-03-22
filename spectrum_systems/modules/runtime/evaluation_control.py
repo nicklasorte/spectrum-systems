@@ -15,7 +15,7 @@ Design rules
 from __future__ import annotations
 
 import json
-import uuid
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -45,8 +45,16 @@ def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _new_id() -> str:
-    return f"ECD-{uuid.uuid4().hex[:12].upper()}"
+def _deterministic_decision_id(
+    *,
+    eval_run_id: str,
+    triggered_signals: List[str],
+    schema_version: str,
+) -> str:
+    signal_seed = ",".join(triggered_signals)
+    seed = f"{eval_run_id}|{signal_seed}|{schema_version}"
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
+    return f"ECD-{digest}"
 
 
 def _load_decision_schema() -> Dict[str, Any]:
@@ -74,6 +82,8 @@ def _fail_closed_decision(
     thresholds: Dict[str, float],
     signal: str,
 ) -> Dict[str, Any]:
+    schema_version = "1.1.0"
+    triggered_signals = [signal]
     rationale_code = (
         "deny_missing_required_signal"
         if signal == "missing_required_signal"
@@ -81,12 +91,16 @@ def _fail_closed_decision(
     )
     return {
         "artifact_type": "evaluation_control_decision",
-        "schema_version": "1.1.0",
-        "decision_id": _new_id(),
+        "schema_version": schema_version,
+        "decision_id": _deterministic_decision_id(
+            eval_run_id=eval_run_id,
+            triggered_signals=triggered_signals,
+            schema_version=schema_version,
+        ),
         "eval_run_id": eval_run_id,
         "system_status": "blocked",
         "system_response": "block",
-        "triggered_signals": [signal],
+        "triggered_signals": triggered_signals,
         "threshold_snapshot": thresholds,
         "trace_id": trace_id,
         "created_at": _now_iso(),
@@ -194,10 +208,15 @@ def build_evaluation_control_decision(
         decision_label = "deny"
         rationale_code = "deny_reliability_breach"
 
+    schema_version = "1.1.0"
     decision = {
         "artifact_type": "evaluation_control_decision",
-        "schema_version": "1.1.0",
-        "decision_id": _new_id(),
+        "schema_version": schema_version,
+        "decision_id": _deterministic_decision_id(
+            eval_run_id=eval_summary["eval_run_id"],
+            triggered_signals=triggered_signals,
+            schema_version=schema_version,
+        ),
         "eval_run_id": eval_summary["eval_run_id"],
         "system_status": system_status,
         "system_response": system_response,

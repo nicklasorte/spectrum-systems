@@ -74,8 +74,6 @@ logger = logging.getLogger(__name__)
 
 _REQUIRED_CONTEXT_KEYS: Tuple[str, ...] = ("artifact", "stage", "runtime_environment")
 
-_BLOCKED_STATUSES = frozenset({"blocked", "repair_required", "escalated"})
-
 
 def _validate_context(context: Dict[str, Any]) -> List[str]:
     """Return a list of validation errors for *context*.  Empty list = OK."""
@@ -99,27 +97,6 @@ def _normalize_context(context: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Blocked-execution result helpers
 # ---------------------------------------------------------------------------
-
-_BYPASS_BLOCKED_RESULT: Dict[str, Any] = {
-    "execution_status": "blocked",
-    "continuation_allowed": False,
-    "publication_blocked": True,
-    "decision_blocked": True,
-    "rerun_triggered": False,
-    "escalation_triggered": True,
-    "human_review_required": True,
-    "actions_taken": [
-        {
-            "action_type": "bypass_attempt_blocked",
-            "status": "blocked",
-            "detail": "enforce_control_before_execution was not called",
-        }
-    ],
-    "validators_run": [],
-    "validators_failed": [],
-    "repair_actions_applied": [],
-}
-
 
 def _execution_result_from_enforcement_result(enforcement_result: Dict[str, Any]) -> Dict[str, Any]:
     """Translate finalized enforcement_result into BN.7 execution_result shape."""
@@ -270,10 +247,10 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         control_signals = cd.get("control_signals") or {}
         execution_result = chain_result.get("execution_result") or {}
 
-    # Derive continuation_allowed strictly from execution_result — never
-    # re-derive from gating / enforcement directly.
-    exec_status = execution_result.get("execution_status", "blocked")
-    continuation_allowed = exec_status not in _BLOCKED_STATUSES
+    # Derive continuation_allowed from strict positive allowlist:
+    # only exact execution_status == "success" may continue.
+    exec_status = execution_result.get("execution_status")
+    continuation_allowed = exec_status == "success"
 
     publication_blocked = bool(execution_result.get("publication_blocked", True))
     decision_blocked = bool(execution_result.get("decision_blocked", True))

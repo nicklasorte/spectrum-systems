@@ -10,7 +10,6 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.control_integration import (  # noqa: E402
-    _BYPASS_BLOCKED_RESULT,
     enforce_control_before_execution,
     generate_working_paper_with_control,
     run_simulation_with_control,
@@ -360,10 +359,59 @@ def test_bypass_attempts_fail_closed_non_dict_context():
     assert result["continuation_allowed"] is False
 
 
-def test_bypass_blocked_result_sentinel_is_fully_closed():
-    assert _BYPASS_BLOCKED_RESULT["continuation_allowed"] is False
-    assert _BYPASS_BLOCKED_RESULT["publication_blocked"] is True
-    assert _BYPASS_BLOCKED_RESULT["decision_blocked"] is True
+def test_continuation_denied_when_execution_status_is_none():
+    chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "execution_result": {"execution_status": None},
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+    assert result["execution_status"] is None
+    assert result["continuation_allowed"] is False
+
+
+def test_continuation_denied_when_execution_status_missing():
+    chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "execution_result": {},
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+    assert result["continuation_allowed"] is False
+
+
+def test_continuation_denied_when_execution_status_unknown():
+    chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "execution_result": {"execution_status": "unexpected_status"},
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+    assert result["execution_status"] == "unexpected_status"
+    assert result["continuation_allowed"] is False
+
+
+def test_continuation_allowed_only_when_execution_status_success():
+    chain = {
+        "control_chain_decision": {"control_signals": {}},
+        "execution_result": {"execution_status": "success"},
+    }
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
+        return_value=chain,
+    ):
+        result = enforce_control_before_execution(_ctx())
+    assert result["execution_status"] == "success"
+    assert result["continuation_allowed"] is True
 
 
 # ---------------------------------------------------------------------------

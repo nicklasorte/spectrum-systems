@@ -82,3 +82,18 @@ def test_indeterminate_derived_failure_summary_is_non_allow() -> None:
 
     decision = build_evaluation_control_decision(summary)
     assert decision["system_response"] != "allow"
+
+
+def test_decision_id_is_deterministic_for_same_inputs() -> None:
+    summary = _eval_summary()
+    first = build_evaluation_control_decision(summary)
+    second = build_evaluation_control_decision(summary)
+    assert first["decision_id"] == second["decision_id"]
+
+
+def test_decision_id_changes_when_triggered_signals_change() -> None:
+    healthy = build_evaluation_control_decision(_eval_summary())
+    breached_summary = _eval_summary()
+    breached_summary["reproducibility_score"] = 0.2
+    breached = build_evaluation_control_decision(breached_summary)
+    assert healthy["decision_id"] != breached["decision_id"]
