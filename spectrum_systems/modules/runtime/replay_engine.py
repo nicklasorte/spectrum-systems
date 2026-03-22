@@ -73,6 +73,7 @@ _REPLAY_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
 
 # Known non-deterministic span fields (timestamps are always non-deterministic)
 _NON_DETERMINISTIC_FIELDS = frozenset({"start_time", "end_time"})
+_SUPPORTED_GOVERNED_ARTIFACT_TYPES = frozenset({"eval_summary", "failure_eval_case"})
 
 
 _LEGACY_REPLAY_RESULT_SCHEMA: Dict[str, Any] = {
@@ -798,6 +799,11 @@ def _validate_governed_artifact_or_raise(artifact: Dict[str, Any]) -> None:
     artifact_type = artifact.get("artifact_type")
     if not isinstance(artifact_type, str) or not artifact_type:
         raise ReplayEngineError("REPLAY_INVALID_INPUT_ARTIFACT: missing artifact_type")
+    if artifact_type not in _SUPPORTED_GOVERNED_ARTIFACT_TYPES:
+        raise ReplayEngineError(
+            "REPLAY_UNSUPPORTED_INPUT_ARTIFACT: artifact_type must be one of "
+            f"{tuple(sorted(_SUPPORTED_GOVERNED_ARTIFACT_TYPES))}, got {artifact_type!r}"
+        )
     try:
         _validate_schema_or_raise(artifact, artifact_type, context="input artifact")
     except FileNotFoundError as exc:

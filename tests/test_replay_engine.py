@@ -141,6 +141,36 @@ def test_malformed_input_artifact_fails_closed() -> None:
         run_replay(malformed, original_decision, original_enforcement, _trace_context())
 
 
+def test_run_replay_rejects_unsupported_artifact_type_at_boundary() -> None:
+    original_decision, original_enforcement = _originals()
+    unsupported = {
+        "artifact_type": "evaluation_control_decision",
+        "schema_version": "1.1.0",
+        "decision_id": "ecd-unsupported",
+        "eval_run_id": "run-unsupported",
+        "system_status": "healthy",
+        "system_response": "allow",
+        "triggered_signals": [],
+        "threshold_snapshot": {
+            "reliability_threshold": 0.85,
+            "drift_threshold": 0.2,
+            "trust_threshold": 0.8,
+        },
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "created_at": "2026-03-22T00:00:00Z",
+        "decision": "allow",
+        "rationale_code": "allow_healthy_eval_summary",
+        "input_signal_reference": {
+            "signal_type": "eval_summary",
+            "source_artifact_id": "run-unsupported",
+        },
+        "run_id": "run-unsupported",
+    }
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_UNSUPPORTED_INPUT_ARTIFACT"):
+        run_replay(unsupported, original_decision, original_enforcement, _trace_context())
+
+
 def test_deterministic_outcome_classification_and_no_input_mutation() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
