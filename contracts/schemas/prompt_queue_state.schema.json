@@ -70,6 +70,7 @@
         "created_at",
         "updated_at",
         "repair_prompt_artifact_path",
+        "gating_decision_artifact_path",
         "spawned_from_repair_prompt_artifact_path",
         "spawned_from_findings_artifact_path",
         "spawned_from_review_artifact_path",
@@ -108,6 +109,9 @@
             "findings_parsed",
             "repair_prompt_generated",
             "repair_child_created",
+            "execution_gated",
+            "runnable",
+            "approval_required",
             "blocked"
           ]
         },
@@ -125,7 +129,8 @@
           "enum": [
             "low",
             "medium",
-            "high"
+            "high",
+            "critical"
           ]
         },
         "repo": {
@@ -233,6 +238,13 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "gating_decision_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
         }
       }
     }

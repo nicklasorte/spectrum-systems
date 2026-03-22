@@ -28,7 +28,8 @@
       "spawned_from_findings_artifact_path": null,
       "spawned_from_review_artifact_path": null,
       "repair_loop_generation": 0,
-      "child_work_item_ids": []
+      "child_work_item_ids": [],
+      "gating_decision_artifact_path": null
     }
   ],
   "active_work_item_id": "wi-001",

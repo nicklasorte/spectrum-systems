@@ -1,5 +1,18 @@
 """Governed prompt queue MVP module."""
 
+from spectrum_systems.modules.prompt_queue.execution_gating_artifact_io import (
+    validate_execution_gating_decision_artifact,
+    write_execution_gating_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.execution_gating_policy import (
+    ExecutionGatingPolicyConfig,
+    default_execution_gating_decision_path,
+    evaluate_execution_gating_policy,
+)
+from spectrum_systems.modules.prompt_queue.execution_gating_queue_integration import (
+    ExecutionGatingQueueIntegrationError,
+    apply_execution_gating_decision_to_queue,
+)
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
     validate_findings_artifact,
     write_findings_artifact,
@@ -47,6 +60,13 @@ from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
 
 __all__ = [
+    "write_execution_gating_decision_artifact",
+    "validate_execution_gating_decision_artifact",
+    "evaluate_execution_gating_policy",
+    "default_execution_gating_decision_path",
+    "apply_execution_gating_decision_to_queue",
+    "ExecutionGatingQueueIntegrationError",
+    "ExecutionGatingPolicyConfig",
     "spawn_repair_child_in_queue",
     "RepairChildQueueIntegrationError",
     "build_repair_child_work_item",

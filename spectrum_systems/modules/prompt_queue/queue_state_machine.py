@@ -30,7 +30,20 @@ _ALLOWED_TRANSITIONS = {
     WorkItemStatus.REVIEW_COMPLETE.value: {WorkItemStatus.FINDINGS_PARSED.value},
     WorkItemStatus.FINDINGS_PARSED.value: {WorkItemStatus.REPAIR_PROMPT_GENERATED.value},
     WorkItemStatus.REPAIR_PROMPT_GENERATED.value: {WorkItemStatus.REPAIR_CHILD_CREATED.value},
-    WorkItemStatus.REPAIR_CHILD_CREATED.value: set(),
+    WorkItemStatus.REPAIR_CHILD_CREATED.value: {
+        WorkItemStatus.EXECUTION_GATED.value,
+        WorkItemStatus.BLOCKED.value,
+    },
+    WorkItemStatus.EXECUTION_GATED.value: {
+        WorkItemStatus.RUNNABLE.value,
+        WorkItemStatus.APPROVAL_REQUIRED.value,
+        WorkItemStatus.BLOCKED.value,
+    },
+    WorkItemStatus.APPROVAL_REQUIRED.value: {
+        WorkItemStatus.RUNNABLE.value,
+        WorkItemStatus.BLOCKED.value,
+    },
+    WorkItemStatus.RUNNABLE.value: set(),
     WorkItemStatus.BLOCKED.value: set(),
 }
 

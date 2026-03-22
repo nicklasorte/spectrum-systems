@@ -1,0 +1,27 @@
+{
+  "gating_decision_artifact_id": "gating-wi-001.repair.1-2026-03-22T01:00:00Z",
+  "work_item_id": "wi-001.repair.1",
+  "parent_work_item_id": "wi-001",
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-001.repair_prompt.json",
+  "findings_artifact_path": "artifacts/prompt_queue/findings/wi-001.findings.json",
+  "review_artifact_path": "docs/reviews/2026-03-22-wi-001.md",
+  "repair_loop_generation": 1,
+  "risk_level": "medium",
+  "decision_status": "runnable",
+  "decision_reason_code": "runnable_within_policy",
+  "approval_required": false,
+  "approval_present": false,
+  "max_generation_allowed": 2,
+  "gating_policy_id": "prompt_queue_execution_gating_policy.v1",
+  "generated_at": "2026-03-22T01:00:00Z",
+  "generator_version": "prompt_queue_execution_gating_policy.v1",
+  "blocking_conditions": [],
+  "warnings": [],
+  "lineage_summary": {
+    "has_parent": true,
+    "has_repair_prompt_lineage": true,
+    "has_findings_lineage": true,
+    "has_review_lineage": true
+  },
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json"
+}

@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.17",
+  "artifact_version": "1.0.18",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
   "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-MVP",
@@ -702,26 +702,26 @@
     {
       "artifact_type": "prompt_queue_work_item",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.17",
+      "last_updated_in": "1.0.18",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
     },
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.17",
+      "last_updated_in": "1.0.18",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
     },
@@ -763,6 +763,19 @@
       "last_updated_in": "1.0.16",
       "example_path": "contracts/examples/prompt_queue_repair_prompt.json",
       "notes": "Deterministic, bounded repair prompt artifact derived from FAIL review findings with provider/fallback lineage preserved."
+    },
+    {
+      "artifact_type": "prompt_queue_execution_gating_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.18",
+      "last_updated_in": "1.0.18",
+      "example_path": "contracts/examples/prompt_queue_execution_gating_decision.json",
+      "notes": "Deterministic execution-gating policy outcome artifact for governed repair-child queue admission, approval gates, and fail-closed blocking reasons."
     }
   ]
 }
