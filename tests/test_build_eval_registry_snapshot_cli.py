@@ -65,3 +65,36 @@ def test_cli_invalid_policy_path_fail_closed(tmp_path: Path) -> None:
     )
 
     assert proc.returncode != 0
+
+
+def test_cli_rejects_dataset_policy_mismatch(tmp_path: Path) -> None:
+    policy = REPO_ROOT / "contracts" / "examples" / "eval_admission_policy.json"
+    dataset = REPO_ROOT / "contracts" / "examples" / "eval_dataset.json"
+    mismatched_dataset = tmp_path / "mismatched_dataset.json"
+
+    payload = json.loads(dataset.read_text(encoding="utf-8"))
+    payload["admission_policy_id"] = "policy-other"
+    mismatched_dataset.write_text(json.dumps(payload), encoding="utf-8")
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--policy",
+            str(policy),
+            "--datasets",
+            str(mismatched_dataset),
+            "--snapshot-id",
+            "snapshot-cli-3",
+            "--trace-id",
+            "trace-cli-3",
+            "--run-id",
+            "run-cli-3",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode != 0
+    assert "active_policy_id mismatch" in proc.stderr
