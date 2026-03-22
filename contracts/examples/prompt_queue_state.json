@@ -42,7 +42,8 @@
       "review_invocation_result_artifact_path": null,
       "review_parsing_handoff_artifact_path": null,
       "findings_reentry_artifact_path": null,
-      "loop_continuation_artifact_path": null
+      "loop_continuation_artifact_path": null,
+      "blocked_recovery_decision_artifact_path": null
     }
   ],
   "active_work_item_id": "wi-001",

@@ -1,0 +1,18 @@
+{
+  "blocked_recovery_decision_artifact_id": "blocked-recovery-wi-001-2026-03-22T00:00:00Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": "wi-parent-001",
+  "blocking_state": "blocked",
+  "blocking_reason_code": "blocked_transient_artifact_write_failure",
+  "source_blocking_artifact_path": "artifacts/prompt_queue/review_invocation_results/wi-001.review_invocation_result.json",
+  "recovery_status": "recoverable",
+  "recovery_action": "return_to_prior_state",
+  "recovery_reason_code": "recoverable_transient_artifact_failure_return_to_prior_state",
+  "source_queue_state_path": "artifacts/prompt_queue/queue-01.state.json",
+  "warnings": [],
+  "blocking_conditions": [],
+  "required_manual_inputs": [],
+  "generated_at": "2026-03-22T00:00:00Z",
+  "generator_version": "prompt_queue_blocked_recovery_policy.v1",
+  "prior_state": "review_triggered"
+}

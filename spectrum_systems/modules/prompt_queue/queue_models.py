@@ -112,6 +112,7 @@ class WorkItem:
     review_parsing_handoff_artifact_path: Optional[str] = None
     findings_reentry_artifact_path: Optional[str] = None
     loop_continuation_artifact_path: Optional[str] = None
+    blocked_recovery_decision_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -205,6 +206,7 @@ def make_work_item(
         review_parsing_handoff_artifact_path=None,
         findings_reentry_artifact_path=None,
         loop_continuation_artifact_path=None,
+        blocked_recovery_decision_artifact_path=None,
         spawned_from_execution_result_artifact_path=None,
         spawned_from_post_execution_decision_artifact_path=None,
         spawned_from_loop_control_decision_artifact_path=None,
