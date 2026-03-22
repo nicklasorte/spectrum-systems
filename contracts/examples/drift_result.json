@@ -1,0 +1,25 @@
+{
+  "drift_result_id": "8cb756445a463f0843a0221dad16433b87eb934c2a3b8bf5c30f6b93c6b18b8e",
+  "source_run_id": "eval-run-001",
+  "replay_run_id": "eval-run-001",
+  "drift_detected": false,
+  "drift_type": "none",
+  "comparison_fields": [
+    "final_status",
+    "enforcement_action"
+  ],
+  "original_values": {
+    "final_status": "allow",
+    "enforcement_action": "allow_execution"
+  },
+  "replay_values": {
+    "final_status": "allow",
+    "enforcement_action": "allow_execution"
+  },
+  "drift_severity": "none",
+  "detection_timestamp": "2026-03-22T00:00:00Z",
+  "provenance": {
+    "trace_id": "trace-eval-001",
+    "run_id": "eval-run-001"
+  }
+}

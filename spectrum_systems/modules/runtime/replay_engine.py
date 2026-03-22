@@ -52,6 +52,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift
 from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
     TraceStoreError,
@@ -932,7 +933,7 @@ def run_replay(
         ]
         replay_enforcement = enforce_control_decision(replay_decision)
         consistency_status = _classify_consistency(replay_enforcement, original_enforcement_input)
-        return _build_replay_result(
+        replay_result = _build_replay_result(
             artifact=artifact_input,
             original_decision=original_decision_input,
             original_enforcement=original_enforcement_input,
@@ -942,6 +943,8 @@ def run_replay(
             consistency_status=consistency_status,
             failure_reason=None,
         )
+        replay_result["drift_result"] = detect_drift(replay_result)
+        return replay_result
     except ReplayEngineError:
         raise
     except Exception as exc:  # noqa: BLE001
@@ -957,7 +960,7 @@ def run_replay(
             "enforcement_action": str(original_enforcement_input.get("enforcement_action") or "deny_execution"),
             "final_status": str(original_enforcement_input.get("final_status") or "deny"),
         }
-        return _build_replay_result(
+        replay_result = _build_replay_result(
             artifact=artifact_input,
             original_decision=original_decision_input,
             original_enforcement=original_enforcement_input,
@@ -967,3 +970,5 @@ def run_replay(
             consistency_status="indeterminate",
             failure_reason=f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}",
         )
+        replay_result["drift_result"] = detect_drift(replay_result)
+        return replay_result

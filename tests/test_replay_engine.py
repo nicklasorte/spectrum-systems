@@ -59,6 +59,9 @@ def test_matching_replay_returns_match_and_no_drift() -> None:
     assert result["consistency_status"] == "match"
     assert result["drift_detected"] is False
     assert result["failure_reason"] is None
+    assert "drift_result" in result
+    assert result["drift_result"]["drift_type"] == "none"
+    assert result["drift_result"]["drift_detected"] is False
 
 
 def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -94,6 +97,9 @@ def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.Monkey
     assert result["consistency_status"] == "mismatch"
     assert result["drift_detected"] is True
     assert result["failure_reason"] is None
+    assert "drift_result" in result
+    assert result["drift_result"]["drift_type"] in {"status_mismatch", "action_mismatch"}
+    assert result["drift_result"]["drift_detected"] is True
 
 
 def test_invalid_original_decision_fails_closed() -> None:

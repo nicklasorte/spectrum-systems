@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.12",
+  "artifact_version": "1.0.13",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-BAG-REPLAY-RESULT",
+  "record_id": "REC-STD-2026-03-22-BAH-DRIFT-RESULT",
   "run_id": "run-20260322T000000Z",
   "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
@@ -542,6 +542,19 @@
       "last_updated_in": "1.0.6",
       "example_path": "contracts/examples/drift_detection_result.json",
       "notes": "Deterministic drift comparison artifact for replay-versus-baseline regression detection and control-loop gating."
+    },
+    {
+      "artifact_type": "drift_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.13",
+      "last_updated_in": "1.0.13",
+      "example_path": "contracts/examples/drift_result.json",
+      "notes": "BAH fail-closed deterministic drift classification artifact for BAG replay_result comparison of final_status and enforcement_action."
     },
     {
       "artifact_type": "eval_case",

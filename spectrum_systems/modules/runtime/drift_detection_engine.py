@@ -1,342 +1,282 @@
 """Drift Detection Engine (BAH).
 
-Compares replay outputs against approved baselines and emits a governed
-``drift_detection_result`` artifact.
-
-Design principles
------------------
-- Fail closed: missing inputs, schema violations, and comparison failures raise
-  hard errors or produce an explicit ``indeterminate`` result.
-- Deterministic: same inputs always produce the same output artifact.
-- Schema-governed: validates replay/baseline inputs and the emitted result.
-- Validator/runtime separation: validation helpers are pure and side-effect free.
+Deterministically classifies replay drift for BAG replay_result artifacts.
+Fail-closed behavior is enforced: malformed input or unknown values raise
+DriftDetectionError.
 """
 
 from __future__ import annotations
 
-import json
-import logging
-import uuid
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+import hashlib
+from copy import deepcopy
+from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from spectrum_systems.modules.runtime.replay_engine import validate_replay_result
+from spectrum_systems.contracts import load_schema
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
-_REPLAY_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
-_DRIFT_SCHEMA_PATH = _SCHEMA_DIR / "drift_detection_result.schema.json"
-
-logger = logging.getLogger(__name__)
-
-STATUS_NO_DRIFT = "no_drift"
-STATUS_DRIFT_DETECTED = "drift_detected"
-STATUS_INDETERMINATE = "indeterminate"
+_COMPARISON_FIELDS: List[str] = ["final_status", "enforcement_action"]
+_ALLOWED_STATUSES = {"allow", "deny", "require_review"}
+_ALLOWED_ACTIONS = {"allow_execution", "deny_execution", "require_manual_review"}
 
 
 class DriftDetectionError(Exception):
     """Raised when drift detection cannot execute safely (fail-closed)."""
 
 
-@dataclass(frozen=True)
-class DriftConfig:
-    """Configuration for deterministic drift comparison."""
-
-    abs_tolerance: float = 0.0
-    rel_tolerance: float = 0.0
-    required_fields: tuple[str, ...] = ()
-
-
-def _load_schema(path: Path) -> Dict[str, Any]:
-    if not path.is_file():
-        raise DriftDetectionError(f"Schema file not found: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
+def _validate_or_raise(payload: Dict[str, Any], schema_name: str, *, context: str) -> None:
+    schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
-    errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.absolute_path))
+    errors = sorted(validator.iter_errors(payload), key=lambda e: list(e.path))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise DriftDetectionError(f"{context} failed validation: {details}")
+
+
+def _stable_drift_id(source_run_id: str, replay_run_id: str, drift_type: str) -> str:
+    return hashlib.sha256(f"{source_run_id}{replay_run_id}{drift_type}".encode("utf-8")).hexdigest()
+
+
+def _validate_known_values(status: Any, action: Any, *, label: str) -> None:
+    if status is not None and status not in _ALLOWED_STATUSES:
+        raise DriftDetectionError(f"unknown {label} final_status value: {status}")
+    if action is not None and action not in _ALLOWED_ACTIONS:
+        raise DriftDetectionError(f"unknown {label} enforcement_action value: {action}")
+
+
+def _build_result(
+    *,
+    source_run_id: str,
+    replay_run_id: str,
+    trace_id: str,
+    detection_timestamp: str,
+    original_values: Dict[str, Any],
+    replay_values: Dict[str, Any],
+    drift_type: str,
+    drift_detected: bool,
+    drift_severity: str,
+) -> Dict[str, Any]:
+    result = {
+        "drift_result_id": _stable_drift_id(source_run_id, replay_run_id, drift_type),
+        "source_run_id": source_run_id,
+        "replay_run_id": replay_run_id,
+        "drift_detected": drift_detected,
+        "drift_type": drift_type,
+        "comparison_fields": list(_COMPARISON_FIELDS),
+        "original_values": dict(original_values),
+        "replay_values": dict(replay_values),
+        "drift_severity": drift_severity,
+        "detection_timestamp": detection_timestamp,
+        "provenance": {
+            "trace_id": trace_id,
+            "run_id": replay_run_id,
+        },
+    }
+    _validate_or_raise(result, "drift_result", context="drift_result")
+    return result
+
+
+def detect_drift(replay_result: dict) -> dict:
+    """Detect deterministic drift from a validated replay_result artifact."""
+    if not isinstance(replay_result, dict):
+        raise DriftDetectionError("replay_result must be an object")
+
+    replay_input = deepcopy(replay_result)
+
+    source_run_id = replay_input.get("original_run_id")
+    replay_run_id = replay_input.get("replay_run_id")
+    trace_id = replay_input.get("trace_id")
+    detection_timestamp = replay_input.get("timestamp")
+    consistency_status = replay_input.get("consistency_status")
+
+    required = {
+        "original_run_id": source_run_id,
+        "replay_run_id": replay_run_id,
+        "trace_id": trace_id,
+        "timestamp": detection_timestamp,
+        "consistency_status": consistency_status,
+    }
+    missing = [key for key, value in required.items() if not isinstance(value, str) or not value]
+    if missing:
+        raise DriftDetectionError(f"replay_result missing required fields: {missing}")
+
+    # Missing comparison surfaces are classified before full schema validation.
+    original_keys_present = all(
+        key in replay_input for key in ("original_final_status", "original_enforcement_action")
+    )
+    replay_keys_present = all(
+        key in replay_input for key in ("replay_final_status", "replay_enforcement_action")
+    )
+
+    if not original_keys_present:
+        original_values = {
+            "final_status": replay_input.get("original_final_status"),
+            "enforcement_action": replay_input.get("original_enforcement_action"),
+        }
+        replay_values = {
+            "final_status": replay_input.get("replay_final_status"),
+            "enforcement_action": replay_input.get("replay_enforcement_action"),
+        }
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="missing_original",
+            drift_detected=True,
+            drift_severity="critical",
+        )
+
+    if not replay_keys_present:
+        original_values = {
+            "final_status": replay_input.get("original_final_status"),
+            "enforcement_action": replay_input.get("original_enforcement_action"),
+        }
+        replay_values = {
+            "final_status": replay_input.get("replay_final_status"),
+            "enforcement_action": replay_input.get("replay_enforcement_action"),
+        }
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="missing_replay",
+            drift_detected=True,
+            drift_severity="critical",
+        )
+
+    _validate_or_raise(replay_input, "replay_result", context="replay_result")
+
+    original_values = {
+        "final_status": replay_input.get("original_final_status"),
+        "enforcement_action": replay_input.get("original_enforcement_action"),
+    }
+    replay_values = {
+        "final_status": replay_input.get("replay_final_status"),
+        "enforcement_action": replay_input.get("replay_enforcement_action"),
+    }
+
+    _validate_known_values(original_values["final_status"], original_values["enforcement_action"], label="original")
+    _validate_known_values(replay_values["final_status"], replay_values["enforcement_action"], label="replay")
+
+    if any(value is None for value in original_values.values()):
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="missing_original",
+            drift_detected=True,
+            drift_severity="critical",
+        )
+
+    if any(value is None for value in replay_values.values()):
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="missing_replay",
+            drift_detected=True,
+            drift_severity="critical",
+        )
+
+    if consistency_status == "indeterminate":
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="indeterminate",
+            drift_detected=True,
+            drift_severity="high",
+        )
+
+    if consistency_status not in {"match", "mismatch"}:
+        raise DriftDetectionError(f"unknown consistency_status value: {consistency_status}")
+
+    if original_values["final_status"] != replay_values["final_status"]:
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="status_mismatch",
+            drift_detected=True,
+            drift_severity="high",
+        )
+
+    if original_values["enforcement_action"] != replay_values["enforcement_action"]:
+        return _build_result(
+            source_run_id=source_run_id,
+            replay_run_id=replay_run_id,
+            trace_id=trace_id,
+            detection_timestamp=detection_timestamp,
+            original_values=original_values,
+            replay_values=replay_values,
+            drift_type="action_mismatch",
+            drift_detected=True,
+            drift_severity="medium",
+        )
+
+    return _build_result(
+        source_run_id=source_run_id,
+        replay_run_id=replay_run_id,
+        trace_id=trace_id,
+        detection_timestamp=detection_timestamp,
+        original_values=original_values,
+        replay_values=replay_values,
+        drift_type="none",
+        drift_detected=False,
+        drift_severity="none",
+    )
+
+
+def validate_drift_result(result: Dict[str, Any]) -> List[str]:
+    """Validate drift_result payloads against the canonical schema."""
+    try:
+        schema = load_schema("drift_result")
+    except (OSError, FileNotFoundError, ValueError) as exc:
+        return [f"validate_drift_result: schema unavailable: {exc}"]
+
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(result), key=lambda e: list(e.path))
     return [e.message for e in errors]
 
 
 def validate_replay_artifact(artifact: Dict[str, Any]) -> List[str]:
-    """Validate replay/baseline artifacts (BAG and legacy-compatible)."""
-    errors = validate_replay_result(artifact)
-    if not errors:
-        return []
-    # Fallback direct schema validation for explicit diagnostics.
-    return _validate(artifact, _load_schema(_REPLAY_SCHEMA_PATH))
+    """Backward-compatible replay_result validator used by runtime package exports."""
+    try:
+        _validate_or_raise(artifact, "replay_result", context="replay_result")
+    except DriftDetectionError as exc:
+        return [str(exc)]
+    return []
 
 
-def validate_drift_detection_result(artifact: Dict[str, Any]) -> List[str]:
-    """Validate drift output artifact against drift_detection_result schema."""
-    return _validate(artifact, _load_schema(_DRIFT_SCHEMA_PATH))
+def run_drift_detection(replay_artifact: Dict[str, Any], baseline_artifact: Dict[str, Any] | None = None, config: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    """Compatibility alias retained for prior callers.
+
+    baseline_artifact/config are unsupported for governed BAH output and will
+    fail-closed when provided.
+    """
+    if baseline_artifact is not None or config is not None:
+        raise DriftDetectionError("run_drift_detection no longer accepts baseline_artifact/config")
+    return detect_drift(replay_artifact)
 
 
-def _extract_required_field(artifact: Dict[str, Any], field: str) -> Any:
-    if field not in artifact:
-        raise DriftDetectionError(f"Missing required field '{field}' in replay artifact")
-    return artifact[field]
-
-
-def _extract_run_id(replay_artifact: Dict[str, Any]) -> str:
-    run_id = replay_artifact.get("replay_run_id")
-    if isinstance(run_id, str) and run_id:
-        return run_id
-    context = replay_artifact.get("context")
-    if isinstance(context, dict):
-        context_run_id = context.get("run_id")
-        if isinstance(context_run_id, str) and context_run_id:
-            return context_run_id
-    raise DriftDetectionError("replay artifact is missing replay run identifier")
-
-
-def _to_config(config: Optional[Dict[str, Any]]) -> DriftConfig:
-    if config is None:
-        return DriftConfig()
-    if not isinstance(config, dict):
-        raise DriftDetectionError("config must be an object when provided")
-
-    abs_tol = config.get("abs_tolerance", 0.0)
-    rel_tol = config.get("rel_tolerance", 0.0)
-    required_fields = config.get("required_fields", [])
-    if required_fields is None:
-        required_fields = []
-
-    if not isinstance(abs_tol, (int, float)) or abs_tol < 0:
-        raise DriftDetectionError("config.abs_tolerance must be a non-negative number")
-    if not isinstance(rel_tol, (int, float)) or rel_tol < 0:
-        raise DriftDetectionError("config.rel_tolerance must be a non-negative number")
-    if not isinstance(required_fields, list):
-        raise DriftDetectionError("config.required_fields must be a list of field paths")
-    if any((not isinstance(x, str) or not x) for x in required_fields):
-        raise DriftDetectionError("config.required_fields entries must be non-empty strings")
-
-    return DriftConfig(
-        abs_tolerance=float(abs_tol),
-        rel_tolerance=float(rel_tol),
-        required_fields=tuple(required_fields),
-    )
-
-
-def _flatten_paths(value: Any, prefix: str = "") -> Dict[str, Any]:
-    paths: Dict[str, Any] = {}
-    if isinstance(value, dict):
-        for key in sorted(value.keys()):
-            child = f"{prefix}.{key}" if prefix else key
-            paths.update(_flatten_paths(value[key], child))
-    elif isinstance(value, list):
-        for idx, item in enumerate(value):
-            child = f"{prefix}[{idx}]"
-            paths.update(_flatten_paths(item, child))
-    else:
-        paths[prefix] = value
-    return paths
-
-
-def _compare_structures(
-    replay_flat: Dict[str, Any],
-    baseline_flat: Dict[str, Any],
-) -> tuple[int, List[str], List[str], Set[str]]:
-    mismatches = 0
-    missing_fields: List[str] = []
-    triggered: Set[str] = set()
-    compared_numeric_paths: List[str] = []
-
-    replay_paths = set(replay_flat.keys())
-    baseline_paths = set(baseline_flat.keys())
-
-    missing = sorted(baseline_paths - replay_paths)
-    extra = sorted(replay_paths - baseline_paths)
-    if missing:
-        mismatches += len(missing)
-        missing_fields.extend(missing)
-        triggered.add("missing_fields")
-    if extra:
-        mismatches += len(extra)
-        triggered.add("extra_fields")
-
-    for path in sorted(replay_paths & baseline_paths):
-        rv = replay_flat[path]
-        bv = baseline_flat[path]
-        if (isinstance(rv, bool) != isinstance(bv, bool)) or (
-            type(rv) is not type(bv) and not (
-                isinstance(rv, (int, float)) and isinstance(bv, (int, float))
-            )
-        ):
-            mismatches += 1
-            triggered.add("type_mismatch")
-            continue
-        if isinstance(rv, (int, float)) and isinstance(bv, (int, float)):
-            compared_numeric_paths.append(path)
-
-    return mismatches, missing_fields, compared_numeric_paths, triggered
-
-
-def _compute_numeric_drift(
-    replay_flat: Dict[str, Any],
-    baseline_flat: Dict[str, Any],
-    numeric_paths: List[str],
-    *,
-    abs_tolerance: float,
-    rel_tolerance: float,
-) -> tuple[float, int, Set[str]]:
-    max_drift = 0.0
-    numeric_exceeded = 0
-    triggered: Set[str] = set()
-
-    for path in numeric_paths:
-        replay_value = float(replay_flat[path])
-        baseline_value = float(baseline_flat[path])
-        abs_diff = abs(replay_value - baseline_value)
-        rel_denom = abs(baseline_value) if abs(baseline_value) > 1e-12 else 1.0
-        rel_diff = abs_diff / rel_denom
-        max_drift = max(max_drift, abs_diff)
-        if abs_diff > abs_tolerance and rel_diff > rel_tolerance:
-            numeric_exceeded += 1
-
-    if numeric_exceeded:
-        triggered.add("numeric_tolerance_exceeded")
-    return max_drift, numeric_exceeded, triggered
-
-
-def _build_drift_id(trace_id: str, baseline_id: str, replay_run_id: str) -> str:
-    seed = f"{trace_id}|{baseline_id}|{replay_run_id}|drift-detection-v1"
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, seed))
-
-
-def _required_fields_missing(replay_flat: Dict[str, Any], required_fields: tuple[str, ...]) -> List[str]:
-    return [field for field in required_fields if field not in replay_flat]
-
-
-def run_drift_detection(
-    replay_artifact: Dict[str, Any],
-    baseline_artifact: Optional[Dict[str, Any]],
-    config: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
-    """Run deterministic drift detection and return a governed artifact."""
-    if not isinstance(replay_artifact, dict):
-        raise DriftDetectionError("replay_artifact must be an object")
-
-    cfg = _to_config(config)
-    replay_errors = validate_replay_artifact(replay_artifact)
-    if replay_errors:
-        raise DriftDetectionError(
-            "replay_artifact failed schema validation: " + "; ".join(replay_errors)
-        )
-
-    trace_id = str(replay_artifact.get("trace_id") or replay_artifact.get("source_trace_id") or "")
-    if not trace_id:
-        raise DriftDetectionError("replay artifact missing trace_id/source_trace_id")
-    baseline_id = ""
-    replay_run_id = _extract_run_id(replay_artifact)
-    timestamp = str(replay_artifact.get("timestamp") or replay_artifact.get("replayed_at") or "")
-    if not timestamp:
-        raise DriftDetectionError("replay artifact missing timestamp/replayed_at")
-
-    if baseline_artifact is None:
-        baseline_id = "baseline_missing"
-        drift = {
-            "drift_id": _build_drift_id(trace_id, baseline_id, replay_run_id),
-            "trace_id": trace_id,
-            "baseline_id": baseline_id,
-            "replay_run_id": replay_run_id,
-            "drift_status": STATUS_INDETERMINATE,
-            "drift_metrics": {
-                "numeric_drift": 0.0,
-                "field_mismatches": 0,
-                "missing_fields": ["baseline_artifact"],
-            },
-            "thresholds_triggered": ["missing_baseline"],
-            "comparison_summary": "Baseline artifact missing; drift comparison indeterminate.",
-            "timestamp": timestamp,
-        }
-        output_errors = validate_drift_detection_result(drift)
-        if output_errors:
-            raise DriftDetectionError(
-                "Generated indeterminate drift artifact failed schema validation: "
-                + "; ".join(output_errors)
-            )
-        logger.warning(
-            "drift_detection indeterminate trace_id=%s replay_run_id=%s reason=missing_baseline",
-            trace_id,
-            replay_run_id,
-        )
-        return drift
-
-    if not isinstance(baseline_artifact, dict):
-        raise DriftDetectionError("baseline_artifact must be an object when provided")
-
-    baseline_errors = validate_replay_artifact(baseline_artifact)
-    if baseline_errors:
-        raise DriftDetectionError(
-            "baseline_artifact failed schema validation: " + "; ".join(baseline_errors)
-        )
-
-    baseline_id = str(_extract_required_field(baseline_artifact, "replay_id"))
-
-    replay_flat = _flatten_paths(replay_artifact)
-    baseline_flat = _flatten_paths(baseline_artifact)
-
-    required_missing = _required_fields_missing(replay_flat, cfg.required_fields)
-    if required_missing:
-        raise DriftDetectionError(
-            "comparison incomplete: replay artifact missing required fields: "
-            + ", ".join(required_missing)
-        )
-
-    struct_mismatches, missing_fields, numeric_paths, triggered = _compare_structures(
-        replay_flat,
-        baseline_flat,
-    )
-    numeric_drift, numeric_exceeded, numeric_triggered = _compute_numeric_drift(
-        replay_flat,
-        baseline_flat,
-        numeric_paths,
-        abs_tolerance=cfg.abs_tolerance,
-        rel_tolerance=cfg.rel_tolerance,
-    )
-
-    triggered |= numeric_triggered
-    field_mismatches = struct_mismatches + numeric_exceeded
-    status = STATUS_DRIFT_DETECTED if field_mismatches > 0 else STATUS_NO_DRIFT
-
-    summary = (
-        f"Compared {len(replay_flat)} replay fields to {len(baseline_flat)} baseline fields; "
-        f"mismatches={field_mismatches}, numeric_drift={numeric_drift:.12g}."
-    )
-
-    result = {
-        "drift_id": _build_drift_id(trace_id, baseline_id, replay_run_id),
-        "trace_id": trace_id,
-        "baseline_id": baseline_id,
-        "replay_run_id": replay_run_id,
-        "drift_status": status,
-        "drift_metrics": {
-            "numeric_drift": numeric_drift,
-            "field_mismatches": field_mismatches,
-            "missing_fields": missing_fields,
-        },
-        "thresholds_triggered": sorted(triggered),
-        "comparison_summary": summary,
-        "timestamp": timestamp,
-    }
-
-    output_errors = validate_drift_detection_result(result)
-    if output_errors:
-        raise DriftDetectionError(
-            "drift_detection_result failed schema validation: " + "; ".join(output_errors)
-        )
-
-    logger.info(
-        "drift_detection completed trace_id=%s replay_run_id=%s status=%s mismatches=%s numeric_drift=%s",
-        trace_id,
-        replay_run_id,
-        status,
-        field_mismatches,
-        f"{numeric_drift:.12g}",
-    )
-    return result
+def validate_drift_detection_result(result: Dict[str, Any]) -> List[str]:
+    """Backward-compatible alias for drift_result validation."""
+    return validate_drift_result(result)
