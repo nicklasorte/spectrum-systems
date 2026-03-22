@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_findings_reentry.schema.json",
+  "title": "Prompt Queue Findings Reentry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "findings_reentry_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "review_parsing_handoff_artifact_path",
+    "review_invocation_result_artifact_path",
+    "findings_artifact_path",
+    "repair_prompt_artifact_path",
+    "reentry_status",
+    "reentry_reason_code",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "findings_reentry_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
+    "review_parsing_handoff_artifact_path": {"type": "string", "minLength": 1},
+    "review_invocation_result_artifact_path": {"type": "string", "minLength": 1},
+    "findings_artifact_path": {"type": "string", "minLength": 1},
+    "repair_prompt_artifact_path": {"type": "string", "minLength": 1},
+    "reentry_status": {
+      "type": "string",
+      "enum": ["reentry_completed", "reentry_blocked", "reentry_failed"]
+    },
+    "reentry_reason_code": {
+      "type": "string",
+      "enum": [
+        "reentry_completed_repair_prompt_generated",
+        "reentry_failed_missing_findings",
+        "reentry_failed_missing_handoff",
+        "reentry_failed_missing_invocation_result",
+        "reentry_failed_invalid_lineage",
+        "reentry_blocked_duplicate_reentry",
+        "reentry_failed_repair_prompt_generation"
+      ]
+    },
+    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1}
+  }
+}
