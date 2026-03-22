@@ -644,7 +644,9 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
         )
         from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
     except Exception as exc:  # noqa: BLE001
-        return _indeterminate(f"replay cannot execute: pipeline import failure: {exc}")
+        raise ReplayEngineError(
+            f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}:{exc}"
+        ) from exc
 
     try:
         replay_validation_decision = validate_and_emit_decision(bundle_path)
@@ -691,7 +693,9 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
         )["evaluation_control_decision"]
         replay_enforcement = enforce_control_decision(replay_decision)
     except Exception as exc:  # noqa: BLE001
-        return _indeterminate(f"replay cannot execute: {exc}")
+        raise ReplayEngineError(
+            f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}:{exc}"
+        ) from exc
 
     replay_run_id = str(replay_decision.get("run_id") or replay_validation_decision.get("run_id") or "unknown")
     replay_trace_id = str(replay_decision.get("trace_id") or replay_validation_decision.get("trace_id") or "unknown")

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -114,6 +115,14 @@ def _fail_closed_decision(
     }
 
 
+def _fallback_eval_run_id(eval_summary: Dict[str, Any]) -> str:
+    eval_run_id = eval_summary.get("eval_run_id")
+    if isinstance(eval_run_id, str) and eval_run_id.strip():
+        return eval_run_id
+    trace_id = str(eval_summary.get("trace_id") or "unknown-trace")
+    return f"malformed-{trace_id}-{uuid.uuid4().hex[:12]}"
+
+
 def build_evaluation_control_decision(
     eval_summary: Dict[str, Any],
     *,
@@ -132,7 +141,7 @@ def build_evaluation_control_decision(
     eval_schema = load_schema("eval_summary")
     if _validate(eval_summary, eval_schema):
         decision = _fail_closed_decision(
-            eval_run_id=str(eval_summary.get("eval_run_id") or "unknown-eval-run"),
+            eval_run_id=_fallback_eval_run_id(eval_summary),
             trace_id=str(eval_summary.get("trace_id") or "unknown-trace"),
             thresholds=t,
             signal="malformed_eval_summary",
@@ -145,7 +154,7 @@ def build_evaluation_control_decision(
     required_signals = ("pass_rate", "drift_rate", "reproducibility_score")
     if any(signal not in eval_summary for signal in required_signals):
         decision = _fail_closed_decision(
-            eval_run_id=str(eval_summary.get("eval_run_id") or "unknown-eval-run"),
+            eval_run_id=_fallback_eval_run_id(eval_summary),
             trace_id=str(eval_summary.get("trace_id") or "unknown-trace"),
             thresholds=t,
             signal="missing_required_signal",

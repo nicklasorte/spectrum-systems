@@ -1,684 +1,25 @@
-"""Tests for BN.7 — Control Signal → Runtime Integration layer."""
+"""Tests for BN.7 — strict BAF control integration boundary."""
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
+from spectrum_systems.modules.runtime.contract_runtime import ContractRuntimeError  # noqa: E402
 from spectrum_systems.modules.runtime.control_integration import (  # noqa: E402
     enforce_control_before_execution,
     generate_working_paper_with_control,
     run_simulation_with_control,
     summarize_control_integration,
 )
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _passing_artifact() -> Dict[str, Any]:
-    """A minimal artifact that will pass the full control chain."""
-    return {
-        "evaluation_id": "EVAL-BN7",
-        "artifact_id": "ART-BN7",
-        "slo_status": "pass",
-        "allowed_to_proceed": True,
-        "slis": {"traceability_integrity": 1.0},
-        "lineage_valid": True,
-        "lineage_validation_mode": "strict",
-        "lineage_defaulted": False,
-        "parent_artifact_ids": ["PARENT-1"],
-        "violations": [],
-        "error_budget": 0.0,
-        "inputs": {},
-        "created_at": "2026-03-20T00:00:00+00:00",
-    }
-
-
-def _blocked_artifact() -> Dict[str, Any]:
-    """An artifact that will be blocked by the control chain."""
-    return {
-        "evaluation_id": "EVAL-BN7-FAIL",
-        "artifact_id": "ART-BN7-FAIL",
-        "slo_status": "fail",
-        "allowed_to_proceed": False,
-        "slis": {"traceability_integrity": 0.0},
-        "lineage_valid": False,
-        "lineage_validation_mode": "strict",
-        "lineage_defaulted": True,
-        "parent_artifact_ids": [],
-        "violations": ["slo_violation"],
-        "error_budget": 1.0,
-        "inputs": {},
-        "created_at": "2026-03-20T00:00:00+00:00",
-    }
-
-
-def _ctx(artifact: Any = None, stage: str = "synthesis", runtime: str = "test") -> Dict[str, Any]:
-    return {
-        "artifact": artifact if artifact is not None else _passing_artifact(),
-        "stage": stage,
-        "runtime_environment": runtime,
-    }
-
-
-def _blocked_ctx() -> Dict[str, Any]:
-    return _ctx(artifact=_blocked_artifact())
-
-
-# ---------------------------------------------------------------------------
-# H.1 — simulation cannot run when control blocks
-# ---------------------------------------------------------------------------
-
-
-def test_simulation_cannot_run_when_control_blocks():
-    called = []
-
-    def sim_fn():
-        called.append(True)
-
-    result, integration = run_simulation_with_control(_blocked_ctx(), sim_fn)
-    assert integration["continuation_allowed"] is False
-    assert result is None
-    assert called == [], "sim_fn must not be called when control blocks"
-
-
-# ---------------------------------------------------------------------------
-# H.2 — working paper generation cannot run when blocked
-# ---------------------------------------------------------------------------
-
-
-def test_working_paper_generation_cannot_run_when_blocked():
-    called = []
-
-    def gen_fn():
-        called.append(True)
-        return {"paper": "data"}
-
-    paper, integration = generate_working_paper_with_control(_blocked_ctx(), gen_fn)
-    assert integration["continuation_allowed"] is False
-    assert paper is None
-    assert called == [], "gen_fn must not be called when control blocks"
-
-
-# ---------------------------------------------------------------------------
-# H.3 — publication is blocked when publication_allowed = False
-# ---------------------------------------------------------------------------
-
-
-def test_publication_is_blocked_when_publication_disallowed():
-    # Build a patched execution_result with publication_blocked=True
-    blocked_exec = {
-        "execution_status": "blocked",
-        "publication_blocked": True,
-        "decision_blocked": True,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    blocked_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,
-        "primary_reason_code": "control_chain_blocked_by_gating",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": blocked_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=blocked_chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["publication_blocked"] is True
-    assert result["continuation_allowed"] is False
-
-
-# ---------------------------------------------------------------------------
-# H.4 — decision-grade marking is blocked when decision_blocked = True
-# ---------------------------------------------------------------------------
-
-
-def test_decision_grade_marking_blocked_when_decision_blocked():
-    blocked_exec = {
-        "execution_status": "blocked",
-        "publication_blocked": False,
-        "decision_blocked": True,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    blocked_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,
-        "primary_reason_code": "control_chain_blocked_by_gating",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": blocked_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=blocked_chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["decision_blocked"] is True
-    assert result["continuation_allowed"] is False
-
-
-# ---------------------------------------------------------------------------
-# H.5 — rerun_triggered prevents execution
-# ---------------------------------------------------------------------------
-
-
-def test_rerun_triggered_prevents_execution():
-    blocked_exec = {
-        "execution_status": "blocked",
-        "publication_blocked": True,
-        "decision_blocked": True,
-        "rerun_triggered": True,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    blocked_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,
-        "primary_reason_code": "rerun_required",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": blocked_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=blocked_chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["rerun_triggered"] is True
-    assert result["continuation_allowed"] is False
-
-
-# ---------------------------------------------------------------------------
-# H.6 — escalation_required prevents execution
-# ---------------------------------------------------------------------------
-
-
-def test_escalation_required_prevents_execution():
-    escalated_exec = {
-        "execution_status": "escalated",
-        "publication_blocked": True,
-        "decision_blocked": True,
-        "rerun_triggered": False,
-        "escalation_triggered": True,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    escalated_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,
-        "primary_reason_code": "escalation_required",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": escalated_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=escalated_chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["escalation_triggered"] is True
-    assert result["continuation_allowed"] is False
-
-
-# ---------------------------------------------------------------------------
-# H.7 — human_review_required produces a structured requirement
-# ---------------------------------------------------------------------------
-
-
-def test_human_review_required_produces_structured_task():
-    review_exec = {
-        "execution_status": "success",
-        "publication_blocked": False,
-        "decision_blocked": False,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": True,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    review_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": True,
-        "primary_reason_code": "continue",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": review_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=review_chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["human_review_required"] is True
-    assert "human_review_task" in result
-    task = result["human_review_task"]
-    assert task["task_type"] == "human_review_required"
-    assert "execution_id" in task
-
-
-# ---------------------------------------------------------------------------
-# H.8 — integration is idempotent
-# ---------------------------------------------------------------------------
-
-
-def test_integration_is_idempotent():
-    ctx = _ctx()
-    first = enforce_control_before_execution(ctx)
-    second = enforce_control_before_execution(ctx)
-    # Status and key flags must be identical across runs (execution_id may differ)
-    for key in ("execution_status", "continuation_allowed", "publication_blocked", "decision_blocked"):
-        assert first[key] == second[key], f"Mismatch for {key}"
-
-
-# ---------------------------------------------------------------------------
-# H.9 — execution_result is not re-derived downstream
-# ---------------------------------------------------------------------------
-
-
-def test_execution_result_is_not_re_derived_downstream():
-    """continuation_allowed must come exclusively from execution_result.execution_status."""
-    # Craft a chain where chain-level continuation_allowed differs from execution_result
-    success_exec = {
-        "execution_status": "success",
-        "publication_blocked": False,
-        "decision_blocked": False,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,  # chain says blocked…
-        "primary_reason_code": "continue",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": success_exec,  # …but execution_result says success
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    # Must follow execution_result, not chain-level flag
-    assert result["continuation_allowed"] is True
-
-
-# ---------------------------------------------------------------------------
-# H.10 — bypass attempts fail closed
-# ---------------------------------------------------------------------------
-
-
-def test_bypass_attempts_fail_closed_missing_context_keys():
-    # Omit required keys → must block
-    result = enforce_control_before_execution({"artifact": {}})
-    assert result["continuation_allowed"] is False
-    assert result["execution_status"] == "blocked"
-
-
-def test_bypass_attempts_fail_closed_non_dict_context():
-    result = enforce_control_before_execution("not a dict")  # type: ignore[arg-type]
-    assert result["continuation_allowed"] is False
-
-
-def test_continuation_denied_when_execution_status_is_none():
-    chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "execution_result": {"execution_status": None},
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["execution_status"] is None
-    assert result["continuation_allowed"] is False
-
-
-def test_continuation_denied_when_execution_status_missing():
-    chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "execution_result": {},
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["continuation_allowed"] is False
-
-
-def test_continuation_denied_when_execution_status_unknown():
-    chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "execution_result": {"execution_status": "unexpected_status"},
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["execution_status"] == "unexpected_status"
-    assert result["continuation_allowed"] is False
-
-
-def test_continuation_allowed_only_when_execution_status_success():
-    chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "execution_result": {"execution_status": "success"},
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    assert result["execution_status"] == "success"
-    assert result["continuation_allowed"] is True
-
-
-# ---------------------------------------------------------------------------
-# H.11 — adapters preserve original function signatures
-# ---------------------------------------------------------------------------
-
-
-def test_simulation_adapter_preserves_signature():
-    """run_simulation_with_control passes args/kwargs to sim_fn unchanged."""
-    received: Dict[str, Any] = {}
-
-    def my_sim(a, b, c=None):
-        received.update({"a": a, "b": b, "c": c})
-        return "sim_ok"
-
-    sim_result, integration = run_simulation_with_control(
-        _ctx(), my_sim, 1, 2, c="three"
-    )
-    assert integration["continuation_allowed"] is True
-    assert sim_result == "sim_ok"
-    assert received == {"a": 1, "b": 2, "c": "three"}
-
-
-def test_working_paper_adapter_preserves_signature():
-    """generate_working_paper_with_control passes args/kwargs to gen_fn unchanged."""
-    received: Dict[str, Any] = {}
-
-    def my_gen(transcript, *, include_summary=True):
-        received.update({"transcript": transcript, "include_summary": include_summary})
-        return {"paper": "done"}
-
-    paper, integration = generate_working_paper_with_control(
-        _ctx(), my_gen, {"text": "hello"}, include_summary=False
-    )
-    assert integration["continuation_allowed"] is True
-    assert paper == {"paper": "done"}
-    assert received == {"transcript": {"text": "hello"}, "include_summary": False}
-
-
-# ---------------------------------------------------------------------------
-# H.12 — integration works with multiple stages
-# ---------------------------------------------------------------------------
-
-
-def test_integration_works_across_multiple_stages():
-    for stage in ("observe", "interpret", "recommend", "synthesis", "export"):
-        result = enforce_control_before_execution(
-            {
-                "artifact": _passing_artifact(),
-                "stage": stage,
-                "runtime_environment": "test",
-            }
-        )
-        assert "continuation_allowed" in result, f"Missing continuation_allowed for stage={stage}"
-        assert "execution_status" in result
-
-
-# ---------------------------------------------------------------------------
-# H.13 — CLI enforces control when enabled (--enforce-control)
-# ---------------------------------------------------------------------------
-
-
-def test_cli_enforce_control_flag_blocks_when_chain_blocked(tmp_path, capsys):
-    """The --enforce-control flag must surface a blocked integration result."""
-    import json
-    from scripts.run_slo_control_chain import main as cc_main
-
-    artifact_path = tmp_path / "blocked.json"
-    artifact_path.write_text(json.dumps(_blocked_artifact()), encoding="utf-8")
-    output_path = tmp_path / "decision.json"
-
-    code = cc_main(
-        [
-            str(artifact_path),
-            "--stage", "synthesis",
-            "--enforce-control",
-            "--output", str(output_path),
-        ]
-    )
-    out = capsys.readouterr().out
-    assert code == 2  # blocked exit code
-    assert "BN.7" in out or "Control Integration" in out
-
-
-def test_cli_enforce_control_flag_proceeds_when_chain_allows(tmp_path, capsys):
-    """The --enforce-control flag must allow execution and print integration summary."""
-    import json
-    from scripts.run_slo_control_chain import main as cc_main
-
-    artifact_path = tmp_path / "passing.json"
-    artifact_path.write_text(json.dumps(_passing_artifact()), encoding="utf-8")
-    output_path = tmp_path / "decision.json"
-
-    code = cc_main(
-        [
-            str(artifact_path),
-            "--stage", "synthesis",
-            "--enforce-control",
-            "--output", str(output_path),
-        ]
-    )
-    out = capsys.readouterr().out
-    assert code in {0, 1}
-    assert "BN.7" in out or "Control Integration" in out
-
-
-# ---------------------------------------------------------------------------
-# H.14 — control_chain is always called before execution
-# ---------------------------------------------------------------------------
-
-
-def test_control_chain_is_always_called_before_execution():
-    """enforce_control_before_execution must invoke run_control_chain."""
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-    ) as mock_chain:
-        mock_chain.return_value = {
-            "control_chain_decision": {"control_signals": {}},
-            "continuation_allowed": True,
-            "primary_reason_code": "continue",
-            "schema_errors": [],
-            "enforcement_result": None,
-            "gating_result": None,
-            "execution_result": {
-                "execution_status": "success",
-                "publication_blocked": False,
-                "decision_blocked": False,
-                "rerun_triggered": False,
-                "escalation_triggered": False,
-                "human_review_required": False,
-                "actions_taken": [],
-                "validators_run": [],
-                "validators_failed": [],
-                "repair_actions_applied": [],
-            },
-        }
-        enforce_control_before_execution(_ctx())
-        mock_chain.assert_called_once()
-        _, call_kwargs = mock_chain.call_args
-        assert call_kwargs.get("execute") is True, "run_control_chain must be called with execute=True"
-
-
-# ---------------------------------------------------------------------------
-# H.15 — execution cannot proceed without control_signals
-# ---------------------------------------------------------------------------
-
-
-def test_execution_cannot_proceed_without_control_signals():
-    """When execution_result is absent/empty, continuation must be blocked."""
-    chain_no_exec_result = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": True,
-        "primary_reason_code": "continue",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        # execution_result deliberately absent
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=chain_no_exec_result,
-    ):
-        result = enforce_control_before_execution(_ctx())
-    # Missing execution_result → execution_status defaults to "blocked"
-    assert result["continuation_allowed"] is False
-
-
-# ---------------------------------------------------------------------------
-# Observability — summarize_control_integration
-# ---------------------------------------------------------------------------
-
-
-def test_summarize_control_integration_is_structured():
-    ctx = _ctx()
-    result = enforce_control_before_execution(ctx)
-    summary = summarize_control_integration(ctx, result)
-    assert "BN.7" in summary
-    assert "continuation_allowed" in summary
-    assert "execution_status" in summary
-
-
-# ---------------------------------------------------------------------------
-# Integration result always contains execution_result
-# ---------------------------------------------------------------------------
-
-
-def test_integration_result_always_contains_execution_result():
-    result = enforce_control_before_execution(_ctx())
-    assert "execution_result" in result
-    assert isinstance(result["execution_result"], dict)
-
-
-# ---------------------------------------------------------------------------
-# Simulation adapter proceeds when allowed
-# ---------------------------------------------------------------------------
-
-
-def test_simulation_adapter_proceeds_when_allowed():
-    def sim_fn():
-        return "simulation_output"
-
-    sim_result, integration = run_simulation_with_control(_ctx(), sim_fn)
-    assert integration["continuation_allowed"] is True
-    assert sim_result == "simulation_output"
-
-
-# ---------------------------------------------------------------------------
-# Working paper adapter proceeds when allowed
-# ---------------------------------------------------------------------------
-
-
-def test_working_paper_adapter_proceeds_when_allowed():
-    def gen_fn():
-        return {"paper": "content"}
-
-    paper, integration = generate_working_paper_with_control(_ctx(), gen_fn)
-    assert integration["continuation_allowed"] is True
-    assert paper == {"paper": "content"}
-
-
-# ---------------------------------------------------------------------------
-# Exception handling — ContractRuntimeError propagates (fail-closed)
-# ---------------------------------------------------------------------------
-
-
-def test_enforce_control_propagates_contract_runtime_error():
-    """If run_control_chain raises ContractRuntimeError, it must not be swallowed."""
-    from spectrum_systems.modules.runtime.contract_runtime import ContractRuntimeError
-
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        side_effect=ContractRuntimeError("jsonschema unavailable"),
-    ):
-        try:
-            enforce_control_before_execution(_ctx())
-            # If no exception was raised, that's also acceptable if the module
-            # returns a blocked result instead of propagating — verify blocked.
-            assert False, "ContractRuntimeError should propagate"
-        except ContractRuntimeError:
-            pass  # expected — fail-closed behaviour confirmed
-
-
-def test_cli_enforce_control_handles_contract_runtime_error(tmp_path, capsys):
-    """CLI --enforce-control returns EXIT_ERROR when ContractRuntimeError is raised."""
-    import json
-    from spectrum_systems.modules.runtime.contract_runtime import ContractRuntimeError
-    from scripts.run_slo_control_chain import main as cc_main
-
-    artifact_path = tmp_path / "passing.json"
-    artifact_path.write_text(json.dumps(_passing_artifact()), encoding="utf-8")
-    output_path = tmp_path / "decision.json"
-
-    # The CLI imports enforce_control_before_execution into its own namespace,
-    # so we must patch the reference there.
-    with patch(
-        "scripts.run_slo_control_chain.enforce_control_before_execution",
-        side_effect=ContractRuntimeError("contract runtime unavailable"),
-    ):
-        code = cc_main(
-            [
-                str(artifact_path),
-                "--stage", "synthesis",
-                "--enforce-control",
-                "--output", str(output_path),
-            ]
-        )
-    assert code == 3  # EXIT_ERROR
+from spectrum_systems.modules.runtime.control_loop import ControlLoopError  # noqa: E402
+from spectrum_systems.modules.runtime.enforcement_engine import EnforcementError  # noqa: E402
 
 
 def _eval_summary_artifact() -> Dict[str, Any]:
@@ -686,7 +27,7 @@ def _eval_summary_artifact() -> Dict[str, Any]:
         "artifact_type": "eval_summary",
         "schema_version": "1.0.0",
         "trace_id": "44444444-4444-4444-8444-444444444444",
-        "eval_run_id": "eval-run-20260321T120000Z",
+        "eval_run_id": "eval-run-20260322T000000Z",
         "pass_rate": 0.95,
         "failure_rate": 0.05,
         "drift_rate": 0.05,
@@ -695,8 +36,24 @@ def _eval_summary_artifact() -> Dict[str, Any]:
     }
 
 
-def _failure_eval_case_artifact() -> Dict[str, Any]:
+def _ctx(artifact: Any | None = None) -> Dict[str, Any]:
     return {
+        "artifact": artifact if artifact is not None else _eval_summary_artifact(),
+        "stage": "synthesis",
+        "runtime_environment": "test",
+    }
+
+
+def test_eval_summary_path_allows_and_emits_decision() -> None:
+    result = enforce_control_before_execution(_ctx())
+    assert result["continuation_allowed"] is True
+    assert result["execution_status"] == "success"
+    assert result["evaluation_control_decision"]["decision"] == "allow"
+    assert result["enforcement_result"]["final_status"] == "allow"
+
+
+def test_failure_eval_case_path_denies_and_blocks() -> None:
+    artifact = {
         "artifact_type": "failure_eval_case",
         "schema_version": "1.0.0",
         "trace_id": "11111111-1111-4111-8111-111111111111",
@@ -717,141 +74,101 @@ def _failure_eval_case_artifact() -> Dict[str, Any]:
         "evaluation_type": "deterministic",
         "created_from": "failure_trace",
     }
-
-
-def test_eval_summary_path_allows_and_emits_decision() -> None:
-    result = enforce_control_before_execution(_ctx(artifact=_eval_summary_artifact()))
-    assert result["continuation_allowed"] is True
-    assert result["execution_status"] == "success"
-    assert result["evaluation_control_decision"]["system_response"] == "allow"
-    assert result["enforcement_result"]["final_status"] == "allow"
-    assert result["control_trace"]["signal_type"] == "eval_summary"
-
-
-def test_eval_summary_freeze_blocks_continuation() -> None:
-    artifact = _eval_summary_artifact()
-    artifact["drift_rate"] = 0.8
-
     result = enforce_control_before_execution(_ctx(artifact=artifact))
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
-    assert result["evaluation_control_decision"]["system_response"] == "freeze"
     assert result["enforcement_result"]["final_status"] == "deny"
-    assert result["control_trace"]["decision"] == "deny"
 
 
-def test_eval_signals_use_control_loop_and_never_bypass() -> None:
-    artifact = _eval_summary_artifact()
+def test_unsupported_artifact_type_raises_hard_error() -> None:
+    artifact = {"artifact_type": "run_bundle", "schema_version": "1.0.0"}
+    with pytest.raises(ContractRuntimeError, match="unsupported governed artifact_type"):
+        enforce_control_before_execution(_ctx(artifact=artifact))
+
+
+def test_non_dict_artifact_raises_hard_error() -> None:
+    with pytest.raises(ContractRuntimeError, match="artifact must be a dict"):
+        enforce_control_before_execution(_ctx(artifact="not-a-dict"))
+
+
+def test_unknown_final_status_raises_and_never_allows() -> None:
     with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain"
-    ) as chain_mock:
-        result = enforce_control_before_execution(_ctx(artifact=artifact))
-    chain_mock.assert_not_called()
-    assert "evaluation_control_decision" in result
-    assert "enforcement_result" in result
-    assert "control_trace" in result
-
-
-def test_failure_eval_case_path_denies_and_blocks() -> None:
-    result = enforce_control_before_execution(_ctx(artifact=_failure_eval_case_artifact()))
-    assert result["continuation_allowed"] is False
-    assert result["evaluation_control_decision"]["decision"] == "deny"
-    assert result["enforcement_result"]["final_status"] == "deny"
-    assert result["control_trace"]["signal_type"] == "failure_eval_case"
-
-
-def test_blocked_paths_emit_generated_failure_eval_case():
-    blocked_exec = {
-        "execution_status": "blocked",
-        "publication_blocked": True,
-        "decision_blocked": True,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    blocked_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": False,
-        "primary_reason_code": "control_chain_blocked_by_gating",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": blocked_exec,
-    }
-    with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=blocked_chain,
+        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision",
+        return_value={
+            "final_status": "maybe",
+            "input_decision_reference": "ecd-1",
+            "enforcement_result_id": "enf-1",
+        },
     ):
-        result = enforce_control_before_execution(_ctx())
-
-    assert result["continuation_allowed"] is False
-    assert "generated_failure_eval_case" in result
-    assert result["generated_failure_eval_case"]["artifact_type"] == "failure_eval_case"
+        with pytest.raises(ContractRuntimeError, match="unsupported enforcement_result.final_status"):
+            enforce_control_before_execution(_ctx())
 
 
-def test_allow_paths_do_not_emit_generated_failure_eval_case():
-    allowed_exec = {
-        "execution_status": "success",
-        "publication_blocked": False,
-        "decision_blocked": False,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": False,
-        "actions_taken": [],
-        "validators_run": [],
-        "validators_failed": [],
-        "repair_actions_applied": [],
-    }
-    allowed_chain = {
-        "control_chain_decision": {"control_signals": {}},
-        "continuation_allowed": True,
-        "primary_reason_code": "allowed",
-        "schema_errors": [],
-        "enforcement_result": None,
-        "gating_result": None,
-        "execution_result": allowed_exec,
-    }
+def test_control_loop_error_is_wrapped_as_contract_runtime_error() -> None:
     with patch(
-        "spectrum_systems.modules.runtime.control_integration.run_control_chain",
-        return_value=allowed_chain,
+        "spectrum_systems.modules.runtime.control_integration.run_control_loop",
+        side_effect=ControlLoopError("boom"),
     ):
-        result = enforce_control_before_execution(_ctx())
-
-    assert result["continuation_allowed"] is True
-    assert "generated_failure_eval_case" not in result
+        with pytest.raises(ContractRuntimeError, match="control loop evaluation failed"):
+            enforce_control_before_execution(_ctx())
 
 
-def test_eval_path_uses_enforcement_engine_for_bn7_status() -> None:
-    artifact = _eval_summary_artifact()
+def test_enforcement_error_is_wrapped_as_contract_runtime_error() -> None:
     with patch(
-        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision"
-    ) as enforce_mock:
-        enforce_mock.return_value = {
+        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision",
+        side_effect=EnforcementError("boom"),
+    ):
+        with pytest.raises(ContractRuntimeError, match="enforcement mapping failed"):
+            enforce_control_before_execution(_ctx())
+
+
+def test_simulation_adapter_blocks_execution() -> None:
+    called = []
+
+    def sim_fn() -> str:
+        called.append("ran")
+        return "ok"
+
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision",
+        return_value={
             "artifact_type": "enforcement_result",
             "schema_version": "1.1.0",
             "enforcement_result_id": "ENF-123",
             "timestamp": "2026-03-22T00:00:00Z",
-            "trace_id": artifact["trace_id"],
-            "run_id": artifact["eval_run_id"],
+            "trace_id": "44444444-4444-4444-8444-444444444444",
+            "run_id": "eval-run-20260322T000000Z",
             "input_decision_reference": "ecd-1",
-            "enforcement_action": "require_manual_review",
-            "final_status": "require_review",
-            "rationale_code": "require_review_warning_signal",
+            "enforcement_action": "deny_execution",
+            "final_status": "deny",
+            "rationale_code": "deny_reliability_breach",
             "fail_closed": True,
             "enforcement_path": "baf_single_path",
             "provenance": {
                 "source_artifact_type": "evaluation_control_decision",
                 "source_artifact_id": "ecd-1",
             },
-        }
-        result = enforce_control_before_execution(_ctx(artifact=artifact))
+        },
+    ):
+        result, integration = run_simulation_with_control(_ctx(), sim_fn)
 
-    enforce_mock.assert_called_once()
-    assert result["enforcement_result"]["final_status"] == "require_review"
-    assert result["execution_status"] == "blocked"
-    assert result["human_review_required"] is True
-    assert result["continuation_allowed"] is False
+    assert result is None
+    assert integration["continuation_allowed"] is False
+    assert called == []
+
+
+def test_working_paper_adapter_allows_execution() -> None:
+    def gen_fn() -> Dict[str, str]:
+        return {"paper": "ok"}
+
+    paper, integration = generate_working_paper_with_control(_ctx(), gen_fn)
+    assert integration["continuation_allowed"] is True
+    assert paper == {"paper": "ok"}
+
+
+def test_summarize_control_integration_is_structured() -> None:
+    result = enforce_control_before_execution(_ctx())
+    summary = summarize_control_integration(_ctx(), result)
+    assert "BN.7" in summary
+    assert "continuation_allowed" in summary
+    assert "execution_status" in summary

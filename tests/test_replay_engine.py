@@ -13,9 +13,14 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.contracts import validate_artifact  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import run_control_loop  # noqa: E402
-from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision  # noqa: E402
+from spectrum_systems.modules.runtime.control_loop import ControlLoopError  # noqa: E402
+from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
+    EnforcementError,
+    enforce_control_decision,
+)
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
     ReplayEngineError,
+    replay_run,
     run_replay,
 )
 
@@ -201,6 +206,100 @@ def test_run_replay_raises_on_canonical_path_exception(monkeypatch: pytest.Monke
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:RuntimeError"):
         run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+def test_run_replay_wraps_control_loop_error_as_hard_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    def _raise_control_loop(_artifact: dict, _trace_context: dict) -> dict:
+        raise ControlLoopError("boom")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
+        _raise_control_loop,
+    )
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:ControlLoopError"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+def test_run_replay_wraps_enforcement_error_as_hard_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    def _raise_enforcement(_decision: dict) -> dict:
+        raise EnforcementError("boom")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.enforcement_engine.enforce_control_decision",
+        _raise_enforcement,
+    )
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:EnforcementError"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+def test_replay_run_raises_hard_failure_on_control_loop_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.run_bundle_validator.validate_and_emit_decision",
+        lambda _bundle_path: {"trace_id": "44444444-4444-4444-8444-444444444444", "run_id": "run-1"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.evaluation_monitor.build_validation_monitor_record",
+        lambda _decision: {"ok": True},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.evaluation_monitor.summarize_validation_monitor_records",
+        lambda _records: {
+            "aggregated_slis": {
+                "bundle_validation_success_rate": 1.0,
+                "provenance_required_rate": 1.0,
+            }
+        },
+    )
+
+    def _raise_control_loop(_artifact: dict, _ctx: dict) -> dict:
+        raise ControlLoopError("control loop exploded")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
+        _raise_control_loop,
+    )
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:ControlLoopError"):
+        replay_run("bundle/path.json", {"run_id": "run-1", "trace_id": "trace-1", "decision": "allow"})
+
+
+def test_replay_run_raises_hard_failure_on_enforcement_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.run_bundle_validator.validate_and_emit_decision",
+        lambda _bundle_path: {"trace_id": "44444444-4444-4444-8444-444444444444", "run_id": "run-2"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.evaluation_monitor.build_validation_monitor_record",
+        lambda _decision: {"ok": True},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.evaluation_monitor.summarize_validation_monitor_records",
+        lambda _records: {
+            "aggregated_slis": {
+                "bundle_validation_success_rate": 1.0,
+                "provenance_required_rate": 1.0,
+            }
+        },
+    )
+
+    def _raise_enforcement(_decision: dict) -> dict:
+        raise EnforcementError("enforcement exploded")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.enforcement_engine.enforce_control_decision",
+        _raise_enforcement,
+    )
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:EnforcementError"):
+        replay_run("bundle/path.json", {"run_id": "run-2", "trace_id": "trace-2", "decision": "allow"})
 
 
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])

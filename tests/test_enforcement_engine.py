@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import sys
 from pathlib import Path
+import warnings
 
 import pytest
 
@@ -11,6 +12,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
     EnforcementError,
+    enforce_budget_decision,
     enforce_control_decision,
     validate_enforcement_result,
 )
@@ -87,3 +89,40 @@ def test_missing_decision_field_raises_error() -> None:
 def test_returned_artifact_validates_against_schema() -> None:
     result = enforce_control_decision(_decision("allow"))
     assert validate_enforcement_result(result) == []
+
+
+def test_legacy_enforce_budget_decision_emits_deprecation_warning() -> None:
+    legacy_decision = {
+        "artifact_type": "evaluation_budget_decision",
+        "schema_version": "1.0.0",
+        "decision_id": "legacy-1",
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "run_id": "run-1",
+        "system_status": "healthy",
+        "system_response": "allow",
+        "reasons": ["legacy"],
+    }
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        enforce_budget_decision(legacy_decision)
+    assert any(issubclass(w.category, DeprecationWarning) for w in caught)
+
+
+def test_no_non_test_callers_of_legacy_enforcement_path() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    callers = []
+    for path in repo_root.rglob("*.py"):
+        rel = path.relative_to(repo_root)
+        if "tests/" in str(rel):
+            continue
+        if rel == Path("spectrum_systems/modules/runtime/enforcement_engine.py"):
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "enforce_budget_decision(" in text:
+            callers.append(str(rel))
+    assert sorted(callers) == sorted(
+        [
+            "spectrum_systems/modules/runtime/control_executor.py",
+            "spectrum_systems/modules/runtime/evaluation_enforcement_bridge.py",
+        ]
+    )
