@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": [
     "review_invocation_result_artifact_id",
+    "invocation_id",
     "work_item_id",
     "parent_work_item_id",
     "review_trigger_artifact_path",
@@ -27,15 +28,16 @@
       "type": "string",
       "minLength": 1
     },
+    "invocation_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "work_item_id": {
       "type": "string",
       "minLength": 1
     },
     "parent_work_item_id": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "minLength": 1
     },
     "review_trigger_artifact_path": {
@@ -43,34 +45,22 @@
       "minLength": 1
     },
     "execution_result_artifact_path": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "minLength": 1
     },
     "provider_requested": {
       "type": "string",
-      "enum": [
-        "codex",
-        "claude"
-      ]
+      "enum": ["codex", "claude"]
     },
     "provider_used": {
       "type": "string",
-      "enum": [
-        "codex",
-        "claude"
-      ]
+      "enum": ["codex", "claude"]
     },
     "fallback_used": {
       "type": "boolean"
     },
     "fallback_reason": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "enum": [
         "usage_limit",
         "rate_limited",
@@ -82,10 +72,7 @@
     },
     "invocation_status": {
       "type": "string",
-      "enum": [
-        "success",
-        "failure"
-      ]
+      "enum": ["success", "failure"]
     },
     "started_at": {
       "type": "string",
@@ -104,17 +91,54 @@
       "minLength": 1
     },
     "output_reference": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "minLength": 1
     },
     "error_summary": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "fallback_used": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "fallback_reason": {
+            "type": "string",
+            "enum": [
+              "usage_limit",
+              "rate_limited",
+              "auth_failure",
+              "timeout",
+              "provider_unavailable"
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "fallback_reason": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "invocation_status": {"const": "success"}
+        }
+      },
+      "then": {
+        "properties": {
+          "output_reference": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
 }

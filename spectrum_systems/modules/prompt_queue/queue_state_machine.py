@@ -60,7 +60,7 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.BLOCKED.value,
     },
     WorkItemStatus.REENTRY_BLOCKED.value: {WorkItemStatus.BLOCKED.value},
-    WorkItemStatus.REVIEW_TRIGGERED.value: {WorkItemStatus.REVIEW_INVOKING.value},
+    WorkItemStatus.REVIEW_TRIGGERED.value: {WorkItemStatus.REVIEW_INVOKING.value, WorkItemStatus.BLOCKED.value},
     WorkItemStatus.REVIEW_INVOKING.value: {
         WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value,
         WorkItemStatus.REVIEW_INVOCATION_FAILED.value,
