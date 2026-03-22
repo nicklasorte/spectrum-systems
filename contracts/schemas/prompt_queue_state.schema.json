@@ -82,6 +82,7 @@
         "post_execution_decision_artifact_path",
         "next_step_action_artifact_path",
         "review_trigger_artifact_path",
+        "review_invocation_result_artifact_path",
         "spawned_from_execution_result_artifact_path",
         "spawned_from_post_execution_decision_artifact_path",
         "spawned_from_loop_control_decision_artifact_path"
@@ -127,6 +128,9 @@
             "executed_failure",
             "complete",
             "review_triggered",
+            "review_invoking",
+            "review_invocation_succeeded",
+            "review_invocation_failed",
             "review_required",
             "reentry_blocked",
             "reentry_eligible"
@@ -168,7 +172,7 @@
         },
         "review_provider_primary": {
           "type": "string",
-          "const": "claude"
+          "const": "codex"
         },
         "review_provider_actual": {
           "type": [
@@ -317,6 +321,13 @@
           "minLength": 1
         },
         "spawned_from_loop_control_decision_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "review_invocation_result_artifact_path": {
           "type": [
             "string",
             "null"

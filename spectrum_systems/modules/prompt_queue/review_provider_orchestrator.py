@@ -70,36 +70,36 @@ def run_review_with_fallback(
 
     attempt_number = int(updated["review_attempt_count"]) + 1
     started = iso_now(clock)
-    claude_result = run_claude(updated)
+    codex_result = run_codex(updated)
     ended = iso_now(clock)
 
-    if claude_result.success:
+    if codex_result.success:
         attempts.append(
             _build_attempt(
                 work_item=updated,
-                provider_requested=ReviewProvider.CLAUDE.value,
-                provider_used=ReviewProvider.CLAUDE.value,
+                provider_requested=ReviewProvider.CODEX.value,
+                provider_used=ReviewProvider.CODEX.value,
                 fallback_used=False,
                 fallback_reason=None,
                 attempt_number=attempt_number,
                 outcome_status=ReviewOutcomeStatus.SUCCESS.value,
                 started_at=started,
                 ended_at=ended,
-                review_artifact_path=claude_result.review_artifact_path,
+                review_artifact_path=codex_result.review_artifact_path,
                 error_message=None,
             )
         )
-        updated["review_provider_actual"] = ReviewProvider.CLAUDE.value
+        updated["review_provider_actual"] = ReviewProvider.CODEX.value
         updated["review_attempt_count"] = attempt_number
         updated = transition_work_item(updated, WorkItemStatus.REVIEW_COMPLETE.value, clock=clock)
         return updated, attempts
 
-    fallback_reason = claude_result.failure_reason
+    fallback_reason = codex_result.failure_reason
     attempts.append(
         _build_attempt(
             work_item=updated,
-            provider_requested=ReviewProvider.CLAUDE.value,
-            provider_used=ReviewProvider.CLAUDE.value,
+            provider_requested=ReviewProvider.CODEX.value,
+            provider_used=ReviewProvider.CODEX.value,
             fallback_used=False,
             fallback_reason=fallback_reason,
             attempt_number=attempt_number,
@@ -107,7 +107,7 @@ def run_review_with_fallback(
             started_at=started,
             ended_at=ended,
             review_artifact_path=None,
-            error_message=claude_result.error_message,
+            error_message=codex_result.error_message,
         )
     )
 
@@ -127,29 +127,29 @@ def run_review_with_fallback(
 
     attempt_number += 1
     started_fallback = iso_now(clock)
-    codex_result = run_codex(updated)
+    claude_result = run_claude(updated)
     ended_fallback = iso_now(clock)
 
     attempts.append(
         _build_attempt(
             work_item=updated,
-            provider_requested=ReviewProvider.CLAUDE.value,
-            provider_used=ReviewProvider.CODEX.value,
+            provider_requested=ReviewProvider.CODEX.value,
+            provider_used=ReviewProvider.CLAUDE.value,
             fallback_used=True,
             fallback_reason=fallback_reason,
             attempt_number=attempt_number,
-            outcome_status=ReviewOutcomeStatus.SUCCESS.value if codex_result.success else ReviewOutcomeStatus.FAILED.value,
+            outcome_status=ReviewOutcomeStatus.SUCCESS.value if claude_result.success else ReviewOutcomeStatus.FAILED.value,
             started_at=started_fallback,
             ended_at=ended_fallback,
-            review_artifact_path=codex_result.review_artifact_path,
-            error_message=codex_result.error_message,
+            review_artifact_path=claude_result.review_artifact_path,
+            error_message=claude_result.error_message,
         )
     )
 
     updated["review_attempt_count"] = attempt_number
-    updated["review_provider_actual"] = ReviewProvider.CODEX.value
+    updated["review_provider_actual"] = ReviewProvider.CLAUDE.value
 
-    if codex_result.success:
+    if claude_result.success:
         updated = transition_work_item(updated, WorkItemStatus.REVIEW_COMPLETE.value, clock=clock)
     else:
         updated = transition_work_item(updated, WorkItemStatus.BLOCKED.value, clock=clock)

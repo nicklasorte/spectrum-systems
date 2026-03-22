@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_review_invocation_result.schema.json",
+  "title": "Prompt Queue Review Invocation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_invocation_result_artifact_id",
+    "work_item_id",
+    "parent_work_item_id",
+    "review_trigger_artifact_path",
+    "execution_result_artifact_path",
+    "provider_requested",
+    "provider_used",
+    "fallback_used",
+    "fallback_reason",
+    "invocation_status",
+    "started_at",
+    "completed_at",
+    "generated_at",
+    "generator_version",
+    "output_reference",
+    "error_summary"
+  ],
+  "properties": {
+    "review_invocation_result_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "review_trigger_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_result_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "provider_requested": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude"
+      ]
+    },
+    "provider_used": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "claude"
+      ]
+    },
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "fallback_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "usage_limit",
+        "rate_limited",
+        "auth_failure",
+        "timeout",
+        "provider_unavailable",
+        null
+      ]
+    },
+    "invocation_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_reference": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "error_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

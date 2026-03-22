@@ -14,16 +14,20 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.contracts import load_example
 from spectrum_systems.modules.prompt_queue import (  # noqa: E402
+    DuplicateReviewInvocationError,
     IllegalTransitionError,
     Priority,
     ProviderResult,
     RiskLevel,
     WorkItemStatus,
+    assert_no_duplicate_review_invocation,
+    has_duplicate_review_invocation_result,
     make_queue_state,
     make_work_item,
     run_review_with_fallback,
     transition_work_item,
     validate_queue_state,
+    validate_review_invocation_result,
     validate_review_attempt,
     validate_work_item,
     write_artifact,
@@ -68,6 +72,35 @@ def test_valid_review_attempt_schema():
     validate_review_attempt(load_example("prompt_queue_review_attempt"))
 
 
+def test_valid_review_invocation_result_schema():
+    validate_review_invocation_result(load_example("prompt_queue_review_invocation_result"))
+
+
+def test_review_invocation_result_missing_required_field_fails():
+    artifact = load_example("prompt_queue_review_invocation_result")
+    artifact.pop("provider_used")
+    with pytest.raises(ValueError):
+        validate_review_invocation_result(artifact)
+
+
+def test_review_invocation_result_invalid_provider_fails():
+    artifact = load_example("prompt_queue_review_invocation_result")
+    artifact["provider_requested"] = "invalid-provider"
+    with pytest.raises(ValueError):
+        validate_review_invocation_result(artifact)
+
+
+def test_work_item_default_provider_is_codex():
+    item = _base_item()
+    assert item["review_provider_primary"] == "codex"
+
+
+def test_work_item_schema_accepts_nullable_review_invocation_result_artifact_path():
+    item = _base_item()
+    item["review_invocation_result_artifact_path"] = None
+    validate_work_item(item)
+
+
 def test_legal_state_transitions():
     item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z", "2026-03-22T00:00:01Z"]))
     review_queued = transition_work_item(item, WorkItemStatus.REVIEW_QUEUED.value, clock=FixedClock(["2026-03-22T00:00:01Z"]))
@@ -93,21 +126,21 @@ def test_claude_success_path():
     ])
     updated, attempts = run_review_with_fallback(
         item,
-        run_claude=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/claude.json"),
-        run_codex=lambda _wi: ProviderResult(success=True),
+        run_claude=lambda _wi: ProviderResult(success=True),
+        run_codex=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/codex.json"),
         clock=clock,
     )
     assert updated["status"] == WorkItemStatus.REVIEW_COMPLETE.value
-    assert updated["review_provider_actual"] == "claude"
+    assert updated["review_provider_actual"] == "codex"
     assert len(attempts) == 1
 
 
-def test_claude_usage_limit_fallback_to_codex_success():
+def test_codex_usage_limit_fallback_to_claude_success():
     item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
     updated, attempts = run_review_with_fallback(
         item,
-        run_claude=lambda _wi: ProviderResult(success=False, failure_reason="usage_limit", error_message="limit"),
-        run_codex=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/codex.json"),
+        run_claude=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/claude.json"),
+        run_codex=lambda _wi: ProviderResult(success=False, failure_reason="usage_limit", error_message="limit"),
         clock=FixedClock([
             "2026-03-22T00:00:01Z",
             "2026-03-22T00:00:02Z",
@@ -119,18 +152,18 @@ def test_claude_usage_limit_fallback_to_codex_success():
         ]),
     )
     assert updated["status"] == WorkItemStatus.REVIEW_COMPLETE.value
-    assert updated["review_provider_actual"] == "codex"
+    assert updated["review_provider_actual"] == "claude"
     assert updated["review_fallback_used"] is True
     assert updated["review_fallback_reason"] == "usage_limit"
     assert len(attempts) == 2
 
 
-def test_claude_failure_and_codex_failure_blocks_item():
+def test_codex_failure_and_claude_failure_blocks_item():
     item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
     updated, attempts = run_review_with_fallback(
         item,
-        run_claude=lambda _wi: ProviderResult(success=False, failure_reason="timeout", error_message="timeout"),
-        run_codex=lambda _wi: ProviderResult(success=False, failure_reason="provider_unavailable", error_message="down"),
+        run_claude=lambda _wi: ProviderResult(success=False, failure_reason="provider_unavailable", error_message="down"),
+        run_codex=lambda _wi: ProviderResult(success=False, failure_reason="timeout", error_message="timeout"),
         clock=FixedClock([
             "2026-03-22T00:00:01Z",
             "2026-03-22T00:00:02Z",
@@ -145,15 +178,15 @@ def test_claude_failure_and_codex_failure_blocks_item():
     assert updated["review_fallback_used"] is True
     assert len(attempts) == 2
     assert attempts[0]["error_message"] == "timeout"
-    assert attempts[1]["provider_used"] == "codex"
+    assert attempts[1]["provider_used"] == "claude"
 
 
 def test_provider_metadata_recorded_correctly():
     item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
     updated, attempts = run_review_with_fallback(
         item,
-        run_claude=lambda _wi: ProviderResult(success=False, failure_reason="rate_limited", error_message="429"),
-        run_codex=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/codex.json"),
+        run_claude=lambda _wi: ProviderResult(success=True, review_artifact_path="artifacts/prompt_queue/claude.json"),
+        run_codex=lambda _wi: ProviderResult(success=False, failure_reason="rate_limited", error_message="429"),
         clock=FixedClock([
             "2026-03-22T00:00:01Z",
             "2026-03-22T00:00:02Z",
@@ -165,8 +198,70 @@ def test_provider_metadata_recorded_correctly():
         ]),
     )
     assert updated["review_fallback_reason"] == "rate_limited"
-    assert attempts[0]["provider_requested"] == "claude"
+    assert attempts[0]["provider_requested"] == "codex"
     assert attempts[1]["fallback_used"] is True
+
+
+def test_review_triggered_to_review_invoking_transition_is_legal():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    item["status"] = WorkItemStatus.REVIEW_TRIGGERED.value
+    moved = transition_work_item(item, WorkItemStatus.REVIEW_INVOKING.value, clock=FixedClock(["2026-03-22T00:00:01Z"]))
+    assert moved["status"] == WorkItemStatus.REVIEW_INVOKING.value
+
+
+def test_review_invoking_to_success_transition_is_legal():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    item["status"] = WorkItemStatus.REVIEW_INVOKING.value
+    moved = transition_work_item(
+        item,
+        WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value,
+        clock=FixedClock(["2026-03-22T00:00:01Z"]),
+    )
+    assert moved["status"] == WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value
+
+
+def test_invalid_invocation_transition_fails_closed():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    item["status"] = WorkItemStatus.REVIEW_TRIGGERED.value
+    with pytest.raises(IllegalTransitionError):
+        transition_work_item(
+            item,
+            WorkItemStatus.REVIEW_INVOCATION_SUCCEEDED.value,
+            clock=FixedClock(["2026-03-22T00:00:01Z"]),
+        )
+
+
+def test_duplicate_invocation_guard_detects_same_trigger_lineage():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    item["review_trigger_artifact_path"] = "artifacts/prompt_queue/review_triggers/wi-100.json"
+    item["review_invocation_result_artifact_path"] = (
+        "artifacts/prompt_queue/review_invocations/wi-100.review_invocation_result.json"
+    )
+    assert has_duplicate_review_invocation_result(
+        work_item=item,
+        review_trigger_artifact_path="artifacts/prompt_queue/review_triggers/wi-100.json",
+    )
+    with pytest.raises(DuplicateReviewInvocationError):
+        assert_no_duplicate_review_invocation(
+            work_item=item,
+            review_trigger_artifact_path="artifacts/prompt_queue/review_triggers/wi-100.json",
+        )
+
+
+def test_duplicate_invocation_guard_allows_new_trigger_lineage():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    item["review_trigger_artifact_path"] = "artifacts/prompt_queue/review_triggers/wi-100.v1.json"
+    item["review_invocation_result_artifact_path"] = (
+        "artifacts/prompt_queue/review_invocations/wi-100.review_invocation_result.v1.json"
+    )
+    assert not has_duplicate_review_invocation_result(
+        work_item=item,
+        review_trigger_artifact_path="artifacts/prompt_queue/review_triggers/wi-100.v2.json",
+    )
+    assert_no_duplicate_review_invocation(
+        work_item=item,
+        review_trigger_artifact_path="artifacts/prompt_queue/review_triggers/wi-100.v2.json",
+    )
 
 
 def test_timestamps_update_deterministically():

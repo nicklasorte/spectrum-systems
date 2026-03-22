@@ -113,6 +113,7 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_queue_state,
+    validate_review_invocation_result,
     validate_review_attempt,
     validate_work_item,
     write_artifact,
@@ -127,6 +128,11 @@ from spectrum_systems.modules.prompt_queue.queue_models import (
 from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
 from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_review_markdown
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
+from spectrum_systems.modules.prompt_queue.review_invocation_guard import (
+    DuplicateReviewInvocationError,
+    assert_no_duplicate_review_invocation,
+    has_duplicate_review_invocation_result,
+)
 
 __all__ = [
     "default_execution_result_path",
@@ -189,6 +195,7 @@ __all__ = [
     "Priority",
     "ProviderResult",
     "ReviewParseError",
+    "DuplicateReviewInvocationError",
     "RiskLevel",
     "WorkItemStatus",
     "attach_findings_to_work_item",
@@ -199,8 +206,11 @@ __all__ = [
     "parse_review_markdown",
     "run_review_with_fallback",
     "transition_work_item",
+    "assert_no_duplicate_review_invocation",
+    "has_duplicate_review_invocation_result",
     "validate_findings_artifact",
     "validate_queue_state",
+    "validate_review_invocation_result",
     "validate_review_attempt",
     "validate_work_item",
     "write_artifact",
