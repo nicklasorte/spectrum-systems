@@ -750,6 +750,19 @@
       "last_updated_in": "1.0.16",
       "example_path": "contracts/examples/prompt_queue_review_findings.json",
       "notes": "Normalized, fail-closed review findings artifact parsed from committed review markdown and attached to governed prompt queue work items."
+    },
+    {
+      "artifact_type": "prompt_queue_repair_prompt",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.16",
+      "last_updated_in": "1.0.16",
+      "example_path": "contracts/examples/prompt_queue_repair_prompt.json",
+      "notes": "Deterministic, bounded repair prompt artifact derived from FAIL review findings with provider/fallback lineage preserved."
     }
   ]
 }

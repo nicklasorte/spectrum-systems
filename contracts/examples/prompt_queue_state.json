@@ -22,7 +22,8 @@
       "review_fallback_reason": null,
       "created_at": "2026-03-22T00:00:00Z",
       "updated_at": "2026-03-22T00:00:00Z",
-      "findings_artifact_path": null
+      "findings_artifact_path": null,
+      "repair_prompt_artifact_path": null
     }
   ],
   "active_work_item_id": "wi-001",

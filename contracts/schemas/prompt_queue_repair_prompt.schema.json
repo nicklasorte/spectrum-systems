@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_repair_prompt.schema.json",
+  "title": "Prompt Queue Repair Prompt Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repair_prompt_artifact_id",
+    "work_item_id",
+    "source_findings_artifact_path",
+    "source_review_artifact_path",
+    "review_provider",
+    "fallback_used",
+    "fallback_reason",
+    "review_decision",
+    "prompt_generation_status",
+    "prompt_scope_summary",
+    "prompt_text",
+    "required_fixes_count",
+    "critical_findings_count",
+    "likely_files",
+    "suggested_test_commands",
+    "bounded_not_in_scope",
+    "finding_ids_included",
+    "generated_at",
+    "generator_version"
+  ],
+  "properties": {
+    "repair_prompt_artifact_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "source_findings_artifact_path": {"type": "string", "minLength": 1},
+    "source_review_artifact_path": {"type": "string", "minLength": 1},
+    "review_provider": {"type": "string", "enum": ["claude", "codex"]},
+    "fallback_used": {"type": "boolean"},
+    "fallback_reason": {
+      "type": ["string", "null"],
+      "enum": ["usage_limit", "rate_limited", "auth_failure", "timeout", "provider_unavailable", null]
+    },
+    "review_decision": {"type": "string", "const": "FAIL"},
+    "prompt_generation_status": {"type": "string", "enum": ["generated"]},
+    "prompt_scope_summary": {"type": "string", "minLength": 1},
+    "prompt_text": {"type": "string", "minLength": 1},
+    "required_fixes_count": {"type": "integer", "minimum": 1},
+    "critical_findings_count": {"type": "integer", "minimum": 0},
+    "likely_files": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "suggested_test_commands": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "bounded_not_in_scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "finding_ids_included": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generator_version": {"type": "string", "minLength": 1}
+  }
+}

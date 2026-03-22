@@ -205,3 +205,13 @@ def test_emitted_artifacts_validate_against_schema(tmp_path: Path):
     for path in (item_path, queue_path, attempt_path):
         assert path.exists()
         json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_findings_parsed_to_repair_prompt_generated_transition():
+    item = _base_item(clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    review_complete = transition_work_item(item, WorkItemStatus.REVIEW_QUEUED.value, clock=FixedClock(["2026-03-22T00:00:01Z"]))
+    review_complete = transition_work_item(review_complete, WorkItemStatus.REVIEW_RUNNING.value, clock=FixedClock(["2026-03-22T00:00:02Z"]))
+    review_complete = transition_work_item(review_complete, WorkItemStatus.REVIEW_COMPLETE.value, clock=FixedClock(["2026-03-22T00:00:03Z"]))
+    findings_parsed = transition_work_item(review_complete, WorkItemStatus.FINDINGS_PARSED.value, clock=FixedClock(["2026-03-22T00:00:04Z"]))
+    repair_generated = transition_work_item(findings_parsed, WorkItemStatus.REPAIR_PROMPT_GENERATED.value, clock=FixedClock(["2026-03-22T00:00:05Z"]))
+    assert repair_generated["status"] == WorkItemStatus.REPAIR_PROMPT_GENERATED.value
