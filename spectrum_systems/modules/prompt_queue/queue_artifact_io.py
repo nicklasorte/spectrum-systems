@@ -27,6 +27,10 @@ def validate_review_attempt(review_attempt: dict) -> None:
     _validate(review_attempt, "prompt_queue_review_attempt")
 
 
+def validate_review_invocation_result(review_invocation_result: dict) -> None:
+    _validate(review_invocation_result, "prompt_queue_review_invocation_result")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

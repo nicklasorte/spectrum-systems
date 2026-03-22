@@ -1,8 +1,8 @@
 {
   "review_attempt_id": "attempt-001",
   "work_item_id": "wi-001",
-  "provider_requested": "claude",
-  "provider_used": "claude",
+  "provider_requested": "codex",
+  "provider_used": "codex",
   "fallback_used": false,
   "fallback_reason": null,
   "attempt_number": 1,

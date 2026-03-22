@@ -28,6 +28,9 @@ class WorkItemStatus(str, Enum):
     REENTRY_BLOCKED = "reentry_blocked"
     REENTRY_ELIGIBLE = "reentry_eligible"
     REVIEW_TRIGGERED = "review_triggered"
+    REVIEW_INVOKING = "review_invoking"
+    REVIEW_INVOCATION_SUCCEEDED = "review_invocation_succeeded"
+    REVIEW_INVOCATION_FAILED = "review_invocation_failed"
     APPROVAL_REQUIRED = "approval_required"
     BLOCKED = "blocked"
 
@@ -93,7 +96,7 @@ class WorkItem:
     repo: str
     branch: str
     scope_paths: list[str]
-    review_provider_primary: str = ReviewProvider.CLAUDE.value
+    review_provider_primary: str = ReviewProvider.CODEX.value
     review_provider_actual: Optional[str] = None
     review_attempt_count: int = 0
     review_fallback_used: bool = False
@@ -105,6 +108,7 @@ class WorkItem:
     post_execution_decision_artifact_path: Optional[str] = None
     next_step_action_artifact_path: Optional[str] = None
     review_trigger_artifact_path: Optional[str] = None
+    review_invocation_result_artifact_path: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
     parent_work_item_id: Optional[str] = None
@@ -194,6 +198,7 @@ def make_work_item(
         post_execution_decision_artifact_path=None,
         next_step_action_artifact_path=None,
         review_trigger_artifact_path=None,
+        review_invocation_result_artifact_path=None,
         spawned_from_execution_result_artifact_path=None,
         spawned_from_post_execution_decision_artifact_path=None,
         spawned_from_loop_control_decision_artifact_path=None,
