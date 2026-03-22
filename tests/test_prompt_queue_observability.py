@@ -1,0 +1,126 @@
+"""Tests for deterministic, read-only prompt queue observability snapshots."""
+
+from __future__ import annotations
+
+import copy
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
+from spectrum_systems.contracts import load_example  # noqa: E402
+from spectrum_systems.modules.prompt_queue import (  # noqa: E402
+    generate_queue_snapshot,
+    validate_observability_snapshot,
+    validate_queue_invariants,
+)
+
+
+def _queue_state() -> dict:
+    state = load_example("prompt_queue_state")
+    state["work_items"] = [
+        {
+            **state["work_items"][0],
+            "work_item_id": "wi-001",
+            "status": "queued",
+            "retry_count": 0,
+            "retry_budget": 2,
+        },
+        {
+            **state["work_items"][0],
+            "work_item_id": "wi-002",
+            "status": "executing",
+            "retry_count": 1,
+            "retry_budget": 3,
+            "run_id": "run-100",
+            "previous_status": "runnable",
+        },
+        {
+            **state["work_items"][0],
+            "work_item_id": "wi-003",
+            "status": "complete",
+            "retry_count": 2,
+            "retry_budget": 2,
+        },
+        {
+            **state["work_items"][0],
+            "work_item_id": "wi-004",
+            "status": "executed_failure",
+            "retry_count": 1,
+            "retry_budget": 1,
+        },
+        {
+            **state["work_items"][0],
+            "work_item_id": "wi-005",
+            "status": "blocked",
+            "retry_count": 0,
+            "retry_budget": 1,
+        },
+    ]
+    state["active_work_item_id"] = "wi-002"
+    state["updated_at"] = "2026-03-22T00:00:00Z"
+    return state
+
+
+def test_snapshot_determinism():
+    queue_state = _queue_state()
+    first = generate_queue_snapshot(queue_state)
+    second = generate_queue_snapshot(copy.deepcopy(queue_state))
+    assert first == second
+
+
+def test_invariant_detection():
+    queue_state = _queue_state()
+    queue_state["work_items"][1]["run_id"] = "run-dup"
+    queue_state["work_items"][2]["run_id"] = "run-dup"
+    queue_state["work_items"][3]["retry_count"] = 5
+    queue_state["work_items"][3]["retry_budget"] = 2
+    queue_state["work_items"][4]["is_running"] = True
+    queue_state["work_items"][0].pop("status")
+    queue_state["work_items"][1]["previous_status"] = "queued"
+
+    violations = validate_queue_invariants(queue_state)
+
+    assert any(v.startswith("duplicate_run_id:run-dup") for v in violations)
+    assert any(v.startswith("retry_count_exceeds_budget:wi-004") for v in violations)
+    assert any(v.startswith("blocked_status_with_running_flag:wi-005") for v in violations)
+    assert any(v.startswith("missing_required_fields:wi-001:status") for v in violations)
+    assert any(v.startswith("invalid_state_transition:wi-002:queued->executing") for v in violations)
+
+
+def test_no_mutation_of_queue():
+    queue_state = _queue_state()
+    before = copy.deepcopy(queue_state)
+
+    _ = validate_queue_invariants(queue_state)
+    _ = generate_queue_snapshot(queue_state)
+
+    assert queue_state == before
+
+
+def test_schema_validation(tmp_path: Path):
+    queue_path = tmp_path / "queue.json"
+    output_path = tmp_path / "snapshot.json"
+    queue_path.write_text(json.dumps(_queue_state(), indent=2), encoding="utf-8")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "run_prompt_queue_observability.py"),
+            "--queue-path",
+            str(queue_path),
+            "--output-path",
+            str(output_path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0
+    snapshot = json.loads(output_path.read_text(encoding="utf-8"))
+    validate_observability_snapshot(snapshot)
+    assert snapshot["snapshot_id"].startswith("pqo-")

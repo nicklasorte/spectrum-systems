@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_observability_snapshot.schema.json",
+  "title": "Prompt Queue Observability Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "timestamp",
+    "total_items",
+    "items_by_status",
+    "retry_counts_summary",
+    "blocked_items_count",
+    "exhausted_retry_count",
+    "active_run_ids",
+    "invariant_violations"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_items": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items_by_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "blocked"
+      ],
+      "properties": {
+        "queued": { "type": "integer", "minimum": 0 },
+        "running": { "type": "integer", "minimum": 0 },
+        "completed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "blocked": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "retry_counts_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_retry_count",
+        "max_retry_count",
+        "items_with_retries"
+      ],
+      "properties": {
+        "total_retry_count": { "type": "integer", "minimum": 0 },
+        "max_retry_count": { "type": "integer", "minimum": 0 },
+        "items_with_retries": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "blocked_items_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "exhausted_retry_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "active_run_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "invariant_violations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

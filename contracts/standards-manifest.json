@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.30",
+  "artifact_version": "1.0.31",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-RETRY-POLICY",
+  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-OBSERVABILITY-SNAPSHOT",
   "run_id": "run-20260322T000000Z",
   "created_at": "2026-03-22T00:00:00Z",
   "created_by": {
@@ -919,6 +919,20 @@
       "last_updated_in": "1.0.30",
       "example_path": "contracts/examples/prompt_queue_retry_decision.json",
       "notes": "Deterministic fail-closed retry eligibility and bounded retry action decision for governed prompt queue work items."
+    },
+    {
+      "artifact_type": "prompt_queue_observability_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems prompt-queue module",
+        "governance and audit workflows"
+      ],
+      "introduced_in": "1.0.31",
+      "last_updated_in": "1.0.31",
+      "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
+      "notes": "Deterministic, read-only queue observability snapshot with invariant reporting and stable ordering guarantees."
     }
   ]
 }
