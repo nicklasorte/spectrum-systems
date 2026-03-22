@@ -1,6 +1,6 @@
 {
   "artifact_type": "evaluation_control_decision",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "decision_id": "ecd-20260321T000000Z",
   "eval_run_id": "eval-run-20260321T120000Z",
   "system_status": "warning",
@@ -14,5 +14,12 @@
     "trust_threshold": 0.8
   },
   "trace_id": "44444444-4444-4444-8444-444444444444",
-  "created_at": "2026-03-21T00:00:00Z"
+  "created_at": "2026-03-21T00:00:00Z",
+  "decision": "require_review",
+  "rationale_code": "require_review_warning_signal",
+  "input_signal_reference": {
+    "signal_type": "eval_summary",
+    "source_artifact_id": "eval-run-20260321T120000Z"
+  },
+  "run_id": "eval-run-20260321T120000Z"
 }

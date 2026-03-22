@@ -15,11 +15,15 @@
     "triggered_signals",
     "threshold_snapshot",
     "trace_id",
-    "created_at"
+    "created_at",
+    "decision",
+    "rationale_code",
+    "input_signal_reference",
+    "run_id"
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "evaluation_control_decision" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "decision_id": { "type": "string", "minLength": 1 },
     "eval_run_id": { "type": "string", "minLength": 1 },
     "system_status": {
@@ -60,7 +64,38 @@
       }
     },
     "trace_id": { "type": "string", "minLength": 1 },
-    "created_at": { "type": "string", "format": "date-time" }
+    "created_at": { "type": "string", "format": "date-time" },
+    "decision": {
+      "type": "string",
+      "enum": ["allow", "deny", "require_review"]
+    },
+    "rationale_code": {
+      "type": "string",
+      "enum": [
+        "allow_healthy_eval_summary",
+        "deny_reliability_breach",
+        "deny_stability_breach",
+        "deny_trust_breach",
+        "deny_indeterminate_failure",
+        "require_review_warning_signal",
+        "deny_failure_eval_case",
+        "deny_malformed_signal",
+        "deny_missing_required_signal"
+      ]
+    },
+    "input_signal_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal_type", "source_artifact_id"],
+      "properties": {
+        "signal_type": {
+          "type": "string",
+          "enum": ["eval_summary", "failure_eval_case"]
+        },
+        "source_artifact_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "run_id": { "type": "string", "minLength": 1 }
   },
   "allOf": [
     {
