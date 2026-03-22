@@ -507,13 +507,13 @@
     {
       "artifact_type": "replay_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.1.1",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.12",
-      "last_updated_in": "1.0.12",
+      "last_updated_in": "1.1.1",
       "example_path": "contracts/examples/replay_result.json",
       "notes": "BAG deterministic canonical trust-loop replay artifact comparing original versus replayed enforcement outcomes."
     },

@@ -11,6 +11,7 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
+from spectrum_systems.contracts import validate_artifact  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import run_control_loop  # noqa: E402
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision  # noqa: E402
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
@@ -62,6 +63,14 @@ def test_matching_replay_returns_match_and_no_drift() -> None:
     assert "drift_result" in result
     assert result["drift_result"]["drift_type"] == "none"
     assert result["drift_result"]["drift_detected"] is False
+
+def test_matching_replay_round_trip_contract_validation() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+    validate_artifact(result, "replay_result")
 
 
 def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -176,3 +185,50 @@ def test_replay_uses_canonical_enforcement_path_not_legacy(monkeypatch: pytest.M
     assert result["replay_path"] == "bag_replay_engine"
     assert called["canonical"] == 1
     assert called["legacy"] == 0
+
+
+def test_run_replay_raises_on_canonical_path_exception(monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    def _raise_control_loop(_artifact: dict, _trace_context: dict) -> dict:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
+        _raise_control_loop,
+    )
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:RuntimeError"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+@pytest.mark.parametrize("invalid_value", [None, "bad", 42])
+def test_run_replay_rejects_invalid_artifact_types(invalid_value: object) -> None:
+    original_decision, original_enforcement = _originals()
+    with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_ARTIFACT"):
+        run_replay(invalid_value, original_decision, original_enforcement, _trace_context())
+
+
+@pytest.mark.parametrize("invalid_value", [None, "bad", 42])
+def test_run_replay_rejects_invalid_original_decision_types(invalid_value: object) -> None:
+    artifact = _artifact()
+    _, original_enforcement = _originals(artifact)
+    with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_ORIGINAL_DECISION"):
+        run_replay(artifact, invalid_value, original_enforcement, _trace_context())
+
+
+@pytest.mark.parametrize("invalid_value", [None, "bad", 42])
+def test_run_replay_rejects_invalid_original_enforcement_types(invalid_value: object) -> None:
+    artifact = _artifact()
+    original_decision, _ = _originals(artifact)
+    with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_ORIGINAL_ENFORCEMENT"):
+        run_replay(artifact, original_decision, invalid_value, _trace_context())
+
+
+@pytest.mark.parametrize("invalid_value", [None, "bad", 42])
+def test_run_replay_rejects_invalid_trace_context_types(invalid_value: object) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_CONTEXT"):
+        run_replay(artifact, original_decision, original_enforcement, invalid_value)

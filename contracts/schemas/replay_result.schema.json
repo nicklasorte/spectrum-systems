@@ -157,6 +157,140 @@
           "minLength": 1
         }
       }
+    },
+    "drift_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drift_result_id",
+        "source_run_id",
+        "replay_run_id",
+        "drift_detected",
+        "drift_type",
+        "comparison_fields",
+        "original_values",
+        "replay_values",
+        "drift_severity",
+        "detection_timestamp",
+        "provenance"
+      ],
+      "properties": {
+        "drift_result_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replay_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "drift_detected": {
+          "type": "boolean"
+        },
+        "drift_type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "status_mismatch",
+            "action_mismatch",
+            "missing_original",
+            "missing_replay",
+            "indeterminate"
+          ]
+        },
+        "comparison_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "final_status",
+              "enforcement_action"
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "original_values": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "final_status",
+            "enforcement_action"
+          ],
+          "properties": {
+            "final_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "enforcement_action": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "replay_values": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "final_status",
+            "enforcement_action"
+          ],
+          "properties": {
+            "final_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "enforcement_action": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "drift_severity": {
+          "type": "string",
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "detection_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trace_id",
+            "run_id"
+          ],
+          "properties": {
+            "trace_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "description": "Optional deterministic drift classification attached to replay_result."
     }
   },
   "allOf": [

@@ -845,7 +845,7 @@ def _build_replay_result(
 
     result = {
         "artifact_type": "replay_result",
-        "schema_version": "1.1.0",
+        "schema_version": "1.1.1",
         "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
         "original_run_id": original_run_id,
         "replay_run_id": replay_run_id,
@@ -944,31 +944,13 @@ def run_replay(
             failure_reason=None,
         )
         replay_result["drift_result"] = detect_drift(replay_result)
+        errors = validate_replay_result(replay_result)
+        if errors:
+            raise ReplayEngineError("replay_result failed validation: " + "; ".join(errors))
         return replay_result
     except ReplayEngineError:
         raise
     except Exception as exc:  # noqa: BLE001
-        fallback_decision = {
-            "decision_id": str(original_decision_input.get("decision_id") or "replay-indeterminate-decision"),
-            "run_id": str(original_decision_input.get("run_id") or "replay-indeterminate-run"),
-            "decision": str(original_decision_input.get("decision") or "deny"),
-        }
-        fallback_enforcement = {
-            "enforcement_result_id": str(
-                original_enforcement_input.get("enforcement_result_id") or "replay-indeterminate-enforcement"
-            ),
-            "enforcement_action": str(original_enforcement_input.get("enforcement_action") or "deny_execution"),
-            "final_status": str(original_enforcement_input.get("final_status") or "deny"),
-        }
-        replay_result = _build_replay_result(
-            artifact=artifact_input,
-            original_decision=original_decision_input,
-            original_enforcement=original_enforcement_input,
-            replay_decision=fallback_decision,
-            replay_enforcement=fallback_enforcement,
-            trace_id=trace_id,
-            consistency_status="indeterminate",
-            failure_reason=f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}",
-        )
-        replay_result["drift_result"] = detect_drift(replay_result)
-        return replay_result
+        raise ReplayEngineError(
+            f"REPLAY_EXECUTION_FAILED:{exc.__class__.__name__}:{exc}"
+        ) from exc
