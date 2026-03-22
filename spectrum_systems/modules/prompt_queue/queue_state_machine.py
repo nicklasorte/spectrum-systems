@@ -48,8 +48,16 @@ _ALLOWED_TRANSITIONS = {
         WorkItemStatus.EXECUTED_SUCCESS.value,
         WorkItemStatus.EXECUTED_FAILURE.value,
     },
-    WorkItemStatus.EXECUTED_SUCCESS.value: set(),
-    WorkItemStatus.EXECUTED_FAILURE.value: set(),
+    WorkItemStatus.EXECUTED_SUCCESS.value: {WorkItemStatus.COMPLETE.value},
+    WorkItemStatus.EXECUTED_FAILURE.value: {
+        WorkItemStatus.REVIEW_REQUIRED.value,
+        WorkItemStatus.REENTRY_BLOCKED.value,
+        WorkItemStatus.REENTRY_ELIGIBLE.value,
+    },
+    WorkItemStatus.REVIEW_REQUIRED.value: set(),
+    WorkItemStatus.REENTRY_BLOCKED.value: set(),
+    WorkItemStatus.REENTRY_ELIGIBLE.value: set(),
+    WorkItemStatus.COMPLETE.value: set(),
     WorkItemStatus.BLOCKED.value: set(),
 }
 

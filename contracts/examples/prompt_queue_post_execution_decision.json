@@ -1,0 +1,21 @@
+{
+  "post_execution_decision_artifact_id": "postexec-wi-001-2026-03-22T03:00:00Z",
+  "work_item_id": "wi-001",
+  "parent_work_item_id": "wi-parent-001",
+  "execution_result_artifact_path": "artifacts/prompt_queue/execution_results/wi-001.execution_result.json",
+  "gating_decision_artifact_path": "artifacts/prompt_queue/gating/wi-001.execution_gating_decision.json",
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-parent-001.repair_prompt.json",
+  "decision_status": "review_required",
+  "decision_reason_code": "review_required_execution_failure_within_generation_limit",
+  "execution_status": "failure",
+  "repair_loop_generation": 1,
+  "max_generation_allowed": 2,
+  "approval_required": true,
+  "approval_present": true,
+  "generated_at": "2026-03-22T03:00:00Z",
+  "generator_version": "prompt_queue_post_execution_policy.v1",
+  "blocking_conditions": [],
+  "warnings": [],
+  "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+  "review_trigger_recommended": true
+}
