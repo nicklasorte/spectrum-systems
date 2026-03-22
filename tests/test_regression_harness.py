@@ -174,7 +174,7 @@ def test_default_policy_file_exists() -> None:
 
 def test_default_policy_file_is_valid_json() -> None:
     data = json.loads(_DEFAULT_POLICY.read_text(encoding="utf-8"))
-    assert "policy_id" in data
+    assert data["policy_id"] == "regression-policy-v1.0.0"
     assert "thresholds" in data
 
 
@@ -196,7 +196,7 @@ def test_default_policy_validates_against_schema() -> None:
 
 
 def test_policy_load_default(default_policy: RegressionPolicy) -> None:
-    assert default_policy.policy_id == "default"
+    assert default_policy.policy_id == "regression-policy-v1.0.0"
     assert default_policy.version
 
 
@@ -219,7 +219,7 @@ def test_policy_hard_fail_dimensions(default_policy: RegressionPolicy) -> None:
 
 def test_policy_load_from_path(tmp_path: Path) -> None:
     policy_data = {
-        "policy_id": "test",
+        "policy_id": "regression-policy-v1.0.1",
         "version": "1.0.0",
         "description": "Test policy",
         "thresholds": {
@@ -243,7 +243,7 @@ def test_policy_load_from_path(tmp_path: Path) -> None:
     p = tmp_path / "policy.json"
     p.write_text(json.dumps(policy_data), encoding="utf-8")
     loaded = RegressionPolicy.load(p)
-    assert loaded.policy_id == "test"
+    assert loaded.policy_id == "regression-policy-v1.0.1"
 
 
 def test_policy_load_missing_file(tmp_path: Path) -> None:
@@ -651,7 +651,7 @@ def test_generate_report_warning_on_latency_increase(
 
 def test_generate_report_deterministic_required_hard_fail() -> None:
     policy_data = {
-        "policy_id": "strict",
+        "policy_id": "regression-policy-v9.0.0",
         "version": "1.0.0",
         "description": "Strict determinism policy",
         "thresholds": {
@@ -685,7 +685,7 @@ def test_generate_report_deterministic_required_hard_fail() -> None:
 
 def test_generate_report_deterministic_required_passes_when_deterministic() -> None:
     policy_data = {
-        "policy_id": "strict",
+        "policy_id": "regression-policy-v9.0.1",
         "version": "1.0.0",
         "description": "Strict",
         "thresholds": {

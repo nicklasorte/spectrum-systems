@@ -395,16 +395,7 @@ def resolve_enforcement_policy(
     """Resolve the effective enforcement policy.
 
     Delegates to the governed policy registry (BN.2) for authoritative
-    resolution.  Resolution order:
-    1. If *requested_policy* is provided and recognised, use it.
-    2. If *stage* is a known stage with a default policy, use that.
-    3. Fall back to ``DEFAULT_POLICY``.
-
-    Unknown policy names and unknown stage names are silently ignored (same
-    behaviour as before BN.2) — the registry raises governed errors, but this
-    wrapper falls through to the next resolution step to preserve backward
-    compatibility.  Callers that need governed errors should call
-    :func:`policy_registry.resolve_effective_slo_policy` directly.
+    fail-closed resolution.
 
     Parameters
     ----------
@@ -416,33 +407,15 @@ def resolve_enforcement_policy(
     Returns
     -------
     One of the POLICY_* constants.
-    """
-    from spectrum_systems.modules.runtime.policy_registry import (  # noqa: PLC0415
-        MalformedRegistryError,
-        UnknownPolicyError,
-        UnknownStageError,
-    )
-    # Try registry resolution first.
-    try:
-        effective_policy, _ = resolve_effective_slo_policy(requested_policy, stage)
-        return effective_policy
-    except UnknownPolicyError:
-        # Unknown policy — skip to stage-based or default resolution.
-        pass
-    except UnknownStageError:
-        # Unknown stage — fall back to system default.
-        return DEFAULT_POLICY
-    except (MalformedRegistryError, OSError, json.JSONDecodeError):
-        # Registry file unavailable — fall back to inline defaults so enforcement
-        # remains operational even if the registry cannot be loaded from disk.
-        pass
 
-    # Inline fallback (backward-compatible behaviour).
-    if requested_policy is not None and requested_policy in KNOWN_POLICIES:
-        return requested_policy
-    if stage is not None and stage in STAGE_DEFAULT_POLICIES:
-        return STAGE_DEFAULT_POLICIES[stage]
-    return DEFAULT_POLICY
+    Raises
+    ------
+    PolicyRegistryError
+        If policy resolution fails (unknown policy/stage or missing
+        policy+stage inputs).
+    """
+    effective_policy, _ = resolve_effective_slo_policy(requested_policy, stage)
+    return effective_policy
 
 
 # ---------------------------------------------------------------------------
@@ -690,8 +663,9 @@ def run_slo_enforcement(
         Artifact dict (or any value) to evaluate.  Accepts full artifact dicts
         or pre-normalised input dicts.
     policy:
-        Explicit policy name (one of the POLICY_* constants), or ``None`` to
-        use stage-default or global default.
+        Explicit policy name (one of the POLICY_* constants), or ``None``.
+        If omitted, a valid stage binding must resolve; otherwise resolution
+        fails closed.
     stage:
         Optional pipeline stage identifier (e.g. ``"synthesis"``).
     evaluated_at:
@@ -718,9 +692,12 @@ def run_slo_enforcement(
         # Last-resort crash protection: if the inner pipeline itself fails,
         # return a governed fail decision.
         err_msg = f"Internal enforcement error: {exc}"
+        fallback_policy = policy
+        if fallback_policy is None:
+            fallback_policy = "policy_resolution_failed"
         decision = build_slo_enforcement_decision(
             artifact_id=None,
-            policy=policy or DEFAULT_POLICY,
+            policy=fallback_policy,
             stage=stage,
             decision_status=DECISION_FAIL,
             reason_code=REASON_MALFORMED_TI,

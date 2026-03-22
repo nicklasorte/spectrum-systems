@@ -1,6 +1,7 @@
 {
   "run_id": "RUN-2026-03-15-PIPE-001",
   "artifact_id": "comment-resolution-matrix.v1.json",
+  "policy_id": "evidence-bundle-governance-v1.3.0",
   "generated_by_engine": "spectrum-pipeline-engine",
   "engine_version": "0.8.1",
   "source_artifacts": [

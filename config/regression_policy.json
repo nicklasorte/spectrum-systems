@@ -1,5 +1,5 @@
 {
-  "policy_id": "default",
+  "policy_id": "regression-policy-v1.0.0",
   "version": "1.0.0",
   "description": "Default regression policy for spectrum-systems. Grounding and structural dimensions are strict hard-fail gates; semantic is a hard-fail at a slightly looser threshold; latency and human disagreement default to warning.",
   "thresholds": {
