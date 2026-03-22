@@ -34,6 +34,16 @@ from spectrum_systems.modules.meeting_minutes_pipeline import (  # noqa: E402
     build_run_id,
     run_pipeline,
 )
+from spectrum_systems.modules.runtime.trace_engine import start_span, start_trace  # noqa: E402
+from spectrum_systems.study_runner.artifact_writer import write_outputs  # noqa: E402
+from spectrum_systems.study_runner.load_config import (  # noqa: E402
+    BandConfig,
+    DeploymentConfig,
+    PropagationModelConfig,
+    ProtectionCriteria,
+    StudyConfig,
+    SystemConfig,
+)
 
 
 # ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -384,3 +394,80 @@ def test_run_pipeline_derived_run_id_deterministic(tmp_path: Path) -> None:
 def test_build_run_id_deterministic() -> None:
     assert build_run_id("hello") == build_run_id("hello")
     assert build_run_id("hello") != build_run_id("world")
+
+
+def _sample_study_config(tmp_path: Path) -> StudyConfig:
+    config_path = tmp_path / "study_config.yaml"
+    config_path.write_text("study: test\n", encoding="utf-8")
+    return StudyConfig(
+        config_path=config_path,
+        band=BandConfig(start_freq_mhz=3550.0, end_freq_mhz=3700.0),
+        systems=[SystemConfig(name="System A", system_type="base")],
+        propagation_model=PropagationModelConfig(model="ITM"),
+        deployment=DeploymentConfig(
+            base_station_density_per_km2=1.0,
+            antenna_height_m=30.0,
+            raw_density="1/km2",
+            raw_height="30m",
+        ),
+        protection_criteria=ProtectionCriteria(i_n_db=-6.0, reliability=0.95, raw_i_n="-6 dB"),
+    )
+
+
+def _sample_pipeline_outputs() -> dict:
+    return {
+        "tables": {"deployments": [{"system": "System A", "distance_km": 10.0}]},
+        "figures_metadata": [{"figure_id": "fig-1", "title": "Coverage"}],
+        "protection_zones": [],
+        "deployments": [],
+        "pathloss": [],
+        "interference": [],
+        "protection_evaluations": {"System A": True},
+    }
+
+
+def test_study_runner_write_outputs_fails_without_trace_context(tmp_path: Path) -> None:
+    config = _sample_study_config(tmp_path)
+    with pytest.raises(ValueError, match="valid trace context"):
+        write_outputs(
+            config,
+            _sample_pipeline_outputs(),
+            logger=None,
+            policy_id="regression-policy-v1.0.0",
+            generated_by_version="abcdef123456",
+            source_revision="rev123",
+            trace_id="",
+            span_id="",
+        )
+
+
+def test_study_runner_write_outputs_provenance_uses_runtime_values(tmp_path: Path, monkeypatch) -> None:
+    config = _sample_study_config(tmp_path)
+    trace_id = start_trace({"test": "study_runner"})
+    span_id = start_span(trace_id, "write_outputs_test")
+
+    class _Logger:
+        def info(self, _msg: str) -> None:
+            return
+
+    monkeypatch.chdir(tmp_path)
+    write_outputs(
+        config,
+        _sample_pipeline_outputs(),
+        logger=_Logger(),
+        policy_id="regression-policy-v1.0.0",
+        generated_by_version="abcdef123456",
+        source_revision="rev20260322",
+        trace_id=trace_id,
+        span_id=span_id,
+    )
+
+    summary = json.loads((tmp_path / "outputs" / "study_summary.json").read_text(encoding="utf-8"))
+    provenance = summary["table_metadata"][0]["provenance"]
+    assert provenance["policy_id"] == "regression-policy-v1.0.0"
+    assert provenance["generated_by_version"] == "abcdef123456"
+    assert provenance["source_revision"] == "rev20260322"
+    assert provenance["trace_id"] == trace_id
+    assert provenance["span_id"] == span_id
+    assert provenance["source_revision"] != "rev0"
+    assert provenance["generated_by_version"] != "design-notebook"

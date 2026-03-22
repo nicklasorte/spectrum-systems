@@ -197,6 +197,7 @@ class TestArtifactMetadataSchema:
             "created_at": "2026-03-17T00:00:00+00:00",
             "lifecycle_state": "input",
             "contract_version": "1.0.0",
+            "policy_id": "regression-policy-v1.0.0",
             "schema_version": "1.0.0",
         }
 
@@ -342,6 +343,7 @@ def test_create_artifact_metadata_valid() -> None:
         module_origin="test-engine",
         lifecycle_state="input",
         contract_version="1.0.0",
+        policy_id="regression-policy-v1.0.0",
     )
     assert meta["artifact_id"] == "ARTIFACT-001"
     assert meta["lifecycle_state"] == "input"
@@ -356,6 +358,7 @@ def test_create_artifact_metadata_invalid_state() -> None:
             module_origin="test-engine",
             lifecycle_state="nonexistent",
             contract_version="1.0.0",
+            policy_id="regression-policy-v1.0.0",
         )
 
 
@@ -367,6 +370,19 @@ def test_create_artifact_metadata_empty_artifact_id() -> None:
             module_origin="test-engine",
             lifecycle_state="input",
             contract_version="1.0.0",
+            policy_id="regression-policy-v1.0.0",
+        )
+
+
+def test_create_artifact_metadata_invalid_policy_id() -> None:
+    with pytest.raises(ValueError, match="policy_id"):
+        create_artifact_metadata(
+            artifact_id="ARTIFACT-001",
+            artifact_type="engine_output",
+            module_origin="test-engine",
+            lifecycle_state="input",
+            contract_version="1.0.0",
+            policy_id="GOV-001",
         )
 
 
@@ -527,6 +543,7 @@ def test_happy_path_full_lifecycle(tmp_path: Path) -> None:
         module_origin="test-engine",
         lifecycle_state="input",
         contract_version="1.0.0",
+        policy_id="regression-policy-v1.0.0",
         run_id="run-happy-001",
     )
     save_artifact_record("artifacts", artifact_id, meta, data_root=tmp_path)
