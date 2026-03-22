@@ -231,5 +231,19 @@
     "action_tracker_path": "docs/review-actions/2026-03-22-replay-engine-actions.md",
     "scope": "BAG replay engine (run_replay), replay_result.schema.json, test_replay_engine.py. Focus: canonical path integrity, determinism, comparison correctness, fail-closed behavior, contract compliance, test coverage. 4 findings (1 critical, 1 high, 1 medium, 1 low); 4 actions.",
     "follow_up_trigger": "When CR-1 (drift_result schema fix) and HI-1 (exception handler fail-closed fix) are complete; re-review before replay results are consumed by downstream audit or drift pipelines."
+  },
+  {
+    "review_id": "2026-03-22-policy-versioning-audit",
+    "review_date": "2026-03-22",
+    "review_type": "Critical governance audit — Policy Versioning System (BAS)",
+    "repo": "spectrum-systems",
+    "reviewer": "Claude (Reasoning Agent — Sonnet 4.6)",
+    "status": "Open",
+    "verdict": "FAIL",
+    "trust_assessment": "NO — policy governance cannot be trusted to never drift silently",
+    "artifact_path": "docs/reviews/2026-03-22-policy-versioning-audit.md",
+    "action_tracker_path": "docs/review-actions/2026-03-22-policy-versioning-audit-actions.md",
+    "scope": "Policy immutability, policy identity strength, artifact-to-policy linkage, snapshot consistency, silent policy drift, version history traceability, fail-closed policy resolution, policy scope clarity. 5 findings (3 critical, 2 high); 7 actions (3 critical, 2 high, 2 medium, 2 low). Sources: policy-registry.json, slo_policy_registry.json, regression_policy.json, eval_admission_policy.schema.json, provenance.schema.json, policy_registry.py.",
+    "follow_up_trigger": "When PV-CR-1 (fail-closed resolution) is implemented: re-audit policy_registry.py callers for explicit policy_id propagation. When PV-CR-2 (immutability) is implemented: verify CI rejects in-place edits. When PV-HI-1 (provenance policy_id field) is merged: audit existing records for backfill. When Phase 2 CI is activated: re-run snapshot consistency check."
   }
 ]
