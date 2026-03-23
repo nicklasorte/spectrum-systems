@@ -34,6 +34,7 @@ from spectrum_systems.modules.runtime.trace_store import (  # noqa: E402
     ENVELOPE_VERSION,
     TraceNotFoundError,
     TraceStoreError,
+    TraceStorePersistenceError,
     delete_trace,
     list_traces,
     load_trace,
@@ -205,19 +206,21 @@ class TestListTraces:
 
 
 # ---------------------------------------------------------------------------
-# Test 4: delete_trace removes the file
+# Test 4: delete_trace is blocked for governed append-only storage
 # ---------------------------------------------------------------------------
 
 class TestDeleteTrace:
-    def test_delete_trace_removes_file(self, tmp_store):
+    def test_delete_trace_not_allowed(self, tmp_store):
         persist_trace(_make_trace("trace-del-001"), base_dir=tmp_store)
-        delete_trace("trace-del-001", base_dir=tmp_store)
-        assert not (tmp_store / "trace-del-001.json").exists()
+        with pytest.raises(TraceStoreError, match="append-only"):
+            delete_trace("trace-del-001", base_dir=tmp_store)
+        assert (tmp_store / "trace-del-001.json").exists()
 
-    def test_delete_trace_no_longer_in_list(self, tmp_store):
+    def test_delete_trace_does_not_remove_from_list(self, tmp_store):
         persist_trace(_make_trace("trace-del-002"), base_dir=tmp_store)
-        delete_trace("trace-del-002", base_dir=tmp_store)
-        assert "trace-del-002" not in list_traces(base_dir=tmp_store)
+        with pytest.raises(TraceStoreError, match="append-only"):
+            delete_trace("trace-del-002", base_dir=tmp_store)
+        assert "trace-del-002" in list_traces(base_dir=tmp_store)
 
 
 # ---------------------------------------------------------------------------
@@ -278,7 +281,7 @@ class TestLoadTraceErrors:
 
 class TestDeleteTraceErrors:
     def test_delete_trace_raises_for_unknown_id(self, tmp_store):
-        with pytest.raises(TraceNotFoundError):
+        with pytest.raises(TraceStoreError, match="append-only"):
             delete_trace("does-not-exist", base_dir=tmp_store)
 
 
@@ -334,22 +337,18 @@ class TestValidatePersistedTraceErrors:
 
 
 # ---------------------------------------------------------------------------
-# Test 11: persist_trace is idempotent (overwriting same trace_id)
+# Test 11: persist_trace is immutable (overwriting same trace_id fails)
 # ---------------------------------------------------------------------------
 
-class TestPersistTraceIdempotent:
-    def test_overwrite_same_trace_id(self, tmp_store):
+class TestPersistTraceImmutability:
+    def test_persist_trace_fails_on_existing_file(self, tmp_store):
         trace = _make_trace("trace-overwrite")
         persist_trace(trace, base_dir=tmp_store)
-        # Modify and re-persist
         trace["context"] = {"updated": True}
-        persist_trace(trace, base_dir=tmp_store)
-        # Only one file should exist
-        files = list(tmp_store.glob("trace-overwrite.json"))
-        assert len(files) == 1
-        # Content should reflect the latest write
+        with pytest.raises(TraceStorePersistenceError, match="refused overwrite"):
+            persist_trace(trace, base_dir=tmp_store)
         envelope = load_trace("trace-overwrite", base_dir=tmp_store)
-        assert envelope["trace"]["context"]["updated"] is True
+        assert envelope["trace"].get("context", {}).get("updated") is not True
 
 
 # ---------------------------------------------------------------------------
@@ -408,6 +407,16 @@ class TestLoadTraceSchemaValidation:
         with pytest.raises(TraceStoreError, match="schema validation"):
             load_trace("trace-corrupt", base_dir=tmp_store)
 
+    def test_load_trace_identity_mismatch_fails(self, tmp_store):
+        trace = _make_trace("trace-good-id")
+        persist_trace(trace, base_dir=tmp_store)
+        envelope_path = tmp_store / "trace-good-id.json"
+        envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+        envelope["trace"]["trace_id"] = "trace-other-id"
+        envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+        with pytest.raises(TraceStoreError, match="identity mismatch"):
+            load_trace("trace-good-id", base_dir=tmp_store)
+
 
 # ---------------------------------------------------------------------------
 # Test 15: list_traces is sorted
@@ -419,3 +428,27 @@ class TestListTracesSorted:
             persist_trace(_make_trace(tid), base_dir=tmp_store)
         ids = list_traces(base_dir=tmp_store)
         assert ids == sorted(ids)
+
+
+def test_persist_trace_fails_on_existing_file(tmp_store) -> None:
+    trace = _make_trace("trace-required-overwrite")
+    persist_trace(trace, base_dir=tmp_store)
+    with pytest.raises(TraceStorePersistenceError, match="refused overwrite"):
+        persist_trace(trace, base_dir=tmp_store)
+
+
+def test_delete_trace_not_allowed(tmp_store) -> None:
+    persist_trace(_make_trace("trace-required-delete"), base_dir=tmp_store)
+    with pytest.raises(TraceStoreError, match="append-only"):
+        delete_trace("trace-required-delete", base_dir=tmp_store)
+
+
+def test_load_trace_identity_mismatch_fails(tmp_store) -> None:
+    trace = _make_trace("trace-required-identity")
+    persist_trace(trace, base_dir=tmp_store)
+    envelope_path = tmp_store / "trace-required-identity.json"
+    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    envelope["trace"]["trace_id"] = "trace-required-other"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    with pytest.raises(TraceStoreError, match="identity mismatch"):
+        load_trace("trace-required-identity", base_dir=tmp_store)
