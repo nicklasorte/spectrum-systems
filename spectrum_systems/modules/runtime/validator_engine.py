@@ -99,6 +99,17 @@ CANONICAL_VALIDATOR_ORDER: List[str] = [
 
 SCHEMA_VERSION: str = "1.0.0"
 
+EVENT_VALIDATOR_EXECUTION_STARTED = "validator_execution_started"
+EVENT_VALIDATOR_RESULT = "validator_result"
+EVENT_VALIDATOR_EXECUTION_COMPLETE = "validator_execution_complete"
+EVENT_VALIDATOR_EXECUTION_ARTIFACT_ATTACHED = "validator_execution_artifact_attached"
+GOVERNED_EVENT_TYPES = frozenset({
+    EVENT_VALIDATOR_EXECUTION_STARTED,
+    EVENT_VALIDATOR_RESULT,
+    EVENT_VALIDATOR_EXECUTION_COMPLETE,
+    EVENT_VALIDATOR_EXECUTION_ARTIFACT_ATTACHED,
+})
+
 # ---------------------------------------------------------------------------
 # Built-in validator callables
 # ---------------------------------------------------------------------------
@@ -452,9 +463,12 @@ def run_validators(
         return blocked_result
 
     # Create a span for the validator execution batch
+    observability_failures: List[str] = []
     try:
         ve_span_id = start_span(trace_id, "validator_execution", parent_span_id)
-    except (TraceNotFoundError, SpanNotFoundError):
+        record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_STARTED, {"validators_requested": list(required_validators or [])})
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        observability_failures.append(str(exc))
         ve_span_id = None
 
     validators_requested = list(required_validators or [])
@@ -476,7 +490,8 @@ def run_validators(
         try:
             if ve_span_id is not None:
                 v_span_id = start_span(trace_id, f"validator:{name}", ve_span_id)
-        except (TraceNotFoundError, SpanNotFoundError):
+        except (TraceNotFoundError, SpanNotFoundError) as exc:
+            observability_failures.append(str(exc))
             v_span_id = None
 
         # --- Resolve ---
@@ -493,10 +508,10 @@ def run_validators(
             validator_results.append(vr)
             if v_span_id:
                 try:
-                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "unknown_validator"})
+                    record_event(v_span_id, EVENT_VALIDATOR_RESULT, {"status": "blocked", "reason": "unknown_validator"})
                     end_span(v_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    observability_failures.append(str(exc))
             continue
 
         # --- Execute ---
@@ -514,10 +529,10 @@ def run_validators(
             validator_results.append(vr)
             if v_span_id:
                 try:
-                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "validator_exception"})
+                    record_event(v_span_id, EVENT_VALIDATOR_RESULT, {"status": "blocked", "reason": "validator_exception"})
                     end_span(v_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    observability_failures.append(str(exc))
             continue
 
         # --- Validate result structure ---
@@ -534,10 +549,10 @@ def run_validators(
             validator_results.append(vr)
             if v_span_id:
                 try:
-                    record_event(v_span_id, "validator_result", {"status": "blocked", "reason": "malformed_validator_result"})
+                    record_event(v_span_id, EVENT_VALIDATOR_RESULT, {"status": "blocked", "reason": "malformed_validator_result"})
                     end_span(v_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    observability_failures.append(str(exc))
             continue
 
         validators_run.append(name)
@@ -554,15 +569,15 @@ def run_validators(
         if v_span_id:
             try:
                 v_status = vr.get("status", "blocked")
-                record_event(v_span_id, "validator_result", {
+                record_event(v_span_id, EVENT_VALIDATOR_RESULT, {
                     "validator_name": name,
                     "status": v_status,
                     "reason_codes": vr.get("reason_codes") or [],
                 })
                 span_status = SPAN_STATUS_OK if v_status == "pass" else SPAN_STATUS_BLOCKED
                 end_span(v_span_id, span_status)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+            except (TraceNotFoundError, SpanNotFoundError) as exc:
+                observability_failures.append(str(exc))
 
     # --- Compute overall status ---
     if any(
@@ -610,19 +625,43 @@ def run_validators(
             )
         )
 
+    if observability_failures:
+        result["overall_status"] = "blocked"
+        result["failure_reason_codes"] = list(
+            dict.fromkeys(result["failure_reason_codes"] + ["observability_emission_failed"])
+        )
+        result["validator_results"].append(
+            _make_blocked_result(
+                "<validator_engine_observability>",
+                reason_codes=["observability_emission_failed"],
+                errors=observability_failures,
+            )
+        )
+
     # BK–BM: close the validator execution batch span and attach the artifact
     if ve_span_id:
         try:
             ve_span_status = SPAN_STATUS_OK if overall_status == "pass" else SPAN_STATUS_BLOCKED
-            record_event(ve_span_id, "validator_execution_complete", {
+            record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_COMPLETE, {
                 "overall_status": result["overall_status"],
                 "validators_run": validators_run,
                 "validators_failed": validators_failed,
             })
             end_span(ve_span_id, ve_span_status)
             attach_artifact(trace_id, result["execution_id"], "validator_execution_result", ve_span_id)
-        except (TraceNotFoundError, SpanNotFoundError):
-            pass
+            record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_ARTIFACT_ATTACHED, {"artifact_id": result["execution_id"]})
+        except (TraceNotFoundError, SpanNotFoundError) as exc:
+            result["overall_status"] = "blocked"
+            result["failure_reason_codes"] = list(
+                dict.fromkeys(result["failure_reason_codes"] + ["observability_emission_failed"])
+            )
+            result["validator_results"].append(
+                _make_blocked_result(
+                    "<validator_engine_observability>",
+                    reason_codes=["observability_emission_failed"],
+                    errors=[str(exc)],
+                )
+            )
 
     return result
 

@@ -706,8 +706,8 @@ def _run_control_chain_inner(
     gating_span_id: Optional[str] = None
     try:
         root_span_id = start_span(trace_id, "control_chain")
-    except (TraceNotFoundError, SpanNotFoundError):
-        root_span_id = None
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        raise RuntimeError("observability_emission_failed") from exc
 
     # ------------------------------------------------------------------ #
     # 1. Normalise inputs and detect kind
@@ -723,8 +723,8 @@ def _run_control_chain_inner(
             try:
                 record_event(root_span_id, "chain_blocked", {"reason": "malformed_input"})
                 end_span(root_span_id, SPAN_STATUS_BLOCKED)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+            except (TraceNotFoundError, SpanNotFoundError) as exc:
+                raise RuntimeError("observability_emission_failed") from exc
         return _make_error_artifact(
             acc_warnings=acc_warnings,
             acc_errors=acc_errors,
@@ -762,8 +762,8 @@ def _run_control_chain_inner(
             # BK–BM: span for enforcement
             try:
                 enforcement_span_id = start_span(trace_id, "enforcement", root_span_id)
-            except (TraceNotFoundError, SpanNotFoundError):
-                enforcement_span_id = None
+            except (TraceNotFoundError, SpanNotFoundError) as exc:
+                raise RuntimeError("observability_emission_failed") from exc
             enforcement_result = run_slo_enforcement(
                 norm, policy=policy, stage=stage
             )
@@ -772,21 +772,21 @@ def _run_control_chain_inner(
                     enf_status = (enforcement_result.get("enforcement_decision") or {}).get("decision_status", "unknown")
                     record_event(enforcement_span_id, "enforcement_complete", {"decision_status": enf_status})
                     end_span(enforcement_span_id, SPAN_STATUS_OK)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
         except Exception as exc:  # noqa: BLE001
             if enforcement_span_id:
                 try:
                     end_span(enforcement_span_id, SPAN_STATUS_ERROR)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             acc_errors.append(f"Enforcement step raised unexpectedly: {exc}")
             if root_span_id:
                 try:
                     record_event(root_span_id, "chain_blocked", {"reason": "enforcement_exception"})
                     end_span(root_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
@@ -806,8 +806,8 @@ def _run_control_chain_inner(
             # BK–BM: span for gating
             try:
                 gating_span_id = start_span(trace_id, "gating", root_span_id)
-            except (TraceNotFoundError, SpanNotFoundError):
-                gating_span_id = None
+            except (TraceNotFoundError, SpanNotFoundError) as exc:
+                raise RuntimeError("observability_emission_failed") from exc
             gating_result = run_slo_gating(
                 enforcement_result, stage=stage, evaluated_at=evaluated_at
             )
@@ -818,21 +818,21 @@ def _run_control_chain_inner(
                     record_event(gating_span_id, "gating_complete", {"gating_outcome": g_outcome})
                     g_span_st = SPAN_STATUS_OK if g_outcome != "halt" else SPAN_STATUS_BLOCKED
                     end_span(gating_span_id, g_span_st)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
         except Exception as exc:  # noqa: BLE001
             if gating_span_id:
                 try:
                     end_span(gating_span_id, SPAN_STATUS_ERROR)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             acc_errors.append(f"Gating step raised unexpectedly: {exc}")
             if root_span_id:
                 try:
                     record_event(root_span_id, "chain_blocked", {"reason": "gating_exception"})
                     end_span(root_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
@@ -855,8 +855,8 @@ def _run_control_chain_inner(
             # BK–BM: span for gating
             try:
                 gating_span_id = start_span(trace_id, "gating", root_span_id)
-            except (TraceNotFoundError, SpanNotFoundError):
-                gating_span_id = None
+            except (TraceNotFoundError, SpanNotFoundError) as exc:
+                raise RuntimeError("observability_emission_failed") from exc
             gating_result = run_slo_gating(
                 norm, stage=stage_override or stage, evaluated_at=evaluated_at
             )
@@ -867,21 +867,21 @@ def _run_control_chain_inner(
                     record_event(gating_span_id, "gating_complete", {"gating_outcome": g_outcome})
                     g_span_st = SPAN_STATUS_OK if g_outcome != "halt" else SPAN_STATUS_BLOCKED
                     end_span(gating_span_id, g_span_st)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
         except Exception as exc:  # noqa: BLE001
             if gating_span_id:
                 try:
                     end_span(gating_span_id, SPAN_STATUS_ERROR)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             acc_errors.append(f"Gating step raised unexpectedly: {exc}")
             if root_span_id:
                 try:
                     record_event(root_span_id, "chain_blocked", {"reason": "gating_exception"})
                     end_span(root_span_id, SPAN_STATUS_BLOCKED)
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
             return _make_error_artifact(
                 acc_warnings=acc_warnings,
                 acc_errors=acc_errors,
@@ -1163,8 +1163,8 @@ def _run_control_chain_inner(
                         "rationale_code": replay_gov_summary.get("replay_governance_rationale_code"),
                         "replay_decision_status": rds,
                     })
-                except (TraceNotFoundError, SpanNotFoundError):
-                    pass
+                except (TraceNotFoundError, SpanNotFoundError) as exc:
+                    raise RuntimeError("observability_emission_failed") from exc
 
         except Exception as exc:  # noqa: BLE001
             # Fail closed: governance integration error must not silently allow
@@ -1184,8 +1184,8 @@ def _run_control_chain_inner(
             })
             end_span(root_span_id, cc_span_st)
             attach_artifact(trace_id, decision_id, "control_chain_decision", root_span_id)
-        except (TraceNotFoundError, SpanNotFoundError):
-            pass
+        except (TraceNotFoundError, SpanNotFoundError) as exc:
+            raise RuntimeError("observability_emission_failed") from exc
 
     result = {
         "control_chain_decision": control_chain_decision,

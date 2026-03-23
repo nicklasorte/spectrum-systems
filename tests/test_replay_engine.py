@@ -23,6 +23,7 @@ from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
     execute_replay,
     replay_run,
     run_replay,
+    validate_replay_result,
 )
 from spectrum_systems.modules.runtime.trace_store import persist_trace  # noqa: E402
 
@@ -426,3 +427,86 @@ def test_replay_persistence_matches_runtime_rules(
     execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
     with pytest.raises(ReplayEngineError, match="refused overwrite"):
         execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
+
+
+def test_replay_schema_canonical_only() -> None:
+    legacy_payload = {
+        "artifact_type": "replay_result",
+        "schema_version": "1.0.0",
+        "replay_path": "bag_replay_engine",
+        "replay_id": "legacy-replay-id",
+        "source_trace_id": "trace-legacy",
+        "replayed_at": "2026-03-23T00:00:00+00:00",
+        "status": "success",
+        "prerequisites_valid": True,
+        "prerequisite_errors": [],
+        "steps_executed": [],
+        "output_comparison": {},
+        "determinism_notes": [],
+        "context": {},
+    }
+    errors = validate_replay_result(legacy_payload)
+    assert errors
+
+
+def test_replay_persistence_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    trace_id = "trace-replay-persist-002"
+    trace = {
+        "trace_id": trace_id,
+        "root_span_id": "span-1",
+        "spans": [
+            {
+                "span_id": "span-1",
+                "trace_id": trace_id,
+                "parent_span_id": None,
+                "name": "root",
+                "status": "ok",
+                "start_time": "2026-03-23T00:00:00+00:00",
+                "end_time": "2026-03-23T00:00:01+00:00",
+                "events": [],
+            }
+        ],
+        "artifacts": [],
+        "start_time": "2026-03-23T00:00:00+00:00",
+        "end_time": "2026-03-23T00:00:01+00:00",
+        "context": {},
+        "schema_version": "1.0.0",
+    }
+    traces_dir = tmp_path / "traces"
+    persist_trace(trace, base_dir=traces_dir)
+    monkeypatch.setattr("spectrum_systems.modules.runtime.replay_engine._new_id", lambda: "fixed-replay-id-2")
+
+    execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
+    replay_path = tmp_path / "replays" / "fixed-replay-id-2.json"
+    assert replay_path.exists()
+
+
+def test_runtime_replay_observability_parity(tmp_path: Path) -> None:
+    runtime_result = run_control_loop(_artifact(), _trace_context())["evaluation_control_decision"]
+    assert runtime_result["trace_id"] == _trace_context()["trace_id"]
+
+    trace_id = "trace-replay-parity-001"
+    persist_trace(
+        {
+            "trace_id": trace_id,
+            "root_span_id": "span-1",
+            "spans": [{
+                "span_id": "span-1",
+                "trace_id": trace_id,
+                "parent_span_id": None,
+                "name": "runtime",
+                "status": "ok",
+                "start_time": "2026-03-23T00:00:00+00:00",
+                "end_time": "2026-03-23T00:00:01+00:00",
+                "events": [],
+            }],
+            "artifacts": [],
+            "start_time": "2026-03-23T00:00:00+00:00",
+            "end_time": "2026-03-23T00:00:01+00:00",
+            "context": {},
+            "schema_version": "1.0.0",
+        },
+        base_dir=tmp_path / "traces",
+    )
+    replay_result = execute_replay(trace_id, base_dir=tmp_path / "traces")
+    assert replay_result["source_trace_id"] == trace_id

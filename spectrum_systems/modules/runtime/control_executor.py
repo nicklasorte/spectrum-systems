@@ -66,6 +66,44 @@ from spectrum_systems.modules.runtime.trace_engine import (
 ExecutionAction = Dict[str, Any]
 ValidatorResult = Dict[str, Any]
 
+EVENT_CONTROL_EXECUTION_STARTED = "control_execution_started"
+EVENT_CONTROL_EXECUTION_BLOCKED = "control_execution_blocked"
+EVENT_CONTROL_EXECUTION_COMPLETE = "control_execution_complete"
+EVENT_CONTROL_EXECUTION_SCHEMA_INVALID = "control_execution_schema_invalid"
+EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED = "control_execution_artifact_attached"
+EVENT_SLO_PIPELINE_COMPLETE = "slo_pipeline_complete"
+EVENT_TYPES = frozenset({
+    EVENT_CONTROL_EXECUTION_STARTED,
+    EVENT_CONTROL_EXECUTION_BLOCKED,
+    EVENT_CONTROL_EXECUTION_COMPLETE,
+    EVENT_CONTROL_EXECUTION_SCHEMA_INVALID,
+    EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED,
+    EVENT_SLO_PIPELINE_COMPLETE,
+})
+
+
+def _emit_event_or_raise(span_id: str, event_type: str, payload: Dict[str, Any]) -> None:
+    if event_type not in EVENT_TYPES:
+        raise RuntimeError(f"unknown governed event_type '{event_type}'")
+    try:
+        record_event(span_id, event_type, payload)
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        raise RuntimeError(f"observability_emission_failed:{event_type}") from exc
+
+
+def _end_span_or_raise(span_id: str, status: str) -> None:
+    try:
+        end_span(span_id, status)
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        raise RuntimeError(f"observability_emission_failed:end_span:{status}") from exc
+
+
+def _attach_artifact_or_raise(trace_id: str, artifact_id: str, artifact_type: str, parent_span_id: str) -> None:
+    try:
+        attach_artifact(trace_id, artifact_id, artifact_type, parent_span_id)
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        raise RuntimeError("observability_emission_failed:attach_artifact") from exc
+
 
 def _load_execution_result_schema() -> Dict[str, Any]:
     return load_schema("control_execution_result")
@@ -303,6 +341,9 @@ def build_execution_result(
     rerun_triggered: bool,
     escalation_triggered: bool,
     human_review_required: bool,
+    trace_id: str,
+    run_id: str,
+    artifact_id: str,
     slo_evaluation: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     result: Dict[str, Any] = {
@@ -316,6 +357,9 @@ def build_execution_result(
         "rerun_triggered": rerun_triggered,
         "escalation_triggered": escalation_triggered,
         "human_review_required": human_review_required,
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "artifact_id": artifact_id,
     }
     if slo_evaluation is not None:
         result["slo_evaluation"] = slo_evaluation
@@ -379,15 +423,16 @@ def _run_slo_pipeline(
         }
 
         if slo_pipe_span_id:
-            try:
-                record_event(slo_pipe_span_id, "slo_pipeline_complete", {
+            _emit_event_or_raise(
+                slo_pipe_span_id,
+                EVENT_SLO_PIPELINE_COMPLETE,
+                {
                     "slo_status": slo_status,
                     "enforcement_action": slo_result["enforcement_action"],
-                })
-                pipe_span_st = SPAN_STATUS_OK if slo_status == "healthy" else SPAN_STATUS_BLOCKED
-                end_span(slo_pipe_span_id, pipe_span_st)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+                },
+            )
+            pipe_span_st = SPAN_STATUS_OK if slo_status == "healthy" else SPAN_STATUS_BLOCKED
+            _end_span_or_raise(slo_pipe_span_id, pipe_span_st)
 
         actions_taken.append(
             {
@@ -400,10 +445,7 @@ def _run_slo_pipeline(
 
     except Exception as exc:  # noqa: BLE001 — fail closed
         if slo_pipe_span_id:
-            try:
-                end_span(slo_pipe_span_id, SPAN_STATUS_BLOCKED)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+            _end_span_or_raise(slo_pipe_span_id, SPAN_STATUS_BLOCKED)
         fallback: Dict[str, Any] = {
             "slo_status": "breached",
             "slis": {
@@ -453,25 +495,40 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
                 rerun_triggered=False,
                 escalation_triggered=True,
                 human_review_required=True,
+                trace_id=trace_id,
+                run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
+                artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
             )
 
     exec_span_id: Optional[str] = None
     try:
         exec_span_id = start_span(trace_id, "control_execution", parent_span_id)
-    except (TraceNotFoundError, SpanNotFoundError):
-        exec_span_id = None
+    except (TraceNotFoundError, SpanNotFoundError) as exc:
+        return build_execution_result(
+            execution_status="blocked",
+            actions_taken=[{"action_type": "observability_emission_failed", "error": str(exc)}],
+            validators_run=[],
+            validators_failed=[],
+            repair_actions_applied=[],
+            publication_blocked=True,
+            decision_blocked=True,
+            rerun_triggered=False,
+            escalation_triggered=True,
+            human_review_required=True,
+            trace_id=trace_id,
+            run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
+            artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
+        )
+
+    _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_STARTED, {"stage": context.get("stage")})
 
     # Propagate trace context to downstream callees
     context["trace_id"] = trace_id
     context["parent_span_id"] = exec_span_id
 
     if not isinstance(control_signals, dict):
-        if exec_span_id:
-            try:
-                record_event(exec_span_id, "execution_blocked", {"reason": "control_signals_missing"})
-                end_span(exec_span_id, SPAN_STATUS_BLOCKED)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+        _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_BLOCKED, {"reason": "control_signals_missing"})
+        _end_span_or_raise(exec_span_id, SPAN_STATUS_BLOCKED)
         return build_execution_result(
             execution_status="blocked",
             actions_taken=[{"action_type": "control_signals_missing", "status": "blocked"}],
@@ -483,6 +540,9 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
             rerun_triggered=False,
             escalation_triggered=True,
             human_review_required=True,
+            trace_id=trace_id,
+            run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
+            artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
         )
 
     signals = copy.deepcopy(control_signals)
@@ -521,6 +581,10 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
     else:
         execution_status = "blocked"
 
+    source_artifact = (context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}
+    run_id = str((ve_result or {}).get("execution_id") or context.get("run_id") or f"control-execution:{trace_id}")
+    artifact_id = str(source_artifact.get("artifact_id") or "unknown-artifact")
+
     result = build_execution_result(
         execution_status=execution_status,
         actions_taken=actions_taken,
@@ -532,6 +596,9 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
         rerun_triggered=rerun_triggered,
         escalation_triggered=escalation_triggered,
         human_review_required=human_review_required,
+        trace_id=trace_id,
+        run_id=run_id,
+        artifact_id=artifact_id,
         slo_evaluation=slo_evaluation,
     )
 
@@ -545,22 +612,16 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
                 "errors": schema_errors,
             }
         )
-        if exec_span_id:
-            try:
-                record_event(exec_span_id, "execution_schema_invalid", {"schema_errors": schema_errors})
-                end_span(exec_span_id, SPAN_STATUS_BLOCKED)
-            except (TraceNotFoundError, SpanNotFoundError):
-                pass
+        _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_SCHEMA_INVALID, {"schema_errors": schema_errors})
+        _end_span_or_raise(exec_span_id, SPAN_STATUS_BLOCKED)
         return blocked_result
 
     # BK–BM: close execution span and attach artifact
-    if exec_span_id:
-        try:
-            record_event(exec_span_id, "execution_complete", {"execution_status": execution_status})
-            exec_span_st = SPAN_STATUS_OK if execution_status == "success" else SPAN_STATUS_BLOCKED
-            end_span(exec_span_id, exec_span_st)
-        except (TraceNotFoundError, SpanNotFoundError):
-            pass
+    _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_COMPLETE, {"execution_status": execution_status})
+    _attach_artifact_or_raise(trace_id, artifact_id, "control_execution_result", exec_span_id)
+    _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED, {"artifact_id": artifact_id})
+    exec_span_st = SPAN_STATUS_OK if execution_status == "success" else SPAN_STATUS_BLOCKED
+    _end_span_or_raise(exec_span_id, exec_span_st)
 
     return result
 

@@ -448,3 +448,11 @@ def test_execution_id_is_unique_across_runs():
     result1 = run_validators(["validate_schema_conformance"], _ctx())
     result2 = run_validators(["validate_schema_conformance"], _ctx())
     assert result1["execution_id"] != result2["execution_id"]
+
+
+def test_event_vocabulary_consistent():
+    import spectrum_systems.modules.runtime.validator_engine as ve
+
+    for event_type in ve.GOVERNED_EVENT_TYPES:
+        assert event_type == event_type.lower()
+        assert " " not in event_type
