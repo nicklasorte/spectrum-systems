@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -36,18 +35,30 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _decision_id(run_id: str, timestamp: str) -> str:
-    digest = hashlib.sha256(f"{run_id}:{timestamp}".encode("utf-8")).hexdigest()[:16]
+def _decision_id(canonical_payload: Dict[str, Any]) -> str:
+    canonical_json = json.dumps(
+        canonical_payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    digest = hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()[:16]
     return f"avd_{digest}"
 
 
 def _resolve_trace_id(run_id: str) -> str:
     try:
         from spectrum_systems.modules.runtime.trace_engine import start_trace
+    except ImportError as exc:
+        raise RuntimeError("trace runtime unavailable; fail-closed") from exc
 
-        return start_trace({"source": "run_bundle_validator", "run_id": run_id})
-    except (ImportError, AttributeError):
-        return str(uuid.uuid4())
+    try:
+        trace_id = start_trace({"source": "run_bundle_validator", "run_id": run_id})
+    except Exception as exc:
+        raise RuntimeError("trace resolution failed; fail-closed") from exc
+
+    if not isinstance(trace_id, str) or not trace_id.strip():
+        raise ValueError("trace_id must be a non-empty string")
+    return trace_id
 
 
 def _load_manifest(bundle_path: Path) -> Dict[str, Any]:
@@ -215,9 +226,9 @@ def build_artifact_validation_decision(validation_report: Dict[str, Any]) -> Dic
     """Build deterministic decision output from validator report."""
     run_id = str(validation_report.get("run_id") or "unknown")
     results = validation_report["validation_results"]
-    missing_artifacts = validation_report["missing_artifacts"]
-    invalid_fields = validation_report["invalid_fields"]
-    reasons = validation_report["reasons"]
+    missing_artifacts = list(validation_report["missing_artifacts"])
+    invalid_fields = list(validation_report["invalid_fields"])
+    reasons = list(validation_report["reasons"])
 
     has_blocker = bool(invalid_fields) or not results["manifest_valid"] or not results["expected_outputs_declared"]
 
@@ -242,11 +253,26 @@ def build_artifact_validation_decision(validation_report: Dict[str, Any]) -> Dic
         system_response = "block"
         reasons.append("unknown validation state encountered; fail-closed block applied")
 
+    trace_id = _resolve_trace_id(run_id)
+    if not isinstance(trace_id, str) or not trace_id.strip():
+        raise ValueError("trace_id must be a non-empty string")
+
+    canonical_identity_payload = {
+        "run_id": run_id,
+        "manifest": validation_report.get("manifest", {}),
+        "validation_results": results,
+        "missing_artifacts": sorted(missing_artifacts),
+        "invalid_fields": sorted(invalid_fields),
+        "reasons": sorted(reasons),
+        "status": status,
+        "system_response": system_response,
+    }
+
     timestamp = _now_iso()
     return {
-        "decision_id": _decision_id(run_id, timestamp),
+        "decision_id": _decision_id(canonical_identity_payload),
         "run_id": run_id,
-        "trace_id": _resolve_trace_id(run_id),
+        "trace_id": trace_id,
         "status": status,
         "system_response": system_response,
         "validation_results": results,
