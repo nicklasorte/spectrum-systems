@@ -139,6 +139,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-GOVERNED-PROMPT-QUEUE-LOOP-CONTINUATION-POLISH-2026-03-22.md | Governed Prompt Queue — loop continuation child spawn + continuation polish | Active |
 
+| docs/review-actions/PLAN-BAG-LEGACY-REPLAY-CLOSURE-2026-03-23.md | Prompt BAG — legacy replay seam closure (surgical hardening) | Active |
+
 Update this table when plans are created or completed.
 
 ---

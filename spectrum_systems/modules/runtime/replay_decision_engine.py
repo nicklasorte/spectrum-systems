@@ -715,6 +715,7 @@ def run_replay_decision_analysis(
             trace_id,
             base_dir=base_dir,
             context=replay_context,
+            require_prerequisites=True,
         )
     except ReplayPrerequisiteError as exc:
         raise ReplayDecisionError(
