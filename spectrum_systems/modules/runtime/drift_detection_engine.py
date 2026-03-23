@@ -40,8 +40,14 @@ def _stable_drift_id(source_run_id: str, replay_run_id: str, drift_type: str) ->
         "replay_run_id": replay_run_id,
         "drift_type": drift_type,
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    canonical_payload = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    canonical_bytes = canonical_payload.encode("utf-8")
+    return hashlib.sha256(canonical_bytes).hexdigest()
 
 
 def _validate_known_values(status: Any, action: Any, *, label: str) -> None:

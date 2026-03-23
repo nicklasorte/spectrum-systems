@@ -143,9 +143,34 @@ def test_drift_result_id_preimage_is_unambiguous() -> None:
     assert collision_left != collision_right
 
 
+def test_drift_result_id_does_not_collide_for_ambiguous_concat_tuples() -> None:
+    replay_left = _replay_result()
+    replay_left["original_run_id"] = "ab"
+    replay_left["replay_run_id"] = "c"
+
+    replay_right = _replay_result()
+    replay_right["original_run_id"] = "a"
+    replay_right["replay_run_id"] = "bc"
+
+    left_result = detect_drift(replay_left)
+    right_result = detect_drift(replay_right)
+
+    assert left_result["drift_type"] == "none"
+    assert right_result["drift_type"] == "none"
+    assert left_result["drift_result_id"] != right_result["drift_result_id"]
+
+
 def test_unknown_consistency_status_raises_error() -> None:
     replay = _replay_result()
     replay["consistency_status"] = "unknown"
 
     with pytest.raises(DriftDetectionError, match="replay_result failed validation"):
+        detect_drift(replay)
+
+
+def test_missing_required_top_level_field_fails_closed() -> None:
+    replay = _replay_result()
+    del replay["trace_id"]
+
+    with pytest.raises(DriftDetectionError, match="missing required fields"):
         detect_drift(replay)
