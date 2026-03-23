@@ -402,6 +402,21 @@ def _make_blocked_result(name: str, reason_codes: List[str], errors: List[str], 
     }
 
 
+def _validate_execution_result_schema(result: ValidatorExecutionResult) -> None:
+    """Fail-closed schema validation for final validator execution artifacts."""
+    schema = _load_validator_execution_result_schema()
+    schema_validator = Draft202012Validator(schema)
+    schema_errors = [
+        f"{'.'.join(str(p) for p in e.absolute_path) or '<root>'}: {e.message}"
+        for e in sorted(schema_validator.iter_errors(result), key=lambda e: list(e.absolute_path))
+    ]
+    if schema_errors:
+        raise ValueError(
+            "validator_execution_result failed schema validation: "
+            + " | ".join(schema_errors)
+        )
+
+
 def run_validators(
     required_validators: List[str],
     context: Optional[Dict[str, Any]] = None,
@@ -438,38 +453,17 @@ def run_validators(
 
     # Validate trace context — fail closed on malformed trace
     _trace_errors = validate_trace_context(trace_id)
-    if _trace_errors:
-        # Malformed trace: return a blocked result immediately
-        blocked_result: ValidatorExecutionResult = {
-            "execution_id": str(uuid.uuid4()),
-            "validators_requested": list(required_validators or []),
-            "validators_run": [],
-            "validators_passed": [],
-            "validators_failed": ["<trace_engine>"],
-            "validator_results": [
-                _make_blocked_result(
-                    "<trace_engine>",
-                    reason_codes=["malformed_trace_context"],
-                    errors=_trace_errors,
-                )
-            ],
-            "overall_status": "blocked",
-            "failure_reason_codes": ["malformed_trace_context"],
-            "evaluated_at": datetime.now(tz=timezone.utc).isoformat(),
-            "schema_version": SCHEMA_VERSION,
-            "trace_id": trace_id,
-            "parent_span_id": parent_span_id,
-        }
-        return blocked_result
 
     # Create a span for the validator execution batch
     observability_failures: List[str] = []
-    try:
-        ve_span_id = start_span(trace_id, "validator_execution", parent_span_id)
-        record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_STARTED, {"validators_requested": list(required_validators or [])})
-    except (TraceNotFoundError, SpanNotFoundError) as exc:
-        observability_failures.append(str(exc))
-        ve_span_id = None
+    ve_span_id: Optional[str] = None
+    if not _trace_errors:
+        try:
+            ve_span_id = start_span(trace_id, "validator_execution", parent_span_id)
+            record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_STARTED, {"validators_requested": list(required_validators or [])})
+        except (TraceNotFoundError, SpanNotFoundError) as exc:
+            observability_failures.append(str(exc))
+            ve_span_id = None
 
     validators_requested = list(required_validators or [])
 
@@ -483,6 +477,17 @@ def run_validators(
     validators_failed: List[str] = []
     validator_results: List[ValidatorResult] = []
     all_reason_codes: List[str] = []
+
+    if _trace_errors:
+        validators_failed.append("<trace_engine>")
+        validator_results.append(
+            _make_blocked_result(
+                "<trace_engine>",
+                reason_codes=["malformed_trace_context"],
+                errors=_trace_errors,
+            )
+        )
+        all_reason_codes.append("malformed_trace_context")
 
     for name in ordered_validators:
         # BK–BM: create per-validator span
@@ -603,28 +608,6 @@ def run_validators(
         "schema_version": SCHEMA_VERSION,
     }
 
-    # --- Validate against governed schema ---
-    try:
-        schema = _load_validator_execution_result_schema()
-        schema_validator = Draft202012Validator(schema)
-        schema_errors = [
-            f"{'.'.join(str(p) for p in e.absolute_path) or '<root>'}: {e.message}"
-            for e in sorted(schema_validator.iter_errors(result), key=lambda e: list(e.absolute_path))
-        ]
-    except Exception as exc:
-        schema_errors = [f"Schema validation unavailable: {exc}"]
-
-    if schema_errors:
-        result["overall_status"] = "blocked"
-        result["failure_reason_codes"] = list(dict.fromkeys(result["failure_reason_codes"] + ["schema_validation_failed"]))
-        result["validator_results"].append(
-            _make_blocked_result(
-                "<validator_engine>",
-                reason_codes=["schema_validation_failed"],
-                errors=schema_errors,
-            )
-        )
-
     if observability_failures:
         result["overall_status"] = "blocked"
         result["failure_reason_codes"] = list(
@@ -663,6 +646,7 @@ def run_validators(
                 )
             )
 
+    _validate_execution_result_schema(result)
     return result
 
 
