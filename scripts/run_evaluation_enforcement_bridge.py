@@ -7,8 +7,7 @@ enforceable evaluation_enforcement_action artifact, and emits that artifact.
 Exit codes
 ----------
 0   allow / warn    – workflow may proceed (action_type=allow or warn)
-1   require_review  – workflow blocked pending human review
-2   freeze_changes / block_release – workflow must halt; error state
+2   freeze / block  – workflow must halt; error state
 
 Usage
 -----
@@ -53,7 +52,6 @@ from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import (  # 
 # ---------------------------------------------------------------------------
 
 EXIT_ALLOW = 0
-EXIT_REVIEW = 1
 EXIT_BLOCKED = 2
 
 # ---------------------------------------------------------------------------
@@ -96,7 +94,7 @@ def _load_json_file(path: str, label: str) -> Dict[str, Any]:
 def main(argv: Optional[List[str]] = None) -> int:
     """Entry point for the Governor Enforcement Bridge CLI.
 
-    Returns the exit code (0=allow, 1=review_required, 2=blocked).
+    Returns the exit code (0=allow/warn, 2=blocked/failure).
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -138,7 +136,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         metavar="PATH",
         help=(
             "Path to an evaluation_override_authorization JSON file. "
-            "Required to unblock a require_review decision. "
+            "Reserved for override authorization artifacts. "
             "The artifact is fully validated and verified before use."
         ),
     )
@@ -213,19 +211,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     action_type = action["action_type"]
     allowed_to_proceed = action["allowed_to_proceed"]
 
-    if action_type in ("freeze_changes", "block_release"):
+    if action_type in ("freeze", "block"):
         print(
             f"\nExit 2: workflow blocked (action_type={action_type})",
             file=sys.stderr,
         )
         return EXIT_BLOCKED
-
-    if action_type == "require_review" and not allowed_to_proceed:
-        print(
-            f"\nExit 1: human review required (action_type={action_type})",
-            file=sys.stderr,
-        )
-        return EXIT_REVIEW
 
     if not allowed_to_proceed:
         print(

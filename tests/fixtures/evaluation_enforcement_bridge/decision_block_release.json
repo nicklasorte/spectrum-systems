@@ -1,19 +1,15 @@
 {
-  "decision_dialect": "legacy",
+  "decision_dialect": "control_loop",
   "decision_id": "decision-block-001",
   "summary_id": "summary-blocked-001",
+  "trace_id": "trace-blocked-001",
+  "timestamp": "2026-03-23T00:00:00Z",
   "status": "blocked",
-  "system_response": "block_release",
+  "system_response": "block",
   "reasons": [
-    "Critical alerts (3) combined with critical failure rate (50% \u2265 50%)"
+    "Critical alerts (3) combined with critical failure rate (50% >= 50%)."
   ],
   "triggered_thresholds": [
     "critical_alerts_with_critical_failure_rate"
-  ],
-  "required_actions": [
-    "Block all release activity immediately.",
-    "Escalate to engineering leadership.",
-    "Conduct mandatory post-mortem before any release."
-  ],
-  "created_at": "2025-01-05T00:00:00Z"
+  ]
 }

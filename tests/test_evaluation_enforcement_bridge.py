@@ -107,25 +107,29 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 def _make_decision(
     *,
-    decision_dialect: str = "legacy",
+    decision_dialect: str = "control_loop",
     decision_id: str = "test-decision-001",
     summary_id: str = "test-summary-001",
     status: str = "healthy",
     system_response: str = "allow",
     reasons: list | None = None,
     triggered_thresholds: list | None = None,
-    required_actions: list | None = None,
 ) -> Dict[str, Any]:
+    resolved_triggered_thresholds = (
+        triggered_thresholds
+        if triggered_thresholds is not None
+        else ([] if status == "healthy" else ["threshold-triggered"])
+    )
     return {
         "decision_dialect": decision_dialect,
         "decision_id": decision_id,
         "summary_id": summary_id,
+        "trace_id": "trace-test-001",
+        "timestamp": "2026-03-23T00:00:00Z",
         "status": status,
         "system_response": system_response,
         "reasons": reasons if reasons is not None else ["All signals healthy."],
-        "triggered_thresholds": triggered_thresholds if triggered_thresholds is not None else [],
-        "required_actions": required_actions if required_actions is not None else [],
-        "created_at": "2025-01-01T00:00:00Z",
+        "triggered_thresholds": resolved_triggered_thresholds,
     }
 
 
@@ -150,7 +154,7 @@ def _make_override_auth(
         "approved_by": approved_by,
         "justification": justification,
         "scope": scope,
-        "allowed_actions": allowed_actions if allowed_actions is not None else ["require_review"],
+        "allowed_actions": allowed_actions if allowed_actions is not None else ["block"],
         "expires_at": expires_at,
         "created_at": created_at,
     }
@@ -257,7 +261,7 @@ def test_determine_enforcement_scope_unknown_falls_back():
 # ---------------------------------------------------------------------------
 
 
-def test_enforce_budget_decision_allow():
+def test_enforce_canonical_allow():
     decision = _make_decision(system_response="allow", status="healthy")
     action = enforce_budget_decision(decision)
     assert action["action_type"] == "allow"
@@ -265,49 +269,26 @@ def test_enforce_budget_decision_allow():
     assert action["allowed_to_proceed"] is True
 
 
-def test_enforce_budget_decision_allow_with_warning():
-    decision = _make_decision(system_response="allow_with_warning", status="warning")
+def test_enforce_canonical_warn():
+    decision = _make_decision(system_response="warn", status="warning")
     action = enforce_budget_decision(decision)
     assert action["action_type"] == "warn"
     assert action["status"] == "advisory"
     assert action["allowed_to_proceed"] is True
 
 
-def test_enforce_budget_decision_require_review_no_override():
-    decision = _make_decision(system_response="require_review", status="warning")
+def test_enforce_canonical_block():
+    decision = _make_decision(system_response="block", status="warning")
     action = enforce_budget_decision(decision)
-    assert action["action_type"] == "require_review"
+    assert action["action_type"] == "block"
     assert action["status"] == "enforced"
     assert action["allowed_to_proceed"] is False
 
 
-def test_enforce_budget_decision_require_review_with_override():
-    decision = _make_decision(system_response="require_review", status="warning")
-    override = _make_override_auth(
-        decision_id="test-decision-001",
-        summary_id="test-summary-001",
-        scope="release",
-        action_id="test-action-override-001",
-    )
-    action = enforce_budget_decision(decision, context={"override_authorization": override})
-    assert action["action_type"] == "require_review"
-    assert action["status"] == "enforced"
-    assert action["allowed_to_proceed"] is True
-    assert action["action_id"] == "test-action-override-001"
-
-
-def test_enforce_budget_decision_freeze_changes():
-    decision = _make_decision(system_response="freeze_changes", status="exhausted")
+def test_enforce_canonical_freeze():
+    decision = _make_decision(system_response="freeze", status="exhausted")
     action = enforce_budget_decision(decision)
-    assert action["action_type"] == "freeze_changes"
-    assert action["status"] == "enforced"
-    assert action["allowed_to_proceed"] is False
-
-
-def test_enforce_budget_decision_block_release():
-    decision = _make_decision(system_response="block_release", status="blocked")
-    action = enforce_budget_decision(decision)
-    assert action["action_type"] == "block_release"
+    assert action["action_type"] == "freeze"
     assert action["status"] == "enforced"
     assert action["allowed_to_proceed"] is False
 
@@ -317,11 +298,10 @@ def test_enforce_budget_decision_invalid_decision_raises():
         enforce_budget_decision({"bad": "data"})
 
 
-def test_enforcement_bridge_accepts_explicit_legacy_budget_decision():
-    decision = _make_decision(decision_dialect="legacy", system_response="allow_with_warning", status="warning")
-    action = enforce_budget_decision(decision)
-    assert action["action_type"] == "warn"
-    assert action["allowed_to_proceed"] is True
+def test_legacy_values_rejected():
+    decision = _make_decision(decision_dialect="legacy", system_response="warn", status="warning")
+    with pytest.raises(InvalidDecisionError):
+        enforce_budget_decision(decision)
 
 
 def test_enforcement_bridge_accepts_explicit_control_loop_budget_decision():
@@ -337,9 +317,27 @@ def test_enforcement_bridge_accepts_explicit_control_loop_budget_decision():
         "reasons": ["Monitor summary reported exhausted status."],
     }
     action = enforce_budget_decision(decision)
-    assert action["action_type"] == "freeze_changes"
+    assert action["action_type"] == "freeze"
     assert action["status"] == "enforced"
     assert action["allowed_to_proceed"] is False
+
+
+def test_unknown_response_fails_closed():
+    decision = _make_decision(system_response="unknown-response")
+    with pytest.raises(InvalidDecisionError):
+        enforce_budget_decision(decision)
+
+
+def test_no_default_allow_path():
+    decision = _make_decision(system_response="freeze", status="exhausted")
+    action = enforce_budget_decision(decision)
+    assert action["allowed_to_proceed"] is False
+
+
+def test_mixed_dialect_rejected():
+    decision = _make_decision(decision_dialect="control_loop", system_response="allow_with_warning")
+    with pytest.raises(InvalidDecisionError):
+        enforce_budget_decision(decision)
 
 
 # ---------------------------------------------------------------------------
@@ -351,7 +349,7 @@ def test_build_enforcement_action_schema_valid():
     action = build_enforcement_action(
         decision_id="dec-001",
         summary_id="sum-001",
-        system_response="block_release",
+        system_response="block",
         enforcement_scope="release",
         reasons=["Critical failure rate."],
         required_human_actions=["Block all release activity."],
@@ -365,7 +363,7 @@ def test_build_enforcement_action_required_fields():
     action = build_enforcement_action(
         decision_id="dec-002",
         summary_id="sum-002",
-        system_response="allow_with_warning",
+        system_response="warn",
         enforcement_scope="promotion",
         reasons=["Elevated drift."],
         required_human_actions=["Review before promoting."],
@@ -395,11 +393,11 @@ def test_build_enforcement_action_raises_on_unknown_response():
 
 
 def test_build_enforcement_action_rejects_blocking_allowed_to_proceed_true():
-    with pytest.raises(EnforcementBridgeError, match="cannot set allowed_to_proceed=True"):
+    with pytest.raises(EnforcementBridgeError, match="requires allowed_to_proceed=False"):
         build_enforcement_action(
             decision_id="dec-004",
             summary_id="sum-004",
-            system_response="block_release",
+            system_response="block",
             enforcement_scope="release",
             reasons=["Critical failures"],
             required_human_actions=["Stop release"],
@@ -425,28 +423,27 @@ def test_run_enforcement_bridge_warn():
     assert action["allowed_to_proceed"] is True
 
 
-def test_run_enforcement_bridge_require_review_no_override():
+def test_run_enforcement_bridge_block():
     action = run_enforcement_bridge(_REVIEW)
-    assert action["action_type"] == "require_review"
+    assert action["action_type"] == "block"
     assert action["allowed_to_proceed"] is False
 
 
-def test_run_enforcement_bridge_require_review_with_override():
+def test_run_enforcement_bridge_rejects_override():
     override = _load_json(_OVERRIDE_AUTHORIZATION)
-    action = run_enforcement_bridge(_REVIEW, context={"override_authorization": override})
-    assert action["action_type"] == "require_review"
-    assert action["allowed_to_proceed"] is True
+    with pytest.raises(EnforcementBridgeError, match="not supported"):
+        run_enforcement_bridge(_REVIEW, context={"override_authorization": override})
 
 
 def test_run_enforcement_bridge_freeze_changes():
     action = run_enforcement_bridge(_FREEZE)
-    assert action["action_type"] == "freeze_changes"
+    assert action["action_type"] == "freeze"
     assert action["allowed_to_proceed"] is False
 
 
 def test_run_enforcement_bridge_block_release():
     action = run_enforcement_bridge(_BLOCK)
-    assert action["action_type"] == "block_release"
+    assert action["action_type"] == "block"
     assert action["allowed_to_proceed"] is False
 
 
@@ -484,22 +481,22 @@ def test_cli_exit_0_warn(tmp_path):
     assert exit_code == 0
 
 
-def test_cli_exit_1_require_review_no_override(tmp_path):
+def test_cli_exit_2_block(tmp_path):
     from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
 
-    exit_code = main(["--input", str(_REVIEW), "--output-dir", str(tmp_path)])
-    assert exit_code == 1
+    exit_code = main(["--input", str(_BLOCK), "--output-dir", str(tmp_path)])
+    assert exit_code == 2
 
 
-def test_cli_exit_0_require_review_with_override(tmp_path):
+def test_cli_exit_2_override_not_supported(tmp_path):
     from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
 
     exit_code = main([
-        "--input", str(_REVIEW),
+        "--input", str(_BLOCK),
         "--output-dir", str(tmp_path),
         "--override-authorization", str(_OVERRIDE_AUTHORIZATION),
     ])
-    assert exit_code == 0
+    assert exit_code == 2
 
 
 def test_cli_exit_2_freeze_changes(tmp_path):
@@ -565,12 +562,29 @@ def test_cli_writes_enforcement_action_artifact(tmp_path):
 @pytest.mark.parametrize(
     "fixture",
     [_ALLOW, _WARN, _REVIEW, _FREEZE, _BLOCK],
-    ids=["allow", "warn", "require_review", "freeze_changes", "block_release"],
+    ids=["allow", "warn", "block", "freeze", "block"],
 )
 def test_all_enforcement_actions_schema_valid(fixture: Path):
     action = run_enforcement_bridge(fixture)
     errors = validate_enforcement_action(action)
     assert errors == [], f"Schema errors for {fixture.name}: {errors}"
+
+
+def test_enforcement_action_schema_canonical_only():
+    invalid_action = {
+        "action_id": "action-legacy-001",
+        "decision_id": "decision-001",
+        "summary_id": "summary-001",
+        "status": "enforced",
+        "action_type": "require_review",
+        "enforcement_scope": "release",
+        "allowed_to_proceed": False,
+        "reasons": ["legacy response should fail"],
+        "required_human_actions": [],
+        "created_at": "2026-03-23T00:00:00Z",
+    }
+    errors = validate_enforcement_action(invalid_action)
+    assert errors
 
 
 # ---------------------------------------------------------------------------
@@ -624,7 +638,7 @@ def test_validate_override_authorization_invalid():
 def _make_proto_action(
     *,
     action_id: str = "test-action-override-001",
-    action_type: str = "require_review",
+    action_type: str = "block",
     enforcement_scope: str = "release",
 ) -> Dict[str, Any]:
     return {
@@ -636,14 +650,14 @@ def _make_proto_action(
 
 def test_verify_override_applicability_passes():
     override = _make_override_auth()
-    decision = _make_decision(system_response="require_review", status="warning")
+    decision = _make_decision(system_response="block", status="warning")
     action = _make_proto_action()
     verify_override_applicability(override, decision, action)  # should not raise
 
 
 def test_verify_override_applicability_fails_decision_id_mismatch():
     override = _make_override_auth(decision_id="wrong-decision-id")
-    decision = _make_decision(system_response="require_review")
+    decision = _make_decision(system_response="block")
     action = _make_proto_action()
     with pytest.raises(EnforcementBridgeError, match="decision_id"):
         verify_override_applicability(override, decision, action)
@@ -651,7 +665,7 @@ def test_verify_override_applicability_fails_decision_id_mismatch():
 
 def test_verify_override_applicability_fails_summary_id_mismatch():
     override = _make_override_auth(summary_id="wrong-summary-id")
-    decision = _make_decision(system_response="require_review")
+    decision = _make_decision(system_response="block")
     action = _make_proto_action()
     with pytest.raises(EnforcementBridgeError, match="summary_id"):
         verify_override_applicability(override, decision, action)
@@ -659,7 +673,7 @@ def test_verify_override_applicability_fails_summary_id_mismatch():
 
 def test_verify_override_applicability_fails_action_id_mismatch():
     override = _make_override_auth(action_id="wrong-action-id")
-    decision = _make_decision(system_response="require_review")
+    decision = _make_decision(system_response="block")
     action = _make_proto_action(action_id="different-action-id")
     with pytest.raises(EnforcementBridgeError, match="action_id"):
         verify_override_applicability(override, decision, action)
@@ -667,7 +681,7 @@ def test_verify_override_applicability_fails_action_id_mismatch():
 
 def test_verify_override_applicability_fails_scope_mismatch():
     override = _make_override_auth(scope="promotion")
-    decision = _make_decision(system_response="require_review")
+    decision = _make_decision(system_response="block")
     action = _make_proto_action(enforcement_scope="release")
     with pytest.raises(EnforcementBridgeError, match="scope"):
         verify_override_applicability(override, decision, action)
@@ -675,7 +689,7 @@ def test_verify_override_applicability_fails_scope_mismatch():
 
 def test_verify_override_applicability_fails_expired():
     override = _make_override_auth(expires_at="2000-01-01T00:00:00Z")
-    decision = _make_decision(system_response="require_review")
+    decision = _make_decision(system_response="block")
     action = _make_proto_action()
     with pytest.raises(EnforcementBridgeError, match="expired"):
         verify_override_applicability(override, decision, action)
@@ -683,8 +697,8 @@ def test_verify_override_applicability_fails_expired():
 
 def test_verify_override_applicability_fails_action_type_not_allowed():
     override = _make_override_auth(allowed_actions=["allow"])
-    decision = _make_decision(system_response="require_review")
-    action = _make_proto_action(action_type="require_review")
+    decision = _make_decision(system_response="block")
+    action = _make_proto_action(action_type="block")
     with pytest.raises(EnforcementBridgeError, match="allowed_actions"):
         verify_override_applicability(override, decision, action)
 
@@ -695,14 +709,14 @@ def test_verify_override_applicability_fails_action_type_not_allowed():
 
 
 def test_enforce_budget_decision_fails_closed_on_invalid_override_schema():
-    decision = _make_decision(system_response="require_review", status="warning")
+    decision = _make_decision(system_response="block", status="warning")
     bad_override = {"not": "a valid override"}
-    with pytest.raises(EnforcementBridgeError, match="schema validation"):
+    with pytest.raises(EnforcementBridgeError, match="not supported"):
         enforce_budget_decision(decision, context={"override_authorization": bad_override})
 
 
 def test_enforce_budget_decision_fails_closed_on_expired_override():
-    decision = _make_decision(system_response="require_review", status="warning")
+    decision = _make_decision(system_response="block", status="warning")
     expired_override = _make_override_auth(expires_at="2000-01-01T00:00:00Z")
-    with pytest.raises(EnforcementBridgeError, match="expired"):
+    with pytest.raises(EnforcementBridgeError, match="not supported"):
         enforce_budget_decision(decision, context={"override_authorization": expired_override})

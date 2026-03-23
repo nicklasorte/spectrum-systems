@@ -119,6 +119,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BAH-DRIFT-RESULT-2026-03-22.md | Prompt BAH — Drift Result contract + replay wiring | Active |
 | docs/review-actions/PLAN-BBC-REVIEW-2-ADMISSION-FIX-2026-03-22.md | Prompt BBC — Review 2 deterministic/governance admission fixes | Active |
 | docs/review-actions/PLAN-BAF-ENFORCEMENT-WIRING-FIX-2026-03-22.md | Prompt BAF — Enforcement Wiring trust-boundary remediation | Active |
+| docs/review-actions/PLAN-BAF-CANONICAL-ENFORCEMENT-VOCAB-2026-03-23.md | Prompt BAF — Canonical enforcement vocabulary alignment | Active |
 | docs/review-actions/PLAN-BAJ-PROVENANCE-HARDENING-PHASE1-2026-03-22.md | BAJ Provenance Hardening — Phase 1 narrow spine fix | Active |
 | docs/review-actions/PLAN-BAE-HARDENING-2026-03-22.md | BAE hardening patch — observe/enforce fail-closed fixes | Active |
 | docs/review-actions/PLAN-BAE-INTERPRET-HARDENING-2026-03-22.md | BAE interpret hardening patch — semantics and provenance integrity | Active |

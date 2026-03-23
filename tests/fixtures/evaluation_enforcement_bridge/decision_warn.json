@@ -1,18 +1,15 @@
 {
-  "decision_dialect": "legacy",
+  "decision_dialect": "control_loop",
   "decision_id": "decision-warn-001",
   "summary_id": "summary-warning-001",
+  "trace_id": "trace-warning-001",
+  "timestamp": "2026-03-23T00:00:00Z",
   "status": "warning",
-  "system_response": "allow_with_warning",
+  "system_response": "warn",
   "reasons": [
-    "Drift rate (15%) \u2265 warning threshold (10%)"
+    "Drift rate (15%) >= warning threshold (10%)."
   ],
   "triggered_thresholds": [
     "drift_rate_warning"
-  ],
-  "required_actions": [
-    "Review warning signals before the next release.",
-    "Investigate elevated drift rate in recent runs."
-  ],
-  "created_at": "2025-01-02T00:00:00Z"
+  ]
 }
