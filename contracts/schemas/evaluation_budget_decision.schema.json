@@ -11,6 +11,7 @@
     "legacy_budget_decision": {
       "type": "object",
       "required": [
+        "decision_dialect",
         "decision_id",
         "summary_id",
         "status",
@@ -22,6 +23,7 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "decision_dialect": {"const": "legacy"},
         "decision_id": {"type": "string", "minLength": 1},
         "summary_id": {"type": "string", "minLength": 1},
         "status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "blocked"]},
@@ -38,6 +40,7 @@
     "control_loop_budget_decision": {
       "type": "object",
       "required": [
+        "decision_dialect",
         "decision_id",
         "summary_id",
         "trace_id",
@@ -49,6 +52,7 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "decision_dialect": {"const": "control_loop"},
         "decision_id": {"type": "string", "minLength": 1},
         "summary_id": {"type": "string", "minLength": 1},
         "trace_id": {"type": "string", "minLength": 1},

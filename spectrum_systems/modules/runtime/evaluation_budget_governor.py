@@ -512,6 +512,7 @@ def build_decision_artifact(
         If the produced artifact fails schema validation.
     """
     decision: Dict[str, Any] = {
+        "decision_dialect": "legacy",
         "decision_id": _new_id(),
         "summary_id": summary_id,
         "status": status,
@@ -675,6 +676,7 @@ def build_validation_budget_decision(
         reasons = ["All monitored thresholds are healthy."]
 
     decision = {
+        "decision_dialect": "control_loop",
         "decision_id": _deterministic_control_decision_id(monitor_summary, status, triggered_thresholds),
         "summary_id": str(monitor_summary.get("summary_id") or "unknown-summary"),
         "trace_id": str(monitor_summary.get("trace_id") or "unknown-trace"),

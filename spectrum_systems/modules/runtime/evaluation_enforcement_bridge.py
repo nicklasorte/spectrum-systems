@@ -81,8 +81,7 @@ _OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authori
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
 
-# Valid system_response values from evaluation_budget_decision (used for
-# validation in build_enforcement_action)
+# Legacy system_response values used by enforcement action construction.
 _VALID_SYSTEM_RESPONSES = frozenset(
     {"allow", "allow_with_warning", "require_review", "freeze_changes", "block_release"}
 )
@@ -106,6 +105,22 @@ _RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
     "require_review": "require_review",
     "freeze_changes": "freeze_changes",
     "block_release": "block_release",
+}
+
+_DECISION_RESPONSE_BY_DIALECT: Dict[str, Dict[str, str]] = {
+    "legacy": {
+        "allow": "allow",
+        "allow_with_warning": "allow_with_warning",
+        "require_review": "require_review",
+        "freeze_changes": "freeze_changes",
+        "block_release": "block_release",
+    },
+    "control_loop": {
+        "allow": "allow",
+        "warn": "allow_with_warning",
+        "freeze": "freeze_changes",
+        "block": "block_release",
+    },
 }
 
 logger = logging.getLogger(__name__)
@@ -157,6 +172,24 @@ def _parse_iso_timestamp(timestamp_str: str) -> datetime:
     return datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
 
 
+def _canonical_response_for_enforcement(decision: Dict[str, Any]) -> str:
+    """Return the legacy/canonical enforcement response for a validated decision."""
+    decision_dialect = str(decision.get("decision_dialect") or "")
+    system_response = str(decision.get("system_response") or "")
+    by_dialect = _DECISION_RESPONSE_BY_DIALECT.get(decision_dialect)
+    if by_dialect is None:
+        raise EnforcementBridgeError(
+            f"Unsupported decision_dialect '{decision_dialect}'."
+        )
+    canonical = by_dialect.get(system_response)
+    if canonical is None:
+        raise EnforcementBridgeError(
+            "Unsupported system_response "
+            f"'{system_response}' for decision_dialect '{decision_dialect}'."
+        )
+    return canonical
+
+
 # ---------------------------------------------------------------------------
 # Public API — loading and validation
 # ---------------------------------------------------------------------------
@@ -203,8 +236,9 @@ def load_budget_decision(path: str | Path) -> Dict[str, Any]:
         )
 
     logger.info(
-        "Loaded evaluation_budget_decision decision_id=%s system_response=%s",
+        "Loaded evaluation_budget_decision decision_id=%s decision_dialect=%s system_response=%s",
         decision.get("decision_id"),
+        decision.get("decision_dialect"),
         decision.get("system_response"),
     )
     return decision
@@ -627,7 +661,7 @@ def enforce_budget_decision(
             + "; ".join(errors)
         )
 
-    system_response: str = decision["system_response"]
+    system_response = _canonical_response_for_enforcement(decision)
     enforcement_scope = determine_enforcement_scope(decision, context)
     required_human_actions = _build_required_human_actions(system_response, decision)
     reasons: List[str] = list(decision.get("reasons", []))
