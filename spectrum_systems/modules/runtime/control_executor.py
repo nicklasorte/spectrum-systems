@@ -12,6 +12,8 @@ registry logic is maintained here.
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator
@@ -60,7 +62,6 @@ from spectrum_systems.modules.runtime.trace_engine import (
     end_span,
     record_event,
     start_span,
-    start_trace,
     validate_trace_context,
 )
 ExecutionAction = Dict[str, Any]
@@ -80,6 +81,71 @@ EVENT_TYPES = frozenset({
     EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED,
     EVENT_SLO_PIPELINE_COMPLETE,
 })
+_PLACEHOLDER_CORRELATION_KEYS = frozenset({
+    "",
+    "unknown-artifact",
+    "unknown-trace",
+    "unknown-run",
+    "unknown",
+})
+
+
+def _deterministic_id(prefix: str, payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+    return f"{prefix}-{digest}"
+
+
+def _is_invalid_correlation_value(value: Any) -> bool:
+    if not isinstance(value, str):
+        return True
+    normalized = value.strip()
+    if not normalized:
+        return True
+    return normalized.lower() in _PLACEHOLDER_CORRELATION_KEYS
+
+
+def _resolve_required_correlation_keys(context: Dict[str, Any]) -> Dict[str, str]:
+    source_artifact = (context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}
+    trace_id = context.get("trace_id")
+    run_id = (
+        context.get("run_id")
+        or source_artifact.get("run_id")
+        or source_artifact.get("control_chain_decision_id")
+        or source_artifact.get("decision_id")
+    )
+    source_artifact_id = source_artifact.get("artifact_id")
+
+    invalid_reasons: List[str] = []
+    if _is_invalid_correlation_value(trace_id):
+        invalid_reasons.append("trace_id")
+    if _is_invalid_correlation_value(run_id):
+        invalid_reasons.append("run_id")
+    if _is_invalid_correlation_value(source_artifact_id):
+        invalid_reasons.append("source_artifact_id")
+    if invalid_reasons:
+        raise RuntimeError(
+            "missing_or_placeholder_correlation_keys:" + ",".join(invalid_reasons)
+        )
+
+    identity_payload = {
+        "artifact_type": "control_execution_result",
+        "run_id": str(run_id).strip(),
+        "source_artifact_id": str(source_artifact_id).strip(),
+        "trace_id": str(trace_id).strip(),
+    }
+    result_artifact_id = _deterministic_id("CER", identity_payload)
+    if _is_invalid_correlation_value(result_artifact_id):
+        raise RuntimeError("missing_or_placeholder_correlation_keys:result_artifact_id")
+    if result_artifact_id == str(source_artifact_id).strip():
+        raise RuntimeError("execution_result_artifact_id_reuses_source_artifact_id")
+
+    return {
+        "trace_id": str(trace_id).strip(),
+        "run_id": str(run_id).strip(),
+        "source_artifact_id": str(source_artifact_id).strip(),
+        "result_artifact_id": result_artifact_id,
+    }
 
 
 def _emit_event_or_raise(span_id: str, event_type: str, payload: Dict[str, Any]) -> None:
@@ -476,29 +542,17 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
 
     context = dict(context or {})
 
-    # BK–BM: resolve or auto-start trace
-    trace_id: Optional[str] = context.get("trace_id")
+    correlation = _resolve_required_correlation_keys(context)
+    trace_id = correlation["trace_id"]
+    run_id = correlation["run_id"]
+    source_artifact_id = correlation["source_artifact_id"]
+    result_artifact_id = correlation["result_artifact_id"]
+
+    # BK–BM: resolve trace
     parent_span_id: Optional[str] = context.get("parent_span_id")
-    if not trace_id:
-        trace_id = start_trace({"source": "control_executor", "auto_started": True})
-    else:
-        _trace_errors = validate_trace_context(trace_id)
-        if _trace_errors:
-            return build_execution_result(
-                execution_status="blocked",
-                actions_taken=[{"action_type": "malformed_trace_context", "errors": _trace_errors}],
-                validators_run=[],
-                validators_failed=[],
-                repair_actions_applied=[],
-                publication_blocked=True,
-                decision_blocked=True,
-                rerun_triggered=False,
-                escalation_triggered=True,
-                human_review_required=True,
-                trace_id=trace_id,
-                run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
-                artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
-            )
+    _trace_errors = validate_trace_context(trace_id)
+    if _trace_errors:
+        raise RuntimeError(f"malformed_trace_context:{','.join(_trace_errors)}")
 
     exec_span_id: Optional[str] = None
     try:
@@ -516,8 +570,8 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
             escalation_triggered=True,
             human_review_required=True,
             trace_id=trace_id,
-            run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
-            artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
+            run_id=run_id,
+            artifact_id=result_artifact_id,
         )
 
     _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_STARTED, {"stage": context.get("stage")})
@@ -541,8 +595,8 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
             escalation_triggered=True,
             human_review_required=True,
             trace_id=trace_id,
-            run_id=str(context.get("run_id") or f"control-execution:{trace_id}"),
-            artifact_id=str(((context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}).get("artifact_id") or "unknown-artifact"),
+            run_id=run_id,
+            artifact_id=result_artifact_id,
         )
 
     signals = copy.deepcopy(control_signals)
@@ -581,9 +635,15 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
     else:
         execution_status = "blocked"
 
-    source_artifact = (context.get("artifact") or {}) if isinstance(context.get("artifact"), dict) else {}
-    run_id = str((ve_result or {}).get("execution_id") or context.get("run_id") or f"control-execution:{trace_id}")
-    artifact_id = str(source_artifact.get("artifact_id") or "unknown-artifact")
+    actions_taken.append(
+        {
+            "action_type": "correlation_keys_bound",
+            "source_artifact_id": source_artifact_id,
+            "result_artifact_id": result_artifact_id,
+            "trace_id": trace_id,
+            "run_id": run_id,
+        }
+    )
 
     result = build_execution_result(
         execution_status=execution_status,
@@ -598,7 +658,7 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
         human_review_required=human_review_required,
         trace_id=trace_id,
         run_id=run_id,
-        artifact_id=artifact_id,
+        artifact_id=result_artifact_id,
         slo_evaluation=slo_evaluation,
     )
 
@@ -618,8 +678,8 @@ def execute_control_signals(control_signals: Any, context: Optional[Dict[str, An
 
     # BK–BM: close execution span and attach artifact
     _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_COMPLETE, {"execution_status": execution_status})
-    _attach_artifact_or_raise(trace_id, artifact_id, "control_execution_result", exec_span_id)
-    _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED, {"artifact_id": artifact_id})
+    _attach_artifact_or_raise(trace_id, result_artifact_id, "control_execution_result", exec_span_id)
+    _emit_event_or_raise(exec_span_id, EVENT_CONTROL_EXECUTION_ARTIFACT_ATTACHED, {"artifact_id": result_artifact_id})
     exec_span_st = SPAN_STATUS_OK if execution_status == "success" else SPAN_STATUS_BLOCKED
     _end_span_or_raise(exec_span_id, exec_span_st)
 

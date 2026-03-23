@@ -8,6 +8,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict
 
+import pytest
+
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
@@ -24,6 +26,7 @@ from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_chain import (  # noqa: E402
     run_control_chain,
 )
+from spectrum_systems.modules.runtime.trace_engine import start_trace  # noqa: E402
 from scripts.run_slo_control_chain import main as cc_main  # noqa: E402
 
 
@@ -50,7 +53,14 @@ def _artifact() -> Dict[str, Any]:
 
 
 def _ctx(**overrides: Any) -> Dict[str, Any]:
-    c = {"artifact": _artifact(), "stage": "synthesis", "runtime_environment": "test"}
+    default_trace_id = start_trace({"source": "tests/test_control_executor.py", "case": "default"})
+    c = {
+        "artifact": _artifact(),
+        "stage": "synthesis",
+        "runtime_environment": "test",
+        "trace_id": default_trace_id,
+        "run_id": "run-fixed",
+    }
     c.update(overrides)
     return c
 
@@ -199,8 +209,9 @@ def test_no_contradiction_between_signals_and_execution_result():
 
 def test_execution_result_consistent_across_repeated_runs():
     cs = _base_signals(required_validators=["validate_schema_conformance"])
-    first = execute_control_signals(cs, _ctx(trace_id="11111111-1111-4111-8111-111111111111", run_id="run-fixed"))
-    second = execute_control_signals(cs, _ctx(trace_id="11111111-1111-4111-8111-111111111111", run_id="run-fixed"))
+    trace_id = start_trace({"source": "tests/test_control_executor.py", "case": "consistent-across-runs"})
+    first = execute_control_signals(cs, _ctx(trace_id=trace_id, run_id="run-fixed"))
+    second = execute_control_signals(cs, _ctx(trace_id=trace_id, run_id="run-fixed"))
     assert first == second
 
 
@@ -236,8 +247,9 @@ def test_execution_does_not_mutate_inputs():
 
 def test_execution_is_idempotent():
     cs = _base_signals(required_validators=["validate_schema_conformance"])
-    first = execute_control_signals(cs, _ctx(trace_id="22222222-2222-4222-8222-222222222222", run_id="run-fixed"))
-    second = execute_control_signals(cs, _ctx(trace_id="22222222-2222-4222-8222-222222222222", run_id="run-fixed"))
+    trace_id = start_trace({"source": "tests/test_control_executor.py", "case": "idempotent"})
+    first = execute_control_signals(cs, _ctx(trace_id=trace_id, run_id="run-fixed"))
+    second = execute_control_signals(cs, _ctx(trace_id=trace_id, run_id="run-fixed"))
     assert first == second
 
 
@@ -283,13 +295,76 @@ def test_trace_emission_failure_blocks_execution(monkeypatch):
 
     monkeypatch.setattr(ce, "validate_trace_context", lambda _trace_id: [])
     monkeypatch.setattr(ce, "start_span", _raise)
-    result = execute_control_signals(_base_signals(), _ctx(trace_id="33333333-3333-4333-8333-333333333333"))
+    result = execute_control_signals(
+        _base_signals(),
+        _ctx(trace_id="33333333-3333-4333-8333-333333333333", run_id="run-333"),
+    )
     assert result["execution_status"] == "blocked"
     assert result["actions_taken"][0]["action_type"] == "observability_emission_failed"
 
 
-def test_control_execution_result_requires_correlation_keys():
-    result = execute_control_signals(_base_signals(), _ctx(trace_id="trace-002"))
-    assert result["trace_id"] == "trace-002"
-    assert result["run_id"]
-    assert result["artifact_id"] == "ART-001"
+def test_control_execution_result_fails_closed_when_trace_missing():
+    with pytest.raises(RuntimeError, match="missing_or_placeholder_correlation_keys:trace_id"):
+        execute_control_signals(_base_signals(), _ctx(trace_id=None))
+
+
+def test_control_execution_result_fails_closed_when_run_missing():
+    with pytest.raises(RuntimeError, match="missing_or_placeholder_correlation_keys:run_id"):
+        execute_control_signals(_base_signals(), _ctx(run_id=None))
+
+
+def test_control_execution_result_fails_closed_when_source_artifact_id_missing():
+    with pytest.raises(RuntimeError, match="missing_or_placeholder_correlation_keys:source_artifact_id"):
+        execute_control_signals(_base_signals(), _ctx(artifact={"payload": {"x": 1}}))
+
+
+def test_control_execution_result_fails_closed_on_placeholder_keys():
+    with pytest.raises(RuntimeError, match="missing_or_placeholder_correlation_keys:trace_id,run_id,source_artifact_id"):
+        execute_control_signals(
+            _base_signals(),
+            _ctx(
+                trace_id="unknown-trace",
+                run_id="unknown-run",
+                artifact={"artifact_id": "unknown-artifact", "payload": {"x": 1}},
+            ),
+        )
+
+
+def test_control_execution_result_uses_unique_emitted_artifact_id():
+    result = execute_control_signals(_base_signals(), _ctx())
+    assert result["artifact_id"] != "ART-001"
+    correlation_action = [a for a in result["actions_taken"] if a.get("action_type") == "correlation_keys_bound"][0]
+    assert correlation_action["source_artifact_id"] == "ART-001"
+    assert correlation_action["result_artifact_id"] == result["artifact_id"]
+
+
+def test_control_execution_result_artifact_id_is_deterministic_for_semantic_identity():
+    trace_id = start_trace({"source": "tests/test_control_executor.py", "case": "semantic-identity"})
+    first = execute_control_signals(_base_signals(), _ctx(trace_id=trace_id, run_id="run-semantic"))
+    second = execute_control_signals(
+        _base_signals(),
+        _ctx(
+            trace_id=trace_id,
+            run_id="run-semantic",
+            artifact={"artifact_id": "ART-001", "payload": {"x": 999}},
+            stage="different-stage",
+            runtime_environment="different-env",
+        ),
+    )
+    assert first["artifact_id"] == second["artifact_id"]
+
+
+def test_blocked_and_error_paths_do_not_synthesize_correlation_keys(monkeypatch):
+    import spectrum_systems.modules.runtime.control_executor as ce
+
+    def _raise(*_args, **_kwargs):
+        raise ce.TraceNotFoundError("missing trace")
+
+    monkeypatch.setattr(ce, "validate_trace_context", lambda _trace_id: [])
+    monkeypatch.setattr(ce, "start_span", _raise)
+    result = execute_control_signals(_base_signals(), _ctx(trace_id="44444444-4444-4444-8444-444444444444", run_id="run-444"))
+    assert result["trace_id"] == "44444444-4444-4444-8444-444444444444"
+    assert result["run_id"] == "run-444"
+    assert result["artifact_id"] != "ART-001"
+    correlation_action = [a for a in result["actions_taken"] if a.get("action_type") == "observability_emission_failed"]
+    assert correlation_action
