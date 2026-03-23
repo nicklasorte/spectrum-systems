@@ -99,6 +99,26 @@ def test_decision_id_changes_when_triggered_signals_change() -> None:
     assert healthy["decision_id"] != breached["decision_id"]
 
 
+def test_decision_id_is_stable_for_semantically_identical_payloads() -> None:
+    summary = _eval_summary()
+    reordered_summary = {
+        "system_status": summary["system_status"],
+        "reproducibility_score": summary["reproducibility_score"],
+        "drift_rate": summary["drift_rate"],
+        "failure_rate": summary["failure_rate"],
+        "pass_rate": summary["pass_rate"],
+        "eval_run_id": summary["eval_run_id"],
+        "trace_id": summary["trace_id"],
+        "schema_version": summary["schema_version"],
+        "artifact_type": summary["artifact_type"],
+    }
+
+    first = build_evaluation_control_decision(summary)
+    second = build_evaluation_control_decision(reordered_summary)
+
+    assert first["decision_id"] == second["decision_id"]
+
+
 def test_malformed_inputs_without_eval_run_id_do_not_share_decision_id() -> None:
     malformed_one = {"artifact_type": "eval_summary", "trace_id": "trace-one"}
     malformed_two = {"artifact_type": "eval_summary", "trace_id": "trace-two"}
