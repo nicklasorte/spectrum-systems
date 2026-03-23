@@ -38,6 +38,7 @@ from spectrum_systems.modules.runtime.control_chain import (  # noqa: E402
     run_control_chain,
 )
 from scripts.run_slo_control_chain import main as cc_main  # noqa: E402
+from spectrum_systems.modules.runtime.trace_engine import start_trace  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -75,6 +76,20 @@ def _base_evaluation() -> Dict[str, Any]:
         "created_at": "2026-03-20T00:00:00+00:00",
     }
 
+
+def _governed_context(**overrides: Any) -> Dict[str, Any]:
+    trace_id = overrides.pop(
+        "trace_id",
+        start_trace({"source": "contract-runtime-tests", "run_id": "run-test-001"}),
+    )
+    context = {
+        "artifact": {"artifact_id": "ART-1"},
+        "trace_id": trace_id,
+        "run_id": "run-test-001",
+        "source_artifact_id": "ART-1",
+    }
+    context.update(overrides)
+    return context
 
 def _base_signals(**overrides: Any) -> Dict[str, Any]:
     base = {
@@ -252,7 +267,7 @@ class TestControlExecutorContractRuntimeEnforcement:
         signals = _base_signals()
         with _simulate_missing_jsonschema():
             with pytest.raises(ContractRuntimeError):
-                execute_control_signals(signals, {})
+                execute_control_signals(signals, _governed_context())
 
     def test_no_artifact_emitted_when_contract_runtime_unavailable(self):
         signals = _base_signals()
@@ -260,7 +275,7 @@ class TestControlExecutorContractRuntimeEnforcement:
         result = None
         with _simulate_missing_jsonschema():
             try:
-                result = execute_control_signals(signals, {})
+                result = execute_control_signals(signals, _governed_context())
             except ContractRuntimeError:
                 caught = True
         assert caught
@@ -268,7 +283,7 @@ class TestControlExecutorContractRuntimeEnforcement:
 
     def test_works_normally_when_contract_runtime_available(self):
         signals = _base_signals()
-        result = execute_control_signals(signals, {"artifact": {"artifact_id": "ART-1"}})
+        result = execute_control_signals(signals, _governed_context(artifact={"artifact_id": "ART-1"}))
         assert result["execution_status"] == "success"
 
 
@@ -336,7 +351,7 @@ class TestNoFalseValidationClaims:
         """When runtime is unavailable, no execution result is returned."""
         with _simulate_missing_jsonschema():
             try:
-                result = execute_control_signals(_base_signals(), {})
+                result = execute_control_signals(_base_signals(), _governed_context())
                 assert result is None, "No result should be returned"
             except ContractRuntimeError:
                 pass  # expected
@@ -357,7 +372,7 @@ class TestBackwardCompatibility:
         }
 
     def test_execute_control_signals_returns_expected_keys(self):
-        result = execute_control_signals(_base_signals(), {})
+        result = execute_control_signals(_base_signals(), _governed_context())
         assert "execution_status" in result
 
     def test_contract_runtime_error_is_runtime_error_subclass(self):
