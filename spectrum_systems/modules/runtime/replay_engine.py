@@ -350,7 +350,7 @@ def execute_replay(
             prerequisite_errors=prerequisite_errors,
             context=context,
         )
-        errors = validate_replay_result(result)
+        errors = validate_replay_result_legacy(result)
         if errors:
             raise ReplayEngineError(
                 f"execute_replay: blocked result failed schema validation: "
@@ -389,7 +389,7 @@ def execute_replay(
         "context": dict(context or {}),
     }
 
-    errors = validate_replay_result(result)
+    errors = validate_replay_result_legacy(result)
     if errors:
         raise ReplayEngineError(
             f"execute_replay: result failed schema validation: " + "; ".join(errors)
@@ -484,7 +484,7 @@ def compare_replay_outputs(
 
 
 def validate_replay_result(result: Dict[str, Any]) -> List[str]:
-    """Validate replay_result payloads with BAG canonical enforcement in governed paths."""
+    """Validate replay_result payloads against the canonical replay_result schema."""
     if not isinstance(result, dict):
         return ["validate_replay_result: result must be a dict"]
 
@@ -499,14 +499,18 @@ def validate_replay_result(result: Dict[str, Any]) -> List[str]:
     if not primary_errors:
         return []
 
-    is_governed_path = result.get("replay_path") == "bag_replay_engine" or "original_run_id" in result
-    if not is_governed_path:
-        legacy_validator = Draft202012Validator(_LEGACY_REPLAY_RESULT_SCHEMA, format_checker=checker)
-        legacy_errors = sorted(legacy_validator.iter_errors(result), key=lambda e: list(e.path))
-        if not legacy_errors:
-            return []
-
     return [e.message for e in primary_errors]
+
+
+def validate_replay_result_legacy(result: Dict[str, Any]) -> List[str]:
+    """Validate legacy replay_result payloads against the legacy compatibility schema only."""
+    if not isinstance(result, dict):
+        return ["validate_replay_result_legacy: result must be a dict"]
+
+    checker = FormatChecker()
+    legacy_validator = Draft202012Validator(_LEGACY_REPLAY_RESULT_SCHEMA, format_checker=checker)
+    legacy_errors = sorted(legacy_validator.iter_errors(result), key=lambda e: list(e.path))
+    return [e.message for e in legacy_errors]
 
 
 # ---------------------------------------------------------------------------
