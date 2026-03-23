@@ -80,6 +80,28 @@ def _validate(artifact: Dict[str, Any]) -> list:
     return [e.message for e in _VALIDATOR.iter_errors(artifact)]
 
 
+def _explicit_governance_policy(
+    *,
+    drift_action: str = SYSTEM_RESPONSE_QUARANTINE,
+    indeterminate_action: str = SYSTEM_RESPONSE_REQUIRE_REVIEW,
+    missing_replay_action: str = SYSTEM_RESPONSE_ALLOW,
+    require_replay: bool = False,
+) -> Dict[str, Any]:
+    return {
+        "policy_name": "bas_replay_governance",
+        "policy_version": "1.0.0",
+        "drift_action": drift_action,
+        "indeterminate_action": indeterminate_action,
+        "missing_replay_action": missing_replay_action,
+        "require_replay": require_replay,
+    }
+
+
+def _build_replay_governance_decision(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    kwargs.setdefault("governance_policy", _explicit_governance_policy())
+    return build_replay_governance_decision(*args, **kwargs)
+
+
 def _base_artifact() -> Dict[str, Any]:
     """Minimal valid control-chain decision without replay_governance."""
     cs = {
@@ -363,7 +385,7 @@ class TestProducer:
     def test_with_consistent_replay_emits_valid_nested_object(self):
         """Consistent replay governance path emits valid nested replay_governance."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-1")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-1")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -390,7 +412,7 @@ class TestProducer:
     def test_with_drifted_replay_emits_valid_nested_object(self):
         """Drifted replay governance path emits valid nested replay_governance."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-2")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-2")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -418,7 +440,7 @@ class TestProducer:
     def test_with_indeterminate_replay_emits_valid_nested_object(self):
         """Indeterminate replay governance path emits valid nested replay_governance."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_INDETERMINATE, score=0.5)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-3")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-3")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -444,7 +466,7 @@ class TestProducer:
     def test_no_old_flat_replay_fields_in_artifact(self):
         """Old ad-hoc flat replay fields must not appear in the produced artifact."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-4")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-4")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -533,7 +555,7 @@ class TestConsumerRegression:
     def test_strict_precedence_still_blocks_with_schema_hardening(self):
         """block > quarantine > require_review > allow precedence still works."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-5")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-5")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -566,7 +588,7 @@ class TestConsumerRegression:
     def test_replay_summary_still_available_in_result(self):
         """replay_governance_summary in the run result is still accessible after hardening."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-6")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-6")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
@@ -584,7 +606,7 @@ class TestConsumerRegression:
     def test_escalated_final_decision_flag_in_nested_object(self):
         """escalated_final_decision is correctly captured in the nested object."""
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.2)
-        gov = build_replay_governance_decision(analysis, run_id="run-bz-7")
+        gov = _build_replay_governance_decision(analysis, run_id="run-bz-7")
 
         with patch(
             "spectrum_systems.modules.runtime.control_chain.run_slo_gating",
