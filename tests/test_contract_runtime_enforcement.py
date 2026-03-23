@@ -37,6 +37,7 @@ from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_chain import (  # noqa: E402
     run_control_chain,
 )
+from spectrum_systems.modules.runtime.trace_engine import start_trace  # noqa: E402
 from scripts.run_slo_control_chain import main as cc_main  # noqa: E402
 
 
@@ -92,6 +93,16 @@ def _base_signals(**overrides: Any) -> Dict[str, Any]:
     }
     base.update(overrides)
     return base
+
+
+def _governed_context(**overrides: Any) -> Dict[str, Any]:
+    ctx = {
+        "artifact": {"artifact_id": "artifact-source-001"},
+        "trace_id": start_trace({"source": "tests/test_contract_runtime_enforcement.py", "case": "governed"}),
+        "run_id": "run-test-001",
+    }
+    ctx.update(overrides)
+    return ctx
 
 
 # ---------------------------------------------------------------------------
@@ -268,7 +279,7 @@ class TestControlExecutorContractRuntimeEnforcement:
 
     def test_works_normally_when_contract_runtime_available(self):
         signals = _base_signals()
-        result = execute_control_signals(signals, {"artifact": {"artifact_id": "ART-1"}})
+        result = execute_control_signals(signals, _governed_context(artifact={"artifact_id": "ART-1"}))
         assert result["execution_status"] == "success"
 
 
@@ -357,8 +368,8 @@ class TestBackwardCompatibility:
         }
 
     def test_execute_control_signals_returns_expected_keys(self):
-        result = execute_control_signals(_base_signals(), {})
-        assert "execution_status" in result
+        with pytest.raises(RuntimeError, match="missing_or_placeholder_correlation_keys:trace_id,run_id,source_artifact_id"):
+            execute_control_signals(_base_signals(), {})
 
     def test_contract_runtime_error_is_runtime_error_subclass(self):
         err = ContractRuntimeError("test")

@@ -23,6 +23,7 @@ from spectrum_systems.modules.runtime.validator_engine import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
     execute_control_signals,
 )
+from spectrum_systems.modules.runtime.trace_engine import start_trace  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -43,7 +44,13 @@ def _artifact() -> Dict[str, Any]:
 
 
 def _ctx(**overrides: Any) -> Dict[str, Any]:
-    c = {"artifact": _artifact(), "stage": "synthesis", "runtime_environment": "test"}
+    c = {
+        "artifact": _artifact(),
+        "stage": "synthesis",
+        "runtime_environment": "test",
+        "trace_id": start_trace({"source": "tests/test_validator_engine.py", "case": "default"}),
+        "run_id": "run-test-001",
+    }
     c.update(overrides)
     return c
 
