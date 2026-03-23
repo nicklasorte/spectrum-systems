@@ -199,8 +199,8 @@ def test_no_contradiction_between_signals_and_execution_result():
 
 def test_execution_result_consistent_across_repeated_runs():
     cs = _base_signals(required_validators=["validate_schema_conformance"])
-    first = execute_control_signals(cs, _ctx())
-    second = execute_control_signals(cs, _ctx())
+    first = execute_control_signals(cs, _ctx(trace_id="11111111-1111-4111-8111-111111111111", run_id="run-fixed"))
+    second = execute_control_signals(cs, _ctx(trace_id="11111111-1111-4111-8111-111111111111", run_id="run-fixed"))
     assert first == second
 
 
@@ -236,8 +236,8 @@ def test_execution_does_not_mutate_inputs():
 
 def test_execution_is_idempotent():
     cs = _base_signals(required_validators=["validate_schema_conformance"])
-    first = execute_control_signals(cs, _ctx())
-    second = execute_control_signals(cs, _ctx())
+    first = execute_control_signals(cs, _ctx(trace_id="22222222-2222-4222-8222-222222222222", run_id="run-fixed"))
+    second = execute_control_signals(cs, _ctx(trace_id="22222222-2222-4222-8222-222222222222", run_id="run-fixed"))
     assert first == second
 
 
@@ -268,5 +268,28 @@ def test_build_execution_result_helper_contract_shape():
         rerun_triggered=False,
         escalation_triggered=False,
         human_review_required=False,
+        trace_id="trace-001",
+        run_id="run-001",
+        artifact_id="ART-001",
     )
     assert validate_execution_result(artifact) == []
+
+
+def test_trace_emission_failure_blocks_execution(monkeypatch):
+    import spectrum_systems.modules.runtime.control_executor as ce
+
+    def _raise(*_args, **_kwargs):
+        raise ce.TraceNotFoundError("missing trace")
+
+    monkeypatch.setattr(ce, "validate_trace_context", lambda _trace_id: [])
+    monkeypatch.setattr(ce, "start_span", _raise)
+    result = execute_control_signals(_base_signals(), _ctx(trace_id="33333333-3333-4333-8333-333333333333"))
+    assert result["execution_status"] == "blocked"
+    assert result["actions_taken"][0]["action_type"] == "observability_emission_failed"
+
+
+def test_control_execution_result_requires_correlation_keys():
+    result = execute_control_signals(_base_signals(), _ctx(trace_id="trace-002"))
+    assert result["trace_id"] == "trace-002"
+    assert result["run_id"]
+    assert result["artifact_id"] == "ART-001"

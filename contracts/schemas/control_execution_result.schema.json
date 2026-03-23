@@ -5,6 +5,9 @@
   "description": "Governed deterministic execution artifact produced by BN.6 control signal consumption.",
   "type": "object",
   "required": [
+    "trace_id",
+    "run_id",
+    "artifact_id",
     "execution_status",
     "actions_taken",
     "validators_run",
@@ -18,6 +21,18 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "execution_status": {
       "type": "string",
       "enum": [
