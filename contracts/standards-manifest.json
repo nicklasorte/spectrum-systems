@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.32",
+  "artifact_version": "1.0.33",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.23",
-  "record_id": "REC-STD-2026-03-23-BAN-TIER1-PERSISTENCE-HARDENING",
+  "record_id": "REC-STD-2026-03-23-REVIEW-ARTIFACT-STANDARD",
   "run_id": "run-20260323T000000Z",
   "created_at": "2026-03-23T00:00:00Z",
   "created_by": {
@@ -28,33 +28,55 @@
   ],
   "contracts": [
     {
-      "artifact_type": "working_paper_input",
+      "artifact_type": "agent_execution_trace",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.8",
+      "last_updated_in": "1.0.8",
+      "example_path": "contracts/examples/agent_execution_trace.json",
+      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
+    },
+    {
+      "artifact_type": "artifact_validation_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/artifact_validation_decision.json",
+      "notes": "Run-bundle artifact validation decision emitted by runtime boundary enforcement."
+    },
+    {
+      "artifact_type": "assumption_register",
       "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
-        "working-paper-review-engine",
-        "system-factory"
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
       ],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/working_paper_input.json",
-      "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
+      "example_path": "contracts/examples/assumption_register.json",
+      "notes": "Structured assumptions with validation plans and dependency links."
     },
     {
-      "artifact_type": "reviewer_comment_set",
-      "artifact_class": "review",
+      "artifact_type": "book_intelligence_pack",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
-        "comment-resolution-engine",
-        "working-paper-review-engine",
-        "system-factory"
+        "spectrum-systems"
       ],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/reviewer_comment_set.json",
-      "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
+      "example_path": "contracts/examples/book_intelligence_pack.json",
+      "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
     },
     {
       "artifact_type": "comment_resolution_matrix",
@@ -70,6 +92,285 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/comment_resolution_matrix.json",
       "notes": "Deterministic mapping from comments to dispositions and actions; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "spectrum-pipeline-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/comment_resolution_matrix_spreadsheet_contract.json",
+      "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "control_execution_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.1.0",
+      "example_path": null,
+      "notes": "Governed BN.6 execution artifact capturing deterministic control-signal consumption outcomes with mandatory correlation keys and fail-closed observability enforcement."
+    },
+    {
+      "artifact_type": "decision_log",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/decision_log.json",
+      "notes": "Structured decision tracking with readiness, options, dependencies, and evidence."
+    },
+    {
+      "artifact_type": "drift_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.6",
+      "last_updated_in": "1.0.6",
+      "example_path": "contracts/examples/drift_detection_result.json",
+      "notes": "Deterministic drift comparison artifact for replay-versus-baseline regression detection and control-loop gating."
+    },
+    {
+      "artifact_type": "drift_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.13",
+      "last_updated_in": "1.0.13",
+      "example_path": "contracts/examples/drift_result.json",
+      "notes": "BAH fail-closed deterministic drift classification artifact for BAG replay_result comparison of final_status and enforcement_action."
+    },
+    {
+      "artifact_type": "enforcement_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.4",
+      "last_updated_in": "1.0.11",
+      "example_path": "contracts/examples/enforcement_result.json",
+      "notes": "Deterministic enforcement artifact generated exclusively from evaluation_control_decision via the BAF single-path enforcement mapper."
+    },
+    {
+      "artifact_type": "eval_admission_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.10",
+      "example_path": "contracts/examples/eval_admission_policy.json",
+      "notes": "BBC deterministic policy contract defining artifact admissibility, provenance requirements, duplicate handling, and threshold gates."
+    },
+    {
+      "artifact_type": "eval_canonicalization_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.14",
+      "last_updated_in": "1.0.14",
+      "example_path": "contracts/examples/eval_canonicalization_policy.json",
+      "notes": "BBC governed canonicalization policy declaring deterministic member ordering and duplicate selection behavior for eval_dataset construction and eval_registry_snapshot integrity checks."
+    },
+    {
+      "artifact_type": "eval_case",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_case.json",
+      "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, and scoring rubric."
+    },
+    {
+      "artifact_type": "eval_dataset",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.14",
+      "example_path": "contracts/examples/eval_dataset.json",
+      "notes": "BBC governed versioned dataset of eval_case and failure_eval_case members with deterministic admission summary and policy linkage. Includes explicit canonicalization_policy_id governance linkage."
+    },
+    {
+      "artifact_type": "eval_registry_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.10",
+      "last_updated_in": "1.0.14",
+      "example_path": "contracts/examples/eval_registry_snapshot.json",
+      "notes": "BBC immutable registry snapshot of active admission policy and dataset approval posture for governed downstream consumption. Includes explicit canonicalization_policy_id governance linkage."
+    },
+    {
+      "artifact_type": "eval_result",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_result.json",
+      "notes": "Governed case-level evaluation result with mandatory eval_case_id and trace_id linkage."
+    },
+    {
+      "artifact_type": "eval_run",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_run.json",
+      "notes": "Governed eval-run record covering case set, system version, dataset version, and run timestamp."
+    },
+    {
+      "artifact_type": "eval_summary",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.7",
+      "last_updated_in": "1.0.7",
+      "example_path": "contracts/examples/eval_summary.json",
+      "notes": "Governed aggregate eval summary capturing pass/failure/drift and reproducibility posture."
+    },
+    {
+      "artifact_type": "evaluation_budget_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/evaluation_budget_decision.json",
+      "notes": "Governor decision artifact supporting legacy responses and enforcement-ready control-loop responses."
+    },
+    {
+      "artifact_type": "evaluation_control_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.9",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/evaluation_control_decision.json",
+      "notes": "Governed deterministic control decision derived from eval_summary reliability, drift, trust, and indeterminate-failure control signals."
+    },
+    {
+      "artifact_type": "evaluation_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/evaluation_manifest.json",
+      "notes": "Canonical evaluation manifest linking a run or artifact set to its evidence bundle, evaluation results, and readiness status. Part of the Prompt J evaluation spine."
+    },
+    {
+      "artifact_type": "evaluation_monitor_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/evaluation_monitor_record.json",
+      "notes": "Continuous monitoring artifact supporting both regression-window and run-bundle control-loop record shapes."
+    },
+    {
+      "artifact_type": "evaluation_monitor_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.2.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.2.0",
+      "example_path": "contracts/examples/evaluation_monitor_summary.json",
+      "notes": "Aggregated monitoring artifact supporting both regression-window and run-bundle control-loop summary shapes."
+    },
+    {
+      "artifact_type": "evidence_map",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/evidence_map.json",
+      "notes": "Evidence map linking strategic claims to anchored source evidence."
+    },
+    {
+      "artifact_type": "external_artifact_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "draft",
+      "intended_consumers": [
+        "spectrum-pipeline-engine",
+        "study-artifact-generator",
+        "comment-resolution-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/external_artifact_manifest.local.json",
+      "notes": "Manifest for artifacts stored on local or network storage; GitHub is never a storage_kind."
+    },
+    {
+      "artifact_type": "failure_eval_case",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.8",
+      "last_updated_in": "1.0.8",
+      "example_path": "contracts/examples/failure_eval_case.json",
+      "notes": "BBB failure-derived eval artifact generated deterministically from blocked, threshold-breach, or indeterminate runtime outcomes."
     },
     {
       "artifact_type": "meeting_agenda_contract",
@@ -118,19 +419,32 @@
       "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering; payloads should be wrapped in the artifact envelope standard."
     },
     {
-      "artifact_type": "comment_resolution_matrix_spreadsheet_contract",
-      "artifact_class": "review",
+      "artifact_type": "milestone_plan",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
-        "comment-resolution-engine",
-        "spectrum-pipeline-engine",
-        "system-factory"
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
       ],
       "introduced_in": "1.0.0",
       "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/comment_resolution_matrix_spreadsheet_contract.json",
-      "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping; payloads should be wrapped in the artifact envelope standard."
+      "example_path": "contracts/examples/milestone_plan.json",
+      "notes": "Dependency-aware milestone tracking with decision gates and risk alignment."
+    },
+    {
+      "artifact_type": "next_best_action_memo",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/next_best_action_memo.json",
+      "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
@@ -149,35 +463,6 @@
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
     },
     {
-      "artifact_type": "standards_manifest",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "system-factory",
-        "downstream schema loaders"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/standards_manifest.json",
-      "notes": "Machine-readable registry of contract versions."
-    },
-    {
-      "artifact_type": "provenance_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "comment-resolution-engine",
-        "working-paper-review-engine",
-        "system-factory"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/provenance_record.json",
-      "notes": "Reusable provenance structure aligned to data-provenance-standard."
-    },
-    {
       "artifact_type": "program_brief",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -192,629 +477,17 @@
       "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
     },
     {
-      "artifact_type": "study_readiness_assessment",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/study_readiness_assessment.json",
-      "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
-    },
-    {
-      "artifact_type": "next_best_action_memo",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/next_best_action_memo.json",
-      "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
-    },
-    {
-      "artifact_type": "decision_log",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/decision_log.json",
-      "notes": "Structured decision tracking with readiness, options, dependencies, and evidence."
-    },
-    {
-      "artifact_type": "risk_register",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/risk_register.json",
-      "notes": "Risk tracking across required categories with decision-readiness effects."
-    },
-    {
-      "artifact_type": "assumption_register",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/assumption_register.json",
-      "notes": "Structured assumptions with validation plans and dependency links."
-    },
-    {
-      "artifact_type": "milestone_plan",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-program-advisor",
-        "spectrum-pipeline-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/milestone_plan.json",
-      "notes": "Dependency-aware milestone tracking with decision gates and risk alignment."
-    },
-    {
-      "artifact_type": "external_artifact_manifest",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "draft",
-      "intended_consumers": [
-        "spectrum-pipeline-engine",
-        "study-artifact-generator",
-        "comment-resolution-engine"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/external_artifact_manifest.local.json",
-      "notes": "Manifest for artifacts stored on local or network storage; GitHub is never a storage_kind."
-    },
-    {
-      "artifact_type": "evaluation_manifest",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/evaluation_manifest.json",
-      "notes": "Canonical evaluation manifest linking a run or artifact set to its evidence bundle, evaluation results, and readiness status. Part of the Prompt J evaluation spine."
-    },
-    {
-      "artifact_type": "slide_deck",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": null,
-      "notes": "Governed input artifact for slide decks submitted to spectrum study working groups. Slides are treated as structured technical artifacts, not transcript text."
-    },
-    {
-      "artifact_type": "slide_intelligence_packet",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": null,
-      "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
-    },
-    {
-      "artifact_type": "control_execution_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
-      "example_path": null,
-      "notes": "Governed BN.6 execution artifact capturing deterministic control-signal consumption outcomes with mandatory correlation keys and fail-closed observability enforcement."
-    },
-    {
-      "artifact_type": "strategic_knowledge_source_ref",
+      "artifact_type": "prompt_queue_blocked_recovery_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/strategic_knowledge_source_ref.json",
-      "notes": "Strategic source registration reference for Strategic Knowledge Layer."
-    },
-    {
-      "artifact_type": "strategic_knowledge_artifact_ref",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/strategic_knowledge_artifact_ref.json",
-      "notes": "Shared provenance-aware reference envelope for strategic knowledge artifacts."
-    },
-    {
-      "artifact_type": "book_intelligence_pack",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/book_intelligence_pack.json",
-      "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
-    },
-    {
-      "artifact_type": "transcript_intelligence_pack",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/transcript_intelligence_pack.json",
-      "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
-    },
-    {
-      "artifact_type": "story_bank_entry",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/story_bank_entry.json",
-      "notes": "Governed strategic story narrative with source-grounded evidence anchors."
-    },
-    {
-      "artifact_type": "tactic_register",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/tactic_register.json",
-      "notes": "Governed tactic register record grounded to book/transcript evidence."
-    },
-    {
-      "artifact_type": "viewpoint_pack",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/viewpoint_pack.json",
-      "notes": "Strategic viewpoint package with supporting and counter evidence."
-    },
-    {
-      "artifact_type": "evidence_map",
-      "artifact_class": "work",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/evidence_map.json",
-      "notes": "Evidence map linking strategic claims to anchored source evidence."
-    },
-    {
-      "artifact_type": "strategic_knowledge_validation_decision",
-      "artifact_class": "review",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
-      "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
-      "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
-    },
-    {
-      "artifact_type": "artifact_validation_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.0.0",
-      "example_path": "contracts/examples/artifact_validation_decision.json",
-      "notes": "Run-bundle artifact validation decision emitted by runtime boundary enforcement."
-    },
-    {
-      "artifact_type": "evaluation_monitor_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
-      "example_path": "contracts/examples/evaluation_monitor_record.json",
-      "notes": "Continuous monitoring artifact supporting both regression-window and run-bundle control-loop record shapes."
-    },
-    {
-      "artifact_type": "evaluation_monitor_summary",
-      "artifact_class": "coordination",
-      "schema_version": "1.2.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.2.0",
-      "example_path": "contracts/examples/evaluation_monitor_summary.json",
-      "notes": "Aggregated monitoring artifact supporting both regression-window and run-bundle control-loop summary shapes."
-    },
-    {
-      "artifact_type": "evaluation_budget_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
-      "example_path": "contracts/examples/evaluation_budget_decision.json",
-      "notes": "Governor decision artifact supporting legacy responses and enforcement-ready control-loop responses."
-    },
-    {
-      "artifact_type": "enforcement_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [],
-      "introduced_in": "1.0.4",
-      "last_updated_in": "1.0.11",
-      "example_path": "contracts/examples/enforcement_result.json",
-      "notes": "Deterministic enforcement artifact generated exclusively from evaluation_control_decision via the BAF single-path enforcement mapper."
-    },
-    {
-      "artifact_type": "replay_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.2",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.12",
-      "last_updated_in": "1.1.2",
-      "example_path": "contracts/examples/replay_result.json",
-      "notes": "BAG deterministic canonical trust-loop replay artifact with fail-closed linkage integrity and placeholder-free governed references."
-    },
-    {
-      "artifact_type": "replay_execution_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.5",
-      "last_updated_in": "1.0.5",
-      "example_path": "contracts/examples/replay_execution_record.json",
-      "notes": "Deterministic replay lineage artifact for run-bundle control-plane consistency checks."
-    },
-    {
-      "artifact_type": "drift_detection_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.6",
-      "last_updated_in": "1.0.6",
-      "example_path": "contracts/examples/drift_detection_result.json",
-      "notes": "Deterministic drift comparison artifact for replay-versus-baseline regression detection and control-loop gating."
-    },
-    {
-      "artifact_type": "drift_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.13",
-      "last_updated_in": "1.0.13",
-      "example_path": "contracts/examples/drift_result.json",
-      "notes": "BAH fail-closed deterministic drift classification artifact for BAG replay_result comparison of final_status and enforcement_action."
-    },
-    {
-      "artifact_type": "eval_case",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.7",
-      "last_updated_in": "1.0.7",
-      "example_path": "contracts/examples/eval_case.json",
-      "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, and scoring rubric."
-    },
-    {
-      "artifact_type": "failure_eval_case",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.8",
-      "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "BBB failure-derived eval artifact generated deterministically from blocked, threshold-breach, or indeterminate runtime outcomes."
-    },
-    {
-      "artifact_type": "eval_dataset",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.10",
-      "last_updated_in": "1.0.14",
-      "example_path": "contracts/examples/eval_dataset.json",
-      "notes": "BBC governed versioned dataset of eval_case and failure_eval_case members with deterministic admission summary and policy linkage. Includes explicit canonicalization_policy_id governance linkage."
-    },
-    {
-      "artifact_type": "eval_admission_policy",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.10",
-      "last_updated_in": "1.0.10",
-      "example_path": "contracts/examples/eval_admission_policy.json",
-      "notes": "BBC deterministic policy contract defining artifact admissibility, provenance requirements, duplicate handling, and threshold gates."
-    },
-    {
-      "artifact_type": "eval_canonicalization_policy",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.14",
-      "last_updated_in": "1.0.14",
-      "example_path": "contracts/examples/eval_canonicalization_policy.json",
-      "notes": "BBC governed canonicalization policy declaring deterministic member ordering and duplicate selection behavior for eval_dataset construction and eval_registry_snapshot integrity checks."
-    },
-    {
-      "artifact_type": "eval_registry_snapshot",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.10",
-      "last_updated_in": "1.0.14",
-      "example_path": "contracts/examples/eval_registry_snapshot.json",
-      "notes": "BBC immutable registry snapshot of active admission policy and dataset approval posture for governed downstream consumption. Includes explicit canonicalization_policy_id governance linkage."
-    },
-    {
-      "artifact_type": "eval_run",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.7",
-      "last_updated_in": "1.0.7",
-      "example_path": "contracts/examples/eval_run.json",
-      "notes": "Governed eval-run record covering case set, system version, dataset version, and run timestamp."
-    },
-    {
-      "artifact_type": "eval_result",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.7",
-      "last_updated_in": "1.0.7",
-      "example_path": "contracts/examples/eval_result.json",
-      "notes": "Governed case-level evaluation result with mandatory eval_case_id and trace_id linkage."
-    },
-    {
-      "artifact_type": "eval_summary",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.7",
-      "last_updated_in": "1.0.7",
-      "example_path": "contracts/examples/eval_summary.json",
-      "notes": "Governed aggregate eval summary capturing pass/failure/drift and reproducibility posture."
-    },
-    {
-      "artifact_type": "agent_execution_trace",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.8",
-      "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
-    },
-    {
-      "artifact_type": "evaluation_control_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.9",
-      "last_updated_in": "1.1.0",
-      "example_path": "contracts/examples/evaluation_control_decision.json",
-      "notes": "Governed deterministic control decision derived from eval_summary reliability, drift, trust, and indeterminate-failure control signals."
-    },
-    {
-      "artifact_type": "prompt_queue_work_item",
-      "artifact_class": "coordination",
-      "schema_version": "1.9.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.15",
-      "last_updated_in": "1.9.0",
-      "example_path": "contracts/examples/prompt_queue_work_item.json",
-      "notes": "Governed prompt queue work item state record for review orchestration and auditability."
-    },
-    {
-      "artifact_type": "prompt_queue_state",
-      "artifact_class": "coordination",
-      "schema_version": "1.9.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.15",
-      "last_updated_in": "1.9.0",
-      "example_path": "contracts/examples/prompt_queue_state.json",
-      "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
-    },
-    {
-      "artifact_type": "prompt_queue_review_attempt",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.15",
-      "last_updated_in": "1.0.15",
-      "example_path": "contracts/examples/prompt_queue_review_attempt.json",
-      "notes": "Per-attempt provider execution record including fallback metadata and failure details."
-    },
-    {
-      "artifact_type": "prompt_queue_review_invocation_result",
-      "artifact_class": "review",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.24",
-      "last_updated_in": "1.1.0",
-      "example_path": "contracts/examples/prompt_queue_review_invocation_result.json",
-      "notes": "Persisted audit-grade record of bounded review invocation outcome and provider/fallback metadata for governed prompt queue."
-    },
-    {
-      "artifact_type": "prompt_queue_review_parsing_handoff",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.26",
-      "last_updated_in": "1.0.26",
-      "example_path": "contracts/examples/prompt_queue_review_parsing_handoff.json",
-      "notes": "Deterministic fail-closed handoff artifact linking successful review invocation output_reference consumption to emitted findings artifacts and queue mutation lineage."
-    },
-    {
-      "artifact_type": "prompt_queue_review_findings",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.16",
-      "last_updated_in": "1.0.16",
-      "example_path": "contracts/examples/prompt_queue_review_findings.json",
-      "notes": "Normalized, fail-closed review findings artifact parsed from committed review markdown and attached to governed prompt queue work items."
-    },
-    {
-      "artifact_type": "prompt_queue_repair_prompt",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.16",
-      "last_updated_in": "1.0.16",
-      "example_path": "contracts/examples/prompt_queue_repair_prompt.json",
-      "notes": "Deterministic, bounded repair prompt artifact derived from FAIL review findings with provider/fallback lineage preserved."
-    },
-    {
-      "artifact_type": "prompt_queue_findings_reentry",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.27",
-      "last_updated_in": "1.0.27",
-      "example_path": "contracts/examples/prompt_queue_findings_reentry.json",
-      "notes": "Deterministic fail-closed lineage artifact wiring live review findings reentry into existing repair prompt generation path and queue mutation."
-    },
-    {
-      "artifact_type": "prompt_queue_loop_continuation",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.28",
-      "last_updated_in": "1.0.28",
-      "example_path": "contracts/examples/prompt_queue_loop_continuation.json",
-      "notes": "Deterministic fail-closed continuation artifact linking findings reentry repair prompts to guarded repair child spawn outcomes with duplicate prevention and loop-control enforcement lineage."
+      "introduced_in": "1.0.29",
+      "last_updated_in": "1.0.29",
+      "example_path": "contracts/examples/prompt_queue_blocked_recovery_decision.json",
+      "notes": "Deterministic blocked-item recovery classification and bounded recovery-action contract for governed prompt queue operations."
     },
     {
       "artifact_type": "prompt_queue_execution_gating_decision",
@@ -843,30 +516,30 @@
       "notes": "Bounded controlled execution result artifact with deterministic simulated execution outcome, lifecycle timestamps, and repair-loop lineage references."
     },
     {
-      "artifact_type": "prompt_queue_post_execution_decision",
+      "artifact_type": "prompt_queue_findings_reentry",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.0.20",
-      "last_updated_in": "1.0.20",
-      "example_path": "contracts/examples/prompt_queue_post_execution_decision.json",
-      "notes": "Deterministic fail-closed post-execution decision artifact for governed prompt queue execution outcomes, review re-entry policy, and lineage-preserving lifecycle transitions."
+      "introduced_in": "1.0.27",
+      "last_updated_in": "1.0.27",
+      "example_path": "contracts/examples/prompt_queue_findings_reentry.json",
+      "notes": "Deterministic fail-closed lineage artifact wiring live review findings reentry into existing repair prompt generation path and queue mutation."
     },
     {
-      "artifact_type": "prompt_queue_next_step_action",
+      "artifact_type": "prompt_queue_loop_continuation",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.0.21",
-      "last_updated_in": "1.0.21",
-      "example_path": "contracts/examples/prompt_queue_next_step_action.json",
-      "notes": "Deterministic, fail-closed next-step orchestration action artifact mapping post-execution decisions to governed queue updates with optional bounded child spawn lineage."
+      "introduced_in": "1.0.28",
+      "last_updated_in": "1.0.28",
+      "example_path": "contracts/examples/prompt_queue_loop_continuation.json",
+      "notes": "Deterministic fail-closed continuation artifact linking findings reentry repair prompts to guarded repair child spawn outcomes with duplicate prevention and loop-control enforcement lineage."
     },
     {
       "artifact_type": "prompt_queue_loop_control_decision",
@@ -882,30 +555,57 @@
       "notes": "Deterministic fail-closed repair loop budget decision artifact enforcing bounded generation depth, canonical enforcement tuple mapping, and lineage-aware queue re-entry control."
     },
     {
-      "artifact_type": "prompt_queue_review_trigger",
+      "artifact_type": "prompt_queue_next_step_action",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.0.23",
-      "last_updated_in": "1.0.23",
-      "example_path": "contracts/examples/prompt_queue_review_trigger.json",
-      "notes": "Deterministic fail-closed review trigger artifact mapping post-execution and loop-control decisions into bounded governed review work-item spawning with full lineage preservation."
+      "introduced_in": "1.0.21",
+      "last_updated_in": "1.0.21",
+      "example_path": "contracts/examples/prompt_queue_next_step_action.json",
+      "notes": "Deterministic, fail-closed next-step orchestration action artifact mapping post-execution decisions to governed queue updates with optional bounded child spawn lineage."
     },
     {
-      "artifact_type": "prompt_queue_blocked_recovery_decision",
+      "artifact_type": "prompt_queue_observability_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems prompt-queue module",
+        "governance and audit workflows"
+      ],
+      "introduced_in": "1.0.31",
+      "last_updated_in": "1.0.31",
+      "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
+      "notes": "Deterministic, read-only queue observability snapshot with invariant reporting and stable ordering guarantees."
+    },
+    {
+      "artifact_type": "prompt_queue_post_execution_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.0.29",
-      "last_updated_in": "1.0.29",
-      "example_path": "contracts/examples/prompt_queue_blocked_recovery_decision.json",
-      "notes": "Deterministic blocked-item recovery classification and bounded recovery-action contract for governed prompt queue operations."
+      "introduced_in": "1.0.20",
+      "last_updated_in": "1.0.20",
+      "example_path": "contracts/examples/prompt_queue_post_execution_decision.json",
+      "notes": "Deterministic fail-closed post-execution decision artifact for governed prompt queue execution outcomes, review re-entry policy, and lineage-preserving lifecycle transitions."
+    },
+    {
+      "artifact_type": "prompt_queue_repair_prompt",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.16",
+      "last_updated_in": "1.0.16",
+      "example_path": "contracts/examples/prompt_queue_repair_prompt.json",
+      "notes": "Deterministic, bounded repair prompt artifact derived from FAIL review findings with provider/fallback lineage preserved."
     },
     {
       "artifact_type": "prompt_queue_retry_decision",
@@ -921,18 +621,332 @@
       "notes": "Deterministic fail-closed retry eligibility and bounded retry action decision for governed prompt queue work items."
     },
     {
-      "artifact_type": "prompt_queue_observability_snapshot",
+      "artifact_type": "prompt_queue_review_attempt",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.15",
+      "last_updated_in": "1.0.15",
+      "example_path": "contracts/examples/prompt_queue_review_attempt.json",
+      "notes": "Per-attempt provider execution record including fallback metadata and failure details."
+    },
+    {
+      "artifact_type": "prompt_queue_review_findings",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.16",
+      "last_updated_in": "1.0.16",
+      "example_path": "contracts/examples/prompt_queue_review_findings.json",
+      "notes": "Normalized, fail-closed review findings artifact parsed from committed review markdown and attached to governed prompt queue work items."
+    },
+    {
+      "artifact_type": "prompt_queue_review_invocation_result",
+      "artifact_class": "review",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.24",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/prompt_queue_review_invocation_result.json",
+      "notes": "Persisted audit-grade record of bounded review invocation outcome and provider/fallback metadata for governed prompt queue."
+    },
+    {
+      "artifact_type": "prompt_queue_review_parsing_handoff",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
-        "spectrum-systems prompt-queue module",
-        "governance and audit workflows"
+        "spectrum-systems"
       ],
-      "introduced_in": "1.0.31",
-      "last_updated_in": "1.0.31",
-      "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
-      "notes": "Deterministic, read-only queue observability snapshot with invariant reporting and stable ordering guarantees."
+      "introduced_in": "1.0.26",
+      "last_updated_in": "1.0.26",
+      "example_path": "contracts/examples/prompt_queue_review_parsing_handoff.json",
+      "notes": "Deterministic fail-closed handoff artifact linking successful review invocation output_reference consumption to emitted findings artifacts and queue mutation lineage."
+    },
+    {
+      "artifact_type": "prompt_queue_review_trigger",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.23",
+      "last_updated_in": "1.0.23",
+      "example_path": "contracts/examples/prompt_queue_review_trigger.json",
+      "notes": "Deterministic fail-closed review trigger artifact mapping post-execution and loop-control decisions into bounded governed review work-item spawning with full lineage preservation."
+    },
+    {
+      "artifact_type": "prompt_queue_state",
+      "artifact_class": "coordination",
+      "schema_version": "1.9.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.15",
+      "last_updated_in": "1.9.0",
+      "example_path": "contracts/examples/prompt_queue_state.json",
+      "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
+    },
+    {
+      "artifact_type": "prompt_queue_work_item",
+      "artifact_class": "coordination",
+      "schema_version": "1.9.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.15",
+      "last_updated_in": "1.9.0",
+      "example_path": "contracts/examples/prompt_queue_work_item.json",
+      "notes": "Governed prompt queue work item state record for review orchestration and auditability."
+    },
+    {
+      "artifact_type": "provenance_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/provenance_record.json",
+      "notes": "Reusable provenance structure aligned to data-provenance-standard."
+    },
+    {
+      "artifact_type": "replay_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.5",
+      "last_updated_in": "1.0.5",
+      "example_path": "contracts/examples/replay_execution_record.json",
+      "notes": "Deterministic replay lineage artifact for run-bundle control-plane consistency checks."
+    },
+    {
+      "artifact_type": "replay_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.2",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.12",
+      "last_updated_in": "1.1.2",
+      "example_path": "contracts/examples/replay_result.json",
+      "notes": "BAG deterministic canonical trust-loop replay artifact with fail-closed linkage integrity and placeholder-free governed references."
+    },
+    {
+      "artifact_type": "review_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "governed-prompt-queue"
+      ],
+      "introduced_in": "1.0.33",
+      "last_updated_in": "1.0.33",
+      "example_path": "contracts/examples/review_artifact.json",
+      "notes": "Canonical governed review artifact for deterministic retrieval, decision tracking, and remediation orchestration handoff."
+    },
+    {
+      "artifact_type": "reviewer_comment_set",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "comment-resolution-engine",
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/reviewer_comment_set.json",
+      "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "risk_register",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/risk_register.json",
+      "notes": "Risk tracking across required categories with decision-readiness effects."
+    },
+    {
+      "artifact_type": "slide_deck",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Governed input artifact for slide decks submitted to spectrum study working groups. Slides are treated as structured technical artifacts, not transcript text."
+    },
+    {
+      "artifact_type": "slide_intelligence_packet",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": null,
+      "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
+    },
+    {
+      "artifact_type": "standards_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "system-factory",
+        "downstream schema loaders"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/standards_manifest.json",
+      "notes": "Machine-readable registry of contract versions."
+    },
+    {
+      "artifact_type": "story_bank_entry",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/story_bank_entry.json",
+      "notes": "Governed strategic story narrative with source-grounded evidence anchors."
+    },
+    {
+      "artifact_type": "strategic_knowledge_artifact_ref",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/strategic_knowledge_artifact_ref.json",
+      "notes": "Shared provenance-aware reference envelope for strategic knowledge artifacts."
+    },
+    {
+      "artifact_type": "strategic_knowledge_source_ref",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/strategic_knowledge_source_ref.json",
+      "notes": "Strategic source registration reference for Strategic Knowledge Layer."
+    },
+    {
+      "artifact_type": "strategic_knowledge_validation_decision",
+      "artifact_class": "review",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
+      "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
+    },
+    {
+      "artifact_type": "study_readiness_assessment",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-program-advisor",
+        "spectrum-pipeline-engine"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/study_readiness_assessment.json",
+      "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "tactic_register",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/tactic_register.json",
+      "notes": "Governed tactic register record grounded to book/transcript evidence."
+    },
+    {
+      "artifact_type": "transcript_intelligence_pack",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/transcript_intelligence_pack.json",
+      "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
+    },
+    {
+      "artifact_type": "viewpoint_pack",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/viewpoint_pack.json",
+      "notes": "Strategic viewpoint package with supporting and counter evidence."
+    },
+    {
+      "artifact_type": "working_paper_input",
+      "artifact_class": "work",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "working-paper-review-engine",
+        "system-factory"
+      ],
+      "introduced_in": "1.0.0",
+      "last_updated_in": "1.0.0",
+      "example_path": "contracts/examples/working_paper_input.json",
+      "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
     }
   ]
 }

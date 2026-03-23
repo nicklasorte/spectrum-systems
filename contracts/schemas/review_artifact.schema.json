@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_artifact.schema.json",
+  "title": "Review Artifact",
+  "description": "Canonical machine-readable review artifact contract for governed Codex/Claude review outputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_id",
+    "module",
+    "review_type",
+    "review_date",
+    "reviewer",
+    "decision",
+    "trust_assessment",
+    "status",
+    "scope",
+    "related_plan",
+    "critical_findings",
+    "required_fixes",
+    "optional_improvements",
+    "failure_mode_summary"
+  ],
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "pattern": "^REV-[A-Z0-9._-]+$",
+      "minLength": 8
+    },
+    "module": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["PASS", "FAIL"]
+    },
+    "trust_assessment": {
+      "type": "string",
+      "enum": ["YES", "NO"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "resolved", "superseded"]
+    },
+    "scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "related_plan": {
+      "type": "string",
+      "pattern": "^docs/review-actions/PLAN-[A-Za-z0-9._-]+\\.md$"
+    },
+    "critical_findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/critical_finding"
+      }
+    },
+    "required_fixes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/required_fix"
+      }
+    },
+    "optional_improvements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "failure_mode_summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "FAIL"
+          }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "critical_findings": {
+            "minItems": 1
+          },
+          "required_fixes": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "resolved"
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "required_fixes": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "critical_finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "title",
+        "description",
+        "why_dangerous",
+        "location",
+        "failure_scenario"
+      ],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "pattern": "^F-[0-9]{3}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "why_dangerous": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failure_scenario": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "required_fix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fix_id",
+        "description",
+        "priority"
+      ],
+      "properties": {
+        "fix_id": {
+          "type": "string",
+          "pattern": "^FIX-[0-9]{3}$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2"]
+        }
+      }
+    }
+  }
+}
