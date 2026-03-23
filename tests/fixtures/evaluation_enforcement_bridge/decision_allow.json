@@ -1,4 +1,5 @@
 {
+  "decision_dialect": "legacy",
   "decision_id": "decision-allow-001",
   "summary_id": "summary-healthy-001",
   "status": "healthy",

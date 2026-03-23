@@ -1,4 +1,5 @@
 {
+  "decision_dialect": "legacy",
   "decision_id": "decision-warn-001",
   "summary_id": "summary-warning-001",
   "status": "warning",

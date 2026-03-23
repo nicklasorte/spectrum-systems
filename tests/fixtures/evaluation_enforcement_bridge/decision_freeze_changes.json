@@ -1,4 +1,5 @@
 {
+  "decision_dialect": "legacy",
   "decision_id": "decision-freeze-001",
   "summary_id": "summary-exhausted-001",
   "status": "exhausted",
@@ -12,7 +13,7 @@
   "required_actions": [
     "Freeze all system changes until budget is restored.",
     "Conduct root-cause analysis of contributing signals.",
-    "Error budget exhausted — halt new feature deployment."
+    "Error budget exhausted \u2014 halt new feature deployment."
   ],
   "created_at": "2025-01-04T00:00:00Z"
 }

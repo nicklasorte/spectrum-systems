@@ -107,6 +107,7 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 def _make_decision(
     *,
+    decision_dialect: str = "legacy",
     decision_id: str = "test-decision-001",
     summary_id: str = "test-summary-001",
     status: str = "healthy",
@@ -116,6 +117,7 @@ def _make_decision(
     required_actions: list | None = None,
 ) -> Dict[str, Any]:
     return {
+        "decision_dialect": decision_dialect,
         "decision_id": decision_id,
         "summary_id": summary_id,
         "status": status,
@@ -188,6 +190,19 @@ def test_validate_budget_decision_valid():
 def test_validate_budget_decision_invalid():
     errors = validate_budget_decision({"bad": "data"})
     assert len(errors) > 0
+
+
+def test_budget_decision_missing_dialect_fails_closed():
+    decision = _make_decision()
+    decision.pop("decision_dialect")
+    with pytest.raises(InvalidDecisionError):
+        enforce_budget_decision(decision)
+
+
+def test_budget_decision_rejects_mixed_dialect_and_response_vocab():
+    decision = _make_decision(decision_dialect="legacy", system_response="warn")
+    with pytest.raises(InvalidDecisionError):
+        enforce_budget_decision(decision)
 
 
 # ---------------------------------------------------------------------------
@@ -300,6 +315,31 @@ def test_enforce_budget_decision_block_release():
 def test_enforce_budget_decision_invalid_decision_raises():
     with pytest.raises(InvalidDecisionError):
         enforce_budget_decision({"bad": "data"})
+
+
+def test_enforcement_bridge_accepts_explicit_legacy_budget_decision():
+    decision = _make_decision(decision_dialect="legacy", system_response="allow_with_warning", status="warning")
+    action = enforce_budget_decision(decision)
+    assert action["action_type"] == "warn"
+    assert action["allowed_to_proceed"] is True
+
+
+def test_enforcement_bridge_accepts_explicit_control_loop_budget_decision():
+    decision = {
+        "decision_dialect": "control_loop",
+        "decision_id": "decision-control-001",
+        "summary_id": "summary-control-001",
+        "trace_id": "trace-control-001",
+        "timestamp": "2026-03-21T00:00:00Z",
+        "status": "exhausted",
+        "system_response": "freeze",
+        "triggered_thresholds": ["summary_reported_exhausted"],
+        "reasons": ["Monitor summary reported exhausted status."],
+    }
+    action = enforce_budget_decision(decision)
+    assert action["action_type"] == "freeze_changes"
+    assert action["status"] == "enforced"
+    assert action["allowed_to_proceed"] is False
 
 
 # ---------------------------------------------------------------------------

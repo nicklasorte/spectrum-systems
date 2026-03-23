@@ -1,4 +1,5 @@
 {
+  "decision_dialect": "control_loop",
   "decision_id": "budget-decision-example-001",
   "summary_id": "summary-example-001",
   "trace_id": "trace-example-001",

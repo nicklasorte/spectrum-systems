@@ -1,4 +1,5 @@
 {
+  "decision_dialect": "legacy",
   "decision_id": "decision-block-001",
   "summary_id": "summary-blocked-001",
   "status": "blocked",
