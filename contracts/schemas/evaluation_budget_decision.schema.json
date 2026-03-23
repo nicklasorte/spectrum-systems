@@ -2,15 +2,40 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/evaluation_budget_decision.schema.json",
   "title": "Evaluation Budget Decision",
-  "description": "Schema supporting both legacy evaluation budget decisions and control-loop enforcement-ready decisions.",
-  "oneOf": [
-    {"$ref": "#/$defs/legacy_budget_decision"},
-    {"$ref": "#/$defs/control_loop_budget_decision"}
+  "description": "Schema for evaluation budget decisions with an explicit dialect discriminator.",
+  "type": "object",
+  "required": ["decision_dialect"],
+  "properties": {
+    "decision_dialect": {
+      "type": "string",
+      "enum": ["control_loop", "legacy"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision_dialect": {"const": "legacy"}
+        },
+        "required": ["decision_dialect"]
+      },
+      "then": {"$ref": "#/$defs/legacy_budget_decision"}
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_dialect": {"const": "control_loop"}
+        },
+        "required": ["decision_dialect"]
+      },
+      "then": {"$ref": "#/$defs/control_loop_budget_decision"}
+    }
   ],
   "$defs": {
     "legacy_budget_decision": {
       "type": "object",
       "required": [
+        "decision_dialect",
         "decision_id",
         "summary_id",
         "status",
@@ -22,6 +47,7 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "decision_dialect": {"const": "legacy"},
         "decision_id": {"type": "string", "minLength": 1},
         "summary_id": {"type": "string", "minLength": 1},
         "status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "blocked"]},
@@ -38,6 +64,7 @@
     "control_loop_budget_decision": {
       "type": "object",
       "required": [
+        "decision_dialect",
         "decision_id",
         "summary_id",
         "trace_id",
@@ -49,6 +76,7 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "decision_dialect": {"const": "control_loop"},
         "decision_id": {"type": "string", "minLength": 1},
         "summary_id": {"type": "string", "minLength": 1},
         "trace_id": {"type": "string", "minLength": 1},

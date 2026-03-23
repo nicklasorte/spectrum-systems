@@ -13,6 +13,8 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.evaluation_budget_governor import (  # noqa: E402
     build_validation_budget_decision,
+    run_validation_control_loop,
+    validate_decision,
 )
 from spectrum_systems.modules.runtime.evaluation_monitor import (  # noqa: E402
     EvaluationMonitorError,
@@ -288,6 +290,7 @@ def test_budget_decision_status_mapping(
     decision = build_validation_budget_decision(summary)
     assert decision["system_response"] == expected_response
     assert decision["status"] == expected_status
+    assert decision["decision_dialect"] == "control_loop"
 
 
 def test_end_to_end_valid_bundle_allows(tmp_path: Path) -> None:
@@ -377,3 +380,46 @@ def test_reason_trigger_consistency() -> None:
     assert len(decision["reasons"]) == len(decision["triggered_thresholds"])
     assert decision["reasons"]
     assert decision["triggered_thresholds"]
+
+
+def test_control_loop_rejects_legacy_responses() -> None:
+    summary = {
+        "summary_id": "sum-legacy-001",
+        "trace_id": "trace-legacy-001",
+        "source_record_ids": ["record-001"],
+        "source_trace_ids": ["trace-legacy-001"],
+        "generated_at": "2026-03-22T00:00:00Z",
+        "window": {"record_count": 1},
+        "aggregated_slis": {
+            "manifest_valid_rate": 1.0,
+            "inputs_present_rate": 1.0,
+            "expected_outputs_declared_rate": 1.0,
+            "output_paths_valid_rate": 1.0,
+            "provenance_required_rate": 1.0,
+            "bundle_validation_success_rate": 0.8,
+        },
+        "overall_status": "warning",
+        "reasons": ["fixture summary"],
+    }
+    decision = build_validation_budget_decision(summary)
+    decision["system_response"] = "allow_with_warning"
+    errors = validate_decision(decision)
+    assert errors
+
+
+def test_script_and_module_outputs_identical(tmp_path: Path) -> None:
+    script = _REPO_ROOT / "scripts" / "run_evaluation_control_loop.py"
+    bundle = _build_bundle(tmp_path / "bundle", valid=True)
+
+    module_output = run_validation_control_loop(bundle)
+    proc = subprocess.run(
+        [sys.executable, str(script), str(bundle)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    script_output = json.loads(proc.stdout)
+    for key in ("status", "system_response", "reasons", "triggered_thresholds", "decision_dialect"):
+        assert script_output[key] == module_output[key]
+

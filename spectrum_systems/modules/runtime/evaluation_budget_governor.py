@@ -52,7 +52,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
-from spectrum_systems.modules.runtime.evaluation_control import map_status_to_response
+from spectrum_systems.modules.runtime.evaluation_control import map_control_loop_status_to_response
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -383,50 +383,28 @@ def determine_system_response(
     triggered_thresholds: List[str],
     thresholds: Optional[Dict[str, Any]] = None,
 ) -> str:
-    """Map a budget *status* to a concrete system response.
+    """Map status to response via the canonical control-loop mapping.
 
-    Rules
-    -----
-    - healthy  → allow
-    - warning  → allow_with_warning  (require_review if critical_alerts triggered)
-    - exhausted → freeze_changes     (require_review if critical + degrading)
-    - blocked  → block_release
-
-    Parameters
-    ----------
-    status:
-        Budget status string from :func:`evaluate_budget_status`.
-    triggered_thresholds:
-        List of triggered threshold names from :func:`evaluate_budget_status`.
-    thresholds:
-        Unused — accepted for forward-compatibility.
-
-    Returns
-    -------
-    str
-        One of ``"allow" | "allow_with_warning" | "freeze_changes" |
-        "block_release" | "require_review"``.
+    ``triggered_thresholds`` and ``thresholds`` are accepted for compatibility
+    but do not affect mapping; status is the only input to preserve determinism.
     """
-    if status == "healthy":
-        return "allow"
+    del triggered_thresholds
+    del thresholds
+    _, response = map_control_loop_status_to_response(status)
+    return response
 
-    if status == "blocked":
-        return "block_release"
 
-    if status == "exhausted":
-        # Require human review when critical alerts combine with degrading trend
-        if "critical_alerts_with_degrading_trend" in triggered_thresholds:
-            return "require_review"
-        return "freeze_changes"
 
-    if status == "warning":
-        # Escalate to require_review when critical alerts are present
-        if "critical_alerts" in triggered_thresholds:
-            return "require_review"
-        return "allow_with_warning"
 
-    # Fail-closed: unknown status → block release
-    return "block_release"
+def translate_to_legacy_response(control_loop_response: str) -> str:
+    """Translate canonical control-loop response to legacy dialect."""
+    translation = {
+        "allow": "allow",
+        "warn": "allow_with_warning",
+        "freeze": "freeze_changes",
+        "block": "block_release",
+    }
+    return translation.get(control_loop_response, "block_release")
 
 
 def _build_required_actions(
@@ -512,6 +490,7 @@ def build_decision_artifact(
         If the produced artifact fails schema validation.
     """
     decision: Dict[str, Any] = {
+        "decision_dialect": "legacy",
         "decision_id": _new_id(),
         "summary_id": summary_id,
         "status": status,
@@ -575,23 +554,25 @@ def run_budget_governor(
     summary = load_monitor_summary(path)
 
     status, reasons, triggered = evaluate_budget_status(summary, thresholds)
-    system_response = determine_system_response(status, triggered, thresholds)
-    required_actions = _build_required_actions(status, system_response, triggered)
+    canonical_response = determine_system_response(status, triggered, thresholds)
+    legacy_response = translate_to_legacy_response(canonical_response)
+    required_actions = _build_required_actions(status, legacy_response, triggered)
 
     decision = build_decision_artifact(
         summary_id=summary["summary_id"],
         status=status,
-        system_response=system_response,
+        system_response=legacy_response,
         reasons=reasons,
         triggered_thresholds=triggered,
         required_actions=required_actions,
     )
 
     logger.info(
-        "Budget governor complete summary_id=%s status=%s system_response=%s",
+        "Budget governor complete summary_id=%s status=%s canonical_response=%s legacy_response=%s",
         summary["summary_id"],
         status,
-        system_response,
+        canonical_response,
+        legacy_response,
     )
     return decision
 
@@ -661,7 +642,7 @@ def build_validation_budget_decision(
         status = "warning"
     else:
         status = "healthy"
-    status, system_response = map_status_to_response(status)
+    status, system_response = map_control_loop_status_to_response(status)
 
     triggered_thresholds = (
         sorted(set(triggered_by_status["blocked"]))
@@ -675,6 +656,7 @@ def build_validation_budget_decision(
         reasons = ["All monitored thresholds are healthy."]
 
     decision = {
+        "decision_dialect": "control_loop",
         "decision_id": _deterministic_control_decision_id(monitor_summary, status, triggered_thresholds),
         "summary_id": str(monitor_summary.get("summary_id") or "unknown-summary"),
         "trace_id": str(monitor_summary.get("trace_id") or "unknown-trace"),
@@ -692,3 +674,17 @@ def build_validation_budget_decision(
             + "; ".join(decision_errors)
         )
     return decision
+
+def run_validation_control_loop(bundle_path: str | Path) -> Dict[str, Any]:
+    """Canonical control-loop adapter for bundle→budget decision."""
+    from spectrum_systems.modules.runtime.evaluation_monitor import (
+        build_validation_monitor_record,
+        summarize_validation_monitor_records,
+    )
+    from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
+
+    decision = validate_and_emit_decision(bundle_path)
+    record = build_validation_monitor_record(decision)
+    summary = summarize_validation_monitor_records([record])
+    return build_validation_budget_decision(summary)
+

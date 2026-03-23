@@ -34,7 +34,7 @@ DEFAULT_THRESHOLDS: Dict[str, float] = {
 }
 
 SEVERE_SIGNALS = frozenset({"stability_breach", "trust_breach", "indeterminate_failure"})
-STATUS_RESPONSE_MAP = {
+STATUS_RESPONSE_MAP: Dict[str, str] = {
     "healthy": "allow",
     "warning": "warn",
     "exhausted": "freeze",
@@ -64,11 +64,24 @@ def _deterministic_decision_id(
     return f"ECD-{digest}"
 
 
-def map_status_to_response(status: Any) -> tuple[str, str]:
+
+
+def map_control_loop_status_to_response(status: Any) -> tuple[str, str]:
+    """Canonical control-loop status→response mapping.
+
+    This is the single runtime authority for mapping:
+    healthy→allow, warning→warn, exhausted→freeze, blocked→block.
+    Unknown status values fail-closed to blocked/block.
+    """
     status_text = str(status)
     if status_text not in STATUS_RESPONSE_MAP:
         status_text = "blocked"
     return status_text, STATUS_RESPONSE_MAP[status_text]
+
+
+def map_status_to_response(status: Any) -> tuple[str, str]:
+    """Backward-compatible alias for canonical control-loop mapping."""
+    return map_control_loop_status_to_response(status)
 
 
 def _load_decision_schema() -> Dict[str, Any]:
@@ -203,7 +216,7 @@ def build_evaluation_control_decision(
         system_status = "exhausted"
     else:
         system_status = "warning"
-    system_status, system_response = map_status_to_response(system_status)
+    system_status, system_response = map_control_loop_status_to_response(system_status)
 
     if system_response == "allow":
         decision_label = "allow"

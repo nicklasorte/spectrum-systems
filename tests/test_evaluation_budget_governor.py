@@ -44,7 +44,6 @@ from __future__ import annotations
 
 import json
 import sys
-import uuid
 from pathlib import Path
 from typing import Any, Dict
 
@@ -61,9 +60,11 @@ from spectrum_systems.modules.runtime.evaluation_budget_governor import (  # noq
     evaluate_budget_status,
     load_monitor_summary,
     run_budget_governor,
+    translate_to_legacy_response,
     validate_decision,
     validate_summary,
 )
+from spectrum_systems.modules.runtime.evaluation_control import map_control_loop_status_to_response  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Fixture paths
@@ -273,33 +274,35 @@ def test_determine_system_response_healthy():
     assert response == "allow"
 
 
-def test_determine_system_response_warning_no_critical():
+def test_determine_system_response_warning():
     response = determine_system_response("warning", ["drift_rate_warning"])
-    assert response == "allow_with_warning"
+    assert response == "warn"
 
 
-def test_determine_system_response_warning_with_critical_alerts():
-    response = determine_system_response("warning", ["critical_alerts"])
-    assert response == "require_review"
-
-
-def test_determine_system_response_exhausted_no_critical_degrading():
+def test_determine_system_response_exhausted():
     response = determine_system_response("exhausted", ["burn_rate_exhausting"])
-    assert response == "freeze_changes"
-
-
-def test_determine_system_response_exhausted_critical_degrading():
-    response = determine_system_response(
-        "exhausted", ["critical_alerts_with_degrading_trend"]
-    )
-    assert response == "require_review"
+    assert response == "freeze"
 
 
 def test_determine_system_response_blocked():
-    response = determine_system_response(
-        "blocked", ["critical_alerts_with_critical_failure_rate"]
-    )
-    assert response == "block_release"
+    response = determine_system_response("blocked", ["critical_alerts_with_critical_failure_rate"])
+    assert response == "block"
+
+
+def test_only_canonical_mapping_used():
+    for status in ("healthy", "warning", "exhausted", "blocked", "unknown"):
+        _, canonical = map_control_loop_status_to_response(status)
+        assert determine_system_response(status, ["any-trigger"]) == canonical
+
+
+def test_no_duplicate_mapping_logic_exists():
+    import inspect
+
+    source = inspect.getsource(determine_system_response)
+    assert "allow_with_warning" not in source
+    assert "freeze_changes" not in source
+    assert "require_review" not in source
+    assert "map_control_loop_status_to_response" in source
 
 
 # ---------------------------------------------------------------------------
@@ -330,11 +333,12 @@ def test_build_decision_artifact_required_fields():
         required_actions=["Review warning signals."],
     )
     for field in (
-        "decision_id", "summary_id", "status", "system_response",
+        "decision_dialect", "decision_id", "summary_id", "status", "system_response",
         "reasons", "triggered_thresholds", "required_actions", "created_at",
     ):
         assert field in decision, f"Missing field: {field}"
     assert decision["summary_id"] == "test-summary-002"
+    assert decision["decision_dialect"] == "legacy"
 
 
 def test_validate_decision_valid():
@@ -370,13 +374,13 @@ def test_run_budget_governor_healthy():
 def test_run_budget_governor_warning():
     decision = run_budget_governor(_WARNING)
     assert decision["status"] == "warning"
-    assert decision["system_response"] in ("allow_with_warning", "require_review")
+    assert decision["system_response"] == "allow_with_warning"
 
 
 def test_run_budget_governor_exhausted():
     decision = run_budget_governor(_EXHAUSTED)
     assert decision["status"] == "exhausted"
-    assert decision["system_response"] in ("freeze_changes", "require_review")
+    assert decision["system_response"] == "freeze_changes"
 
 
 def test_run_budget_governor_blocked():
@@ -489,3 +493,27 @@ def test_threshold_precedence():
     assert "critical_alerts_with_critical_failure_rate" in triggered
     assert "burn_rate_exhausting" not in triggered
     assert reasons
+
+
+def test_translate_to_legacy_response_is_isolated():
+    assert translate_to_legacy_response("allow") == "allow"
+    assert translate_to_legacy_response("warn") == "allow_with_warning"
+    assert translate_to_legacy_response("freeze") == "freeze_changes"
+    assert translate_to_legacy_response("block") == "block_release"
+
+
+def test_schema_blocks_mixed_dialects():
+    mixed = {
+        "decision_dialect": "control_loop",
+        "decision_id": "x",
+        "summary_id": "y",
+        "trace_id": "t",
+        "timestamp": "2026-03-22T00:00:00Z",
+        "status": "warning",
+        "system_response": "allow_with_warning",
+        "triggered_thresholds": ["drift_rate_warning"],
+        "reasons": ["warning"],
+    }
+    errors = validate_decision(mixed)
+    assert errors
+
