@@ -308,6 +308,29 @@ def test_end_to_end_broken_bundle_blocks_or_freezes(tmp_path: Path) -> None:
     assert budget["system_response"] in {"freeze", "block"}
 
 
+def test_control_loop_budget_decision_uses_canonical_vocab_only() -> None:
+    summary = {
+        "summary_id": "sum-canonical-001",
+        "trace_id": "trace-canonical-001",
+        "source_record_ids": ["record-001"],
+        "source_trace_ids": ["trace-001"],
+        "generated_at": "2026-03-23T00:00:00Z",
+        "window": {"record_count": 1},
+        "aggregated_slis": {
+            "manifest_valid_rate": 1.0,
+            "inputs_present_rate": 1.0,
+            "expected_outputs_declared_rate": 1.0,
+            "output_paths_valid_rate": 1.0,
+            "provenance_required_rate": 1.0,
+            "bundle_validation_success_rate": 1.0,
+        },
+        "overall_status": "warning",
+        "reasons": ["fixture summary"],
+    }
+    decision = build_validation_budget_decision(summary)
+    assert decision["system_response"] in {"allow", "warn", "freeze", "block"}
+
+
 def test_cli_exit_code_behavior(tmp_path: Path) -> None:
     script = _REPO_ROOT / "scripts" / "run_evaluation_control_loop.py"
 

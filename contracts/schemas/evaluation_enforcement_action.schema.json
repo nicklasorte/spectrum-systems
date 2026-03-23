@@ -22,7 +22,7 @@
       "if": {
         "properties": {
           "action_type": {
-            "enum": ["freeze_changes", "block_release"]
+            "enum": ["freeze", "block"]
           }
         }
       },
@@ -65,6 +65,38 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "freeze"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "block"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_to_proceed": {
+            "const": false
+          }
+        }
+      }
     }
   ],
   "properties": {
@@ -90,7 +122,7 @@
     },
     "action_type": {
       "type": "string",
-      "enum": ["allow", "warn", "require_review", "freeze_changes", "block_release"],
+      "enum": ["allow", "warn", "freeze", "block"],
       "description": "The concrete enforcement action that downstream workflows must honor."
     },
     "enforcement_scope": {
