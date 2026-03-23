@@ -1,0 +1,38 @@
+{
+  "review_id": "REV-GOVERNED-PROMPT-QUEUE-REVIEW-STANDARD-2026-03-23",
+  "module": "governed_prompt_queue",
+  "review_type": "codex_review",
+  "review_date": "2026-03-23",
+  "reviewer": "Codex",
+  "decision": "FAIL",
+  "trust_assessment": "NO",
+  "status": "open",
+  "scope": [
+    "docs/reviews/",
+    "contracts/schemas/review_artifact.schema.json",
+    "contracts/examples/review_artifact.json"
+  ],
+  "related_plan": "docs/review-actions/PLAN-REVIEW-ARTIFACT-STANDARD-2026-03-23.md",
+  "critical_findings": [
+    {
+      "finding_id": "F-001",
+      "title": "Metadata fields are not machine-consistent",
+      "description": "Review markdown files do not share an enforceable metadata header contract.",
+      "why_dangerous": "Automation cannot deterministically parse module, decision, and trust fields.",
+      "location": "docs/reviews/*.md",
+      "failure_scenario": "Review retrieval jobs misclassify outcomes and generate incorrect follow-up actions."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Adopt and enforce canonical YAML frontmatter metadata keys for every new review markdown artifact.",
+      "priority": "P0"
+    }
+  ],
+  "optional_improvements": [
+    "Backfill historical review markdown files with standardized frontmatter when practical.",
+    "Add CI-level linting for markdown review filenames."
+  ],
+  "failure_mode_summary": "Without a governed schema and frontmatter standard, review-and-fix orchestration remains fragile and ambiguous."
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "system_id": "governed-prompt-queue",
+  "repo_name": "governed-prompt-queue",
+  "repo_type": "pipeline",
+  "layer": "Layer 4",
+  "status": "planned",
+  "description": "Planned governed prompt queue orchestration repository for deterministic review-and-fix lifecycle control."
+}

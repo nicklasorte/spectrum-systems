@@ -1,0 +1,10 @@
+{
+  "system_id": "governed-prompt-queue",
+  "repo_name": "governed-prompt-queue",
+  "repo_type": "pipeline",
+  "governance_repo": "spectrum-systems",
+  "governance_version": "1.0.0",
+  "contracts": {
+    "review_artifact": "1.0.0"
+  }
+}
