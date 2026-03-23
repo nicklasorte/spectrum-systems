@@ -288,6 +288,42 @@ def test_run_validators_result_passes_schema_validation():
     assert errors == [], f"Schema validation failed: {errors}"
 
 
+def test_validator_outputs_single_canonical_shape_for_all_paths():
+    from jsonschema import Draft202012Validator
+    from spectrum_systems.contracts import load_schema
+
+    schema = load_schema("validator_execution_result")
+    validator = Draft202012Validator(schema)
+
+    valid_result = run_validators(["validate_schema_conformance"], _ctx())
+    malformed_input_result = run_validators(["validate_bundle_contract"], _ctx(artifact="not-a-dict"))
+    missing_trace_result = run_validators(["validate_schema_conformance"], _ctx(trace_id="not-a-real-trace-id"))
+
+    for output in (valid_result, malformed_input_result, missing_trace_result):
+        errors = list(validator.iter_errors(output))
+        assert errors == [], f"Schema validation failed for output: {errors}"
+
+    canonical_keys = set(valid_result.keys())
+    assert set(malformed_input_result.keys()) == canonical_keys
+    assert set(missing_trace_result.keys()) == canonical_keys
+
+
+def test_validator_never_returns_unvalidated_artifact(monkeypatch):
+    import spectrum_systems.modules.runtime.validator_engine as ve
+
+    def _invalid_schema():
+        return {
+            "type": "object",
+            "required": ["nonexistent_required_field"],
+            "properties": {},
+            "additionalProperties": True,
+        }
+
+    monkeypatch.setattr(ve, "_load_validator_execution_result_schema", _invalid_schema)
+    with pytest.raises(ValueError, match="failed schema validation"):
+        run_validators(["validate_schema_conformance"], _ctx())
+
+
 def test_validate_validator_result_accepts_well_formed_result():
     well_formed = {
         "validator_name": "test_validator",
