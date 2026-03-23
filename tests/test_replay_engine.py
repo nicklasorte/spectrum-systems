@@ -23,6 +23,7 @@ from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
     execute_replay,
     replay_run,
     run_replay,
+    validate_replay_result_legacy,
     validate_replay_result,
 )
 from spectrum_systems.modules.runtime.trace_store import persist_trace  # noqa: E402
@@ -447,6 +448,55 @@ def test_replay_schema_canonical_only() -> None:
     }
     errors = validate_replay_result(legacy_payload)
     assert errors
+
+
+def test_governed_replay_validation_does_not_fallback_to_legacy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    legacy_payload = {
+        "artifact_type": "replay_result",
+        "schema_version": "1.0.0",
+        "replay_id": "legacy-replay-id",
+        "source_trace_id": "trace-legacy",
+        "replayed_at": "2026-03-23T00:00:00+00:00",
+        "status": "success",
+        "prerequisites_valid": True,
+        "prerequisite_errors": [],
+        "steps_executed": [],
+        "output_comparison": {},
+        "determinism_notes": [],
+        "context": {},
+    }
+
+    def _forbidden_legacy_validator(_result: dict) -> list[str]:
+        raise AssertionError("legacy replay validator must not be called on governed validation")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.replay_engine.validate_replay_result_legacy",
+        _forbidden_legacy_validator,
+    )
+
+    errors = validate_replay_result(legacy_payload)
+    assert errors
+
+
+def test_legacy_replay_validator_accepts_legacy_shape() -> None:
+    legacy_payload = {
+        "artifact_type": "replay_result",
+        "schema_version": "1.0.0",
+        "replay_id": "legacy-replay-id",
+        "source_trace_id": "trace-legacy",
+        "replayed_at": "2026-03-23T00:00:00+00:00",
+        "status": "success",
+        "prerequisites_valid": True,
+        "prerequisite_errors": [],
+        "steps_executed": [],
+        "output_comparison": {},
+        "determinism_notes": [],
+        "context": {},
+    }
+
+    assert validate_replay_result_legacy(legacy_payload) == []
 
 
 def test_replay_persistence_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
