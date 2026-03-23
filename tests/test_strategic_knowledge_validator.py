@@ -1,3 +1,5 @@
+import pytest
+
 from spectrum_systems.modules.strategic_knowledge.validator import validate_strategic_knowledge_artifact
 
 
@@ -26,6 +28,10 @@ def _valid_artifact() -> dict:
 
 def _context() -> dict:
     return {
+        "trace_id": "trace-validator-001",
+        "span_id": "span-validator-001",
+        "parent_span_id": "span-validator-parent-001",
+        "run_id": "run-validator-001",
         "source_catalog": {
             "sources": [
                 {
@@ -94,7 +100,14 @@ def test_explicit_trace_context_is_preserved() -> None:
             **_context(),
             "trace_id": "trace-explicit-001",
             "span_id": "span-explicit-001",
+            "parent_span_id": "span-parent-explicit-001",
+            "run_id": "run-explicit-001",
         },
     )
     assert decision["trace_id"] == "trace-explicit-001"
     assert decision["span_id"] == "span-explicit-001"
+
+
+def test_missing_trace_context_fails_closed() -> None:
+    with pytest.raises(ValueError, match="requires explicit trace context"):
+        validate_strategic_knowledge_artifact(_valid_artifact(), {"source_catalog": _context()["source_catalog"]})
