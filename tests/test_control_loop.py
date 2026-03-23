@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -13,6 +14,7 @@ from spectrum_systems.modules.runtime.control_loop import (  # noqa: E402
     ControlLoopError,
     run_control_loop,
 )
+import spectrum_systems.modules.runtime.control_loop as control_loop  # noqa: E402
 
 
 def _trace_context() -> Dict[str, Any]:
@@ -84,6 +86,26 @@ def test_failure_eval_case_always_denies() -> None:
     assert decision["decision"] == "deny"
     assert decision["rationale_code"] == "deny_failure_eval_case"
     assert result["control_trace"]["signal_type"] == "failure_eval_case"
+
+
+def test_failure_eval_case_decision_id_is_deterministic_for_identical_inputs() -> None:
+    artifact = _failure_eval_case()
+    first = run_control_loop(artifact, _trace_context())["evaluation_control_decision"]
+    second = run_control_loop(copy.deepcopy(artifact), _trace_context())["evaluation_control_decision"]
+    assert first["decision_id"] == second["decision_id"]
+
+
+def test_failure_eval_case_created_at_can_vary_without_changing_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifact = _failure_eval_case()
+    monkeypatch.setattr(control_loop, "_now_iso", lambda: "2026-03-23T00:00:00Z")
+    first = run_control_loop(artifact, _trace_context())["evaluation_control_decision"]
+    monkeypatch.setattr(control_loop, "_now_iso", lambda: "2026-03-23T00:01:00Z")
+    second = run_control_loop(artifact, _trace_context())["evaluation_control_decision"]
+
+    assert first["created_at"] != second["created_at"]
+    assert first["decision_id"] == second["decision_id"]
 
 
 def test_malformed_artifact_raises_error() -> None:

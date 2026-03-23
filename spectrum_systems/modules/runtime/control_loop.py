@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
+import json
 from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -20,6 +22,12 @@ class ControlLoopError(Exception):
 
 def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _deterministic_id(prefix: str, payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+    return f"{prefix}-{digest}"
 
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
@@ -87,10 +95,29 @@ def _evaluate_signal(
         return build_evaluation_control_decision(artifact)
 
     if signal_type == "failure_eval_case":
+        if not isinstance(signal.get("source_artifact_id"), str) or not signal["source_artifact_id"]:
+            raise ControlLoopError("failure_eval_case missing eval_case_id for deterministic identity")
+        if not isinstance(signal.get("run_id"), str) or not signal["run_id"]:
+            raise ControlLoopError("failure_eval_case missing run_id for deterministic identity")
+        if not isinstance(signal.get("trace_id"), str) or not signal["trace_id"]:
+            raise ControlLoopError("failure_eval_case missing trace_id for deterministic identity")
+
+        deterministic_identity_payload = {
+            "artifact_type": "evaluation_control_decision",
+            "schema_version": "1.1.0",
+            "signal_type": "failure_eval_case",
+            "run_id": signal["run_id"],
+            "trace_id": signal["trace_id"],
+            "source_artifact_id": signal["source_artifact_id"],
+            "evaluation_type": signal["decision_inputs"].get("evaluation_type"),
+            "created_from": signal["decision_inputs"].get("created_from"),
+            "decision": "deny",
+            "rationale_code": "deny_failure_eval_case",
+        }
         decision = {
             "artifact_type": "evaluation_control_decision",
             "schema_version": "1.1.0",
-            "decision_id": f"ECD-{signal['run_id']}-FAILURE",
+            "decision_id": _deterministic_id("ECD", deterministic_identity_payload),
             "eval_run_id": signal["run_id"],
             "system_status": "blocked",
             "system_response": "block",

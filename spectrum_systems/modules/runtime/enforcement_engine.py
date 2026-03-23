@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import uuid
 import warnings
+import hashlib
+import json
 from inspect import stack
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
@@ -65,6 +67,12 @@ def _new_id(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
 
+def _deterministic_id(prefix: str, payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+    return f"{prefix}-{digest}"
+
+
 def enforce_control_decision(decision_artifact: dict) -> dict:
     """Map ``evaluation_control_decision`` to deterministic ``enforcement_result``.
 
@@ -94,20 +102,42 @@ def enforce_control_decision(decision_artifact: dict) -> dict:
     source_decision_id = str(decision_artifact.get("decision_id") or "")
     if not source_decision_id:
         raise EnforcementError("evaluation_control_decision missing decision_id")
+    trace_id = str(decision_artifact.get("trace_id") or "")
+    if not trace_id:
+        raise EnforcementError("evaluation_control_decision missing trace_id")
+    run_id = str(decision_artifact.get("run_id") or "")
+    if not run_id:
+        raise EnforcementError("evaluation_control_decision missing run_id")
+    rationale_code = str(decision_artifact.get("rationale_code") or "")
+    if not rationale_code:
+        raise EnforcementError("evaluation_control_decision missing rationale_code")
 
     fail_closed = final_status in {"deny", "require_review"}
+    deterministic_identity_payload = {
+        "artifact_type": "enforcement_result",
+        "schema_version": "1.1.0",
+        "source_decision_id": source_decision_id,
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "decision": decision_label,
+        "enforcement_action": enforcement_action,
+        "final_status": final_status,
+        "rationale_code": rationale_code,
+        "fail_closed": fail_closed,
+        "enforcement_path": "baf_single_path",
+    }
 
     result = {
         "artifact_type": "enforcement_result",
         "schema_version": "1.1.0",
-        "enforcement_result_id": _new_id("ENF"),
+        "enforcement_result_id": _deterministic_id("ENF", deterministic_identity_payload),
         "timestamp": _now_iso(),
-        "trace_id": decision_artifact["trace_id"],
-        "run_id": decision_artifact["run_id"],
+        "trace_id": trace_id,
+        "run_id": run_id,
         "input_decision_reference": source_decision_id,
         "enforcement_action": enforcement_action,
         "final_status": final_status,
-        "rationale_code": decision_artifact["rationale_code"],
+        "rationale_code": rationale_code,
         "fail_closed": fail_closed,
         "enforcement_path": "baf_single_path",
         "provenance": {

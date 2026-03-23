@@ -16,6 +16,7 @@ from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
     enforce_control_decision,
     validate_enforcement_result,
 )
+import spectrum_systems.modules.runtime.enforcement_engine as enforcement_engine  # noqa: E402
 
 
 def _decision(decision: str = "allow") -> dict:
@@ -89,6 +90,31 @@ def test_missing_decision_field_raises_error() -> None:
 def test_returned_artifact_validates_against_schema() -> None:
     result = enforce_control_decision(_decision("allow"))
     assert validate_enforcement_result(result) == []
+
+
+def test_enforcement_result_id_is_deterministic_for_identical_inputs() -> None:
+    decision = _decision("deny")
+    decision["system_status"] = "blocked"
+    decision["system_response"] = "block"
+    decision["triggered_signals"] = ["stability_breach"]
+
+    first = enforce_control_decision(decision)
+    second = enforce_control_decision(copy.deepcopy(decision))
+
+    assert first["enforcement_result_id"] == second["enforcement_result_id"]
+
+
+def test_timestamp_changes_do_not_change_enforcement_result_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    decision = _decision("allow")
+
+    monkeypatch.setattr(enforcement_engine, "_now_iso", lambda: "2026-03-23T00:00:00Z")
+    first = enforce_control_decision(decision)
+
+    monkeypatch.setattr(enforcement_engine, "_now_iso", lambda: "2026-03-23T00:00:59Z")
+    second = enforce_control_decision(decision)
+
+    assert first["timestamp"] != second["timestamp"]
+    assert first["enforcement_result_id"] == second["enforcement_result_id"]
 
 
 def test_legacy_enforce_budget_decision_emits_deprecation_warning() -> None:
