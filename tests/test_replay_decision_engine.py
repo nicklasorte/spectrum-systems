@@ -54,6 +54,8 @@ from spectrum_systems.modules.runtime.replay_decision_engine import (  # noqa: E
     validate_analysis,
 )
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
+    ReplayEngineError,
+    ReplayPrerequisiteError,
     execute_replay,
 )
 from spectrum_systems.modules.runtime.trace_store import (  # noqa: E402
@@ -636,51 +638,45 @@ class TestRunAnalysisBlockedReplay:
 
 
 # ---------------------------------------------------------------------------
-# Test 19: execute_replay with run_decision_analysis=True
+# Test 19: legacy execute_replay analysis mutation is blocked
 # ---------------------------------------------------------------------------
 
 
 class TestExecuteReplayWithDecisionAnalysis:
-    def test_decision_analysis_key_present_when_enabled(self, tmp_store):
+    def test_analysis_flow_still_runs_via_dedicated_entrypoint(self, tmp_store):
         trace = _make_trace("trace-da-enabled", n_spans=1, with_enforcement_span=True)
         persist_trace(trace, base_dir=tmp_store)
-        result = execute_replay(
-            "trace-da-enabled",
-            base_dir=tmp_store,
-            run_decision_analysis=True,
-        )
-        assert "decision_analysis" in result
+        analysis = run_replay_decision_analysis("trace-da-enabled", base_dir=tmp_store)
+        assert isinstance(analysis["analysis_id"], str)
+        assert analysis["trace_id"] == "trace-da-enabled"
 
-    def test_decision_analysis_key_absent_by_default(self, tmp_store):
+    def test_execute_replay_rejects_inline_analysis(self, tmp_store):
+        trace = _make_trace("trace-da-inline", n_spans=1, with_enforcement_span=True)
+        persist_trace(trace, base_dir=tmp_store)
+        with pytest.raises(ReplayEngineError, match="run_decision_analysis=True is not supported"):
+            execute_replay("trace-da-inline", base_dir=tmp_store, run_decision_analysis=True)
+
+    def test_execute_replay_legacy_payload_has_no_analysis_key(self, tmp_store):
         trace = _make_trace("trace-da-absent", n_spans=1)
         persist_trace(trace, base_dir=tmp_store)
         result = execute_replay("trace-da-absent", base_dir=tmp_store)
         assert "decision_analysis" not in result
 
-    def test_decision_analysis_none_when_no_enforcement_span(self, tmp_store):
-        # Trace has no enforcement span → decision analysis should set None (not raise)
-        trace = _make_trace("trace-da-no-enf", n_spans=1, with_enforcement_span=False)
+    def test_analysis_flow_propagates_replay_prerequisite_error(self, tmp_store, monkeypatch: pytest.MonkeyPatch):
+        trace = _make_trace("trace-da-prereq", n_spans=1, with_enforcement_span=True)
         persist_trace(trace, base_dir=tmp_store)
-        result = execute_replay(
-            "trace-da-no-enf",
-            base_dir=tmp_store,
-            run_decision_analysis=True,
-        )
-        assert "decision_analysis" in result
-        assert result["decision_analysis"] is None
 
-    def test_decision_analysis_is_schema_valid_when_enforcement_present(self, tmp_store):
-        trace = _make_trace("trace-da-valid", n_spans=1, with_enforcement_span=True)
-        persist_trace(trace, base_dir=tmp_store)
-        result = execute_replay(
-            "trace-da-valid",
-            base_dir=tmp_store,
-            run_decision_analysis=True,
+        def _fake_execute_replay(_trace_id: str, **kwargs):
+            assert kwargs.get("require_prerequisites") is True
+            raise ReplayPrerequisiteError("missing replay prerequisites")
+
+        monkeypatch.setattr(
+            "spectrum_systems.modules.runtime.replay_decision_engine.execute_replay",
+            _fake_execute_replay,
         )
-        analysis = result["decision_analysis"]
-        assert analysis is not None
-        errors = validate_analysis(analysis)
-        assert errors == []
+
+        with pytest.raises(ReplayDecisionError, match="replay prerequisites not met"):
+            run_replay_decision_analysis("trace-da-prereq", base_dir=tmp_store)
 
 
 # ---------------------------------------------------------------------------

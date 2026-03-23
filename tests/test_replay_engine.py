@@ -20,6 +20,7 @@ from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
 )
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
     ReplayEngineError,
+    ReplayPrerequisiteError,
     execute_replay,
     replay_run,
     run_replay,
@@ -226,6 +227,22 @@ def test_replay_uses_canonical_enforcement_path_not_legacy(monkeypatch: pytest.M
     assert called["legacy"] == 0
 
 
+def test_run_replay_does_not_use_legacy_execute_replay(monkeypatch: pytest.MonkeyPatch) -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    def _forbidden_execute_replay(*_args, **_kwargs):
+        raise AssertionError("run_replay must not call execute_replay")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.replay_engine.execute_replay",
+        _forbidden_execute_replay,
+    )
+
+    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    assert result["replay_path"] == "bag_replay_engine"
+
+
 def test_run_replay_raises_on_canonical_path_exception(monkeypatch: pytest.MonkeyPatch) -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
@@ -425,8 +442,9 @@ def test_replay_persistence_matches_runtime_rules(
 
     monkeypatch.setattr("spectrum_systems.modules.runtime.replay_engine._new_id", lambda: "fixed-replay-id")
 
-    execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
-    with pytest.raises(ReplayEngineError, match="refused overwrite"):
+    with pytest.raises(ReplayEngineError, match="persist_result=True is not allowed"):
+        execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
+    with pytest.raises(ReplayEngineError, match="persist_result=True is not allowed"):
         execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
 
 
@@ -526,9 +544,47 @@ def test_replay_persistence_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyP
     persist_trace(trace, base_dir=traces_dir)
     monkeypatch.setattr("spectrum_systems.modules.runtime.replay_engine._new_id", lambda: "fixed-replay-id-2")
 
-    execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
+    with pytest.raises(ReplayEngineError, match="persist_result=True is not allowed"):
+        execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
     replay_path = tmp_path / "replays" / "fixed-replay-id-2.json"
-    assert replay_path.exists()
+    assert not replay_path.exists()
+
+
+def test_execute_replay_analysis_mutation_disabled(tmp_path: Path) -> None:
+    trace_id = "trace-exec-analysis-disabled-001"
+    persist_trace(
+        {
+            "trace_id": trace_id,
+            "root_span_id": "span-1",
+            "spans": [{
+                "span_id": "span-1",
+                "trace_id": trace_id,
+                "parent_span_id": None,
+                "name": "runtime",
+                "status": "ok",
+                "start_time": "2026-03-23T00:00:00+00:00",
+                "end_time": "2026-03-23T00:00:01+00:00",
+                "events": [],
+            }],
+            "artifacts": [],
+            "start_time": "2026-03-23T00:00:00+00:00",
+            "end_time": "2026-03-23T00:00:01+00:00",
+            "context": {},
+            "schema_version": "1.0.0",
+        },
+        base_dir=tmp_path / "traces",
+    )
+    with pytest.raises(ReplayEngineError, match="run_decision_analysis=True is not supported"):
+        execute_replay(trace_id, base_dir=tmp_path / "traces", run_decision_analysis=True)
+
+
+def test_execute_replay_can_hard_fail_prerequisites() -> None:
+    with pytest.raises(ReplayPrerequisiteError, match="prerequisites not met"):
+        execute_replay(
+            "missing-trace-for-hard-fail",
+            base_dir=Path("/tmp/nonexistent-traces-dir"),
+            require_prerequisites=True,
+        )
 
 
 def test_runtime_replay_observability_parity(tmp_path: Path) -> None:

@@ -295,6 +295,7 @@ def execute_replay(
     context: Optional[Dict[str, Any]] = None,
     persist_result: bool = False,
     run_decision_analysis: bool = False,
+    require_prerequisites: bool = False,
 ) -> Dict[str, Any]:
     """Execute a replay of the trace identified by *trace_id*.
 
@@ -312,21 +313,20 @@ def execute_replay(
     context:
         Optional caller-supplied replay context metadata.
     persist_result:
-        If ``True``, persist the replay result trace via ``trace_store``.
+        Legacy execute_replay payloads are not canonical replay_result artifacts.
+        Persistence is therefore fail-closed and this flag is not supported.
     run_decision_analysis:
-        If ``True``, invoke the BQ Replay Decision Integrity Engine after the
-        replay completes and attach the result under the
-        ``decision_analysis`` key.  Decision analysis failures are recorded
-        but do not cause this function to raise — the replay result is still
-        returned.
+        Legacy execute_replay payloads are not extended with governed analysis.
+        Analysis must be run via ``run_replay_decision_analysis``.
+    require_prerequisites:
+        If ``True``, prerequisite failures raise ``ReplayPrerequisiteError``
+        instead of returning a blocked legacy replay payload.
 
     Returns
     -------
     dict
-        A fully validated ``replay_result`` artifact conforming to
-        ``replay_result.schema.json``.  When ``run_decision_analysis`` is
-        ``True`` an additional ``decision_analysis`` key is present containing
-        the governed analysis artifact (or ``None`` on failure).
+        A legacy-shaped replay payload validated against the legacy replay
+        compatibility schema.
 
     Raises
     ------
@@ -335,6 +335,17 @@ def execute_replay(
     ReplayEngineError
         If the replay result fails schema validation.
     """
+    if persist_result:
+        raise ReplayEngineError(
+            "execute_replay: persist_result=True is not allowed for legacy replay payloads; "
+            "use canonical run_replay persistence paths"
+        )
+    if run_decision_analysis:
+        raise ReplayEngineError(
+            "execute_replay: run_decision_analysis=True is not supported; "
+            "run replay_decision_engine.run_replay_decision_analysis(...) separately"
+        )
+
     replay_id = _new_id()
     replayed_at = _now_iso()
 
@@ -343,6 +354,11 @@ def execute_replay(
     prerequisites_valid = len(prerequisite_errors) == 0
 
     if not prerequisites_valid:
+        if require_prerequisites:
+            raise ReplayPrerequisiteError(
+                f"execute_replay: prerequisites not met for trace '{trace_id}': "
+                + "; ".join(prerequisite_errors)
+            )
         result = _build_blocked_result(
             replay_id=replay_id,
             trace_id=trace_id,
@@ -394,25 +410,6 @@ def execute_replay(
         raise ReplayEngineError(
             f"execute_replay: result failed schema validation: " + "; ".join(errors)
         )
-
-    if persist_result:
-        _persist_replay_result_immutable(result, base_dir=base_dir)
-
-    if run_decision_analysis:
-        # Import lazily to avoid a circular import at module load time.
-        from spectrum_systems.modules.runtime.replay_decision_engine import (  # noqa: PLC0415
-            ReplayDecisionError,
-            run_replay_decision_analysis,
-        )
-        try:
-            analysis = run_replay_decision_analysis(
-                trace_id,
-                base_dir=base_dir,
-                replay_context=context,
-            )
-            result["decision_analysis"] = analysis
-        except ReplayDecisionError:
-            result["decision_analysis"] = None
 
     return result
 
