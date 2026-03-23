@@ -35,7 +35,7 @@
     "original_decision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["decision_status", "decision_reason_code"],
+      "required": ["decision_status", "decision_reason_code", "policy_id", "policy_version"],
       "description": "Summary of the SLO enforcement decision from the original execution.",
       "properties": {
         "decision_status": {
@@ -52,6 +52,18 @@
           "type": ["string", "null"],
           "description": "Policy profile used in the original enforcement decision."
         },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\(unknown\\)$).+",
+          "description": "Immutable policy identifier used in the original enforcement decision."
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\(unknown\\)$).+",
+          "description": "Immutable policy version/hash used in the original enforcement decision."
+        },
         "recommended_action": {
           "type": ["string", "null"],
           "description": "Recommended action from the original enforcement decision."
@@ -65,7 +77,7 @@
     "replay_decision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["decision_status", "decision_reason_code"],
+      "required": ["decision_status", "decision_reason_code", "policy_id", "policy_version"],
       "description": "Summary of the SLO enforcement decision recomputed from the replay.",
       "properties": {
         "decision_status": {
@@ -81,6 +93,18 @@
         "enforcement_policy": {
           "type": ["string", "null"],
           "description": "Policy profile used in the replayed enforcement decision."
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\(unknown\\)$).+",
+          "description": "Immutable policy identifier used in the replayed enforcement decision."
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\(unknown\\)$).+",
+          "description": "Immutable policy version/hash used in the replayed enforcement decision."
         },
         "recommended_action": {
           "type": ["string", "null"],

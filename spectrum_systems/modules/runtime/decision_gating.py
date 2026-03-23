@@ -195,43 +195,21 @@ KNOWN_RECOMMENDED_ACTIONS: frozenset = frozenset({
 })
 
 # ---------------------------------------------------------------------------
-# Built-in fallback stage postures (used if config file is unavailable)
-# ---------------------------------------------------------------------------
-
-_FALLBACK_STAGE_POSTURES: Dict[str, Dict[str, bool]] = {
-    STAGE_OBSERVE:    {"warnings_allowed": True,  "decision_bearing": False},
-    STAGE_INTERPRET:  {"warnings_allowed": True,  "decision_bearing": False},
-    STAGE_RECOMMEND:  {"warnings_allowed": False, "decision_bearing": True},
-    STAGE_SYNTHESIS:  {"warnings_allowed": False, "decision_bearing": True},
-    STAGE_EXPORT:     {"warnings_allowed": False, "decision_bearing": True},
-}
-
-# ---------------------------------------------------------------------------
 # Gating rules cache (loaded once from the JSON config)
 # ---------------------------------------------------------------------------
 
 _GATING_RULES_CACHE: Optional[Dict[str, Any]] = None
-_GATING_CONFIG_FALLBACK_USED: bool = False
 
 
 def _load_gating_rules() -> Dict[str, Any]:
     """Load and cache gating rules from the governed JSON config file.
-
-    Falls back to built-in posture map on any load/validation error so the
-    system never fails to gate.  Sets :data:`_GATING_CONFIG_FALLBACK_USED` to
-    ``True`` when the fallback is used (BN.4 I.2: fallback visibility).
     """
-    global _GATING_RULES_CACHE, _GATING_CONFIG_FALLBACK_USED
+    global _GATING_RULES_CACHE
     if _GATING_RULES_CACHE is not None:
         return _GATING_RULES_CACHE
-
-    try:
-        rules_data = json.loads(_GATING_RULES_PATH.read_text(encoding="utf-8"))
-        _GATING_RULES_CACHE = rules_data
-        return _GATING_RULES_CACHE
-    except Exception:  # noqa: BLE001
-        _GATING_CONFIG_FALLBACK_USED = True
-        return {"stages": _FALLBACK_STAGE_POSTURES}
+    rules_data = json.loads(_GATING_RULES_PATH.read_text(encoding="utf-8"))
+    _GATING_RULES_CACHE = rules_data
+    return _GATING_RULES_CACHE
 
 
 # ---------------------------------------------------------------------------
@@ -305,6 +283,8 @@ def validate_enforcement_decision_for_gating(
         "decision_id",
         "artifact_id",
         "enforcement_policy",
+        "policy_id",
+        "policy_version",
         "decision_status",
         "decision_reason_code",
     ]
@@ -324,6 +304,15 @@ def validate_enforcement_decision_for_gating(
             f"Expected one of: {sorted(KNOWN_ENFORCEMENT_STATUSES)}"
         )
         return False, REASON_UNKNOWN_ENFORCEMENT_STATUS, errors
+
+    policy_id = norm.get("policy_id")
+    policy_version = norm.get("policy_version")
+    if not isinstance(policy_id, str) or not policy_id.strip():
+        errors.append("Missing immutable enforcement policy_id.")
+        return False, REASON_MALFORMED_ENFORCEMENT_DECISION, errors
+    if not isinstance(policy_version, str) or not policy_version.strip():
+        errors.append("Missing immutable enforcement policy_version.")
+        return False, REASON_MALFORMED_ENFORCEMENT_DECISION, errors
 
     # Inconsistency detection: allow with errors populated, or fail with no errors/warnings
     enforcement_errors = norm.get("errors") or []
@@ -523,6 +512,8 @@ def build_slo_gating_decision(
     artifact_id: str,
     stage: Optional[str],
     enforcement_policy: str,
+    policy_id: str,
+    policy_version: str,
     enforcement_decision_status: str,
     gating_outcome: str,
     gating_reason_code: str,
@@ -548,6 +539,8 @@ def build_slo_gating_decision(
         "artifact_id": artifact_id if artifact_id else "(unknown)",
         "stage": stage if stage else "(unknown)",
         "enforcement_policy": enforcement_policy,
+        "policy_id": policy_id,
+        "policy_version": policy_version,
         "enforcement_decision_status": enforcement_decision_status,
         "gating_outcome": gating_outcome,
         "gating_reason_code": gating_reason_code,
@@ -623,32 +616,7 @@ def run_slo_gating(
         ``gating_outcome``   – shortcut to ``gating_decision["gating_outcome"]``
         ``schema_errors``    – list of schema validation errors (usually empty)
     """
-    try:
-        return _run_slo_gating_inner(raw_input, stage=stage, evaluated_at=evaluated_at)
-    except Exception as exc:  # noqa: BLE001
-        # Crash-proof: return a governed failure artifact
-        fallback = build_slo_gating_decision(
-            source_decision_id="(unknown)",
-            artifact_id="(unknown)",
-            stage=stage or "(unknown)",
-            enforcement_policy="(unknown)",
-            enforcement_decision_status="(unknown)",
-            gating_outcome=OUTCOME_HALT,
-            gating_reason_code=REASON_MALFORMED_ENFORCEMENT_DECISION,
-            ti_value=None,
-            lineage_mode=None,
-            lineage_defaulted=None,
-            lineage_valid=None,
-            warnings=[],
-            errors=[f"Unhandled exception during gating: {exc}"],
-            recommended_action=ACTION_HALT_AND_ESCALATE,
-            evaluated_at=evaluated_at,
-        )
-        return {
-            "gating_decision": fallback,
-            "gating_outcome": OUTCOME_HALT,
-            "schema_errors": [],
-        }
+    return _run_slo_gating_inner(raw_input, stage=stage, evaluated_at=evaluated_at)
 
 
 def _run_slo_gating_inner(
@@ -675,13 +643,6 @@ def _run_slo_gating_inner(
     # Collect accumulated warnings / errors
     acc_warnings: List[str] = list(norm.get("warnings") or [])
     acc_errors: List[str] = list(validation_errors)
-
-    # Add a warning if the gating config fallback was used (BN.4 I.2 fix)
-    if _GATING_CONFIG_FALLBACK_USED:
-        acc_warnings.append(
-            "Gating rules config could not be loaded; built-in fallback postures are in use. "
-            f"Verify that {_GATING_RULES_PATH} is present and valid."
-        )
 
     # Add a warning if stage is unknown (but don't block on it)
     if not posture["stage_known"] and effective_stage is not None:
@@ -720,6 +681,8 @@ def _run_slo_gating_inner(
         artifact_id=norm.get("artifact_id") or "(unknown)",
         stage=effective_stage,
         enforcement_policy=norm.get("enforcement_policy") or "(unknown)",
+        policy_id=norm.get("policy_id") or "",
+        policy_version=norm.get("policy_version") or "",
         enforcement_decision_status=norm.get("decision_status") or "(unknown)",
         gating_outcome=gating_outcome,
         gating_reason_code=gating_reason_code,

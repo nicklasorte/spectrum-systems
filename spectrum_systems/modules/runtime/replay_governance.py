@@ -126,16 +126,6 @@ REPLAY_VALIDATION_MODE_SHARED: str = "shared"
 _DEFAULT_SLI_REBUILD_THRESHOLD: float = 0.5
 _DEFAULT_SLI_REVIEW_THRESHOLD: float = 0.8
 
-# Default policy
-_DEFAULT_POLICY: Dict[str, Any] = {
-    "policy_name": "default_replay_governance",
-    "policy_version": "1.0.0",
-    "drift_action": SYSTEM_RESPONSE_QUARANTINE,
-    "indeterminate_action": SYSTEM_RESPONSE_REQUIRE_REVIEW,
-    "missing_replay_action": SYSTEM_RESPONSE_ALLOW,
-    "require_replay": False,
-}
-
 # Schema path
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
@@ -590,9 +580,10 @@ def build_replay_governance_decision(
     # Resolve and validate policy
     effective_policy: Dict[str, Any]
     if governance_policy is None:
-        effective_policy = dict(_DEFAULT_POLICY)
-    else:
-        effective_policy = _validate_governance_policy(governance_policy)
+        raise ReplayGovernancePolicyError(
+            "governance_policy is required; implicit default policy is disallowed."
+        )
+    effective_policy = _validate_governance_policy(governance_policy)
 
     # Determine whether replay is required from any source
     replay_is_required: bool = require_replay or bool(effective_policy.get("require_replay", False))

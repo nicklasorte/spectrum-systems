@@ -143,8 +143,8 @@ from spectrum_systems.modules.runtime.decision_gating import (  # noqa: E402
     run_slo_gating,
 )
 from spectrum_systems.modules.runtime.policy_registry import (  # noqa: E402
-    DEFAULT_POLICY,
     KNOWN_STAGES,
+    get_policy_profile,
     resolve_effective_slo_policy,
 )
 from spectrum_systems.modules.runtime.control_signals import (  # noqa: E402
@@ -540,6 +540,8 @@ def build_control_chain_decision(
     enforcement_decision_id: str,
     gating_decision_id: str,
     enforcement_policy: str,
+    policy_id: str,
+    policy_version: str,
     enforcement_decision_status: str,
     gating_outcome: str,
     continuation_allowed: bool,
@@ -571,6 +573,8 @@ def build_control_chain_decision(
         "enforcement_decision_id": enforcement_decision_id,
         "gating_decision_id": gating_decision_id,
         "enforcement_policy": enforcement_policy,
+        "policy_id": policy_id,
+        "policy_version": policy_version,
         "enforcement_decision_status": enforcement_decision_status,
         "gating_outcome": gating_outcome,
         "continuation_allowed": bool(continuation_allowed),
@@ -755,9 +759,18 @@ def _run_control_chain_inner(
     gating_result: Optional[Dict[str, Any]] = None
     gating_executed: bool = False
 
+    resolved_policy_id: Optional[str] = None
+    resolved_policy_version: Optional[str] = None
+
     if input_kind == INPUT_KIND_EVALUATION:
         # Must run enforcement then gating.
-        policy = policy_override or _resolve_policy_for_stage(stage)
+        if policy_override is not None:
+            raise ValueError(
+                "policy_override is not permitted on decision-grade control-chain execution; "
+                "immutable policy identity must come from registry stage binding."
+            )
+        resolved_policy_id, resolved_policy_version = _resolve_policy_for_stage(stage)
+        policy = resolved_policy_id
         try:
             # BK–BM: span for enforcement
             try:
@@ -798,6 +811,8 @@ def _run_control_chain_inner(
 
         # Accumulate any enforcement warnings
         enf_artifact = enforcement_result.get("enforcement_decision") or enforcement_result
+        enf_artifact["policy_id"] = resolved_policy_id
+        enf_artifact["policy_version"] = resolved_policy_version
         acc_warnings.extend(enf_artifact.get("warnings") or [])
         acc_errors.extend(enforcement_result.get("schema_errors") or [])
 
@@ -929,7 +944,9 @@ def _run_control_chain_inner(
     enforcement_decision_artifact: Dict[str, Any] = {}
     enforcement_decision_id_str: str = "(none)"
     enforcement_decision_status_str: str = "(unknown)"
-    enforcement_policy_str: str = "(unknown)"
+    enforcement_policy_str: str = ""
+    policy_id_str: str = ""
+    policy_version_str: str = ""
     ti_value: Any = None
     lineage_mode: Optional[str] = None
     lineage_defaulted: Optional[Any] = None
@@ -941,7 +958,9 @@ def _run_control_chain_inner(
         )
         enforcement_decision_id_str = enforcement_decision_artifact.get("decision_id") or "(unknown)"
         enforcement_decision_status_str = enforcement_decision_artifact.get("decision_status") or "(unknown)"
-        enforcement_policy_str = enforcement_decision_artifact.get("enforcement_policy") or "(unknown)"
+        enforcement_policy_str = enforcement_decision_artifact.get("enforcement_policy") or ""
+        policy_id_str = enforcement_decision_artifact.get("policy_id") or resolved_policy_id or ""
+        policy_version_str = enforcement_decision_artifact.get("policy_version") or resolved_policy_version or ""
         ti_value = enforcement_decision_artifact.get("traceability_integrity_sli")
         lineage_mode = enforcement_decision_artifact.get("lineage_validation_mode")
         lineage_defaulted = enforcement_decision_artifact.get("lineage_defaulted")
@@ -950,7 +969,9 @@ def _run_control_chain_inner(
         # Enforcement artifact is the input itself
         enforcement_decision_id_str = norm.get("decision_id") or "(unknown)"
         enforcement_decision_status_str = norm.get("decision_status") or "(unknown)"
-        enforcement_policy_str = norm.get("enforcement_policy") or "(unknown)"
+        enforcement_policy_str = norm.get("enforcement_policy") or ""
+        policy_id_str = norm.get("policy_id") or ""
+        policy_version_str = norm.get("policy_version") or ""
         ti_value = norm.get("traceability_integrity_sli")
         lineage_mode = norm.get("lineage_validation_mode")
         lineage_defaulted = norm.get("lineage_defaulted")
@@ -959,7 +980,9 @@ def _run_control_chain_inner(
         # Extract from gating artifact (pass-through)
         enforcement_decision_id_str = norm.get("source_decision_id") or "(unknown)"
         enforcement_decision_status_str = norm.get("enforcement_decision_status") or "(unknown)"
-        enforcement_policy_str = norm.get("enforcement_policy") or "(unknown)"
+        enforcement_policy_str = norm.get("enforcement_policy") or ""
+        policy_id_str = norm.get("policy_id") or ""
+        policy_version_str = norm.get("policy_version") or ""
         ti_value = norm.get("traceability_integrity_sli")
         lineage_mode = norm.get("lineage_validation_mode")
         lineage_defaulted = norm.get("lineage_defaulted")
@@ -1024,6 +1047,12 @@ def _run_control_chain_inner(
     # ------------------------------------------------------------------ #
     # 10. Build artifact
     # ------------------------------------------------------------------ #
+    if not policy_id_str or not policy_version_str:
+        raise ValueError(
+            "Policy identity missing in control-chain path. "
+            "policy_id and policy_version are required for decision artifacts."
+        )
+
     control_chain_decision = build_control_chain_decision(
         artifact_id=artifact_id_str,
         stage=stage,
@@ -1031,6 +1060,8 @@ def _run_control_chain_inner(
         enforcement_decision_id=enforcement_decision_id_str,
         gating_decision_id=gating_decision_id_str,
         enforcement_policy=enforcement_policy_str,
+        policy_id=policy_id_str,
+        policy_version=policy_version_str,
         enforcement_decision_status=enforcement_decision_status_str,
         gating_outcome=gating_outcome_str,
         continuation_allowed=continuation_allowed,
@@ -1182,14 +1213,20 @@ def _run_control_chain_inner(
     return result
 
 
-def _resolve_policy_for_stage(stage: Optional[str]) -> str:
-    """Return the default policy for *stage*, or the global default."""
-    if stage is None:
-        return DEFAULT_POLICY
-    try:
-        return resolve_effective_slo_policy(stage=stage, policy_override=None)
-    except Exception:  # noqa: BLE001
-        return DEFAULT_POLICY
+def _resolve_policy_for_stage(stage: Optional[str]) -> Tuple[str, str]:
+    """Resolve policy identity for stage; fail closed when unresolved."""
+    effective_policy, _ = resolve_effective_slo_policy(
+        requested_policy=None,
+        stage=stage,
+    )
+    profile = get_policy_profile(effective_policy)
+    policy_id = profile.get("policy_id")
+    policy_version = profile.get("policy_version")
+    if not isinstance(policy_id, str) or not policy_id.strip():
+        raise ValueError("Resolved policy is missing immutable policy_id.")
+    if not isinstance(policy_version, str) or not policy_version.strip():
+        raise ValueError("Resolved policy is missing immutable policy_version.")
+    return policy_id, policy_version
 
 
 def _make_error_artifact(
@@ -1223,6 +1260,8 @@ def _make_error_artifact(
         enforcement_decision_id="(none)",
         gating_decision_id="(none)",
         enforcement_policy="(unknown)",
+        policy_id="policy_resolution_failed",
+        policy_version="unresolved",
         enforcement_decision_status="(unknown)",
         gating_outcome="(none)",
         continuation_allowed=False,

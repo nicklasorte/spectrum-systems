@@ -10,6 +10,8 @@
     "artifact_id",
     "stage",
     "enforcement_policy",
+    "policy_id",
+    "policy_version",
     "enforcement_decision_status",
     "gating_outcome",
     "gating_reason_code",
@@ -47,8 +49,21 @@
     },
     "enforcement_policy": {
       "type": "string",
-      "description": "Named enforcement policy profile that produced the source enforcement decision. '(unknown)' when the source decision was malformed.",
-      "minLength": 1
+      "description": "Named enforcement policy profile that produced the source enforcement decision.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
+    },
+    "policy_id": {
+      "type": "string",
+      "description": "Immutable policy identifier for the source enforcement decision.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Immutable policy version/hash for the source enforcement decision.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
     },
     "enforcement_decision_status": {
       "type": "string",

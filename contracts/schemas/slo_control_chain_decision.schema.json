@@ -12,6 +12,8 @@
     "enforcement_decision_id",
     "gating_decision_id",
     "enforcement_policy",
+    "policy_id",
+    "policy_version",
     "enforcement_decision_status",
     "gating_outcome",
     "continuation_allowed",
@@ -261,8 +263,21 @@
     },
     "enforcement_policy": {
       "type": "string",
-      "description": "Named enforcement policy profile used in this chain. '(unknown)' when indeterminate.",
-      "minLength": 1
+      "description": "Named enforcement policy profile used in this chain.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
+    },
+    "policy_id": {
+      "type": "string",
+      "description": "Immutable policy identifier propagated across enforcement, gating, and control-chain artifacts.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Immutable policy version/hash propagated across enforcement, gating, and control-chain artifacts.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
     },
     "enforcement_decision_status": {
       "type": "string",

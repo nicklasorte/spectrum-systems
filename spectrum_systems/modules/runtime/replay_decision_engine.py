@@ -102,6 +102,8 @@ DRIFT_NON_DETERMINISTIC: str = "NON_DETERMINISTIC_DRIFT"
 _DECISION_STATUS_FIELD: str = "decision_status"
 _REASON_CODE_FIELD: str = "decision_reason_code"
 _POLICY_FIELD: str = "enforcement_policy"
+_POLICY_ID_FIELD: str = "policy_id"
+_POLICY_VERSION_FIELD: str = "policy_version"
 _RECOMMENDED_ACTION_FIELD: str = "recommended_action"
 
 # SLO enforcement span names emitted by the trace engine
@@ -139,6 +141,15 @@ def _load_analysis_schema() -> Dict[str, Any]:
     return json.loads(_ANALYSIS_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
+def _require_policy_identity(decision: Dict[str, Any], *, label: str) -> None:
+    policy_id = decision.get("policy_id")
+    policy_version = decision.get("policy_version")
+    if not isinstance(policy_id, str) or not policy_id.strip():
+        raise ReplayDecisionError(f"{label} missing policy_id; replay comparison is fail-closed.")
+    if not isinstance(policy_version, str) or not policy_version.strip():
+        raise ReplayDecisionError(f"{label} missing policy_version; replay comparison is fail-closed.")
+
+
 def _extract_enforcement_event(span: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Return the first enforcement_decision event payload from a span, or None."""
     for event in span.get("events") or []:
@@ -174,6 +185,8 @@ def _decision_summary_from_span(span: Dict[str, Any]) -> Optional[Dict[str, Any]
         "decision_status": decision_status,
         "decision_reason_code": event_data.get("reason") or "unknown",
         "enforcement_policy": event_data.get("enforcement_policy", None),
+        "policy_id": event_data.get("policy_id", None),
+        "policy_version": event_data.get("policy_version", None),
         "recommended_action": event_data.get("recommended_action", None),
         "traceability_integrity_sli": event_data.get("traceability_integrity_sli", None),
     }
@@ -255,6 +268,8 @@ def load_original_decision(
                     "decision_status": status,
                     "decision_reason_code": reason,
                     "enforcement_policy": artifact.get("enforcement_policy"),
+                    "policy_id": artifact.get("policy_id"),
+                    "policy_version": artifact.get("policy_version"),
                     "recommended_action": artifact.get("recommended_action"),
                     "traceability_integrity_sli": artifact.get("traceability_integrity_sli"),
                 }
@@ -349,6 +364,8 @@ def recompute_decision_from_replay(
             "decision_status": decision_status,
             "decision_reason_code": "replayed_from_step",
             "enforcement_policy": None,
+            "policy_id": None,
+            "policy_version": None,
             "recommended_action": None,
             "traceability_integrity_sli": None,
         }
@@ -380,6 +397,8 @@ def recompute_decision_from_replay(
         "decision_status": decision_status,
         "decision_reason_code": "derived_from_replay_status",
         "enforcement_policy": None,
+        "policy_id": None,
+        "policy_version": None,
         "recommended_action": None,
         "traceability_integrity_sli": None,
     }
@@ -437,14 +456,18 @@ def compare_decisions(
         )
 
     # --- Secondary fields: only compared when both carry meaningful values ---
-    secondary_fields = [_REASON_CODE_FIELD, _POLICY_FIELD, _RECOMMENDED_ACTION_FIELD]
+    secondary_fields = [
+        _REASON_CODE_FIELD,
+        _POLICY_FIELD,
+        _POLICY_ID_FIELD,
+        _POLICY_VERSION_FIELD,
+        _RECOMMENDED_ACTION_FIELD,
+    ]
     for field in secondary_fields:
         orig_val = original.get(field)
         replay_val = replay.get(field)
 
-        # Skip when either side is None or when replay carries a synthetic code
-        if orig_val is None or replay_val is None:
-            continue
+        # Skip replay synthetic reason codes only; policy linkage must always compare.
         if field == _REASON_CODE_FIELD and replay_val in _synthetic:
             continue
 
@@ -509,7 +532,12 @@ def classify_drift(
         return DRIFT_LOGIC
 
     # If only configuration fields (policy or action) differ → environment/configuration changed
-    config_only_drift = diffed_fields <= {_POLICY_FIELD, _RECOMMENDED_ACTION_FIELD}
+    config_only_drift = diffed_fields <= {
+        _POLICY_FIELD,
+        _POLICY_ID_FIELD,
+        _POLICY_VERSION_FIELD,
+        _RECOMMENDED_ACTION_FIELD,
+    }
     if config_only_drift:
         return DRIFT_ENVIRONMENT
 
@@ -703,6 +731,7 @@ def run_replay_decision_analysis(
 
     # Step 1: Load original decision (fail closed if missing)
     original_decision = load_original_decision(trace_id, base_dir=base_dir)
+    _require_policy_identity(original_decision, label="original_decision")
     logger.info(
         "run_replay_decision_analysis: original decision loaded trace_id=%s status=%s",
         trace_id,
@@ -743,6 +772,7 @@ def run_replay_decision_analysis(
     indeterminate_cause: Optional[str] = None
     try:
         replay_decision = recompute_decision_from_replay(replay_result)
+        _require_policy_identity(replay_decision, label="replay_decision")
         logger.info(
             "run_replay_decision_analysis: replay decision derived trace_id=%s status=%s",
             trace_id,
@@ -761,6 +791,8 @@ def run_replay_decision_analysis(
             "decision_status": "indeterminate",
             "decision_reason_code": "replay_failed",
             "enforcement_policy": None,
+            "policy_id": original_decision["policy_id"],
+            "policy_version": original_decision["policy_version"],
             "recommended_action": None,
             "traceability_integrity_sli": None,
         }

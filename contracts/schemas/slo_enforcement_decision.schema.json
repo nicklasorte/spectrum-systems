@@ -7,6 +7,8 @@
   "required": [
     "artifact_id",
     "enforcement_policy",
+    "policy_id",
+    "policy_version",
     "decision_status",
     "decision_reason_code",
     "traceability_integrity_sli",
@@ -31,6 +33,18 @@
       "type": "string",
       "description": "Named policy profile used to derive this decision.",
       "enum": ["permissive", "decision_grade", "exploratory", "policy_resolution_failed"]
+    },
+    "policy_id": {
+      "type": "string",
+      "description": "Immutable policy identifier used for this enforcement decision.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Immutable policy version/hash used for this enforcement decision.",
+      "minLength": 1,
+      "pattern": "^(?!\\(unknown\\)$).+"
     },
     "enforcement_scope": {
       "type": "string",
