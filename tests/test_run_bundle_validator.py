@@ -5,7 +5,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
+import pytest
+
+import spectrum_systems.modules.runtime.run_bundle_validator as run_bundle_validator
+from spectrum_systems.modules.runtime.run_bundle_validator import (
+    build_artifact_validation_decision,
+    validate_and_emit_decision,
+)
 
 
 def _write_manifest(bundle_dir: Path, manifest: dict) -> None:
@@ -109,3 +115,63 @@ def test_cli_exit_codes(tmp_path: Path) -> None:
     (rebuild_bundle / "outputs").rmdir()
     rebuild_proc = subprocess.run([sys.executable, str(script), "--bundle", str(rebuild_bundle)], check=False)
     assert rebuild_proc.returncode == 1
+
+
+def test_fails_closed_when_trace_unavailable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bundle = _build_bundle(tmp_path, _base_manifest())
+
+    def _fail_trace(_run_id: str) -> str:
+        raise RuntimeError("trace runtime unavailable; fail-closed")
+
+    monkeypatch.setattr(run_bundle_validator, "_resolve_trace_id", _fail_trace)
+
+    with pytest.raises(RuntimeError, match="trace runtime unavailable"):
+        validate_and_emit_decision(bundle)
+
+
+def test_no_uuid_generated_for_trace(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bundle = _build_bundle(tmp_path, _base_manifest())
+
+    def _fail_trace(_run_id: str) -> str:
+        raise RuntimeError("trace resolution failed; fail-closed")
+
+    monkeypatch.setattr(run_bundle_validator, "_resolve_trace_id", _fail_trace)
+    with pytest.raises(RuntimeError, match="trace resolution failed"):
+        validate_and_emit_decision(bundle)
+
+
+def test_decision_id_is_deterministic_for_same_inputs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bundle = _build_bundle(tmp_path, _base_manifest())
+    report = run_bundle_validator.validate_run_bundle(bundle)
+
+    monkeypatch.setattr(run_bundle_validator, "_resolve_trace_id", lambda _run_id: "trace-fixed")
+    monkeypatch.setattr(run_bundle_validator, "_now_iso", lambda: "2026-03-23T00:00:00+00:00")
+
+    first = build_artifact_validation_decision(report)
+    second = build_artifact_validation_decision(report)
+
+    assert first["decision_id"] == second["decision_id"]
+
+
+def test_timestamp_does_not_affect_decision_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bundle = _build_bundle(tmp_path, _base_manifest())
+    report = run_bundle_validator.validate_run_bundle(bundle)
+
+    monkeypatch.setattr(run_bundle_validator, "_resolve_trace_id", lambda _run_id: "trace-fixed")
+
+    monkeypatch.setattr(run_bundle_validator, "_now_iso", lambda: "2026-03-23T00:00:00+00:00")
+    first = build_artifact_validation_decision(report)
+
+    monkeypatch.setattr(run_bundle_validator, "_now_iso", lambda: "2026-03-23T12:34:56+00:00")
+    second = build_artifact_validation_decision(report)
+
+    assert first["decision_id"] == second["decision_id"]
+    assert first["timestamp"] != second["timestamp"]
+
+
+def test_missing_trace_id_fails_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bundle = _build_bundle(tmp_path, _base_manifest())
+
+    monkeypatch.setattr(run_bundle_validator, "_resolve_trace_id", lambda _run_id: "")
+    with pytest.raises(ValueError, match="trace_id must be a non-empty string"):
+        validate_and_emit_decision(bundle)
