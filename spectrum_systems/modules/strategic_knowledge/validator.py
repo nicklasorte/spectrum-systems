@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import uuid
 from typing import Any
 
 VALIDATOR_VERSION = "1.0.0"
@@ -83,16 +82,22 @@ def _coerce_trace_value(value: Any) -> str | None:
     return None
 
 
+REQUIRED_TRACE_CONTEXT_FIELDS = ("trace_id", "span_id", "parent_span_id", "run_id")
+
+
 def _resolve_trace_context(context_payload: dict[str, Any]) -> tuple[str, str]:
-    trace_id = _coerce_trace_value(context_payload.get("trace_id"))
-    span_id = _coerce_trace_value(context_payload.get("span_id"))
-
-    if trace_id is None:
-        trace_id = str(uuid.uuid4())
-    if span_id is None:
-        span_id = str(uuid.uuid4())
-
-    return trace_id, span_id
+    missing = [
+        field_name
+        for field_name in REQUIRED_TRACE_CONTEXT_FIELDS
+        if _coerce_trace_value(context_payload.get(field_name)) is None
+    ]
+    if missing:
+        raise ValueError(
+            "strategic knowledge validation requires explicit trace context: "
+            + ", ".join(REQUIRED_TRACE_CONTEXT_FIELDS)
+            + f" (missing: {', '.join(missing)})"
+        )
+    return str(context_payload["trace_id"]).strip(), str(context_payload["span_id"]).strip()
 
 
 def _validate_schema(input_artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:

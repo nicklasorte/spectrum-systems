@@ -26,6 +26,20 @@ EXIT_CODES = {
 }
 
 
+def _emit_json(payload: dict[str, object]) -> None:
+    print(json.dumps(payload, indent=2))
+
+
+def _missing_trace_context(args: argparse.Namespace) -> list[str]:
+    required = ("trace_id", "span_id", "parent_span_id", "run_id")
+    missing: list[str] = []
+    for field_name in required:
+        value = getattr(args, field_name)
+        if not isinstance(value, str) or not value.strip():
+            missing.append(field_name)
+    return missing
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact-path", required=True, type=Path, help="Path to candidate strategic artifact JSON.")
@@ -35,9 +49,34 @@ def main() -> int:
         type=Path,
         help="Data lake root containing strategic_knowledge metadata/lineage directories.",
     )
-    parser.add_argument("--trace-id", type=str, default=None, help="Optional trace identifier override.")
-    parser.add_argument("--span-id", type=str, default=None, help="Optional span identifier override.")
+    parser.add_argument("--trace-id", type=str, default=None, help="Required trace identifier for governed validation.")
+    parser.add_argument("--span-id", type=str, default=None, help="Required span identifier for governed validation.")
+    parser.add_argument(
+        "--parent-span-id",
+        type=str,
+        default=None,
+        help="Required parent span identifier for governed validation.",
+    )
+    parser.add_argument("--run-id", type=str, default=None, help="Required run identifier for governed validation.")
     args = parser.parse_args()
+
+    missing_trace_fields = _missing_trace_context(args)
+    if missing_trace_fields:
+        _emit_json(
+            {
+                "status": "error",
+                "system_response": "block",
+                "error": {
+                    "code": "MISSING_TRACE_CONTEXT",
+                    "message": (
+                        "governed strategic-knowledge validation requires explicit trace context "
+                        "(trace_id, span_id, parent_span_id, run_id)"
+                    ),
+                    "missing_fields": missing_trace_fields,
+                },
+            }
+        )
+        return 2
 
     try:
         artifact = load_artifact_payload(args.artifact_path)
@@ -50,15 +89,38 @@ def main() -> int:
                 "artifact_registry": artifact_registry,
                 "trace_id": args.trace_id,
                 "span_id": args.span_id,
+                "parent_span_id": args.parent_span_id,
+                "run_id": args.run_id,
             },
         )
     except FileNotFoundError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
+        _emit_json(
+            {
+                "status": "error",
+                "system_response": "block",
+                "error": {"code": "FILE_NOT_FOUND", "message": str(exc)},
+            }
+        )
         return 2
     except json.JSONDecodeError as exc:
-        print(f"ERROR: artifact JSON parse failed: {exc}", file=sys.stderr)
+        _emit_json(
+            {
+                "status": "error",
+                "system_response": "block",
+                "error": {"code": "ARTIFACT_JSON_PARSE_FAILED", "message": str(exc)},
+            }
+        )
         return 2
-    print(json.dumps(decision, indent=2))
+    except ValueError as exc:
+        _emit_json(
+            {
+                "status": "error",
+                "system_response": "block",
+                "error": {"code": "VALIDATION_CONTEXT_ERROR", "message": str(exc)},
+            }
+        )
+        return 2
+    _emit_json(decision)
     return EXIT_CODES[decision["system_response"]]
 
 

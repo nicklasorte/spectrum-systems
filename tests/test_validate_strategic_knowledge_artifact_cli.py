@@ -58,8 +58,10 @@ def _run_cli(
     tmp_path: Path,
     artifact: dict,
     *,
-    trace_id: str | None = None,
-    span_id: str | None = None,
+    trace_id: str | None = "trace-cli-default-001",
+    span_id: str | None = "span-cli-default-001",
+    parent_span_id: str | None = "span-cli-parent-001",
+    run_id: str | None = "run-cli-governed-001",
 ) -> subprocess.CompletedProcess[str]:
     artifact_path = tmp_path / "artifact.json"
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
@@ -75,6 +77,10 @@ def _run_cli(
         args.extend(["--trace-id", trace_id])
     if span_id is not None:
         args.extend(["--span-id", span_id])
+    if parent_span_id is not None:
+        args.extend(["--parent-span-id", parent_span_id])
+    if run_id is not None:
+        args.extend(["--run-id", run_id])
     return subprocess.run(
         args,
         cwd=REPO_ROOT,
@@ -84,14 +90,19 @@ def _run_cli(
     )
 
 
+def _stdout_payload(result: subprocess.CompletedProcess[str]) -> dict:
+    assert result.stdout.strip(), "expected JSON payload on stdout"
+    return json.loads(result.stdout)
+
+
 def test_cli_allow_returns_success_exit(tmp_path: Path) -> None:
     _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
     result = _run_cli(tmp_path, _artifact_payload())
-    payload = json.loads(result.stdout)
+    payload = _stdout_payload(result)
     assert result.returncode == 0
     assert payload["system_response"] == "allow"
-    assert payload["trace_id"]
-    assert payload["span_id"]
+    assert payload["trace_id"] == "trace-cli-default-001"
+    assert payload["span_id"] == "span-cli-default-001"
 
 
 def test_cli_require_review_is_non_blocking(tmp_path: Path) -> None:
@@ -100,7 +111,7 @@ def test_cli_require_review_is_non_blocking(tmp_path: Path) -> None:
     artifact["evidence_anchors"] = [{"anchor_type": "pdf", "page_number": 0}]
     result = _run_cli(tmp_path, artifact)
     assert result.returncode == 0
-    assert json.loads(result.stdout)["system_response"] == "require_review"
+    assert _stdout_payload(result)["system_response"] == "require_review"
 
 
 def test_cli_require_rebuild_returns_nonzero_exit(tmp_path: Path) -> None:
@@ -109,7 +120,7 @@ def test_cli_require_rebuild_returns_nonzero_exit(tmp_path: Path) -> None:
     artifact["provenance"] = {}
     result = _run_cli(tmp_path, artifact)
     assert result.returncode != 0
-    assert json.loads(result.stdout)["system_response"] == "require_rebuild"
+    assert _stdout_payload(result)["system_response"] == "require_rebuild"
 
 
 def test_cli_block_returns_nonzero_exit(tmp_path: Path) -> None:
@@ -118,7 +129,7 @@ def test_cli_block_returns_nonzero_exit(tmp_path: Path) -> None:
     artifact["source"]["source_id"] = "SRC-UNKNOWN"
     result = _run_cli(tmp_path, artifact)
     assert result.returncode != 0
-    assert json.loads(result.stdout)["system_response"] == "block"
+    assert _stdout_payload(result)["system_response"] == "block"
 
 
 def test_cli_honors_explicit_trace_context(tmp_path: Path) -> None:
@@ -128,8 +139,49 @@ def test_cli_honors_explicit_trace_context(tmp_path: Path) -> None:
         _artifact_payload(),
         trace_id="trace-cli-explicit-001",
         span_id="span-cli-explicit-001",
+        parent_span_id="span-cli-explicit-parent-001",
+        run_id="run-cli-explicit-001",
     )
-    payload = json.loads(result.stdout)
+    payload = _stdout_payload(result)
     assert result.returncode == 0
     assert payload["trace_id"] == "trace-cli-explicit-001"
     assert payload["span_id"] == "span-cli-explicit-001"
+
+
+def test_cli_missing_trace_context_fails_closed(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    result = _run_cli(
+        tmp_path,
+        _artifact_payload(),
+        trace_id=None,
+        span_id=None,
+        parent_span_id=None,
+        run_id=None,
+    )
+    payload = _stdout_payload(result)
+    assert result.returncode != 0
+    assert payload["system_response"] == "block"
+    assert payload["error"]["code"] == "MISSING_TRACE_CONTEXT"
+    assert payload["error"]["missing_fields"] == ["trace_id", "span_id", "parent_span_id", "run_id"]
+
+
+def test_cli_machine_readable_output_contract_is_consistent(tmp_path: Path) -> None:
+    _write_catalog(tmp_path, "SRC-BOOK-CLI-001")
+    allow_result = _run_cli(tmp_path, _artifact_payload())
+    block_result = _run_cli(
+        tmp_path,
+        _artifact_payload(),
+        trace_id=None,
+        span_id=None,
+        parent_span_id=None,
+        run_id=None,
+    )
+
+    allow_payload = _stdout_payload(allow_result)
+    block_payload = _stdout_payload(block_result)
+
+    assert allow_result.stderr == ""
+    assert block_result.stderr == ""
+    assert allow_payload["system_response"] == "allow"
+    assert block_payload["system_response"] == "block"
+    assert block_payload["error"]["code"] == "MISSING_TRACE_CONTEXT"
