@@ -85,6 +85,28 @@ def _validate(artifact: Dict[str, Any]) -> List[str]:
     return [e.message for e in v.iter_errors(artifact)]
 
 
+def _explicit_governance_policy(
+    *,
+    drift_action: str = SYSTEM_RESPONSE_QUARANTINE,
+    indeterminate_action: str = SYSTEM_RESPONSE_REQUIRE_REVIEW,
+    missing_replay_action: str = SYSTEM_RESPONSE_ALLOW,
+    require_replay: bool = False,
+) -> Dict[str, Any]:
+    return {
+        "policy_name": "bas_replay_governance",
+        "policy_version": "1.0.0",
+        "drift_action": drift_action,
+        "indeterminate_action": indeterminate_action,
+        "missing_replay_action": missing_replay_action,
+        "require_replay": require_replay,
+    }
+
+
+def _build_replay_governance_decision(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    kwargs.setdefault("governance_policy", _explicit_governance_policy())
+    return build_replay_governance_decision(*args, **kwargs)
+
+
 def _make_analysis(
     *,
     status: str = REPLAY_STATUS_CONSISTENT,
@@ -123,7 +145,7 @@ class TestMissingTraceId:
     def test_missing_trace_id_fails_schema_when_replay_consumed(self):
         """BAA R2: trace_id REQUIRED when replay_analysis_artifact_id is non-null."""
         analysis = _make_analysis()
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         # The builder auto-extracts trace_id from analysis — confirm it's present
         assert "trace_id" in result, "Builder should auto-extract trace_id from analysis"
         assert result["trace_id"] == "trace-001"
@@ -139,7 +161,7 @@ class TestMissingTraceId:
     def test_trace_id_present_and_valid_passes_schema(self):
         """When trace_id is provided or auto-extracted, schema passes."""
         analysis = _make_analysis(trace_id="trace-xyz")
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["trace_id"] == "trace-xyz"
         errors = _validate(result)
         assert errors == [], errors
@@ -147,14 +169,14 @@ class TestMissingTraceId:
     def test_explicit_trace_id_overrides_analysis_trace_id(self):
         """Caller-supplied trace_id takes precedence over analysis trace_id."""
         analysis = _make_analysis(trace_id="trace-from-analysis")
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", trace_id="trace-from-caller"
         )
         assert result["trace_id"] == "trace-from-caller"
 
     def test_trace_id_not_required_when_no_replay(self):
         """trace_id is NOT required when replay was not consumed (null artifact_id)."""
-        result = build_replay_governance_decision(None, run_id="run-1")
+        result = _build_replay_governance_decision(None, run_id="run-1")
         # No trace_id in result when no replay consumed
         assert result.get("replay_analysis_artifact_id") is None
         errors = _validate(result)
@@ -169,13 +191,13 @@ class TestInconsistentEnvironment:
     def test_drifted_analysis_produces_drift_decision_status(self):
         """BAA R6: drifted replay produces replay_decision_status='drift'."""
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["replay_decision_status"] == REPLAY_DECISION_STATUS_DRIFT
 
     def test_indeterminate_analysis_produces_indeterminate_decision_status(self):
         """Indeterminate replay produces replay_decision_status='indeterminate'."""
         analysis = _make_analysis(status=REPLAY_STATUS_INDETERMINATE, score=0.7)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["replay_decision_status"] == REPLAY_DECISION_STATUS_INDETERMINATE
 
     def test_inconsistent_env_with_environment_context_flags_drift(self):
@@ -187,7 +209,7 @@ class TestInconsistentEnvironment:
             "platform": "linux-x86_64",
             "seed_rng_state": "42",
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", environment_context=env_ctx
         )
         assert result["replay_decision_status"] == REPLAY_DECISION_STATUS_DRIFT
@@ -198,7 +220,7 @@ class TestInconsistentEnvironment:
     def test_drift_event_emitted_when_status_is_drift(self):
         """BAA R5: replay_drift_event is attached to artifact when drift detected."""
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "replay_drift_event" in result, (
             "replay_drift_event must be present when replay_decision_status=drift"
         )
@@ -210,7 +232,7 @@ class TestInconsistentEnvironment:
     def test_no_drift_event_when_consistent(self):
         """replay_drift_event must NOT be present when replay is consistent."""
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "replay_drift_event" not in result
 
 
@@ -225,7 +247,7 @@ class TestSliThresholds:
             status=REPLAY_STATUS_CONSISTENT,
             score=_DEFAULT_SLI_REBUILD_THRESHOLD - 0.1,
         )
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_BLOCK, (
             f"Expected block for SLI below rebuild threshold, got: {decision['system_response']}"
@@ -239,7 +261,7 @@ class TestSliThresholds:
             status=REPLAY_STATUS_CONSISTENT,
             score=sli,
         )
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_REQUIRE_REVIEW, (
             f"Expected require_review for SLI below review threshold, got: {decision['system_response']}"
@@ -252,7 +274,7 @@ class TestSliThresholds:
             status=REPLAY_STATUS_CONSISTENT,
             score=_DEFAULT_SLI_REVIEW_THRESHOLD,
         )
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_ALLOW
 
     def test_sli_thresholds_configurable_via_policy(self):
@@ -269,14 +291,14 @@ class TestSliThresholds:
         }
         # SLI=0.5 is between custom review threshold (0.3) and rebuild (0.6)
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=0.5)
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", governance_policy=custom_policy
         )
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_REQUIRE_REVIEW
 
         # SLI=0.25 is below custom rebuild threshold (0.3)
         analysis_low = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=0.25)
-        result_low = build_replay_governance_decision(
+        result_low = _build_replay_governance_decision(
             analysis_low, run_id="run-1", governance_policy=custom_policy
         )
         assert result_low["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
@@ -287,7 +309,7 @@ class TestSliThresholds:
             status=REPLAY_STATUS_DRIFTED,
             score=0.0,  # Well below rebuild threshold
         )
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         # Drifted replay uses drift_action (quarantine by default), not block from threshold
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_QUARANTINE
         assert result["decision"]["rationale_code"] == "replay_drifted"
@@ -320,7 +342,7 @@ class TestReplayIndependence:
     def test_independent_mode_does_not_escalate(self):
         """BAA R3: independent mode has no escalation effect."""
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1",
             replay_validation_mode=REPLAY_VALIDATION_MODE_INDEPENDENT,
         )
@@ -335,7 +357,7 @@ class TestReplayIndependence:
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
         # drifted + default policy = quarantine (elevated severity)
         # shared mode should escalate this to block
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1",
             replay_validation_mode=REPLAY_VALIDATION_MODE_SHARED,
         )
@@ -348,7 +370,7 @@ class TestReplayIndependence:
     def test_shared_mode_with_allow_does_not_escalate(self):
         """Shared mode with allow (consistent, high SLI) does NOT escalate."""
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1",
             replay_validation_mode=REPLAY_VALIDATION_MODE_SHARED,
         )
@@ -357,7 +379,7 @@ class TestReplayIndependence:
     def test_replay_validation_mode_in_schema(self):
         """replay_validation_mode field is valid in the schema."""
         analysis = _make_analysis()
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1",
             replay_validation_mode=REPLAY_VALIDATION_MODE_INDEPENDENT,
         )
@@ -390,20 +412,20 @@ class TestReplayDecisionStatus:
             (REPLAY_STATUS_INDETERMINATE, REPLAY_DECISION_STATUS_INDETERMINATE),
         ]:
             analysis = _make_analysis(status=status, score=1.0)
-            result = build_replay_governance_decision(analysis, run_id="run-1")
+            result = _build_replay_governance_decision(analysis, run_id="run-1")
             assert result.get("replay_decision_status") == expected, (
                 f"Expected replay_decision_status={expected} for status={status}"
             )
 
     def test_replay_decision_status_absent_when_no_replay(self):
         """replay_decision_status is not set when no replay was consumed."""
-        result = build_replay_governance_decision(None, run_id="run-1")
+        result = _build_replay_governance_decision(None, run_id="run-1")
         assert "replay_decision_status" not in result
 
     def test_replay_decision_status_passes_schema(self):
         """Artifact with replay_decision_status passes schema validation."""
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "replay_decision_status" in result
         errors = _validate(result)
         assert errors == [], errors
@@ -466,7 +488,7 @@ class TestReplayAffectsControlChain:
         from spectrum_systems.modules.runtime.decision_gating import STAGE_OBSERVE
 
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        rg = build_replay_governance_decision(analysis, run_id="run-001")
+        rg = _build_replay_governance_decision(analysis, run_id="run-001")
         assert rg["decision"]["system_response"] == SYSTEM_RESPONSE_ALLOW
 
         with patch(
@@ -498,7 +520,7 @@ class TestReplayAffectsControlChain:
             "missing_replay_action": SYSTEM_RESPONSE_ALLOW,
             "require_replay": False,
         }
-        rg = build_replay_governance_decision(
+        rg = _build_replay_governance_decision(
             analysis, run_id="run-001", governance_policy=block_policy
         )
         assert rg["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
@@ -522,7 +544,7 @@ class TestReplayAffectsControlChain:
         from spectrum_systems.modules.runtime.decision_gating import STAGE_OBSERVE
 
         analysis = _make_analysis(status=REPLAY_STATUS_INDETERMINATE, score=0.5)
-        rg = build_replay_governance_decision(analysis, run_id="run-001")
+        rg = _build_replay_governance_decision(analysis, run_id="run-001")
         assert rg["decision"]["system_response"] == SYSTEM_RESPONSE_REQUIRE_REVIEW
 
         with patch(
@@ -543,7 +565,7 @@ class TestReplayAffectsControlChain:
         from spectrum_systems.modules.runtime.decision_gating import STAGE_OBSERVE
 
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
-        rg = build_replay_governance_decision(analysis, run_id="run-001")
+        rg = _build_replay_governance_decision(analysis, run_id="run-001")
         assert rg.get("replay_decision_status") == REPLAY_DECISION_STATUS_DRIFT
 
         with patch(
@@ -571,7 +593,7 @@ class TestObservabilityEvents:
         """BAA R9: REPLAY_START and REPLAY_COMPLETE events are emitted."""
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT)
         with caplog.at_level(logging.DEBUG, logger="spectrum_systems.modules.runtime.replay_governance"):
-            build_replay_governance_decision(analysis, run_id="run-1")
+            _build_replay_governance_decision(analysis, run_id="run-1")
 
         log_messages = [r.message for r in caplog.records]
         assert any(EVENT_REPLAY_START in msg for msg in log_messages), (
@@ -585,7 +607,7 @@ class TestObservabilityEvents:
         """BAA R9: REPLAY_DRIFT_DETECTED event emitted when drift detected."""
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
         with caplog.at_level(logging.WARNING, logger="spectrum_systems.modules.runtime.replay_governance"):
-            build_replay_governance_decision(analysis, run_id="run-1")
+            _build_replay_governance_decision(analysis, run_id="run-1")
 
         warning_messages = [r.message for r in caplog.records if r.levelno == logging.WARNING]
         assert any(EVENT_REPLAY_DRIFT_DETECTED in msg for msg in warning_messages), (
@@ -596,7 +618,7 @@ class TestObservabilityEvents:
         """REPLAY_DRIFT_DETECTED must NOT be emitted for consistent replay."""
         analysis = _make_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
         with caplog.at_level(logging.WARNING, logger="spectrum_systems.modules.runtime.replay_governance"):
-            build_replay_governance_decision(analysis, run_id="run-1")
+            _build_replay_governance_decision(analysis, run_id="run-1")
 
         warning_messages = [r.message for r in caplog.records if r.levelno == logging.WARNING]
         assert not any(EVENT_REPLAY_DRIFT_DETECTED in msg for msg in warning_messages)
@@ -609,7 +631,7 @@ class TestObservabilityEvents:
 class TestBackwardCompatibility:
     def test_absent_replay_governance_skips_enforcement(self):
         """BAA R10: If replay governance is absent, no enforcement occurs."""
-        result = build_replay_governance_decision(None, run_id="run-1", require_replay=False)
+        result = _build_replay_governance_decision(None, run_id="run-1", require_replay=False)
         assert result["decision"]["replay_governed"] is False
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_ALLOW
         assert result.get("replay_analysis_artifact_id") is None
@@ -618,13 +640,13 @@ class TestBackwardCompatibility:
 
     def test_absent_replay_governance_passes_schema(self):
         """BAA R10: Artifact without replay governance fields passes schema."""
-        result = build_replay_governance_decision(None, run_id="run-1")
+        result = _build_replay_governance_decision(None, run_id="run-1")
         errors = _validate(result)
         assert errors == [], errors
 
     def test_no_replay_decision_status_when_absent(self):
         """replay_decision_status absent when no replay was consumed."""
-        result = build_replay_governance_decision(None, run_id="run-1")
+        result = _build_replay_governance_decision(None, run_id="run-1")
         assert "replay_decision_status" not in result
 
 
@@ -636,13 +658,13 @@ class TestTraceProvenance:
     def test_replay_run_id_auto_extracted_from_analysis(self):
         """BAA R2: replay_run_id auto-extracted from analysis.replay_result_id."""
         analysis = _make_analysis(replay_result_id="replay-run-xyz")
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["replay_run_id"] == "replay-run-xyz"
 
     def test_explicit_replay_run_id_overrides_analysis(self):
         """Caller-supplied replay_run_id takes precedence."""
         analysis = _make_analysis(replay_result_id="replay-from-analysis")
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", replay_run_id="replay-from-caller"
         )
         assert result["replay_run_id"] == "replay-from-caller"
@@ -650,7 +672,7 @@ class TestTraceProvenance:
     def test_original_run_id_included_when_provided(self):
         """BAA R2: original_run_id is included when provided."""
         analysis = _make_analysis()
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", original_run_id="original-run-001"
         )
         assert result["original_run_id"] == "original-run-001"
@@ -661,7 +683,7 @@ class TestTraceProvenance:
         """BAA R2: replay_artifact_ids list included when provided."""
         analysis = _make_analysis()
         artifact_ids = ["artifact-001", "artifact-002"]
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", replay_artifact_ids=artifact_ids
         )
         assert result["replay_artifact_ids"] == artifact_ids
@@ -671,7 +693,7 @@ class TestTraceProvenance:
     def test_replay_run_id_required_by_schema_when_replay_consumed(self):
         """replay_run_id is REQUIRED by schema when replay was consumed."""
         analysis = _make_analysis()
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "replay_run_id" in result
 
         # Removing replay_run_id with non-null artifact_id should fail schema
@@ -697,7 +719,7 @@ class TestEnvironmentReproducibility:
             "platform": "linux-x86_64",
             "seed_rng_state": "12345",
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", environment_context=env_ctx
         )
         assert result["environment_context"] == env_ctx
@@ -713,7 +735,7 @@ class TestEnvironmentReproducibility:
             "platform": "linux-x86_64",
             "seed_rng_state": None,
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", environment_context=env_ctx
         )
         errors = _validate(result)
@@ -722,7 +744,7 @@ class TestEnvironmentReproducibility:
     def test_environment_context_absent_by_default(self):
         """environment_context is not added to artifact when not provided."""
         analysis = _make_analysis()
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "environment_context" not in result
 
 
@@ -740,7 +762,7 @@ class TestSchemaUpdates:
         v = Draft202012Validator(schema, format_checker=FormatChecker())
 
         analysis = _make_analysis()
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         result["replay_decision_status"] = "invalid_status"
         errors = [e.message for e in v.iter_errors(result)]
         assert any("replay_decision_status" in e or "invalid_status" in e for e in errors)
@@ -770,7 +792,7 @@ class TestSchemaUpdates:
             "consistency_sli_rebuild_threshold": 0.4,
             "consistency_sli_review_threshold": 0.7,
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", governance_policy=policy
         )
         errors = _validate(result)
@@ -779,7 +801,7 @@ class TestSchemaUpdates:
     def test_replay_drift_event_schema_valid(self):
         """BAA R5/R7: replay_drift_event passes schema validation."""
         analysis = _make_analysis(status=REPLAY_STATUS_DRIFTED, score=0.6)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert "replay_drift_event" in result
         errors = _validate(result)
         assert errors == [], errors

@@ -116,6 +116,30 @@ def _validate_against_schema(artifact: Dict[str, Any]) -> list:
     return [e.message for e in validator.iter_errors(artifact)]
 
 
+def _explicit_governance_policy(
+    *,
+    policy_name: str = "bas_replay_governance",
+    policy_version: str = "1.0.0",
+    drift_action: str = SYSTEM_RESPONSE_QUARANTINE,
+    indeterminate_action: str = SYSTEM_RESPONSE_REQUIRE_REVIEW,
+    missing_replay_action: str = SYSTEM_RESPONSE_ALLOW,
+    require_replay: bool = False,
+) -> Dict[str, Any]:
+    return {
+        "policy_name": policy_name,
+        "policy_version": policy_version,
+        "drift_action": drift_action,
+        "indeterminate_action": indeterminate_action,
+        "missing_replay_action": missing_replay_action,
+        "require_replay": require_replay,
+    }
+
+
+def _build_replay_governance_decision(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    kwargs.setdefault("governance_policy", _explicit_governance_policy())
+    return build_replay_governance_decision(*args, **kwargs)
+
+
 def _make_replay_analysis(
     *,
     status: str = REPLAY_STATUS_CONSISTENT,
@@ -302,7 +326,7 @@ class TestSchema:
 class TestDecisionLogic:
     def test_consistent_replay_allows(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_ALLOW
         assert decision["severity"] == "info"
@@ -312,7 +336,7 @@ class TestDecisionLogic:
 
     def test_drifted_replay_default_policy_quarantines(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_QUARANTINE
         assert decision["severity"] == "elevated"
@@ -330,7 +354,7 @@ class TestDecisionLogic:
             "missing_replay_action": SYSTEM_RESPONSE_ALLOW,
             "require_replay": False,
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", governance_policy=block_policy
         )
         decision = result["decision"]
@@ -340,7 +364,7 @@ class TestDecisionLogic:
 
     def test_indeterminate_replay_default_policy_requires_review(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_INDETERMINATE, score=0.5)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_REQUIRE_REVIEW
         assert decision["severity"] == "warning"
@@ -357,13 +381,13 @@ class TestDecisionLogic:
             "missing_replay_action": SYSTEM_RESPONSE_BLOCK,
             "require_replay": False,
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", governance_policy=strict_policy
         )
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
 
     def test_missing_replay_not_required_allows(self):
-        result = build_replay_governance_decision(None, run_id="run-1", require_replay=False)
+        result = _build_replay_governance_decision(None, run_id="run-1", require_replay=False)
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_ALLOW
         assert decision["replay_governed"] is False
@@ -371,7 +395,7 @@ class TestDecisionLogic:
         assert result["status"] == GOVERNANCE_STATUS_OK
 
     def test_missing_replay_require_replay_caller_applies_missing_action(self):
-        result = build_replay_governance_decision(None, run_id="run-1", require_replay=True)
+        result = _build_replay_governance_decision(None, run_id="run-1", require_replay=True)
         decision = result["decision"]
         assert decision["rationale_code"] == "replay_missing_required"
         # Default policy missing_replay_action=allow
@@ -386,7 +410,7 @@ class TestDecisionLogic:
             "missing_replay_action": SYSTEM_RESPONSE_BLOCK,
             "require_replay": True,
         }
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             None, run_id="run-1", governance_policy=policy
         )
         decision = result["decision"]
@@ -394,7 +418,7 @@ class TestDecisionLogic:
         assert decision["system_response"] == SYSTEM_RESPONSE_BLOCK
 
     def test_malformed_replay_not_dict_blocks(self):
-        result = build_replay_governance_decision("not_a_dict", run_id="run-1")
+        result = _build_replay_governance_decision("not_a_dict", run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_BLOCK
         assert decision["rationale_code"] == "replay_invalid_artifact"
@@ -403,7 +427,7 @@ class TestDecisionLogic:
     def test_malformed_replay_missing_analysis_id_blocks(self):
         analysis = _make_replay_analysis()
         del analysis["analysis_id"]
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_BLOCK
         assert decision["rationale_code"] == "replay_invalid_artifact"
@@ -411,26 +435,26 @@ class TestDecisionLogic:
     def test_unknown_replay_status_blocks(self):
         analysis = _make_replay_analysis()
         analysis["decision_consistency"]["status"] = "totally_unknown"
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         decision = result["decision"]
         assert decision["system_response"] == SYSTEM_RESPONSE_BLOCK
         assert decision["rationale_code"] == "replay_invalid_artifact"
 
     def test_replay_sli_out_of_range_high_blocks(self):
         analysis = _make_replay_analysis(score=1.5)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
         assert result["decision"]["rationale_code"] == "replay_invalid_artifact"
 
     def test_replay_sli_out_of_range_low_blocks(self):
         analysis = _make_replay_analysis(score=-0.1)
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
 
     def test_replay_sli_non_numeric_blocks(self):
         analysis = _make_replay_analysis()
         analysis["reproducibility_score"] = "high"
-        result = build_replay_governance_decision(analysis, run_id="run-1")
+        result = _build_replay_governance_decision(analysis, run_id="run-1")
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
 
     def test_result_passes_schema_validation(self):
@@ -440,13 +464,13 @@ class TestDecisionLogic:
             (REPLAY_STATUS_INDETERMINATE, 0.5),
         ]:
             analysis = _make_replay_analysis(status=status, score=score)
-            result = build_replay_governance_decision(analysis, run_id="run-1")
+            result = _build_replay_governance_decision(analysis, run_id="run-1")
             errors = _validate_against_schema(result)
             assert errors == [], f"Schema errors for {status}: {errors}"
 
     def test_trace_id_propagated(self):
         analysis = _make_replay_analysis()
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", trace_id="trace-xyz"
         )
         assert result.get("trace_id") == "trace-xyz"
@@ -454,7 +478,7 @@ class TestDecisionLogic:
     def test_evaluated_at_override(self):
         analysis = _make_replay_analysis()
         ts = "2025-06-15T10:00:00+00:00"
-        result = build_replay_governance_decision(
+        result = _build_replay_governance_decision(
             analysis, run_id="run-1", evaluated_at=ts
         )
         assert result["evaluated_at"] == ts
@@ -545,7 +569,7 @@ class TestQueryHelpers:
 class TestSummary:
     def test_summarize_returns_required_fields(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        artifact = build_replay_governance_decision(analysis, run_id="run-1")
+        artifact = _build_replay_governance_decision(analysis, run_id="run-1")
         summary = summarize_replay_governance_decision(artifact)
 
         assert "replay_governance_response" in summary
@@ -558,13 +582,13 @@ class TestSummary:
 
     def test_escalation_flag_true_when_not_allow(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        artifact = build_replay_governance_decision(analysis, run_id="run-1")
+        artifact = _build_replay_governance_decision(analysis, run_id="run-1")
         summary = summarize_replay_governance_decision(artifact)
         assert summary["replay_governance_escalated_final_decision"] is True
 
     def test_escalation_flag_false_when_allow(self):
         analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        artifact = build_replay_governance_decision(analysis, run_id="run-1")
+        artifact = _build_replay_governance_decision(analysis, run_id="run-1")
         summary = summarize_replay_governance_decision(artifact)
         assert summary["replay_governance_escalated_final_decision"] is False
 
@@ -576,13 +600,13 @@ class TestSummary:
 
 class TestRegressionCompat:
     def test_no_replay_no_require_passes_through(self):
-        result = build_replay_governance_decision(None, run_id="run-1")
+        result = _build_replay_governance_decision(None, run_id="run-1")
         assert result["decision"]["system_response"] == SYSTEM_RESPONSE_ALLOW
         assert result["decision"]["replay_governed"] is False
 
     def test_invalid_replay_never_allows(self):
         bad_analysis = {"broken": True}
-        result = build_replay_governance_decision(bad_analysis, run_id="run-1")
+        result = _build_replay_governance_decision(bad_analysis, run_id="run-1")
         assert result["decision"]["system_response"] != SYSTEM_RESPONSE_ALLOW
 
     def test_policy_validation_bad_drift_action(self):
@@ -690,7 +714,7 @@ class TestControlChainIntegration:
         from spectrum_systems.modules.runtime.control_chain import run_control_chain
 
         consistent_analysis = _make_replay_analysis(status=REPLAY_STATUS_CONSISTENT, score=1.0)
-        gov_artifact = build_replay_governance_decision(
+        gov_artifact = _build_replay_governance_decision(
             consistent_analysis, run_id="run-1"
         )
         assert gov_artifact["decision"]["system_response"] == SYSTEM_RESPONSE_ALLOW
@@ -748,7 +772,7 @@ class TestControlChainIntegration:
         indeterminate_analysis = _make_replay_analysis(
             status=REPLAY_STATUS_INDETERMINATE, score=0.5
         )
-        gov_artifact = build_replay_governance_decision(
+        gov_artifact = _build_replay_governance_decision(
             indeterminate_analysis, run_id="run-1"
         )
         assert gov_artifact["decision"]["system_response"] == SYSTEM_RESPONSE_REQUIRE_REVIEW
@@ -803,7 +827,7 @@ class TestControlChainIntegration:
         from spectrum_systems.modules.runtime.control_chain import run_control_chain
 
         drifted_analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        gov_artifact = build_replay_governance_decision(drifted_analysis, run_id="run-1")
+        gov_artifact = _build_replay_governance_decision(drifted_analysis, run_id="run-1")
         assert gov_artifact["decision"]["system_response"] == SYSTEM_RESPONSE_QUARANTINE
 
         enf_artifact = {
@@ -863,7 +887,7 @@ class TestControlChainIntegration:
             "missing_replay_action": SYSTEM_RESPONSE_BLOCK,
             "require_replay": False,
         }
-        gov_artifact = build_replay_governance_decision(
+        gov_artifact = _build_replay_governance_decision(
             drifted_analysis, run_id="run-1", governance_policy=block_policy
         )
         assert gov_artifact["decision"]["system_response"] == SYSTEM_RESPONSE_BLOCK
@@ -917,7 +941,7 @@ class TestControlChainIntegration:
         from spectrum_systems.modules.runtime.control_chain import run_control_chain
 
         drifted_analysis = _make_replay_analysis(status=REPLAY_STATUS_DRIFTED, score=0.0)
-        gov_artifact = build_replay_governance_decision(drifted_analysis, run_id="run-1")
+        gov_artifact = _build_replay_governance_decision(drifted_analysis, run_id="run-1")
 
         enf_artifact = {
             "artifact_type": "slo_enforcement_decision",

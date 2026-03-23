@@ -565,8 +565,8 @@ def build_control_chain_decision(
 
     artifact: Dict[str, Any] = {
         "control_chain_decision_id": cc_id,
-        "artifact_id": artifact_id if artifact_id else "(unknown)",
-        "stage": stage if stage else "(unknown)",
+        "artifact_id": artifact_id if artifact_id else "missing_artifact_id",
+        "stage": stage if stage else "unspecified_stage",
         "input_kind": input_kind,
         "enforcement_decision_id": enforcement_decision_id,
         "gating_decision_id": gating_decision_id,
@@ -579,7 +579,7 @@ def build_control_chain_decision(
         "traceability_integrity_sli": (
             ti_value if isinstance(ti_value, (int, float)) else None
         ),
-        "lineage_validation_mode": lineage_mode if lineage_mode else "(unknown)",
+        "lineage_validation_mode": lineage_mode if lineage_mode else "unspecified_lineage_mode",
         "lineage_defaulted": (
             lineage_defaulted if isinstance(lineage_defaulted, bool) else None
         ),
@@ -975,6 +975,37 @@ def _run_control_chain_inner(
         or "(unknown)"
     )
 
+    # Fail closed: governed producer paths must not emit placeholder policy linkage.
+    if enforcement_policy_str in {"(unknown)", ""}:
+        acc_errors.append(
+            "Missing enforcement policy linkage: enforcement_policy must be explicit."
+        )
+        return _make_error_artifact(
+            acc_warnings=acc_warnings,
+            acc_errors=acc_errors,
+            reason_code=REASON_BLOCKED_BY_INCONSISTENT_STATE,
+            stage=stage,
+            stage_source=stage_source,
+            evaluated_at=evaluated_at,
+            execute=execute,
+            trace_id=trace_id,
+        )
+
+    if enforcement_decision_status_str in {"(unknown)", ""}:
+        acc_errors.append(
+            "Missing enforcement decision status: enforcement_decision_status must be explicit."
+        )
+        return _make_error_artifact(
+            acc_warnings=acc_warnings,
+            acc_errors=acc_errors,
+            reason_code=REASON_BLOCKED_BY_INCONSISTENT_STATE,
+            stage=stage,
+            stage_source=stage_source,
+            evaluated_at=evaluated_at,
+            execute=execute,
+            trace_id=trace_id,
+        )
+
     # ------------------------------------------------------------------ #
     # 7. Mandatory gating enforcement
     # ------------------------------------------------------------------ #
@@ -1217,13 +1248,13 @@ def _make_error_artifact(
         traceability_integrity_sli=None,
     )
     decision = build_control_chain_decision(
-        artifact_id="(unknown)",
+        artifact_id="missing_artifact_id",
         stage=stage,
         input_kind=INPUT_KIND_EVALUATION,  # best guess for error paths
         enforcement_decision_id="(none)",
         gating_decision_id="(none)",
-        enforcement_policy="(unknown)",
-        enforcement_decision_status="(unknown)",
+        enforcement_policy="missing_enforcement_policy",
+        enforcement_decision_status="missing_enforcement_decision_status",
         gating_outcome="(none)",
         continuation_allowed=False,
         blocking_layer=BLOCKING_ORCHESTRATION,
