@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.31",
+  "artifact_version": "1.0.32",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-OBSERVABILITY-SNAPSHOT",
-  "run_id": "run-20260322T000000Z",
-  "created_at": "2026-03-22T00:00:00Z",
+  "standards_version": "2026.03.23",
+  "record_id": "REC-STD-2026-03-23-BAN-TIER1-PERSISTENCE-HARDENING",
+  "run_id": "run-20260323T000000Z",
+  "created_at": "2026-03-23T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -507,15 +507,15 @@
     {
       "artifact_type": "replay_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.1",
+      "schema_version": "1.1.2",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.12",
-      "last_updated_in": "1.1.1",
+      "last_updated_in": "1.1.2",
       "example_path": "contracts/examples/replay_result.json",
-      "notes": "BAG deterministic canonical trust-loop replay artifact comparing original versus replayed enforcement outcomes."
+      "notes": "BAG deterministic canonical trust-loop replay artifact with fail-closed linkage integrity and placeholder-free governed references."
     },
     {
       "artifact_type": "replay_execution_record",

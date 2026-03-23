@@ -13,14 +13,14 @@ Design principles
 - Storage-path conventions:  all traces are stored under
   ``data/traces/<trace_id>.json`` relative to the repository root.
 - No hidden re-derivation:  what is written is exactly what is read back.
-- Thread-safe:  each write uses an atomic rename pattern.
+- Thread-safe + immutable: each write is create-only and fails if the destination already exists.
 
 Public API
 ----------
 persist_trace(trace)                → storage_path (str)
 load_trace(trace_id)                → persisted_trace_envelope (dict)
 list_traces()                       → list[str]  (trace_ids)
-delete_trace(trace_id)              → None
+delete_trace(trace_id)              → None (blocked; store is append-only)
 validate_persisted_trace(envelope)  → list[str]  (errors; empty = valid)
 """
 
@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -194,6 +193,22 @@ def load_trace(
             + "; ".join(errors)
         )
 
+    stored_trace_id = ((envelope.get("trace") or {}).get("trace_id"))
+    if stored_trace_id != trace_id:
+        raise TraceStoreError(
+            "load_trace: trace identity mismatch between request and payload "
+            f"(requested={trace_id!r}, stored={stored_trace_id!r})"
+        )
+
+    expected_storage_path = _relative_storage_path(path)
+    stored_storage_path = envelope.get("storage_path")
+    if stored_storage_path != expected_storage_path:
+        raise TraceStoreError(
+            "load_trace: storage_path mismatch for persisted trace "
+            f"'{trace_id}' (expected={expected_storage_path!r}, "
+            f"stored={stored_storage_path!r})"
+        )
+
     return envelope
 
 
@@ -221,33 +236,15 @@ def delete_trace(
     trace_id: str,
     base_dir: Optional[Path] = None,
 ) -> None:
-    """Remove a persisted trace from the file-backed store.
+    """Block deletion for governed trace artifacts.
 
-    Parameters
-    ----------
-    trace_id:
-        The trace to delete.
-    base_dir:
-        Override the storage directory (primarily for testing).
-
-    Raises
-    ------
-    TraceNotFoundError
-        If no persisted trace for *trace_id* exists.
-    TraceStorePersistenceError
-        If the file cannot be removed.
+    Governed traces are append-only and must not be physically deleted.
     """
-    path = _trace_path(trace_id, base_dir)
-    if not path.exists():
-        raise TraceNotFoundError(
-            f"delete_trace: no persisted trace found for trace_id '{trace_id}'"
-        )
-    try:
-        path.unlink()
-    except OSError as exc:
-        raise TraceStorePersistenceError(
-            f"delete_trace: failed to remove trace '{trace_id}': {exc}"
-        ) from exc
+    _ = _trace_path(trace_id, base_dir)
+    raise TraceStoreError(
+        "delete_trace: physical deletion is forbidden for governed traces; "
+        "trace_store is append-only"
+    )
 
 
 def validate_persisted_trace(envelope: Dict[str, Any]) -> List[str]:
@@ -283,20 +280,25 @@ def validate_persisted_trace(envelope: Dict[str, Any]) -> List[str]:
 
 
 def _atomic_write(dest: Path, data: Dict[str, Any]) -> None:
-    """Write *data* as JSON to *dest* atomically via a temp-file rename."""
+    """Write *data* as JSON to *dest* exactly once (immutable create-only)."""
     dest.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     try:
-        fd, tmp_path = tempfile.mkstemp(
-            dir=dest.parent, prefix=".tmp_", suffix=".json"
-        )
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                json.dump(data, fh, indent=2, ensure_ascii=False)
-                fh.write("\n")
-        except Exception:
-            os.unlink(tmp_path)
-            raise
-        os.replace(tmp_path, dest)
+        fd = os.open(dest, flags, 0o644)
+    except FileExistsError as exc:
+        raise TraceStorePersistenceError(
+            f"_atomic_write: refused overwrite for existing governed artifact '{dest}'"
+        ) from exc
+    except OSError as exc:
+        raise TraceStorePersistenceError(
+            f"_atomic_write: failed to create '{dest}': {exc}"
+        ) from exc
+
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(payload)
     except OSError as exc:
         raise TraceStorePersistenceError(
             f"_atomic_write: failed to write to '{dest}': {exc}"

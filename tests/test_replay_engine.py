@@ -20,9 +20,11 @@ from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
 )
 from spectrum_systems.modules.runtime.replay_engine import (  # noqa: E402
     ReplayEngineError,
+    execute_replay,
     replay_run,
     run_replay,
 )
+from spectrum_systems.modules.runtime.trace_store import persist_trace  # noqa: E402
 
 
 def _artifact() -> dict:
@@ -381,3 +383,46 @@ def test_run_replay_rejects_invalid_trace_context_types(invalid_value: object) -
     original_decision, original_enforcement = _originals(artifact)
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_CONTEXT"):
         run_replay(artifact, original_decision, original_enforcement, invalid_value)
+
+
+def test_replay_missing_linkage_fails() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    original_decision.pop("decision_id", None)
+    with pytest.raises(ReplayEngineError, match="decision_id|linkage requires"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+def test_replay_persistence_matches_runtime_rules(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    trace_id = "trace-replay-persist-001"
+    trace = {
+        "trace_id": trace_id,
+        "root_span_id": "span-1",
+        "spans": [
+            {
+                "span_id": "span-1",
+                "trace_id": trace_id,
+                "parent_span_id": None,
+                "name": "root",
+                "status": "ok",
+                "start_time": "2026-03-23T00:00:00+00:00",
+                "end_time": "2026-03-23T00:00:01+00:00",
+                "events": [],
+            }
+        ],
+        "artifacts": [],
+        "start_time": "2026-03-23T00:00:00+00:00",
+        "end_time": "2026-03-23T00:00:01+00:00",
+        "context": {},
+        "schema_version": "1.0.0",
+    }
+    traces_dir = tmp_path / "traces"
+    persist_trace(trace, base_dir=traces_dir)
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.replay_engine._new_id", lambda: "fixed-replay-id")
+
+    execute_replay(trace_id, base_dir=traces_dir, persist_result=True)
+    with pytest.raises(ReplayEngineError, match="refused overwrite"):
+        execute_replay(trace_id, base_dir=traces_dir, persist_result=True)

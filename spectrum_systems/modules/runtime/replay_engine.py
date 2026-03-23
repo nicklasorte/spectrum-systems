@@ -43,6 +43,7 @@ validate_replay_result(result)                   → list[str]  (empty = valid)
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from copy import deepcopy
 from datetime import datetime, timezone
@@ -57,7 +58,6 @@ from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
     TraceStoreError,
     load_trace,
-    persist_trace,
 )
 
 # ---------------------------------------------------------------------------
@@ -70,6 +70,7 @@ ARTIFACT_TYPE: str = "replay_result"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _REPLAY_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
+_REPLAY_RESULTS_DIR = _REPO_ROOT / "data" / "replays"
 
 # Known non-deterministic span fields (timestamps are always non-deterministic)
 _NON_DETERMINISTIC_FIELDS = frozenset({"start_time", "end_time"})
@@ -125,6 +126,44 @@ def _new_id() -> str:
 
 def _load_replay_result_schema() -> Dict[str, Any]:
     return json.loads(_REPLAY_RESULT_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def _replay_result_path(replay_id: str, base_dir: Optional[Path] = None) -> Path:
+    if not replay_id or not isinstance(replay_id, str):
+        raise ReplayEngineError("replay_id must be a non-empty string")
+    target_dir = _REPLAY_RESULTS_DIR if base_dir is None else base_dir.parent / "replays"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    return target_dir / f"{replay_id}.json"
+
+
+def _persist_replay_result_immutable(
+    replay_result: Dict[str, Any],
+    base_dir: Optional[Path] = None,
+) -> str:
+    replay_id = replay_result.get("replay_id")
+    if not isinstance(replay_id, str) or not replay_id:
+        raise ReplayEngineError("replay_result persistence requires replay_id")
+    path = _replay_result_path(replay_id, base_dir=base_dir)
+    payload = json.dumps(replay_result, indent=2, ensure_ascii=False) + "\n"
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    except FileExistsError as exc:
+        raise ReplayEngineError(
+            f"execute_replay: immutable replay persistence refused overwrite for '{path}'"
+        ) from exc
+    except OSError as exc:
+        raise ReplayEngineError(
+            f"execute_replay: failed to create replay artifact '{path}': {exc}"
+        ) from exc
+
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(payload)
+    except OSError as exc:
+        raise ReplayEngineError(
+            f"execute_replay: failed to persist replay artifact '{path}': {exc}"
+        ) from exc
+    return str(path)
 
 
 # ---------------------------------------------------------------------------
@@ -356,6 +395,9 @@ def execute_replay(
             f"execute_replay: result failed schema validation: " + "; ".join(errors)
         )
 
+    if persist_result:
+        _persist_replay_result_immutable(result, base_dir=base_dir)
+
     if run_decision_analysis:
         # Import lazily to avoid a circular import at module load time.
         from spectrum_systems.modules.runtime.replay_decision_engine import (  # noqa: PLC0415
@@ -487,7 +529,11 @@ def _execute_steps(
     ]
 
     for idx, span in enumerate(spans):
-        span_id = span.get("span_id", f"unknown-{idx}")
+        span_id = span.get("span_id")
+        if not isinstance(span_id, str) or not span_id.strip():
+            raise ReplayEngineError(
+                f"_execute_steps: span at index {idx} is missing required span_id"
+            )
         original_status = span.get("status")
         span_name = span.get("name") or f"<unnamed-span-{idx}>"
 
@@ -841,6 +887,17 @@ def _build_replay_result(
     consistency_status: str,
     failure_reason: Optional[str],
 ) -> Dict[str, Any]:
+    def _require_non_empty_ref(value: Any, field_name: str) -> str:
+        if not isinstance(value, str) or not value.strip():
+            raise ReplayEngineError(
+                f"replay_result linkage requires non-empty {field_name}; placeholder/default values are forbidden"
+            )
+        if value.startswith("unknown-") or value == "unknown":
+            raise ReplayEngineError(
+                f"replay_result linkage field {field_name} contains forbidden placeholder value {value!r}"
+            )
+        return value
+
     replay_decision_value = replay_decision.get("decision")
     if replay_decision_value not in {"allow", "deny", "require_review"}:
         raise ReplayEngineError(
@@ -868,34 +925,46 @@ def _build_replay_result(
             f"original_enforcement contains unsupported final_status: {original_status!r}"
         )
 
-    source_id = str(
+    source_id = _require_non_empty_ref(
         artifact.get("eval_run_id")
         or artifact.get("eval_case_id")
         or artifact.get("run_id")
-        or artifact.get("artifact_id")
-        or trace_id
+        or artifact.get("artifact_id"),
+        "source_artifact_id",
     )
-    original_run_id = str(original_decision.get("run_id") or source_id)
-    replay_run_id = str(replay_decision.get("run_id") or source_id)
-    source_ref = f"{artifact.get('artifact_type', 'unknown')}:{source_id}"
+    original_run_id = _require_non_empty_ref(original_decision.get("run_id"), "original_run_id")
+    replay_run_id = _require_non_empty_ref(replay_decision.get("run_id"), "replay_run_id")
+    source_artifact_type = _require_non_empty_ref(
+        artifact.get("artifact_type"),
+        "source_artifact_type",
+    )
+    source_ref = f"{source_artifact_type}:{source_id}"
     drift_detected = consistency_status == "mismatch"
 
     result = {
         "artifact_type": "replay_result",
-        "schema_version": "1.1.1",
+        "schema_version": "1.1.2",
         "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
         "original_run_id": original_run_id,
         "replay_run_id": replay_run_id,
         "timestamp": _now_iso(),
         "trace_id": trace_id,
         "input_artifact_reference": source_ref,
-        "original_decision_reference": str(original_decision.get("decision_id") or "unknown-decision"),
-        "original_enforcement_reference": str(
-            original_enforcement.get("enforcement_result_id") or "unknown-enforcement"
+        "original_decision_reference": _require_non_empty_ref(
+            original_decision.get("decision_id"),
+            "original_decision_reference",
         ),
-        "replay_decision_reference": str(replay_decision.get("decision_id") or "unknown-replay-decision"),
-        "replay_enforcement_reference": str(
-            replay_enforcement.get("enforcement_result_id") or "unknown-replay-enforcement"
+        "original_enforcement_reference": _require_non_empty_ref(
+            original_enforcement.get("enforcement_result_id"),
+            "original_enforcement_reference",
+        ),
+        "replay_decision_reference": _require_non_empty_ref(
+            replay_decision.get("decision_id"),
+            "replay_decision_reference",
+        ),
+        "replay_enforcement_reference": _require_non_empty_ref(
+            replay_enforcement.get("enforcement_result_id"),
+            "replay_enforcement_reference",
         ),
         "replay_decision": replay_decision_value,
         "replay_enforcement_action": replay_action,
@@ -907,7 +976,7 @@ def _build_replay_result(
         "failure_reason": failure_reason,
         "replay_path": "bag_replay_engine",
         "provenance": {
-            "source_artifact_type": str(artifact.get("artifact_type") or "unknown"),
+            "source_artifact_type": source_artifact_type,
             "source_artifact_id": source_id,
         },
     }
@@ -954,12 +1023,20 @@ def run_replay(
         context="original_enforcement",
     )
 
-    trace_id = str(
+    trace_id_value = (
         trace_context_input.get("trace_id")
         or original_decision_input.get("trace_id")
         or artifact_input.get("trace_id")
-        or "unknown-trace"
     )
+    if not isinstance(trace_id_value, str) or not trace_id_value.strip():
+        raise ReplayEngineError(
+            "REPLAY_INVALID_TRACE_LINKAGE: trace_id is required for governed replay flows"
+        )
+    if trace_id_value.startswith("unknown-") or trace_id_value == "unknown":
+        raise ReplayEngineError(
+            f"REPLAY_INVALID_TRACE_LINKAGE: placeholder trace_id is forbidden ({trace_id_value!r})"
+        )
+    trace_id = trace_id_value
 
     try:
         from spectrum_systems.modules.runtime.control_loop import run_control_loop

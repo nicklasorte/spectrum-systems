@@ -25,11 +25,12 @@
     "storage_path": {
       "type": "string",
       "minLength": 1,
-      "description": "Relative path (from repository root) to the file where this trace is stored."
+      "description": "Relative path (from repository root) to the file where this trace is stored.",
+      "pattern": "^[^\\s]+\\.json$"
     },
     "trace": {
       "type": "object",
-      "description": "The full trace object — must conform to trace.schema.json.",
+      "description": "The full trace object \u2014 must conform to trace.schema.json.",
       "required": [
         "trace_id",
         "root_span_id",
@@ -42,10 +43,15 @@
       "properties": {
         "trace_id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^(?!unknown(?:-|$))[A-Za-z0-9][A-Za-z0-9._:-]*$"
         },
         "root_span_id": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "spans": {
           "type": "array"
