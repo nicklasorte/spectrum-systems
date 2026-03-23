@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import uuid
 from typing import Any
+
+from spectrum_systems.modules.runtime.provenance import build_canonical_provenance
 
 VALIDATOR_VERSION = "1.0.0"
 ARTIFACT_TYPES = frozenset(
@@ -83,16 +84,28 @@ def _coerce_trace_value(value: Any) -> str | None:
     return None
 
 
-def _resolve_trace_context(context_payload: dict[str, Any]) -> tuple[str, str]:
+def _resolve_trace_context(context_payload: dict[str, Any]) -> tuple[str, str, str, str]:
     trace_id = _coerce_trace_value(context_payload.get("trace_id"))
     span_id = _coerce_trace_value(context_payload.get("span_id"))
+    parent_span_id = _coerce_trace_value(context_payload.get("parent_span_id"))
+    run_id = _coerce_trace_value(context_payload.get("run_id"))
 
-    if trace_id is None:
-        trace_id = str(uuid.uuid4())
-    if span_id is None:
-        span_id = str(uuid.uuid4())
+    missing = [
+        field
+        for field, value in (
+            ("trace_id", trace_id),
+            ("span_id", span_id),
+            ("parent_span_id", parent_span_id),
+            ("run_id", run_id),
+        )
+        if value is None
+    ]
+    if missing:
+        raise ValueError(
+            "STRATEGIC_KNOWLEDGE_MISSING_TRACE_CONTEXT: " + ", ".join(missing)
+        )
 
-    return trace_id, span_id
+    return trace_id, span_id, parent_span_id, run_id
 
 
 def _validate_schema(input_artifact: dict[str, Any], issues: list[ValidationIssue]) -> bool:
@@ -378,7 +391,7 @@ def validate_strategic_knowledge_artifact(
     """Evaluate strategic knowledge candidate artifact with fail-closed policy logic."""
 
     context_payload = _coerce_context(context)
-    trace_id, span_id = _resolve_trace_context(context_payload)
+    trace_id, span_id, parent_span_id, run_id = _resolve_trace_context(context_payload)
     issues: list[ValidationIssue] = []
 
     schema_signal = context_payload.get("schema_valid")
@@ -422,15 +435,35 @@ def validate_strategic_knowledge_artifact(
         trust_score=trust_score,
     )
 
+    artifact_id_for_decision = str(input_artifact.get("artifact_id") or "invalid-artifact")
+
     return {
-        "decision_id": f"SK-VAL-{input_artifact.get('artifact_id', 'UNKNOWN')}",
+        "decision_id": f"SK-VAL-{artifact_id_for_decision}",
         "trace_id": trace_id,
         "span_id": span_id,
-        "artifact_id": str(input_artifact.get("artifact_id", "UNKNOWN")),
+        "artifact_id": artifact_id_for_decision,
         "artifact_type": str(input_artifact.get("artifact_type", "UNKNOWN")),
         "schema_version": str(input_artifact.get("schema_version", "unknown")),
         "evaluated_at": str(context_payload.get("evaluated_at") or _utc_now_iso()),
         "validator_version": str(context_payload.get("validator_version") or VALIDATOR_VERSION),
+        "provenance": build_canonical_provenance(
+            run_id=run_id,
+            trace_id=trace_id,
+            span_id=span_id,
+            parent_span_id=parent_span_id,
+            source_artifacts=[
+                {
+                    "artifact_type": str(input_artifact.get("artifact_type") or ""),
+                    "artifact_id": artifact_id_for_decision,
+                }
+            ],
+            generator_name="strategic_knowledge.validator.validate_strategic_knowledge_artifact",
+            generator_version=VALIDATOR_VERSION,
+            artifact_type="strategic_knowledge_validation_decision",
+            artifact_id=f"SK-VAL-{artifact_id_for_decision}",
+            schema_version="1.1.0",
+            timestamp=str(context_payload.get("evaluated_at") or _utc_now_iso()),
+        ),
         "schema_valid": schema_valid,
         "source_refs_valid": source_refs_valid,
         "artifact_refs_valid": artifact_refs_valid,

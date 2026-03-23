@@ -1,6 +1,6 @@
 {
   "artifact_type": "enforcement_result",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "enforcement_result_id": "enf-20260322T000000Z",
   "timestamp": "2026-03-22T00:00:00Z",
   "trace_id": "44444444-4444-4444-8444-444444444444",
@@ -12,7 +12,25 @@
   "fail_closed": true,
   "enforcement_path": "baf_single_path",
   "provenance": {
-    "source_artifact_type": "evaluation_control_decision",
-    "source_artifact_id": "ecd-20260321T000000Z"
+    "run_id": "eval-run-20260321T120000Z",
+    "trace_id": "44444444-4444-4444-8444-444444444444",
+    "span_id": "enf-20260322T000000Z",
+    "parent_span_id": "ecd-20260321T000000Z",
+    "source_artifacts": [
+      {
+        "artifact_type": "evaluation_control_decision",
+        "artifact_id": "ecd-20260321T000000Z"
+      }
+    ],
+    "generator": {
+      "name": "runtime.enforcement_engine.enforce_control_decision",
+      "version": "1.2.0"
+    },
+    "timestamp": "2026-03-22T00:00:00Z",
+    "artifact": {
+      "artifact_type": "enforcement_result",
+      "artifact_id": "enf-20260322T000000Z",
+      "schema_version": "1.2.0"
+    }
   }
 }

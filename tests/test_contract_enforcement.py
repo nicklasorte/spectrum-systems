@@ -469,7 +469,7 @@ def test_standards_manifest_registers_bbc_eval_governance_contracts() -> None:
 def test_standards_manifest_registers_enforcement_result_contract() -> None:
     standards = load_standards_contracts()
     assert "enforcement_result" in standards
-    assert standards["enforcement_result"]["schema_version"] == "1.1.0"
+    assert standards["enforcement_result"]["schema_version"] == "1.1.1"
     assert standards["enforcement_result"]["example_path"] == "contracts/examples/enforcement_result.json"
 
 

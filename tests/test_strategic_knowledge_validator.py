@@ -1,3 +1,5 @@
+import pytest
+
 from spectrum_systems.modules.strategic_knowledge.validator import validate_strategic_knowledge_artifact
 
 
@@ -26,6 +28,10 @@ def _valid_artifact() -> dict:
 
 def _context() -> dict:
     return {
+        "trace_id": "trace-sk-001",
+        "span_id": "span-sk-001",
+        "parent_span_id": "parent-sk-001",
+        "run_id": "run-sk-001",
         "source_catalog": {
             "sources": [
                 {
@@ -33,7 +39,7 @@ def _context() -> dict:
                     "source_status": "ready",
                 }
             ]
-        }
+        },
     }
 
 
@@ -51,8 +57,11 @@ def test_schema_failure_returns_block() -> None:
     decision = validate_strategic_knowledge_artifact(artifact, _context())
     assert decision["system_response"] == "block"
     assert decision["schema_valid"] is False
-    assert decision["trace_id"]
-    assert decision["span_id"]
+
+
+def test_missing_trace_context_fails_closed() -> None:
+    with pytest.raises(ValueError, match="STRATEGIC_KNOWLEDGE_MISSING_TRACE_CONTEXT"):
+        validate_strategic_knowledge_artifact(_valid_artifact(), {"source_catalog": _context()["source_catalog"]})
 
 
 def test_missing_provenance_returns_require_rebuild() -> None:
@@ -94,6 +103,8 @@ def test_explicit_trace_context_is_preserved() -> None:
             **_context(),
             "trace_id": "trace-explicit-001",
             "span_id": "span-explicit-001",
+            "parent_span_id": "parent-explicit-001",
+            "run_id": "run-explicit-001",
         },
     )
     assert decision["trace_id"] == "trace-explicit-001"

@@ -159,6 +159,13 @@ from spectrum_systems.modules.runtime.artifact_lineage import (
     validate_full_registry,
     validate_lineage_chain,
 )
+from spectrum_systems.modules.runtime.provenance import (
+    ProvenanceError,
+    assert_canonical_provenance,
+    build_canonical_provenance,
+    revalidate_mutated_artifact,
+    validate_canonical_provenance,
+)
 from spectrum_systems.modules.runtime.trace_store import (
     delete_trace,
     list_traces,
@@ -206,6 +213,11 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (
 )
 
 __all__ = [
+    "revalidate_mutated_artifact",
+    "assert_canonical_provenance",
+    "validate_canonical_provenance",
+    "build_canonical_provenance",
+    "ProvenanceError",
     # BC — Runtime Compatibility
     "validate_runtime_environment",
     "validate_matlab_runtime_version",

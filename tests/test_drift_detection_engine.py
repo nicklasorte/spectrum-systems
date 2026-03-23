@@ -22,7 +22,7 @@ from spectrum_systems.modules.runtime.drift_detection_engine import (  # noqa: E
 def _replay_result() -> dict:
     return {
         "artifact_type": "replay_result",
-        "schema_version": "1.1.0",
+        "schema_version": "1.1.1",
         "replay_id": "RPL-test-001",
         "original_run_id": "eval-run-001",
         "replay_run_id": "eval-run-001",
@@ -43,8 +43,26 @@ def _replay_result() -> dict:
         "failure_reason": None,
         "replay_path": "bag_replay_engine",
         "provenance": {
-            "source_artifact_type": "eval_summary",
-            "source_artifact_id": "eval-run-001",
+            "run_id": "eval-run-001",
+            "trace_id": "trace-eval-001",
+            "span_id": "RPL-test-001",
+            "parent_span_id": "ECD-eval-run-001-ALLOW",
+            "source_artifacts": [
+                {
+                    "artifact_type": "eval_summary",
+                    "artifact_id": "eval-run-001",
+                }
+            ],
+            "generator": {
+                "name": "runtime.replay_engine.run_replay",
+                "version": "1.2.0",
+            },
+            "timestamp": "2026-03-22T00:00:00Z",
+            "artifact": {
+                "artifact_type": "replay_result",
+                "artifact_id": "RPL-test-001",
+                "schema_version": "1.1.1",
+            },
         },
     }
 

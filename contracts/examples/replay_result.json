@@ -21,8 +21,26 @@
   "failure_reason": null,
   "replay_path": "bag_replay_engine",
   "provenance": {
-    "source_artifact_type": "eval_summary",
-    "source_artifact_id": "eval-run-001"
+    "run_id": "eval-run-001",
+    "trace_id": "trace-eval-001",
+    "span_id": "RPL-trace-eval-001",
+    "parent_span_id": "ECD-eval-run-001-ALLOW",
+    "source_artifacts": [
+      {
+        "artifact_type": "eval_summary",
+        "artifact_id": "eval-run-001"
+      }
+    ],
+    "generator": {
+      "name": "runtime.replay_engine.run_replay",
+      "version": "1.2.0"
+    },
+    "timestamp": "2026-03-22T00:00:00Z",
+    "artifact": {
+      "artifact_type": "replay_result",
+      "artifact_id": "RPL-trace-eval-001",
+      "schema_version": "1.1.1"
+    }
   },
   "drift_result": {
     "drift_result_id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -45,8 +63,26 @@
     "drift_severity": "none",
     "detection_timestamp": "2026-03-22T00:00:00Z",
     "provenance": {
+      "run_id": "eval-run-001",
       "trace_id": "trace-eval-001",
-      "run_id": "eval-run-001"
+      "span_id": "RPL-trace-eval-001",
+      "parent_span_id": "ECD-eval-run-001-ALLOW",
+      "source_artifacts": [
+        {
+          "artifact_type": "replay_result",
+          "artifact_id": "RPL-trace-eval-001"
+        }
+      ],
+      "generator": {
+        "name": "runtime.drift_detection_engine.detect_drift",
+        "version": "1.2.0"
+      },
+      "timestamp": "2026-03-22T00:00:00Z",
+      "artifact": {
+        "artifact_type": "drift_result",
+        "artifact_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "schema_version": "1.0.0"
+      }
     }
   }
 }

@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.31",
+  "artifact_version": "1.0.32",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.22",
-  "record_id": "REC-STD-2026-03-22-GOVERNED-PROMPT-QUEUE-OBSERVABILITY-SNAPSHOT",
-  "run_id": "run-20260322T000000Z",
-  "created_at": "2026-03-22T00:00:00Z",
+  "standards_version": "2026.03.23",
+  "record_id": "REC-STD-2026-03-23-BAJ-PROVENANCE-HARDENING-PHASE2",
+  "run_id": "run-20260323T000000Z",
+  "created_at": "2026-03-23T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -441,11 +441,11 @@
     {
       "artifact_type": "strategic_knowledge_validation_decision",
       "artifact_class": "review",
-      "schema_version": "1.1.0",
+      "schema_version": "1.1.1",
       "status": "stable",
       "intended_consumers": [],
       "introduced_in": "1.0.0",
-      "last_updated_in": "1.1.0",
+      "last_updated_in": "1.0.32",
       "example_path": "contracts/examples/strategic_knowledge_validation_decision.json",
       "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
     },
@@ -496,24 +496,24 @@
     {
       "artifact_type": "enforcement_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.1.1",
       "status": "stable",
       "intended_consumers": [],
       "introduced_in": "1.0.4",
-      "last_updated_in": "1.0.11",
+      "last_updated_in": "1.0.32",
       "example_path": "contracts/examples/enforcement_result.json",
       "notes": "Deterministic enforcement artifact generated exclusively from evaluation_control_decision via the BAF single-path enforcement mapper."
     },
     {
       "artifact_type": "replay_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.1",
+      "schema_version": "1.1.2",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.12",
-      "last_updated_in": "1.1.1",
+      "last_updated_in": "1.0.32",
       "example_path": "contracts/examples/replay_result.json",
       "notes": "BAG deterministic canonical trust-loop replay artifact comparing original versus replayed enforcement outcomes."
     },
@@ -546,13 +546,13 @@
     {
       "artifact_type": "drift_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.0.1",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.13",
-      "last_updated_in": "1.0.13",
+      "last_updated_in": "1.0.32",
       "example_path": "contracts/examples/drift_result.json",
       "notes": "BAH fail-closed deterministic drift classification artifact for BAG replay_result comparison of final_status and enforcement_action."
     },

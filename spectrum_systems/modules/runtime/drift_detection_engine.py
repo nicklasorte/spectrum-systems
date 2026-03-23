@@ -15,6 +15,7 @@ from typing import Any, Dict, List
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.provenance import assert_canonical_provenance, build_canonical_provenance
 
 _COMPARISON_FIELDS: List[str] = ["final_status", "enforcement_action"]
 _ALLOWED_STATUSES = {"allow", "deny", "require_review"}
@@ -62,6 +63,7 @@ def _build_result(
     drift_type: str,
     drift_detected: bool,
     drift_severity: str,
+    replay_provenance: Dict[str, Any],
 ) -> Dict[str, Any]:
     result = {
         "drift_result_id": _stable_drift_id(source_run_id, replay_run_id, drift_type),
@@ -74,10 +76,24 @@ def _build_result(
         "replay_values": dict(replay_values),
         "drift_severity": drift_severity,
         "detection_timestamp": detection_timestamp,
-        "provenance": {
-            "trace_id": trace_id,
-            "run_id": replay_run_id,
-        },
+        "provenance": build_canonical_provenance(
+            run_id=replay_run_id,
+            trace_id=trace_id,
+            span_id=str(replay_provenance.get("span_id") or ""),
+            parent_span_id=str(replay_provenance.get("parent_span_id") or ""),
+            source_artifacts=[
+                {
+                    "artifact_type": "replay_result",
+                    "artifact_id": str(replay_provenance.get("artifact", {}).get("artifact_id") or ""),
+                }
+            ],
+            generator_name="runtime.drift_detection_engine.detect_drift",
+            generator_version="1.2.0",
+            artifact_type="drift_result",
+            artifact_id=_stable_drift_id(source_run_id, replay_run_id, drift_type),
+            schema_version="1.0.0",
+            timestamp=detection_timestamp,
+        ),
     }
     _validate_or_raise(result, "drift_result", context="drift_result")
     return result
@@ -95,6 +111,14 @@ def detect_drift(replay_result: dict) -> dict:
     trace_id = replay_input.get("trace_id")
     detection_timestamp = replay_input.get("timestamp")
     consistency_status = replay_input.get("consistency_status")
+
+    replay_provenance = replay_input.get("provenance")
+    if not isinstance(replay_provenance, dict):
+        raise DriftDetectionError("replay_result missing canonical provenance")
+    try:
+        assert_canonical_provenance(replay_provenance)
+    except Exception as exc:  # noqa: BLE001
+        raise DriftDetectionError(f"replay_result provenance invalid: {exc}") from exc
 
     required = {
         "original_run_id": source_run_id,
@@ -134,6 +158,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="missing_original",
             drift_detected=True,
             drift_severity="critical",
+            replay_provenance=replay_provenance,
         )
 
     if not replay_keys_present:
@@ -155,6 +180,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="missing_replay",
             drift_detected=True,
             drift_severity="critical",
+            replay_provenance=replay_provenance,
         )
 
     _validate_or_raise(replay_input, "replay_result", context="replay_result")
@@ -182,6 +208,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="missing_original",
             drift_detected=True,
             drift_severity="critical",
+            replay_provenance=replay_provenance,
         )
 
     if any(value is None for value in replay_values.values()):
@@ -195,6 +222,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="missing_replay",
             drift_detected=True,
             drift_severity="critical",
+            replay_provenance=replay_provenance,
         )
 
     if consistency_status == "indeterminate":
@@ -208,6 +236,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="indeterminate",
             drift_detected=True,
             drift_severity="high",
+            replay_provenance=replay_provenance,
         )
 
     if consistency_status not in {"match", "mismatch"}:
@@ -224,6 +253,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="status_mismatch",
             drift_detected=True,
             drift_severity="high",
+            replay_provenance=replay_provenance,
         )
 
     if original_values["enforcement_action"] != replay_values["enforcement_action"]:
@@ -237,6 +267,7 @@ def detect_drift(replay_result: dict) -> dict:
             drift_type="action_mismatch",
             drift_detected=True,
             drift_severity="medium",
+            replay_provenance=replay_provenance,
         )
 
     return _build_result(
@@ -249,6 +280,7 @@ def detect_drift(replay_result: dict) -> dict:
         drift_type="none",
         drift_detected=False,
         drift_severity="none",
+        replay_provenance=replay_provenance,
     )
 
 

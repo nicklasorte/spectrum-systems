@@ -16,6 +16,23 @@ VALID_DECISION = {
     "schema_version": "1.0.0",
     "evaluated_at": "2026-03-21T12:00:00Z",
     "validator_version": "1.0.0",
+    "provenance": {
+        "run_id": "run-sk-001",
+        "trace_id": "trace-001",
+        "span_id": "span-001",
+        "parent_span_id": "parent-001",
+        "source_artifacts": [{"artifact_type": "book_intelligence_pack", "artifact_id": "ART-001"}],
+        "generator": {
+            "name": "strategic_knowledge.validator.validate_strategic_knowledge_artifact",
+            "version": "1.0.0"
+        },
+        "timestamp": "2026-03-21T12:00:00Z",
+        "artifact": {
+            "artifact_type": "strategic_knowledge_validation_decision",
+            "artifact_id": "SK-VAL-ART-001",
+            "schema_version": "1.1.0"
+        }
+    },
     "schema_valid": True,
     "source_refs_valid": True,
     "artifact_refs_valid": True,

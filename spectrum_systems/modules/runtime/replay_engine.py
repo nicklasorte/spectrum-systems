@@ -53,6 +53,10 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift
+from spectrum_systems.modules.runtime.provenance import (
+    build_canonical_provenance,
+    revalidate_mutated_artifact,
+)
 from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
     TraceStoreError,
@@ -880,13 +884,15 @@ def _build_replay_result(
     source_ref = f"{artifact.get('artifact_type', 'unknown')}:{source_id}"
     drift_detected = consistency_status == "mismatch"
 
+    result_id = _stable_replay_id(original_run_id, trace_id, source_ref)
+    result_timestamp = _now_iso()
     result = {
         "artifact_type": "replay_result",
         "schema_version": "1.1.1",
-        "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
+        "replay_id": result_id,
         "original_run_id": original_run_id,
         "replay_run_id": replay_run_id,
-        "timestamp": _now_iso(),
+        "timestamp": result_timestamp,
         "trace_id": trace_id,
         "input_artifact_reference": source_ref,
         "original_decision_reference": str(original_decision.get("decision_id") or "unknown-decision"),
@@ -906,15 +912,49 @@ def _build_replay_result(
         "drift_detected": drift_detected,
         "failure_reason": failure_reason,
         "replay_path": "bag_replay_engine",
-        "provenance": {
-            "source_artifact_type": str(artifact.get("artifact_type") or "unknown"),
-            "source_artifact_id": source_id,
-        },
+        "provenance": build_canonical_provenance(
+            run_id=replay_run_id,
+            trace_id=trace_id,
+            span_id=str(result_id),
+            parent_span_id=str(replay_decision.get("decision_id") or ""),
+            source_artifacts=[
+                {
+                    "artifact_type": str(artifact.get("artifact_type") or ""),
+                    "artifact_id": source_id,
+                }
+            ],
+            generator_name="runtime.replay_engine.run_replay",
+            generator_version="1.2.0",
+            artifact_type="replay_result",
+            artifact_id=str(result_id),
+            schema_version="1.1.1",
+            timestamp=result_timestamp,
+        ),
     }
     errors = validate_replay_result(result)
     if errors:
         raise ReplayEngineError("replay_result failed validation: " + "; ".join(errors))
     return result
+
+
+def _require_trace_context(trace_context: Dict[str, Any]) -> Tuple[str, str, str]:
+    trace_id = str(trace_context.get("trace_id") or "").strip()
+    span_id = str(trace_context.get("span_id") or "").strip()
+    parent_span_id = str(trace_context.get("parent_span_id") or "").strip()
+    missing = [
+        field
+        for field, value in (
+            ("trace_id", trace_id),
+            ("span_id", span_id),
+            ("parent_span_id", parent_span_id),
+        )
+        if not value
+    ]
+    if missing:
+        raise ReplayEngineError(
+            "REPLAY_MISSING_TRACE_CONTEXT: trace_context missing required fields: " + ", ".join(missing)
+        )
+    return trace_id, span_id, parent_span_id
 
 
 def run_replay(
@@ -954,12 +994,7 @@ def run_replay(
         context="original_enforcement",
     )
 
-    trace_id = str(
-        trace_context_input.get("trace_id")
-        or original_decision_input.get("trace_id")
-        or artifact_input.get("trace_id")
-        or "unknown-trace"
-    )
+    trace_id, _trace_span_id, _trace_parent_span_id = _require_trace_context(trace_context_input)
 
     try:
         from spectrum_systems.modules.runtime.control_loop import run_control_loop
@@ -981,10 +1016,11 @@ def run_replay(
             failure_reason=None,
         )
         replay_result["drift_result"] = detect_drift(replay_result)
-        errors = validate_replay_result(replay_result)
-        if errors:
-            raise ReplayEngineError("replay_result failed validation: " + "; ".join(errors))
-        return replay_result
+        return revalidate_mutated_artifact(
+            replay_result,
+            schema_validator=validate_replay_result,
+            artifact_label="replay_result",
+        )
     except ReplayEngineError:
         raise
     except Exception as exc:  # noqa: BLE001

@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Tuple
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.provenance import build_canonical_provenance
 
 
 _ACTION_MAP: Dict[str, str] = {
@@ -97,11 +98,13 @@ def enforce_control_decision(decision_artifact: dict) -> dict:
 
     fail_closed = final_status in {"deny", "require_review"}
 
+    enforcement_result_id = _new_id("ENF")
+    timestamp = _now_iso()
     result = {
         "artifact_type": "enforcement_result",
-        "schema_version": "1.1.0",
-        "enforcement_result_id": _new_id("ENF"),
-        "timestamp": _now_iso(),
+        "schema_version": "1.2.0",
+        "enforcement_result_id": enforcement_result_id,
+        "timestamp": timestamp,
         "trace_id": decision_artifact["trace_id"],
         "run_id": decision_artifact["run_id"],
         "input_decision_reference": source_decision_id,
@@ -110,10 +113,24 @@ def enforce_control_decision(decision_artifact: dict) -> dict:
         "rationale_code": decision_artifact["rationale_code"],
         "fail_closed": fail_closed,
         "enforcement_path": "baf_single_path",
-        "provenance": {
-            "source_artifact_type": "evaluation_control_decision",
-            "source_artifact_id": source_decision_id,
-        },
+        "provenance": build_canonical_provenance(
+            run_id=str(decision_artifact["run_id"]),
+            trace_id=str(decision_artifact["trace_id"]),
+            span_id=enforcement_result_id,
+            parent_span_id=str(decision_artifact.get("decision_id") or ""),
+            source_artifacts=[
+                {
+                    "artifact_type": "evaluation_control_decision",
+                    "artifact_id": source_decision_id,
+                }
+            ],
+            generator_name="runtime.enforcement_engine.enforce_control_decision",
+            generator_version="1.2.0",
+            artifact_type="enforcement_result",
+            artifact_id=enforcement_result_id,
+            schema_version="1.2.0",
+            timestamp=timestamp,
+        ),
     }
 
     result_errors = validate_enforcement_result(result)

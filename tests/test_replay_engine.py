@@ -42,6 +42,8 @@ def _artifact() -> dict:
 def _trace_context() -> dict:
     return {
         "trace_id": "44444444-4444-4444-8444-444444444444",
+        "span_id": "span-replay-001",
+        "parent_span_id": "parent-replay-001",
         "execution_id": "exec-001",
         "stage": "runtime_gate",
         "runtime_environment": "test",
@@ -85,7 +87,7 @@ def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.Monkey
     def _force_mismatch(_decision: dict) -> dict:
         return {
             "artifact_type": "enforcement_result",
-            "schema_version": "1.1.0",
+            "schema_version": "1.2.0",
             "enforcement_result_id": "ENF-MISMATCH-001",
             "timestamp": "2026-03-22T00:00:00Z",
             "trace_id": original_enforcement["trace_id"],
@@ -97,8 +99,26 @@ def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.Monkey
             "fail_closed": True,
             "enforcement_path": "baf_single_path",
             "provenance": {
-                "source_artifact_type": "evaluation_control_decision",
-                "source_artifact_id": original_enforcement["input_decision_reference"],
+                "run_id": original_enforcement["run_id"],
+                "trace_id": original_enforcement["trace_id"],
+                "span_id": "ENF-MISMATCH-001",
+                "parent_span_id": original_enforcement["input_decision_reference"],
+                "source_artifacts": [
+                    {
+                        "artifact_type": "evaluation_control_decision",
+                        "artifact_id": original_enforcement["input_decision_reference"],
+                    }
+                ],
+                "generator": {
+                    "name": "runtime.enforcement_engine.enforce_control_decision",
+                    "version": "1.2.0",
+                },
+                "timestamp": "2026-03-22T00:00:00Z",
+                "artifact": {
+                    "artifact_type": "enforcement_result",
+                    "artifact_id": "ENF-MISMATCH-001",
+                    "schema_version": "1.2.0",
+                },
             },
         }
 
@@ -381,3 +401,10 @@ def test_run_replay_rejects_invalid_trace_context_types(invalid_value: object) -
     original_decision, original_enforcement = _originals(artifact)
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_CONTEXT"):
         run_replay(artifact, original_decision, original_enforcement, invalid_value)
+
+
+def test_missing_trace_context_fails_closed() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_TRACE_CONTEXT"):
+        run_replay(artifact, original_decision, original_enforcement, {"trace_id": "only-trace"})

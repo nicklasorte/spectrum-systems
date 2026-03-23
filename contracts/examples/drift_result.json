@@ -19,7 +19,25 @@
   "drift_severity": "none",
   "detection_timestamp": "2026-03-22T00:00:00Z",
   "provenance": {
+    "run_id": "eval-run-001",
     "trace_id": "trace-eval-001",
-    "run_id": "eval-run-001"
+    "span_id": "RPL-trace-eval-001",
+    "parent_span_id": "ECD-eval-run-001-ALLOW",
+    "source_artifacts": [
+      {
+        "artifact_type": "replay_result",
+        "artifact_id": "RPL-trace-eval-001"
+      }
+    ],
+    "generator": {
+      "name": "runtime.drift_detection_engine.detect_drift",
+      "version": "1.2.0"
+    },
+    "timestamp": "2026-03-22T00:00:00Z",
+    "artifact": {
+      "artifact_type": "drift_result",
+      "artifact_id": "8cb756445a463f0843a0221dad16433b87eb934c2a3b8bf5c30f6b93c6b18b8e",
+      "schema_version": "1.0.0"
+    }
   }
 }
