@@ -94,6 +94,39 @@ def construct_context_bundle(
     bundle.setdefault("trace", {})
     bundle["trace"]["trace_id"] = trace_id
     bundle["trace"]["run_id"] = run_id
+    bundle.setdefault("glossary_terms", [])
+    bundle.setdefault("glossary_definitions", [])
+    bundle.setdefault(
+        "glossary_canonicalization",
+        {
+            "match_mode": "exact",
+            "selection_mode": "explicit_then_exact_text",
+            "fail_on_missing_required": False,
+            "selected_glossary_entry_ids": [],
+            "unresolved_terms": [],
+        },
+    )
+    bundle.setdefault("metadata", {})
+    if isinstance(bundle["metadata"], dict):
+        bundle["metadata"].setdefault("glossary_injection_status", "not_requested")
+    bundle.setdefault("token_estimates", {})
+    if isinstance(bundle["token_estimates"], dict):
+        bundle["token_estimates"].setdefault("glossary_definitions", 0)
+        bundle["token_estimates"].setdefault(
+            "total",
+            sum(
+                int(bundle["token_estimates"].get(name, 0))
+                for name in (
+                    "primary_input",
+                    "policy_constraints",
+                    "prior_artifacts",
+                    "retrieved_context",
+                    "glossary_terms",
+                    "glossary_definitions",
+                    "unresolved_questions",
+                )
+            ),
+        )
 
     try:
         _validate_contract(bundle, "context_bundle")

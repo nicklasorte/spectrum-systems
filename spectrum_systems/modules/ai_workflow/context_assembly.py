@@ -54,6 +54,7 @@ PRIORITY_ORDER: List[str] = [
     "prior_artifacts",
     "retrieved_context",
     "glossary_terms",
+    "glossary_definitions",
     "unresolved_questions",
 ]
 
@@ -109,6 +110,8 @@ def estimate_bundle_tokens(bundle: Dict[str, Any]) -> Dict[str, int]:
         if isinstance(value, str):
             return value
         if isinstance(value, (dict, list)):
+            if not value:
+                return ""
             import json as _json
             return _json.dumps(value, ensure_ascii=False)
         return str(value) if value is not None else ""
@@ -526,6 +529,12 @@ def build_context_bundle(
             Governing constraints/rules relevant to the task (string or dict).
         ``glossary_terms``
             Domain glossary entries (list of strings or dicts).
+        ``glossary_registry_entries``
+            Optional governed glossary entry records used when glossary
+            canonicalization is explicitly enabled.
+        ``glossary_injection_policy``
+            Optional glossary canonicalization policy; injection is explicit
+            and disabled by default unless this policy enables it.
         ``unresolved_questions``
             Open questions to be provided as context (list of strings).
         ``retrieval_query``
@@ -580,6 +589,8 @@ def build_context_bundle(
     policy_constraints = cfg.get("policy_constraints") or {}
     glossary_terms = cfg.get("glossary_terms") or []
     unresolved_questions = cfg.get("unresolved_questions") or []
+    glossary_registry_entries = cfg.get("glossary_registry_entries") or []
+    glossary_injection_policy = cfg.get("glossary_injection_policy") or {}
 
     bundle: Dict[str, Any] = compose_context_bundle(
         task_type=task_type,
@@ -592,6 +603,8 @@ def build_context_bundle(
         source_artifact_ids=[a.get("artifact_id", "") for a in artifacts],
         trace_id=trace_id,
         run_id=run_id,
+        glossary_registry_entries=glossary_registry_entries,
+        glossary_injection_policy=glossary_injection_policy,
     )
 
     # Backward-compatible fields retained for existing runtime consumers.

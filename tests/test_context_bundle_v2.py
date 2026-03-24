@@ -49,6 +49,7 @@ def _compose() -> dict:
         trace_id="trace-001",
         run_id="run-001",
         glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+        glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
     )
 
 
@@ -153,6 +154,7 @@ def test_missing_required_glossary_definition_fails_closed() -> None:
             trace_id="trace-001",
             run_id="run-001",
             glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+            glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
         )
 
 
@@ -170,4 +172,43 @@ def test_no_fuzzy_matching_behavior() -> None:
             trace_id="trace-001",
             run_id="run-001",
             glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+            glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
         )
+
+
+def test_glossary_terms_with_injection_disabled_does_not_fail() -> None:
+    bundle = compose_context_bundle(
+        task_type="meeting_minutes",
+        input_payload={"transcript": "hello", "provenance_id": "input-001"},
+        policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+        retrieved_context=[],
+        prior_artifacts=[],
+        glossary_terms=["SLA"],
+        unresolved_questions=[],
+        source_artifact_ids=[],
+        trace_id="trace-001",
+        run_id="run-001",
+        glossary_registry_entries=[],
+        glossary_injection_policy={"enabled": False},
+    )
+    assert bundle["glossary_definitions"] == []
+    assert bundle["token_estimates"]["glossary_definitions"] == 0
+
+
+def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> None:
+    bundle = compose_context_bundle(
+        task_type="meeting_minutes",
+        input_payload={"transcript": "hello", "provenance_id": "input-001"},
+        policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+        retrieved_context=[],
+        prior_artifacts=[],
+        glossary_terms=["SLA"],
+        unresolved_questions=[],
+        source_artifact_ids=[],
+        trace_id="trace-001",
+        run_id="run-001",
+        glossary_registry_entries=[],
+        glossary_injection_policy={"enabled": True, "fail_on_missing_required": False},
+    )
+    assert bundle["glossary_definitions"] == []
+    assert bundle["glossary_canonicalization"]["unresolved_terms"] == ["SLA@general"]

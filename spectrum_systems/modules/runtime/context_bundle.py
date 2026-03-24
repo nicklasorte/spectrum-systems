@@ -224,9 +224,46 @@ def _normalize_glossary_injection_policy(policy: Optional[Dict[str, Any]]) -> Di
     return {
         "default_domain_scope": str(normalized.get("default_domain_scope") or "general"),
         "allow_deprecated": bool(normalized.get("allow_deprecated", False)),
-        "fail_on_missing_required": bool(normalized.get("fail_on_missing_required", True)),
-        "enabled": bool(normalized.get("enabled", True)),
+        "fail_on_missing_required": bool(normalized.get("fail_on_missing_required", False)),
+        "enabled": bool(normalized.get("enabled", False)),
     }
+
+
+def _ensure_glossary_bundle_defaults(bundle: Dict[str, Any]) -> Dict[str, Any]:
+    bundle.setdefault("glossary_terms", [])
+    bundle.setdefault("glossary_definitions", [])
+    bundle.setdefault(
+        "glossary_canonicalization",
+        {
+            "match_mode": "exact",
+            "selection_mode": "explicit_then_exact_text",
+            "fail_on_missing_required": False,
+            "selected_glossary_entry_ids": [],
+            "unresolved_terms": [],
+        },
+    )
+
+    metadata = bundle.get("metadata")
+    if isinstance(metadata, dict):
+        metadata.setdefault("glossary_injection_status", "not_requested")
+
+    token_estimates = bundle.get("token_estimates")
+    if isinstance(token_estimates, dict):
+        token_estimates.setdefault("glossary_definitions", 0)
+        if "total" not in token_estimates:
+            token_estimates["total"] = sum(
+                int(token_estimates.get(name, 0))
+                for name in (
+                    "primary_input",
+                    "policy_constraints",
+                    "prior_artifacts",
+                    "retrieved_context",
+                    "glossary_terms",
+                    "glossary_definitions",
+                    "unresolved_questions",
+                )
+            )
+    return bundle
 
 
 def compose_context_items(
@@ -317,6 +354,8 @@ def compose_context_items(
 def _estimate_tokens(value: Any) -> int:
     if value is None:
         return 0
+    if isinstance(value, (list, dict)) and not value:
+        return 0
     payload = value if isinstance(value, str) else _canonical(value)
     if not payload:
         return 0
@@ -376,6 +415,7 @@ def compose_context_bundle(
         "context_items": context_items,
         "source_segmentation": source_segmentation,
         "trace": {"trace_id": trace_id, "run_id": run_id},
+        "requested_glossary_terms": list(glossary_terms),
         "glossary_selection": {
             "selected_glossary_entry_ids": glossary_selection["selected_glossary_entry_ids"],
             "unresolved_terms": glossary_selection["unresolved_terms"],
@@ -452,6 +492,7 @@ def compose_context_bundle(
 
 
 def validate_context_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
+    bundle = _ensure_glossary_bundle_defaults(bundle)
     items = bundle.get("context_items")
     if not isinstance(items, list) or not items:
         raise ContextBundleValidationError("context_items must be a non-empty ordered list")
