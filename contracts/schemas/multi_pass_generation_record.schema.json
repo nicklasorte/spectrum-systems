@@ -17,6 +17,7 @@
     "refinement",
     "final_output",
     "evidence_binding",
+    "grounding_factcheck_eval",
     "created_at"
   ],
   "properties": {
@@ -26,7 +27,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "record_id": {
       "type": "string",
@@ -364,6 +365,43 @@
             "type": "string",
             "pattern": "^ebc-[a-f0-9]{16}$"
           }
+        }
+      }
+    },
+    "grounding_factcheck_eval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eval_id",
+        "overall_status",
+        "failure_classes"
+      ],
+      "properties": {
+        "eval_id": {
+          "type": "string",
+          "pattern": "^gfe-[a-f0-9]{16}$"
+        },
+        "overall_status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ]
+        },
+        "failure_classes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "fact_check_fail",
+              "semantic_error",
+              "evidence_mismatch",
+              "unsupported_grounded_claim",
+              "incomplete_grounding"
+            ]
+          },
+          "uniqueItems": true
         }
       }
     }

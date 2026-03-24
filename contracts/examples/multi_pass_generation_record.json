@@ -1,6 +1,6 @@
 {
   "artifact_type": "multi_pass_generation_record",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "record_id": "mpg-6a0f4b8c9d1e2f30",
   "trace_id": "trace-example-001",
   "run_id": "agent-run-example-001",
@@ -174,6 +174,14 @@
     "claim_ids": [
       "ebc-1111111111111111",
       "ebc-2222222222222222"
+    ]
+  },
+  "grounding_factcheck_eval": {
+    "eval_id": "gfe-5c8f2f0e7c4b9a11",
+    "overall_status": "fail",
+    "failure_classes": [
+      "incomplete_grounding",
+      "unsupported_grounded_claim"
     ]
   }
 }

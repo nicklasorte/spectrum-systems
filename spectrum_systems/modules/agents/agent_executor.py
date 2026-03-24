@@ -566,6 +566,12 @@ def execute_step_sequence(
                 for claim_id in list((((multi_pass_record or {}).get("evidence_binding") or {}).get("claim_ids") or []))
             ],
             "evidence_binding_policy_mode": str((((multi_pass_record or {}).get("evidence_binding") or {}).get("policy_mode") or "")),
+            "grounding_factcheck_eval_id": str((((multi_pass_record or {}).get("grounding_factcheck_eval") or {}).get("eval_id") or "")),
+            "grounding_factcheck_overall_status": str((((multi_pass_record or {}).get("grounding_factcheck_eval") or {}).get("overall_status") or "")),
+            "grounding_factcheck_failure_classes": [
+                str(item or "")
+                for item in list((((multi_pass_record or {}).get("grounding_factcheck_eval") or {}).get("failure_classes") or []))
+            ],
         },
         "final_output_artifact_id": final_output_artifact_id,
         "execution_status": execution_status,

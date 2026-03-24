@@ -126,6 +126,12 @@
       "ebc-1111111111111111",
       "ebc-2222222222222222"
     ],
-    "evidence_binding_policy_mode": "allow_inferred"
+    "evidence_binding_policy_mode": "allow_inferred",
+    "grounding_factcheck_eval_id": "gfe-5c8f2f0e7c4b9a11",
+    "grounding_factcheck_overall_status": "fail",
+    "grounding_factcheck_failure_classes": [
+      "incomplete_grounding",
+      "unsupported_grounded_claim"
+    ]
   }
 }
