@@ -179,6 +179,7 @@ def execute_step_sequence(
     *,
     agent_run_id: str,
     trace_id: str,
+    prompt_resolution: Dict[str, Any],
     context_bundle: Dict[str, Any],
     step_plan: Sequence[Dict[str, Any]],
     final_output_schema: str,
@@ -192,6 +193,10 @@ def execute_step_sequence(
     """
     if not agent_run_id or not trace_id:
         raise AgentExecutionError("execute_step_sequence: agent_run_id and trace_id are required")
+
+    required_prompt_fields = ("prompt_id", "prompt_version", "resolution_source", "status")
+    if not prompt_resolution or any(not str(prompt_resolution.get(field) or "").strip() for field in required_prompt_fields):
+        raise AgentExecutionError("execute_step_sequence: prompt_resolution with prompt_id/prompt_version/resolution_source/status is required")
 
     bounded_context = construct_context_bundle(context_bundle)
     planned_steps = [deepcopy(step) for step in step_plan]
@@ -274,6 +279,13 @@ def execute_step_sequence(
         "agent_run_id": agent_run_id,
         "context_bundle_id": bounded_context["context_id"],
         "trace_id": trace_id,
+        "prompt_resolution": {
+            "prompt_id": str(prompt_resolution["prompt_id"]),
+            "prompt_version": str(prompt_resolution["prompt_version"]),
+            "requested_alias": prompt_resolution.get("requested_alias"),
+            "resolution_source": str(prompt_resolution["resolution_source"]),
+            "status": str(prompt_resolution["status"]),
+        },
         "step_sequence": [
             {
                 "step_id": s["step_id"],

@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.41",
+  "artifact_version": "1.0.42",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-AG-05-FAILURE-EVAL-AUTOGEN",
-  "run_id": "run-20260324T000000Z",
+  "record_id": "REC-STD-2026-03-24-HS-01-PROMPT-REGISTRY",
+  "run_id": "run-20260324T010000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -30,15 +30,15 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.8",
+      "last_updated_in": "1.0.42",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
+      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, final output lineage, and resolved governed prompt version linkage for replay/eval attribution."
     },
     {
       "artifact_type": "agent_failure_record",
@@ -594,6 +594,19 @@
       "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "prompt_alias_map",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.42",
+      "last_updated_in": "1.0.42",
+      "example_path": "contracts/examples/prompt_alias_map.json",
+      "notes": "Deterministic runtime alias map resolving prompt_id plus alias to one immutable prompt version with explicit deprecated-target allowance."
+    },
+    {
       "artifact_type": "prompt_queue_blocked_recovery_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -827,6 +840,19 @@
       "last_updated_in": "1.9.0",
       "example_path": "contracts/examples/prompt_queue_work_item.json",
       "notes": "Governed prompt queue work item state record for review orchestration and auditability."
+    },
+    {
+      "artifact_type": "prompt_registry_entry",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.42",
+      "last_updated_in": "1.0.42",
+      "example_path": "contracts/examples/prompt_registry_entry.json",
+      "notes": "Immutable governed prompt version artifact carrying deterministic selection key, prompt text hash, risk metadata, and bounded eval linkage."
     },
     {
       "artifact_type": "provenance_record",

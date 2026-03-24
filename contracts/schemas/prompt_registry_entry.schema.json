@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_registry_entry.schema.json",
+  "title": "Prompt Registry Entry",
+  "description": "Immutable governed prompt version artifact for deterministic runtime selection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "prompt_id",
+    "prompt_version",
+    "created_at",
+    "status",
+    "owner",
+    "risk_class",
+    "prompt_text",
+    "prompt_purpose",
+    "linked_eval_set_ids",
+    "runtime_metadata"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "prompt_registry_entry"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "prompt_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "prompt_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "deprecated"]
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["team", "contact"],
+      "properties": {
+        "team": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contact": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "prompt_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "linked_eval_set_ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 25,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9._:-]{2,127}$"
+      }
+    },
+    "runtime_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["immutability_hash", "selection_key"],
+      "properties": {
+        "immutability_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "selection_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}@v[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    }
+  }
+}

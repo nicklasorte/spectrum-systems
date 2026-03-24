@@ -13,10 +13,21 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.modules.agents.agent_executor import (  # noqa: E402
     AgentExecutionBlockedError,
+    AgentExecutionError,
     emit_agent_execution_trace,
     execute_step_sequence,
     generate_step_plan,
 )
+
+
+def _prompt_resolution() -> Dict[str, Any]:
+    return {
+        "prompt_id": "ag.runtime.default",
+        "prompt_version": "v1.0.0",
+        "requested_alias": "prod",
+        "resolution_source": "prompt_alias_map",
+        "status": "resolved",
+    }
 
 
 def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
@@ -67,6 +78,7 @@ def test_successful_bounded_execution() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-001",
         trace_id="trace-001",
+        prompt_resolution=_prompt_resolution(),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -79,6 +91,8 @@ def test_successful_bounded_execution() -> None:
     assert len(trace["step_sequence"]) == 2
     assert trace["step_sequence"][0]["status"] == "completed"
     assert trace["tool_calls"][0]["tool_name"] == "echo"
+    assert trace["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
+    assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
 
 
 def test_tool_step_failure() -> None:
@@ -94,6 +108,7 @@ def test_tool_step_failure() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-002",
         trace_id="trace-002",
+        prompt_resolution=_prompt_resolution(),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -113,6 +128,7 @@ def test_schema_invalid_final_output() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-003",
         trace_id="trace-003",
+        prompt_resolution=_prompt_resolution(),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -131,6 +147,7 @@ def test_blocked_execution_when_context_bundle_missing_required_data() -> None:
         execute_step_sequence(
             agent_run_id="agent-run-004",
             trace_id="trace-004",
+            prompt_resolution=_prompt_resolution(),
             context_bundle=bundle,
             step_plan=plan,
             final_output_schema="context_bundle",
@@ -143,6 +160,7 @@ def test_full_trace_emission_shape_validation() -> None:
         "agent_run_id": "agent-run-005",
         "context_bundle_id": "ctx-1234abcd5678ef90",
         "trace_id": "trace-005",
+        "prompt_resolution": _prompt_resolution(),
         "step_sequence": [
             {
                 "step_id": "step-001",
@@ -165,3 +183,19 @@ def test_full_trace_emission_shape_validation() -> None:
     emitted = emit_agent_execution_trace(valid_trace)
     assert emitted["trace_id"] == "trace-005"
     assert emitted["execution_status"] == "completed"
+
+
+def test_missing_prompt_resolution_fails_closed() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(bundle, [{"step_type": "transform"}])
+
+    with pytest.raises(AgentExecutionError):
+        execute_step_sequence(
+            agent_run_id="agent-run-006",
+            trace_id="trace-006",
+            prompt_resolution={},
+            context_bundle=bundle,
+            step_plan=plan,
+            final_output_schema="context_bundle",
+            final_output_builder=lambda b, _: b,
+        )

@@ -33,5 +33,12 @@
   "execution_status": "completed",
   "failure_reason": null,
   "started_at": "2026-03-21T00:00:00+00:00",
-  "completed_at": "2026-03-21T00:00:01+00:00"
+  "completed_at": "2026-03-21T00:00:01+00:00",
+  "prompt_resolution": {
+    "prompt_id": "ag.runtime.default",
+    "prompt_version": "v1.0.0",
+    "requested_alias": "prod",
+    "resolution_source": "prompt_alias_map",
+    "status": "resolved"
+  }
 }

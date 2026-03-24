@@ -149,6 +149,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-AG-03-2026-03-24.md | AG-03 — HITL Review Queue | Active |
 | docs/review-actions/PLAN-AG-04-2026-03-24.md | AG-04 — Override Artifact Enforcement | Active |
 | docs/review-actions/PLAN-AG-05-2026-03-24.md | AG-05 — Failure → Eval Auto-Generation | Active |
+| docs/review-actions/PLAN-HS-01-2026-03-24.md | HS-01 — Prompt Registry + Versioning System | Active |
 
 Update this table when plans are created or completed.
 
