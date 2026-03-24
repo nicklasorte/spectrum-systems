@@ -105,6 +105,8 @@ def test_happy_path_passes_and_emits_schema_valid_summary(tmp_path: Path) -> Non
     assert code == 0
     assert summary["status"] == "pass"
     assert summary["blocking_reasons"] == []
+    assert summary["id"] == summary["gate_run_id"]
+    assert summary["trace_refs"] == ["22222222-2222-4222-8222-222222222222"]
 
     validator = Draft202012Validator(load_schema("evaluation_ci_gate_result"), format_checker=FormatChecker())
     validator.validate(summary)
@@ -133,6 +135,7 @@ def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
     assert code == 2
     assert summary["status"] == "blocked"
     assert "eval_cases" in summary["missing_artifacts"]
+    assert summary["id"] == summary["gate_run_id"]
 
 
 def test_invalid_schema_artifact_fails_closed(tmp_path: Path) -> None:

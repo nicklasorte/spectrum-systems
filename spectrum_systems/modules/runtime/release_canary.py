@@ -321,8 +321,16 @@ def build_release_record(
     record = {
         "artifact_type": "evaluation_release_record",
         "schema_version": "1.0.0",
+        "id": release_id,
         "release_id": release_id,
         "timestamp": timestamp or _utc_now(),
+        "trace_refs": sorted(
+            {
+                str(baseline_eval_summary.get("trace_id", "")).strip(),
+                str(candidate_eval_summary.get("trace_id", "")).strip(),
+            }
+            - {""}
+        ),
         "candidate_version": candidate_version,
         "baseline_version": baseline_version,
         "artifact_types": sorted(set(artifact_types)),

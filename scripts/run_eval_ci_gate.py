@@ -250,19 +250,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     if missing_artifacts:
         status = "blocked"
         blocking_reasons = [f"missing_required_artifact: {name}" for name in missing_artifacts]
+        summary_id = _gate_run_id(
+            seed_payload={
+                "status": status,
+                "missing_artifacts": sorted(missing_artifacts),
+                "eval_run": str(args.eval_run),
+                "eval_cases": str(args.eval_cases),
+                "policy": str(policy_path),
+            }
+        )
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
             "schema_version": "1.0.0",
-            "gate_run_id": _gate_run_id(
-                seed_payload={
-                    "status": status,
-                    "missing_artifacts": sorted(missing_artifacts),
-                    "eval_run": str(args.eval_run),
-                    "eval_cases": str(args.eval_cases),
-                    "policy": str(policy_path),
-                }
-            ),
+            "id": summary_id,
+            "gate_run_id": summary_id,
             "timestamp": _utc_now(),
+            "trace_refs": [],
             "status": status,
             "blocking_reasons": blocking_reasons,
             "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,
@@ -280,17 +283,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         policy = _load_json(policy_path)
     except (json.JSONDecodeError, OSError) as exc:
+        summary_id = _gate_run_id(
+            seed_payload={
+                "status": "blocked",
+                "invalid_artifacts": ["eval_ci_gate_policy"],
+                "policy_path": str(policy_path),
+            }
+        )
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
             "schema_version": "1.0.0",
-            "gate_run_id": _gate_run_id(
-                seed_payload={
-                    "status": "blocked",
-                    "invalid_artifacts": ["eval_ci_gate_policy"],
-                    "policy_path": str(policy_path),
-                }
-            ),
+            "id": summary_id,
+            "gate_run_id": summary_id,
             "timestamp": _utc_now(),
+            "trace_refs": [],
             "status": "blocked",
             "blocking_reasons": [f"execution_error: invalid policy ({exc})"],
             "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,
@@ -313,11 +319,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     eval_summary_ref = None
     control_ref = None
+    trace_refs: List[str] = []
     if artifacts is not None:
         eval_summary_ref = _ref_path(output_dir / "eval_summary.json")
         control_ref = _ref_path(output_dir / "evaluation_control_decision.json")
         _write_json(output_dir / "eval_summary.json", artifacts.eval_summary)
         _write_json(output_dir / "evaluation_control_decision.json", artifacts.evaluation_control_decision)
+        trace_id = artifacts.eval_summary.get("trace_id")
+        if isinstance(trace_id, str) and trace_id.strip():
+            trace_refs.append(trace_id)
 
     status = "pass"
     exit_code = _EXIT_PASS
@@ -342,21 +352,24 @@ def main(argv: Optional[List[str]] = None) -> int:
         status = "blocked"
         exit_code = _EXIT_BLOCKED
 
+    summary_id = _gate_run_id(
+        seed_payload={
+            "status": status,
+            "blocking_reasons": sorted(blocking_reasons),
+            "invalid_artifacts": sorted(invalid_artifacts),
+            "indeterminate_hits": sorted(indeterminate_hits),
+            "eval_run": str(args.eval_run),
+            "eval_cases": str(args.eval_cases),
+            "policy": str(policy_path),
+        }
+    )
     summary = {
         "artifact_type": "evaluation_ci_gate_result",
         "schema_version": "1.0.0",
-        "gate_run_id": _gate_run_id(
-            seed_payload={
-                "status": status,
-                "blocking_reasons": sorted(blocking_reasons),
-                "invalid_artifacts": sorted(invalid_artifacts),
-                "indeterminate_hits": sorted(indeterminate_hits),
-                "eval_run": str(args.eval_run),
-                "eval_cases": str(args.eval_cases),
-                "policy": str(policy_path),
-            }
-        ),
+        "id": summary_id,
+        "gate_run_id": summary_id,
         "timestamp": _utc_now(),
+        "trace_refs": sorted(set(trace_refs)),
         "status": status,
         "blocking_reasons": blocking_reasons,
         "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,

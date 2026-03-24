@@ -8,8 +8,10 @@
   "required": [
     "artifact_type",
     "schema_version",
+    "id",
     "release_id",
     "timestamp",
+    "trace_refs",
     "candidate_version",
     "baseline_version",
     "artifact_types",
@@ -30,6 +32,10 @@
       "type": "string",
       "const": "1.0.0"
     },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
     "release_id": {
       "type": "string",
       "minLength": 1
@@ -37,6 +43,14 @@
     "timestamp": {
       "type": "string",
       "format": "date-time"
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     },
     "candidate_version": {
       "type": "string",

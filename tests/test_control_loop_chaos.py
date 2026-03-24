@@ -104,6 +104,8 @@ def test_summary_artifact_is_emitted_to_json(tmp_path: Path) -> None:
     assert output_path.exists()
     written = json.loads(output_path.read_text(encoding="utf-8"))
     assert written["artifact_type"] == "evaluation_control_chaos_summary"
+    assert written["id"] == written["chaos_run_id"]
+    assert written["trace_refs"] == []
     assert written["scenario_count"] == summary["scenario_count"]
 
 

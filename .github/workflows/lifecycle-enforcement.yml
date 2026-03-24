@@ -23,6 +23,12 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Verify dependency bootstrap contract
+        run: python scripts/verify_environment.py --python-only
+
       - name: Validate lifecycle definitions and data backbone
         run: python scripts/validate_lifecycle_data.py
 
@@ -40,6 +46,9 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
 
+      - name: Verify dependency bootstrap contract
+        run: python scripts/verify_environment.py --python-only
+
       - name: Run lifecycle and data backbone tests
         run: pytest tests/test_lifecycle_enforcer.py -v
 
@@ -56,6 +65,9 @@ jobs:
 
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt
+
+      - name: Verify dependency bootstrap contract
+        run: python scripts/verify_environment.py --python-only
 
       - name: Run fail-closed eval CI gate
         run: |

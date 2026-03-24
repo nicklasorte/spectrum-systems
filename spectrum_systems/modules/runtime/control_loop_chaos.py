@@ -223,8 +223,10 @@ def run_chaos_scenarios(
     return {
         "artifact_type": "evaluation_control_chaos_summary",
         "schema_version": SCHEMA_VERSION,
+        "id": run_id,
         "chaos_run_id": run_id,
         "timestamp": run_timestamp,
+        "trace_refs": [],
         "scenario_count": len(scenario_results),
         "pass_count": pass_count,
         "fail_count": fail_count,

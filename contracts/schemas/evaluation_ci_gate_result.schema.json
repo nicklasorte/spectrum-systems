@@ -8,8 +8,10 @@
   "required": [
     "artifact_type",
     "schema_version",
+    "id",
     "gate_run_id",
     "timestamp",
+    "trace_refs",
     "status",
     "blocking_reasons",
     "required_artifacts_checked",
@@ -29,6 +31,10 @@
       "type": "string",
       "const": "1.0.0"
     },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
     "gate_run_id": {
       "type": "string",
       "minLength": 1
@@ -36,6 +42,14 @@
     "timestamp": {
       "type": "string",
       "format": "date-time"
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     },
     "status": {
       "type": "string",

@@ -69,6 +69,7 @@ SF-14 emits `evaluation_release_record`:
 - example: `contracts/examples/evaluation_release_record.json`
 
 The artifact includes:
+- envelope core fields (`id`, `timestamp`, `schema_version`, `trace_refs`),
 - baseline/candidate version references,
 - prompt/schema/policy/routing version IDs,
 - eval/coverage artifact refs,
@@ -106,3 +107,4 @@ Key output artifact:
 - **SF-11:** reuses control decision response (`allow|warn|freeze|block`) as a governed release signal.
 
 No parallel control or evaluation architecture is introduced.
+Implementation boundary rule: `scripts/run_release_canary.py` only orchestrates CLI I/O and imports shared coverage logic from `spectrum_systems.modules.evaluation.eval_coverage_reporting` (never from another script).
