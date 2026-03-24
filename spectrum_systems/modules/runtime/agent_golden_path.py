@@ -8,15 +8,17 @@ context_bundle -> agent_execution_trace -> structured_output(eval_case)
 
 from __future__ import annotations
 
+import hashlib
 import json
 from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import NAMESPACE_URL, uuid5
 
 from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.exceptions import ValidationError
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.agents.agent_executor import execute_step_sequence, generate_step_plan
@@ -31,6 +33,16 @@ class AgentGoldenPathError(RuntimeError):
     """Fail-closed error for AG-01 runtime pipeline."""
 
 
+class AgentGoldenPathStageError(AgentGoldenPathError):
+    """Typed fail-closed stage failure for AG-02 canonical artifact emission."""
+
+    def __init__(self, *, stage: str, failure_type: str, error_message: str) -> None:
+        super().__init__(error_message)
+        self.stage = stage
+        self.failure_type = failure_type
+        self.error_message = error_message
+
+
 @dataclass(frozen=True)
 class GoldenPathConfig:
     """Runtime configuration for deterministic AG-01 execution."""
@@ -40,9 +52,13 @@ class GoldenPathConfig:
     source_artifacts: List[Dict[str, Any]]
     context_config: Dict[str, Any]
     output_dir: Path
+    fail_context_assembly: bool = False
     fail_agent_execution: bool = False
     emit_invalid_structured_output: bool = False
     fail_eval_execution: bool = False
+    emit_invalid_eval_summary: bool = False
+    fail_control_decision: bool = False
+    fail_enforcement: bool = False
     force_eval_status: Optional[str] = None
     force_control_block: bool = False
 
@@ -51,9 +67,16 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _validate_contract(payload: Dict[str, Any], schema_name: str) -> None:
+def _validate_contract(payload: Dict[str, Any], schema_name: str, *, stage: str) -> None:
     schema = load_schema(schema_name)
-    Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+    try:
+        Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+    except ValidationError as exc:
+        raise AgentGoldenPathStageError(
+            stage=stage,
+            failure_type="schema_error",
+            error_message=f"{schema_name} validation failed: {exc.message}",
+        ) from exc
 
 
 def _stable_trace_id(task_type: str, input_payload: Dict[str, Any]) -> str:
@@ -66,37 +89,67 @@ def _emit_json(path: Path, payload: Dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _failure_record(*, run_id: str, trace_id: str, stage: str, reason: str, artifact_refs: List[str]) -> Dict[str, Any]:
-    record = {
-        "trace_id": trace_id,
-        "run_id": run_id,
-        "artifact_id": deterministic_id(
-            prefix="cer",
-            namespace="agent_golden_path_execution",
-            payload={"run_id": run_id, "trace_id": trace_id, "stage": stage, "reason": reason},
-        ),
-        "execution_status": "blocked",
-        "actions_taken": [
-            {
-                "action_type": "agent_golden_path_failure",
-                "status": "blocked",
-                "stage": stage,
-                "reason": reason,
-                "artifact_references": sorted(set(artifact_refs)),
-                "timestamp": _now_iso(),
-            }
-        ],
-        "validators_run": ["agent_golden_path"],
-        "validators_failed": [stage],
-        "repair_actions_applied": [],
-        "publication_blocked": True,
-        "decision_blocked": True,
-        "rerun_triggered": False,
-        "escalation_triggered": False,
-        "human_review_required": True,
+def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    offset_seconds = int(digest[:8], 16) % (365 * 24 * 60 * 60)
+    base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    return (base + timedelta(seconds=offset_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _extract_root_artifact_ids(artifacts: Dict[str, Dict[str, Any]], run_id: str) -> Dict[str, Optional[str]]:
+    return {
+        "context_bundle_id": artifacts.get("context_bundle", {}).get("context_id"),
+        "agent_run_id": artifacts.get("agent_execution_trace", {}).get("agent_run_id") or run_id,
+        "eval_case_id": artifacts.get("structured_output", {}).get("eval_case_id"),
+        "eval_run_id": artifacts.get("eval_summary", {}).get("eval_run_id"),
+        "decision_id": artifacts.get("control_decision", {}).get("decision_id"),
+        "enforcement_result_id": artifacts.get("enforcement", {}).get("enforcement_result_id"),
     }
-    _validate_contract(record, "control_execution_result")
-    return record
+
+
+def _build_failure_artifact(
+    *,
+    run_id: str,
+    trace_id: str,
+    stage: str,
+    failure_type: str,
+    error_message: str,
+    artifacts: Dict[str, Dict[str, Any]],
+    refs: List[str],
+    policy_version_id: Optional[str],
+) -> Dict[str, Any]:
+    root_artifact_ids = _extract_root_artifact_ids(artifacts, run_id)
+    identity_payload = {
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "failure_stage": stage,
+        "failure_type": failure_type,
+        "error_message": error_message,
+        "root_artifact_ids": root_artifact_ids,
+        "input_references": sorted(set(refs)),
+        "policy_version_id": policy_version_id,
+    }
+    artifact = {
+        "artifact_type": "agent_failure_record",
+        "schema_version": "1.0.0",
+        "id": deterministic_id(
+            prefix="afr",
+            namespace="agent_golden_path_failure",
+            payload=identity_payload,
+        ),
+        "timestamp": _deterministic_timestamp(identity_payload),
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "failure_stage": stage,
+        "failure_type": failure_type,
+        "error_message": error_message,
+        "root_artifact_ids": root_artifact_ids,
+        "input_references": sorted(set(refs)),
+        "policy_version_id": policy_version_id,
+    }
+    _validate_contract(artifact, "agent_failure_record", stage="enforcement")
+    return artifact
 
 
 def _build_structured_output(
@@ -154,13 +207,24 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
 
     try:
         # 1) Context assembly
-        context_bundle = build_context_bundle(
-            config.task_type,
-            config.input_payload,
-            source_artifacts=config.source_artifacts,
-            config=config.context_config,
-        )
-        _validate_contract(context_bundle, "context_bundle")
+        try:
+            if config.fail_context_assembly:
+                raise RuntimeError("forced_context_assembly_failure")
+            context_bundle = build_context_bundle(
+                config.task_type,
+                config.input_payload,
+                source_artifacts=config.source_artifacts,
+                config=config.context_config,
+            )
+            _validate_contract(context_bundle, "context_bundle", stage="context")
+        except AgentGoldenPathStageError:
+            raise
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="context",
+                failure_type="execution_error",
+                error_message=str(exc),
+            ) from exc
         artifacts["context_bundle"] = context_bundle
         refs.append(f"context_bundle:{context_bundle['context_id']}")
 
@@ -192,27 +256,33 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 "payload": deepcopy(payload),
             }
 
-        trace = execute_step_sequence(
-            agent_run_id=run_id,
-            trace_id=trace_id,
-            context_bundle=context_bundle,
-            step_plan=step_plan,
-            final_output_schema="eval_case",
-            tool_registry={"generate_structured_signal": _tool_fn},
-            final_output_builder=lambda bundle, steps: _build_structured_output(
+        try:
+            trace = execute_step_sequence(
+                agent_run_id=run_id,
                 trace_id=trace_id,
-                run_id=run_id,
-                context_bundle=bundle,
-                tool_calls=[s for s in steps if s.get("step_type") == "tool"],
-                force_invalid=config.emit_invalid_structured_output,
-                force_eval_status=config.force_eval_status,
-            ),
-        )
+                context_bundle=context_bundle,
+                step_plan=step_plan,
+                final_output_schema="eval_case",
+                tool_registry={"generate_structured_signal": _tool_fn},
+                final_output_builder=lambda bundle, steps: _build_structured_output(
+                    trace_id=trace_id,
+                    run_id=run_id,
+                    context_bundle=bundle,
+                    tool_calls=[s for s in steps if s.get("step_type") == "tool"],
+                    force_invalid=False,
+                    force_eval_status=config.force_eval_status,
+                ),
+            )
+            if trace["execution_status"] != "completed":
+                raise RuntimeError(trace.get("failure_reason") or "agent execution did not complete")
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="agent",
+                failure_type="execution_error",
+                error_message=str(exc),
+            ) from exc
         artifacts["agent_execution_trace"] = trace
         refs.append(f"agent_execution_trace:{trace['agent_run_id']}")
-
-        if trace["execution_status"] != "completed":
-            raise AgentGoldenPathError(trace.get("failure_reason") or "agent execution did not complete")
 
         # 3) Output normalization
         structured_output = _build_structured_output(
@@ -223,39 +293,72 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             force_invalid=config.emit_invalid_structured_output,
             force_eval_status=config.force_eval_status,
         )
-        _validate_contract(structured_output, "eval_case")
+        _validate_contract(structured_output, "eval_case", stage="normalization")
         artifacts["structured_output"] = structured_output
         refs.append(f"structured_output:{structured_output['eval_case_id']}")
 
         # 4) Eval execution
-        if config.fail_eval_execution:
-            raise AgentGoldenPathError("forced_eval_execution_failure")
-        eval_result = run_eval_case(structured_output)
-        _validate_contract(eval_result, "eval_result")
-        eval_summary = compute_eval_summary(
-            eval_run_id=run_id,
-            trace_id=trace_id,
-            eval_results=[eval_result],
-        )
-        if config.force_control_block:
-            eval_summary["reproducibility_score"] = 0.0
-            eval_summary["system_status"] = "failing"
-        _validate_contract(eval_summary, "eval_summary")
+        try:
+            if config.fail_eval_execution:
+                raise RuntimeError("forced_eval_execution_failure")
+            eval_result = run_eval_case(structured_output)
+            _validate_contract(eval_result, "eval_result", stage="eval")
+            eval_summary = compute_eval_summary(
+                eval_run_id=run_id,
+                trace_id=trace_id,
+                eval_results=[eval_result],
+            )
+            if config.emit_invalid_eval_summary:
+                eval_summary.pop("trace_id", None)
+            if config.force_control_block:
+                eval_summary["reproducibility_score"] = 0.0
+                eval_summary["system_status"] = "failing"
+            _validate_contract(eval_summary, "eval_summary", stage="eval")
+        except AgentGoldenPathStageError:
+            raise
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="eval",
+                failure_type="execution_error",
+                error_message=str(exc),
+            ) from exc
         artifacts["eval_result"] = eval_result
         artifacts["eval_summary"] = eval_summary
         refs.append(f"eval_result:{eval_result['eval_case_id']}")
         refs.append(f"eval_summary:{eval_summary['eval_run_id']}")
 
         # 5) Control decision
-        control = run_control_loop(eval_summary, {"run_id": run_id, "trace_id": trace_id})
-        decision = control["evaluation_control_decision"]
-        _validate_contract(decision, "evaluation_control_decision")
+        try:
+            if config.fail_control_decision:
+                raise RuntimeError("forced_control_decision_failure")
+            control = run_control_loop(eval_summary, {"run_id": run_id, "trace_id": trace_id})
+            decision = control["evaluation_control_decision"]
+            _validate_contract(decision, "evaluation_control_decision", stage="control")
+        except AgentGoldenPathStageError:
+            raise
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="control",
+                failure_type="policy_error",
+                error_message=str(exc),
+            ) from exc
         artifacts["control_decision"] = decision
         refs.append(f"evaluation_control_decision:{decision['decision_id']}")
 
         # 6) Enforcement
-        enforcement = enforce_control_decision(decision)
-        _validate_contract(enforcement, "enforcement_result")
+        try:
+            if config.fail_enforcement:
+                raise RuntimeError("forced_enforcement_failure")
+            enforcement = enforce_control_decision(decision)
+            _validate_contract(enforcement, "enforcement_result", stage="enforcement")
+        except AgentGoldenPathStageError:
+            raise
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="enforcement",
+                failure_type="execution_error",
+                error_message=str(exc),
+            ) from exc
         artifacts["enforcement"] = enforcement
         refs.append(f"enforcement_result:{enforcement['enforcement_result_id']}")
 
@@ -299,16 +402,19 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             "escalation_triggered": False,
             "human_review_required": warning_flag,
         }
-        _validate_contract(execution_record, "control_execution_result")
+        _validate_contract(execution_record, "control_execution_result", stage="enforcement")
         artifacts["final_execution_record"] = execution_record
 
-    except Exception as exc:
-        failure = _failure_record(
+    except AgentGoldenPathStageError as exc:
+        failure = _build_failure_artifact(
             run_id=run_id,
             trace_id=trace_id,
-            stage=("agent_execution" if "agent_execution_trace" in artifacts else "context_or_precheck"),
-            reason=str(exc),
-            artifact_refs=refs,
+            stage=exc.stage,
+            failure_type=exc.failure_type,
+            error_message=exc.error_message,
+            artifacts=artifacts,
+            refs=refs,
+            policy_version_id=None,
         )
         artifacts["failure_artifact"] = failure
 

@@ -42,9 +42,13 @@ def main(argv: list[str] | None = None) -> int:
         help="JSON array of source artifact objects",
     )
     parser.add_argument("--output-dir", default="outputs/agent_golden_path", help="Artifact output directory")
+    parser.add_argument("--fail-context-assembly", action="store_true", help="Force context assembly failure")
     parser.add_argument("--fail-agent-execution", action="store_true", help="Force agent execution tool failure")
     parser.add_argument("--emit-invalid-structured-output", action="store_true", help="Force invalid structured output schema")
     parser.add_argument("--fail-eval-execution", action="store_true", help="Force eval stage failure")
+    parser.add_argument("--emit-invalid-eval-summary", action="store_true", help="Force invalid eval summary schema")
+    parser.add_argument("--fail-control-decision", action="store_true", help="Force control decision failure")
+    parser.add_argument("--fail-enforcement", action="store_true", help="Force enforcement failure")
     parser.add_argument(
         "--force-eval-status",
         choices=["pass", "fail"],
@@ -66,15 +70,31 @@ def main(argv: list[str] | None = None) -> int:
             source_artifacts=source_artifacts,
             context_config=context_config,
             output_dir=Path(args.output_dir),
+            fail_context_assembly=args.fail_context_assembly,
             fail_agent_execution=args.fail_agent_execution,
             emit_invalid_structured_output=args.emit_invalid_structured_output,
             fail_eval_execution=args.fail_eval_execution,
+            emit_invalid_eval_summary=args.emit_invalid_eval_summary,
+            fail_control_decision=args.fail_control_decision,
+            fail_enforcement=args.fail_enforcement,
             force_eval_status=args.force_eval_status,
             force_control_block=args.force_control_block,
         )
     )
 
-    print(json.dumps({"artifacts_emitted": sorted(artifacts.keys())}, indent=2))
+    if "failure_artifact" in artifacts:
+        failure = artifacts["failure_artifact"]
+        summary = {
+            "status": "failed",
+            "failure_stage": failure["failure_stage"],
+            "failure_type": failure["failure_type"],
+            "message": failure["error_message"],
+            "failure_artifact_id": failure["id"],
+        }
+        print(json.dumps(summary, indent=2))
+        return 1
+
+    print(json.dumps({"status": "success", "artifacts_emitted": sorted(artifacts.keys())}, indent=2))
     return 0
 
 

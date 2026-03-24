@@ -1,4 +1,4 @@
-# AG-01 Agent Runtime Golden Path
+# AG-01 Agent Runtime Golden Path (AG-02 Failure-Hardened)
 
 ## Purpose
 
@@ -6,7 +6,7 @@
 
 `context_bundle -> agent_execution_trace -> structured_output -> eval -> eval_summary -> control_decision -> enforcement -> final_execution_record`
 
-This path is deterministic, bounded, and fail-closed.
+`AG-02` hardens this path so every failure emits one canonical governed failure artifact.
 
 ## Pipeline diagram (text)
 
@@ -31,6 +31,78 @@ This path is deterministic, bounded, and fail-closed.
 7. **Final execution record**
    - Emit `final_execution_record` as `control_execution_result`.
 
+## Failure stages (AG-02)
+
+Canonical `failure_stage` vocabulary:
+
+- `context`
+- `agent`
+- `normalization`
+- `eval`
+- `control`
+- `enforcement`
+
+At any stage failure:
+
+1. Build `agent_failure_record`.
+2. Emit `failure_artifact.json`.
+3. Stop pipeline immediately.
+4. Do not execute downstream stages.
+
+## Canonical failure artifact
+
+`artifact_type: agent_failure_record` (`schema_version: 1.0.0`)
+
+Required fields:
+
+- `id` (deterministic)
+- `timestamp` (deterministic)
+- `run_id`
+- `trace_id`
+- `failure_stage`
+- `failure_type`
+- `error_message`
+- `root_artifact_ids`
+- `input_references`
+- `policy_version_id`
+
+Governance guarantees:
+
+- Schema-valid against `contracts/schemas/agent_failure_record.schema.json`
+- `additionalProperties: false`
+- Deterministic identity (`deterministic_id`, no random UUIDs)
+- Stable ordering for emitted JSON keys
+
+### Example failure output (shape)
+
+```json
+{
+  "artifact_type": "agent_failure_record",
+  "schema_version": "1.0.0",
+  "id": "afr-...",
+  "timestamp": "2026-...Z",
+  "run_id": "agrun-...",
+  "trace_id": "...",
+  "failure_stage": "eval",
+  "failure_type": "execution_error",
+  "error_message": "forced_eval_execution_failure",
+  "root_artifact_ids": {
+    "context_bundle_id": "...",
+    "agent_run_id": "...",
+    "eval_case_id": "...",
+    "eval_run_id": null,
+    "decision_id": null,
+    "enforcement_result_id": null
+  },
+  "input_references": [
+    "context_bundle:...",
+    "agent_execution_trace:...",
+    "structured_output:..."
+  ],
+  "policy_version_id": null
+}
+```
+
 ## Artifact flow
 
 On successful run, artifacts are emitted to the output directory:
@@ -44,19 +116,16 @@ On successful run, artifacts are emitted to the output directory:
 - `enforcement.json`
 - `final_execution_record.json`
 
-On fail-closed stop, `failure_artifact.json` is emitted and downstream stages are not executed.
+On fail-closed stop, `failure_artifact.json` is always emitted and downstream stages are not executed.
 
-## Failure behavior
+## CLI behavior
 
-Fail-closed at every stage:
+`scripts/run_agent_golden_path.py` behavior:
 
-- Context schema invalid -> stop + failure artifact.
-- Agent execution failure/blocked trace -> stop + failure artifact.
-- Structured output schema invalid -> stop + failure artifact.
-- Eval stage exception -> stop + failure artifact.
-- Control/enforcement errors -> stop + failure artifact.
-
-No silent retries, no hidden fallback, no bypass path.
+- Exit `0` on success with concise artifact list.
+- Exit non-zero on failure.
+- Print concise failure summary (`failure_stage`, `failure_type`, `message`, `failure_artifact_id`).
+- Always write `failure_artifact.json` on failure.
 
 ## Run locally
 
@@ -71,8 +140,10 @@ python scripts/run_agent_golden_path.py \
 Failure injection examples:
 
 ```bash
+python scripts/run_agent_golden_path.py --fail-context-assembly
 python scripts/run_agent_golden_path.py --fail-agent-execution
 python scripts/run_agent_golden_path.py --emit-invalid-structured-output
 python scripts/run_agent_golden_path.py --fail-eval-execution
-python scripts/run_agent_golden_path.py --force-eval-status fail
+python scripts/run_agent_golden_path.py --fail-control-decision
+python scripts/run_agent_golden_path.py --fail-enforcement
 ```

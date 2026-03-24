@@ -1,0 +1,25 @@
+{
+  "artifact_type": "agent_failure_record",
+  "schema_version": "1.0.0",
+  "id": "afr-6b4e9480bd3e4b2d",
+  "timestamp": "2026-01-01T00:00:00Z",
+  "run_id": "agrun-1c42b4ad4a2f",
+  "trace_id": "8c9a39f1-7b62-5ca9-8b04-e628776f4e11",
+  "failure_stage": "eval",
+  "failure_type": "execution_error",
+  "error_message": "forced_eval_execution_failure",
+  "root_artifact_ids": {
+    "context_bundle_id": "ctx-001",
+    "agent_run_id": "agrun-1c42b4ad4a2f",
+    "eval_case_id": "ec-001",
+    "eval_run_id": null,
+    "decision_id": null,
+    "enforcement_result_id": null
+  },
+  "input_references": [
+    "agent_execution_trace:agrun-1c42b4ad4a2f",
+    "context_bundle:ctx-001",
+    "structured_output:ec-001"
+  ],
+  "policy_version_id": null
+}
