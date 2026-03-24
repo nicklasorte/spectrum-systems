@@ -1,0 +1,20 @@
+{
+  "decision_id": "gcd-9a7b6c5d4e3f2011",
+  "timestamp": "2026-03-24T12:00:00Z",
+  "trace_id": "trace-example-001",
+  "run_id": "agent-run-example-001",
+  "grounding_eval_id": "gfe-5c8f2f0e7c4b9a11",
+  "status": "block",
+  "failure_summary": {
+    "total_claims": 2,
+    "supported_claims": 1,
+    "unsupported_claims": 1,
+    "invalid_evidence_refs": 1
+  },
+  "triggered_rules": [
+    "invalid_evidence_refs_gt_zero"
+  ],
+  "enforcement_action": "block_execution",
+  "policy_id": "grounding-control-v1",
+  "generated_by_version": "hs-20.1.0"
+}

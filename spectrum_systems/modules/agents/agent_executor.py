@@ -477,8 +477,22 @@ def execute_step_sequence(
                 input_artifact=draft_output,
                 validated_context_bundle=bounded_context,
             )
-            final_output = dict(multi_pass_record["final_output"])
-            validate_final_output(final_output, final_output_schema)
+            grounding_control = dict(multi_pass_record.get("grounding_control_decision") or {})
+            enforcement_action = str(grounding_control.get("enforcement_action") or "")
+            if enforcement_action == "block_execution":
+                execution_status = EXECUTION_BLOCKED
+                failure_reason = (
+                    "grounding_control_decision blocked execution: "
+                    f"{grounding_control.get('decision_id', '')}"
+                )
+            else:
+                final_output = dict(multi_pass_record["final_output"])
+                validate_final_output(final_output, final_output_schema)
+                if enforcement_action == "flag":
+                    failure_reason = (
+                        "grounding_control_decision flagged grounding violations: "
+                        f"{grounding_control.get('decision_id', '')}"
+                    )
         except (MultiPassGenerationError, Exception) as exc:
             execution_status = EXECUTION_FAILED
             failure_reason = f"multi_pass_generation/validate_final_output failed: {exc}"
@@ -572,6 +586,15 @@ def execute_step_sequence(
                 str(item or "")
                 for item in list((((multi_pass_record or {}).get("grounding_factcheck_eval") or {}).get("failure_classes") or []))
             ],
+            "grounding_control_decision": {
+                "decision_id": str((((multi_pass_record or {}).get("grounding_control_decision") or {}).get("decision_id") or "")),
+                "status": str((((multi_pass_record or {}).get("grounding_control_decision") or {}).get("status") or "")),
+                "enforcement_action": str((((multi_pass_record or {}).get("grounding_control_decision") or {}).get("enforcement_action") or "")),
+                "triggered_rules": [
+                    str(rule or "")
+                    for rule in list((((multi_pass_record or {}).get("grounding_control_decision") or {}).get("triggered_rules") or []))
+                ],
+            },
         },
         "final_output_artifact_id": final_output_artifact_id,
         "execution_status": execution_status,

@@ -49,6 +49,8 @@ def test_full_multi_pass_execution_path() -> None:
     assert record["passes"][2]["pass_type"] == "refine"
     assert record["evidence_binding"]["record_id"].startswith("ebr-")
     assert record["grounding_factcheck_eval"]["eval_id"].startswith("gfe-")
+    assert record["grounding_control_decision"]["decision_id"].startswith("gcd-")
+    assert record["grounding_control_decision"]["enforcement_action"] in {"allow", "flag", "block_execution"}
 
 
 def test_deterministic_outputs_across_runs() -> None:
@@ -86,6 +88,7 @@ def test_trace_linkage_fields_present_for_all_passes() -> None:
         assert isinstance(p["parent_pass_ids"], list)
     assert isinstance(record["evidence_binding"]["claim_ids"], list)
     assert isinstance(record["grounding_factcheck_eval"]["failure_classes"], list)
+    assert isinstance(record["grounding_control_decision"]["triggered_rules"], list)
 
 
 def test_required_grounded_mode_fails_when_unsupported_claims_present() -> None:
