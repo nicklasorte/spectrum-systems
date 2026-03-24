@@ -190,6 +190,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["multi_pass_generation"]["record_id"].startswith("mpg-")
     assert trace["multi_pass_generation"]["evidence_binding_record_id"].startswith("ebr-")
     assert trace["multi_pass_generation"]["evidence_binding_policy_mode"] == "required_grounded"
+    assert trace["multi_pass_generation"]["grounding_factcheck_eval_id"].startswith("gfe-")
+    assert trace["multi_pass_generation"]["grounding_factcheck_overall_status"] in {"pass", "warn", "fail"}
 
 
 def test_tool_step_failure() -> None:
@@ -313,7 +315,13 @@ def test_full_trace_emission_shape_validation() -> None:
                 "ebc-1111111111111111",
                 "ebc-2222222222222222"
             ],
-            "evidence_binding_policy_mode": "allow_inferred"
+            "evidence_binding_policy_mode": "allow_inferred",
+            "grounding_factcheck_eval_id": "gfe-5c8f2f0e7c4b9a11",
+            "grounding_factcheck_overall_status": "fail",
+            "grounding_factcheck_failure_classes": [
+                "incomplete_grounding",
+                "unsupported_grounded_claim"
+            ]
         },
         "final_output_artifact_id": "agent-output://agent-run-005",
         "execution_status": "completed",

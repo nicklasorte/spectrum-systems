@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/grounding_factcheck_eval.schema.json",
+  "title": "Grounding Fact-Check Eval",
+  "description": "Deterministic HS-19 grounding and fact-check evaluation artifact over HS-09 bound claims.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "created_at",
+    "source_artifact_id",
+    "evidence_binding_record_id",
+    "overall_status",
+    "failure_classes",
+    "claim_results",
+    "trace_linkage",
+    "policy"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "grounding_factcheck_eval"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string",
+      "pattern": "^gfe-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_binding_record_id": {
+      "type": "string",
+      "pattern": "^ebr-[a-f0-9]{16}$"
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warn",
+        "fail"
+      ]
+    },
+    "failure_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "fact_check_fail",
+          "semantic_error",
+          "evidence_mismatch",
+          "unsupported_grounded_claim",
+          "incomplete_grounding"
+        ]
+      }
+    },
+    "claim_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "claim_classification_from_binding",
+          "eval_status",
+          "failure_classes",
+          "supporting_evidence_refs_checked",
+          "rationale_code"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "pattern": "^ebc-[a-f0-9]{16}$"
+          },
+          "claim_classification_from_binding": {
+            "type": "string",
+            "enum": [
+              "directly_supported",
+              "inferred",
+              "unsupported"
+            ]
+          },
+          "eval_status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "warn",
+              "fail"
+            ]
+          },
+          "failure_classes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "fact_check_fail",
+                "semantic_error",
+                "evidence_mismatch",
+                "unsupported_grounded_claim",
+                "incomplete_grounding"
+              ]
+            }
+          },
+          "supporting_evidence_refs_checked": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ctxi-[a-f0-9]{16}$"
+            }
+          },
+          "rationale_code": {
+            "type": "string",
+            "enum": [
+              "ok_supported",
+              "direct_missing_evidence_refs",
+              "direct_invalid_evidence_ref",
+              "direct_text_evidence_mismatch",
+              "inferred_retained",
+              "inferred_masquerades_as_direct",
+              "inferred_disallowed_by_policy",
+              "unsupported_claim",
+              "unsupported_disallowed_by_policy",
+              "canonical_ref_not_selected",
+              "canonical_term_missing_in_claim_text"
+            ]
+          }
+        }
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "trace_id",
+        "parent_multi_pass_record_id",
+        "final_pass_output_ref"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_multi_pass_record_id": {
+          "type": "string",
+          "pattern": "^mpg-[a-f0-9]{16}$"
+        },
+        "final_pass_output_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "allow_inferred_claims",
+        "allow_unsupported_claims",
+        "fail_on_fact_check_fail"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "allow_inferred_claims": {
+          "type": "boolean"
+        },
+        "allow_unsupported_claims": {
+          "type": "boolean"
+        },
+        "fail_on_fact_check_fail": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

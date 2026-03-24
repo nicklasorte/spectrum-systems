@@ -48,6 +48,7 @@ def test_full_multi_pass_execution_path() -> None:
     assert record["passes"][1]["pass_type"] == "critique"
     assert record["passes"][2]["pass_type"] == "refine"
     assert record["evidence_binding"]["record_id"].startswith("ebr-")
+    assert record["grounding_factcheck_eval"]["eval_id"].startswith("gfe-")
 
 
 def test_deterministic_outputs_across_runs() -> None:
@@ -84,6 +85,7 @@ def test_trace_linkage_fields_present_for_all_passes() -> None:
         assert p["output_ref"].startswith("multi-pass://agent-run-006/")
         assert isinstance(p["parent_pass_ids"], list)
     assert isinstance(record["evidence_binding"]["claim_ids"], list)
+    assert isinstance(record["grounding_factcheck_eval"]["failure_classes"], list)
 
 
 def test_required_grounded_mode_fails_when_unsupported_claims_present() -> None:
@@ -94,4 +96,19 @@ def test_required_grounded_mode_fails_when_unsupported_claims_present() -> None:
             input_artifact=_input_artifact(),
             validated_context_bundle=_context_bundle(),
             config=MultiPassConfig(evidence_binding_policy_mode="required_grounded"),
+        )
+
+
+def test_required_eval_missing_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.multi_pass_generation.build_grounding_factcheck_eval",
+        lambda **_: {},
+    )
+    with pytest.raises(MultiPassGenerationError, match="policy requires grounding eval"):
+        run_multi_pass_generation(
+            run_id="agent-run-008",
+            trace_id="trace-008",
+            input_artifact=_input_artifact(),
+            validated_context_bundle=_context_bundle(),
+            config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported", grounding_factcheck_required=True),
         )

@@ -24,6 +24,11 @@ from spectrum_systems.modules.runtime.evidence_binding import (
     EvidenceBindingPolicy,
     build_evidence_binding_record,
 )
+from spectrum_systems.modules.runtime.grounding_factcheck_eval import (
+    GroundingFactCheckEvalError,
+    GroundingFactCheckPolicy,
+    build_grounding_factcheck_eval,
+)
 
 _PASS_SEQUENCE = (
     ("pass_1", "extract"),
@@ -43,6 +48,8 @@ class MultiPassConfig:
 
     unsupported_claim_markers: Sequence[str] = ("TODO", "TBD", "UNSUPPORTED")
     evidence_binding_policy_mode: str = "required_grounded"
+    grounding_factcheck_required: bool = True
+    fail_on_fact_check_fail: bool = True
 
 
 def _deterministic_timestamp(payload: Mapping[str, Any], *, stage: str) -> str:
@@ -249,17 +256,19 @@ def run_multi_pass_generation(
     if actual_ids != expected_ids:
         raise MultiPassGenerationError("missing required pass or pass ordering inconsistency")
 
+    parent_record_id = deterministic_id(
+        prefix="mpg",
+        namespace="multi_pass_generation",
+        payload={"run_id": run_id, "trace_id": trace_id, "input_artifact": input_artifact},
+    )
+
     try:
         evidence_binding_record = build_evidence_binding_record(
             run_id=run_id,
             trace_id=trace_id,
             final_artifact=final_output,
             validated_context_bundle=context_bundle,
-            parent_multi_pass_record_id=deterministic_id(
-                prefix="mpg",
-                namespace="multi_pass_generation",
-                payload={"run_id": run_id, "trace_id": trace_id, "input_artifact": input_artifact},
-            ),
+            parent_multi_pass_record_id=parent_record_id,
             final_pass_id="final",
             final_pass_output_ref=pass_records[3]["output_ref"],
             policy=EvidenceBindingPolicy(mode=cfg.evidence_binding_policy_mode),
@@ -267,14 +276,33 @@ def run_multi_pass_generation(
     except EvidenceBindingError as exc:
         raise MultiPassGenerationError(f"evidence binding failed: {exc}") from exc
 
+    try:
+        grounding_eval = build_grounding_factcheck_eval(
+            run_id=run_id,
+            trace_id=trace_id,
+            source_artifact_id=f"agent-output://{run_id}",
+            final_artifact=final_output,
+            evidence_binding_record=evidence_binding_record,
+            validated_context_bundle=context_bundle,
+            parent_multi_pass_record_id=parent_record_id,
+            final_pass_output_ref=pass_records[3]["output_ref"],
+            policy=GroundingFactCheckPolicy(
+                required=cfg.grounding_factcheck_required,
+                allow_inferred_claims=cfg.evidence_binding_policy_mode in {"allow_inferred", "allow_unsupported"},
+                allow_unsupported_claims=cfg.evidence_binding_policy_mode == "allow_unsupported",
+                fail_on_fact_check_fail=cfg.fail_on_fact_check_fail,
+            ),
+        )
+    except GroundingFactCheckEvalError as exc:
+        raise MultiPassGenerationError(f"grounding fact-check eval failed: {exc}") from exc
+
+    if cfg.grounding_factcheck_required and not grounding_eval:
+        raise MultiPassGenerationError("policy requires grounding eval but eval did not run")
+
     record = {
         "artifact_type": "multi_pass_generation_record",
-        "schema_version": "1.1.0",
-        "record_id": deterministic_id(
-            prefix="mpg",
-            namespace="multi_pass_generation",
-            payload={"run_id": run_id, "trace_id": trace_id, "input_artifact": input_artifact},
-        ),
+        "schema_version": "1.2.0",
+        "record_id": parent_record_id,
         "trace_id": trace_id,
         "run_id": run_id,
         "pass_sequence": [
@@ -289,6 +317,11 @@ def run_multi_pass_generation(
             "record_id": evidence_binding_record["record_id"],
             "policy_mode": evidence_binding_record["policy_mode"],
             "claim_ids": [claim["claim_id"] for claim in evidence_binding_record["claims"]],
+        },
+        "grounding_factcheck_eval": {
+            "eval_id": grounding_eval["eval_id"],
+            "overall_status": grounding_eval["overall_status"],
+            "failure_classes": list(grounding_eval["failure_classes"]),
         },
         "created_at": _deterministic_timestamp({"run_id": run_id, "trace_id": trace_id, "input": input_artifact}, stage="record"),
     }
