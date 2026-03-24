@@ -156,6 +156,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-HS-07-2026-03-24.md | HS-07 — Retrieval + Context Trust Segmentation | Active |
 | docs/review-actions/PLAN-HS-18-2026-03-24.md | HS-18 — Glossary Injection + Domain Canonicalization | Active |
 | docs/review-actions/PLAN-HS-18-FIX-2026-03-24.md | HS-18 follow-up fix — explicit glossary policy + baseline compatibility restoration | Active |
+| docs/review-actions/PLAN-HS-18-FIX2-2026-03-24.md | HS-18 follow-up fix 2 — policy/defaulting + trace-state closure | Active |
 
 Update this table when plans are created or completed.
 

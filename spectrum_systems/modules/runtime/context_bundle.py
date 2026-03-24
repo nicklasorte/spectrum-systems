@@ -22,7 +22,7 @@ from spectrum_systems.modules.runtime.glossary_registry import (
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 BUNDLE_ARTIFACT_TYPE = "context_bundle"
-BUNDLE_SCHEMA_VERSION = "2.2.0"
+BUNDLE_SCHEMA_VERSION = "2.2.1"
 
 ALLOWED_ITEM_TYPES: Tuple[str, ...] = (
     "primary_input",
@@ -235,6 +235,7 @@ def _ensure_glossary_bundle_defaults(bundle: Dict[str, Any]) -> Dict[str, Any]:
     bundle.setdefault(
         "glossary_canonicalization",
         {
+            "injection_enabled": False,
             "match_mode": "exact",
             "selection_mode": "explicit_then_exact_text",
             "fail_on_missing_required": False,
@@ -449,6 +450,7 @@ def compose_context_bundle(
         "glossary_terms": list(glossary_terms),
         "glossary_definitions": glossary_selection["selected_entries"],
         "glossary_canonicalization": {
+            "injection_enabled": injection_policy["enabled"],
             "match_mode": glossary_selection["match_mode"],
             "selection_mode": glossary_selection["selection_mode"],
             "fail_on_missing_required": injection_policy["fail_on_missing_required"],

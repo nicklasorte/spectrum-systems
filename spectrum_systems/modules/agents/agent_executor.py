@@ -99,6 +99,7 @@ def construct_context_bundle(
     bundle.setdefault(
         "glossary_canonicalization",
         {
+            "injection_enabled": False,
             "match_mode": "exact",
             "selection_mode": "explicit_then_exact_text",
             "fail_on_missing_required": False,
@@ -453,6 +454,10 @@ def execute_step_sequence(
                 for item in list(bounded_context.get("context_items") or [])
                 if str(item.get("item_type") or "") == "glossary_definition"
             ],
+            "glossary_injection_enabled": bool(((bounded_context.get("glossary_canonicalization") or {}).get("injection_enabled"))),
+            "glossary_unresolved_terms": list(((bounded_context.get("glossary_canonicalization") or {}).get("unresolved_terms") or [])),
+            "glossary_fail_on_missing_required": bool(((bounded_context.get("glossary_canonicalization") or {}).get("fail_on_missing_required", False)),
+            ),
         },
         "trace_id": trace_id,
         "routing_decision": {

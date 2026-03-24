@@ -54,7 +54,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
 
     return {
         "artifact_type": "context_bundle",
-        "schema_version": "2.2.0",
+        "schema_version": "2.2.1",
         "context_bundle_id": "ctx-1234abcd5678ef90",
         "context_id": "ctx-1234abcd5678ef90",
         "task_type": "agent_execution",
@@ -104,6 +104,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
         "glossary_terms": [],
         "glossary_definitions": [],
         "glossary_canonicalization": {
+            "injection_enabled": False,
             "match_mode": "exact",
             "selection_mode": "explicit_then_exact_text",
             "fail_on_missing_required": True,
@@ -180,6 +181,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
     assert trace["context_source_summary"]["glossary_entry_refs"] == []
     assert trace["context_source_summary"]["glossary_definition_item_refs"] == []
+    assert trace["context_source_summary"]["glossary_injection_enabled"] is False
+    assert trace["context_source_summary"]["glossary_unresolved_terms"] == []
 
 
 def test_tool_step_failure() -> None:
@@ -261,6 +264,9 @@ def test_full_trace_emission_shape_validation() -> None:
             "inferred_item_refs": [],
             "glossary_entry_refs": [],
             "glossary_definition_item_refs": [],
+            "glossary_injection_enabled": False,
+            "glossary_unresolved_terms": [],
+            "glossary_fail_on_missing_required": False,
         },
         "trace_id": "trace-005",
         "prompt_resolution": _prompt_resolution(),
@@ -362,6 +368,8 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
     assert trace["context_source_summary"]["glossary_entry_refs"] == []
     assert trace["context_source_summary"]["glossary_definition_item_refs"] == []
+    assert trace["context_source_summary"]["glossary_injection_enabled"] is False
+    assert trace["context_source_summary"]["glossary_unresolved_terms"] == []
 
 
 def test_model_step_fails_closed_on_malformed_provider_response() -> None:

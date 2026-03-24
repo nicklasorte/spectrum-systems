@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/context_bundle.schema.json",
-  "title": "Context Bundle v2.2",
+  "title": "Context Bundle v2.2.1",
   "description": "Governed, typed, trust-scoped, source-segmented context bundle with deterministic glossary canonicalization and required provenance per item.",
   "type": "object",
   "additionalProperties": false,
@@ -35,7 +35,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "2.2.0"
+      "const": "2.2.1"
     },
     "context_bundle_id": {
       "type": "string",
@@ -362,6 +362,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "injection_enabled",
         "match_mode",
         "selection_mode",
         "fail_on_missing_required",
@@ -393,6 +394,9 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "injection_enabled": {
+          "type": "boolean"
         }
       }
     },

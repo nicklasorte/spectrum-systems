@@ -1,6 +1,6 @@
 {
   "artifact_type": "context_bundle",
-  "schema_version": "2.2.0",
+  "schema_version": "2.2.1",
   "context_bundle_id": "ctx-8b602b2cbd9ff1c2",
   "context_id": "ctx-8b602b2cbd9ff1c2",
   "task_type": "meeting_minutes",
@@ -216,7 +216,8 @@
     "selected_glossary_entry_ids": [
       "gle-a2f8fbe34b21d991"
     ],
-    "unresolved_terms": []
+    "unresolved_terms": [],
+    "injection_enabled": true
   },
   "unresolved_questions": [
     "owner?"

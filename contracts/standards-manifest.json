@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.48",
+  "artifact_version": "1.0.49",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-HS-18-GLOSSARY-INJECTION",
-  "run_id": "run-20260324T160000Z",
+  "record_id": "REC-STD-2026-03-24-HS-18-FIX2-POLICY-TRACE",
+  "run_id": "run-20260324T180000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -30,15 +30,15 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.6.0",
+      "schema_version": "1.6.1",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.48",
+      "last_updated_in": "1.0.49",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded execution trace with required context_bundle linkage, source segmentation summary, and glossary entry/item refs for runtime traceability."
+      "notes": "HS-18 follow-up: compact glossary context summary includes injection-enabled/fail-required state, selected glossary refs, and unresolved terms for reconstruction."
     },
     {
       "artifact_type": "agent_failure_record",
@@ -163,15 +163,15 @@
     {
       "artifact_type": "context_bundle",
       "artifact_class": "coordination",
-      "schema_version": "2.2.0",
+      "schema_version": "2.2.1",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.46",
-      "last_updated_in": "1.0.48",
+      "last_updated_in": "1.0.49",
       "example_path": "contracts/examples/context_bundle.json",
-      "notes": "HS-18 glossary-injected context bundle with deterministic canonicalization metadata, exact-only matching policy, and fail-closed missing-definition handling."
+      "notes": "HS-18 follow-up: explicit policy-gated glossary canonicalization defaults, deterministic unresolved metadata, and compatibility-safe glossary field population."
     },
     {
       "artifact_type": "control_execution_result",

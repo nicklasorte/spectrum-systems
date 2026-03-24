@@ -359,7 +359,10 @@
         "item_refs_by_class",
         "inferred_item_refs",
         "glossary_entry_refs",
-        "glossary_definition_item_refs"
+        "glossary_definition_item_refs",
+        "glossary_injection_enabled",
+        "glossary_unresolved_terms",
+        "glossary_fail_on_missing_required"
       ],
       "properties": {
         "classification_counts": {
@@ -450,6 +453,19 @@
             "type": "string",
             "pattern": "^ctxi-[a-f0-9]{16}$"
           }
+        },
+        "glossary_injection_enabled": {
+          "type": "boolean"
+        },
+        "glossary_unresolved_terms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "glossary_fail_on_missing_required": {
+          "type": "boolean"
         }
       }
     }

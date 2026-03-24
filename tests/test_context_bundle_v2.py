@@ -63,7 +63,7 @@ def test_schema_example_validation() -> None:
 def test_valid_segmented_bundle_construction() -> None:
     bundle = _compose()
     assert bundle["artifact_type"] == "context_bundle"
-    assert bundle["schema_version"] == "2.2.0"
+    assert bundle["schema_version"] == "2.2.1"
     assert bundle["source_segmentation"]["classification_counts"] == {
         "internal": 3,
         "external": 1,
@@ -72,6 +72,7 @@ def test_valid_segmented_bundle_construction() -> None:
     }
     glossary_items = [item for item in bundle["context_items"] if item["item_type"] == "glossary_definition"]
     assert len(glossary_items) == 1
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is True
 
 
 def test_deterministic_repeated_composition() -> None:
@@ -193,6 +194,7 @@ def test_glossary_terms_with_injection_disabled_does_not_fail() -> None:
     )
     assert bundle["glossary_definitions"] == []
     assert bundle["token_estimates"]["glossary_definitions"] == 0
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is False
 
 
 def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> None:
@@ -212,3 +214,4 @@ def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> N
     )
     assert bundle["glossary_definitions"] == []
     assert bundle["glossary_canonicalization"]["unresolved_terms"] == ["SLA@general"]
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is True

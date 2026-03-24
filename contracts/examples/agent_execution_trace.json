@@ -94,6 +94,9 @@
     ],
     "glossary_definition_item_refs": [
       "ctxi-984a0e3ddf5f4279"
-    ]
+    ],
+    "glossary_injection_enabled": true,
+    "glossary_unresolved_terms": [],
+    "glossary_fail_on_missing_required": true
   }
 }
