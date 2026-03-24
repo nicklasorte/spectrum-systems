@@ -29,6 +29,10 @@ from spectrum_systems.modules.runtime.grounding_factcheck_eval import (
     GroundingFactCheckPolicy,
     build_grounding_factcheck_eval,
 )
+from spectrum_systems.modules.runtime.grounding_control import (
+    GroundingControlError,
+    build_grounding_control_decision,
+)
 
 _PASS_SEQUENCE = (
     ("pass_1", "extract"),
@@ -298,10 +302,20 @@ def run_multi_pass_generation(
 
     if cfg.grounding_factcheck_required and not grounding_eval:
         raise MultiPassGenerationError("policy requires grounding eval but eval did not run")
+    try:
+        grounding_control_decision = build_grounding_control_decision(
+            grounding_eval,
+            policy={
+                "policy_id": "grounding-control-v1",
+                "generated_by_version": "hs-20.1.0",
+            },
+        )
+    except GroundingControlError as exc:
+        raise MultiPassGenerationError(f"grounding control decision failed: {exc}") from exc
 
     record = {
         "artifact_type": "multi_pass_generation_record",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "record_id": parent_record_id,
         "trace_id": trace_id,
         "run_id": run_id,
@@ -323,6 +337,7 @@ def run_multi_pass_generation(
             "overall_status": grounding_eval["overall_status"],
             "failure_classes": list(grounding_eval["failure_classes"]),
         },
+        "grounding_control_decision": grounding_control_decision,
         "created_at": _deterministic_timestamp({"run_id": run_id, "trace_id": trace_id, "input": input_artifact}, stage="record"),
     }
     _validate_contract(record, "multi_pass_generation_record")

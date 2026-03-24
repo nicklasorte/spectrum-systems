@@ -534,7 +534,8 @@
         "evidence_binding_policy_mode",
         "grounding_factcheck_eval_id",
         "grounding_factcheck_overall_status",
-        "grounding_factcheck_failure_classes"
+        "grounding_factcheck_failure_classes",
+        "grounding_control_decision"
       ],
       "properties": {
         "record_id": {
@@ -596,6 +597,45 @@
             ]
           },
           "uniqueItems": true
+        },
+        "grounding_control_decision": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "decision_id",
+            "status",
+            "enforcement_action",
+            "triggered_rules"
+          ],
+          "properties": {
+            "decision_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "",
+                "pass",
+                "warn",
+                "block"
+              ]
+            },
+            "enforcement_action": {
+              "type": "string",
+              "enum": [
+                "",
+                "allow",
+                "flag",
+                "block_execution"
+              ]
+            },
+            "triggered_rules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }

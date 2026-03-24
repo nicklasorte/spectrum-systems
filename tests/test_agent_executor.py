@@ -192,6 +192,9 @@ def test_successful_bounded_execution() -> None:
     assert trace["multi_pass_generation"]["evidence_binding_policy_mode"] == "required_grounded"
     assert trace["multi_pass_generation"]["grounding_factcheck_eval_id"].startswith("gfe-")
     assert trace["multi_pass_generation"]["grounding_factcheck_overall_status"] in {"pass", "warn", "fail"}
+    assert trace["multi_pass_generation"]["grounding_control_decision"]["decision_id"].startswith("gcd-")
+    assert trace["multi_pass_generation"]["grounding_control_decision"]["status"] in {"pass", "warn", "block"}
+    assert trace["multi_pass_generation"]["grounding_control_decision"]["enforcement_action"] in {"allow", "flag", "block_execution"}
 
 
 def test_tool_step_failure() -> None:
@@ -238,6 +241,92 @@ def test_schema_invalid_final_output() -> None:
 
     assert trace["execution_status"] == "failed"
     assert "validate_final_output failed" in (trace["failure_reason"] or "")
+
+
+def test_grounding_control_block_halts_execution(monkeypatch: pytest.MonkeyPatch) -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(bundle, [{"step_type": "transform"}])
+
+    def _blocked_record(**_: Any) -> Dict[str, Any]:
+        return {
+            "record_id": "mpg-6a0f4b8c9d1e2f30",
+            "passes": [],
+            "evidence_binding": {"record_id": "ebr-7b9f4a13c2d8e601", "claim_ids": [], "policy_mode": "required_grounded"},
+            "grounding_factcheck_eval": {"eval_id": "gfe-5c8f2f0e7c4b9a11", "overall_status": "fail", "failure_classes": ["incomplete_grounding"]},
+            "grounding_control_decision": {
+                "decision_id": "gcd-9a7b6c5d4e3f2011",
+                "status": "block",
+                "enforcement_action": "block_execution",
+                "triggered_rules": ["invalid_evidence_refs_gt_zero"],
+            },
+            "final_output": {"context_id": bundle["context_id"], "task_type": bundle["task_type"], "executed_step_ids": ["step-001"]},
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.agents.agent_executor.run_multi_pass_generation",
+        _blocked_record,
+    )
+    validate_called = {"called": False}
+
+    def _validate(_: Dict[str, Any], __: str) -> None:
+        validate_called["called"] = True
+
+    monkeypatch.setattr("spectrum_systems.modules.agents.agent_executor.validate_final_output", _validate)
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-003b",
+        trace_id="trace-003b",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
+    )
+
+    assert trace["execution_status"] == "blocked"
+    assert "grounding_control_decision blocked execution" in (trace["failure_reason"] or "")
+    assert validate_called["called"] is False
+
+
+def test_grounding_control_flag_continues_execution(monkeypatch: pytest.MonkeyPatch) -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(bundle, [{"step_type": "transform"}])
+
+    def _flagged_record(**_: Any) -> Dict[str, Any]:
+        return {
+            "record_id": "mpg-6a0f4b8c9d1e2f30",
+            "passes": [],
+            "evidence_binding": {"record_id": "ebr-7b9f4a13c2d8e601", "claim_ids": [], "policy_mode": "required_grounded"},
+            "grounding_factcheck_eval": {"eval_id": "gfe-5c8f2f0e7c4b9a11", "overall_status": "warn", "failure_classes": ["unsupported_grounded_claim"]},
+            "grounding_control_decision": {
+                "decision_id": "gcd-1234567890abcdef",
+                "status": "warn",
+                "enforcement_action": "flag",
+                "triggered_rules": ["unsupported_claims_gt_zero"],
+            },
+            "final_output": bundle,
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.agents.agent_executor.run_multi_pass_generation",
+        _flagged_record,
+    )
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-003c",
+        trace_id="trace-003c",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
+    )
+
+    assert trace["execution_status"] == "completed"
+    assert "grounding_control_decision flagged grounding violations" in (trace["failure_reason"] or "")
+    assert trace["multi_pass_generation"]["grounding_control_decision"]["enforcement_action"] == "flag"
 
 
 def test_blocked_execution_when_context_bundle_missing_required_data() -> None:
@@ -321,7 +410,13 @@ def test_full_trace_emission_shape_validation() -> None:
             "grounding_factcheck_failure_classes": [
                 "incomplete_grounding",
                 "unsupported_grounded_claim"
-            ]
+            ],
+            "grounding_control_decision": {
+                "decision_id": "gcd-9a7b6c5d4e3f2011",
+                "status": "block",
+                "enforcement_action": "block_execution",
+                "triggered_rules": ["invalid_evidence_refs_gt_zero"]
+            }
         },
         "final_output_artifact_id": "agent-output://agent-run-005",
         "execution_status": "completed",

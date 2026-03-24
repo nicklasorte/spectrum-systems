@@ -132,6 +132,14 @@
     "grounding_factcheck_failure_classes": [
       "incomplete_grounding",
       "unsupported_grounded_claim"
-    ]
+    ],
+    "grounding_control_decision": {
+      "decision_id": "gcd-9a7b6c5d4e3f2011",
+      "status": "block",
+      "enforcement_action": "block_execution",
+      "triggered_rules": [
+        "invalid_evidence_refs_gt_zero"
+      ]
+    }
   }
 }

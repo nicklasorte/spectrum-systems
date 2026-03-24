@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/grounding_control_decision.schema.json",
+  "title": "Grounding Control Decision",
+  "description": "Deterministic HS-20 runtime enforcement decision derived from HS-19 grounding_factcheck_eval outputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_id",
+    "timestamp",
+    "trace_id",
+    "run_id",
+    "grounding_eval_id",
+    "status",
+    "failure_summary",
+    "triggered_rules",
+    "enforcement_action",
+    "policy_id",
+    "generated_by_version"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "pattern": "^gcd-[a-f0-9]{16}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grounding_eval_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warn",
+        "block"
+      ]
+    },
+    "failure_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_claims",
+        "supported_claims",
+        "unsupported_claims",
+        "invalid_evidence_refs"
+      ],
+      "properties": {
+        "total_claims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supported_claims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unsupported_claims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_evidence_refs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "triggered_rules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "enforcement_action": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "flag",
+        "block_execution"
+      ]
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_by_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

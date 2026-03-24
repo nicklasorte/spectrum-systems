@@ -192,6 +192,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("grounding_factcheck_eval")
         validate_artifact(instance, "grounding_factcheck_eval")
 
+    def test_grounding_control_decision_example_validates(self) -> None:
+        instance = load_example("grounding_control_decision")
+        validate_artifact(instance, "grounding_control_decision")
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]
