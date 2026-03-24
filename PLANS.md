@@ -152,6 +152,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-HS-01-2026-03-24.md | HS-01 — Prompt Registry + Versioning System | Active |
 | docs/review-actions/PLAN-HS-03-2026-03-24.md | HS-03 — Model Adapter Layer | Active |
 | docs/review-actions/PLAN-HS-X1-2026-03-24.md | HS-X1 — Structured Decoding + Schema-Constrained Generation | Active |
+| docs/review-actions/PLAN-HS-06-2026-03-24.md | HS-06 — Context Bundle v2 (Typed + Trusted) | Active |
 
 Update this table when plans are created or completed.
 

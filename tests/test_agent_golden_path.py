@@ -180,6 +180,17 @@ def test_unknown_route_key_fails_closed_without_default(tmp_path: Path) -> None:
     assert "agent_execution_trace" not in artifacts
 
 
+def test_context_bundle_runtime_linkage_present(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path))
+
+    bundle = artifacts["context_bundle"]
+    trace = artifacts["agent_execution_trace"]
+
+    assert bundle["context_bundle_id"] == trace["context_bundle_id"]
+    assert bundle["trace"]["trace_id"] == trace["trace_id"]
+    assert bundle["trace"]["run_id"] == trace["agent_run_id"]
+
+
 def test_routing_decision_trace_linkage_present(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path))
 
