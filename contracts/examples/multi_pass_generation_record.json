@@ -1,0 +1,77 @@
+{
+  "artifact_type": "multi_pass_generation_record",
+  "schema_version": "1.0.0",
+  "record_id": "mpg-6a0f4b8c9d1e2f30",
+  "trace_id": "trace-example-001",
+  "run_id": "agent-run-example-001",
+  "pass_sequence": [
+    {"pass_id": "pass_1", "pass_type": "extract", "pass_order": 1},
+    {"pass_id": "pass_2", "pass_type": "critique", "pass_order": 2},
+    {"pass_id": "pass_3", "pass_type": "refine", "pass_order": 3},
+    {"pass_id": "final", "pass_type": "final", "pass_order": 4}
+  ],
+  "passes": [
+    {
+      "pass_id": "pass_1",
+      "pass_type": "extract",
+      "pass_record_id": "mpr-1111111111111111",
+      "trace_id": "trace-example-001",
+      "parent_pass_ids": [],
+      "input_refs": ["input://agent-run-example-001"],
+      "output_ref": "multi-pass://agent-run-example-001/pass_1",
+      "output": {"topic": "runtime governance", "claims": [{"text": "Claim A", "supporting_evidence_refs": ["ev-1"]}]},
+      "created_at": "2026-01-04T00:00:00Z"
+    },
+    {
+      "pass_id": "pass_2",
+      "pass_type": "critique",
+      "pass_record_id": "mpr-2222222222222222",
+      "trace_id": "trace-example-001",
+      "parent_pass_ids": ["pass_1"],
+      "input_refs": ["multi-pass://agent-run-example-001/pass_1"],
+      "output_ref": "multi-pass://agent-run-example-001/pass_2",
+      "output": {"missing_elements": [], "inconsistencies": [], "weak_reasoning": [], "summary": {"missing_count": 0, "inconsistency_count": 0, "weak_reasoning_count": 0}},
+      "created_at": "2026-01-04T00:01:00Z"
+    },
+    {
+      "pass_id": "pass_3",
+      "pass_type": "refine",
+      "pass_record_id": "mpr-3333333333333333",
+      "trace_id": "trace-example-001",
+      "parent_pass_ids": ["pass_1", "pass_2"],
+      "input_refs": ["multi-pass://agent-run-example-001/pass_1", "multi-pass://agent-run-example-001/pass_2"],
+      "output_ref": "multi-pass://agent-run-example-001/pass_3",
+      "output": {"refined_artifact": {"topic": "runtime governance", "claims": [{"text": "Claim A", "supporting_evidence_refs": ["ev-1"]}]}, "refinement_actions": []},
+      "created_at": "2026-01-04T00:02:00Z"
+    },
+    {
+      "pass_id": "final",
+      "pass_type": "final",
+      "pass_record_id": "mpr-4444444444444444",
+      "trace_id": "trace-example-001",
+      "parent_pass_ids": ["pass_3"],
+      "input_refs": ["multi-pass://agent-run-example-001/pass_3"],
+      "output_ref": "multi-pass://agent-run-example-001/final",
+      "output": {"final_artifact": {"topic": "runtime governance", "claims": [{"text": "Claim A", "supporting_evidence_refs": ["ev-1"]}]}},
+      "created_at": "2026-01-04T00:03:00Z"
+    }
+  ],
+  "critique": {
+    "missing_elements": [],
+    "inconsistencies": [],
+    "weak_reasoning": [],
+    "summary": {"missing_count": 0, "inconsistency_count": 0, "weak_reasoning_count": 0}
+  },
+  "refinement": {
+    "refined_artifact": {
+      "topic": "runtime governance",
+      "claims": [{"text": "Claim A", "supporting_evidence_refs": ["ev-1"]}]
+    },
+    "refinement_actions": []
+  },
+  "final_output": {
+    "topic": "runtime governance",
+    "claims": [{"text": "Claim A", "supporting_evidence_refs": ["ev-1"]}]
+  },
+  "created_at": "2026-01-04T00:03:00Z"
+}

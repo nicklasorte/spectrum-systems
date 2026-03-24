@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/multi_pass_generation_record.schema.json",
+  "title": "Multi-Pass Generation Record",
+  "description": "Deterministic fixed four-pass artifact generation record (extract, critique, refine, final) with explicit pass linkage and trace references.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "trace_id",
+    "run_id",
+    "pass_sequence",
+    "passes",
+    "critique",
+    "refinement",
+    "final_output",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "multi_pass_generation_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^mpg-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pass_sequence": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass_id", "pass_type", "pass_order"],
+          "properties": {
+            "pass_id": {"const": "pass_1"},
+            "pass_type": {"const": "extract"},
+            "pass_order": {"const": 1}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass_id", "pass_type", "pass_order"],
+          "properties": {
+            "pass_id": {"const": "pass_2"},
+            "pass_type": {"const": "critique"},
+            "pass_order": {"const": 2}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass_id", "pass_type", "pass_order"],
+          "properties": {
+            "pass_id": {"const": "pass_3"},
+            "pass_type": {"const": "refine"},
+            "pass_order": {"const": 3}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass_id", "pass_type", "pass_order"],
+          "properties": {
+            "pass_id": {"const": "final"},
+            "pass_type": {"const": "final"},
+            "pass_order": {"const": 4}
+          }
+        }
+      ],
+      "items": false
+    },
+    "passes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pass_id",
+          "pass_type",
+          "pass_record_id",
+          "trace_id",
+          "parent_pass_ids",
+          "input_refs",
+          "output_ref",
+          "output",
+          "created_at"
+        ],
+        "properties": {
+          "pass_id": {
+            "type": "string",
+            "enum": ["pass_1", "pass_2", "pass_3", "final"]
+          },
+          "pass_type": {
+            "type": "string",
+            "enum": ["extract", "critique", "refine", "final"]
+          },
+          "pass_record_id": {
+            "type": "string",
+            "pattern": "^mpr-[a-f0-9]{16}$"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parent_pass_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["pass_1", "pass_2", "pass_3", "final"]
+            }
+          },
+          "input_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "output_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output": {
+            "type": "object"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "critique": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["missing_elements", "inconsistencies", "weak_reasoning", "summary"],
+      "properties": {
+        "missing_elements": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["field", "issue"], "properties": {"field": {"type": "string"}, "issue": {"type": "string"}}}},
+        "inconsistencies": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["field", "issue"], "properties": {"field": {"type": "string"}, "issue": {"type": "string"}}}},
+        "weak_reasoning": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "issue"], "properties": {"path": {"type": "string"}, "issue": {"type": "string"}}}},
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["missing_count", "inconsistency_count", "weak_reasoning_count"],
+          "properties": {
+            "missing_count": {"type": "integer", "minimum": 0},
+            "inconsistency_count": {"type": "integer", "minimum": 0},
+            "weak_reasoning_count": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    },
+    "refinement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["refined_artifact", "refinement_actions"],
+      "properties": {
+        "refined_artifact": {"type": "object"},
+        "refinement_actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "field"],
+            "properties": {
+              "action": {"type": "string"},
+              "field": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "final_output": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

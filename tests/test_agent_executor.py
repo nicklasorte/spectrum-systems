@@ -186,6 +186,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["context_source_summary"]["prompt_injection"]["detection_status"] == "clean"
     assert trace["context_source_summary"]["prompt_injection"]["enforcement_action"] == "allow_as_data"
     assert trace["context_source_summary"]["prompt_injection"]["flagged_item_refs"] == []
+    assert trace["multi_pass_generation"]["pass_ids"] == ["pass_1", "pass_2", "pass_3", "final"]
+    assert trace["multi_pass_generation"]["record_id"].startswith("mpg-")
 
 
 def test_tool_step_failure() -> None:
@@ -295,6 +297,16 @@ def test_full_trace_emission_shape_validation() -> None:
         "tool_calls": [],
         "model_invocations": [],
         "intermediate_artifacts": [],
+        "multi_pass_generation": {
+            "record_id": "mpg-6a0f4b8c9d1e2f30",
+            "pass_ids": ["pass_1", "pass_2", "pass_3", "final"],
+            "pass_output_refs": [
+                "multi-pass://agent-run-005/pass_1",
+                "multi-pass://agent-run-005/pass_2",
+                "multi-pass://agent-run-005/pass_3",
+                "multi-pass://agent-run-005/final"
+            ]
+        },
         "final_output_artifact_id": "agent-output://agent-run-005",
         "execution_status": "completed",
         "failure_reason": None,

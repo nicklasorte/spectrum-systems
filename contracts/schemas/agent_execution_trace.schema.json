@@ -16,6 +16,7 @@
     "tool_calls",
     "model_invocations",
     "intermediate_artifacts",
+    "multi_pass_generation",
     "final_output_artifact_id",
     "execution_status",
     "failure_reason",
@@ -517,6 +518,38 @@
                 "pattern": "^pi-[a-z0-9-]+:ctxi-[a-f0-9]{16}$"
               }
             }
+          }
+        }
+      }
+    },
+    "multi_pass_generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "pass_ids",
+        "pass_output_refs"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string"
+        },
+        "pass_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "pass_1",
+              "pass_2",
+              "pass_3",
+              "final"
+            ]
+          }
+        },
+        "pass_output_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }

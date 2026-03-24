@@ -30,15 +30,15 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.7.0",
+      "schema_version": "1.8.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.50",
+      "last_updated_in": "1.0.51",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "HS-X3: prompt-injection assessment linkage summary added to execution trace context source summary."
+      "notes": "HS-08: deterministic multi-pass generation linkage (record id, fixed pass ids, pass output refs) added to execution trace."
     },
     {
       "artifact_type": "agent_failure_record",
@@ -600,6 +600,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/milestone_plan.json",
       "notes": "Dependency-aware milestone tracking with decision gates and risk alignment."
+    },
+    {
+      "artifact_type": "multi_pass_generation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.51",
+      "last_updated_in": "1.0.51",
+      "example_path": "contracts/examples/multi_pass_generation_record.json",
+      "notes": "HS-08 fixed deterministic four-pass generation record capturing pass outputs, critique, refinement, parent linkage, and final artifact traceability."
     },
     {
       "artifact_type": "next_best_action_memo",
