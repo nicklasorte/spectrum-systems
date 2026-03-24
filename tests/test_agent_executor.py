@@ -54,7 +54,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
 
     return {
         "artifact_type": "context_bundle",
-        "schema_version": "2.0.0",
+        "schema_version": "2.1.0",
         "context_bundle_id": "ctx-1234abcd5678ef90",
         "context_id": "ctx-1234abcd5678ef90",
         "task_type": "agent_execution",
@@ -80,6 +80,23 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
                 "content": {"max_steps": 4},
             },
         ],
+        "source_segmentation": {
+            "classification_order": ["internal", "external", "inferred", "user_provided"],
+            "classification_counts": {
+                "internal": 1,
+                "external": 0,
+                "inferred": 0,
+                "user_provided": 1,
+            },
+            "item_refs_by_class": {
+                "internal": ["ctxi-0234abcd5678ef90"],
+                "external": [],
+                "inferred": [],
+                "user_provided": ["ctxi-1234abcd5678ef90"],
+            },
+            "grounded_item_refs": ["ctxi-0234abcd5678ef90", "ctxi-1234abcd5678ef90"],
+            "inferred_item_refs": [],
+        },
         "primary_input": {"goal": "execute bounded plan"},
         "policy_constraints": {"max_steps": 4},
         "retrieved_context": retrieved,
@@ -148,6 +165,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["tool_calls"][0]["tool_name"] == "echo"
     assert trace["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
     assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
+    assert trace["context_bundle_id"] == bundle["context_bundle_id"]
+    assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
 
 
 def test_tool_step_failure() -> None:
@@ -218,6 +237,16 @@ def test_full_trace_emission_shape_validation() -> None:
     valid_trace = {
         "agent_run_id": "agent-run-005",
         "context_bundle_id": "ctx-1234abcd5678ef90",
+        "context_source_summary": {
+            "classification_counts": {"internal": 1, "external": 0, "inferred": 0, "user_provided": 1},
+            "item_refs_by_class": {
+                "internal": ["ctxi-0234abcd5678ef90"],
+                "external": [],
+                "inferred": [],
+                "user_provided": ["ctxi-1234abcd5678ef90"],
+            },
+            "inferred_item_refs": [],
+        },
         "trace_id": "trace-005",
         "prompt_resolution": _prompt_resolution(),
         "routing_decision": _routing_decision(),
@@ -314,6 +343,8 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     assert invocation["structured_output_status"] == "not_requested"
     assert trace["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
     assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
+    assert trace["context_bundle_id"] == bundle["context_bundle_id"]
+    assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
 
 
 def test_model_step_fails_closed_on_malformed_provider_response() -> None:

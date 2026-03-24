@@ -404,9 +404,15 @@ def execute_step_sequence(
             failure_reason = f"validate_final_output failed: {exc}"
 
     final_output_artifact_id = f"agent-output://{agent_run_id}"
+    source_segmentation = dict(bounded_context.get("source_segmentation") or {})
     trace = {
         "agent_run_id": agent_run_id,
         "context_bundle_id": bounded_context["context_id"],
+        "context_source_summary": {
+            "classification_counts": dict(source_segmentation.get("classification_counts") or {}),
+            "item_refs_by_class": dict(source_segmentation.get("item_refs_by_class") or {}),
+            "inferred_item_refs": list(source_segmentation.get("inferred_item_refs") or []),
+        },
         "trace_id": trace_id,
         "routing_decision": {
             "routing_decision_id": str((routing_decision or {}).get("routing_decision_id") or ""),

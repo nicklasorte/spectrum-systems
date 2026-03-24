@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.46",
+  "artifact_version": "1.0.47",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-HS-06-CONTEXT-BUNDLE-V2",
-  "run_id": "run-20260324T060000Z",
+  "record_id": "REC-STD-2026-03-24-HS-07-CONTEXT-TRUST-SEGMENTATION",
+  "run_id": "run-20260324T120000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -30,15 +30,15 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.4.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.45",
+      "last_updated_in": "1.0.47",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded agent execution trace artifact capturing deterministic routing decision linkage, prompt resolution, canonical model invocation lineage, and structured-generation schema linkage for replay/eval attribution."
+      "notes": "Bounded execution trace with required context_bundle linkage plus source-segmentation summary refs for provenance-class attribution."
     },
     {
       "artifact_type": "agent_failure_record",
@@ -163,15 +163,15 @@
     {
       "artifact_type": "context_bundle",
       "artifact_class": "coordination",
-      "schema_version": "2.0.0",
+      "schema_version": "2.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.46",
-      "last_updated_in": "1.0.46",
+      "last_updated_in": "1.0.47",
       "example_path": "contracts/examples/context_bundle.json",
-      "notes": "HS-06 typed/trusted governed context bundle with deterministic ordered context_items, explicit trust/source classification, and required provenance linkage."
+      "notes": "HS-07 source-segmented context bundle with strict source_classification/trust boundary validation, deterministic segmentation summary, and fail-closed provenance linkage."
     },
     {
       "artifact_type": "control_execution_result",

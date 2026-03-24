@@ -1,10 +1,10 @@
 {
   "artifact_type": "context_bundle",
-  "schema_version": "2.0.0",
-  "context_bundle_id": "ctx-9fc39b6d2f32e5f8",
-  "context_id": "ctx-9fc39b6d2f32e5f8",
+  "schema_version": "2.1.0",
+  "context_bundle_id": "ctx-35ebe96f13ad8359",
+  "context_id": "ctx-35ebe96f13ad8359",
   "task_type": "meeting_minutes",
-  "created_at": "2026-02-02T10:30:00Z",
+  "created_at": "2026-11-04T11:26:31Z",
   "trace": {
     "trace_id": "trc-93aa2ec4af8de2b1",
     "run_id": "agrun-22f8f68f268ed56d"
@@ -12,53 +12,164 @@
   "context_items": [
     {
       "item_index": 0,
-      "item_id": "ctxi-d3cf1f9df5e58ea0",
+      "item_id": "ctxi-b31119346d350786",
       "item_type": "primary_input",
       "trust_level": "high",
       "source_classification": "user_provided",
-      "provenance_refs": ["input_payload"],
-      "content": {"meeting_id": "M-2026-02-01", "transcript": "Project status reviewed."}
+      "provenance_refs": [
+        "input_payload"
+      ],
+      "content": {
+        "meeting_id": "M-2026-02-01",
+        "transcript": "Project status reviewed.",
+        "provenance_id": "input_payload"
+      }
     },
     {
       "item_index": 1,
-      "item_id": "ctxi-6ea76a3f7fb53e77",
+      "item_id": "ctxi-84e0c245743b55a3",
       "item_type": "policy_constraints",
       "trust_level": "high",
       "source_classification": "internal",
-      "provenance_refs": ["policy_constraints"],
-      "content": {"must_include": ["decisions", "owners"]}
+      "provenance_refs": [
+        "policy_constraints"
+      ],
+      "content": {
+        "must_include": [
+          "decisions",
+          "owners"
+        ],
+        "provenance_id": "policy_constraints"
+      }
     },
     {
       "item_index": 2,
-      "item_id": "ctxi-c3f89a0a74d8d1b2",
+      "item_id": "ctxi-2afbbea2c3e46a4c",
       "item_type": "prior_artifact",
       "trust_level": "high",
       "source_classification": "internal",
-      "provenance_refs": ["artifact-prev-001"],
-      "content": {"artifact_id": "artifact-prev-001", "summary": "Last sprint decisions"}
+      "provenance_refs": [
+        "artifact-prev-001"
+      ],
+      "content": {
+        "artifact_id": "artifact-prev-001",
+        "summary": "Last sprint decisions"
+      }
+    },
+    {
+      "item_index": 3,
+      "item_id": "ctxi-b57cd276a8dbb46e",
+      "item_type": "glossary_term",
+      "trust_level": "medium",
+      "source_classification": "internal",
+      "provenance_refs": [
+        "glossary_term:0"
+      ],
+      "content": "SLA"
+    },
+    {
+      "item_index": 4,
+      "item_id": "ctxi-984a0e3ddf5f4279",
+      "item_type": "glossary_term",
+      "trust_level": "medium",
+      "source_classification": "internal",
+      "provenance_refs": [
+        "glossary_term:1"
+      ],
+      "content": "RCA"
+    },
+    {
+      "item_index": 5,
+      "item_id": "ctxi-c13c9a6b394dc26b",
+      "item_type": "unresolved_question",
+      "trust_level": "low",
+      "source_classification": "inferred",
+      "provenance_refs": [
+        "unresolved_question:0"
+      ],
+      "content": "Who owns deployment rollback criteria?"
     }
   ],
-  "primary_input": {"meeting_id": "M-2026-02-01", "transcript": "Project status reviewed."},
-  "policy_constraints": {"must_include": ["decisions", "owners"]},
+  "source_segmentation": {
+    "classification_order": [
+      "internal",
+      "external",
+      "inferred",
+      "user_provided"
+    ],
+    "classification_counts": {
+      "internal": 4,
+      "external": 0,
+      "inferred": 1,
+      "user_provided": 1
+    },
+    "item_refs_by_class": {
+      "internal": [
+        "ctxi-84e0c245743b55a3",
+        "ctxi-2afbbea2c3e46a4c",
+        "ctxi-b57cd276a8dbb46e",
+        "ctxi-984a0e3ddf5f4279"
+      ],
+      "external": [],
+      "inferred": [
+        "ctxi-c13c9a6b394dc26b"
+      ],
+      "user_provided": [
+        "ctxi-b31119346d350786"
+      ]
+    },
+    "grounded_item_refs": [
+      "ctxi-2afbbea2c3e46a4c",
+      "ctxi-84e0c245743b55a3",
+      "ctxi-984a0e3ddf5f4279",
+      "ctxi-b31119346d350786",
+      "ctxi-b57cd276a8dbb46e"
+    ],
+    "inferred_item_refs": [
+      "ctxi-c13c9a6b394dc26b"
+    ]
+  },
+  "primary_input": {
+    "meeting_id": "M-2026-02-01",
+    "transcript": "Project status reviewed.",
+    "provenance_id": "input_payload"
+  },
+  "policy_constraints": {
+    "must_include": [
+      "decisions",
+      "owners"
+    ],
+    "provenance_id": "policy_constraints"
+  },
   "retrieved_context": [],
   "prior_artifacts": [
-    {"artifact_id": "artifact-prev-001", "summary": "Last sprint decisions"}
+    {
+      "artifact_id": "artifact-prev-001",
+      "summary": "Last sprint decisions"
+    }
   ],
-  "glossary_terms": ["SLA", "RCA"],
-  "unresolved_questions": ["Who owns deployment rollback criteria?"],
+  "glossary_terms": [
+    "SLA",
+    "RCA"
+  ],
+  "unresolved_questions": [
+    "Who owns deployment rollback criteria?"
+  ],
   "metadata": {
-    "created_at": "2026-02-02T10:30:00Z",
+    "created_at": "2026-11-04T11:26:31Z",
     "retrieval_status": "unavailable",
-    "source_artifact_ids": ["artifact-prev-001"]
+    "source_artifact_ids": [
+      "artifact-prev-001"
+    ]
   },
   "token_estimates": {
-    "primary_input": 16,
-    "policy_constraints": 8,
-    "prior_artifacts": 9,
-    "retrieved_context": 0,
-    "glossary_terms": 2,
-    "unresolved_questions": 4,
-    "total": 39
+    "primary_input": 25,
+    "policy_constraints": 19,
+    "prior_artifacts": 17,
+    "retrieved_context": 1,
+    "glossary_terms": 3,
+    "unresolved_questions": 10,
+    "total": 75
   },
   "truncation_log": [],
   "priority_order": [
