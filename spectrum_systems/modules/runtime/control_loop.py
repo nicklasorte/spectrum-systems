@@ -72,7 +72,7 @@ def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
         },
         "decision_inputs": decision_inputs,
         "trace_id": str(artifact.get("trace_id") or ""),
-        "run_id": str(artifact.get("eval_run_id") or source_artifact_id or ""),
+        "run_id": str(artifact.get("eval_run_id") or artifact.get("source_run_id") or source_artifact_id or ""),
         "artifact_type": artifact_type,
     }
 

@@ -20,6 +20,7 @@ from spectrum_systems.modules.runtime.control_integration import (  # noqa: E402
 )
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError  # noqa: E402
 from spectrum_systems.modules.runtime.enforcement_engine import EnforcementError  # noqa: E402
+from spectrum_systems.modules.runtime.evaluation_auto_generation import EvalCaseGenerationError  # noqa: E402
 
 
 def _eval_summary_artifact() -> Dict[str, Any]:
@@ -44,6 +45,44 @@ def _ctx(artifact: Any | None = None) -> Dict[str, Any]:
     }
 
 
+def _failure_eval_case_artifact() -> Dict[str, Any]:
+    return {
+        "artifact_type": "failure_eval_case",
+        "schema_version": "1.1.0",
+        "trace_id": "11111111-1111-4111-8111-111111111111",
+        "eval_case_id": "fec-001",
+        "created_at": "2026-03-24T00:00:00Z",
+        "source_run_id": "agrun-001",
+        "source_artifact_type": "agent_failure_record",
+        "source_artifact_id": "afr-001",
+        "failure_class": "runtime_failure",
+        "failure_stage": "runtime_boundary",
+        "triggering_condition": "governed_runtime_failure_artifact",
+        "normalized_inputs": {
+            "stage": "eval",
+            "runtime_environment": "agent_golden_path",
+            "continuation_allowed": False,
+            "publication_blocked": True,
+            "decision_blocked": True,
+            "human_review_required": False,
+            "escalation_triggered": True,
+        },
+        "expected_system_behavior": "system_must_fail_closed_and_emit_failure_artifact",
+        "observed_system_behavior": "runtime_failed_with_governed_failure_artifact",
+        "evaluation_goal": "controller_must_deny_and_require_remediation",
+        "pass_criteria": {
+            "decision_must_remain_denied": True,
+            "review_or_remediation_required": True,
+            "replay_reproducible": True,
+        },
+        "provenance": {
+            "source_artifact_ref": "agent_failure_record:afr-001",
+            "generation_path": "ag_runtime_failure_eval_auto_generation",
+            "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation",
+        },
+    }
+
+
 def test_eval_summary_path_allows_and_emits_decision() -> None:
     result = enforce_control_before_execution(_ctx())
     assert result["continuation_allowed"] is True
@@ -53,31 +92,12 @@ def test_eval_summary_path_allows_and_emits_decision() -> None:
 
 
 def test_failure_eval_case_path_denies_and_blocks() -> None:
-    artifact = {
-        "artifact_type": "failure_eval_case",
-        "schema_version": "1.0.0",
-        "trace_id": "11111111-1111-4111-8111-111111111111",
-        "eval_case_id": "failure-eval-case-001",
-        "input_artifact_refs": ["artifact://runtime/evaluation_summary/trace-1"],
-        "expected_output_spec": {
-            "failure_modes": ["threshold_breach", "indeterminate"],
-            "required_response": "block_and_escalate",
-            "minimum_decision_count": 1,
-        },
-        "scoring_rubric": {
-            "weights": {
-                "corrective_action_completeness": 0.6,
-                "reproducibility": 0.4,
-            },
-            "pass_threshold": 1.0,
-        },
-        "evaluation_type": "deterministic",
-        "created_from": "failure_trace",
-    }
+    artifact = _failure_eval_case_artifact()
     result = enforce_control_before_execution(_ctx(artifact=artifact))
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
     assert result["enforcement_result"]["final_status"] == "deny"
+    assert result["generated_failure_eval_case"]["artifact_type"] == "failure_eval_case"
 
 
 def test_unsupported_artifact_type_raises_hard_error() -> None:
@@ -129,6 +149,32 @@ def test_simulation_adapter_blocks_execution() -> None:
         called.append("ran")
         return "ok"
 
+    result, integration = run_simulation_with_control(_ctx(artifact=_failure_eval_case_artifact()), sim_fn)
+
+    assert result is None
+    assert integration["continuation_allowed"] is False
+    assert called == []
+
+
+def test_working_paper_adapter_allows_execution() -> None:
+    def gen_fn() -> Dict[str, str]:
+        return {"paper": "ok"}
+
+    paper, integration = generate_working_paper_with_control(_ctx(), gen_fn)
+    assert integration["continuation_allowed"] is True
+    assert paper == {"paper": "ok"}
+
+
+def test_summarize_control_integration_is_structured() -> None:
+    result = enforce_control_before_execution(_ctx(artifact=_failure_eval_case_artifact()))
+    summary = summarize_control_integration(_ctx(), result)
+    assert "BN.7" in summary
+    assert "continuation_allowed" in summary
+    assert "execution_status" in summary
+    assert "Failure Eval Artifact" in summary
+
+
+def test_blocked_execution_fails_closed_if_auto_generation_fails() -> None:
     with patch(
         "spectrum_systems.modules.runtime.control_integration.enforce_control_decision",
         return_value={
@@ -149,26 +195,9 @@ def test_simulation_adapter_blocks_execution() -> None:
                 "source_artifact_id": "ecd-1",
             },
         },
+    ), patch(
+        "spectrum_systems.modules.runtime.control_integration.generate_failure_eval_case",
+        side_effect=EvalCaseGenerationError("boom"),
     ):
-        result, integration = run_simulation_with_control(_ctx(), sim_fn)
-
-    assert result is None
-    assert integration["continuation_allowed"] is False
-    assert called == []
-
-
-def test_working_paper_adapter_allows_execution() -> None:
-    def gen_fn() -> Dict[str, str]:
-        return {"paper": "ok"}
-
-    paper, integration = generate_working_paper_with_control(_ctx(), gen_fn)
-    assert integration["continuation_allowed"] is True
-    assert paper == {"paper": "ok"}
-
-
-def test_summarize_control_integration_is_structured() -> None:
-    result = enforce_control_before_execution(_ctx())
-    summary = summarize_control_integration(_ctx(), result)
-    assert "BN.7" in summary
-    assert "continuation_allowed" in summary
-    assert "execution_status" in summary
+        with pytest.raises(ContractRuntimeError, match="failure_eval_case generation required"):
+            enforce_control_before_execution(_ctx())

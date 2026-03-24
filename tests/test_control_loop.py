@@ -42,24 +42,38 @@ def _eval_summary() -> Dict[str, Any]:
 def _failure_eval_case() -> Dict[str, Any]:
     return {
         "artifact_type": "failure_eval_case",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "trace_id": "11111111-1111-4111-8111-111111111111",
-        "eval_case_id": "failure-eval-case-001",
-        "input_artifact_refs": ["artifact://runtime/evaluation_summary/trace-1"],
-        "expected_output_spec": {
-            "failure_modes": ["threshold_breach", "indeterminate"],
-            "required_response": "block_and_escalate",
-            "minimum_decision_count": 1,
+        "eval_case_id": "fec-001",
+        "created_at": "2026-03-24T00:00:00Z",
+        "source_run_id": "agrun-001",
+        "source_artifact_type": "agent_failure_record",
+        "source_artifact_id": "afr-001",
+        "failure_class": "runtime_failure",
+        "failure_stage": "runtime_boundary",
+        "triggering_condition": "governed_runtime_failure_artifact",
+        "normalized_inputs": {
+            "stage": "eval",
+            "runtime_environment": "agent_golden_path",
+            "continuation_allowed": False,
+            "publication_blocked": True,
+            "decision_blocked": True,
+            "human_review_required": False,
+            "escalation_triggered": True,
         },
-        "scoring_rubric": {
-            "weights": {
-                "corrective_action_completeness": 0.6,
-                "reproducibility": 0.4,
-            },
-            "pass_threshold": 1.0,
+        "expected_system_behavior": "system_must_fail_closed_and_emit_failure_artifact",
+        "observed_system_behavior": "runtime_failed_with_governed_failure_artifact",
+        "evaluation_goal": "controller_must_deny_and_require_remediation",
+        "pass_criteria": {
+            "decision_must_remain_denied": True,
+            "review_or_remediation_required": True,
+            "replay_reproducible": True,
         },
-        "evaluation_type": "deterministic",
-        "created_from": "failure_trace",
+        "provenance": {
+            "source_artifact_ref": "agent_failure_record:afr-001",
+            "generation_path": "ag_runtime_failure_eval_auto_generation",
+            "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation",
+        },
     }
 
 
