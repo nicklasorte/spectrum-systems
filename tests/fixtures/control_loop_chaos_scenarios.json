@@ -1,0 +1,296 @@
+[
+  {
+    "scenario_id": "missing-001",
+    "category": "missing_or_invalid",
+    "description": "Missing eval_summary artifact object fails closed.",
+    "artifact": null,
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "control_loop_error"
+    ]
+  },
+  {
+    "scenario_id": "invalid-001",
+    "category": "missing_or_invalid",
+    "description": "Unsupported artifact_type fails closed.",
+    "artifact": {
+      "artifact_type": "unsupported",
+      "trace_id": "11111111-1111-4111-8111-111111111111",
+      "eval_run_id": "eval-chaos-invalid-001"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "control_loop_error"
+    ]
+  },
+  {
+    "scenario_id": "invalid-002",
+    "category": "missing_or_invalid",
+    "description": "Malformed eval_summary with missing required fields fails closed via decision artifact.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "22222222-2222-4222-8222-222222222222",
+      "eval_run_id": "eval-chaos-invalid-002"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_malformed_signal",
+      "malformed_eval_summary"
+    ]
+  },
+  {
+    "scenario_id": "invalid-003",
+    "category": "missing_or_invalid",
+    "description": "Invalid enum in system_status is rejected and fails closed.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "33333333-3333-4333-8333-333333333333",
+      "eval_run_id": "eval-chaos-invalid-003",
+      "pass_rate": 0.95,
+      "failure_rate": 0.05,
+      "drift_rate": 0.02,
+      "reproducibility_score": 0.95,
+      "system_status": "unsupported"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_malformed_signal",
+      "malformed_eval_summary"
+    ]
+  },
+  {
+    "scenario_id": "indeterminate-001",
+    "category": "indeterminate",
+    "description": "Indeterminate case folded into failure_eval_case auto-deny path.",
+    "artifact": {
+      "artifact_type": "failure_eval_case",
+      "schema_version": "1.0.0",
+      "trace_id": "44444444-4444-4444-8444-444444444444",
+      "eval_run_id": "eval-chaos-indeterminate-001",
+      "eval_case_id": "case-chaos-indeterminate-001",
+      "evaluation_type": "replay",
+      "created_from": "indeterminate"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_failure_eval_case",
+      "indeterminate_failure"
+    ]
+  },
+  {
+    "scenario_id": "threshold-001",
+    "category": "threshold_boundary",
+    "description": "Pass rate exactly at threshold remains allow.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "55555555-5555-4555-8555-555555555555",
+      "eval_run_id": "eval-chaos-threshold-001",
+      "pass_rate": 0.85,
+      "failure_rate": 0.15,
+      "drift_rate": 0.2,
+      "reproducibility_score": 0.8,
+      "system_status": "healthy"
+    },
+    "expected_status": "healthy",
+    "expected_response": "allow",
+    "expected_decision": "allow",
+    "expected_reasons": [
+      "allow_healthy_eval_summary"
+    ]
+  },
+  {
+    "scenario_id": "threshold-002",
+    "category": "threshold_boundary",
+    "description": "Pass rate just below threshold triggers warning.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "66666666-6666-4666-8666-666666666666",
+      "eval_run_id": "eval-chaos-threshold-002",
+      "pass_rate": 0.8499,
+      "failure_rate": 0.1501,
+      "drift_rate": 0.02,
+      "reproducibility_score": 0.95,
+      "system_status": "degraded"
+    },
+    "expected_status": "warning",
+    "expected_response": "warn",
+    "expected_decision": "require_review",
+    "expected_reasons": [
+      "require_review_warning_signal",
+      "reliability_breach"
+    ]
+  },
+  {
+    "scenario_id": "threshold-003",
+    "category": "threshold_boundary",
+    "description": "Drift just above threshold triggers freeze.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "77777777-7777-4777-8777-777777777777",
+      "eval_run_id": "eval-chaos-threshold-003",
+      "pass_rate": 0.95,
+      "failure_rate": 0.05,
+      "drift_rate": 0.2001,
+      "reproducibility_score": 0.95,
+      "system_status": "degraded"
+    },
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_stability_breach",
+      "stability_breach"
+    ]
+  },
+  {
+    "scenario_id": "threshold-004",
+    "category": "threshold_boundary",
+    "description": "Reproducibility just below threshold triggers block.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "88888888-8888-4888-8888-888888888888",
+      "eval_run_id": "eval-chaos-threshold-004",
+      "pass_rate": 0.95,
+      "failure_rate": 0.05,
+      "drift_rate": 0.02,
+      "reproducibility_score": 0.7999,
+      "system_status": "failing"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_trust_breach",
+      "trust_breach"
+    ]
+  },
+  {
+    "scenario_id": "conflict-001",
+    "category": "conflicting_signals",
+    "description": "Healthy pass rate is overridden by drift breach (freeze precedence).",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "99999999-9999-4999-8999-999999999999",
+      "eval_run_id": "eval-chaos-conflict-001",
+      "pass_rate": 0.99,
+      "failure_rate": 0.01,
+      "drift_rate": 0.9,
+      "reproducibility_score": 0.99,
+      "system_status": "degraded"
+    },
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_stability_breach",
+      "stability_breach"
+    ]
+  },
+  {
+    "scenario_id": "conflict-002",
+    "category": "conflicting_signals",
+    "description": "Good pass rate and low drift are overridden by trust breach (block precedence).",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "eval_run_id": "eval-chaos-conflict-002",
+      "pass_rate": 0.99,
+      "failure_rate": 0.01,
+      "drift_rate": 0.01,
+      "reproducibility_score": 0.1,
+      "system_status": "failing"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_trust_breach",
+      "trust_breach"
+    ]
+  },
+  {
+    "scenario_id": "conflict-003",
+    "category": "conflicting_signals",
+    "description": "Drift breach + trust breach together resolve to block (most severe signal wins).",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "eval_run_id": "eval-chaos-conflict-003",
+      "pass_rate": 0.95,
+      "failure_rate": 0.05,
+      "drift_rate": 0.9,
+      "reproducibility_score": 0.2,
+      "system_status": "failing"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_trust_breach",
+      "stability_breach",
+      "trust_breach"
+    ]
+  },
+  {
+    "scenario_id": "blocking-001",
+    "category": "blocking_states",
+    "description": "Failure eval case is canonical blocking control state.",
+    "artifact": {
+      "artifact_type": "failure_eval_case",
+      "schema_version": "1.0.0",
+      "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "eval_run_id": "eval-chaos-blocking-001",
+      "eval_case_id": "case-chaos-001",
+      "evaluation_type": "reliability",
+      "created_from": "indeterminate"
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_failure_eval_case",
+      "indeterminate_failure"
+    ]
+  },
+  {
+    "scenario_id": "determinism-001",
+    "category": "determinism",
+    "description": "Stable healthy input returns deterministic allow decision on repeat execution.",
+    "artifact": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      "eval_run_id": "eval-chaos-determinism-001",
+      "pass_rate": 1.0,
+      "failure_rate": 0.0,
+      "drift_rate": 0.0,
+      "reproducibility_score": 1.0,
+      "system_status": "healthy"
+    },
+    "expected_status": "healthy",
+    "expected_response": "allow",
+    "expected_decision": "allow",
+    "expected_reasons": [
+      "allow_healthy_eval_summary"
+    ]
+  }
+]
