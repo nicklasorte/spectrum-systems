@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_injection_assessment.schema.json",
+  "title": "Prompt Injection Assessment",
+  "description": "Deterministic runtime assessment artifact for detecting instruction-shaped context content and enforcing governed prompt-injection actions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "assessment_id",
+    "created_at",
+    "context_bundle_id",
+    "assessed_item_refs",
+    "detection_status",
+    "detected_patterns",
+    "enforcement_action",
+    "policy",
+    "trace",
+    "provenance_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "prompt_injection_assessment"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^pia-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "context_bundle_id": {
+      "type": "string",
+      "pattern": "^ctx-[a-f0-9]{16}$"
+    },
+    "assessed_item_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ctxi-[a-f0-9]{16}$"
+      }
+    },
+    "detection_status": {
+      "type": "string",
+      "enum": [
+        "clean",
+        "suspicious"
+      ]
+    },
+    "detected_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pattern_ref",
+          "item_ref",
+          "pattern_id",
+          "pattern_class",
+          "match_snippet"
+        ],
+        "properties": {
+          "pattern_ref": {
+            "type": "string",
+            "pattern": "^pi-[a-z0-9-]+:ctxi-[a-f0-9]{16}$"
+          },
+          "item_ref": {
+            "type": "string",
+            "pattern": "^ctxi-[a-f0-9]{16}$"
+          },
+          "pattern_id": {
+            "type": "string",
+            "enum": [
+              "pi-override-system-instructions",
+              "pi-ignore-prior-instructions",
+              "pi-reveal-hidden-prompts",
+              "pi-tool-coercion"
+            ]
+          },
+          "pattern_class": {
+            "type": "string",
+            "enum": [
+              "override_system_instructions",
+              "ignore_prior_instructions_or_policies",
+              "reveal_hidden_prompts_or_policies",
+              "tool_usage_coercion_outside_rules"
+            ]
+          },
+          "match_snippet": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "enforcement_action": {
+      "type": "string",
+      "enum": [
+        "allow_as_data",
+        "quarantine",
+        "block_bundle"
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "require_assessment",
+        "on_detection"
+      ],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "require_assessment": {
+          "type": "boolean"
+        },
+        "on_detection": {
+          "type": "string",
+          "enum": [
+            "allow_as_data",
+            "quarantine",
+            "block_bundle"
+          ]
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "run_id",
+        "source_artifact_refs"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_artifact_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "provenance_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "detection_status": {
+            "const": "clean"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "detected_patterns": {
+            "maxItems": 0
+          },
+          "enforcement_action": {
+            "const": "allow_as_data"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "detection_status": {
+            "const": "suspicious"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "detected_patterns": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

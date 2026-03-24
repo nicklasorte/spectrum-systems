@@ -97,6 +97,14 @@
     ],
     "glossary_injection_enabled": true,
     "glossary_unresolved_terms": [],
-    "glossary_fail_on_missing_required": true
+    "glossary_fail_on_missing_required": true,
+    "prompt_injection": {
+      "assessment_id": "pia-a7d9c0f87a2b4ce1",
+      "detection_status": "clean",
+      "enforcement_action": "allow_as_data",
+      "policy_id": "prompt_injection-default-v1",
+      "flagged_item_refs": [],
+      "detected_pattern_refs": []
+    }
   }
 }
