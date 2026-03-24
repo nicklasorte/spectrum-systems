@@ -162,3 +162,4 @@ A plan is **closed** when its VALIDATE slice passes and the result is committed.
 Closed plans are not deleted — they remain as execution history.
 
 | docs/review-actions/PLAN-SF-14-2026-03-24.md | SF-14 — Release + Canary Policy for governed staged promotion and rollback | Active |
+| docs/review-actions/PLAN-SF-14.5-2026-03-24.md | SF-14.5 — Trust hardening for deterministic identity, precedence, indeterminate handling, and coverage parity | Active |

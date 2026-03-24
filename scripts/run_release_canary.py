@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -22,6 +21,7 @@ from spectrum_systems.modules.runtime.release_canary import (  # noqa: E402
     build_release_record,
     decision_exit_code,
 )
+from spectrum_systems.utils.deterministic_id import deterministic_id  # noqa: E402
 
 _DEFAULT_OUTPUT_DIR = _REPO_ROOT / "outputs" / "release_canary"
 _DEFAULT_RELEASE_POLICY = _REPO_ROOT / "data" / "policy" / "eval_release_policy.json"
@@ -124,7 +124,26 @@ def main(argv: list[str] | None = None) -> int:
     coverage_policy = _load_json(Path(args.coverage_policy))
 
     timestamp = args.timestamp.strip() or _utc_now()
-    release_id = args.release_id.strip() or f"release-canary-{uuid.uuid4()}"
+    release_identity_payload = {
+        "baseline_eval_run": args.baseline_eval_run,
+        "baseline_eval_cases": args.baseline_eval_cases,
+        "candidate_eval_run": args.candidate_eval_run,
+        "candidate_eval_cases": args.candidate_eval_cases,
+        "baseline_version": args.baseline_version,
+        "candidate_version": args.candidate_version,
+        "baseline_prompt_version_id": args.baseline_prompt_version_id,
+        "candidate_prompt_version_id": args.candidate_prompt_version_id,
+        "baseline_schema_version": args.baseline_schema_version,
+        "candidate_schema_version": args.candidate_schema_version,
+        "baseline_policy_version_id": args.baseline_policy_version_id,
+        "candidate_policy_version_id": args.candidate_policy_version_id,
+        "artifact_type": sorted(set(args.artifact_type)),
+    }
+    release_id = args.release_id.strip() or deterministic_id(
+        prefix="release-canary",
+        namespace="evaluation_release_record",
+        payload=release_identity_payload,
+    )
 
     _, baseline_cases, baseline_results, baseline_summary = _run_eval_bundle(
         Path(args.baseline_eval_run),
@@ -139,14 +158,22 @@ def main(argv: list[str] | None = None) -> int:
         eval_cases=baseline_cases,
         eval_results=baseline_results,
         policy=coverage_policy,
-        coverage_run_id=f"{release_id}-baseline",
+        coverage_run_id=deterministic_id(
+            prefix="coverage",
+            namespace="eval_coverage_summary",
+            payload={"release_id": release_id, "role": "baseline"},
+        ),
         timestamp=timestamp,
     )
     candidate_coverage, candidate_slices = _build_coverage(
         eval_cases=candidate_cases,
         eval_results=candidate_results,
         policy=coverage_policy,
-        coverage_run_id=f"{release_id}-candidate",
+        coverage_run_id=deterministic_id(
+            prefix="coverage",
+            namespace="eval_coverage_summary",
+            payload={"release_id": release_id, "role": "candidate"},
+        ),
         timestamp=timestamp,
     )
 

@@ -30,6 +30,12 @@ The gate blocks and exits non-zero when any of the following occurs:
 5. Control decision resolves to a blocking response (`freeze` or `block` by policy).
 6. Execution errors prevent trustworthy evaluation.
 
+Canonical indeterminate rule for governed CI is fail-closed:
+- default: `indeterminate_is_blocking=true`
+- optional override: policy may set `indeterminate_is_blocking=false` explicitly
+
+Gate identity is deterministic (`gate_run_id` derived from canonical structured inputs), so repeated runs with the same governed inputs produce the same gate identity.
+
 ## Exit code behavior
 
 - `0`: gate **pass**

@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.decision_precedence import most_severe
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
 
 
@@ -94,6 +95,34 @@ def _required_slice_regressions(
             regressions.add(slice_id)
 
     return sorted(regressions)
+
+
+def _case_set_mismatch(
+    baseline_eval_results: list[dict[str, Any]],
+    candidate_eval_results: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    baseline_cases = sorted({str(item.get("eval_case_id")) for item in baseline_eval_results if item.get("eval_case_id")})
+    candidate_cases = sorted({str(item.get("eval_case_id")) for item in candidate_eval_results if item.get("eval_case_id")})
+    baseline_set = set(baseline_cases)
+    candidate_set = set(candidate_cases)
+    return {
+        "baseline_only_case_ids": sorted(baseline_set - candidate_set),
+        "candidate_only_case_ids": sorted(candidate_set - baseline_set),
+    }
+
+
+def _slice_set_mismatch(
+    baseline_slice_summaries: list[dict[str, Any]],
+    candidate_slice_summaries: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    baseline_slices = sorted({str(item.get("slice_id")) for item in baseline_slice_summaries if item.get("slice_id")})
+    candidate_slices = sorted({str(item.get("slice_id")) for item in candidate_slice_summaries if item.get("slice_id")})
+    baseline_set = set(baseline_slices)
+    candidate_set = set(candidate_slices)
+    return {
+        "baseline_only_slice_ids": sorted(baseline_set - candidate_set),
+        "candidate_only_slice_ids": sorted(candidate_set - baseline_set),
+    }
 
 
 def _threshold_result(threshold: str, passed: bool, actual: Any, expected: Any) -> dict[str, Any]:
@@ -207,13 +236,39 @@ def build_release_record(
         )
     )
 
-    if bool(policy.get("indeterminate_counts_as_regression", True)):
+    if bool(policy.get("indeterminate_is_blocking", policy.get("indeterminate_counts_as_regression", True))):
         threshold_results.append(
             _threshold_result(
-                "indeterminate_counts_as_regression",
+                "indeterminate_is_blocking",
                 len(indeterminate_failures) == 0,
                 len(indeterminate_failures),
                 0,
+            )
+        )
+
+    case_set_mismatch = _case_set_mismatch(baseline_eval_results, candidate_eval_results)
+    if bool(policy.get("coverage_parity_require_case_set_match", True)):
+        has_case_set_mismatch = bool(case_set_mismatch["baseline_only_case_ids"] or case_set_mismatch["candidate_only_case_ids"])
+        threshold_results.append(
+            _threshold_result(
+                "coverage_parity_require_case_set_match",
+                not has_case_set_mismatch,
+                case_set_mismatch,
+                {"baseline_only_case_ids": [], "candidate_only_case_ids": []},
+            )
+        )
+
+    slice_set_mismatch = _slice_set_mismatch(baseline_slice_summaries, candidate_slice_summaries)
+    if bool(policy.get("coverage_parity_require_slice_set_match", True)):
+        has_slice_set_mismatch = bool(
+            slice_set_mismatch["baseline_only_slice_ids"] or slice_set_mismatch["candidate_only_slice_ids"]
+        )
+        threshold_results.append(
+            _threshold_result(
+                "coverage_parity_require_slice_set_match",
+                not has_slice_set_mismatch,
+                slice_set_mismatch,
+                {"baseline_only_slice_ids": [], "candidate_only_slice_ids": []},
             )
         )
 
@@ -232,6 +287,12 @@ def build_release_record(
     rollback_reason_map: dict[str, bool] = {
         "candidate_blocked_by_control": candidate_system_response in set(policy.get("rollback_system_responses") or ["block"]),
         "required_slice_regression": len(required_slice_regressions) > 0,
+        "coverage_case_set_mismatch": bool(
+            case_set_mismatch["baseline_only_case_ids"] or case_set_mismatch["candidate_only_case_ids"]
+        ),
+        "coverage_slice_set_mismatch": bool(
+            slice_set_mismatch["baseline_only_slice_ids"] or slice_set_mismatch["candidate_only_slice_ids"]
+        ),
         "new_failures_introduced": len(new_failures) > 0,
         "indeterminate_case_detected": len(indeterminate_failures) > 0,
         "pass_rate_drop_exceeds_rollback_threshold": pass_rate_delta < (-1.0 * float(policy.get("rollback_pass_rate_delta_drop_threshold", 1.0))),
@@ -247,15 +308,14 @@ def build_release_record(
             active_rollback_triggers.append(str(trigger))
     reasons.extend(f"rollback_triggered:{name}" for name in active_rollback_triggers)
 
+    decision_candidates: list[str] = ["promote"]
+    if failed_thresholds:
+        decision_candidates.append("hold")
     if active_rollback_triggers:
-        decision = "rollback"
-        rollback_target_version: str | None = baseline_version
-    elif failed_thresholds:
-        decision = "hold"
-        rollback_target_version = None
-    else:
-        decision = "promote"
-        rollback_target_version = None
+        decision_candidates.append("rollback")
+    decision = most_severe(decision_candidates, default="promote")
+    rollback_target_version: str | None = baseline_version if decision == "rollback" else None
+    if decision == "promote":
         reasons.append("all_release_policy_checks_passed")
 
     record = {
@@ -301,7 +361,7 @@ def build_release_record(
                 "baseline": str(baseline_control.get("system_response", "block")),
                 "candidate": candidate_system_response,
             },
-            "threshold_results": threshold_results,
+            "threshold_results": sorted(threshold_results, key=lambda item: str(item["threshold"])),
         },
         "decision": decision,
         "reasons": sorted(set(reasons)),

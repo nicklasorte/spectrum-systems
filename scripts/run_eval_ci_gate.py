@@ -13,7 +13,6 @@ import json
 import os
 import subprocess
 import sys
-import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,6 +30,7 @@ from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     DEFAULT_THRESHOLDS,
     build_evaluation_control_decision,
 )
+from spectrum_systems.utils.deterministic_id import deterministic_id  # noqa: E402
 
 
 _DEFAULT_POLICY_PATH = _REPO_ROOT / "data" / "policy" / "eval_ci_gate_policy.json"
@@ -48,6 +48,10 @@ class GateArtifacts:
     eval_results: List[Dict[str, Any]]
     eval_summary: Dict[str, Any]
     evaluation_control_decision: Dict[str, Any]
+
+
+def _gate_run_id(*, seed_payload: Dict[str, Any]) -> str:
+    return deterministic_id(prefix="gate", namespace="evaluation_ci_gate_result", payload=seed_payload)
 
 
 def _utc_now() -> str:
@@ -163,7 +167,7 @@ def _run_gate(
         invalid_artifacts.append("eval_summary")
         blocking_reasons.append("invalid_schema: eval_summary")
 
-    if indeterminate_hits:
+    if indeterminate_hits and bool(policy.get("indeterminate_is_blocking", True)):
         blocking_reasons.append("indeterminate_eval_outcome_detected")
 
     thresholds = policy.get("thresholds", {})
@@ -249,7 +253,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
             "schema_version": "1.0.0",
-            "gate_run_id": f"gate-{uuid.uuid4()}",
+            "gate_run_id": _gate_run_id(
+                seed_payload={
+                    "status": status,
+                    "missing_artifacts": sorted(missing_artifacts),
+                    "eval_run": str(args.eval_run),
+                    "eval_cases": str(args.eval_cases),
+                    "policy": str(policy_path),
+                }
+            ),
             "timestamp": _utc_now(),
             "status": status,
             "blocking_reasons": blocking_reasons,
@@ -271,7 +283,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
             "schema_version": "1.0.0",
-            "gate_run_id": f"gate-{uuid.uuid4()}",
+            "gate_run_id": _gate_run_id(
+                seed_payload={
+                    "status": "blocked",
+                    "invalid_artifacts": ["eval_ci_gate_policy"],
+                    "policy_path": str(policy_path),
+                }
+            ),
             "timestamp": _utc_now(),
             "status": "blocked",
             "blocking_reasons": [f"execution_error: invalid policy ({exc})"],
@@ -315,7 +333,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             status = "blocked"
             exit_code = _EXIT_BLOCKED
 
-    if indeterminate_hits and "indeterminate_eval_outcome_detected" not in blocking_reasons:
+    if (
+        indeterminate_hits
+        and bool(policy.get("indeterminate_is_blocking", True))
+        and "indeterminate_eval_outcome_detected" not in blocking_reasons
+    ):
         blocking_reasons.append("indeterminate_eval_outcome_detected")
         status = "blocked"
         exit_code = _EXIT_BLOCKED
@@ -323,7 +345,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     summary = {
         "artifact_type": "evaluation_ci_gate_result",
         "schema_version": "1.0.0",
-        "gate_run_id": f"gate-{uuid.uuid4()}",
+        "gate_run_id": _gate_run_id(
+            seed_payload={
+                "status": status,
+                "blocking_reasons": sorted(blocking_reasons),
+                "invalid_artifacts": sorted(invalid_artifacts),
+                "indeterminate_hits": sorted(indeterminate_hits),
+                "eval_run": str(args.eval_run),
+                "eval_cases": str(args.eval_cases),
+                "policy": str(policy_path),
+            }
+        ),
         "timestamp": _utc_now(),
         "status": status,
         "blocking_reasons": blocking_reasons,

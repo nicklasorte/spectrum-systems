@@ -154,6 +154,20 @@ def test_indeterminate_eval_outcome_fails_closed(tmp_path: Path) -> None:
     assert "indeterminate_eval_outcome_detected" in summary["blocking_reasons"]
 
 
+def test_indeterminate_can_be_explicitly_overridden_by_policy(tmp_path: Path) -> None:
+    policy = _policy()
+    policy["indeterminate_is_blocking"] = False
+    code, summary = _run_gate(
+        tmp_path,
+        case=_eval_case(forced_status="indeterminate", forced_score=0.0),
+        policy=policy,
+    )
+
+    assert code == 1
+    assert summary["status"] == "fail"
+    assert "indeterminate_eval_outcome_detected" not in summary["blocking_reasons"]
+
+
 def test_threshold_failure_fails_closed(tmp_path: Path) -> None:
     code, summary = _run_gate(
         tmp_path,
@@ -209,3 +223,12 @@ def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> 
     assert code == 2
     assert summary["status"] == "blocked"
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
+
+
+def test_gate_run_id_is_deterministic_for_same_inputs(tmp_path: Path) -> None:
+    case = _eval_case(forced_status="pass", forced_score=1.0)
+    code_one, summary_one = _run_gate(tmp_path, case=case)
+    code_two, summary_two = _run_gate(tmp_path, case=case)
+    assert code_one == 0
+    assert code_two == 0
+    assert summary_one["gate_run_id"] == summary_two["gate_run_id"]

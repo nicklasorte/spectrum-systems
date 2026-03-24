@@ -44,9 +44,13 @@ Supported controls:
 - `minimum_cases_per_required_slice`
 - `minimum_pass_rate_by_risk_class`
 - `indeterminate_counts_as_failure`
+- `indeterminate_is_blocking` (canonical alias; defaults fail-closed)
 - `gap_severity_mapping`
 
 The script reads policy values at runtime (no hardcoded required-slice thresholds).
+
+Indeterminate semantics are fail-closed by default and can only be loosened via explicit governed policy override.
+Coverage run IDs are deterministic when not provided explicitly, preventing identity drift in repeated comparisons.
 
 ## Generated artifacts
 

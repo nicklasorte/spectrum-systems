@@ -1,14 +1,15 @@
 {
   "artifact_type": "eval_ci_gate_policy",
-  "schema_version": "1.0.0",
-  "thresholds": {
-    "pass_rate_min": 0.95,
-    "failure_rate_max": 0.05,
-    "drift_rate_max": 0.2,
-    "reproducibility_score_min": 0.8
-  },
   "blocking_system_responses": [
     "freeze",
     "block"
-  ]
+  ],
+  "indeterminate_is_blocking": true,
+  "schema_version": "1.0.0",
+  "thresholds": {
+    "drift_rate_max": 0.2,
+    "failure_rate_max": 0.05,
+    "pass_rate_min": 0.95,
+    "reproducibility_score_min": 0.8
+  }
 }
