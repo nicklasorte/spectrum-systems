@@ -17,14 +17,29 @@
     "created_from"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "eval_case" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
-    "trace_id": { "type": "string", "format": "uuid" },
-    "eval_case_id": { "type": "string", "minLength": 1 },
+    "artifact_type": {
+      "type": "string",
+      "const": "eval_case"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eval_case_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "input_artifact_refs": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "expected_output_spec": {
       "type": "object",
@@ -36,11 +51,56 @@
     },
     "evaluation_type": {
       "type": "string",
-      "enum": ["deterministic", "heuristic", "model_based"]
+      "enum": [
+        "deterministic",
+        "heuristic",
+        "model_based"
+      ]
     },
     "created_from": {
       "type": "string",
-      "enum": ["manual", "failure_trace", "synthetic"]
+      "enum": [
+        "manual",
+        "failure_trace",
+        "synthetic"
+      ]
+    },
+    "slice_tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Canonical slice identifiers used for coverage and risk aggregation."
+    },
+    "domain_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Optional legacy/domain tags that can be used as slice fallbacks."
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Optional risk class used for slice-level minimum pass-rate policies."
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "description": "Optional priority used by coverage reporting policy."
     }
   }
 }

@@ -1,0 +1,36 @@
+{
+  "required_slices": [
+    {
+      "slice_id": "decision_extraction",
+      "slice_name": "Decision Extraction",
+      "risk_class": "high",
+      "priority": "p1",
+      "weight": 0.75
+    },
+    {
+      "slice_id": "runtime_guardrails",
+      "slice_name": "Runtime Guardrails",
+      "risk_class": "critical",
+      "priority": "p0",
+      "weight": 1.0
+    }
+  ],
+  "optional_slices": [
+    "pre_merge_gate",
+    "audit"
+  ],
+  "minimum_cases_per_required_slice": 1,
+  "minimum_pass_rate_by_risk_class": {
+    "critical": 0.98,
+    "high": 0.95,
+    "medium": 0.9,
+    "low": 0.8
+  },
+  "indeterminate_counts_as_failure": true,
+  "gap_severity_mapping": {
+    "missing_required_slice": "critical",
+    "zero_cases": "high",
+    "below_min_cases": "medium",
+    "below_pass_rate": "medium"
+  }
+}
