@@ -52,10 +52,18 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert artifacts["final_execution_record"]["execution_status"] == "success"
 
 
+def test_context_failure_stops_pipeline(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, fail_context_assembly=True))
+
+    assert artifacts["failure_artifact"]["failure_stage"] == "context"
+    assert "context_bundle" not in artifacts
+    assert "agent_execution_trace" not in artifacts
+
+
 def test_agent_execution_failure_stops_pipeline(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path, fail_agent_execution=True))
 
-    assert "failure_artifact" in artifacts
+    assert artifacts["failure_artifact"]["failure_stage"] == "agent"
     assert "eval_result" not in artifacts
     assert "control_decision" not in artifacts
 
@@ -63,7 +71,7 @@ def test_agent_execution_failure_stops_pipeline(tmp_path: Path) -> None:
 def test_invalid_output_schema_stops_pipeline(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path, emit_invalid_structured_output=True))
 
-    assert "failure_artifact" in artifacts
+    assert artifacts["failure_artifact"]["failure_stage"] == "normalization"
     assert "structured_output" not in artifacts
     assert "eval_result" not in artifacts
 
@@ -71,9 +79,25 @@ def test_invalid_output_schema_stops_pipeline(tmp_path: Path) -> None:
 def test_eval_failure_stops_pipeline(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path, fail_eval_execution=True))
 
-    assert "failure_artifact" in artifacts
+    assert artifacts["failure_artifact"]["failure_stage"] == "eval"
     assert "eval_summary" not in artifacts
     assert "control_decision" not in artifacts
+
+
+def test_control_failure_stops_pipeline(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, fail_control_decision=True))
+
+    assert artifacts["failure_artifact"]["failure_stage"] == "control"
+    assert "control_decision" not in artifacts
+    assert "enforcement" not in artifacts
+
+
+def test_enforcement_failure_stops_pipeline(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, fail_enforcement=True))
+
+    assert artifacts["failure_artifact"]["failure_stage"] == "enforcement"
+    assert "enforcement" not in artifacts
+    assert "final_execution_record" not in artifacts
 
 
 def test_control_block_path(tmp_path: Path) -> None:

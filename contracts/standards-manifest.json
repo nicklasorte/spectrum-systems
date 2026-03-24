@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.37",
+  "artifact_version": "1.0.38",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
   "record_id": "REC-STD-2026-03-24-ENVELOPE-HARDENING",
@@ -39,6 +39,19 @@
       "last_updated_in": "1.0.8",
       "example_path": "contracts/examples/agent_execution_trace.json",
       "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, and final output lineage for replay compatibility."
+    },
+    {
+      "artifact_type": "agent_failure_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.38",
+      "last_updated_in": "1.0.38",
+      "example_path": "contracts/examples/agent_failure_record.json",
+      "notes": "AG-02 canonical deterministic failure artifact for fail-closed agent golden-path stage termination and replay/debug traceability."
     },
     {
       "artifact_type": "artifact_envelope",

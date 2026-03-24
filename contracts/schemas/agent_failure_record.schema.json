@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/agent_failure_record.schema.json",
+  "title": "Agent Failure Record",
+  "description": "Canonical AG-02 deterministic failure artifact emitted when any AG-01 golden-path stage fails.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "run_id",
+    "trace_id",
+    "failure_stage",
+    "failure_type",
+    "error_message",
+    "root_artifact_ids",
+    "input_references",
+    "policy_version_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "agent_failure_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_stage": {
+      "type": "string",
+      "enum": [
+        "context",
+        "agent",
+        "normalization",
+        "eval",
+        "control",
+        "enforcement"
+      ]
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "schema_error",
+        "execution_error",
+        "policy_error",
+        "validation_error",
+        "runtime_error"
+      ]
+    },
+    "error_message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "root_artifact_ids": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context_bundle_id",
+        "agent_run_id",
+        "eval_case_id",
+        "eval_run_id",
+        "decision_id",
+        "enforcement_result_id"
+      ],
+      "properties": {
+        "context_bundle_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "agent_run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eval_case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eval_run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enforcement_result_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "input_references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "policy_version_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

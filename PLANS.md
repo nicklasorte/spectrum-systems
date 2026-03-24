@@ -145,6 +145,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-SF-12-2026-03-24.md | SF-12 — Control-Loop Chaos Tests for deterministic controller correctness | Active |
 
 | docs/review-actions/PLAN-AG-01-2026-03-24.md | AG-01 — Agent Runtime Golden Path | Active |
+| docs/review-actions/PLAN-AG-02-2026-03-24.md | AG-02 — Agent Failure Artifact Path | Active |
 
 Update this table when plans are created or completed.
 
