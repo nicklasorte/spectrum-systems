@@ -42,6 +42,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence
 
+from spectrum_systems.modules.runtime.context_bundle import compose_context_bundle
+from spectrum_systems.utils.deterministic_id import deterministic_id
+
 # ─── Constants ────────────────────────────────────────────────────────────────
 
 #: Deterministic priority ordering for context sections (1 = highest priority).
@@ -141,8 +144,8 @@ def prioritize_context_elements(bundle: Dict[str, Any]) -> Dict[str, Any]:
     """
     result: Dict[str, Any] = {}
 
-    reserved = {"metadata", "token_estimates", "truncation_log", "context_id", "task_type",
-                "priority_order"}
+    reserved = {"metadata", "token_estimates", "truncation_log", "context_id", "context_bundle_id", "task_type",
+                "artifact_type", "schema_version", "created_at", "trace", "context_items", "priority_order"}
 
     # Fixed-order priority sections first.
     for section in PRIORITY_ORDER:
@@ -551,8 +554,6 @@ def build_context_bundle(
     cfg = config or {}
     artifacts = source_artifacts or []
 
-    context_id = _make_context_id(task_type, input_payload, source_artifacts=artifacts, config=cfg)
-
     # Build retrieval context (stub always returns []).
     # NOTE: task_type is used as a placeholder retrieval query.  When real
     # retrieval is implemented, the caller should pass an explicit query via
@@ -560,25 +561,50 @@ def build_context_bundle(
     # actual content of the task rather than the task-type label.
     retrieval_query = cfg.get("retrieval_query") or task_type
     retrieved = retrieve_context(query=retrieval_query, task_type=task_type)
-    retrieval_status = "unavailable" if not retrieved else "available"
 
-    bundle: Dict[str, Any] = {
-        "context_id": context_id,
-        "task_type": task_type,
+    trace_id = str(cfg.get("trace_id") or deterministic_id(
+        prefix="trc",
+        namespace="context_bundle_trace",
+        payload={"task_type": task_type, "input_payload": input_payload},
+    ))
+    run_id = str(cfg.get("run_id") or deterministic_id(
+        prefix="run",
+        namespace="context_bundle_run",
+        payload={
+            "task_type": task_type,
+            "input_payload": input_payload,
+            "source_artifact_ids": sorted([a.get("artifact_id", "") for a in artifacts]),
+        },
+    ))
+
+    policy_constraints = cfg.get("policy_constraints") or {}
+    glossary_terms = cfg.get("glossary_terms") or []
+    unresolved_questions = cfg.get("unresolved_questions") or []
+
+    bundle: Dict[str, Any] = compose_context_bundle(
+        task_type=task_type,
+        input_payload=input_payload,
+        policy_constraints=policy_constraints,
+        retrieved_context=retrieved,
+        prior_artifacts=artifacts,
+        glossary_terms=glossary_terms,
+        unresolved_questions=unresolved_questions,
+        source_artifact_ids=[a.get("artifact_id", "") for a in artifacts],
+        trace_id=trace_id,
+        run_id=run_id,
+    )
+
+    # Backward-compatible fields retained for existing runtime consumers.
+    bundle.update({
         "primary_input": input_payload,
-        "policy_constraints": cfg.get("policy_constraints") or {},
+        "policy_constraints": policy_constraints,
         "retrieved_context": retrieved,
         "prior_artifacts": artifacts,
-        "glossary_terms": cfg.get("glossary_terms") or [],
-        "unresolved_questions": cfg.get("unresolved_questions") or [],
-        "metadata": {
-            "created_at": _utc_now(),
-            "retrieval_status": retrieval_status,
-            "source_artifact_ids": [a.get("artifact_id", "") for a in artifacts],
-        },
+        "glossary_terms": glossary_terms,
+        "unresolved_questions": unresolved_questions,
         "token_estimates": {},
         "truncation_log": [],
-    }
+    })
 
     # Apply budget policy if supplied.
     policy = cfg.get("budget_policy")

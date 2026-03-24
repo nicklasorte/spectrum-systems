@@ -48,13 +48,38 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
             "artifact_id": "ART-001",
             "content": "relevant context",
             "relevance_score": 0.9,
-            "provenance": {"source": "fixture"},
+            "provenance": {"source_id": "SRC-001", "provenance_refs": ["SRC-001"]},
         }
     ] if with_context_data else []
 
     return {
+        "artifact_type": "context_bundle",
+        "schema_version": "2.0.0",
+        "context_bundle_id": "ctx-1234abcd5678ef90",
         "context_id": "ctx-1234abcd5678ef90",
         "task_type": "agent_execution",
+        "created_at": "2026-03-21T00:00:00Z",
+        "trace": {"trace_id": "trace-seed", "run_id": "run-seed"},
+        "context_items": [
+            {
+                "item_index": 0,
+                "item_id": "ctxi-1234abcd5678ef90",
+                "item_type": "primary_input",
+                "trust_level": "high",
+                "source_classification": "user_provided",
+                "provenance_refs": ["input_payload"],
+                "content": {"goal": "execute bounded plan"},
+            },
+            {
+                "item_index": 1,
+                "item_id": "ctxi-0234abcd5678ef90",
+                "item_type": "policy_constraints",
+                "trust_level": "high",
+                "source_classification": "internal",
+                "provenance_refs": ["policy_constraints"],
+                "content": {"max_steps": 4},
+            },
+        ],
         "primary_input": {"goal": "execute bounded plan"},
         "policy_constraints": {"max_steps": 4},
         "retrieved_context": retrieved,
@@ -62,12 +87,28 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
         "glossary_terms": [],
         "unresolved_questions": [],
         "metadata": {
-            "created_at": "2026-03-21T00:00:00+00:00",
+            "created_at": "2026-03-21T00:00:00Z",
             "retrieval_status": "available" if with_context_data else "empty",
             "source_artifact_ids": ["ART-001"],
         },
-        "token_estimates": {"total": 100},
+        "token_estimates": {
+            "primary_input": 10,
+            "policy_constraints": 5,
+            "prior_artifacts": 0,
+            "retrieved_context": 3,
+            "glossary_terms": 0,
+            "unresolved_questions": 0,
+            "total": 18,
+        },
         "truncation_log": [],
+        "priority_order": [
+            "primary_input",
+            "policy_constraints",
+            "prior_artifacts",
+            "retrieved_context",
+            "glossary_terms",
+            "unresolved_questions",
+        ],
     }
 
 
@@ -157,6 +198,7 @@ def test_schema_invalid_final_output() -> None:
 
 def test_blocked_execution_when_context_bundle_missing_required_data() -> None:
     bundle = _context_bundle(with_context_data=False)
+    bundle["context_items"][0]["provenance_refs"] = []
     plan = generate_step_plan(bundle, [{"step_type": "transform"}])
 
     with pytest.raises(AgentExecutionBlockedError):

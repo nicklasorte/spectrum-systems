@@ -1,0 +1,72 @@
+{
+  "artifact_type": "context_bundle",
+  "schema_version": "2.0.0",
+  "context_bundle_id": "ctx-9fc39b6d2f32e5f8",
+  "context_id": "ctx-9fc39b6d2f32e5f8",
+  "task_type": "meeting_minutes",
+  "created_at": "2026-02-02T10:30:00Z",
+  "trace": {
+    "trace_id": "trc-93aa2ec4af8de2b1",
+    "run_id": "agrun-22f8f68f268ed56d"
+  },
+  "context_items": [
+    {
+      "item_index": 0,
+      "item_id": "ctxi-d3cf1f9df5e58ea0",
+      "item_type": "primary_input",
+      "trust_level": "high",
+      "source_classification": "user_provided",
+      "provenance_refs": ["input_payload"],
+      "content": {"meeting_id": "M-2026-02-01", "transcript": "Project status reviewed."}
+    },
+    {
+      "item_index": 1,
+      "item_id": "ctxi-6ea76a3f7fb53e77",
+      "item_type": "policy_constraints",
+      "trust_level": "high",
+      "source_classification": "internal",
+      "provenance_refs": ["policy_constraints"],
+      "content": {"must_include": ["decisions", "owners"]}
+    },
+    {
+      "item_index": 2,
+      "item_id": "ctxi-c3f89a0a74d8d1b2",
+      "item_type": "prior_artifact",
+      "trust_level": "high",
+      "source_classification": "internal",
+      "provenance_refs": ["artifact-prev-001"],
+      "content": {"artifact_id": "artifact-prev-001", "summary": "Last sprint decisions"}
+    }
+  ],
+  "primary_input": {"meeting_id": "M-2026-02-01", "transcript": "Project status reviewed."},
+  "policy_constraints": {"must_include": ["decisions", "owners"]},
+  "retrieved_context": [],
+  "prior_artifacts": [
+    {"artifact_id": "artifact-prev-001", "summary": "Last sprint decisions"}
+  ],
+  "glossary_terms": ["SLA", "RCA"],
+  "unresolved_questions": ["Who owns deployment rollback criteria?"],
+  "metadata": {
+    "created_at": "2026-02-02T10:30:00Z",
+    "retrieval_status": "unavailable",
+    "source_artifact_ids": ["artifact-prev-001"]
+  },
+  "token_estimates": {
+    "primary_input": 16,
+    "policy_constraints": 8,
+    "prior_artifacts": 9,
+    "retrieved_context": 0,
+    "glossary_terms": 2,
+    "unresolved_questions": 4,
+    "total": 39
+  },
+  "truncation_log": [],
+  "priority_order": [
+    "primary_input",
+    "policy_constraints",
+    "prior_artifacts",
+    "retrieved_context",
+    "glossary_terms",
+    "unresolved_questions"
+  ]
+}

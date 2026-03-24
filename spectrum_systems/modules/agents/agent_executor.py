@@ -17,6 +17,11 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.context_bundle import (
+    ContextBundleValidationError,
+    compose_context_bundle,
+    validate_context_bundle,
+)
 from spectrum_systems.modules.runtime.model_adapter import (
     CanonicalModelAdapter,
     ModelAdapterError,
@@ -55,7 +60,12 @@ def _validate_contract(instance: Dict[str, Any], schema_name: str) -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(instance)
 
 
-def construct_context_bundle(context_bundle: Dict[str, Any]) -> Dict[str, Any]:
+def construct_context_bundle(
+    context_bundle: Dict[str, Any],
+    *,
+    trace_id: str,
+    run_id: str,
+) -> Dict[str, Any]:
     """Validate and normalize a context bundle for bounded execution.
 
     Fail-closed rules:
@@ -63,15 +73,31 @@ def construct_context_bundle(context_bundle: Dict[str, Any]) -> Dict[str, Any]:
     - context must include either retrieved_context or prior_artifacts content
     """
     bundle = deepcopy(context_bundle)
-    _validate_contract(bundle, "context_bundle")
 
-    has_retrieval = bool(bundle.get("retrieved_context"))
-    has_prior = bool(bundle.get("prior_artifacts"))
-    if not (has_retrieval or has_prior):
-        raise AgentExecutionBlockedError(
-            "construct_context_bundle: context bundle missing required execution context "
-            "(retrieved_context or prior_artifacts)"
+    if "context_items" not in bundle:
+        bundle = compose_context_bundle(
+            task_type=str(bundle.get("task_type") or ""),
+            input_payload=dict(bundle.get("primary_input") or {}),
+            policy_constraints=bundle.get("policy_constraints") or {},
+            retrieved_context=list(bundle.get("retrieved_context") or []),
+            prior_artifacts=list(bundle.get("prior_artifacts") or []),
+            glossary_terms=list(bundle.get("glossary_terms") or []),
+            unresolved_questions=list(bundle.get("unresolved_questions") or []),
+            source_artifact_ids=list(((bundle.get("metadata") or {}).get("source_artifact_ids") or [])),
+            trace_id=trace_id,
+            run_id=run_id,
         )
+
+    # Ensure runtime linkage fields are explicit and up to date at execution seam.
+    bundle.setdefault("trace", {})
+    bundle["trace"]["trace_id"] = trace_id
+    bundle["trace"]["run_id"] = run_id
+
+    try:
+        _validate_contract(bundle, "context_bundle")
+        validate_context_bundle(bundle)
+    except (ContextBundleValidationError, Exception) as exc:
+        raise AgentExecutionBlockedError(f"construct_context_bundle: {exc}") from exc
 
     return bundle
 
@@ -215,7 +241,7 @@ def execute_step_sequence(
             "execute_step_sequence: routing_decision with routing_decision_id/policy_id/route_key/task_class/selected_model_id is required"
         )
 
-    bounded_context = construct_context_bundle(context_bundle)
+    bounded_context = construct_context_bundle(context_bundle, trace_id=trace_id, run_id=agent_run_id)
     planned_steps = [deepcopy(step) for step in step_plan]
 
     started_at = _now_iso()

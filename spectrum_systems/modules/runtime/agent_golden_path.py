@@ -589,7 +589,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 config.task_type,
                 config.input_payload,
                 source_artifacts=config.source_artifacts,
-                config=config.context_config,
+                config={**dict(config.context_config), "trace_id": trace_id, "run_id": run_id},
             )
             _validate_contract(context_bundle, "context_bundle", stage="context")
         except AgentGoldenPathStageError:
