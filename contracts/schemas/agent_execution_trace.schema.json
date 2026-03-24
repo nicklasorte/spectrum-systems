@@ -8,6 +8,7 @@
   "required": [
     "agent_run_id",
     "context_bundle_id",
+    "context_source_summary",
     "trace_id",
     "routing_decision",
     "prompt_resolution",
@@ -347,6 +348,92 @@
         "selected_model_id": {
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9:_./-]{2,127}$"
+        }
+      }
+    },
+    "context_source_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification_counts",
+        "item_refs_by_class",
+        "inferred_item_refs"
+      ],
+      "properties": {
+        "classification_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internal",
+            "external",
+            "inferred",
+            "user_provided"
+          ],
+          "properties": {
+            "internal": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "external": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inferred": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "user_provided": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "item_refs_by_class": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internal",
+            "external",
+            "inferred",
+            "user_provided"
+          ],
+          "properties": {
+            "internal": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^ctxi-[a-f0-9]{16}$"
+              }
+            },
+            "external": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^ctxi-[a-f0-9]{16}$"
+              }
+            },
+            "inferred": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^ctxi-[a-f0-9]{16}$"
+              }
+            },
+            "user_provided": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^ctxi-[a-f0-9]{16}$"
+              }
+            }
+          }
+        },
+        "inferred_item_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ctxi-[a-f0-9]{16}$"
+          }
         }
       }
     }

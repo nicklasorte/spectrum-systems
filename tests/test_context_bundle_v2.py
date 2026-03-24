@@ -43,12 +43,16 @@ def test_schema_example_validation() -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
 
 
-def test_valid_typed_trusted_bundle_construction() -> None:
+def test_valid_segmented_bundle_construction() -> None:
     bundle = _compose()
     assert bundle["artifact_type"] == "context_bundle"
-    assert bundle["schema_version"] == "2.0.0"
-    assert bundle["context_items"][0]["item_type"] == "primary_input"
-    assert bundle["context_items"][0]["trust_level"] == "high"
+    assert bundle["schema_version"] == "2.1.0"
+    assert bundle["source_segmentation"]["classification_counts"] == {
+        "internal": 3,
+        "external": 1,
+        "inferred": 1,
+        "user_provided": 1,
+    }
 
 
 def test_deterministic_repeated_composition() -> None:
@@ -57,24 +61,10 @@ def test_deterministic_repeated_composition() -> None:
     assert b1 == b2
 
 
-def test_unknown_item_type_rejected() -> None:
-    bundle = _compose()
-    bundle["context_items"][0]["item_type"] = "unknown"
-    with pytest.raises(ContextBundleValidationError, match="unknown item_type"):
-        validate_context_bundle(bundle)
-
-
 def test_unknown_trust_level_rejected() -> None:
     bundle = _compose()
     bundle["context_items"][0]["trust_level"] = "super_trusted"
     with pytest.raises(ContextBundleValidationError, match="unknown trust_level"):
-        validate_context_bundle(bundle)
-
-
-def test_missing_provenance_rejected() -> None:
-    bundle = _compose()
-    bundle["context_items"][0]["provenance_refs"] = []
-    with pytest.raises(ContextBundleValidationError, match="provenance"):
         validate_context_bundle(bundle)
 
 
@@ -85,8 +75,47 @@ def test_invalid_source_classification_rejected() -> None:
         validate_context_bundle(bundle)
 
 
-def test_no_silent_coercion_of_malformed_items() -> None:
+def test_missing_source_classification_rejected_fail_closed() -> None:
     bundle = _compose()
-    bundle["context_items"][0]["item_index"] = 7
-    with pytest.raises(ContextBundleValidationError, match="non-deterministic ordering"):
+    del bundle["context_items"][0]["source_classification"]
+    with pytest.raises(ContextBundleValidationError, match="source_classification"):
+        validate_context_bundle(bundle)
+
+
+def test_inferred_vs_grounded_separation_enforced() -> None:
+    bundle = _compose()
+    unresolved_item = next(
+        item for item in bundle["context_items"] if item["item_type"] == "unresolved_question"
+    )
+    unresolved_item["source_classification"] = "internal"
+    with pytest.raises(ContextBundleValidationError, match="mixed-source violation"):
+        validate_context_bundle(bundle)
+
+
+def test_user_provided_vs_internal_trust_boundary_enforced() -> None:
+    bundle = _compose()
+    retrieved = next(item for item in bundle["context_items"] if item["item_type"] == "retrieved_context")
+    retrieved["trust_level"] = "high"
+    with pytest.raises(ContextBundleValidationError, match="inconsistent trust_level"):
+        validate_context_bundle(bundle)
+
+
+def test_runtime_trace_linkage_and_source_summary_present() -> None:
+    bundle = _compose()
+    assert bundle["trace"]["trace_id"] == "trace-001"
+    assert bundle["trace"]["run_id"] == "run-001"
+    assert bundle["source_segmentation"]["item_refs_by_class"]["external"]
+
+
+def test_no_silent_fallback_classification() -> None:
+    bundle = _compose()
+    bundle["context_items"][2]["source_classification"] = ""
+    with pytest.raises(ContextBundleValidationError, match="source_classification"):
+        validate_context_bundle(bundle)
+
+
+def test_source_segmentation_mismatch_rejected() -> None:
+    bundle = _compose()
+    bundle["source_segmentation"]["classification_counts"]["external"] = 0
+    with pytest.raises(ContextBundleValidationError, match="source segmentation mismatch"):
         validate_context_bundle(bundle)

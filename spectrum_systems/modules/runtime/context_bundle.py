@@ -1,4 +1,4 @@
-"""HS-06 Context Bundle v2 (Typed + Trusted).
+"""HS-06/HS-07 Context Bundle v2 (Typed + Trusted + Segmented Sources).
 
 Narrow deterministic composition + fail-closed validation boundary for runtime
 context bundles. This module intentionally does not perform retrieval/ranking.
@@ -18,7 +18,7 @@ from spectrum_systems.contracts import load_schema
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 BUNDLE_ARTIFACT_TYPE = "context_bundle"
-BUNDLE_SCHEMA_VERSION = "2.0.0"
+BUNDLE_SCHEMA_VERSION = "2.1.0"
 
 ALLOWED_ITEM_TYPES: Tuple[str, ...] = (
     "primary_input",
@@ -35,6 +35,23 @@ ALLOWED_SOURCE_CLASSIFICATIONS: Tuple[str, ...] = (
     "inferred",
     "user_provided",
 )
+SOURCE_CLASSIFICATION_ORDER: Tuple[str, ...] = ALLOWED_SOURCE_CLASSIFICATIONS
+
+ALLOWED_SOURCE_BY_ITEM_TYPE: Dict[str, Tuple[str, ...]] = {
+    "primary_input": ("user_provided",),
+    "policy_constraints": ("internal",),
+    "retrieved_context": ("external",),
+    "prior_artifact": ("internal",),
+    "glossary_term": ("internal",),
+    "unresolved_question": ("inferred",),
+}
+
+ALLOWED_TRUST_BY_SOURCE: Dict[str, Tuple[str, ...]] = {
+    "internal": ("high", "medium"),
+    "external": ("medium", "low"),
+    "inferred": ("low", "untrusted"),
+    "user_provided": ("high", "medium", "low", "untrusted"),
+}
 
 LEGACY_PRIORITY_ORDER: Tuple[str, ...] = (
     "primary_input",
@@ -97,6 +114,29 @@ def _ensure_provenance_refs(value: Any, *, default_ref: Optional[str] = None) ->
     return normalized
 
 
+def _validate_item_boundary(item_type: str, trust_level: str, source_classification: str) -> None:
+    if item_type not in ALLOWED_ITEM_TYPES:
+        raise ContextBundleValidationError(f"unknown item_type '{item_type}'")
+    if trust_level not in ALLOWED_TRUST_LEVELS:
+        raise ContextBundleValidationError(f"unknown trust_level '{trust_level}'")
+    if source_classification not in ALLOWED_SOURCE_CLASSIFICATIONS:
+        raise ContextBundleValidationError(
+            f"invalid source_classification '{source_classification}'"
+        )
+
+    allowed_sources = ALLOWED_SOURCE_BY_ITEM_TYPE[item_type]
+    if source_classification not in allowed_sources:
+        raise ContextBundleValidationError(
+            f"mixed-source violation: item_type '{item_type}' requires source_classification in {allowed_sources}"
+        )
+
+    allowed_trust = ALLOWED_TRUST_BY_SOURCE[source_classification]
+    if trust_level not in allowed_trust:
+        raise ContextBundleValidationError(
+            f"inconsistent trust_level '{trust_level}' for source_classification '{source_classification}'"
+        )
+
+
 def _append_item(
     items: List[Dict[str, Any]],
     *,
@@ -106,14 +146,7 @@ def _append_item(
     provenance_refs: Iterable[str],
     content: Any,
 ) -> None:
-    if item_type not in ALLOWED_ITEM_TYPES:
-        raise ContextBundleValidationError(f"unknown item_type '{item_type}'")
-    if trust_level not in ALLOWED_TRUST_LEVELS:
-        raise ContextBundleValidationError(f"unknown trust_level '{trust_level}'")
-    if source_classification not in ALLOWED_SOURCE_CLASSIFICATIONS:
-        raise ContextBundleValidationError(
-            f"invalid source_classification '{source_classification}'"
-        )
+    _validate_item_boundary(item_type, trust_level, source_classification)
 
     item_index = len(items)
     refs = sorted(set(str(ref).strip() for ref in provenance_refs if str(ref).strip()))
@@ -145,6 +178,43 @@ def _append_item(
     )
 
 
+def _build_source_segmentation(items: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    refs_by_class: Dict[str, List[str]] = {
+        classification: [] for classification in SOURCE_CLASSIFICATION_ORDER
+    }
+
+    for item in items:
+        classification = str(item.get("source_classification") or "")
+        item_id = str(item.get("item_id") or "").strip()
+        if classification not in refs_by_class:
+            raise ContextBundleValidationError(
+                f"invalid source_classification '{classification}'"
+            )
+        if not item_id:
+            raise ContextBundleValidationError("context item missing required item_id")
+        refs_by_class[classification].append(item_id)
+
+    classification_counts = {
+        classification: len(refs_by_class[classification])
+        for classification in SOURCE_CLASSIFICATION_ORDER
+    }
+    grounded_refs = sorted(
+        refs_by_class["internal"] + refs_by_class["external"] + refs_by_class["user_provided"]
+    )
+    inferred_refs = sorted(refs_by_class["inferred"])
+
+    return {
+        "classification_order": list(SOURCE_CLASSIFICATION_ORDER),
+        "classification_counts": classification_counts,
+        "item_refs_by_class": {
+            classification: refs_by_class[classification]
+            for classification in SOURCE_CLASSIFICATION_ORDER
+        },
+        "grounded_item_refs": grounded_refs,
+        "inferred_item_refs": inferred_refs,
+    }
+
+
 def compose_context_items(
     *,
     input_payload: Dict[str, Any],
@@ -174,7 +244,7 @@ def compose_context_items(
         content=policy_constraints,
     )
 
-    for idx, retrieval_item in enumerate(_sort_context_objects(retrieved_context)):
+    for retrieval_item in _sort_context_objects(retrieved_context):
         provenance = retrieval_item.get("provenance")
         refs = _ensure_provenance_refs(provenance, default_ref=str(retrieval_item.get("artifact_id") or ""))
         _append_item(
@@ -222,8 +292,6 @@ def compose_context_items(
     return items
 
 
-
-
 def _estimate_tokens(value: Any) -> int:
     if value is None:
         return 0
@@ -257,10 +325,12 @@ def compose_context_bundle(
         glossary_terms=glossary_terms,
         unresolved_questions=unresolved_questions,
     )
+    source_segmentation = _build_source_segmentation(context_items)
 
     identity_payload = {
         "task_type": task_type,
         "context_items": context_items,
+        "source_segmentation": source_segmentation,
         "trace": {"trace_id": trace_id, "run_id": run_id},
     }
     context_bundle_id = deterministic_id(
@@ -282,6 +352,7 @@ def compose_context_bundle(
             "run_id": run_id,
         },
         "context_items": context_items,
+        "source_segmentation": source_segmentation,
         "primary_input": input_payload,
         "policy_constraints": policy_constraints,
         "retrieved_context": list(retrieved_context),
@@ -331,14 +402,11 @@ def validate_context_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
         item_type = item.get("item_type")
         trust_level = item.get("trust_level")
         source_classification = item.get("source_classification")
-        if item_type not in ALLOWED_ITEM_TYPES:
-            raise ContextBundleValidationError(f"unknown item_type '{item_type}'")
-        if trust_level not in ALLOWED_TRUST_LEVELS:
-            raise ContextBundleValidationError(f"unknown trust_level '{trust_level}'")
-        if source_classification not in ALLOWED_SOURCE_CLASSIFICATIONS:
-            raise ContextBundleValidationError(
-                f"invalid source_classification '{source_classification}'"
-            )
+        _validate_item_boundary(
+            str(item_type or ""),
+            str(trust_level or ""),
+            str(source_classification or ""),
+        )
 
         idx = item.get("item_index")
         if idx != expected_index:
@@ -349,6 +417,13 @@ def validate_context_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
         refs = item.get("provenance_refs")
         if not isinstance(refs, list) or not refs or any(not str(ref).strip() for ref in refs):
             raise ContextBundleValidationError("context item missing required provenance linkage")
+
+    source_segmentation = bundle.get("source_segmentation")
+    expected_segmentation = _build_source_segmentation(items)
+    if source_segmentation != expected_segmentation:
+        raise ContextBundleValidationError(
+            "source segmentation mismatch: deterministic segmentation failed or ambiguous source blending detected"
+        )
 
     if bundle.get("context_bundle_id") != bundle.get("context_id"):
         raise ContextBundleValidationError("context_bundle_id and context_id must match")

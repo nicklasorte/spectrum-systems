@@ -1,6 +1,6 @@
 {
   "agent_run_id": "agent-run-example-001",
-  "context_bundle_id": "ctx-1234abcd5678ef90",
+  "context_bundle_id": "ctx-35ebe96f13ad8359",
   "trace_id": "trace-example-001",
   "step_sequence": [
     {
@@ -63,5 +63,31 @@
     "route_key": "meeting_minutes_default",
     "task_class": "meeting_minutes",
     "selected_model_id": "openai:gpt-4o-mini"
+  },
+  "context_source_summary": {
+    "classification_counts": {
+      "internal": 4,
+      "external": 0,
+      "inferred": 1,
+      "user_provided": 1
+    },
+    "item_refs_by_class": {
+      "internal": [
+        "ctxi-84e0c245743b55a3",
+        "ctxi-2afbbea2c3e46a4c",
+        "ctxi-b57cd276a8dbb46e",
+        "ctxi-984a0e3ddf5f4279"
+      ],
+      "external": [],
+      "inferred": [
+        "ctxi-c13c9a6b394dc26b"
+      ],
+      "user_provided": [
+        "ctxi-b31119346d350786"
+      ]
+    },
+    "inferred_item_refs": [
+      "ctxi-c13c9a6b394dc26b"
+    ]
   }
 }
