@@ -1,12 +1,14 @@
 {
   "artifact_type": "eval_release_policy",
   "schema_version": "1.0.0",
+  "policy_version_id": "eval-release-policy-v1.0.0",
   "minimum_eval_sample_size": 1,
-  "max_pass_rate_delta_drop": 0.02,
+  "max_acceptable_aggregate_regression": 0.02,
   "max_coverage_score_delta_drop": 0.05,
-  "required_slices_must_not_degrade": true,
-  "allow_new_failures": false,
-  "indeterminate_counts_as_regression": true,
+  "required_slices_no_regression": true,
+  "coverage_parity_required": true,
+  "new_failures_block": true,
+  "indeterminate_blocks": true,
   "control_thresholds": {
     "reliability_threshold": 0.85,
     "drift_threshold": 0.2,
@@ -23,8 +25,14 @@
   "rollback_triggers": [
     "candidate_blocked_by_control",
     "required_slice_regression",
+    "coverage_mismatch",
     "new_failures_introduced",
     "indeterminate_case_detected",
     "pass_rate_drop_exceeds_rollback_threshold"
+  ],
+  "decision_precedence": [
+    "rollback",
+    "hold",
+    "promote"
   ]
 }

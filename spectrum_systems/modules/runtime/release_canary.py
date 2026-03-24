@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -27,10 +26,6 @@ class ReleaseInputVersions:
 def _validate(instance: dict[str, Any], schema_name: str) -> None:
     schema = load_schema(schema_name)
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(instance)
-
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _round_delta(value: float) -> float:
@@ -73,7 +68,7 @@ def _required_slice_regressions(
 
     baseline_uncovered = set(baseline_coverage.get("uncovered_required_slices") or [])
     candidate_uncovered = set(candidate_coverage.get("uncovered_required_slices") or [])
-    regressions.update(sorted(candidate_uncovered - baseline_uncovered))
+    regressions.update(candidate_uncovered - baseline_uncovered)
 
     baseline_idx = _slice_index(baseline_slices)
     candidate_idx = _slice_index(candidate_slices)
@@ -96,6 +91,34 @@ def _required_slice_regressions(
     return sorted(regressions)
 
 
+def _coverage_mismatch_details(
+    *,
+    baseline_coverage: dict[str, Any],
+    candidate_coverage: dict[str, Any],
+) -> list[str]:
+    mismatches: list[str] = []
+
+    if int(baseline_coverage.get("total_eval_cases", 0)) != int(candidate_coverage.get("total_eval_cases", 0)):
+        mismatches.append("total_eval_cases")
+
+    baseline_covered = sorted(str(x) for x in (baseline_coverage.get("covered_slices") or []))
+    candidate_covered = sorted(str(x) for x in (candidate_coverage.get("covered_slices") or []))
+    if baseline_covered != candidate_covered:
+        mismatches.append("covered_slices")
+
+    baseline_uncovered = sorted(str(x) for x in (baseline_coverage.get("uncovered_required_slices") or []))
+    candidate_uncovered = sorted(str(x) for x in (candidate_coverage.get("uncovered_required_slices") or []))
+    if baseline_uncovered != candidate_uncovered:
+        mismatches.append("uncovered_required_slices")
+
+    baseline_counts = {str(k): int(v) for k, v in dict(baseline_coverage.get("slice_case_counts") or {}).items()}
+    candidate_counts = {str(k): int(v) for k, v in dict(candidate_coverage.get("slice_case_counts") or {}).items()}
+    if baseline_counts != candidate_counts:
+        mismatches.append("slice_case_counts")
+
+    return sorted(mismatches)
+
+
 def _threshold_result(threshold: str, passed: bool, actual: Any, expected: Any) -> dict[str, Any]:
     return {
         "threshold": threshold,
@@ -108,7 +131,7 @@ def _threshold_result(threshold: str, passed: bool, actual: Any, expected: Any) 
 def build_release_record(
     *,
     release_id: str,
-    timestamp: str | None,
+    timestamp: str,
     baseline_version: str,
     candidate_version: str,
     artifact_types: list[str],
@@ -160,6 +183,10 @@ def build_release_record(
         baseline_slices=baseline_slice_summaries,
         candidate_slices=candidate_slice_summaries,
     )
+    coverage_mismatch_fields = _coverage_mismatch_details(
+        baseline_coverage=baseline_coverage_summary,
+        candidate_coverage=candidate_coverage_summary,
+    )
 
     baseline_failures = _failure_case_ids(baseline_eval_results)
     candidate_failures = _failure_case_ids(candidate_eval_results)
@@ -168,13 +195,18 @@ def build_release_record(
     indeterminate_failures = sorted(_indeterminate_case_ids(candidate_eval_results))
 
     min_sample_size = int(policy.get("minimum_eval_sample_size", 1))
-    max_pass_drop = float(policy.get("max_pass_rate_delta_drop", 0.0))
+    max_pass_drop = float(policy.get("max_acceptable_aggregate_regression", policy.get("max_pass_rate_delta_drop", 0.0)))
     max_coverage_drop = float(policy.get("max_coverage_score_delta_drop", 0.0))
+
+    coverage_parity_required = bool(policy.get("coverage_parity_required", True))
+    new_failures_block = bool(policy.get("new_failures_block", True))
+    indeterminate_blocks = bool(policy.get("indeterminate_blocks", True))
+    required_slices_no_regression = bool(policy.get("required_slices_no_regression", True))
 
     threshold_results: list[dict[str, Any]] = [
         _threshold_result("minimum_eval_sample_size", sample_size >= min_sample_size, sample_size, min_sample_size),
         _threshold_result(
-            "max_pass_rate_delta_drop",
+            "max_acceptable_aggregate_regression",
             pass_rate_delta >= (-1.0 * max_pass_drop),
             pass_rate_delta,
             -1.0 * max_pass_drop,
@@ -187,66 +219,75 @@ def build_release_record(
         ),
     ]
 
-    if bool(policy.get("required_slices_must_not_degrade", True)):
+    if required_slices_no_regression:
         threshold_results.append(
             _threshold_result(
-                "required_slices_must_not_degrade",
+                "required_slices_no_regression",
                 len(required_slice_regressions) == 0,
-                len(required_slice_regressions),
-                0,
+                required_slice_regressions,
+                [],
             )
         )
 
-    allow_new_failures = bool(policy.get("allow_new_failures", False))
-    threshold_results.append(
-        _threshold_result(
-            "allow_new_failures",
-            allow_new_failures or len(new_failures) == 0,
-            len(new_failures),
-            0 if not allow_new_failures else "any",
-        )
-    )
-
-    if bool(policy.get("indeterminate_counts_as_regression", True)):
+    if coverage_parity_required:
         threshold_results.append(
             _threshold_result(
-                "indeterminate_counts_as_regression",
+                "coverage_parity_required",
+                len(coverage_mismatch_fields) == 0,
+                coverage_mismatch_fields,
+                [],
+            )
+        )
+
+    if new_failures_block:
+        threshold_results.append(
+            _threshold_result(
+                "new_failures_block",
+                len(new_failures) == 0,
+                new_failures,
+                [],
+            )
+        )
+
+    if indeterminate_blocks:
+        threshold_results.append(
+            _threshold_result(
+                "indeterminate_blocks",
                 len(indeterminate_failures) == 0,
-                len(indeterminate_failures),
-                0,
+                indeterminate_failures,
+                [],
             )
         )
 
     candidate_system_response = str(candidate_control.get("system_response", "block"))
-    blocking_system_responses = set(policy.get("blocking_system_responses") or ["freeze", "block"])
+    blocking_system_responses = sorted(set(policy.get("blocking_system_responses") or ["freeze", "block"]))
     threshold_results.append(
         _threshold_result(
             "candidate_control_response",
-            candidate_system_response not in blocking_system_responses,
+            candidate_system_response not in set(blocking_system_responses),
             candidate_system_response,
-            sorted(blocking_system_responses),
+            blocking_system_responses,
         )
     )
 
-    reasons: list[str] = []
+    failed_thresholds = sorted(item["threshold"] for item in threshold_results if not item["passed"])
+
     rollback_reason_map: dict[str, bool] = {
         "candidate_blocked_by_control": candidate_system_response in set(policy.get("rollback_system_responses") or ["block"]),
         "required_slice_regression": len(required_slice_regressions) > 0,
+        "coverage_mismatch": len(coverage_mismatch_fields) > 0,
         "new_failures_introduced": len(new_failures) > 0,
         "indeterminate_case_detected": len(indeterminate_failures) > 0,
-        "pass_rate_drop_exceeds_rollback_threshold": pass_rate_delta < (-1.0 * float(policy.get("rollback_pass_rate_delta_drop_threshold", 1.0))),
+        "pass_rate_drop_exceeds_rollback_threshold": pass_rate_delta
+        < (-1.0 * float(policy.get("rollback_pass_rate_delta_drop_threshold", 1.0))),
     }
+    active_rollback_triggers = sorted(
+        str(trigger)
+        for trigger in (policy.get("rollback_triggers") or [])
+        if rollback_reason_map.get(str(trigger), False)
+    )
 
-    failed_thresholds = [item["threshold"] for item in threshold_results if not item["passed"]]
-    if failed_thresholds:
-        reasons.extend(f"threshold_failed:{name}" for name in failed_thresholds)
-
-    active_rollback_triggers = []
-    for trigger in policy.get("rollback_triggers") or []:
-        if rollback_reason_map.get(str(trigger), False):
-            active_rollback_triggers.append(str(trigger))
-    reasons.extend(f"rollback_triggered:{name}" for name in active_rollback_triggers)
-
+    # Explicit precedence: rollback > hold > promote
     if active_rollback_triggers:
         decision = "rollback"
         rollback_target_version: str | None = baseline_version
@@ -256,13 +297,16 @@ def build_release_record(
     else:
         decision = "promote"
         rollback_target_version = None
+
+    reasons = [*(f"threshold_failed:{name}" for name in failed_thresholds), *(f"rollback_triggered:{name}" for name in active_rollback_triggers)]
+    if decision == "promote":
         reasons.append("all_release_policy_checks_passed")
 
     record = {
         "artifact_type": "evaluation_release_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "release_id": release_id,
-        "timestamp": timestamp or _utc_now(),
+        "timestamp": timestamp,
         "candidate_version": candidate_version,
         "baseline_version": baseline_version,
         "artifact_types": sorted(set(artifact_types)),
@@ -295,17 +339,19 @@ def build_release_record(
             "pass_rate_delta": pass_rate_delta,
             "coverage_score_delta": coverage_score_delta,
             "required_slice_regressions": required_slice_regressions,
+            "coverage_mismatch_fields": coverage_mismatch_fields,
             "new_failures": new_failures,
             "indeterminate_failures": indeterminate_failures,
             "control_responses": {
                 "baseline": str(baseline_control.get("system_response", "block")),
                 "candidate": candidate_system_response,
             },
-            "threshold_results": threshold_results,
+            "threshold_results": sorted(threshold_results, key=lambda item: str(item["threshold"])),
         },
         "decision": decision,
         "reasons": sorted(set(reasons)),
         "rollback_target_version": rollback_target_version,
+        "policy_version_id": str(policy.get("policy_version_id", "unknown")),
     }
 
     _validate(record, "evaluation_release_record")

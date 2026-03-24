@@ -1,0 +1,48 @@
+name: release-canary
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'codex/**'
+
+permissions:
+  contents: read
+
+jobs:
+  sf14-release-canary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run canonical SF-14 release canary
+        run: |
+          python scripts/run_release_canary.py \
+            --baseline-version baseline-ci \
+            --candidate-version candidate-ci \
+            --baseline-prompt-version-id prompt-ci-base \
+            --candidate-prompt-version-id prompt-ci-candidate \
+            --baseline-schema-version schema-ci-base \
+            --candidate-schema-version schema-ci-candidate \
+            --baseline-policy-version-id policy-ci-base \
+            --candidate-policy-version-id policy-ci-candidate \
+            --output-dir outputs/release_canary/ci
+
+      - name: Upload release canary artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sf14-release-canary-artifacts
+          path: outputs/release_canary/ci
+          if-no-files-found: error

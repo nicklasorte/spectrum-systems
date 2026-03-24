@@ -19,7 +19,8 @@
     "canary_comparison_results",
     "decision",
     "reasons",
-    "rollback_target_version"
+    "rollback_target_version",
+    "policy_version_id"
   ],
   "properties": {
     "artifact_type": {
@@ -28,7 +29,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "release_id": {
       "type": "string",
@@ -122,6 +123,7 @@
         "pass_rate_delta",
         "coverage_score_delta",
         "required_slice_regressions",
+        "coverage_mismatch_fields",
         "new_failures",
         "indeterminate_failures",
         "control_responses",
@@ -243,6 +245,14 @@
               }
             }
           }
+        },
+        "coverage_mismatch_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     },
@@ -267,6 +277,10 @@
         "string",
         "null"
       ]
+    },
+    "policy_version_id": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "$defs": {

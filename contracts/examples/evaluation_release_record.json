@@ -1,6 +1,6 @@
 {
   "artifact_type": "evaluation_release_record",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "release_id": "release-20260324-canary-001",
   "timestamp": "2026-03-24T00:00:00Z",
   "candidate_version": "candidate-2026.03.24.1",
@@ -59,11 +59,13 @@
         "actual": 0.0,
         "expected": -0.02
       }
-    ]
+    ],
+    "coverage_mismatch_fields": []
   },
   "decision": "promote",
   "reasons": [
     "all_release_policy_checks_passed"
   ],
-  "rollback_target_version": null
+  "rollback_target_version": null,
+  "policy_version_id": "eval-release-policy-v1.0.0"
 }
