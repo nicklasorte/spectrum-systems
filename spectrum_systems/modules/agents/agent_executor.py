@@ -86,12 +86,48 @@ def construct_context_bundle(
             source_artifact_ids=list(((bundle.get("metadata") or {}).get("source_artifact_ids") or [])),
             trace_id=trace_id,
             run_id=run_id,
+            glossary_registry_entries=list(bundle.get("glossary_registry_entries") or []),
+            glossary_injection_policy=dict(bundle.get("glossary_injection_policy") or {}),
         )
 
     # Ensure runtime linkage fields are explicit and up to date at execution seam.
     bundle.setdefault("trace", {})
     bundle["trace"]["trace_id"] = trace_id
     bundle["trace"]["run_id"] = run_id
+    bundle.setdefault("glossary_terms", [])
+    bundle.setdefault("glossary_definitions", [])
+    bundle.setdefault(
+        "glossary_canonicalization",
+        {
+            "injection_enabled": False,
+            "match_mode": "exact",
+            "selection_mode": "explicit_then_exact_text",
+            "fail_on_missing_required": False,
+            "selected_glossary_entry_ids": [],
+            "unresolved_terms": [],
+        },
+    )
+    bundle.setdefault("metadata", {})
+    if isinstance(bundle["metadata"], dict):
+        bundle["metadata"].setdefault("glossary_injection_status", "not_requested")
+    bundle.setdefault("token_estimates", {})
+    if isinstance(bundle["token_estimates"], dict):
+        bundle["token_estimates"].setdefault("glossary_definitions", 0)
+        bundle["token_estimates"].setdefault(
+            "total",
+            sum(
+                int(bundle["token_estimates"].get(name, 0))
+                for name in (
+                    "primary_input",
+                    "policy_constraints",
+                    "prior_artifacts",
+                    "retrieved_context",
+                    "glossary_terms",
+                    "glossary_definitions",
+                    "unresolved_questions",
+                )
+            ),
+        )
 
     try:
         _validate_contract(bundle, "context_bundle")
@@ -412,6 +448,16 @@ def execute_step_sequence(
             "classification_counts": dict(source_segmentation.get("classification_counts") or {}),
             "item_refs_by_class": dict(source_segmentation.get("item_refs_by_class") or {}),
             "inferred_item_refs": list(source_segmentation.get("inferred_item_refs") or []),
+            "glossary_entry_refs": list(((bounded_context.get("glossary_canonicalization") or {}).get("selected_glossary_entry_ids") or [])),
+            "glossary_definition_item_refs": [
+                str(item.get("item_id"))
+                for item in list(bounded_context.get("context_items") or [])
+                if str(item.get("item_type") or "") == "glossary_definition"
+            ],
+            "glossary_injection_enabled": bool(((bounded_context.get("glossary_canonicalization") or {}).get("injection_enabled"))),
+            "glossary_unresolved_terms": list(((bounded_context.get("glossary_canonicalization") or {}).get("unresolved_terms") or [])),
+            "glossary_fail_on_missing_required": bool(((bounded_context.get("glossary_canonicalization") or {}).get("fail_on_missing_required", False)),
+            ),
         },
         "trace_id": trace_id,
         "routing_decision": {

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/glossary_entry.schema.json",
+  "title": "Glossary Entry",
+  "description": "Governed canonical glossary definition record with deterministic identity and publication timestamp semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "glossary_entry_id",
+    "term_id",
+    "canonical_term",
+    "definition",
+    "domain_scope",
+    "version",
+    "status",
+    "provenance_refs",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "glossary_entry"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "glossary_entry_id": {
+      "type": "string",
+      "pattern": "^gle-[a-f0-9]{16}$"
+    },
+    "term_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "canonical_term": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "definition": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "domain_scope": {
+      "type": "string",
+      "enum": [
+        "general",
+        "governance",
+        "runtime",
+        "evaluation",
+        "safety"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "deprecated"
+      ]
+    },
+    "provenance_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -212,6 +212,7 @@ class TestBuildContextBundle:
     def test_token_estimates_total_non_negative(self):
         bundle = build_context_bundle("meeting_minutes", MINIMAL_INPUT)
         assert bundle["token_estimates"]["total"] >= 0
+        assert bundle["token_estimates"]["glossary_definitions"] == 0
 
     def test_priority_order_key_present(self):
         bundle = build_context_bundle("meeting_minutes", MINIMAL_INPUT)
@@ -225,6 +226,7 @@ class TestBuildContextBundle:
         bundle = build_context_bundle("meeting_minutes", MINIMAL_INPUT, config=cfg)
         assert "EIRP" in bundle["glossary_terms"]
         assert len(bundle["unresolved_questions"]) == 1
+        assert bundle["glossary_definitions"] == []
 
     def test_schema_validation(self):
         schema = _load_schema("context_bundle.schema.json")

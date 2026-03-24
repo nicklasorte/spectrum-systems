@@ -1,0 +1,16 @@
+{
+  "artifact_type": "glossary_entry",
+  "schema_version": "1.0.0",
+  "glossary_entry_id": "gle-a2f8fbe34b21d991",
+  "term_id": "context_bundle",
+  "canonical_term": "Context Bundle",
+  "definition": "Deterministic, schema-governed execution context artifact composed from typed inputs and trusted context items.",
+  "domain_scope": "runtime",
+  "version": "v1.0.0",
+  "status": "approved",
+  "provenance_refs": [
+    "contracts/schemas/context_bundle.schema.json",
+    "docs/runtime/context_bundle_v2.md"
+  ],
+  "created_at": "2026-03-24T00:00:00Z"
+}

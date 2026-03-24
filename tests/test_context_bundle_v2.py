@@ -14,6 +14,21 @@ from spectrum_systems.modules.runtime.context_bundle import (
 )
 
 
+_GLOSSARY_ENTRY = {
+    "artifact_type": "glossary_entry",
+    "schema_version": "1.0.0",
+    "glossary_entry_id": "gle-a2f8fbe34b21d991",
+    "term_id": "sla",
+    "canonical_term": "SLA",
+    "definition": "Service Level Agreement governing measurable service commitments.",
+    "domain_scope": "runtime",
+    "version": "v1.0.0",
+    "status": "approved",
+    "provenance_refs": ["rules/policy/sla.md"],
+    "created_at": "2026-03-24T00:00:00Z",
+}
+
+
 def _compose() -> dict:
     return compose_context_bundle(
         task_type="meeting_minutes",
@@ -28,11 +43,13 @@ def _compose() -> dict:
             }
         ],
         prior_artifacts=[{"artifact_id": "art-001", "kind": "decision"}],
-        glossary_terms=["SLA"],
+        glossary_terms=[{"requested_term": "SLA", "term_id": "sla", "domain_scope": "runtime"}],
         unresolved_questions=["owner?"],
         source_artifact_ids=["art-001"],
         trace_id="trace-001",
         run_id="run-001",
+        glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+        glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
     )
 
 
@@ -46,13 +63,16 @@ def test_schema_example_validation() -> None:
 def test_valid_segmented_bundle_construction() -> None:
     bundle = _compose()
     assert bundle["artifact_type"] == "context_bundle"
-    assert bundle["schema_version"] == "2.1.0"
+    assert bundle["schema_version"] == "2.2.1"
     assert bundle["source_segmentation"]["classification_counts"] == {
         "internal": 3,
         "external": 1,
         "inferred": 1,
         "user_provided": 1,
     }
+    glossary_items = [item for item in bundle["context_items"] if item["item_type"] == "glossary_definition"]
+    assert len(glossary_items) == 1
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is True
 
 
 def test_deterministic_repeated_composition() -> None:
@@ -119,3 +139,79 @@ def test_source_segmentation_mismatch_rejected() -> None:
     bundle["source_segmentation"]["classification_counts"]["external"] = 0
     with pytest.raises(ContextBundleValidationError, match="source segmentation mismatch"):
         validate_context_bundle(bundle)
+
+
+def test_missing_required_glossary_definition_fails_closed() -> None:
+    with pytest.raises(ContextBundleValidationError, match="missing required canonical glossary definitions"):
+        compose_context_bundle(
+            task_type="meeting_minutes",
+            input_payload={"transcript": "hello", "provenance_id": "input-001"},
+            policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+            retrieved_context=[],
+            prior_artifacts=[],
+            glossary_terms=["UNKNOWN_TERM"],
+            unresolved_questions=[],
+            source_artifact_ids=[],
+            trace_id="trace-001",
+            run_id="run-001",
+            glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+            glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
+        )
+
+
+def test_no_fuzzy_matching_behavior() -> None:
+    with pytest.raises(ContextBundleValidationError, match="missing required canonical glossary definitions"):
+        compose_context_bundle(
+            task_type="meeting_minutes",
+            input_payload={"transcript": "hello", "provenance_id": "input-001"},
+            policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+            retrieved_context=[],
+            prior_artifacts=[],
+            glossary_terms=["SLAA"],
+            unresolved_questions=[],
+            source_artifact_ids=[],
+            trace_id="trace-001",
+            run_id="run-001",
+            glossary_registry_entries=[dict(_GLOSSARY_ENTRY)],
+            glossary_injection_policy={"enabled": True, "fail_on_missing_required": True},
+        )
+
+
+def test_glossary_terms_with_injection_disabled_does_not_fail() -> None:
+    bundle = compose_context_bundle(
+        task_type="meeting_minutes",
+        input_payload={"transcript": "hello", "provenance_id": "input-001"},
+        policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+        retrieved_context=[],
+        prior_artifacts=[],
+        glossary_terms=["SLA"],
+        unresolved_questions=[],
+        source_artifact_ids=[],
+        trace_id="trace-001",
+        run_id="run-001",
+        glossary_registry_entries=[],
+        glossary_injection_policy={"enabled": False},
+    )
+    assert bundle["glossary_definitions"] == []
+    assert bundle["token_estimates"]["glossary_definitions"] == 0
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is False
+
+
+def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> None:
+    bundle = compose_context_bundle(
+        task_type="meeting_minutes",
+        input_payload={"transcript": "hello", "provenance_id": "input-001"},
+        policy_constraints={"require": ["decisions"], "provenance_id": "policy-001"},
+        retrieved_context=[],
+        prior_artifacts=[],
+        glossary_terms=["SLA"],
+        unresolved_questions=[],
+        source_artifact_ids=[],
+        trace_id="trace-001",
+        run_id="run-001",
+        glossary_registry_entries=[],
+        glossary_injection_policy={"enabled": True, "fail_on_missing_required": False},
+    )
+    assert bundle["glossary_definitions"] == []
+    assert bundle["glossary_canonicalization"]["unresolved_terms"] == ["SLA@general"]
+    assert bundle["glossary_canonicalization"]["injection_enabled"] is True
