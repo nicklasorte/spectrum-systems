@@ -14,7 +14,7 @@ SF-14 is intentionally surgical:
 
 ## Baseline vs candidate model
 
-The CLI (`scripts/run_release_canary.py`) runs both versions through the existing eval harness:
+The canonical CLI (`scripts/run_release_canary.py`) runs both versions through the existing eval harness:
 
 1. Run baseline eval (`run_eval_run`) → `eval_summary`, `eval_results`.
 2. Run candidate eval (`run_eval_run`) → `eval_summary`, `eval_results`.
@@ -74,9 +74,11 @@ The artifact includes:
 ```bash
 python scripts/run_release_canary.py \
   --baseline-eval-run contracts/examples/eval_run.json \
-  --baseline-eval-cases contracts/examples/eval_case.json \
+  --baseline-eval-cases contracts/examples/release_canary_eval_cases.json \
+  --baseline-dataset contracts/examples/eval_dataset.json \
   --candidate-eval-run contracts/examples/eval_run.json \
-  --candidate-eval-cases contracts/examples/eval_case.json \
+  --candidate-eval-cases contracts/examples/release_canary_eval_cases.json \
+  --candidate-dataset contracts/examples/eval_dataset.json \
   --baseline-version baseline-2026.03.24.1 \
   --candidate-version candidate-2026.03.24.2 \
   --baseline-prompt-version-id prompt-v1 \
@@ -86,6 +88,22 @@ python scripts/run_release_canary.py \
   --baseline-policy-version-id policy-v1 \
   --candidate-policy-version-id policy-v2
 ```
+
+## Required eval inputs for canonical CLI
+
+The CLI is operational only when the baseline and candidate eval inputs are complete and consistent:
+
+- `--*-eval-run`: must reference an `eval_run` artifact with `eval_case_ids`.
+- `--*-eval-cases`: must provide **all** `eval_case` definitions referenced by the corresponding `eval_run`.
+- `--*-dataset`: governed dataset artifact(s) used for release-canary coverage context.
+
+Default governed smoke-path inputs are:
+
+- `contracts/examples/eval_run.json`
+- `contracts/examples/release_canary_eval_cases.json` (contains both `eval-case-001` and `eval-case-002`)
+- `contracts/examples/eval_dataset.json`
+
+If eval-case definitions are incomplete, release-canary fails closed (`hold`, exit `1`) and still emits `evaluation_release_record.json` with an `execution_error:*` reason.
 
 Output directory default: `outputs/release_canary/`
 

@@ -11,11 +11,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator, FormatChecker
+
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from scripts.run_eval_coverage_report import build_eval_coverage  # noqa: E402
+from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.evaluation.eval_engine import run_eval_run  # noqa: E402
 from spectrum_systems.modules.runtime.release_canary import (  # noqa: E402
     ReleaseInputVersions,
@@ -72,6 +75,7 @@ def _build_coverage(
     *,
     eval_cases: list[dict[str, Any]],
     eval_results: list[dict[str, Any]],
+    datasets: list[dict[str, Any]],
     policy: dict[str, Any],
     coverage_run_id: str,
     timestamp: str,
@@ -79,7 +83,7 @@ def _build_coverage(
     coverage, slices, _ = build_eval_coverage(
         eval_cases=eval_cases,
         eval_results=eval_results,
-        datasets=[],
+        datasets=datasets,
         policy=policy,
         coverage_run_id=coverage_run_id,
         timestamp=timestamp,
@@ -87,12 +91,84 @@ def _build_coverage(
     return coverage, slices
 
 
+def _build_fail_closed_record(
+    *,
+    release_id: str,
+    timestamp: str,
+    baseline_version: str,
+    candidate_version: str,
+    artifact_types: list[str],
+    baseline_versions: ReleaseInputVersions,
+    candidate_versions: ReleaseInputVersions,
+    baseline_eval_run_id: str,
+    candidate_eval_run_id: str,
+    eval_summary_refs: dict[str, str],
+    coverage_summary_refs: dict[str, str],
+    reason: str,
+) -> dict[str, Any]:
+    record = {
+        "artifact_type": "evaluation_release_record",
+        "schema_version": "1.0.0",
+        "release_id": release_id,
+        "timestamp": timestamp,
+        "candidate_version": candidate_version,
+        "baseline_version": baseline_version,
+        "artifact_types": artifact_types,
+        "version_set": {
+            "baseline": {
+                "prompt_version_id": baseline_versions.prompt_version_id,
+                "schema_version": baseline_versions.schema_version,
+                "policy_version_id": baseline_versions.policy_version_id,
+                "route_policy_version_id": baseline_versions.route_policy_version_id,
+            },
+            "candidate": {
+                "prompt_version_id": candidate_versions.prompt_version_id,
+                "schema_version": candidate_versions.schema_version,
+                "policy_version_id": candidate_versions.policy_version_id,
+                "route_policy_version_id": candidate_versions.route_policy_version_id,
+            },
+        },
+        "eval_summary_refs": eval_summary_refs,
+        "coverage_summary_refs": coverage_summary_refs,
+        "canary_comparison_results": {
+            "baseline_eval_run_id": baseline_eval_run_id,
+            "candidate_eval_run_id": candidate_eval_run_id,
+            "sample_size": 0,
+            "pass_rate_delta": 0.0,
+            "coverage_score_delta": 0.0,
+            "required_slice_regressions": [],
+            "new_failures": [],
+            "indeterminate_failures": [],
+            "control_responses": {
+                "baseline": "allow",
+                "candidate": "block",
+            },
+            "threshold_results": [
+                {
+                    "threshold": "release_canary_execution",
+                    "passed": False,
+                    "actual": reason,
+                    "expected": "successful_eval_and_coverage_execution",
+                }
+            ],
+        },
+        "decision": "hold",
+        "reasons": [reason],
+        "rollback_target_version": None,
+    }
+    schema = load_schema("evaluation_release_record")
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(record)
+    return record
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run governed release canary policy and emit evaluation_release_record")
     parser.add_argument("--baseline-eval-run", default="contracts/examples/eval_run.json")
-    parser.add_argument("--baseline-eval-cases", default="contracts/examples/eval_case.json")
+    parser.add_argument("--baseline-eval-cases", default="contracts/examples/release_canary_eval_cases.json")
     parser.add_argument("--candidate-eval-run", default="contracts/examples/eval_run.json")
-    parser.add_argument("--candidate-eval-cases", default="contracts/examples/eval_case.json")
+    parser.add_argument("--candidate-eval-cases", default="contracts/examples/release_canary_eval_cases.json")
+    parser.add_argument("--baseline-dataset", action="append", default=[])
+    parser.add_argument("--candidate-dataset", action="append", default=[])
     parser.add_argument("--release-policy", default=str(_DEFAULT_RELEASE_POLICY))
     parser.add_argument("--coverage-policy", default=str(_DEFAULT_COVERAGE_POLICY))
     parser.add_argument("--output-dir", default=str(_DEFAULT_OUTPUT_DIR))
@@ -125,30 +201,12 @@ def main(argv: list[str] | None = None) -> int:
 
     timestamp = args.timestamp.strip() or _utc_now()
     release_id = args.release_id.strip() or f"release-canary-{uuid.uuid4()}"
-
-    _, baseline_cases, baseline_results, baseline_summary = _run_eval_bundle(
-        Path(args.baseline_eval_run),
-        Path(args.baseline_eval_cases),
-    )
-    _, candidate_cases, candidate_results, candidate_summary = _run_eval_bundle(
-        Path(args.candidate_eval_run),
-        Path(args.candidate_eval_cases),
-    )
-
-    baseline_coverage, baseline_slices = _build_coverage(
-        eval_cases=baseline_cases,
-        eval_results=baseline_results,
-        policy=coverage_policy,
-        coverage_run_id=f"{release_id}-baseline",
-        timestamp=timestamp,
-    )
-    candidate_coverage, candidate_slices = _build_coverage(
-        eval_cases=candidate_cases,
-        eval_results=candidate_results,
-        policy=coverage_policy,
-        coverage_run_id=f"{release_id}-candidate",
-        timestamp=timestamp,
-    )
+    baseline_eval_run = _load_json(Path(args.baseline_eval_run))
+    candidate_eval_run = _load_json(Path(args.candidate_eval_run))
+    baseline_dataset_paths = args.baseline_dataset or ["contracts/examples/eval_dataset.json"]
+    candidate_dataset_paths = args.candidate_dataset or ["contracts/examples/eval_dataset.json"]
+    baseline_datasets = [_load_json(Path(path)) for path in baseline_dataset_paths]
+    candidate_datasets = [_load_json(Path(path)) for path in candidate_dataset_paths]
 
     baseline_eval_summary_path = baseline_dir / "eval_summary.json"
     candidate_eval_summary_path = candidate_dir / "eval_summary.json"
@@ -156,13 +214,6 @@ def main(argv: list[str] | None = None) -> int:
     candidate_eval_results_path = candidate_dir / "eval_results.json"
     baseline_coverage_path = baseline_dir / "eval_coverage_summary.json"
     candidate_coverage_path = candidate_dir / "eval_coverage_summary.json"
-
-    _write_json(baseline_eval_summary_path, baseline_summary)
-    _write_json(candidate_eval_summary_path, candidate_summary)
-    _write_json(baseline_eval_results_path, baseline_results)
-    _write_json(candidate_eval_results_path, candidate_results)
-    _write_json(baseline_coverage_path, baseline_coverage)
-    _write_json(candidate_coverage_path, candidate_coverage)
 
     baseline_versions = ReleaseInputVersions(
         prompt_version_id=args.baseline_prompt_version_id,
@@ -176,33 +227,85 @@ def main(argv: list[str] | None = None) -> int:
         policy_version_id=args.candidate_policy_version_id,
         route_policy_version_id=args.candidate_route_policy_version_id or None,
     )
+    eval_summary_refs = {
+        "baseline": _ref_path(baseline_eval_summary_path),
+        "candidate": _ref_path(candidate_eval_summary_path),
+    }
+    coverage_summary_refs = {
+        "baseline": _ref_path(baseline_coverage_path),
+        "candidate": _ref_path(candidate_coverage_path),
+    }
 
-    record = build_release_record(
-        release_id=release_id,
-        timestamp=timestamp,
-        baseline_version=args.baseline_version,
-        candidate_version=args.candidate_version,
-        artifact_types=args.artifact_type,
-        baseline_versions=baseline_versions,
-        candidate_versions=candidate_versions,
-        baseline_eval_summary=baseline_summary,
-        candidate_eval_summary=candidate_summary,
-        baseline_eval_results=baseline_results,
-        candidate_eval_results=candidate_results,
-        baseline_coverage_summary=baseline_coverage,
-        candidate_coverage_summary=candidate_coverage,
-        baseline_slice_summaries=baseline_slices,
-        candidate_slice_summaries=candidate_slices,
-        eval_summary_refs={
-            "baseline": _ref_path(baseline_eval_summary_path),
-            "candidate": _ref_path(candidate_eval_summary_path),
-        },
-        coverage_summary_refs={
-            "baseline": _ref_path(baseline_coverage_path),
-            "candidate": _ref_path(candidate_coverage_path),
-        },
-        policy=release_policy,
-    )
+    try:
+        _, baseline_cases, baseline_results, baseline_summary = _run_eval_bundle(
+            Path(args.baseline_eval_run),
+            Path(args.baseline_eval_cases),
+        )
+        _, candidate_cases, candidate_results, candidate_summary = _run_eval_bundle(
+            Path(args.candidate_eval_run),
+            Path(args.candidate_eval_cases),
+        )
+
+        baseline_coverage, baseline_slices = _build_coverage(
+            eval_cases=baseline_cases,
+            eval_results=baseline_results,
+            datasets=baseline_datasets,
+            policy=coverage_policy,
+            coverage_run_id=f"{release_id}-baseline",
+            timestamp=timestamp,
+        )
+        candidate_coverage, candidate_slices = _build_coverage(
+            eval_cases=candidate_cases,
+            eval_results=candidate_results,
+            datasets=candidate_datasets,
+            policy=coverage_policy,
+            coverage_run_id=f"{release_id}-candidate",
+            timestamp=timestamp,
+        )
+
+        _write_json(baseline_eval_summary_path, baseline_summary)
+        _write_json(candidate_eval_summary_path, candidate_summary)
+        _write_json(baseline_eval_results_path, baseline_results)
+        _write_json(candidate_eval_results_path, candidate_results)
+        _write_json(baseline_coverage_path, baseline_coverage)
+        _write_json(candidate_coverage_path, candidate_coverage)
+
+        record = build_release_record(
+            release_id=release_id,
+            timestamp=timestamp,
+            baseline_version=args.baseline_version,
+            candidate_version=args.candidate_version,
+            artifact_types=args.artifact_type,
+            baseline_versions=baseline_versions,
+            candidate_versions=candidate_versions,
+            baseline_eval_summary=baseline_summary,
+            candidate_eval_summary=candidate_summary,
+            baseline_eval_results=baseline_results,
+            candidate_eval_results=candidate_results,
+            baseline_coverage_summary=baseline_coverage,
+            candidate_coverage_summary=candidate_coverage,
+            baseline_slice_summaries=baseline_slices,
+            candidate_slice_summaries=candidate_slices,
+            eval_summary_refs=eval_summary_refs,
+            coverage_summary_refs=coverage_summary_refs,
+            policy=release_policy,
+        )
+    except Exception as exc:  # noqa: BLE001
+        reason = f"execution_error:{exc}"
+        record = _build_fail_closed_record(
+            release_id=release_id,
+            timestamp=timestamp,
+            baseline_version=args.baseline_version,
+            candidate_version=args.candidate_version,
+            artifact_types=args.artifact_type,
+            baseline_versions=baseline_versions,
+            candidate_versions=candidate_versions,
+            baseline_eval_run_id=str(baseline_eval_run.get("eval_run_id", "unknown-baseline-eval-run")),
+            candidate_eval_run_id=str(candidate_eval_run.get("eval_run_id", "unknown-candidate-eval-run")),
+            eval_summary_refs=eval_summary_refs,
+            coverage_summary_refs=coverage_summary_refs,
+            reason=reason,
+        )
 
     record_path = output_dir / "evaluation_release_record.json"
     _write_json(record_path, record)

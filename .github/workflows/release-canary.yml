@@ -1,0 +1,52 @@
+name: release-canary
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/run_release_canary.py"
+      - "spectrum_systems/modules/runtime/release_canary.py"
+      - "contracts/examples/release_canary_eval_cases.json"
+      - "contracts/examples/eval_run.json"
+      - "contracts/examples/eval_dataset.json"
+      - "data/policy/eval_release_policy.json"
+      - "data/policy/eval_coverage_policy.json"
+      - "tests/test_release_canary.py"
+
+jobs:
+  release-canary-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run release-canary smoke path
+        run: |
+          python scripts/run_release_canary.py \
+            --baseline-eval-run contracts/examples/eval_run.json \
+            --baseline-eval-cases contracts/examples/release_canary_eval_cases.json \
+            --baseline-dataset contracts/examples/eval_dataset.json \
+            --candidate-eval-run contracts/examples/eval_run.json \
+            --candidate-eval-cases contracts/examples/release_canary_eval_cases.json \
+            --candidate-dataset contracts/examples/eval_dataset.json \
+            --baseline-version baseline-smoke \
+            --candidate-version candidate-smoke \
+            --baseline-prompt-version-id prompt-baseline \
+            --candidate-prompt-version-id prompt-candidate \
+            --baseline-schema-version schema-baseline \
+            --candidate-schema-version schema-candidate \
+            --baseline-policy-version-id policy-baseline \
+            --candidate-policy-version-id policy-candidate
+
+      - name: Upload release canary artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-release-record
+          path: outputs/release_canary/evaluation_release_record.json
+          if-no-files-found: warn

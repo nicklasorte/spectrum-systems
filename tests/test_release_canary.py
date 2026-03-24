@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
+from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.release_canary import ReleaseInputVersions, build_release_record
+from scripts.run_release_canary import main as run_release_canary_main
 
 
 def _eval_summary(eval_run_id: str, *, pass_rate: float, trace_suffix: str = "1") -> dict:
@@ -203,3 +206,127 @@ def test_policy_threshold_failure_holds_when_no_rollback_trigger() -> None:
         candidate_eval_summary=_eval_summary("cand-run", pass_rate=0.9, trace_suffix="7"),
     )
     assert record["decision"] == "hold"
+
+
+def test_cli_happy_path_emits_release_artifact(tmp_path: Path) -> None:
+    output_dir = tmp_path / "release_canary"
+    exit_code = run_release_canary_main(
+        [
+            "--baseline-eval-run",
+            "contracts/examples/eval_run.json",
+            "--baseline-eval-cases",
+            "contracts/examples/release_canary_eval_cases.json",
+            "--baseline-dataset",
+            "contracts/examples/eval_dataset.json",
+            "--candidate-eval-run",
+            "contracts/examples/eval_run.json",
+            "--candidate-eval-cases",
+            "contracts/examples/release_canary_eval_cases.json",
+            "--candidate-dataset",
+            "contracts/examples/eval_dataset.json",
+            "--release-id",
+            "release-happy-path",
+            "--timestamp",
+            "2026-03-24T00:00:00Z",
+            "--output-dir",
+            str(output_dir),
+            "--baseline-version",
+            "baseline-v1",
+            "--candidate-version",
+            "candidate-v1",
+            "--baseline-prompt-version-id",
+            "prompt-baseline",
+            "--candidate-prompt-version-id",
+            "prompt-candidate",
+            "--baseline-schema-version",
+            "schema-baseline",
+            "--candidate-schema-version",
+            "schema-candidate",
+            "--baseline-policy-version-id",
+            "policy-baseline",
+            "--candidate-policy-version-id",
+            "policy-candidate",
+        ]
+    )
+    assert exit_code in {0, 1, 2}
+    record_path = output_dir / "evaluation_release_record.json"
+    assert record_path.exists()
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    assert record["artifact_type"] == "evaluation_release_record"
+    assert record["decision"] == "promote"
+
+
+def test_cli_missing_eval_case_definitions_fails_closed_with_artifact(tmp_path: Path) -> None:
+    missing_cases = tmp_path / "missing_eval_cases.json"
+    missing_cases.write_text(
+        json.dumps(
+            [
+                {
+                    "artifact_type": "eval_case",
+                    "schema_version": "1.0.0",
+                    "trace_id": "11111111-1111-4111-8111-111111111111",
+                    "eval_case_id": "eval-case-001",
+                    "input_artifact_refs": ["artifact://golden/case-001/input"],
+                    "expected_output_spec": {"required_fields": ["decisions"], "minimum_decision_count": 1},
+                    "scoring_rubric": {
+                        "weights": {"correctness": 0.7, "completeness": 0.3},
+                        "pass_threshold": 0.8,
+                    },
+                    "evaluation_type": "deterministic",
+                    "created_from": "manual",
+                    "slice_tags": ["decision_extraction"],
+                    "domain_tags": ["governance"],
+                    "risk_class": "high",
+                    "priority": "p1",
+                }
+            ],
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "release_canary"
+
+    exit_code = run_release_canary_main(
+        [
+            "--baseline-eval-run",
+            "contracts/examples/eval_run.json",
+            "--baseline-eval-cases",
+            str(missing_cases),
+            "--candidate-eval-run",
+            "contracts/examples/eval_run.json",
+            "--candidate-eval-cases",
+            str(missing_cases),
+            "--release-id",
+            "release-fail-closed",
+            "--timestamp",
+            "2026-03-24T00:00:00Z",
+            "--output-dir",
+            str(output_dir),
+            "--baseline-version",
+            "baseline-v1",
+            "--candidate-version",
+            "candidate-v1",
+            "--baseline-prompt-version-id",
+            "prompt-baseline",
+            "--candidate-prompt-version-id",
+            "prompt-candidate",
+            "--baseline-schema-version",
+            "schema-baseline",
+            "--candidate-schema-version",
+            "schema-candidate",
+            "--baseline-policy-version-id",
+            "policy-baseline",
+            "--candidate-policy-version-id",
+            "policy-candidate",
+        ]
+    )
+    assert exit_code == 1
+    record = json.loads((output_dir / "evaluation_release_record.json").read_text(encoding="utf-8"))
+    assert record["decision"] == "hold"
+    assert any(str(reason).startswith("execution_error:run_eval_run: missing eval_case definitions") for reason in record["reasons"])
+
+
+def test_release_canary_workflow_wires_eval_case_inputs() -> None:
+    workflow = Path(".github/workflows/release-canary.yml").read_text(encoding="utf-8")
+    assert "--baseline-eval-cases contracts/examples/release_canary_eval_cases.json" in workflow
+    assert "--candidate-eval-cases contracts/examples/release_canary_eval_cases.json" in workflow
