@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from spectrum_systems.modules.runtime.agent_golden_path import GoldenPathConfig, run_agent_golden_path
@@ -39,6 +40,30 @@ def _normalized(artifacts: dict) -> dict:
             clone["actions_taken"] = sanitized
         normalized[key] = clone
     return normalized
+
+
+def _override_payload(review_request: dict, execution_record: dict, **overrides: object) -> dict:
+    payload = {
+        "artifact_type": "hitl_override_decision",
+        "schema_version": "1.0.0",
+        "override_decision_id": "hod-test-001",
+        "created_at": "2026-01-05T14:22:31Z",
+        "trace_id": review_request["trace_id"],
+        "review_request_id": review_request["id"],
+        "related_execution_record_id": execution_record["artifact_id"],
+        "decision_status": "allow_once",
+        "decision_reason": "Approved for deterministic one-time continuation.",
+        "decided_by": {"actor_id": "reviewer-test", "role": "control_authority_reviewer"},
+        "decision_scope": "ag_runtime_review_boundary",
+        "allowed_next_action": "resume_once",
+        "trace_refs": {"primary": review_request["trace_id"], "related": [review_request["trace_id"]]},
+        "related_artifact_refs": [
+            f"hitl_review_request:{review_request['id']}",
+            f"final_execution_record:{execution_record['artifact_id']}",
+        ],
+    }
+    payload.update(overrides)
+    return payload
 
 
 def test_happy_path_end_to_end(tmp_path: Path) -> None:
@@ -159,3 +184,26 @@ def test_review_required_writes_expected_artifacts(tmp_path: Path) -> None:
     assert (tmp_path / "hitl_review_request.json").exists()
     assert (tmp_path / "final_execution_record.json").exists()
     assert not (tmp_path / "enforcement.json").exists()
+
+
+def test_review_required_with_valid_override_resumes_once(tmp_path: Path) -> None:
+    preview = run_agent_golden_path(_config(tmp_path / "preview", force_review_required=True))
+    override_path = tmp_path / "override.json"
+    override_path.write_text(
+        json.dumps(_override_payload(preview["hitl_review_request"], preview["final_execution_record"]), indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    artifacts = run_agent_golden_path(
+        _config(
+            tmp_path / "resume",
+            force_review_required=True,
+            override_decision_paths=[override_path],
+            require_override_decision=True,
+        )
+    )
+
+    assert "failure_artifact" not in artifacts
+    assert artifacts["final_execution_record"]["execution_status"] == "success"
+    assert artifacts["hitl_override_decision"]["decision_status"] == "allow_once"
+    assert "enforcement" in artifacts

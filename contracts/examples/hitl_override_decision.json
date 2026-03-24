@@ -1,0 +1,27 @@
+{
+  "artifact_type": "hitl_override_decision",
+  "schema_version": "1.0.0",
+  "override_decision_id": "hod-2f5e53cb7f0f",
+  "created_at": "2026-01-05T14:22:31Z",
+  "trace_id": "7f2c7c6a-0000-4000-8000-000000000001",
+  "review_request_id": "hrr-9f7ef3e6e9a8",
+  "related_execution_record_id": "cer-4f5d85f6502d",
+  "decision_status": "allow_once",
+  "decision_reason": "Manual governance review approved one-time continuation for this exact halted run boundary.",
+  "decided_by": {
+    "actor_id": "reviewer-001",
+    "role": "control_authority_reviewer"
+  },
+  "decision_scope": "ag_runtime_review_boundary",
+  "allowed_next_action": "resume_once",
+  "trace_refs": {
+    "primary": "7f2c7c6a-0000-4000-8000-000000000001",
+    "related": [
+      "7f2c7c6a-0000-4000-8000-000000000010"
+    ]
+  },
+  "related_artifact_refs": [
+    "hitl_review_request:hrr-9f7ef3e6e9a8",
+    "final_execution_record:cer-4f5d85f6502d"
+  ]
+}
