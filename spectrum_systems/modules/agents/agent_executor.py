@@ -475,6 +475,7 @@ def execute_step_sequence(
                 run_id=agent_run_id,
                 trace_id=trace_id,
                 input_artifact=draft_output,
+                validated_context_bundle=bounded_context,
             )
             final_output = dict(multi_pass_record["final_output"])
             validate_final_output(final_output, final_output_schema)
@@ -559,6 +560,12 @@ def execute_step_sequence(
                 str(pass_item.get("output_ref") or "")
                 for pass_item in list((multi_pass_record or {}).get("passes") or [])
             ],
+            "evidence_binding_record_id": str((((multi_pass_record or {}).get("evidence_binding") or {}).get("record_id") or "")),
+            "evidence_binding_claim_ids": [
+                str(claim_id or "")
+                for claim_id in list((((multi_pass_record or {}).get("evidence_binding") or {}).get("claim_ids") or []))
+            ],
+            "evidence_binding_policy_mode": str((((multi_pass_record or {}).get("evidence_binding") or {}).get("policy_mode") or "")),
         },
         "final_output_artifact_id": final_output_artifact_id,
         "execution_status": execution_status,

@@ -1,0 +1,50 @@
+{
+  "artifact_type": "evidence_binding_record",
+  "schema_version": "1.0.0",
+  "record_id": "ebr-7b9f4a13c2d8e601",
+  "run_id": "agent-run-example-001",
+  "trace_id": "trace-example-001",
+  "parent_multi_pass_record_id": "mpg-6a0f4b8c9d1e2f30",
+  "policy_mode": "allow_inferred",
+  "claims": [
+    {
+      "claim_id": "ebc-1111111111111111",
+      "claim_path": "claims[0]",
+      "claim_text": "Project completion is blocked by unresolved legal review.",
+      "claim_classification": "directly_supported",
+      "evidence_item_refs": [
+        "ctxi-84e0c245743b55a3"
+      ],
+      "source_artifact_refs": [
+        "ART-001"
+      ],
+      "inferred_from_claim_ids": [],
+      "pass_id": "final",
+      "trace_id": "trace-example-001",
+      "pass_output_ref": "multi-pass://agent-run-example-001/final"
+    },
+    {
+      "claim_id": "ebc-2222222222222222",
+      "claim_path": "recommendation",
+      "claim_text": "Escalate review priority this week.",
+      "claim_classification": "inferred",
+      "evidence_item_refs": [],
+      "source_artifact_refs": [
+        "ART-001"
+      ],
+      "inferred_from_claim_ids": [
+        "ebc-1111111111111111"
+      ],
+      "pass_id": "final",
+      "trace_id": "trace-example-001",
+      "pass_output_ref": "multi-pass://agent-run-example-001/final"
+    }
+  ],
+  "summary": {
+    "total_claims": 2,
+    "directly_supported_count": 1,
+    "inferred_count": 1,
+    "unsupported_count": 0
+  },
+  "created_at": "2026-03-24T12:00:00Z"
+}

@@ -528,7 +528,10 @@
       "required": [
         "record_id",
         "pass_ids",
-        "pass_output_refs"
+        "pass_output_refs",
+        "evidence_binding_record_id",
+        "evidence_binding_claim_ids",
+        "evidence_binding_policy_mode"
       ],
       "properties": {
         "record_id": {
@@ -551,6 +554,19 @@
           "items": {
             "type": "string"
           }
+        },
+        "evidence_binding_record_id": {
+          "type": "string"
+        },
+        "evidence_binding_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ebc-[a-f0-9]{16}$"
+          }
+        },
+        "evidence_binding_policy_mode": {
+          "type": "string"
         }
       }
     }

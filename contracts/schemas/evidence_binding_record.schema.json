@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evidence_binding_record.schema.json",
+  "title": "Evidence Binding Record",
+  "description": "Deterministic HS-09 claim classification and evidence linkage record for final artifact trust enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "parent_multi_pass_record_id",
+    "policy_mode",
+    "claims",
+    "summary",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "evidence_binding_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^ebr-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_multi_pass_record_id": {
+      "type": "string",
+      "pattern": "^mpg-[a-f0-9]{16}$"
+    },
+    "policy_mode": {
+      "type": "string",
+      "enum": [
+        "required_grounded",
+        "allow_inferred",
+        "allow_unsupported"
+      ]
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "claim_path",
+          "claim_text",
+          "claim_classification",
+          "evidence_item_refs",
+          "source_artifact_refs",
+          "inferred_from_claim_ids",
+          "pass_id",
+          "trace_id",
+          "pass_output_ref"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "pattern": "^ebc-[a-f0-9]{16}$"
+          },
+          "claim_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_classification": {
+            "type": "string",
+            "enum": [
+              "directly_supported",
+              "inferred",
+              "unsupported"
+            ]
+          },
+          "evidence_item_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ctxi-[a-f0-9]{16}$"
+            }
+          },
+          "source_artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "inferred_from_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ebc-[a-f0-9]{16}$"
+            }
+          },
+          "pass_id": {
+            "type": "string",
+            "const": "final"
+          },
+          "trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pass_output_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "claim_classification": {
+                  "const": "directly_supported"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "evidence_item_refs": {
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "claim_classification": {
+                  "const": "inferred"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "evidence_item_refs": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "claim_classification": {
+                  "const": "unsupported"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "evidence_item_refs": {
+                  "maxItems": 0
+                },
+                "inferred_from_claim_ids": {
+                  "maxItems": 0
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_claims",
+        "directly_supported_count",
+        "inferred_count",
+        "unsupported_count"
+      ],
+      "properties": {
+        "total_claims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directly_supported_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inferred_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unsupported_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

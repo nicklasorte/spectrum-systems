@@ -184,6 +184,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("multi_pass_generation_record")
         validate_artifact(instance, "multi_pass_generation_record")
 
+    def test_evidence_binding_record_example_validates(self) -> None:
+        instance = load_example("evidence_binding_record")
+        validate_artifact(instance, "evidence_binding_record")
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]
