@@ -15,7 +15,7 @@ def test_run_checks_all_pass_when_prereqs_available() -> None:
     ):
         checks = verify_environment.run_checks()
 
-    assert [check.ok for check in checks] == [True, True, True]
+    assert [check.ok for check in checks] == [True, True, True, True]
     assert checks[0].name == "python_runtime"
 
 
@@ -39,9 +39,10 @@ def test_main_returns_nonzero_on_failures() -> None:
     failing = [
         verify_environment.CheckResult("python", True, "ok"),
         verify_environment.CheckResult("jsonschema", True, "ok"),
+        verify_environment.CheckResult("pytest", True, "ok"),
         verify_environment.CheckResult("node", False, "missing"),
     ]
     with patch.object(verify_environment, "run_checks", return_value=failing):
-        code = verify_environment.main()
+        code = verify_environment.main([])
 
     assert code == 1

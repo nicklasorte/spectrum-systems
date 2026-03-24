@@ -8,8 +8,10 @@
   "required": [
     "artifact_type",
     "schema_version",
+    "id",
     "coverage_run_id",
     "timestamp",
+    "trace_refs",
     "dataset_refs",
     "total_eval_cases",
     "covered_slices",
@@ -21,8 +23,14 @@
   "properties": {
     "artifact_type": { "type": "string", "const": "eval_coverage_summary" },
     "schema_version": { "type": "string", "const": "1.0.0" },
+    "id": { "type": "string", "minLength": 1 },
     "coverage_run_id": { "type": "string", "minLength": 1 },
     "timestamp": { "type": "string", "format": "date-time" },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "dataset_refs": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }

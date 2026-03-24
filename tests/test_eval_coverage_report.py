@@ -5,7 +5,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from scripts.run_eval_coverage_report import build_eval_coverage, main
+from scripts.run_eval_coverage_report import main
+from spectrum_systems.modules.evaluation.eval_coverage_reporting import build_eval_coverage
 from spectrum_systems.contracts import load_schema
 
 
@@ -142,6 +143,8 @@ def test_grouping_aggregation_gaps_and_weighted_score() -> None:
 
     assert by_slice["slice.beta"]["total_cases"] == 0
     assert "slice.beta" in coverage["uncovered_required_slices"]
+    assert coverage["id"] == "cov-run-1"
+    assert coverage["trace_refs"]
 
     # Weighted score is deterministic: (alpha covered=1.0 + beta uncovered=0.0) / (1.0 + 0.75)
     assert coverage["risk_weighted_coverage_score"] == 0.571429

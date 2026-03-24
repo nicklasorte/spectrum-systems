@@ -14,7 +14,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.run_eval_coverage_report import build_eval_coverage  # noqa: E402
+from spectrum_systems.modules.evaluation.eval_coverage_reporting import build_eval_coverage  # noqa: E402
 from spectrum_systems.modules.evaluation.eval_engine import run_eval_run  # noqa: E402
 from spectrum_systems.modules.runtime.release_canary import (  # noqa: E402
     ReleaseInputVersions,

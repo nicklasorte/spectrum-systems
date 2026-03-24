@@ -48,6 +48,7 @@ Supported controls:
 - `gap_severity_mapping`
 
 The script reads policy values at runtime (no hardcoded required-slice thresholds).
+Module boundary rule: the CLI script (`scripts/run_eval_coverage_report.py`) is a wrapper and imports shared coverage builders from `spectrum_systems.modules.evaluation.eval_coverage_reporting`.
 
 Indeterminate semantics are fail-closed by default and can only be loosened via explicit governed policy override.
 Coverage run IDs are deterministic when not provided explicitly, preventing identity drift in repeated comparisons.
@@ -88,3 +89,4 @@ python scripts/run_eval_coverage_report.py --blocking-on-gaps
 ```
 
 By default SF-07 is report-only; SF-05 remains the canonical CI gate.
+- `eval_coverage_summary` carries envelope core fields (`id`, `timestamp`, `schema_version`, `trace_refs`) where `id == coverage_run_id`.

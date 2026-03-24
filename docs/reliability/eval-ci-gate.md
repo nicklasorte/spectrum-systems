@@ -35,6 +35,7 @@ Canonical indeterminate rule for governed CI is fail-closed:
 - optional override: policy may set `indeterminate_is_blocking=false` explicitly
 
 Gate identity is deterministic (`gate_run_id` derived from canonical structured inputs), so repeated runs with the same governed inputs produce the same gate identity.
+The emitted gate artifact uses a consistent envelope (`id`, `timestamp`, `schema_version`, `trace_refs`) with `id == gate_run_id`.
 
 ## Exit code behavior
 
@@ -51,6 +52,8 @@ The lifecycle workflow calls this gate and uploads its artifact bundle:
 - Artifact upload path: `outputs/eval_ci_gate/`
 
 Workflow failure is driven directly by the gate exit code.
+
+Dependency/bootstrap rule: CI and local both install Python dependencies through `python -m pip install -r requirements-dev.txt`, then verify bootstrap with `python scripts/verify_environment.py --python-only`.
 
 ## Local usage
 

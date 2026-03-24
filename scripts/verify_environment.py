@@ -10,12 +10,13 @@ Checks are intentionally thin and deterministic:
 from __future__ import annotations
 
 import importlib
+import argparse
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
 
-REQUIRED_PYTHON_PACKAGES = ("jsonschema",)
+REQUIRED_PYTHON_PACKAGES = ("jsonschema", "pytest")
 
 
 @dataclass(frozen=True)
@@ -62,15 +63,23 @@ def _check_node_runtime() -> CheckResult:
     return CheckResult(name="node_runtime", ok=True, detail=f"Node.js {version.stdout.strip()} available")
 
 
-def run_checks() -> list[CheckResult]:
+def run_checks(*, python_only: bool = False) -> list[CheckResult]:
     checks = [CheckResult(name="python_runtime", ok=True, detail=f"Python {sys.version.split()[0]} available")]
     checks.extend(_check_python_package(pkg) for pkg in REQUIRED_PYTHON_PACKAGES)
-    checks.append(_check_node_runtime())
+    if not python_only:
+        checks.append(_check_node_runtime())
     return checks
 
 
-def main() -> int:
-    checks = run_checks()
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Verify local/CI dependencies required by spectrum-systems.")
+    parser.add_argument(
+        "--python-only",
+        action="store_true",
+        help="Validate Python runtime + required Python packages only.",
+    )
+    args = parser.parse_args(argv)
+    checks = run_checks(python_only=args.python_only)
     has_failures = False
 
     for result in checks:

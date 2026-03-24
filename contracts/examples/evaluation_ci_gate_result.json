@@ -1,10 +1,19 @@
 {
   "artifact_type": "evaluation_ci_gate_result",
-  "schema_version": "1.0.0",
-  "gate_run_id": "gate-20260323T010101Z",
-  "timestamp": "2026-03-23T01:01:01Z",
-  "status": "pass",
   "blocking_reasons": [],
+  "control_decision_ref": "outputs/eval_ci_gate/evaluation_control_decision.json",
+  "eval_summary_refs": [
+    "outputs/eval_ci_gate/eval_summary.json"
+  ],
+  "gate_run_id": "gate-20260323T010101Z",
+  "id": "gate-20260323T010101Z",
+  "invalid_artifacts": [],
+  "missing_artifacts": [],
+  "repo_state": {
+    "branch": "main",
+    "commit_sha": "abc123def456",
+    "workflow_run_id": "123456789"
+  },
   "required_artifacts_checked": [
     "eval_run",
     "eval_cases",
@@ -12,33 +21,28 @@
     "evaluation_control_decision",
     "evaluation_ci_gate_result"
   ],
-  "missing_artifacts": [],
-  "invalid_artifacts": [],
-  "eval_summary_refs": [
-    "outputs/eval_ci_gate/eval_summary.json"
-  ],
+  "schema_version": "1.0.0",
+  "status": "pass",
   "threshold_results": [
     {
-      "threshold": "pass_rate_min",
-      "passed": true
+      "passed": true,
+      "threshold": "pass_rate_min"
     },
     {
-      "threshold": "failure_rate_max",
-      "passed": true
+      "passed": true,
+      "threshold": "failure_rate_max"
     },
     {
-      "threshold": "drift_rate_max",
-      "passed": true
+      "passed": true,
+      "threshold": "drift_rate_max"
     },
     {
-      "threshold": "reproducibility_score_min",
-      "passed": true
+      "passed": true,
+      "threshold": "reproducibility_score_min"
     }
   ],
-  "control_decision_ref": "outputs/eval_ci_gate/evaluation_control_decision.json",
-  "repo_state": {
-    "commit_sha": "abc123def456",
-    "branch": "main",
-    "workflow_run_id": "123456789"
-  }
+  "timestamp": "2026-03-23T01:01:01Z",
+  "trace_refs": [
+    "22222222-2222-4222-8222-222222222222"
+  ]
 }
