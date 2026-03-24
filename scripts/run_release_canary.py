@@ -11,14 +11,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator, FormatChecker
-
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from scripts.run_eval_coverage_report import build_eval_coverage  # noqa: E402
-from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.evaluation.eval_engine import run_eval_run  # noqa: E402
 from spectrum_systems.modules.runtime.release_canary import (  # noqa: E402
     ReleaseInputVersions,
@@ -156,8 +153,6 @@ def _build_fail_closed_record(
         "reasons": [reason],
         "rollback_target_version": None,
     }
-    schema = load_schema("evaluation_release_record")
-    Draft202012Validator(schema, format_checker=FormatChecker()).validate(record)
     return record
 
 
