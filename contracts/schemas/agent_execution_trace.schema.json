@@ -9,6 +9,7 @@
     "agent_run_id",
     "context_bundle_id",
     "trace_id",
+    "routing_decision",
     "prompt_resolution",
     "step_sequence",
     "tool_calls",
@@ -278,6 +279,39 @@
               "error"
             ]
           }
+        }
+      }
+    },
+    "routing_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "routing_decision_id",
+        "policy_id",
+        "route_key",
+        "task_class",
+        "selected_model_id"
+      ],
+      "properties": {
+        "routing_decision_id": {
+          "type": "string",
+          "pattern": "^rd-[a-f0-9]{16}$"
+        },
+        "policy_id": {
+          "type": "string",
+          "pattern": "^rp-[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "route_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "task_class": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "selected_model_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9:_./-]{2,127}$"
         }
       }
     }

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/routing_policy.schema.json",
+  "title": "Routing Policy",
+  "description": "Governed deterministic routing policy for AG runtime prompt alias and model selection.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_id",
+    "created_at",
+    "policy_scope",
+    "model_catalog",
+    "routes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "routing_policy"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^rp-[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "policy_scope": {
+      "type": "string",
+      "enum": [
+        "ag_runtime"
+      ]
+    },
+    "model_catalog": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9:_./-]{2,127}$"
+      }
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_key",
+          "risk_class",
+          "prompt_selection",
+          "model_selection"
+        ],
+        "properties": {
+          "route_key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+          },
+          "task_class": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+          },
+          "risk_class": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "prompt_selection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "prompt_id",
+              "prompt_alias"
+            ],
+            "properties": {
+              "prompt_id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+              },
+              "prompt_alias": {
+                "type": "string",
+                "enum": [
+                  "dev",
+                  "staging",
+                  "prod"
+                ]
+              }
+            }
+          },
+          "model_selection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "selected_model_id"
+            ],
+            "properties": {
+              "selected_model_id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9:_./-]{2,127}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

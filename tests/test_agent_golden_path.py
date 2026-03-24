@@ -71,9 +71,14 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
 
     assert "failure_artifact" not in artifacts
     assert artifacts["agent_execution_trace"]["execution_status"] == "completed"
+    assert artifacts["routing_decision"]["artifact_type"] == "routing_decision"
+    assert artifacts["routing_decision"]["selected_prompt_id"] == "ag.runtime.default"
+    assert artifacts["routing_decision"]["resolved_prompt_version"] == "v1.0.0"
+    assert artifacts["routing_decision"]["selected_prompt_alias"] == "prod"
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_version"] == "v1.0.0"
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["requested_alias"] == "prod"
+    assert artifacts["agent_execution_trace"]["routing_decision"]["routing_decision_id"] == artifacts["routing_decision"]["routing_decision_id"]
     assert len(artifacts["agent_execution_trace"]["model_invocations"]) == 1
     model_invocation = artifacts["agent_execution_trace"]["model_invocations"][0]
     assert model_invocation["requested_model_id"] == "openai:gpt-4o-mini"
@@ -161,6 +166,27 @@ def test_indeterminate_review_path_emits_review_artifact(tmp_path: Path) -> None
     assert "control_decision" not in artifacts
 
 
+
+
+def test_unknown_route_key_fails_closed_without_default(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, route_key="unknown_route_key"))
+
+    assert artifacts["failure_artifact"]["failure_stage"] == "agent"
+    assert artifacts["failure_artifact"]["failure_type"] == "policy_error"
+    assert "agent_execution_trace" not in artifacts
+
+
+def test_routing_decision_trace_linkage_present(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path))
+
+    routing = artifacts["routing_decision"]
+    trace = artifacts["agent_execution_trace"]
+    invocation = trace["model_invocations"][0]
+
+    assert routing["trace"]["trace_id"] == trace["trace_id"]
+    assert routing["trace"]["agent_run_id"] == trace["agent_run_id"]
+    assert invocation["requested_model_id"] == routing["selected_model_id"]
+
 def test_deterministic_repeated_runs(tmp_path: Path) -> None:
     first = run_agent_golden_path(_config(tmp_path / "run1"))
     second = run_agent_golden_path(_config(tmp_path / "run2"))
@@ -172,6 +198,7 @@ def test_artifact_completeness(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path))
     expected = {
         "context_bundle",
+        "routing_decision",
         "agent_execution_trace",
         "structured_output",
         "eval_result",

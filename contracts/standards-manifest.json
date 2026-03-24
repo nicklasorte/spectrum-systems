@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.43",
+  "artifact_version": "1.0.44",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-HS-03-MODEL-ADAPTER",
-  "run_id": "run-20260324T020000Z",
+  "record_id": "REC-STD-2026-03-24-HS-04-ROUTING-POLICY",
+  "run_id": "run-20260324T030000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -30,15 +30,15 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.43",
+      "last_updated_in": "1.0.44",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool/model invocation lineage, final output lineage, and resolved governed prompt version linkage for replay/eval attribution."
+      "notes": "Bounded agent execution trace artifact capturing deterministic routing decision linkage, prompt resolution, canonical model invocation lineage, and final output lineage for replay/eval attribution."
     },
     {
       "artifact_type": "ai_model_request",
@@ -65,6 +65,32 @@
       "last_updated_in": "1.0.43",
       "example_path": "contracts/examples/ai_model_response.json",
       "notes": "HS-03 canonical response artifact for normalized provider output, strict finish/status vocabulary, and fail-closed response boundary validation."
+    },
+    {
+      "artifact_type": "routing_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.44",
+      "last_updated_in": "1.0.44",
+      "example_path": "contracts/examples/routing_policy.json",
+      "notes": "HS-04 governed deterministic routing policy mapping route_key/task_class to prompt alias and model selection inputs with fail-closed semantics."
+    },
+    {
+      "artifact_type": "routing_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.44",
+      "last_updated_in": "1.0.44",
+      "example_path": "contracts/examples/routing_decision.json",
+      "notes": "HS-04 deterministic runtime routing decision artifact linking policy selection, resolved prompt version, selected model id, and trace identifiers."
     },
     {
       "artifact_type": "agent_failure_record",
