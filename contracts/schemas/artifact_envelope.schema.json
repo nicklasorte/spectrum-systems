@@ -1,104 +1,80 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/artifact_envelope.schema.json",
-  "title": "Artifact Envelope",
-  "description": "Canonical outer metadata carried by all governed artifacts to support interoperability across coordination, work, and review flows.",
+  "title": "Governed Artifact Envelope",
+  "description": "Canonical top-level envelope required for governed artifacts that participate in deterministic replay, provenance, and control-loop trust boundaries.",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "artifact_id",
-    "artifact_class",
-    "artifact_type",
-    "contract_name",
-    "contract_version",
-    "lifecycle_stage",
-    "produced_by",
-    "created_at"
+    "id",
+    "timestamp",
+    "schema_version",
+    "trace_refs"
   ],
   "properties": {
-    "artifact_id": {
+    "id": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9._-]+$",
-      "description": "Stable identifier for the specific artifact instance."
+      "minLength": 1,
+      "description": "Artifact instance identifier; deterministic when the producer has deterministic identity rules."
     },
-    "artifact_class": {
+    "timestamp": {
       "type": "string",
-      "enum": [
-        "coordination",
-        "work",
-        "review"
-      ],
-      "description": "Canonical class used for governance routing."
+      "format": "date-time",
+      "description": "Artifact production timestamp in UTC ISO-8601 format."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Published contract version for this artifact payload."
+    },
+    "trace_refs": {
+      "$ref": "#/$defs/trace_refs"
+    },
+    "provenance_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
     },
     "artifact_type": {
       "type": "string",
-      "description": "Contract-scoped type name (e.g., meeting_minutes_record)."
-    },
-    "contract_name": {
-      "type": [
-        "string",
-        "null"
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
       ],
-      "description": "Authoritative contract name that defines the payload schema."
-    },
-    "contract_version": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-      "description": "Semantic version of the payload contract."
-    },
-    "lifecycle_stage": {
-      "type": "string",
-      "enum": [
-        "raw",
-        "processed",
-        "final",
-        "fixture"
-      ],
-      "description": "Lifecycle state for routing, retention, and review."
-    },
-    "produced_by": {
-      "type": "string",
-      "description": "Workflow, system, or human that produced the artifact."
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp when this artifact instance was created."
-    },
-    "source_path": {
-      "type": "string",
-      "description": "Filesystem or object-store path where the source artifact originated."
-    },
-    "derived_from": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Parent artifact identifiers that this artifact depends on."
-    },
-    "study_id": {
-      "type": "string",
-      "description": "Study identifier when the artifact belongs to a study bundle."
-    },
-    "meeting_id": {
-      "type": "string",
-      "description": "Meeting identifier when the artifact is tied to a session.",
-      "pattern": "^[A-Z][A-Z0-9._-]*$"
-    },
-    "review_cycle_id": {
-      "type": "string",
-      "description": "Review cycle identifier when the artifact participates in adjudication.",
-      "pattern": "^[A-Z][A-Z0-9._-]*$"
-    },
-    "tags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Free-form labels to aid discovery and filtering."
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Primary trace identifier for the emitting run or decision context."
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Related trace identifiers linked to the primary trace."
+        }
+      }
     }
   }
 }

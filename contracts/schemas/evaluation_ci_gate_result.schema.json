@@ -29,7 +29,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "id": {
       "type": "string",
@@ -44,12 +44,7 @@
       "format": "date-time"
     },
     "trace_refs": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "uniqueItems": true
+      "$ref": "#/$defs/trace_refs"
     },
     "status": {
       "type": "string",
@@ -150,6 +145,30 @@
             "string",
             "null"
           ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     }

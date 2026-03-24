@@ -11,6 +11,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.decision_precedence import most_severe
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
+from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 
 
 class ReleaseCanaryError(Exception):
@@ -318,19 +319,26 @@ def build_release_record(
     if decision == "promote":
         reasons.append("all_release_policy_checks_passed")
 
+    release_timestamp = timestamp or _utc_now()
+    release_traces = sorted(
+        {
+            str(baseline_eval_summary.get("trace_id", "")).strip(),
+            str(candidate_eval_summary.get("trace_id", "")).strip(),
+        }
+        - {""}
+    )
+    envelope = build_artifact_envelope(
+        artifact_id=release_id,
+        timestamp=release_timestamp,
+        schema_version="1.1.0",
+        primary_trace_ref=release_traces[0] if release_traces else release_id,
+        related_trace_refs=release_traces[1:] if len(release_traces) > 1 else [],
+    )
+
     record = {
         "artifact_type": "evaluation_release_record",
-        "schema_version": "1.0.0",
-        "id": release_id,
+        **envelope,
         "release_id": release_id,
-        "timestamp": timestamp or _utc_now(),
-        "trace_refs": sorted(
-            {
-                str(baseline_eval_summary.get("trace_id", "")).strip(),
-                str(candidate_eval_summary.get("trace_id", "")).strip(),
-            }
-            - {""}
-        ),
         "candidate_version": candidate_version,
         "baseline_version": baseline_version,
         "artifact_types": sorted(set(artifact_types)),

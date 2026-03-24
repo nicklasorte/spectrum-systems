@@ -21,7 +21,7 @@
     "evaluation_control_decision",
     "evaluation_ci_gate_result"
   ],
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "status": "pass",
   "threshold_results": [
     {
@@ -42,7 +42,8 @@
     }
   ],
   "timestamp": "2026-03-23T01:01:01Z",
-  "trace_refs": [
-    "22222222-2222-4222-8222-222222222222"
-  ]
+  "trace_refs": {
+    "primary": "22222222-2222-4222-8222-222222222222",
+    "related": []
+  }
 }

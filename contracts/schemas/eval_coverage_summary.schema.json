@@ -21,44 +21,118 @@
     "coverage_gaps"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "eval_coverage_summary" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
-    "id": { "type": "string", "minLength": 1 },
-    "coverage_run_id": { "type": "string", "minLength": 1 },
-    "timestamp": { "type": "string", "format": "date-time" },
+    "artifact_type": {
+      "type": "string",
+      "const": "eval_coverage_summary"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "coverage_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
     "trace_refs": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "uniqueItems": true
+      "$ref": "#/$defs/trace_refs"
     },
     "dataset_refs": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
-    "total_eval_cases": { "type": "integer", "minimum": 0 },
+    "total_eval_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
     "covered_slices": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "uncovered_required_slices": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "slice_case_counts": {
       "type": "object",
-      "additionalProperties": { "type": "integer", "minimum": 0 }
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
     },
-    "risk_weighted_coverage_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "risk_weighted_coverage_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
     "coverage_gaps": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["slice_id", "severity", "reason"],
+        "required": [
+          "slice_id",
+          "severity",
+          "reason"
+        ],
         "properties": {
-          "slice_id": { "type": "string", "minLength": 1 },
-          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
-          "reason": { "type": "string", "minLength": 1 }
+          "slice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     }

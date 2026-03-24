@@ -11,6 +11,7 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 _RISK_WEIGHTS = {
@@ -405,14 +406,18 @@ def build_eval_coverage(
             if isinstance(ref, str) and ref.strip()
         }
     )
+    envelope = build_artifact_envelope(
+        artifact_id=coverage_run_id,
+        timestamp=timestamp,
+        schema_version="1.1.0",
+        primary_trace_ref=trace_refs[0] if trace_refs else coverage_run_id,
+        related_trace_refs=trace_refs[1:] if len(trace_refs) > 1 else [],
+    )
 
     coverage_summary = {
         "artifact_type": "eval_coverage_summary",
-        "schema_version": "1.0.0",
-        "id": coverage_run_id,
+        **envelope,
         "coverage_run_id": coverage_run_id,
-        "timestamp": timestamp,
-        "trace_refs": trace_refs,
         "dataset_refs": sorted(dataset_refs),
         "total_eval_cases": len(case_by_id),
         "covered_slices": sorted(set(covered_slices)),

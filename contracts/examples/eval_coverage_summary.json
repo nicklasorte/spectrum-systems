@@ -17,7 +17,7 @@
   ],
   "id": "coverage-run-20260324",
   "risk_weighted_coverage_score": 0.6,
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "slice_case_counts": {
     "decision_extraction": 2,
     "pre_merge_gate": 1,
@@ -25,9 +25,10 @@
   },
   "timestamp": "2026-03-24T00:00:00Z",
   "total_eval_cases": 3,
-  "trace_refs": [
-    "22222222-2222-4222-8222-222222222222"
-  ],
+  "trace_refs": {
+    "primary": "22222222-2222-4222-8222-222222222222",
+    "related": []
+  },
   "uncovered_required_slices": [
     "runtime_guardrails"
   ]

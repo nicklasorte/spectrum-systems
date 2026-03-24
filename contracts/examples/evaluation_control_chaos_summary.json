@@ -1,0 +1,49 @@
+{
+  "artifact_type": "evaluation_control_chaos_summary",
+  "schema_version": "1.0.0",
+  "id": "chaos-20260324-001",
+  "chaos_run_id": "chaos-20260324-001",
+  "timestamp": "2026-03-24T00:00:00Z",
+  "trace_refs": {
+    "primary": "chaos-20260324-001",
+    "related": []
+  },
+  "scenario_count": 2,
+  "pass_count": 2,
+  "fail_count": 0,
+  "mismatches": [],
+  "scenario_results": [
+    {
+      "scenario_id": "healthy-allows",
+      "category": "baseline",
+      "description": "Healthy summary remains allow.",
+      "expected_status": "healthy",
+      "actual_status": "healthy",
+      "expected_response": "allow",
+      "actual_response": "allow",
+      "expected_decision": "promote",
+      "actual_decision": "promote",
+      "matched": true,
+      "mismatch_fields": [],
+      "reasons": [],
+      "notes": ""
+    },
+    {
+      "scenario_id": "drift-freezes",
+      "category": "drift",
+      "description": "Elevated drift triggers freeze.",
+      "expected_status": "warning",
+      "actual_status": "warning",
+      "expected_response": "freeze",
+      "actual_response": "freeze",
+      "expected_decision": "hold",
+      "actual_decision": "hold",
+      "matched": true,
+      "mismatch_fields": [],
+      "reasons": [
+        "drift_threshold_breached"
+      ],
+      "notes": ""
+    }
+  ]
+}

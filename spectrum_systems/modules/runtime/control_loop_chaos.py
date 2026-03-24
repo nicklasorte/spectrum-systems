@@ -9,9 +9,17 @@ import json
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator, FormatChecker
+
+from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop
+from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 
 SCHEMA_VERSION = "1.0.0"
+
+
+def _validate(instance: dict[str, Any], schema_name: str) -> None:
+    Draft202012Validator(load_schema(schema_name), format_checker=FormatChecker()).validate(instance)
 
 
 class ControlLoopChaosError(Exception):
@@ -220,19 +228,25 @@ def run_chaos_scenarios(
     pass_count = sum(1 for item in scenario_results if item["matched"])
     fail_count = len(scenario_results) - pass_count
 
-    return {
+    envelope = build_artifact_envelope(
+        artifact_id=run_id,
+        timestamp=run_timestamp,
+        schema_version=SCHEMA_VERSION,
+        primary_trace_ref=run_id,
+        related_trace_refs=[],
+    )
+    summary = {
         "artifact_type": "evaluation_control_chaos_summary",
-        "schema_version": SCHEMA_VERSION,
-        "id": run_id,
+        **envelope,
         "chaos_run_id": run_id,
-        "timestamp": run_timestamp,
-        "trace_refs": [],
         "scenario_count": len(scenario_results),
         "pass_count": pass_count,
         "fail_count": fail_count,
         "mismatches": mismatches,
         "scenario_results": scenario_results,
     }
+    _validate(summary, "evaluation_control_chaos_summary")
+    return summary
 
 
 def run_chaos_scenarios_from_file(*, scenarios_path: Path, output_path: Path) -> dict[str, Any]:
