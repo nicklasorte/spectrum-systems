@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.33",
+  "artifact_version": "1.0.34",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.23",
-  "record_id": "REC-STD-2026-03-23-REVIEW-ARTIFACT-STANDARD",
+  "record_id": "REC-STD-2026-03-23-EVAL-CI-GATE",
   "run_id": "run-20260323T000000Z",
   "created_at": "2026-03-23T00:00:00Z",
   "created_by": {
@@ -284,6 +284,19 @@
       "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/evaluation_budget_decision.json",
       "notes": "Governor decision artifact supporting legacy responses and enforcement-ready control-loop responses."
+    },
+    {
+      "artifact_type": "evaluation_ci_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.34",
+      "last_updated_in": "1.0.34",
+      "example_path": "contracts/examples/evaluation_ci_gate_result.json",
+      "notes": "Fail-closed CI gate summary artifact for governed eval execution, artifact validation, threshold checks, and promotion blocking outcomes."
     },
     {
       "artifact_type": "evaluation_control_decision",

@@ -1,0 +1,44 @@
+{
+  "artifact_type": "evaluation_ci_gate_result",
+  "schema_version": "1.0.0",
+  "gate_run_id": "gate-20260323T010101Z",
+  "timestamp": "2026-03-23T01:01:01Z",
+  "status": "pass",
+  "blocking_reasons": [],
+  "required_artifacts_checked": [
+    "eval_run",
+    "eval_cases",
+    "eval_summary",
+    "evaluation_control_decision",
+    "evaluation_ci_gate_result"
+  ],
+  "missing_artifacts": [],
+  "invalid_artifacts": [],
+  "eval_summary_refs": [
+    "outputs/eval_ci_gate/eval_summary.json"
+  ],
+  "threshold_results": [
+    {
+      "threshold": "pass_rate_min",
+      "passed": true
+    },
+    {
+      "threshold": "failure_rate_max",
+      "passed": true
+    },
+    {
+      "threshold": "drift_rate_max",
+      "passed": true
+    },
+    {
+      "threshold": "reproducibility_score_min",
+      "passed": true
+    }
+  ],
+  "control_decision_ref": "outputs/eval_ci_gate/evaluation_control_decision.json",
+  "repo_state": {
+    "commit_sha": "abc123def456",
+    "branch": "main",
+    "workflow_run_id": "123456789"
+  }
+}
