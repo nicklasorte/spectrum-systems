@@ -103,8 +103,29 @@ def test_enforcement_failure_stops_pipeline(tmp_path: Path) -> None:
 def test_control_block_path(tmp_path: Path) -> None:
     artifacts = run_agent_golden_path(_config(tmp_path, force_eval_status="fail", force_control_block=True))
 
-    assert artifacts["control_decision"]["system_response"] in {"block", "freeze"}
-    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    assert artifacts["control_decision"]["system_response"] in {"block", "freeze", "warn"}
+    assert artifacts["hitl_review_request"]["trigger_reason"] == "control_non_allow_response"
+    assert artifacts["final_execution_record"]["execution_status"] == "escalated"
+    assert "enforcement" not in artifacts
+
+
+def test_force_review_required_stops_before_control(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, force_review_required=True))
+
+    assert artifacts["hitl_review_request"]["trigger_reason"] == "forced_review_required"
+    assert artifacts["hitl_review_request"]["status"] == "pending_review"
+    assert artifacts["final_execution_record"]["execution_status"] == "escalated"
+    assert "control_decision" not in artifacts
+    assert "enforcement" not in artifacts
+
+
+def test_indeterminate_review_path_emits_review_artifact(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, force_indeterminate_review=True))
+
+    assert artifacts["hitl_review_request"]["trigger_stage"] == "eval"
+    assert artifacts["hitl_review_request"]["trigger_reason"] == "indeterminate_outcome_routed_to_human"
+    assert artifacts["final_execution_record"]["human_review_required"] is True
+    assert "control_decision" not in artifacts
 
 
 def test_deterministic_repeated_runs(tmp_path: Path) -> None:
@@ -129,3 +150,12 @@ def test_artifact_completeness(tmp_path: Path) -> None:
     assert expected.issubset(artifacts.keys())
     for name in expected:
         assert (tmp_path / f"{name}.json").exists()
+
+
+def test_review_required_writes_expected_artifacts(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, force_review_required=True))
+
+    assert "failure_artifact" not in artifacts
+    assert (tmp_path / "hitl_review_request.json").exists()
+    assert (tmp_path / "final_execution_record.json").exists()
+    assert not (tmp_path / "enforcement.json").exists()

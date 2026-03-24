@@ -1,0 +1,21 @@
+{
+  "artifact_type": "hitl_review_request",
+  "schema_version": "1.0.0",
+  "id": "hrr-a5ec8a7f9834dc2e",
+  "timestamp": "2026-01-03T10:15:21Z",
+  "status": "pending_review",
+  "source_run_id": "agrun-1c42b4ad4a2f",
+  "trace_id": "8c9a39f1-7b62-5ca9-8b04-e628776f4e11",
+  "source_artifact_ids": [
+    "context_bundle:ctx-001",
+    "agent_execution_trace:agrun-1c42b4ad4a2f",
+    "structured_output:ec-001",
+    "eval_summary:agrun-1c42b4ad4a2f",
+    "evaluation_control_decision:ECD-8ab922c4ae965f84"
+  ],
+  "trigger_stage": "control",
+  "trigger_reason": "control_non_allow_response",
+  "review_type": "control_escalation_review",
+  "required_reviewer_role": "control_authority_reviewer",
+  "policy_version_id": "ag03-policy-v1"
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hitl_review_request.schema.json",
+  "title": "HITL Review Request",
+  "description": "Canonical AG-03 deterministic human-in-the-loop review-request artifact emitted when runtime policy routes execution into governed pending review.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "status",
+    "source_run_id",
+    "trace_id",
+    "source_artifact_ids",
+    "trigger_stage",
+    "trigger_reason",
+    "review_type",
+    "required_reviewer_role",
+    "policy_version_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "hitl_review_request"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "superseded",
+        "closed"
+      ]
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_artifact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "trigger_stage": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "eval",
+        "control",
+        "enforcement"
+      ]
+    },
+    "trigger_reason": {
+      "type": "string",
+      "enum": [
+        "control_non_allow_response",
+        "policy_review_required",
+        "indeterminate_outcome_routed_to_human",
+        "forced_review_required"
+      ]
+    },
+    "review_type": {
+      "type": "string",
+      "enum": [
+        "policy_exception_review",
+        "confidence_review",
+        "control_escalation_review",
+        "manual_test_review"
+      ]
+    },
+    "required_reviewer_role": {
+      "type": "string",
+      "enum": [
+        "governance_reviewer",
+        "control_authority_reviewer"
+      ]
+    },
+    "policy_version_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

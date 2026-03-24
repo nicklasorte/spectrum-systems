@@ -146,6 +146,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-AG-01-2026-03-24.md | AG-01 — Agent Runtime Golden Path | Active |
 | docs/review-actions/PLAN-AG-02-2026-03-24.md | AG-02 — Agent Failure Artifact Path | Active |
+| docs/review-actions/PLAN-AG-03-2026-03-24.md | AG-03 — HITL Review Queue | Active |
 
 Update this table when plans are created or completed.
 

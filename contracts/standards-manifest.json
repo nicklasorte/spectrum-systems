@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.38",
+  "artifact_version": "1.0.39",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
   "record_id": "REC-STD-2026-03-24-ENVELOPE-HARDENING",
@@ -462,6 +462,19 @@
       "last_updated_in": "1.0.8",
       "example_path": "contracts/examples/failure_eval_case.json",
       "notes": "BBB failure-derived eval artifact generated deterministically from blocked, threshold-breach, or indeterminate runtime outcomes."
+    },
+    {
+      "artifact_type": "hitl_review_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.39",
+      "last_updated_in": "1.0.39",
+      "example_path": "contracts/examples/hitl_review_request.json",
+      "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
     },
     {
       "artifact_type": "meeting_agenda_contract",
