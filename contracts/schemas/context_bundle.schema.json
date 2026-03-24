@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/context_bundle.schema.json",
-  "title": "Context Bundle v2.1",
-  "description": "Governed, typed, trust-scoped, source-segmented context bundle with deterministic ordering and required provenance per item.",
+  "title": "Context Bundle v2.2",
+  "description": "Governed, typed, trust-scoped, source-segmented context bundle with deterministic glossary canonicalization and required provenance per item.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,6 +20,8 @@
     "retrieved_context",
     "prior_artifacts",
     "glossary_terms",
+    "glossary_definitions",
+    "glossary_canonicalization",
     "unresolved_questions",
     "metadata",
     "token_estimates",
@@ -33,7 +35,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "2.1.0"
+      "const": "2.2.0"
     },
     "context_bundle_id": {
       "type": "string",
@@ -100,7 +102,7 @@
               "policy_constraints",
               "retrieved_context",
               "prior_artifact",
-              "glossary_term",
+              "glossary_definition",
               "unresolved_question"
             ]
           },
@@ -239,13 +241,159 @@
       "items": {
         "oneOf": [
           {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": false,
+            "required": [
+              "requested_term"
+            ],
+            "properties": {
+              "requested_term": {
+                "type": "string",
+                "minLength": 1
+              },
+              "term_id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,63}$"
+              },
+              "canonical_term": {
+                "type": "string",
+                "minLength": 1
+              },
+              "domain_scope": {
+                "type": "string",
+                "enum": [
+                  "general",
+                  "governance",
+                  "runtime",
+                  "evaluation",
+                  "safety"
+                ]
+              },
+              "required": {
+                "type": "boolean"
+              }
+            }
           }
         ]
+      }
+    },
+    "glossary_definitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "glossary_entry_id",
+          "term_id",
+          "canonical_term",
+          "definition",
+          "domain_scope",
+          "version",
+          "status",
+          "provenance_refs",
+          "created_at"
+        ],
+        "properties": {
+          "glossary_entry_id": {
+            "type": "string",
+            "pattern": "^gle-[a-f0-9]{16}$"
+          },
+          "term_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,63}$"
+          },
+          "canonical_term": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "domain_scope": {
+            "type": "string",
+            "enum": [
+              "general",
+              "governance",
+              "runtime",
+              "evaluation",
+              "safety"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "deprecated"
+            ]
+          },
+          "provenance_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "artifact_type": {
+            "type": "string",
+            "const": "glossary_entry"
+          },
+          "schema_version": {
+            "type": "string",
+            "const": "1.0.0"
+          }
+        }
+      }
+    },
+    "glossary_canonicalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_mode",
+        "selection_mode",
+        "fail_on_missing_required",
+        "selected_glossary_entry_ids",
+        "unresolved_terms"
+      ],
+      "properties": {
+        "match_mode": {
+          "type": "string",
+          "const": "exact"
+        },
+        "selection_mode": {
+          "type": "string",
+          "const": "explicit_then_exact_text"
+        },
+        "fail_on_missing_required": {
+          "type": "boolean"
+        },
+        "selected_glossary_entry_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^gle-[a-f0-9]{16}$"
+          }
+        },
+        "unresolved_terms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       }
     },
     "unresolved_questions": {
@@ -268,7 +416,8 @@
       "required": [
         "created_at",
         "retrieval_status",
-        "source_artifact_ids"
+        "source_artifact_ids",
+        "glossary_injection_status"
       ],
       "properties": {
         "created_at": {
@@ -288,6 +437,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "glossary_injection_status": {
+          "type": "string",
+          "enum": [
+            "applied",
+            "not_requested"
+          ]
         }
       }
     },
@@ -300,6 +456,7 @@
         "prior_artifacts",
         "retrieved_context",
         "glossary_terms",
+        "glossary_definitions",
         "unresolved_questions",
         "total"
       ],
@@ -321,6 +478,10 @@
           "minimum": 0
         },
         "glossary_terms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "glossary_definitions": {
           "type": "integer",
           "minimum": 0
         },

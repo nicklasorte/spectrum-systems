@@ -54,7 +54,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
 
     return {
         "artifact_type": "context_bundle",
-        "schema_version": "2.1.0",
+        "schema_version": "2.2.0",
         "context_bundle_id": "ctx-1234abcd5678ef90",
         "context_id": "ctx-1234abcd5678ef90",
         "task_type": "agent_execution",
@@ -102,11 +102,20 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
         "retrieved_context": retrieved,
         "prior_artifacts": [],
         "glossary_terms": [],
+        "glossary_definitions": [],
+        "glossary_canonicalization": {
+            "match_mode": "exact",
+            "selection_mode": "explicit_then_exact_text",
+            "fail_on_missing_required": True,
+            "selected_glossary_entry_ids": [],
+            "unresolved_terms": []
+        },
         "unresolved_questions": [],
         "metadata": {
             "created_at": "2026-03-21T00:00:00Z",
             "retrieval_status": "available" if with_context_data else "empty",
             "source_artifact_ids": ["ART-001"],
+            "glossary_injection_status": "not_requested",
         },
         "token_estimates": {
             "primary_input": 10,
@@ -114,6 +123,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
             "prior_artifacts": 0,
             "retrieved_context": 3,
             "glossary_terms": 0,
+            "glossary_definitions": 0,
             "unresolved_questions": 0,
             "total": 18,
         },
@@ -124,6 +134,7 @@ def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
             "prior_artifacts",
             "retrieved_context",
             "glossary_terms",
+            "glossary_definitions",
             "unresolved_questions",
         ],
     }
@@ -167,6 +178,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
     assert trace["context_bundle_id"] == bundle["context_bundle_id"]
     assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
+    assert trace["context_source_summary"]["glossary_entry_refs"] == []
+    assert trace["context_source_summary"]["glossary_definition_item_refs"] == []
 
 
 def test_tool_step_failure() -> None:
@@ -246,6 +259,8 @@ def test_full_trace_emission_shape_validation() -> None:
                 "user_provided": ["ctxi-1234abcd5678ef90"],
             },
             "inferred_item_refs": [],
+            "glossary_entry_refs": [],
+            "glossary_definition_item_refs": [],
         },
         "trace_id": "trace-005",
         "prompt_resolution": _prompt_resolution(),
@@ -345,6 +360,8 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
     assert trace["context_bundle_id"] == bundle["context_bundle_id"]
     assert trace["context_source_summary"]["classification_counts"]["user_provided"] == 1
+    assert trace["context_source_summary"]["glossary_entry_refs"] == []
+    assert trace["context_source_summary"]["glossary_definition_item_refs"] == []
 
 
 def test_model_step_fails_closed_on_malformed_provider_response() -> None:

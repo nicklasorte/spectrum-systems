@@ -86,6 +86,8 @@ def construct_context_bundle(
             source_artifact_ids=list(((bundle.get("metadata") or {}).get("source_artifact_ids") or [])),
             trace_id=trace_id,
             run_id=run_id,
+            glossary_registry_entries=list(bundle.get("glossary_registry_entries") or []),
+            glossary_injection_policy=dict(bundle.get("glossary_injection_policy") or {}),
         )
 
     # Ensure runtime linkage fields are explicit and up to date at execution seam.
@@ -412,6 +414,12 @@ def execute_step_sequence(
             "classification_counts": dict(source_segmentation.get("classification_counts") or {}),
             "item_refs_by_class": dict(source_segmentation.get("item_refs_by_class") or {}),
             "inferred_item_refs": list(source_segmentation.get("inferred_item_refs") or []),
+            "glossary_entry_refs": list(((bounded_context.get("glossary_canonicalization") or {}).get("selected_glossary_entry_ids") or [])),
+            "glossary_definition_item_refs": [
+                str(item.get("item_id"))
+                for item in list(bounded_context.get("context_items") or [])
+                if str(item.get("item_type") or "") == "glossary_definition"
+            ],
         },
         "trace_id": trace_id,
         "routing_decision": {

@@ -1,93 +1,119 @@
 {
   "artifact_type": "context_bundle",
-  "schema_version": "2.1.0",
-  "context_bundle_id": "ctx-35ebe96f13ad8359",
-  "context_id": "ctx-35ebe96f13ad8359",
+  "schema_version": "2.2.0",
+  "context_bundle_id": "ctx-8b602b2cbd9ff1c2",
+  "context_id": "ctx-8b602b2cbd9ff1c2",
   "task_type": "meeting_minutes",
-  "created_at": "2026-11-04T11:26:31Z",
+  "created_at": "2026-09-12T11:26:32Z",
   "trace": {
-    "trace_id": "trc-93aa2ec4af8de2b1",
-    "run_id": "agrun-22f8f68f268ed56d"
+    "trace_id": "trace-001",
+    "run_id": "run-001"
   },
   "context_items": [
     {
       "item_index": 0,
-      "item_id": "ctxi-b31119346d350786",
+      "item_id": "ctxi-a979756bd8cde763",
       "item_type": "primary_input",
       "trust_level": "high",
       "source_classification": "user_provided",
       "provenance_refs": [
+        "input-001",
         "input_payload"
       ],
       "content": {
-        "meeting_id": "M-2026-02-01",
-        "transcript": "Project status reviewed.",
-        "provenance_id": "input_payload"
+        "transcript": "hello",
+        "provenance_id": "input-001"
       }
     },
     {
       "item_index": 1,
-      "item_id": "ctxi-84e0c245743b55a3",
+      "item_id": "ctxi-0f1d5156a981e904",
       "item_type": "policy_constraints",
       "trust_level": "high",
       "source_classification": "internal",
       "provenance_refs": [
+        "policy-001",
         "policy_constraints"
       ],
       "content": {
-        "must_include": [
-          "decisions",
-          "owners"
+        "require": [
+          "decisions"
         ],
-        "provenance_id": "policy_constraints"
+        "provenance_id": "policy-001"
       }
     },
     {
       "item_index": 2,
-      "item_id": "ctxi-2afbbea2c3e46a4c",
-      "item_type": "prior_artifact",
-      "trust_level": "high",
-      "source_classification": "internal",
+      "item_id": "ctxi-0a0671bd25be73a2",
+      "item_type": "retrieved_context",
+      "trust_level": "medium",
+      "source_classification": "external",
       "provenance_refs": [
-        "artifact-prev-001"
+        "ext-src-001",
+        "ret-001"
       ],
       "content": {
-        "artifact_id": "artifact-prev-001",
-        "summary": "Last sprint decisions"
+        "artifact_id": "ret-001",
+        "content": "snippet",
+        "relevance_score": 0.8,
+        "provenance": {
+          "source_id": "ext-src-001",
+          "provenance_refs": [
+            "ext-src-001"
+          ]
+        }
       }
     },
     {
       "item_index": 3,
-      "item_id": "ctxi-b57cd276a8dbb46e",
-      "item_type": "glossary_term",
-      "trust_level": "medium",
+      "item_id": "ctxi-a2bbf699150fd26b",
+      "item_type": "prior_artifact",
+      "trust_level": "high",
       "source_classification": "internal",
       "provenance_refs": [
-        "glossary_term:0"
+        "art-001"
       ],
-      "content": "SLA"
+      "content": {
+        "artifact_id": "art-001",
+        "kind": "decision"
+      }
     },
     {
       "item_index": 4,
-      "item_id": "ctxi-984a0e3ddf5f4279",
-      "item_type": "glossary_term",
+      "item_id": "ctxi-136d635693c6aa0a",
+      "item_type": "glossary_definition",
       "trust_level": "medium",
       "source_classification": "internal",
       "provenance_refs": [
-        "glossary_term:1"
+        "gle-a2f8fbe34b21d991",
+        "rules/policy/sla.md"
       ],
-      "content": "RCA"
+      "content": {
+        "artifact_type": "glossary_entry",
+        "schema_version": "1.0.0",
+        "glossary_entry_id": "gle-a2f8fbe34b21d991",
+        "term_id": "sla",
+        "canonical_term": "SLA",
+        "definition": "Service Level Agreement governing measurable service commitments.",
+        "domain_scope": "runtime",
+        "version": "v1.0.0",
+        "status": "approved",
+        "provenance_refs": [
+          "rules/policy/sla.md"
+        ],
+        "created_at": "2026-03-24T00:00:00Z"
+      }
     },
     {
       "item_index": 5,
-      "item_id": "ctxi-c13c9a6b394dc26b",
+      "item_id": "ctxi-4026f4b440323302",
       "item_type": "unresolved_question",
       "trust_level": "low",
       "source_classification": "inferred",
       "provenance_refs": [
         "unresolved_question:0"
       ],
-      "content": "Who owns deployment rollback criteria?"
+      "content": "owner?"
     }
   ],
   "source_segmentation": {
@@ -98,78 +124,120 @@
       "user_provided"
     ],
     "classification_counts": {
-      "internal": 4,
-      "external": 0,
+      "internal": 3,
+      "external": 1,
       "inferred": 1,
       "user_provided": 1
     },
     "item_refs_by_class": {
       "internal": [
-        "ctxi-84e0c245743b55a3",
-        "ctxi-2afbbea2c3e46a4c",
-        "ctxi-b57cd276a8dbb46e",
-        "ctxi-984a0e3ddf5f4279"
+        "ctxi-0f1d5156a981e904",
+        "ctxi-a2bbf699150fd26b",
+        "ctxi-136d635693c6aa0a"
       ],
-      "external": [],
+      "external": [
+        "ctxi-0a0671bd25be73a2"
+      ],
       "inferred": [
-        "ctxi-c13c9a6b394dc26b"
+        "ctxi-4026f4b440323302"
       ],
       "user_provided": [
-        "ctxi-b31119346d350786"
+        "ctxi-a979756bd8cde763"
       ]
     },
     "grounded_item_refs": [
-      "ctxi-2afbbea2c3e46a4c",
-      "ctxi-84e0c245743b55a3",
-      "ctxi-984a0e3ddf5f4279",
-      "ctxi-b31119346d350786",
-      "ctxi-b57cd276a8dbb46e"
+      "ctxi-0a0671bd25be73a2",
+      "ctxi-0f1d5156a981e904",
+      "ctxi-136d635693c6aa0a",
+      "ctxi-a2bbf699150fd26b",
+      "ctxi-a979756bd8cde763"
     ],
     "inferred_item_refs": [
-      "ctxi-c13c9a6b394dc26b"
+      "ctxi-4026f4b440323302"
     ]
   },
   "primary_input": {
-    "meeting_id": "M-2026-02-01",
-    "transcript": "Project status reviewed.",
-    "provenance_id": "input_payload"
+    "transcript": "hello",
+    "provenance_id": "input-001"
   },
   "policy_constraints": {
-    "must_include": [
-      "decisions",
-      "owners"
+    "require": [
+      "decisions"
     ],
-    "provenance_id": "policy_constraints"
+    "provenance_id": "policy-001"
   },
-  "retrieved_context": [],
+  "retrieved_context": [
+    {
+      "artifact_id": "ret-001",
+      "content": "snippet",
+      "relevance_score": 0.8,
+      "provenance": {
+        "source_id": "ext-src-001",
+        "provenance_refs": [
+          "ext-src-001"
+        ]
+      }
+    }
+  ],
   "prior_artifacts": [
     {
-      "artifact_id": "artifact-prev-001",
-      "summary": "Last sprint decisions"
+      "artifact_id": "art-001",
+      "kind": "decision"
     }
   ],
   "glossary_terms": [
-    "SLA",
-    "RCA"
+    {
+      "requested_term": "SLA",
+      "term_id": "sla",
+      "domain_scope": "runtime"
+    }
   ],
+  "glossary_definitions": [
+    {
+      "artifact_type": "glossary_entry",
+      "schema_version": "1.0.0",
+      "glossary_entry_id": "gle-a2f8fbe34b21d991",
+      "term_id": "sla",
+      "canonical_term": "SLA",
+      "definition": "Service Level Agreement governing measurable service commitments.",
+      "domain_scope": "runtime",
+      "version": "v1.0.0",
+      "status": "approved",
+      "provenance_refs": [
+        "rules/policy/sla.md"
+      ],
+      "created_at": "2026-03-24T00:00:00Z"
+    }
+  ],
+  "glossary_canonicalization": {
+    "match_mode": "exact",
+    "selection_mode": "explicit_then_exact_text",
+    "fail_on_missing_required": true,
+    "selected_glossary_entry_ids": [
+      "gle-a2f8fbe34b21d991"
+    ],
+    "unresolved_terms": []
+  },
   "unresolved_questions": [
-    "Who owns deployment rollback criteria?"
+    "owner?"
   ],
   "metadata": {
-    "created_at": "2026-11-04T11:26:31Z",
-    "retrieval_status": "unavailable",
+    "created_at": "2026-09-12T11:26:32Z",
+    "retrieval_status": "available",
     "source_artifact_ids": [
-      "artifact-prev-001"
-    ]
+      "art-001"
+    ],
+    "glossary_injection_status": "applied"
   },
   "token_estimates": {
-    "primary_input": 25,
-    "policy_constraints": 19,
-    "prior_artifacts": 17,
-    "retrieved_context": 1,
-    "glossary_terms": 3,
-    "unresolved_questions": 10,
-    "total": 75
+    "primary_input": 12,
+    "policy_constraints": 13,
+    "prior_artifacts": 11,
+    "retrieved_context": 36,
+    "glossary_terms": 16,
+    "glossary_definitions": 91,
+    "unresolved_questions": 2,
+    "total": 181
   },
   "truncation_log": [],
   "priority_order": [
@@ -177,7 +245,7 @@
     "policy_constraints",
     "prior_artifacts",
     "retrieved_context",
-    "glossary_terms",
+    "glossary_definitions",
     "unresolved_questions"
   ]
 }

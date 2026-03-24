@@ -1,4 +1,4 @@
-"""HS-06/HS-07 Context Bundle v2 (Typed + Trusted + Segmented Sources).
+"""HS-06/HS-07/HS-18 Context Bundle composition and validation.
 
 Narrow deterministic composition + fail-closed validation boundary for runtime
 context bundles. This module intentionally does not perform retrieval/ranking.
@@ -15,17 +15,21 @@ from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import ValidationError
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.glossary_registry import (
+    GlossaryRegistryError,
+    select_glossary_entries,
+)
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 BUNDLE_ARTIFACT_TYPE = "context_bundle"
-BUNDLE_SCHEMA_VERSION = "2.1.0"
+BUNDLE_SCHEMA_VERSION = "2.2.0"
 
 ALLOWED_ITEM_TYPES: Tuple[str, ...] = (
     "primary_input",
     "policy_constraints",
     "retrieved_context",
     "prior_artifact",
-    "glossary_term",
+    "glossary_definition",
     "unresolved_question",
 )
 ALLOWED_TRUST_LEVELS: Tuple[str, ...] = ("high", "medium", "low", "untrusted")
@@ -42,7 +46,7 @@ ALLOWED_SOURCE_BY_ITEM_TYPE: Dict[str, Tuple[str, ...]] = {
     "policy_constraints": ("internal",),
     "retrieved_context": ("external",),
     "prior_artifact": ("internal",),
-    "glossary_term": ("internal",),
+    "glossary_definition": ("internal",),
     "unresolved_question": ("inferred",),
 }
 
@@ -58,7 +62,7 @@ LEGACY_PRIORITY_ORDER: Tuple[str, ...] = (
     "policy_constraints",
     "prior_artifacts",
     "retrieved_context",
-    "glossary_terms",
+    "glossary_definitions",
     "unresolved_questions",
 )
 
@@ -215,13 +219,23 @@ def _build_source_segmentation(items: Sequence[Dict[str, Any]]) -> Dict[str, Any
     }
 
 
+def _normalize_glossary_injection_policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    normalized = dict(policy or {})
+    return {
+        "default_domain_scope": str(normalized.get("default_domain_scope") or "general"),
+        "allow_deprecated": bool(normalized.get("allow_deprecated", False)),
+        "fail_on_missing_required": bool(normalized.get("fail_on_missing_required", True)),
+        "enabled": bool(normalized.get("enabled", True)),
+    }
+
+
 def compose_context_items(
     *,
     input_payload: Dict[str, Any],
     policy_constraints: Any,
     retrieved_context: Sequence[Dict[str, Any]],
     prior_artifacts: Sequence[Dict[str, Any]],
-    glossary_terms: Sequence[Any],
+    glossary_definitions: Sequence[Dict[str, Any]],
     unresolved_questions: Sequence[Any],
 ) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
@@ -269,14 +283,22 @@ def compose_context_items(
             content=artifact,
         )
 
-    for idx, term in enumerate(glossary_terms):
+    for entry in sorted(
+        [dict(item) for item in glossary_definitions],
+        key=lambda item: (
+            str(item.get("domain_scope") or ""),
+            str(item.get("term_id") or ""),
+            str(item.get("version") or ""),
+            str(item.get("glossary_entry_id") or ""),
+        ),
+    ):
         _append_item(
             items,
-            item_type="glossary_term",
+            item_type="glossary_definition",
             trust_level="medium",
             source_classification="internal",
-            provenance_refs=[f"glossary_term:{idx}"],
-            content=term,
+            provenance_refs=_ensure_provenance_refs(entry, default_ref=entry.get("glossary_entry_id")),
+            content=entry,
         )
 
     for idx, question in enumerate(unresolved_questions):
@@ -313,16 +335,38 @@ def compose_context_bundle(
     source_artifact_ids: Sequence[str],
     trace_id: str,
     run_id: str,
+    glossary_registry_entries: Optional[Sequence[Dict[str, Any]]] = None,
+    glossary_injection_policy: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if not trace_id or not run_id:
         raise ContextBundleValidationError("trace_id and run_id are required for context bundle linkage")
+
+    injection_policy = _normalize_glossary_injection_policy(glossary_injection_policy)
+    glossary_selection = {
+        "selected_entries": [],
+        "selected_glossary_entry_ids": [],
+        "unresolved_terms": [],
+        "match_mode": "exact",
+        "selection_mode": "explicit_then_exact_text",
+    }
+    if injection_policy["enabled"] and glossary_terms:
+        try:
+            glossary_selection = select_glossary_entries(
+                glossary_registry_entries or [],
+                glossary_terms,
+                default_domain_scope=injection_policy["default_domain_scope"],
+                allow_deprecated=injection_policy["allow_deprecated"],
+                fail_on_missing_required=injection_policy["fail_on_missing_required"],
+            )
+        except GlossaryRegistryError as exc:
+            raise ContextBundleValidationError(f"glossary injection failed: {exc}") from exc
 
     context_items = compose_context_items(
         input_payload=input_payload,
         policy_constraints=policy_constraints,
         retrieved_context=retrieved_context,
         prior_artifacts=prior_artifacts,
-        glossary_terms=glossary_terms,
+        glossary_definitions=glossary_selection["selected_entries"],
         unresolved_questions=unresolved_questions,
     )
     source_segmentation = _build_source_segmentation(context_items)
@@ -332,6 +376,11 @@ def compose_context_bundle(
         "context_items": context_items,
         "source_segmentation": source_segmentation,
         "trace": {"trace_id": trace_id, "run_id": run_id},
+        "glossary_selection": {
+            "selected_glossary_entry_ids": glossary_selection["selected_glossary_entry_ids"],
+            "unresolved_terms": glossary_selection["unresolved_terms"],
+            "match_mode": glossary_selection["match_mode"],
+        },
     }
     context_bundle_id = deterministic_id(
         prefix="ctx",
@@ -358,11 +407,20 @@ def compose_context_bundle(
         "retrieved_context": list(retrieved_context),
         "prior_artifacts": list(prior_artifacts),
         "glossary_terms": list(glossary_terms),
+        "glossary_definitions": glossary_selection["selected_entries"],
+        "glossary_canonicalization": {
+            "match_mode": glossary_selection["match_mode"],
+            "selection_mode": glossary_selection["selection_mode"],
+            "fail_on_missing_required": injection_policy["fail_on_missing_required"],
+            "selected_glossary_entry_ids": glossary_selection["selected_glossary_entry_ids"],
+            "unresolved_terms": glossary_selection["unresolved_terms"],
+        },
         "unresolved_questions": list(unresolved_questions),
         "metadata": {
             "created_at": created_at,
             "retrieval_status": "available" if retrieved_context else "unavailable",
             "source_artifact_ids": sorted(set(source_artifact_ids)),
+            "glossary_injection_status": "applied" if glossary_selection["selected_entries"] else "not_requested",
         },
         "token_estimates": {
             "primary_input": _estimate_tokens(input_payload),
@@ -370,6 +428,7 @@ def compose_context_bundle(
             "prior_artifacts": _estimate_tokens(prior_artifacts),
             "retrieved_context": _estimate_tokens(retrieved_context),
             "glossary_terms": _estimate_tokens(glossary_terms),
+            "glossary_definitions": _estimate_tokens(glossary_selection["selected_entries"]),
             "unresolved_questions": _estimate_tokens(unresolved_questions),
             "total": 0,
         },
@@ -384,6 +443,7 @@ def compose_context_bundle(
             "prior_artifacts",
             "retrieved_context",
             "glossary_terms",
+            "glossary_definitions",
             "unresolved_questions",
         )
     )
