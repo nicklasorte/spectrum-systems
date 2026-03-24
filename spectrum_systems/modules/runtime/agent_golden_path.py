@@ -648,6 +648,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                         sort_keys=True,
                     ),
                     "execution_constraints": {"max_output_tokens": 256, "temperature": 0.0},
+                    "requires_structured_generation": False,
                 }
             ],
         )

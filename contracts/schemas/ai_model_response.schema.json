@@ -16,6 +16,7 @@
     "normalized_output_text",
     "finish_reason",
     "response_status",
+    "structured_output",
     "trace"
   ],
   "properties": {
@@ -25,7 +26,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "response_id": {
       "type": "string",
@@ -66,6 +67,60 @@
         "completed",
         "failed"
       ]
+    },
+    "structured_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "target_schema_ref",
+        "generation_mode",
+        "enforcement_path",
+        "status",
+        "failure_reason"
+      ],
+      "properties": {
+        "requested": {
+          "type": "boolean"
+        },
+        "target_schema_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "generation_mode": {
+          "type": "string",
+          "enum": [
+            "unstructured",
+            "provider_native_strict",
+            "adapter_json_schema_strict"
+          ]
+        },
+        "enforcement_path": {
+          "type": "string",
+          "enum": [
+            "none",
+            "provider_native",
+            "adapter_json_schema"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_requested",
+            "succeeded",
+            "failed"
+          ]
+        },
+        "failure_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
     "trace": {
       "type": "object",

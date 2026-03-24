@@ -1,14 +1,22 @@
 {
   "artifact_type": "ai_model_response",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "response_id": "amres-5d48513ea6506bd0",
   "created_at": "2026-02-08T11:52:17Z",
   "request_id": "amr-7d4dc9cbba9865a4",
   "provider_name": "openai",
   "provider_model_name": "gpt-4o-mini",
-  "normalized_output_text": "Assertion: generated summary is grounded in retrieved artifacts.",
+  "normalized_output_text": "{\"artifact_type\":\"eval_case\",\"schema_version\":\"1.0.0\",\"eval_case_id\":\"ec-0123456789abcdef\",\"trace_id\":\"trace-example-001\",\"assertion\":\"Generated assertion\",\"expected_signals\":[],\"input_artifact_refs\":[]}",
   "finish_reason": "stop",
   "response_status": "completed",
+  "structured_output": {
+    "requested": true,
+    "target_schema_ref": "eval_case",
+    "generation_mode": "provider_native_strict",
+    "enforcement_path": "provider_native",
+    "status": "succeeded",
+    "failure_reason": null
+  },
   "trace": {
     "trace_id": "trace-example-001",
     "agent_run_id": "agrun-1111111111111111",

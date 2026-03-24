@@ -84,6 +84,10 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert model_invocation["requested_model_id"] == "openai:gpt-4o-mini"
     assert model_invocation["provider_name"] == "openai"
     assert model_invocation["provider_model_name"] == "gpt-4o-mini"
+    assert model_invocation["structured_generation_mode"] == "unstructured"
+    assert model_invocation["structured_target_schema_ref"] is None
+    assert model_invocation["structured_enforcement_path"] == "none"
+    assert model_invocation["structured_output_status"] == "not_requested"
     assert artifacts["structured_output"]["artifact_type"] == "eval_case"
     assert artifacts["eval_result"]["result_status"] == "pass"
     assert artifacts["control_decision"]["system_response"] == "allow"
