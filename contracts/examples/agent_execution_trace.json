@@ -41,5 +41,12 @@
     "resolution_source": "prompt_alias_map",
     "status": "resolved"
   },
-  "model_invocations": []
+  "model_invocations": [],
+  "routing_decision": {
+    "routing_decision_id": "rd-f43caad7a69a5ce1",
+    "policy_id": "rp-ag-runtime-v1",
+    "route_key": "meeting_minutes_default",
+    "task_class": "meeting_minutes",
+    "selected_model_id": "openai:gpt-4o-mini"
+  }
 }

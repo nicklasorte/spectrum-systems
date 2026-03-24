@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/routing_decision.schema.json",
+  "title": "Routing Decision",
+  "description": "Governed deterministic routing decision emitted by AG runtime before model invocation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "routing_decision_id",
+    "created_at",
+    "route_key",
+    "task_class",
+    "risk_class",
+    "selected_prompt_id",
+    "selected_prompt_alias",
+    "resolved_prompt_version",
+    "selected_model_id",
+    "policy_id",
+    "trace",
+    "related_artifact_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "routing_decision"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "routing_decision_id": {
+      "type": "string",
+      "pattern": "^rd-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "route_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "task_class": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "selected_prompt_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "selected_prompt_alias": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "resolved_prompt_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "selected_model_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9:_./-]{2,127}$"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^rp-[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "agent_run_id"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "related_artifact_refs": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -194,6 +194,7 @@ def execute_step_sequence(
     tool_registry: Optional[Dict[str, ToolFn]] = None,
     model_adapter: Optional[CanonicalModelAdapter] = None,
     final_output_builder: Optional[Callable[[Dict[str, Any], List[Dict[str, Any]]], Dict[str, Any]]] = None,
+    routing_decision: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Execute a bounded step sequence and emit a governed execution trace.
 
@@ -206,6 +207,11 @@ def execute_step_sequence(
     required_prompt_fields = ("prompt_id", "prompt_version", "resolution_source", "status")
     if not prompt_resolution or any(not str(prompt_resolution.get(field) or "").strip() for field in required_prompt_fields):
         raise AgentExecutionError("execute_step_sequence: prompt_resolution with prompt_id/prompt_version/resolution_source/status is required")
+    required_routing_fields = ("routing_decision_id", "policy_id", "route_key", "task_class", "selected_model_id")
+    if not routing_decision or any(not str(routing_decision.get(field) or "").strip() for field in required_routing_fields):
+        raise AgentExecutionError(
+            "execute_step_sequence: routing_decision with routing_decision_id/policy_id/route_key/task_class/selected_model_id is required"
+        )
 
     bounded_context = construct_context_bundle(context_bundle)
     planned_steps = [deepcopy(step) for step in step_plan]
@@ -357,6 +363,13 @@ def execute_step_sequence(
         "agent_run_id": agent_run_id,
         "context_bundle_id": bounded_context["context_id"],
         "trace_id": trace_id,
+        "routing_decision": {
+            "routing_decision_id": str((routing_decision or {}).get("routing_decision_id") or ""),
+            "policy_id": str((routing_decision or {}).get("policy_id") or ""),
+            "route_key": str((routing_decision or {}).get("route_key") or ""),
+            "task_class": str((routing_decision or {}).get("task_class") or ""),
+            "selected_model_id": str((routing_decision or {}).get("selected_model_id") or ""),
+        },
         "prompt_resolution": {
             "prompt_id": str(prompt_resolution["prompt_id"]),
             "prompt_version": str(prompt_resolution["prompt_version"]),

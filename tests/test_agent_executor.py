@@ -31,6 +31,17 @@ def _prompt_resolution() -> Dict[str, Any]:
     }
 
 
+
+
+def _routing_decision() -> Dict[str, Any]:
+    return {
+        "routing_decision_id": "rd-f43caad7a69a5ce1",
+        "policy_id": "rp-ag-runtime-v1",
+        "route_key": "meeting_minutes_default",
+        "task_class": "meeting_minutes",
+        "selected_model_id": "openai:gpt-4o-mini",
+    }
+
 def _context_bundle(*, with_context_data: bool = True) -> Dict[str, Any]:
     retrieved = [
         {
@@ -85,6 +96,7 @@ def test_successful_bounded_execution() -> None:
         final_output_schema="context_bundle",
         tool_registry={"echo": echo_tool},
         final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
     )
 
     assert trace["execution_status"] == "completed"
@@ -115,6 +127,7 @@ def test_tool_step_failure() -> None:
         final_output_schema="context_bundle",
         tool_registry={"explode": fail_tool},
         final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
     )
 
     assert trace["execution_status"] == "failed"
@@ -134,6 +147,7 @@ def test_schema_invalid_final_output() -> None:
         step_plan=plan,
         final_output_schema="context_bundle",
         final_output_builder=lambda *_: {"invalid": True},
+        routing_decision=_routing_decision(),
     )
 
     assert trace["execution_status"] == "failed"
@@ -153,6 +167,7 @@ def test_blocked_execution_when_context_bundle_missing_required_data() -> None:
             step_plan=plan,
             final_output_schema="context_bundle",
             final_output_builder=lambda b, _: b,
+            routing_decision=_routing_decision(),
         )
 
 
@@ -162,6 +177,7 @@ def test_full_trace_emission_shape_validation() -> None:
         "context_bundle_id": "ctx-1234abcd5678ef90",
         "trace_id": "trace-005",
         "prompt_resolution": _prompt_resolution(),
+        "routing_decision": _routing_decision(),
         "step_sequence": [
             {
                 "step_id": "step-001",
@@ -200,6 +216,7 @@ def test_missing_prompt_resolution_fails_closed() -> None:
             step_plan=plan,
             final_output_schema="context_bundle",
             final_output_builder=lambda b, _: b,
+            routing_decision=_routing_decision(),
         )
 
 
@@ -238,6 +255,7 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
         final_output_schema="context_bundle",
         model_adapter=CanonicalModelAdapter(provider=_Provider()),
         final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
     )
 
     assert trace["execution_status"] == "completed"
@@ -280,6 +298,7 @@ def test_model_step_fails_closed_on_malformed_provider_response() -> None:
         final_output_schema="context_bundle",
         model_adapter=CanonicalModelAdapter(provider=_BadProvider()),
         final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
     )
 
     assert trace["execution_status"] == "failed"

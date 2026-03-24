@@ -30,9 +30,9 @@ from spectrum_systems.modules.runtime.prompt_registry import (
     PromptRegistryError,
     load_prompt_alias_map,
     load_prompt_registry_entries,
-    resolve_prompt_version,
 )
 from spectrum_systems.modules.runtime.model_adapter import CanonicalModelAdapter
+from spectrum_systems.modules.runtime.routing_policy import RoutingPolicyError, load_routing_policy, resolve_routing_decision
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 
@@ -109,10 +109,10 @@ class GoldenPathConfig:
     override_decision_paths: Optional[List[Path]] = None
     require_override_decision: bool = False
 
-    prompt_id: str = "ag.runtime.default"
-    prompt_alias: str = "prod"
+    route_key: str = "meeting_minutes_default"
     prompt_registry_entry_paths: Optional[List[Path]] = None
     prompt_alias_map_path: Optional[Path] = None
+    routing_policy_path: Optional[Path] = None
 
 
 def _now_iso() -> str:
@@ -606,21 +606,30 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         # 2) Agent execution (bounded)
         registry_paths = config.prompt_registry_entry_paths or [Path("contracts/examples/prompt_registry_entry.json")]
         alias_map_path = config.prompt_alias_map_path or Path("contracts/examples/prompt_alias_map.json")
+        routing_policy_path = config.routing_policy_path or Path("contracts/examples/routing_policy.json")
         try:
             prompt_entries = load_prompt_registry_entries(registry_paths)
             prompt_alias_map = load_prompt_alias_map(alias_map_path)
-            prompt_resolution = resolve_prompt_version(
-                prompt_id=config.prompt_id,
-                alias=config.prompt_alias,
-                entries=prompt_entries,
-                alias_map=prompt_alias_map,
+            routing_policy = load_routing_policy(routing_policy_path)
+            routing_resolution = resolve_routing_decision(
+                policy=routing_policy,
+                route_key=config.route_key,
+                task_class=config.task_type,
+                trace_id=trace_id,
+                agent_run_id=run_id,
+                prompt_entries=prompt_entries,
+                prompt_alias_map=prompt_alias_map,
             )
-        except PromptRegistryError as exc:
+            prompt_resolution = routing_resolution["prompt_resolution"]
+            routing_decision = routing_resolution["routing_decision"]
+        except (PromptRegistryError, RoutingPolicyError) as exc:
             raise AgentGoldenPathStageError(
                 stage="agent",
-                failure_type="prompt_resolution_error",
+                failure_type="policy_error",
                 error_message=str(exc),
             ) from exc
+        artifacts["routing_decision"] = routing_decision
+        refs.append(f"routing_decision:{routing_decision['routing_decision_id']}")
 
         step_plan = generate_step_plan(
             context_bundle,
@@ -628,7 +637,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 {
                     "step_id": "step-001",
                     "step_type": "model",
-                    "requested_model_id": "openai:gpt-4o-mini",
+                    "requested_model_id": routing_decision["selected_model_id"],
                     "input_ref": f"context://{context_bundle['context_id']}",
                     "input_text": json.dumps(
                         {
@@ -675,6 +684,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                     force_invalid=False,
                     force_eval_status=config.force_eval_status,
                 ),
+                routing_decision=routing_decision,
             )
             if trace["execution_status"] != "completed":
                 raise RuntimeError(trace.get("failure_reason") or "agent execution did not complete")
@@ -905,6 +915,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
 
     output_paths = {
         "context_bundle": config.output_dir / "context_bundle.json",
+        "routing_decision": config.output_dir / "routing_decision.json",
         "agent_execution_trace": config.output_dir / "agent_execution_trace.json",
         "structured_output": config.output_dir / "structured_output.json",
         "eval_result": config.output_dir / "eval_result.json",
