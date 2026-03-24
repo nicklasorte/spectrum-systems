@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +18,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.contracts import load_schema  # noqa: E402
+from spectrum_systems.utils.deterministic_id import deterministic_id  # noqa: E402
 
 _DEFAULT_POLICY_PATH = _REPO_ROOT / "data" / "policy" / "eval_coverage_policy.json"
 _DEFAULT_OUTPUT_DIR = _REPO_ROOT / "outputs" / "eval_coverage"
@@ -256,7 +256,9 @@ def build_eval_coverage(
 
     required_slice_index = _build_required_slice_index(policy)
     minimum_cases = int(policy.get("minimum_cases_per_required_slice", 1))
-    indeterminate_is_failure = bool(policy.get("indeterminate_counts_as_failure", True))
+    indeterminate_is_failure = bool(
+        policy.get("indeterminate_is_blocking", policy.get("indeterminate_counts_as_failure", True))
+    )
 
     slice_acc: dict[str, dict[str, Any]] = {}
 
@@ -444,7 +446,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--blocking-on-gaps", action="store_true", help="Return non-zero when required slice gaps exist")
     args = parser.parse_args(argv)
 
-    coverage_run_id = args.coverage_run_id.strip() or f"coverage-{uuid.uuid4()}"
     timestamp = _utc_now()
 
     eval_cases = _load_json_many(Path(args.eval_cases))
@@ -454,6 +455,27 @@ def main(argv: list[str] | None = None) -> int:
         _validate(dataset, "eval_dataset")
 
     policy = _load_json(Path(args.policy))
+    coverage_run_id = args.coverage_run_id.strip() or deterministic_id(
+        prefix="coverage",
+        namespace="eval_coverage_summary",
+        payload={
+            "eval_cases_path": str(args.eval_cases),
+            "eval_results_path": str(args.eval_results),
+            "dataset_paths": sorted(args.dataset),
+            "policy_path": str(args.policy),
+            "policy_summary": {
+                "required_slices": sorted(
+                    str(item.get("slice_id"))
+                    for item in policy.get("required_slices", [])
+                    if isinstance(item, dict) and item.get("slice_id")
+                ),
+                "minimum_cases_per_required_slice": int(policy.get("minimum_cases_per_required_slice", 1)),
+                "indeterminate_is_blocking": bool(
+                    policy.get("indeterminate_is_blocking", policy.get("indeterminate_counts_as_failure", True))
+                ),
+            },
+        },
+    )
 
     coverage, slices, markdown = build_eval_coverage(
         eval_cases=eval_cases,

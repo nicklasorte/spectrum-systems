@@ -15,6 +15,7 @@ from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
     run_chaos_scenarios,
     run_chaos_scenarios_from_file,
 )
+from spectrum_systems.modules.runtime.decision_precedence import most_severe  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision  # noqa: E402
 
 _FIXTURE_PATH = _REPO_ROOT / "tests" / "fixtures" / "control_loop_chaos_scenarios.json"
@@ -126,3 +127,9 @@ def test_cli_returns_zero_when_no_mismatch(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["fail_count"] == 0
+
+
+def test_canonical_precedence_order_is_stable() -> None:
+    assert most_severe(["promote", "warn", "hold"], default="promote") == "hold"
+    assert most_severe(["warn", "freeze"], default="promote") == "freeze"
+    assert most_severe(["hold", "rollback"], default="promote") == "rollback"

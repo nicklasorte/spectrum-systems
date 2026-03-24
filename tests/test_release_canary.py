@@ -5,6 +5,7 @@ from copy import deepcopy
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.decision_precedence import precedence_rank
 from spectrum_systems.modules.runtime.release_canary import ReleaseInputVersions, build_release_record
 
 
@@ -84,6 +85,9 @@ def _policy() -> dict:
         "required_slices_must_not_degrade": True,
         "allow_new_failures": False,
         "indeterminate_counts_as_regression": True,
+        "indeterminate_is_blocking": True,
+        "coverage_parity_require_case_set_match": True,
+        "coverage_parity_require_slice_set_match": True,
         "control_thresholds": {
             "reliability_threshold": 0.85,
             "drift_threshold": 0.2,
@@ -98,6 +102,8 @@ def _policy() -> dict:
             "new_failures_introduced",
             "indeterminate_case_detected",
             "pass_rate_drop_exceeds_rollback_threshold",
+            "coverage_case_set_mismatch",
+            "coverage_slice_set_mismatch",
         ],
     }
 
@@ -203,3 +209,27 @@ def test_policy_threshold_failure_holds_when_no_rollback_trigger() -> None:
         candidate_eval_summary=_eval_summary("cand-run", pass_rate=0.9, trace_suffix="7"),
     )
     assert record["decision"] == "hold"
+
+
+def test_case_set_parity_mismatch_is_blocking() -> None:
+    record = _build(candidate_eval_results=[_eval_result("case-1", status="pass")])
+    assert record["decision"] != "promote"
+    assert any("coverage_parity_require_case_set_match" in item["threshold"] for item in record["canary_comparison_results"]["threshold_results"])
+
+
+def test_slice_set_parity_mismatch_is_blocking() -> None:
+    candidate_slice = deepcopy(_slice_summary(1.0))
+    candidate_slice["slice_id"] = "slice.beta"
+    candidate_slice["slice_name"] = "Beta"
+    record = _build(candidate_slice_summaries=[candidate_slice])
+    assert record["decision"] != "promote"
+    assert any("coverage_parity_require_slice_set_match" in item["threshold"] for item in record["canary_comparison_results"]["threshold_results"])
+
+
+def test_release_decision_precedence_prefers_rollback_over_hold() -> None:
+    record = _build(
+        baseline_eval_summary=_eval_summary("base-run", pass_rate=0.95, trace_suffix="8"),
+        candidate_eval_summary=_eval_summary("cand-run", pass_rate=0.80, trace_suffix="9"),
+    )
+    assert precedence_rank("rollback") < precedence_rank("hold")
+    assert record["decision"] == "rollback"

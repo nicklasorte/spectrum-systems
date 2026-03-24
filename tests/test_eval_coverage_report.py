@@ -213,3 +213,44 @@ def test_cli_writes_expected_artifacts_and_report_sections(tmp_path: Path) -> No
     assert "## Per-Slice Breakdown" in report
     assert "## Zero-Case Slices" in report
     assert "Aggregate pass rate" in report
+
+
+def test_indeterminate_policy_alias_is_respected() -> None:
+    eval_cases = [_eval_case("case-1", ["slice.alpha"])]
+    eval_results = [_eval_result("case-1", "indeterminate", "11")]
+    policy = _policy()
+    policy["indeterminate_counts_as_failure"] = False
+    policy["indeterminate_is_blocking"] = True
+
+    _, slices, _ = build_eval_coverage(
+        eval_cases=eval_cases,
+        eval_results=eval_results,
+        datasets=[],
+        policy=policy,
+        coverage_run_id="cov-run-alias",
+        timestamp="2026-03-24T00:00:00Z",
+    )
+    assert slices[0]["failure_rate"] == 1.0
+
+
+def test_cli_default_coverage_run_id_is_deterministic(tmp_path: Path) -> None:
+    eval_cases = [_eval_case("case-1", ["slice.alpha"])]
+    eval_results = [_eval_result("case-1", "pass", "12")]
+    eval_cases_path = tmp_path / "eval_cases.json"
+    eval_results_path = tmp_path / "eval_results.json"
+    policy_path = tmp_path / "policy.json"
+    out_one = tmp_path / "out1"
+    out_two = tmp_path / "out2"
+
+    eval_cases_path.write_text(json.dumps(eval_cases, indent=2) + "\n", encoding="utf-8")
+    eval_results_path.write_text(json.dumps(eval_results, indent=2) + "\n", encoding="utf-8")
+    policy_path.write_text(json.dumps(_policy(), indent=2) + "\n", encoding="utf-8")
+
+    code_one = main(["--eval-cases", str(eval_cases_path), "--eval-results", str(eval_results_path), "--policy", str(policy_path), "--output-dir", str(out_one)])
+    code_two = main(["--eval-cases", str(eval_cases_path), "--eval-results", str(eval_results_path), "--policy", str(policy_path), "--output-dir", str(out_two)])
+    assert code_one == 0
+    assert code_two == 0
+
+    coverage_one = json.loads((out_one / "eval_coverage_summary.json").read_text(encoding="utf-8"))
+    coverage_two = json.loads((out_two / "eval_coverage_summary.json").read_text(encoding="utf-8"))
+    assert coverage_one["coverage_run_id"] == coverage_two["coverage_run_id"]

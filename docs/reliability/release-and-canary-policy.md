@@ -23,6 +23,8 @@ The CLI (`scripts/run_release_canary.py`) runs both versions through the existin
    - pass-rate delta,
    - coverage-score delta,
    - required-slice regressions,
+   - baseline/candidate case-set parity,
+   - baseline/candidate slice-set parity,
    - new failures introduced,
    - indeterminate outcomes,
    - control-loop response deltas.
@@ -36,10 +38,13 @@ Release decisions are policy-driven by `data/policy/eval_release_policy.json`.
 - `rollback` (exit code `2`): deterministic rollback trigger(s) fire; target is `baseline_version`.
 
 Key deterministic rules:
+- release ID defaults to deterministic canonical identity (no `uuid4`),
 - no silent regression in required slices when `required_slices_must_not_degrade=true`,
+- no silent baseline/candidate case-set or slice-set drift when coverage parity checks are required,
 - threshold checks are explicit and recorded,
-- indeterminate counts as regression when configured,
+- indeterminate is blocking by default (`indeterminate_is_blocking=true`) unless governed policy explicitly overrides,
 - control responses (`freeze`, `block`) can gate or trigger rollback,
+- final release action follows canonical precedence (`rollback > block/freeze > hold > warn > promote`),
 - rollback reasons are emitted as machine-readable reason codes.
 
 ## Policy configuration
@@ -49,7 +54,9 @@ Key deterministic rules:
 - max pass-rate drop,
 - max coverage-score drop,
 - whether new failures are allowed,
-- whether indeterminate outcomes are treated as regressions,
+- whether indeterminate outcomes are blocking,
+- whether case-set parity is required,
+- whether slice-set parity is required,
 - control thresholds and blocking responses,
 - rollback trigger set.
 

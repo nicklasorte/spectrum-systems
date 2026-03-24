@@ -1,30 +1,35 @@
 {
-  "artifact_type": "eval_release_policy",
-  "schema_version": "1.0.0",
-  "minimum_eval_sample_size": 1,
-  "max_pass_rate_delta_drop": 0.02,
-  "max_coverage_score_delta_drop": 0.05,
-  "required_slices_must_not_degrade": true,
   "allow_new_failures": false,
-  "indeterminate_counts_as_regression": true,
-  "control_thresholds": {
-    "reliability_threshold": 0.85,
-    "drift_threshold": 0.2,
-    "trust_threshold": 0.8
-  },
+  "artifact_type": "eval_release_policy",
   "blocking_system_responses": [
     "freeze",
     "block"
   ],
+  "control_thresholds": {
+    "drift_threshold": 0.2,
+    "reliability_threshold": 0.85,
+    "trust_threshold": 0.8
+  },
+  "coverage_parity_require_case_set_match": true,
+  "coverage_parity_require_slice_set_match": true,
+  "indeterminate_counts_as_regression": true,
+  "indeterminate_is_blocking": true,
+  "max_coverage_score_delta_drop": 0.05,
+  "max_pass_rate_delta_drop": 0.02,
+  "minimum_eval_sample_size": 1,
+  "required_slices_must_not_degrade": true,
+  "rollback_pass_rate_delta_drop_threshold": 0.1,
   "rollback_system_responses": [
     "block"
   ],
-  "rollback_pass_rate_delta_drop_threshold": 0.1,
   "rollback_triggers": [
     "candidate_blocked_by_control",
     "required_slice_regression",
     "new_failures_introduced",
     "indeterminate_case_detected",
-    "pass_rate_drop_exceeds_rollback_threshold"
-  ]
+    "pass_rate_drop_exceeds_rollback_threshold",
+    "coverage_case_set_mismatch",
+    "coverage_slice_set_mismatch"
+  ],
+  "schema_version": "1.0.0"
 }
