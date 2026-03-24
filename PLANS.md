@@ -147,6 +147,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-AG-01-2026-03-24.md | AG-01 — Agent Runtime Golden Path | Active |
 | docs/review-actions/PLAN-AG-02-2026-03-24.md | AG-02 — Agent Failure Artifact Path | Active |
 | docs/review-actions/PLAN-AG-03-2026-03-24.md | AG-03 — HITL Review Queue | Active |
+| docs/review-actions/PLAN-AG-04-2026-03-24.md | AG-04 — Override Artifact Enforcement | Active |
 
 Update this table when plans are created or completed.
 
@@ -169,4 +170,3 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-SF-14.5-2026-03-24.md | SF-14.5 — Trust hardening for deterministic identity, precedence, indeterminate handling, and coverage parity | Active |
 | docs/review-actions/PLAN-SF-14.6-2026-03-24.md | SF-14.6 — Cleanup for script boundaries, dependency bootstrap, and envelope consistency | Active |
 | docs/review-actions/PLAN-ARTIFACT-ENVELOPE-HARDENING-2026-03-24.md | Artifact envelope hardening — canonical governed envelope enforcement | Active |
-

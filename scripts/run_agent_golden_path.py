@@ -70,6 +70,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Inject indeterminate eval outcome and route to review-required handoff",
     )
+    parser.add_argument(
+        "--override-decision-path",
+        action="append",
+        default=[],
+        help="Path to hitl_override_decision JSON artifact (repeatable; exactly one allowed).",
+    )
+    parser.add_argument(
+        "--require-override-decision",
+        action="store_true",
+        help="Fail closed at review boundary when no override decision artifact is supplied.",
+    )
     args = parser.parse_args(argv)
 
     input_payload = _parse_json_arg(args.input_json)
@@ -97,6 +108,8 @@ def main(argv: list[str] | None = None) -> int:
             force_review_required=args.force_review_required,
             policy_review_required=args.policy_review_required,
             force_indeterminate_review=args.force_indeterminate_review,
+            override_decision_paths=[Path(p) for p in args.override_decision_path],
+            require_override_decision=args.require_override_decision,
         )
     )
 
@@ -110,10 +123,31 @@ def main(argv: list[str] | None = None) -> int:
             "failure_artifact_id": failure["id"],
         }
         print(json.dumps(summary, indent=2))
+        if failure["failure_stage"] == "override_enforcement":
+            return 3
         return 1
+
+    final_record = artifacts.get("final_execution_record", {})
+    if isinstance(final_record, dict) and final_record.get("execution_status") == "success":
+        print(json.dumps({"status": "success", "artifacts_emitted": sorted(artifacts.keys())}, indent=2))
+        return 0
 
     if "hitl_review_request" in artifacts:
         review_request = artifacts["hitl_review_request"]
+        override_decision = artifacts.get("hitl_override_decision")
+        action = {}
+        actions = artifacts.get("final_execution_record", {}).get("actions_taken", [])
+        if actions and isinstance(actions[0], dict):
+            action = actions[0]
+        if action.get("action_type") == "hitl_override_enforcement_failed":
+            summary = {
+                "status": "override_enforcement_failed",
+                "review_request_id": review_request["id"],
+                "reason": action.get("reason"),
+                "message": action.get("message"),
+            }
+            print(json.dumps(summary, indent=2))
+            return 3
         summary = {
             "status": "review_required",
             "review_request_id": review_request["id"],
@@ -121,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
             "trigger_reason": review_request["trigger_reason"],
             "required_reviewer_role": review_request["required_reviewer_role"],
         }
+        if override_decision is not None:
+            summary["override_decision_id"] = override_decision["override_decision_id"]
+            summary["override_status"] = override_decision["decision_status"]
         print(json.dumps(summary, indent=2))
         return 2
 

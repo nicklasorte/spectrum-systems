@@ -46,10 +46,36 @@ class AgentGoldenPathStageError(AgentGoldenPathError):
 class AgentGoldenPathReviewRequired(AgentGoldenPathError):
     """Typed stop signal when execution must hand off to human review."""
 
-    def __init__(self, review_request: Dict[str, Any], execution_record: Dict[str, Any]) -> None:
+    def __init__(
+        self,
+        review_request: Dict[str, Any],
+        execution_record: Dict[str, Any],
+        override_decision: Optional[Dict[str, Any]] = None,
+    ) -> None:
         super().__init__("review_required")
         self.review_request = review_request
         self.execution_record = execution_record
+        self.override_decision = override_decision
+
+
+class AgentGoldenPathOverrideEnforcementError(AgentGoldenPathError):
+    """Typed fail-closed stop when AG-04 override enforcement fails."""
+
+    def __init__(
+        self,
+        *,
+        failure_type: str,
+        error_message: str,
+        review_request: Dict[str, Any],
+        execution_record: Dict[str, Any],
+        override_decision: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        super().__init__(error_message)
+        self.failure_type = failure_type
+        self.error_message = error_message
+        self.review_request = review_request
+        self.execution_record = execution_record
+        self.override_decision = override_decision
 
 
 @dataclass(frozen=True)
@@ -73,6 +99,8 @@ class GoldenPathConfig:
     force_review_required: bool = False
     policy_review_required: bool = False
     force_indeterminate_review: bool = False
+    override_decision_paths: Optional[List[Path]] = None
+    require_override_decision: bool = False
 
 
 def _now_iso() -> str:
@@ -107,6 +135,31 @@ def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
     offset_seconds = int(digest[:8], 16) % (365 * 24 * 60 * 60)
     base = datetime(2026, 1, 1, tzinfo=timezone.utc)
     return (base + timedelta(seconds=offset_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+_OVERRIDE_STATUS_TO_ACTION = {
+    "allow_once": "resume_once",
+    "deny": "remain_blocked",
+    "require_rerun": "rerun_from_context",
+    "require_revision": "revise_input_then_rerun",
+}
+
+_OVERRIDE_STATUS_COMPATIBILITY = {
+    "allow_once": {"control_non_allow_response", "policy_review_required", "forced_review_required"},
+    "deny": {
+        "control_non_allow_response",
+        "policy_review_required",
+        "forced_review_required",
+        "indeterminate_outcome_routed_to_human",
+    },
+    "require_rerun": {
+        "control_non_allow_response",
+        "policy_review_required",
+        "forced_review_required",
+        "indeterminate_outcome_routed_to_human",
+    },
+    "require_revision": {"policy_review_required", "forced_review_required", "indeterminate_outcome_routed_to_human"},
+}
 
 
 def _extract_root_artifact_ids(artifacts: Dict[str, Dict[str, Any]], run_id: str) -> Dict[str, Optional[str]]:
@@ -252,6 +305,104 @@ def _build_review_execution_record(
     return record
 
 
+def _load_override_decisions(paths: List[Path]) -> List[Dict[str, Any]]:
+    decisions: List[Dict[str, Any]] = []
+    for path in paths:
+        if not path.exists():
+            raise AgentGoldenPathStageError(
+                stage="override_enforcement",
+                failure_type="override_missing",
+                error_message=f"override decision not found: {path}",
+            )
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise AgentGoldenPathStageError(
+                stage="override_enforcement",
+                failure_type="override_malformed",
+                error_message=f"override decision JSON parse failed at {path}: {exc}",
+            ) from exc
+        _validate_contract(payload, "hitl_override_decision", stage="override_enforcement")
+        decisions.append(payload)
+    return decisions
+
+
+def _evaluate_override_decision(
+    *,
+    review_request: Dict[str, Any],
+    review_execution_record: Dict[str, Any],
+    override_decision: Dict[str, Any],
+) -> Dict[str, Any]:
+    status = str(override_decision["decision_status"])
+    allowed_next_action = str(override_decision["allowed_next_action"])
+    expected_action = _OVERRIDE_STATUS_TO_ACTION.get(status)
+    if expected_action is None:
+        raise ValueError(f"unsupported decision_status: {status}")
+    if allowed_next_action != expected_action:
+        raise ValueError(
+            f"allowed_next_action '{allowed_next_action}' is incompatible with decision_status '{status}'"
+        )
+    if override_decision.get("decision_scope") != "ag_runtime_review_boundary":
+        raise ValueError(f"unsupported decision_scope '{override_decision.get('decision_scope')}'")
+    if override_decision.get("trace_id") != review_request.get("trace_id"):
+        raise ValueError("override trace_id does not match review trace_id")
+    if override_decision.get("review_request_id") != review_request.get("id"):
+        raise ValueError("override review_request_id does not match emitted review_request id")
+    if override_decision.get("related_execution_record_id") != review_execution_record.get("artifact_id"):
+        raise ValueError("override related_execution_record_id does not match emitted execution record id")
+    trigger_reason = str(review_request.get("trigger_reason"))
+    if trigger_reason not in _OVERRIDE_STATUS_COMPATIBILITY[status]:
+        raise ValueError(
+            f"decision_status '{status}' is incompatible with trigger_reason '{trigger_reason}'"
+        )
+    return {
+        "decision_status": status,
+        "allowed_next_action": allowed_next_action,
+        "override_decision_id": override_decision["override_decision_id"],
+    }
+
+
+def _resolve_review_override(
+    *,
+    config: GoldenPathConfig,
+    review_request: Dict[str, Any],
+    review_execution_record: Dict[str, Any],
+) -> Dict[str, Any]:
+    raw_paths = config.override_decision_paths or []
+    unique_paths = sorted({Path(p).resolve() for p in raw_paths}, key=lambda p: str(p))
+    if not unique_paths:
+        if config.require_override_decision:
+            raise AgentGoldenPathStageError(
+                stage="override_enforcement",
+                failure_type="override_missing",
+                error_message="review boundary requires a hitl_override_decision artifact, but none were supplied",
+            )
+        raise AgentGoldenPathReviewRequired(review_request, review_execution_record)
+
+    decisions = _load_override_decisions(unique_paths)
+    if len(decisions) != 1:
+        raise AgentGoldenPathStageError(
+            stage="override_enforcement",
+            failure_type="override_ambiguous",
+            error_message=f"exactly one override artifact is required, found {len(decisions)}",
+        )
+    override_decision = decisions[0]
+    try:
+        outcome = _evaluate_override_decision(
+            review_request=review_request,
+            review_execution_record=review_execution_record,
+            override_decision=override_decision,
+        )
+    except ValueError as exc:
+        raise AgentGoldenPathStageError(
+            stage="override_enforcement",
+            failure_type="override_incompatible",
+            error_message=str(exc),
+        ) from exc
+    outcome["override_decision"] = override_decision
+    return outcome
+
+
 def _build_structured_output(
     *,
     trace_id: str,
@@ -291,6 +442,118 @@ def _build_structured_output(
     if force_invalid:
         structured_output.pop("evaluation_type", None)
     return structured_output
+
+
+def _handle_review_gate(
+    *,
+    config: GoldenPathConfig,
+    run_id: str,
+    trace_id: str,
+    trigger_stage: str,
+    trigger_reason: str,
+    review_type: str,
+    required_reviewer_role: str,
+    refs: List[str],
+    policy_version_id: Optional[str],
+) -> Dict[str, Any]:
+    review_request = _build_review_artifact(
+        run_id=run_id,
+        trace_id=trace_id,
+        trigger_stage=trigger_stage,
+        trigger_reason=trigger_reason,
+        review_type=review_type,
+        required_reviewer_role=required_reviewer_role,
+        refs=refs,
+        policy_version_id=policy_version_id,
+    )
+    review_execution_record = _build_review_execution_record(
+        run_id=run_id,
+        trace_id=trace_id,
+        trigger_reason=review_request["trigger_reason"],
+        refs=refs + [f"hitl_review_request:{review_request['id']}"],
+    )
+    try:
+        override_outcome = _resolve_review_override(
+            config=config,
+            review_request=review_request,
+            review_execution_record=review_execution_record,
+        )
+    except AgentGoldenPathStageError as exc:
+        fail_closed_record = deepcopy(review_execution_record)
+        fail_closed_record["execution_status"] = "blocked"
+        fail_closed_record["actions_taken"] = [
+            {
+                "action_type": "hitl_override_enforcement_failed",
+                "status": "blocked",
+                "reason": exc.failure_type,
+                "message": exc.error_message,
+                "review_request_id": review_request["id"],
+                "artifact_references": sorted(set(refs + [f"hitl_review_request:{review_request['id']}"])),
+                "timestamp": _now_iso(),
+            }
+        ]
+        fail_closed_record["publication_blocked"] = True
+        fail_closed_record["decision_blocked"] = True
+        fail_closed_record["rerun_triggered"] = False
+        fail_closed_record["escalation_triggered"] = True
+        fail_closed_record["human_review_required"] = True
+        _validate_contract(fail_closed_record, "control_execution_result", stage="override_enforcement")
+        raise AgentGoldenPathOverrideEnforcementError(
+            failure_type=exc.failure_type,
+            error_message=exc.error_message,
+            review_request=review_request,
+            execution_record=fail_closed_record,
+        ) from exc
+    override_decision = override_outcome["override_decision"]
+    status = override_outcome["decision_status"]
+    if status == "allow_once":
+        return {
+            "should_continue": True,
+            "review_request": review_request,
+            "review_execution_record": review_execution_record,
+            "override_decision": override_decision,
+        }
+
+    execution_status = "blocked" if status == "deny" else "repair_required"
+    action_status = "blocked" if status == "deny" else "required"
+    fail_closed_record = deepcopy(review_execution_record)
+    fail_closed_record["execution_status"] = execution_status
+    fail_closed_record["actions_taken"] = [
+        {
+            "action_type": "hitl_override_decision_applied",
+            "status": action_status,
+            "override_status": status,
+            "allowed_next_action": override_outcome["allowed_next_action"],
+            "override_decision_id": override_outcome["override_decision_id"],
+            "review_request_id": review_request["id"],
+            "artifact_references": sorted(
+                set(
+                    refs
+                    + [
+                        f"hitl_review_request:{review_request['id']}",
+                        f"hitl_override_decision:{override_decision['override_decision_id']}",
+                    ]
+                )
+            ),
+            "timestamp": _now_iso(),
+        }
+    ]
+    fail_closed_record["repair_actions_applied"] = (
+        []
+        if status == "deny"
+        else [{"action": override_outcome["allowed_next_action"], "reason": "hitl_override_decision"}]
+    )
+    fail_closed_record["publication_blocked"] = True
+    fail_closed_record["decision_blocked"] = True
+    fail_closed_record["rerun_triggered"] = status == "require_rerun"
+    fail_closed_record["escalation_triggered"] = status == "deny"
+    fail_closed_record["human_review_required"] = status != "deny"
+    _validate_contract(fail_closed_record, "control_execution_result", stage="override_enforcement")
+    raise AgentGoldenPathReviewRequired(
+        review_request=review_request,
+        execution_record=fail_closed_record,
+        override_decision=override_decision,
+    )
 
 
 def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]:
@@ -428,7 +691,8 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         refs.append(f"eval_summary:{eval_summary['eval_run_id']}")
 
         if config.force_review_required:
-            review_request = _build_review_artifact(
+            review_gate = _handle_review_gate(
+                config=config,
                 run_id=run_id,
                 trace_id=trace_id,
                 trigger_stage="agent",
@@ -438,17 +702,14 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 refs=refs,
                 policy_version_id="ag03-policy-v1",
             )
-            artifacts["hitl_review_request"] = review_request
-            execution_record = _build_review_execution_record(
-                run_id=run_id,
-                trace_id=trace_id,
-                trigger_reason=review_request["trigger_reason"],
-                refs=refs + [f"hitl_review_request:{review_request['id']}"],
-            )
-            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+            artifacts["hitl_review_request"] = review_gate["review_request"]
+            artifacts["hitl_override_decision"] = review_gate["override_decision"]
+            refs.append(f"hitl_review_request:{review_gate['review_request']['id']}")
+            refs.append(f"hitl_override_decision:{review_gate['override_decision']['override_decision_id']}")
 
         if config.policy_review_required:
-            review_request = _build_review_artifact(
+            review_gate = _handle_review_gate(
+                config=config,
                 run_id=run_id,
                 trace_id=trace_id,
                 trigger_stage="agent",
@@ -458,20 +719,17 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 refs=refs,
                 policy_version_id="ag03-policy-v1",
             )
-            artifacts["hitl_review_request"] = review_request
-            execution_record = _build_review_execution_record(
-                run_id=run_id,
-                trace_id=trace_id,
-                trigger_reason=review_request["trigger_reason"],
-                refs=refs + [f"hitl_review_request:{review_request['id']}"],
-            )
-            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+            artifacts["hitl_review_request"] = review_gate["review_request"]
+            artifacts["hitl_override_decision"] = review_gate["override_decision"]
+            refs.append(f"hitl_review_request:{review_gate['review_request']['id']}")
+            refs.append(f"hitl_override_decision:{review_gate['override_decision']['override_decision_id']}")
 
         indeterminate_count = int(eval_summary.get("indeterminate_failure_count", 0))
         if config.force_indeterminate_review:
             indeterminate_count = max(1, indeterminate_count)
         if indeterminate_count > 0:
-            review_request = _build_review_artifact(
+            review_gate = _handle_review_gate(
+                config=config,
                 run_id=run_id,
                 trace_id=trace_id,
                 trigger_stage="eval",
@@ -481,14 +739,10 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 refs=refs,
                 policy_version_id="ag03-policy-v1",
             )
-            artifacts["hitl_review_request"] = review_request
-            execution_record = _build_review_execution_record(
-                run_id=run_id,
-                trace_id=trace_id,
-                trigger_reason=review_request["trigger_reason"],
-                refs=refs + [f"hitl_review_request:{review_request['id']}"],
-            )
-            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+            artifacts["hitl_review_request"] = review_gate["review_request"]
+            artifacts["hitl_override_decision"] = review_gate["override_decision"]
+            refs.append(f"hitl_review_request:{review_gate['review_request']['id']}")
+            refs.append(f"hitl_override_decision:{review_gate['override_decision']['override_decision_id']}")
 
         # 5) Control decision
         try:
@@ -510,7 +764,8 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
 
         system_response = str(decision.get("system_response", "block"))
         if system_response != "allow":
-            review_request = _build_review_artifact(
+            review_gate = _handle_review_gate(
+                config=config,
                 run_id=run_id,
                 trace_id=trace_id,
                 trigger_stage="control",
@@ -520,14 +775,10 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 refs=refs,
                 policy_version_id="ag03-policy-v1",
             )
-            artifacts["hitl_review_request"] = review_request
-            execution_record = _build_review_execution_record(
-                run_id=run_id,
-                trace_id=trace_id,
-                trigger_reason=review_request["trigger_reason"],
-                refs=refs + [f"hitl_review_request:{review_request['id']}"],
-            )
-            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+            artifacts["hitl_review_request"] = review_gate["review_request"]
+            artifacts["hitl_override_decision"] = review_gate["override_decision"]
+            refs.append(f"hitl_review_request:{review_gate['review_request']['id']}")
+            refs.append(f"hitl_override_decision:{review_gate['override_decision']['override_decision_id']}")
 
         # 6) Enforcement
         try:
@@ -589,6 +840,11 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         _validate_contract(execution_record, "control_execution_result", stage="enforcement")
         artifacts["final_execution_record"] = execution_record
 
+    except AgentGoldenPathOverrideEnforcementError as exc:
+        artifacts["hitl_review_request"] = exc.review_request
+        artifacts["final_execution_record"] = exc.execution_record
+        if exc.override_decision is not None:
+            artifacts["hitl_override_decision"] = exc.override_decision
     except AgentGoldenPathStageError as exc:
         failure = _build_failure_artifact(
             run_id=run_id,
@@ -604,6 +860,8 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
     except AgentGoldenPathReviewRequired as review_required:
         artifacts["hitl_review_request"] = review_required.review_request
         artifacts["final_execution_record"] = review_required.execution_record
+        if review_required.override_decision is not None:
+            artifacts["hitl_override_decision"] = review_required.override_decision
 
     output_paths = {
         "context_bundle": config.output_dir / "context_bundle.json",
@@ -616,6 +874,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         "final_execution_record": config.output_dir / "final_execution_record.json",
         "failure_artifact": config.output_dir / "failure_artifact.json",
         "hitl_review_request": config.output_dir / "hitl_review_request.json",
+        "hitl_override_decision": config.output_dir / "hitl_override_decision.json",
     }
     for key, payload in artifacts.items():
         _emit_json(output_paths[key], payload)

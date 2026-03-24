@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hitl_override_decision.schema.json",
+  "title": "HITL Override Decision",
+  "description": "Canonical AG-04 governed override artifact used to resolve an AG-03 review-required runtime halt with bounded deterministic semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "override_decision_id",
+    "created_at",
+    "trace_id",
+    "review_request_id",
+    "related_execution_record_id",
+    "decision_status",
+    "decision_reason",
+    "decided_by",
+    "decision_scope",
+    "allowed_next_action",
+    "trace_refs",
+    "related_artifact_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "hitl_override_decision"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "override_decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "related_execution_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_status": {
+      "type": "string",
+      "enum": [
+        "allow_once",
+        "deny",
+        "require_rerun",
+        "require_revision"
+      ]
+    },
+    "decision_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decided_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_id",
+        "role"
+      ],
+      "properties": {
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "governance_reviewer",
+            "control_authority_reviewer"
+          ]
+        }
+      }
+    },
+    "decision_scope": {
+      "type": "string",
+      "enum": [
+        "ag_runtime_review_boundary"
+      ]
+    },
+    "allowed_next_action": {
+      "type": "string",
+      "enum": [
+        "resume_once",
+        "remain_blocked",
+        "rerun_from_context",
+        "revise_input_then_rerun"
+      ]
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "related_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 2,
+      "uniqueItems": true
+    }
+  }
+}
