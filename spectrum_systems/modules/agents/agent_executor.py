@@ -108,6 +108,8 @@ def generate_step_plan(
             "requested_model_id": raw_step.get("requested_model_id"),
             "input_text": raw_step.get("input_text"),
             "execution_constraints": deepcopy(raw_step.get("execution_constraints") or {}),
+            "requires_structured_generation": bool(raw_step.get("requires_structured_generation", False)),
+            "structured_output": deepcopy(raw_step.get("structured_output")),
         }
         plan.append(step)
     return plan
@@ -283,6 +285,18 @@ def execute_step_sequence(
                 failure_reason = step["error"]
                 break
 
+            requires_structured_generation = bool(step.get("requires_structured_generation", False))
+            structured_output = step.get("structured_output")
+            if requires_structured_generation and not isinstance(structured_output, dict):
+                step["status"] = STEP_STATUS_BLOCKED
+                step["error"] = (
+                    "execute_step_sequence: structured model step requires structured_output declaration "
+                    "with target_schema_ref and generation_mode"
+                )
+                execution_status = EXECUTION_BLOCKED
+                failure_reason = step["error"]
+                break
+
             constraints = step.get("execution_constraints") or {}
             max_output_tokens = int(constraints.get("max_output_tokens", 512))
             temperature = float(constraints.get("temperature", 0.0))
@@ -296,6 +310,7 @@ def execute_step_sequence(
                 step_id=str(step["step_id"]),
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
+                structured_output=structured_output,
             )
             try:
                 canonical_response = model_adapter.execute(canonical_request)
@@ -323,6 +338,10 @@ def execute_step_sequence(
                     "provider_model_name": canonical_response["provider_model_name"],
                     "response_status": canonical_response["response_status"],
                     "finish_reason": canonical_response["finish_reason"],
+                    "structured_generation_mode": canonical_response["structured_output"]["generation_mode"],
+                    "structured_target_schema_ref": canonical_response["structured_output"]["target_schema_ref"],
+                    "structured_enforcement_path": canonical_response["structured_output"]["enforcement_path"],
+                    "structured_output_status": canonical_response["structured_output"]["status"],
                 }
             )
             if step["status"] != STEP_STATUS_COMPLETED:

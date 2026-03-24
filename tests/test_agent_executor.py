@@ -95,6 +95,7 @@ def test_successful_bounded_execution() -> None:
         step_plan=plan,
         final_output_schema="context_bundle",
         tool_registry={"echo": echo_tool},
+        model_adapter=CanonicalModelAdapter(provider=type("_P", (), {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}})()),
         final_output_builder=lambda b, _: b,
         routing_decision=_routing_decision(),
     )
@@ -265,6 +266,10 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     assert invocation["provider_name"] == "openai"
     assert invocation["provider_model_name"] == "gpt-4o-mini"
     assert "raw_provider_field" not in invocation
+    assert invocation["structured_generation_mode"] == "unstructured"
+    assert invocation["structured_target_schema_ref"] is None
+    assert invocation["structured_enforcement_path"] == "none"
+    assert invocation["structured_output_status"] == "not_requested"
     assert trace["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
     assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
 
@@ -303,3 +308,97 @@ def test_model_step_fails_closed_on_malformed_provider_response() -> None:
 
     assert trace["execution_status"] == "failed"
     assert "model adapter failure" in (trace["failure_reason"] or "")
+
+
+def test_structured_model_step_requires_structured_declaration() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-structured-missing",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Return structured routing decision",
+                "requires_structured_generation": True,
+            }
+        ],
+    )
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-009",
+        trace_id="trace-009",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        model_adapter=CanonicalModelAdapter(provider=type("_P", (), {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}})()),
+        final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
+    )
+
+    assert trace["execution_status"] == "blocked"
+    assert "structured model step requires structured_output declaration" in (trace["failure_reason"] or "")
+
+
+def test_structured_model_step_trace_linkage_present() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-structured-001",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Return structured routing decision",
+                "requires_structured_generation": True,
+                "structured_output": {
+                    "generation_mode": "provider_native_strict",
+                    "target_schema_ref": "routing_decision",
+                },
+            }
+        ],
+    )
+
+    class _StructuredProvider:
+        provider_name = "openai"
+        supported_structured_modes = {"provider_native_strict"}
+
+        def invoke(self, _: Dict[str, Any]) -> Dict[str, Any]:
+            output = {
+                "artifact_type": "routing_decision",
+                "schema_version": "1.0.0",
+                "routing_decision_id": "rd-f43caad7a69a5ce1",
+                "created_at": "2026-03-24T00:00:00Z",
+                "route_key": "meeting_minutes_default",
+                "task_class": "meeting_minutes",
+                "risk_class": "low",
+                "selected_prompt_id": "ag.runtime.default",
+                "selected_prompt_alias": "prod",
+                "resolved_prompt_version": "v1.0.0",
+                "selected_model_id": "openai:gpt-4o-mini",
+                "policy_id": "rp-ag-runtime-v1",
+                "trace": {"trace_id": "trace-010", "agent_run_id": "agent-run-010"},
+                "related_artifact_refs": ["context_bundle:ctx-1", "prompt_resolution:ag.runtime.default@v1.0.0"],
+            }
+            import json
+            return {"model": "gpt-4o-mini", "output_text": json.dumps(output), "finish_reason": "stop"}
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-010",
+        trace_id="trace-010",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        model_adapter=CanonicalModelAdapter(provider=_StructuredProvider()),
+        final_output_builder=lambda b, _: b,
+        routing_decision=_routing_decision(),
+    )
+
+    assert trace["execution_status"] == "completed"
+    invocation = trace["model_invocations"][0]
+    assert invocation["structured_generation_mode"] == "provider_native_strict"
+    assert invocation["structured_target_schema_ref"] == "routing_decision"
+    assert invocation["structured_enforcement_path"] == "provider_native"
+    assert invocation["structured_output_status"] == "succeeded"

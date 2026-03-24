@@ -236,7 +236,11 @@
           "provider_name",
           "provider_model_name",
           "response_status",
-          "finish_reason"
+          "finish_reason",
+          "structured_generation_mode",
+          "structured_target_schema_ref",
+          "structured_enforcement_path",
+          "structured_output_status"
         ],
         "properties": {
           "step_id": {
@@ -277,6 +281,37 @@
               "length",
               "content_filter",
               "error"
+            ]
+          },
+          "structured_generation_mode": {
+            "type": "string",
+            "enum": [
+              "unstructured",
+              "provider_native_strict",
+              "adapter_json_schema_strict"
+            ]
+          },
+          "structured_target_schema_ref": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+          },
+          "structured_enforcement_path": {
+            "type": "string",
+            "enum": [
+              "none",
+              "provider_native",
+              "adapter_json_schema"
+            ]
+          },
+          "structured_output_status": {
+            "type": "string",
+            "enum": [
+              "not_requested",
+              "succeeded",
+              "failed"
             ]
           }
         }

@@ -41,7 +41,22 @@
     "resolution_source": "prompt_alias_map",
     "status": "resolved"
   },
-  "model_invocations": [],
+  "model_invocations": [
+    {
+      "step_id": "step-002",
+      "request_id": "amr-7d4dc9cbba9865a4",
+      "response_id": "amres-5d48513ea6506bd0",
+      "requested_model_id": "openai:gpt-4o-mini",
+      "provider_name": "openai",
+      "provider_model_name": "gpt-4o-mini",
+      "response_status": "completed",
+      "finish_reason": "stop",
+      "structured_generation_mode": "provider_native_strict",
+      "structured_target_schema_ref": "eval_case",
+      "structured_enforcement_path": "provider_native",
+      "structured_output_status": "succeeded"
+    }
+  ],
   "routing_decision": {
     "routing_decision_id": "rd-f43caad7a69a5ce1",
     "policy_id": "rp-ag-runtime-v1",

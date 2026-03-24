@@ -15,7 +15,8 @@
     "requested_model_id",
     "input_text",
     "execution_constraints",
-    "trace"
+    "trace",
+    "structured_output"
   ],
   "properties": {
     "artifact_type": {
@@ -24,7 +25,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "request_id": {
       "type": "string",
@@ -90,6 +91,30 @@
         "step_id": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "structured_output": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "generation_mode",
+        "target_schema_ref"
+      ],
+      "properties": {
+        "generation_mode": {
+          "type": "string",
+          "enum": [
+            "provider_native_strict",
+            "adapter_json_schema_strict"
+          ]
+        },
+        "target_schema_ref": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
         }
       }
     }
