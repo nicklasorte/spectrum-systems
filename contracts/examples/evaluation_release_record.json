@@ -1,0 +1,69 @@
+{
+  "artifact_type": "evaluation_release_record",
+  "schema_version": "1.0.0",
+  "release_id": "release-20260324-canary-001",
+  "timestamp": "2026-03-24T00:00:00Z",
+  "candidate_version": "candidate-2026.03.24.1",
+  "baseline_version": "baseline-2026.03.23.2",
+  "artifact_types": [
+    "prompt",
+    "schema",
+    "policy",
+    "routing"
+  ],
+  "version_set": {
+    "baseline": {
+      "prompt_version_id": "prompt-v1.4.0",
+      "schema_version": "contracts-v1.0.35",
+      "policy_version_id": "policy-v1.2.0",
+      "route_policy_version_id": "route-v1.1.0"
+    },
+    "candidate": {
+      "prompt_version_id": "prompt-v1.5.0",
+      "schema_version": "contracts-v1.0.36",
+      "policy_version_id": "policy-v1.3.0",
+      "route_policy_version_id": "route-v1.2.0"
+    }
+  },
+  "eval_summary_refs": {
+    "baseline": "outputs/release_canary/baseline/eval_summary.json",
+    "candidate": "outputs/release_canary/candidate/eval_summary.json"
+  },
+  "coverage_summary_refs": {
+    "baseline": "outputs/release_canary/baseline/eval_coverage_summary.json",
+    "candidate": "outputs/release_canary/candidate/eval_coverage_summary.json"
+  },
+  "canary_comparison_results": {
+    "baseline_eval_run_id": "eval-run-baseline-001",
+    "candidate_eval_run_id": "eval-run-candidate-001",
+    "sample_size": 16,
+    "pass_rate_delta": 0.0,
+    "coverage_score_delta": 0.0,
+    "required_slice_regressions": [],
+    "new_failures": [],
+    "indeterminate_failures": [],
+    "control_responses": {
+      "baseline": "allow",
+      "candidate": "allow"
+    },
+    "threshold_results": [
+      {
+        "threshold": "minimum_eval_sample_size",
+        "passed": true,
+        "actual": 16,
+        "expected": 10
+      },
+      {
+        "threshold": "max_pass_rate_delta_drop",
+        "passed": true,
+        "actual": 0.0,
+        "expected": -0.02
+      }
+    ]
+  },
+  "decision": "promote",
+  "reasons": [
+    "all_release_policy_checks_passed"
+  ],
+  "rollback_target_version": null
+}

@@ -160,3 +160,5 @@ PLAN written → Codex/Claude review → BUILD/WIRE executes → VALIDATE passes
 
 A plan is **closed** when its VALIDATE slice passes and the result is committed.
 Closed plans are not deleted — they remain as execution history.
+
+| docs/review-actions/PLAN-SF-14-2026-03-24.md | SF-14 — Release + Canary Policy for governed staged promotion and rollback | Active |

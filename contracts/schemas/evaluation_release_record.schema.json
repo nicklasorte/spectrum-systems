@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_release_record.schema.json",
+  "title": "Evaluation Release Record",
+  "description": "Governed deterministic release-canary decision artifact for baseline vs candidate promotion control.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "release_id",
+    "timestamp",
+    "candidate_version",
+    "baseline_version",
+    "artifact_types",
+    "version_set",
+    "eval_summary_refs",
+    "coverage_summary_refs",
+    "canary_comparison_results",
+    "decision",
+    "reasons",
+    "rollback_target_version"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "evaluation_release_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "release_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidate_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "prompt",
+          "schema",
+          "policy",
+          "routing"
+        ]
+      }
+    },
+    "version_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/versionEntry"
+        },
+        "candidate": {
+          "$ref": "#/$defs/versionEntry"
+        }
+      }
+    },
+    "eval_summary_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "properties": {
+        "baseline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "coverage_summary_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "properties": {
+        "baseline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "canary_comparison_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_eval_run_id",
+        "candidate_eval_run_id",
+        "sample_size",
+        "pass_rate_delta",
+        "coverage_score_delta",
+        "required_slice_regressions",
+        "new_failures",
+        "indeterminate_failures",
+        "control_responses",
+        "threshold_results"
+      ],
+      "properties": {
+        "baseline_eval_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_eval_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sample_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pass_rate_delta": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "coverage_score_delta": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "required_slice_regressions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "new_failures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "indeterminate_failures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "control_responses": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baseline",
+            "candidate"
+          ],
+          "properties": {
+            "baseline": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "freeze",
+                "block"
+              ]
+            },
+            "candidate": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "freeze",
+                "block"
+              ]
+            }
+          }
+        },
+        "threshold_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "threshold",
+              "passed"
+            ],
+            "properties": {
+              "threshold": {
+                "type": "string",
+                "minLength": 1
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "actual": {
+                "type": [
+                  "number",
+                  "string",
+                  "integer",
+                  "boolean",
+                  "array",
+                  "object",
+                  "null"
+                ]
+              },
+              "expected": {
+                "type": [
+                  "number",
+                  "string",
+                  "integer",
+                  "boolean",
+                  "array",
+                  "object",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "promote",
+        "hold",
+        "rollback"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "rollback_target_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$defs": {
+    "versionEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prompt_version_id",
+        "schema_version",
+        "policy_version_id",
+        "route_policy_version_id"
+      ],
+      "properties": {
+        "prompt_version_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route_policy_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
