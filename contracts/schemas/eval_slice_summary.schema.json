@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_slice_summary.schema.json",
+  "title": "Eval Slice Summary",
+  "description": "Governed per-slice summary of eval outcomes and health status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "coverage_run_id",
+    "slice_id",
+    "slice_name",
+    "total_cases",
+    "pass_count",
+    "fail_count",
+    "indeterminate_count",
+    "pass_rate",
+    "failure_rate",
+    "latest_eval_run_refs",
+    "risk_class",
+    "priority",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_slice_summary" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "coverage_run_id": { "type": "string", "minLength": 1 },
+    "slice_id": { "type": "string", "minLength": 1 },
+    "slice_name": { "type": "string", "minLength": 1 },
+    "total_cases": { "type": "integer", "minimum": 0 },
+    "pass_count": { "type": "integer", "minimum": 0 },
+    "fail_count": { "type": "integer", "minimum": 0 },
+    "indeterminate_count": { "type": "integer", "minimum": 0 },
+    "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "failure_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "latest_eval_run_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "risk_class": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+    "priority": { "type": "string", "enum": ["p0", "p1", "p2", "p3"] },
+    "status": { "type": "string", "enum": ["healthy", "warning", "exhausted", "blocked"] }
+  }
+}

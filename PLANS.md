@@ -141,6 +141,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-BAG-LEGACY-REPLAY-CLOSURE-2026-03-23.md | Prompt BAG — legacy replay seam closure (surgical hardening) | Active |
 
+| docs/review-actions/PLAN-SF-07-2026-03-24.md | SF-07 — Coverage + Slice Dashboard for eval visibility | Active |
+
 Update this table when plans are created or completed.
 
 ---

@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.34",
+  "artifact_version": "1.0.35",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.23",
-  "record_id": "REC-STD-2026-03-23-EVAL-CI-GATE",
-  "run_id": "run-20260323T000000Z",
-  "created_at": "2026-03-23T00:00:00Z",
+  "standards_version": "2026.03.24",
+  "record_id": "REC-STD-2026-03-24-EVAL-COVERAGE",
+  "run_id": "run-20260324T000000Z",
+  "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -205,9 +205,22 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.7",
-      "last_updated_in": "1.0.7",
+      "last_updated_in": "1.0.35",
       "example_path": "contracts/examples/eval_case.json",
-      "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, and scoring rubric."
+      "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, scoring rubric, and optional slice/risk metadata for SF-07 coverage reporting."
+    },
+    {
+      "artifact_type": "eval_coverage_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.35",
+      "last_updated_in": "1.0.35",
+      "example_path": "contracts/examples/eval_coverage_summary.json",
+      "notes": "SF-07 governed aggregate coverage artifact with required-slice gap visibility and risk-weighted coverage scoring."
     },
     {
       "artifact_type": "eval_dataset",
@@ -260,6 +273,19 @@
       "last_updated_in": "1.0.7",
       "example_path": "contracts/examples/eval_run.json",
       "notes": "Governed eval-run record covering case set, system version, dataset version, and run timestamp."
+    },
+    {
+      "artifact_type": "eval_slice_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.35",
+      "last_updated_in": "1.0.35",
+      "example_path": "contracts/examples/eval_slice_summary.json",
+      "notes": "SF-07 governed per-slice eval summary artifact exposing pass/fail/indeterminate breakdown and slice health status."
     },
     {
       "artifact_type": "eval_summary",

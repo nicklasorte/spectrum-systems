@@ -1,0 +1,30 @@
+{
+  "artifact_type": "eval_coverage_summary",
+  "schema_version": "1.0.0",
+  "coverage_run_id": "coverage-run-20260324",
+  "timestamp": "2026-03-24T00:00:00Z",
+  "dataset_refs": [
+    "dataset-bbc-core@1.0.0"
+  ],
+  "total_eval_cases": 3,
+  "covered_slices": [
+    "decision_extraction",
+    "pre_merge_gate"
+  ],
+  "uncovered_required_slices": [
+    "runtime_guardrails"
+  ],
+  "slice_case_counts": {
+    "decision_extraction": 2,
+    "pre_merge_gate": 1,
+    "runtime_guardrails": 0
+  },
+  "risk_weighted_coverage_score": 0.6,
+  "coverage_gaps": [
+    {
+      "slice_id": "runtime_guardrails",
+      "severity": "high",
+      "reason": "required slice has zero eval cases"
+    }
+  ]
+}

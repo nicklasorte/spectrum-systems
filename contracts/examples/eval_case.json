@@ -7,7 +7,10 @@
     "artifact://golden/case-001/input"
   ],
   "expected_output_spec": {
-    "required_fields": ["decisions", "action_items"],
+    "required_fields": [
+      "decisions",
+      "action_items"
+    ],
     "minimum_decision_count": 1
   },
   "scoring_rubric": {
@@ -18,5 +21,15 @@
     "pass_threshold": 0.8
   },
   "evaluation_type": "deterministic",
-  "created_from": "manual"
+  "created_from": "manual",
+  "slice_tags": [
+    "decision_extraction",
+    "pre_merge_gate"
+  ],
+  "domain_tags": [
+    "governance",
+    "decision_quality"
+  ],
+  "risk_class": "high",
+  "priority": "p1"
 }

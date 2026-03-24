@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_coverage_summary.schema.json",
+  "title": "Eval Coverage Summary",
+  "description": "Governed aggregate summary of eval case coverage and required-slice gaps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "coverage_run_id",
+    "timestamp",
+    "dataset_refs",
+    "total_eval_cases",
+    "covered_slices",
+    "uncovered_required_slices",
+    "slice_case_counts",
+    "risk_weighted_coverage_score",
+    "coverage_gaps"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "eval_coverage_summary" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "coverage_run_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "dataset_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "total_eval_cases": { "type": "integer", "minimum": 0 },
+    "covered_slices": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "uncovered_required_slices": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "slice_case_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "risk_weighted_coverage_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "coverage_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slice_id", "severity", "reason"],
+        "properties": {
+          "slice_id": { "type": "string", "minLength": 1 },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
