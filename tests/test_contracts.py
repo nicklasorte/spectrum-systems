@@ -176,6 +176,10 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_prompt_injection_assessment_example_validates(self) -> None:
+        instance = load_example("prompt_injection_assessment")
+        validate_artifact(instance, "prompt_injection_assessment")
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]

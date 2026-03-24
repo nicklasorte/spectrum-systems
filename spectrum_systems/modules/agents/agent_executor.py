@@ -27,6 +27,12 @@ from spectrum_systems.modules.runtime.model_adapter import (
     ModelAdapterError,
     build_canonical_request,
 )
+from spectrum_systems.modules.runtime.prompt_injection_defense import (
+    PromptInjectionDefenseError,
+    assess_prompt_injection,
+    default_prompt_injection_policy,
+    evaluate_enforcement_outcome,
+)
 
 SCHEMA_VERSION = "1.0.0"
 TRACE_ARTIFACT_TYPE = "agent_execution_trace"
@@ -259,6 +265,7 @@ def execute_step_sequence(
     model_adapter: Optional[CanonicalModelAdapter] = None,
     final_output_builder: Optional[Callable[[Dict[str, Any], List[Dict[str, Any]]], Dict[str, Any]]] = None,
     routing_decision: Optional[Dict[str, Any]] = None,
+    prompt_injection_policy: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Execute a bounded step sequence and emit a governed execution trace.
 
@@ -278,6 +285,31 @@ def execute_step_sequence(
         )
 
     bounded_context = construct_context_bundle(context_bundle, trace_id=trace_id, run_id=agent_run_id)
+    injection_policy = dict(prompt_injection_policy or default_prompt_injection_policy())
+    try:
+        injection_assessment = assess_prompt_injection(
+            context_bundle=bounded_context,
+            trace_id=trace_id,
+            run_id=agent_run_id,
+            policy=injection_policy,
+        )
+        _validate_contract(injection_assessment, "prompt_injection_assessment")
+        enforcement_outcome = evaluate_enforcement_outcome(
+            injection_assessment,
+            policy=injection_policy,
+        )
+    except PromptInjectionDefenseError as exc:
+        raise AgentExecutionBlockedError(f"prompt injection defense failed: {exc}") from exc
+    except Exception as exc:
+        raise AgentExecutionBlockedError(
+            f"prompt injection assessment validation failed: {exc}"
+        ) from exc
+
+    if enforcement_outcome["should_block"]:
+        raise AgentExecutionBlockedError(
+            f"prompt injection enforcement blocked execution: {enforcement_outcome['blocked_reason']}"
+        )
+
     planned_steps = [deepcopy(step) for step in step_plan]
 
     started_at = _now_iso()
@@ -458,6 +490,24 @@ def execute_step_sequence(
             "glossary_unresolved_terms": list(((bounded_context.get("glossary_canonicalization") or {}).get("unresolved_terms") or [])),
             "glossary_fail_on_missing_required": bool(((bounded_context.get("glossary_canonicalization") or {}).get("fail_on_missing_required", False)),
             ),
+            "prompt_injection": {
+                "assessment_id": str(injection_assessment["assessment_id"]),
+                "detection_status": str(injection_assessment["detection_status"]),
+                "enforcement_action": str(injection_assessment["enforcement_action"]),
+                "policy_id": str((injection_assessment.get("policy") or {}).get("policy_id") or ""),
+                "flagged_item_refs": sorted(
+                    {
+                        str(pattern.get("item_ref") or "")
+                        for pattern in list(injection_assessment.get("detected_patterns") or [])
+                        if str(pattern.get("item_ref") or "").strip()
+                    }
+                ),
+                "detected_pattern_refs": [
+                    str(pattern.get("pattern_ref") or "")
+                    for pattern in list(injection_assessment.get("detected_patterns") or [])
+                    if str(pattern.get("pattern_ref") or "").strip()
+                ],
+            },
         },
         "trace_id": trace_id,
         "routing_decision": {

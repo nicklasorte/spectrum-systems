@@ -362,7 +362,8 @@
         "glossary_definition_item_refs",
         "glossary_injection_enabled",
         "glossary_unresolved_terms",
-        "glossary_fail_on_missing_required"
+        "glossary_fail_on_missing_required",
+        "prompt_injection"
       ],
       "properties": {
         "classification_counts": {
@@ -466,6 +467,57 @@
         },
         "glossary_fail_on_missing_required": {
           "type": "boolean"
+        },
+        "prompt_injection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assessment_id",
+            "detection_status",
+            "enforcement_action",
+            "policy_id",
+            "flagged_item_refs",
+            "detected_pattern_refs"
+          ],
+          "properties": {
+            "assessment_id": {
+              "type": "string",
+              "pattern": "^pia-[a-f0-9]{16}$"
+            },
+            "detection_status": {
+              "type": "string",
+              "enum": [
+                "clean",
+                "suspicious"
+              ]
+            },
+            "enforcement_action": {
+              "type": "string",
+              "enum": [
+                "allow_as_data",
+                "quarantine",
+                "block_bundle"
+              ]
+            },
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "flagged_item_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^ctxi-[a-f0-9]{16}$"
+              }
+            },
+            "detected_pattern_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^pi-[a-z0-9-]+:ctxi-[a-f0-9]{16}$"
+              }
+            }
+          }
         }
       }
     }
