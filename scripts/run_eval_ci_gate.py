@@ -30,6 +30,7 @@ from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     DEFAULT_THRESHOLDS,
     build_evaluation_control_decision,
 )
+from spectrum_systems.utils.artifact_envelope import build_artifact_envelope  # noqa: E402
 from spectrum_systems.utils.deterministic_id import deterministic_id  # noqa: E402
 
 
@@ -261,11 +262,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
-            "schema_version": "1.0.0",
-            "id": summary_id,
+            **build_artifact_envelope(
+                artifact_id=summary_id,
+                timestamp=_utc_now(),
+                schema_version="1.1.0",
+                primary_trace_ref=summary_id,
+                related_trace_refs=[],
+            ),
             "gate_run_id": summary_id,
-            "timestamp": _utc_now(),
-            "trace_refs": [],
             "status": status,
             "blocking_reasons": blocking_reasons,
             "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,
@@ -292,11 +296,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         summary = {
             "artifact_type": "evaluation_ci_gate_result",
-            "schema_version": "1.0.0",
-            "id": summary_id,
+            **build_artifact_envelope(
+                artifact_id=summary_id,
+                timestamp=_utc_now(),
+                schema_version="1.1.0",
+                primary_trace_ref=summary_id,
+                related_trace_refs=[],
+            ),
             "gate_run_id": summary_id,
-            "timestamp": _utc_now(),
-            "trace_refs": [],
             "status": "blocked",
             "blocking_reasons": [f"execution_error: invalid policy ({exc})"],
             "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,
@@ -363,13 +370,17 @@ def main(argv: Optional[List[str]] = None) -> int:
             "policy": str(policy_path),
         }
     )
+    sorted_trace_refs = sorted(set(trace_refs))
     summary = {
         "artifact_type": "evaluation_ci_gate_result",
-        "schema_version": "1.0.0",
-        "id": summary_id,
+        **build_artifact_envelope(
+            artifact_id=summary_id,
+            timestamp=_utc_now(),
+            schema_version="1.1.0",
+            primary_trace_ref=sorted_trace_refs[0] if sorted_trace_refs else summary_id,
+            related_trace_refs=sorted_trace_refs[1:] if len(sorted_trace_refs) > 1 else [],
+        ),
         "gate_run_id": summary_id,
-        "timestamp": _utc_now(),
-        "trace_refs": sorted(set(trace_refs)),
         "status": status,
         "blocking_reasons": blocking_reasons,
         "required_artifacts_checked": required_input_artifacts + required_emitted_artifacts,

@@ -20,25 +20,23 @@ class ArtifactEnvelopeTests(unittest.TestCase):
 
     def test_example_validates(self) -> None:
         schema_path = REPO_ROOT / "contracts" / "schemas" / "artifact_envelope.schema.json"
-        example_path = REPO_ROOT / "contracts" / "examples" / "artifact_envelope.example.json"
+        example_path = REPO_ROOT / "contracts" / "examples" / "artifact_envelope.json"
         schema = json.loads(schema_path.read_text())
         example = json.loads(example_path.read_text())
         Draft202012Validator(schema).validate(example)
 
-    def test_artifact_class_enum_matches_standard(self) -> None:
+    def test_required_envelope_fields_present(self) -> None:
         schema_path = REPO_ROOT / "contracts" / "schemas" / "artifact_envelope.schema.json"
-        registry_path = REPO_ROOT / "contracts" / "artifact-class-registry.json"
         schema = json.loads(schema_path.read_text())
-        registry = json.loads(registry_path.read_text())
-        schema_classes = set(schema["properties"]["artifact_class"]["enum"])
-        registry_classes = {entry["name"] for entry in registry["artifact_classes"]}
-        self.assertEqual(schema_classes, registry_classes, "artifact_class enum must match the classification standard")
+        required = set(schema["required"])
+        self.assertEqual(required, {"id", "timestamp", "schema_version", "trace_refs"})
 
-    def test_lifecycle_stage_enum(self) -> None:
+    def test_trace_refs_shape_requires_primary_and_related(self) -> None:
         schema_path = REPO_ROOT / "contracts" / "schemas" / "artifact_envelope.schema.json"
         schema = json.loads(schema_path.read_text())
-        lifecycle_enum = set(schema["properties"]["lifecycle_stage"]["enum"])
-        self.assertEqual(lifecycle_enum, {"raw", "processed", "final", "fixture"})
+        trace_schema = schema["$defs"]["trace_refs"]
+        self.assertEqual(set(trace_schema["required"]), {"primary", "related"})
+        self.assertFalse(trace_schema["additionalProperties"])
 
 
 if __name__ == "__main__":

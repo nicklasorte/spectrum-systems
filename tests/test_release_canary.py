@@ -44,11 +44,11 @@ def _eval_result(case_id: str, *, status: str = "pass", indeterminate: bool = Fa
 def _coverage(run_id: str, *, score: float = 1.0, uncovered: list[str] | None = None) -> dict:
     return {
         "artifact_type": "eval_coverage_summary",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "id": run_id,
         "coverage_run_id": run_id,
         "timestamp": "2026-03-24T00:00:00Z",
-        "trace_refs": ["22222222-2222-4222-8222-222222222222"],
+        "trace_refs": {"primary": "22222222-2222-4222-8222-222222222222", "related": []},
         "dataset_refs": [],
         "total_eval_cases": 2,
         "covered_slices": ["slice.alpha"],
@@ -151,7 +151,8 @@ def test_no_regression_promotes() -> None:
     record = _build()
     assert record["decision"] == "promote"
     assert record["id"] == record["release_id"]
-    assert len(record["trace_refs"]) == 2
+    assert record["trace_refs"]["primary"]
+    assert len(record["trace_refs"]["related"]) == 1
 
 
 def test_slice_regression_blocks_promotion() -> None:

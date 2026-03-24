@@ -126,6 +126,17 @@ class ContractSchemaTests(unittest.TestCase):
             validate_artifact(instance, name)
 
 
+
+
+    def test_eval_governance_release_gate_examples_validate(self) -> None:
+        for name in (
+            "evaluation_ci_gate_result",
+            "evaluation_release_record",
+            "evaluation_control_chaos_summary",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_enforcement_result_example_validates(self) -> None:
         instance = load_example("enforcement_result")
         validate_artifact(instance, "enforcement_result")

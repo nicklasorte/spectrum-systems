@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evaluation_control_chaos_summary.schema.json",
+  "title": "Evaluation Control Chaos Summary",
+  "description": "Deterministic control-loop chaos execution summary used to validate policy precedence and fail-closed behavior.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "chaos_run_id",
+    "timestamp",
+    "trace_refs",
+    "scenario_count",
+    "pass_count",
+    "fail_count",
+    "mismatches",
+    "scenario_results"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "evaluation_control_chaos_summary"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chaos_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_refs": {
+      "$ref": "#/$defs/trace_refs"
+    },
+    "scenario_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pass_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fail_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mismatches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mismatch"
+      }
+    },
+    "scenario_results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scenario_result"
+      }
+    }
+  },
+  "$defs": {
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "mismatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "mismatch_fields",
+        "expected_status",
+        "actual_status",
+        "expected_response",
+        "actual_response",
+        "expected_decision",
+        "actual_decision",
+        "expected_reasons",
+        "actual_reasons",
+        "notes"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mismatch_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "expected_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_response": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_response": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "actual_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "scenario_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "category",
+        "description",
+        "expected_status",
+        "actual_status",
+        "expected_response",
+        "actual_response",
+        "expected_decision",
+        "actual_decision",
+        "matched",
+        "mismatch_fields",
+        "reasons",
+        "notes"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "expected_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_response": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_response": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actual_decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "matched": {
+          "type": "boolean"
+        },
+        "mismatch_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -106,7 +106,8 @@ def test_happy_path_passes_and_emits_schema_valid_summary(tmp_path: Path) -> Non
     assert summary["status"] == "pass"
     assert summary["blocking_reasons"] == []
     assert summary["id"] == summary["gate_run_id"]
-    assert summary["trace_refs"] == ["22222222-2222-4222-8222-222222222222"]
+    assert summary["schema_version"] == "1.1.0"
+    assert summary["trace_refs"] == {"primary": "22222222-2222-4222-8222-222222222222", "related": []}
 
     validator = Draft202012Validator(load_schema("evaluation_ci_gate_result"), format_checker=FormatChecker())
     validator.validate(summary)
