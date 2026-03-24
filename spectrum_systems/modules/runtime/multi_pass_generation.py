@@ -19,6 +19,11 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.utils.deterministic_id import deterministic_id
+from spectrum_systems.modules.runtime.evidence_binding import (
+    EvidenceBindingError,
+    EvidenceBindingPolicy,
+    build_evidence_binding_record,
+)
 
 _PASS_SEQUENCE = (
     ("pass_1", "extract"),
@@ -37,6 +42,7 @@ class MultiPassConfig:
     """Deterministic bounded configuration for critique/refinement behavior."""
 
     unsupported_claim_markers: Sequence[str] = ("TODO", "TBD", "UNSUPPORTED")
+    evidence_binding_policy_mode: str = "required_grounded"
 
 
 def _deterministic_timestamp(payload: Mapping[str, Any], *, stage: str) -> str:
@@ -162,6 +168,7 @@ def run_multi_pass_generation(
     run_id: str,
     trace_id: str,
     input_artifact: Dict[str, Any],
+    validated_context_bundle: Mapping[str, Any] | None = None,
     config: MultiPassConfig | None = None,
 ) -> Dict[str, Any]:
     """Execute fixed deterministic HS-08 pass chain and return governed record."""
@@ -171,6 +178,13 @@ def run_multi_pass_generation(
         raise MultiPassGenerationError("input_artifact must be an object")
 
     cfg = config or MultiPassConfig()
+    if cfg.evidence_binding_policy_mode not in {"required_grounded", "allow_inferred", "allow_unsupported"}:
+        raise MultiPassGenerationError("unsupported evidence binding policy mode")
+
+    context_bundle = validated_context_bundle if validated_context_bundle is not None else {"context_items": []}
+    if not isinstance(context_bundle, Mapping):
+        raise MultiPassGenerationError("validated_context_bundle must be an object")
+
     pass_records: List[Dict[str, Any]] = []
 
     extract_output = _normalize_artifact(input_artifact)
@@ -235,9 +249,27 @@ def run_multi_pass_generation(
     if actual_ids != expected_ids:
         raise MultiPassGenerationError("missing required pass or pass ordering inconsistency")
 
+    try:
+        evidence_binding_record = build_evidence_binding_record(
+            run_id=run_id,
+            trace_id=trace_id,
+            final_artifact=final_output,
+            validated_context_bundle=context_bundle,
+            parent_multi_pass_record_id=deterministic_id(
+                prefix="mpg",
+                namespace="multi_pass_generation",
+                payload={"run_id": run_id, "trace_id": trace_id, "input_artifact": input_artifact},
+            ),
+            final_pass_id="final",
+            final_pass_output_ref=pass_records[3]["output_ref"],
+            policy=EvidenceBindingPolicy(mode=cfg.evidence_binding_policy_mode),
+        )
+    except EvidenceBindingError as exc:
+        raise MultiPassGenerationError(f"evidence binding failed: {exc}") from exc
+
     record = {
         "artifact_type": "multi_pass_generation_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "record_id": deterministic_id(
             prefix="mpg",
             namespace="multi_pass_generation",
@@ -253,6 +285,11 @@ def run_multi_pass_generation(
         "critique": critique_output,
         "refinement": refinement_output,
         "final_output": final_output,
+        "evidence_binding": {
+            "record_id": evidence_binding_record["record_id"],
+            "policy_mode": evidence_binding_record["policy_mode"],
+            "claim_ids": [claim["claim_id"] for claim in evidence_binding_record["claims"]],
+        },
         "created_at": _deterministic_timestamp({"run_id": run_id, "trace_id": trace_id, "input": input_artifact}, stage="record"),
     }
     _validate_contract(record, "multi_pass_generation_record")

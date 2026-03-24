@@ -16,6 +16,7 @@
     "critique",
     "refinement",
     "final_output",
+    "evidence_binding",
     "created_at"
   ],
   "properties": {
@@ -25,7 +26,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "record_id": {
       "type": "string",
@@ -47,41 +48,81 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["pass_id", "pass_type", "pass_order"],
+          "required": [
+            "pass_id",
+            "pass_type",
+            "pass_order"
+          ],
           "properties": {
-            "pass_id": {"const": "pass_1"},
-            "pass_type": {"const": "extract"},
-            "pass_order": {"const": 1}
+            "pass_id": {
+              "const": "pass_1"
+            },
+            "pass_type": {
+              "const": "extract"
+            },
+            "pass_order": {
+              "const": 1
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["pass_id", "pass_type", "pass_order"],
+          "required": [
+            "pass_id",
+            "pass_type",
+            "pass_order"
+          ],
           "properties": {
-            "pass_id": {"const": "pass_2"},
-            "pass_type": {"const": "critique"},
-            "pass_order": {"const": 2}
+            "pass_id": {
+              "const": "pass_2"
+            },
+            "pass_type": {
+              "const": "critique"
+            },
+            "pass_order": {
+              "const": 2
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["pass_id", "pass_type", "pass_order"],
+          "required": [
+            "pass_id",
+            "pass_type",
+            "pass_order"
+          ],
           "properties": {
-            "pass_id": {"const": "pass_3"},
-            "pass_type": {"const": "refine"},
-            "pass_order": {"const": 3}
+            "pass_id": {
+              "const": "pass_3"
+            },
+            "pass_type": {
+              "const": "refine"
+            },
+            "pass_order": {
+              "const": 3
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["pass_id", "pass_type", "pass_order"],
+          "required": [
+            "pass_id",
+            "pass_type",
+            "pass_order"
+          ],
           "properties": {
-            "pass_id": {"const": "final"},
-            "pass_type": {"const": "final"},
-            "pass_order": {"const": 4}
+            "pass_id": {
+              "const": "final"
+            },
+            "pass_type": {
+              "const": "final"
+            },
+            "pass_order": {
+              "const": 4
+            }
           }
         }
       ],
@@ -108,11 +149,21 @@
         "properties": {
           "pass_id": {
             "type": "string",
-            "enum": ["pass_1", "pass_2", "pass_3", "final"]
+            "enum": [
+              "pass_1",
+              "pass_2",
+              "pass_3",
+              "final"
+            ]
           },
           "pass_type": {
             "type": "string",
-            "enum": ["extract", "critique", "refine", "final"]
+            "enum": [
+              "extract",
+              "critique",
+              "refine",
+              "final"
+            ]
           },
           "pass_record_id": {
             "type": "string",
@@ -126,7 +177,12 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["pass_1", "pass_2", "pass_3", "final"]
+              "enum": [
+                "pass_1",
+                "pass_2",
+                "pass_3",
+                "final"
+              ]
             }
           },
           "input_refs": {
@@ -153,19 +209,91 @@
     "critique": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["missing_elements", "inconsistencies", "weak_reasoning", "summary"],
+      "required": [
+        "missing_elements",
+        "inconsistencies",
+        "weak_reasoning",
+        "summary"
+      ],
       "properties": {
-        "missing_elements": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["field", "issue"], "properties": {"field": {"type": "string"}, "issue": {"type": "string"}}}},
-        "inconsistencies": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["field", "issue"], "properties": {"field": {"type": "string"}, "issue": {"type": "string"}}}},
-        "weak_reasoning": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "issue"], "properties": {"path": {"type": "string"}, "issue": {"type": "string"}}}},
+        "missing_elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "issue"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "issue": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "inconsistencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "issue"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "issue": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "weak_reasoning": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "issue"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "issue": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "summary": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["missing_count", "inconsistency_count", "weak_reasoning_count"],
+          "required": [
+            "missing_count",
+            "inconsistency_count",
+            "weak_reasoning_count"
+          ],
           "properties": {
-            "missing_count": {"type": "integer", "minimum": 0},
-            "inconsistency_count": {"type": "integer", "minimum": 0},
-            "weak_reasoning_count": {"type": "integer", "minimum": 0}
+            "missing_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inconsistency_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "weak_reasoning_count": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         }
       }
@@ -173,18 +301,30 @@
     "refinement": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["refined_artifact", "refinement_actions"],
+      "required": [
+        "refined_artifact",
+        "refinement_actions"
+      ],
       "properties": {
-        "refined_artifact": {"type": "object"},
+        "refined_artifact": {
+          "type": "object"
+        },
         "refinement_actions": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["action", "field"],
+            "required": [
+              "action",
+              "field"
+            ],
             "properties": {
-              "action": {"type": "string"},
-              "field": {"type": "string"}
+              "action": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              }
             }
           }
         }
@@ -196,6 +336,36 @@
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "evidence_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "policy_mode",
+        "claim_ids"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "pattern": "^ebr-[a-f0-9]{16}$"
+        },
+        "policy_mode": {
+          "type": "string",
+          "enum": [
+            "required_grounded",
+            "allow_inferred",
+            "allow_unsupported"
+          ]
+        },
+        "claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ebc-[a-f0-9]{16}$"
+          }
+        }
+      }
     }
   }
 }

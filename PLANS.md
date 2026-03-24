@@ -159,6 +159,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-HS-18-FIX-2026-03-24.md | HS-18 follow-up fix — explicit glossary policy + baseline compatibility restoration | Active |
 | docs/review-actions/PLAN-HS-18-FIX2-2026-03-24.md | HS-18 follow-up fix 2 — policy/defaulting + trace-state closure | Active |
 | docs/review-actions/PLAN-HS-08-2026-03-24.md | HS-08 — Multi-Pass Artifact Generation Engine | Active |
+| docs/review-actions/PLAN-HS-09-2026-03-24.md | HS-09 — Evidence Binding + Citation System | Active |
 
 Update this table when plans are created or completed.
 

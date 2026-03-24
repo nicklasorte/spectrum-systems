@@ -188,6 +188,8 @@ def test_successful_bounded_execution() -> None:
     assert trace["context_source_summary"]["prompt_injection"]["flagged_item_refs"] == []
     assert trace["multi_pass_generation"]["pass_ids"] == ["pass_1", "pass_2", "pass_3", "final"]
     assert trace["multi_pass_generation"]["record_id"].startswith("mpg-")
+    assert trace["multi_pass_generation"]["evidence_binding_record_id"].startswith("ebr-")
+    assert trace["multi_pass_generation"]["evidence_binding_policy_mode"] == "required_grounded"
 
 
 def test_tool_step_failure() -> None:
@@ -305,7 +307,13 @@ def test_full_trace_emission_shape_validation() -> None:
                 "multi-pass://agent-run-005/pass_2",
                 "multi-pass://agent-run-005/pass_3",
                 "multi-pass://agent-run-005/final"
-            ]
+            ],
+            "evidence_binding_record_id": "ebr-7b9f4a13c2d8e601",
+            "evidence_binding_claim_ids": [
+                "ebc-1111111111111111",
+                "ebc-2222222222222222"
+            ],
+            "evidence_binding_policy_mode": "allow_inferred"
         },
         "final_output_artifact_id": "agent-output://agent-run-005",
         "execution_status": "completed",
