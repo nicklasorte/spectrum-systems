@@ -13,29 +13,19 @@ from jsonschema import Draft202012Validator, FormatChecker  # noqa: E402
 from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
     EvalCaseGenerationError,
-    generate_eval_case_from_failure,
+    generate_failure_eval_case,
 )
 
 
-def _blocked_context() -> dict:
-    return {
-        "artifact": {
-            "artifact_id": "ART-FAIL-001",
-            "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        },
-        "stage": "synthesis",
-        "runtime_environment": "test",
-    }
-
-
-def _blocked_integration() -> dict:
+def _execution_result() -> dict:
     return {
         "execution_status": "blocked",
         "continuation_allowed": False,
         "publication_blocked": True,
         "decision_blocked": True,
         "execution_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        "execution_result": {"actions_taken": []},
+        "human_review_required": True,
+        "escalation_triggered": True,
     }
 
 
@@ -45,35 +35,101 @@ def _validate_failure_eval_case(artifact: dict) -> None:
 
 
 def test_generated_failure_eval_case_is_schema_valid() -> None:
-    artifact = generate_eval_case_from_failure(_blocked_context(), _blocked_integration())
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-001",
+            "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        },
+        source_run_id="agrun-001",
+        stage="eval",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
     assert artifact["artifact_type"] == "failure_eval_case"
     _validate_failure_eval_case(artifact)
 
 
-def test_generation_is_deterministic() -> None:
-    first = generate_eval_case_from_failure(_blocked_context(), _blocked_integration())
-    second = generate_eval_case_from_failure(_blocked_context(), _blocked_integration())
+def test_generation_is_deterministic_for_identical_inputs() -> None:
+    kwargs = dict(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-001",
+            "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        },
+        source_run_id="agrun-001",
+        stage="eval",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
+    first = generate_failure_eval_case(**kwargs)
+    second = generate_failure_eval_case(**kwargs)
     assert first == second
 
 
-def test_generation_fail_closed_when_continuation_allowed() -> None:
-    integration = _blocked_integration()
-    integration["continuation_allowed"] = True
-    with pytest.raises(EvalCaseGenerationError):
-        generate_eval_case_from_failure(_blocked_context(), integration)
+def test_generation_from_review_required_indeterminate_source() -> None:
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "hitl_review_request",
+            "id": "hrr-001",
+            "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+            "trigger_reason": "indeterminate_outcome_routed_to_human",
+        },
+        source_run_id="agrun-002",
+        stage="control",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
+    assert artifact["failure_class"] == "review_boundary_halt"
+    assert artifact["failure_stage"] == "review_boundary"
 
 
-def test_indeterminate_failure_mode_maps_to_indeterminate() -> None:
-    integration = _blocked_integration()
-    integration["execution_result"] = {
-        "actions_taken": [
-            {"status": "indeterminate"},
-        ]
-    }
-    artifact = generate_eval_case_from_failure(_blocked_context(), integration)
-    assert artifact["expected_output_spec"]["failure_mode"] == "indeterminate"
+def test_generation_from_control_indeterminate_source() -> None:
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "evaluation_control_decision",
+            "decision_id": "ECD-001",
+            "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            "decision": "require_review",
+            "rationale_code": "require_review_indeterminate_failure",
+        },
+        source_run_id="eval-run-003",
+        stage="synthesis",
+        runtime_environment="cli",
+        execution_result=_execution_result(),
+    )
+    assert artifact["failure_class"] == "control_indeterminate"
+    assert artifact["source_artifact_id"] == "ECD-001"
 
 
-def test_threshold_breach_failure_mode_maps_when_blocked_flags_set() -> None:
-    artifact = generate_eval_case_from_failure(_blocked_context(), _blocked_integration())
-    assert artifact["expected_output_spec"]["failure_mode"] == "threshold_breach"
+def test_unsupported_source_artifact_type_is_rejected() -> None:
+    with pytest.raises(EvalCaseGenerationError, match="unsupported source artifact_type"):
+        generate_failure_eval_case(
+            source_artifact={
+                "artifact_type": "eval_summary",
+                "eval_run_id": "eval-run-001",
+                "trace_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            },
+            source_run_id="eval-run-001",
+            stage="synthesis",
+            runtime_environment="cli",
+            execution_result=_execution_result(),
+        )
+
+
+def test_replay_linkage_fields_are_present() -> None:
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-009",
+            "trace_id": "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        },
+        source_run_id="agrun-009",
+        stage="eval",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
+
+    assert artifact["source_run_id"] == "agrun-009"
+    assert artifact["source_artifact_id"] == "afr-009"
+    assert artifact["provenance"]["source_artifact_ref"] == "agent_failure_record:afr-009"

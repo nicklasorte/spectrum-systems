@@ -62,7 +62,7 @@ from spectrum_systems.modules.runtime.enforcement_engine import (
 )
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (
     EvalCaseGenerationError,
-    generate_eval_case_from_failure,
+    generate_failure_eval_case,
 )
 
 logger = logging.getLogger(__name__)
@@ -318,18 +318,26 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         integration_result["human_review_task"] = human_review_task
 
     if not continuation_allowed:
+        source_for_eval = integration_result.get("evaluation_control_decision")
+        if not isinstance(source_for_eval, dict):
+            source_for_eval = ctx.get("artifact")
         try:
-            integration_result["generated_failure_eval_case"] = generate_eval_case_from_failure(
-                ctx,
-                integration_result,
+            integration_result["generated_failure_eval_case"] = generate_failure_eval_case(
+                source_artifact=source_for_eval,
+                source_run_id=str(
+                    source_for_eval.get("run_id")
+                    or source_for_eval.get("eval_run_id")
+                    or execution_id
+                ),
+                stage=stage,
+                runtime_environment=runtime_environment,
+                execution_result=integration_result,
             )
         except EvalCaseGenerationError as exc:
-            logger.warning(
-                "enforce_control_before_execution: failed to generate failure_eval_case "
-                "(execution_id=%s): %s",
-                execution_id,
-                exc,
-            )
+            raise ContractRuntimeError(
+                "enforce_control_before_execution: failure_eval_case generation required "
+                f"for blocked execution but failed: {exc}"
+            ) from exc
 
     # Log outcome for observability (G section)
     _log_integration_outcome(integration_result)
@@ -405,6 +413,14 @@ def summarize_control_integration(context: Dict[str, Any], result: Dict[str, Any
             "",
             "Human Review Task:",
             f"  {result['human_review_task']}",
+        ]
+    generated_failure_eval_case = result.get("generated_failure_eval_case")
+    if isinstance(generated_failure_eval_case, dict):
+        lines += [
+            "",
+            "Failure Eval Artifact:",
+            f"  eval_case_id: {generated_failure_eval_case.get('eval_case_id')}",
+            f"  source_artifact_ref: {generated_failure_eval_case.get('provenance', {}).get('source_artifact_ref')}",
         ]
     return "\n".join(lines)
 

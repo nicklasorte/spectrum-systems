@@ -2,45 +2,100 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/failure_eval_case.schema.json",
   "title": "Failure Eval Case",
-  "description": "Governed failure-derived evaluation case artifact defining expected behavior and scoring criteria.",
+  "description": "Canonical AG-05 deterministic eval artifact generated from bounded governed runtime failure/review-control outcomes.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
-    "trace_id",
     "eval_case_id",
-    "input_artifact_refs",
-    "expected_output_spec",
-    "scoring_rubric",
-    "evaluation_type",
-    "created_from"
+    "created_at",
+    "source_run_id",
+    "trace_id",
+    "source_artifact_type",
+    "source_artifact_id",
+    "failure_class",
+    "failure_stage",
+    "triggering_condition",
+    "normalized_inputs",
+    "expected_system_behavior",
+    "observed_system_behavior",
+    "evaluation_goal",
+    "pass_criteria",
+    "provenance"
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "failure_eval_case" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
-    "trace_id": { "type": "string", "format": "uuid" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "eval_case_id": { "type": "string", "minLength": 1 },
-    "input_artifact_refs": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "type": "string", "minLength": 1 }
-    },
-    "expected_output_spec": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "scoring_rubric": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "evaluation_type": {
+    "created_at": { "type": "string", "format": "date-time" },
+    "source_run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "format": "uuid" },
+    "source_artifact_type": {
       "type": "string",
-      "enum": ["deterministic", "heuristic", "model_based"]
+      "enum": ["agent_failure_record", "hitl_review_request", "evaluation_control_decision"]
     },
-    "created_from": {
+    "source_artifact_id": { "type": "string", "minLength": 1 },
+    "failure_class": {
       "type": "string",
-      "enum": ["manual", "failure_trace", "synthetic"]
+      "enum": ["runtime_failure", "review_boundary_halt", "control_indeterminate"]
+    },
+    "failure_stage": {
+      "type": "string",
+      "enum": ["runtime_boundary", "review_boundary", "control_boundary"]
+    },
+    "triggering_condition": { "type": "string", "minLength": 1 },
+    "normalized_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "runtime_environment",
+        "continuation_allowed",
+        "publication_blocked",
+        "decision_blocked",
+        "human_review_required",
+        "escalation_triggered"
+      ],
+      "properties": {
+        "stage": { "type": "string", "minLength": 1 },
+        "runtime_environment": { "type": "string", "minLength": 1 },
+        "continuation_allowed": { "type": "boolean" },
+        "publication_blocked": { "type": "boolean" },
+        "decision_blocked": { "type": "boolean" },
+        "human_review_required": { "type": "boolean" },
+        "escalation_triggered": { "type": "boolean" }
+      }
+    },
+    "expected_system_behavior": { "type": "string", "minLength": 1 },
+    "observed_system_behavior": { "type": "string", "minLength": 1 },
+    "evaluation_goal": { "type": "string", "minLength": 1 },
+    "pass_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_must_remain_denied",
+        "review_or_remediation_required",
+        "replay_reproducible"
+      ],
+      "properties": {
+        "decision_must_remain_denied": { "type": "boolean", "const": true },
+        "review_or_remediation_required": { "type": "boolean", "const": true },
+        "replay_reproducible": { "type": "boolean", "const": true }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_artifact_ref", "generation_path", "generated_by_module"],
+      "properties": {
+        "source_artifact_ref": { "type": "string", "minLength": 1 },
+        "generation_path": { "type": "string", "const": "ag_runtime_failure_eval_auto_generation" },
+        "generated_by_module": {
+          "type": "string",
+          "const": "spectrum_systems.modules.runtime.evaluation_auto_generation"
+        }
+      }
     }
   }
 }

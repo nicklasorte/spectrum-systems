@@ -1,26 +1,35 @@
 {
   "artifact_type": "failure_eval_case",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
+  "eval_case_id": "fec-77075216d85a5419",
+  "created_at": "2026-03-13T17:37:24Z",
+  "source_run_id": "agrun-1c42b4ad4a2f",
   "trace_id": "11111111-1111-4111-8111-111111111111",
-  "eval_case_id": "failure-eval-case-001",
-  "input_artifact_refs": [
-    "artifact://runtime/evaluation_summary/trace-11111111-1111-4111-8111-111111111111"
-  ],
-  "expected_output_spec": {
-    "failure_modes": [
-      "threshold_breach",
-      "indeterminate"
-    ],
-    "required_response": "block_and_escalate",
-    "minimum_decision_count": 1
+  "source_artifact_type": "agent_failure_record",
+  "source_artifact_id": "afr-6b4e9480bd3e4b2d",
+  "failure_class": "runtime_failure",
+  "failure_stage": "runtime_boundary",
+  "triggering_condition": "governed_runtime_failure_artifact",
+  "normalized_inputs": {
+    "stage": "eval",
+    "runtime_environment": "agent_golden_path",
+    "continuation_allowed": false,
+    "publication_blocked": true,
+    "decision_blocked": true,
+    "human_review_required": false,
+    "escalation_triggered": true
   },
-  "scoring_rubric": {
-    "weights": {
-      "corrective_action_completeness": 0.6,
-      "reproducibility": 0.4
-    },
-    "pass_threshold": 1.0
+  "expected_system_behavior": "system_must_fail_closed_and_emit_failure_artifact",
+  "observed_system_behavior": "runtime_failed_with_governed_failure_artifact",
+  "evaluation_goal": "controller_must_deny_and_require_remediation",
+  "pass_criteria": {
+    "decision_must_remain_denied": true,
+    "review_or_remediation_required": true,
+    "replay_reproducible": true
   },
-  "evaluation_type": "deterministic",
-  "created_from": "failure_trace"
+  "provenance": {
+    "source_artifact_ref": "agent_failure_record:afr-6b4e9480bd3e4b2d",
+    "generation_path": "ag_runtime_failure_eval_auto_generation",
+    "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation"
+  }
 }
