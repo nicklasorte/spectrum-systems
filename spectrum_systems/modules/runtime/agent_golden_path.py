@@ -43,6 +43,15 @@ class AgentGoldenPathStageError(AgentGoldenPathError):
         self.error_message = error_message
 
 
+class AgentGoldenPathReviewRequired(AgentGoldenPathError):
+    """Typed stop signal when execution must hand off to human review."""
+
+    def __init__(self, review_request: Dict[str, Any], execution_record: Dict[str, Any]) -> None:
+        super().__init__("review_required")
+        self.review_request = review_request
+        self.execution_record = execution_record
+
+
 @dataclass(frozen=True)
 class GoldenPathConfig:
     """Runtime configuration for deterministic AG-01 execution."""
@@ -61,6 +70,9 @@ class GoldenPathConfig:
     fail_enforcement: bool = False
     force_eval_status: Optional[str] = None
     force_control_block: bool = False
+    force_review_required: bool = False
+    policy_review_required: bool = False
+    force_indeterminate_review: bool = False
 
 
 def _now_iso() -> str:
@@ -150,6 +162,94 @@ def _build_failure_artifact(
     }
     _validate_contract(artifact, "agent_failure_record", stage="enforcement")
     return artifact
+
+
+def _build_review_artifact(
+    *,
+    run_id: str,
+    trace_id: str,
+    trigger_stage: str,
+    trigger_reason: str,
+    review_type: str,
+    required_reviewer_role: str,
+    refs: List[str],
+    policy_version_id: Optional[str],
+) -> Dict[str, Any]:
+    identity_payload = {
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "trigger_stage": trigger_stage,
+        "trigger_reason": trigger_reason,
+        "review_type": review_type,
+        "required_reviewer_role": required_reviewer_role,
+        "source_artifact_ids": sorted(set(refs)),
+        "policy_version_id": policy_version_id,
+    }
+    artifact = {
+        "artifact_type": "hitl_review_request",
+        "schema_version": "1.0.0",
+        "id": deterministic_id(
+            prefix="hrr",
+            namespace="agent_golden_path_hitl_review",
+            payload=identity_payload,
+        ),
+        "timestamp": _deterministic_timestamp(identity_payload),
+        "status": "pending_review",
+        "source_run_id": run_id,
+        "trace_id": trace_id,
+        "source_artifact_ids": sorted(set(refs)),
+        "trigger_stage": trigger_stage,
+        "trigger_reason": trigger_reason,
+        "review_type": review_type,
+        "required_reviewer_role": required_reviewer_role,
+        "policy_version_id": policy_version_id,
+    }
+    _validate_contract(artifact, "hitl_review_request", stage="enforcement")
+    return artifact
+
+
+def _build_review_execution_record(
+    *,
+    run_id: str,
+    trace_id: str,
+    trigger_reason: str,
+    refs: List[str],
+) -> Dict[str, Any]:
+    record = {
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "artifact_id": deterministic_id(
+            prefix="cer",
+            namespace="agent_golden_path_execution",
+            payload={"run_id": run_id, "trace_id": trace_id, "review_reason": trigger_reason},
+        ),
+        "execution_status": "escalated",
+        "actions_taken": [
+            {
+                "action_type": "agent_golden_path_review_required",
+                "status": "blocked_for_review",
+                "review_trigger_reason": trigger_reason,
+                "artifact_references": sorted(set(refs)),
+                "timestamp": _now_iso(),
+            }
+        ],
+        "validators_run": [
+            "context_bundle",
+            "agent_execution_trace",
+            "eval_case",
+            "eval_engine",
+            "control_loop",
+        ],
+        "validators_failed": [],
+        "repair_actions_applied": [],
+        "publication_blocked": True,
+        "decision_blocked": True,
+        "rerun_triggered": False,
+        "escalation_triggered": True,
+        "human_review_required": True,
+    }
+    _validate_contract(record, "control_execution_result", stage="enforcement")
+    return record
 
 
 def _build_structured_output(
@@ -327,6 +427,69 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         refs.append(f"eval_result:{eval_result['eval_case_id']}")
         refs.append(f"eval_summary:{eval_summary['eval_run_id']}")
 
+        if config.force_review_required:
+            review_request = _build_review_artifact(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_stage="agent",
+                trigger_reason="forced_review_required",
+                review_type="manual_test_review",
+                required_reviewer_role="governance_reviewer",
+                refs=refs,
+                policy_version_id="ag03-policy-v1",
+            )
+            artifacts["hitl_review_request"] = review_request
+            execution_record = _build_review_execution_record(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_reason=review_request["trigger_reason"],
+                refs=refs + [f"hitl_review_request:{review_request['id']}"],
+            )
+            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+
+        if config.policy_review_required:
+            review_request = _build_review_artifact(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_stage="agent",
+                trigger_reason="policy_review_required",
+                review_type="policy_exception_review",
+                required_reviewer_role="governance_reviewer",
+                refs=refs,
+                policy_version_id="ag03-policy-v1",
+            )
+            artifacts["hitl_review_request"] = review_request
+            execution_record = _build_review_execution_record(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_reason=review_request["trigger_reason"],
+                refs=refs + [f"hitl_review_request:{review_request['id']}"],
+            )
+            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+
+        indeterminate_count = int(eval_summary.get("indeterminate_failure_count", 0))
+        if config.force_indeterminate_review:
+            indeterminate_count = max(1, indeterminate_count)
+        if indeterminate_count > 0:
+            review_request = _build_review_artifact(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_stage="eval",
+                trigger_reason="indeterminate_outcome_routed_to_human",
+                review_type="confidence_review",
+                required_reviewer_role="governance_reviewer",
+                refs=refs,
+                policy_version_id="ag03-policy-v1",
+            )
+            artifacts["hitl_review_request"] = review_request
+            execution_record = _build_review_execution_record(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_reason=review_request["trigger_reason"],
+                refs=refs + [f"hitl_review_request:{review_request['id']}"],
+            )
+            raise AgentGoldenPathReviewRequired(review_request, execution_record)
+
         # 5) Control decision
         try:
             if config.fail_control_decision:
@@ -344,6 +507,27 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             ) from exc
         artifacts["control_decision"] = decision
         refs.append(f"evaluation_control_decision:{decision['decision_id']}")
+
+        system_response = str(decision.get("system_response", "block"))
+        if system_response != "allow":
+            review_request = _build_review_artifact(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_stage="control",
+                trigger_reason="control_non_allow_response",
+                review_type="control_escalation_review",
+                required_reviewer_role="control_authority_reviewer",
+                refs=refs,
+                policy_version_id="ag03-policy-v1",
+            )
+            artifacts["hitl_review_request"] = review_request
+            execution_record = _build_review_execution_record(
+                run_id=run_id,
+                trace_id=trace_id,
+                trigger_reason=review_request["trigger_reason"],
+                refs=refs + [f"hitl_review_request:{review_request['id']}"],
+            )
+            raise AgentGoldenPathReviewRequired(review_request, execution_record)
 
         # 6) Enforcement
         try:
@@ -417,6 +601,9 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             policy_version_id=None,
         )
         artifacts["failure_artifact"] = failure
+    except AgentGoldenPathReviewRequired as review_required:
+        artifacts["hitl_review_request"] = review_required.review_request
+        artifacts["final_execution_record"] = review_required.execution_record
 
     output_paths = {
         "context_bundle": config.output_dir / "context_bundle.json",
@@ -428,6 +615,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         "enforcement": config.output_dir / "enforcement.json",
         "final_execution_record": config.output_dir / "final_execution_record.json",
         "failure_artifact": config.output_dir / "failure_artifact.json",
+        "hitl_review_request": config.output_dir / "hitl_review_request.json",
     }
     for key, payload in artifacts.items():
         _emit_json(output_paths[key], payload)

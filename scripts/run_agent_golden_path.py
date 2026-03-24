@@ -55,6 +55,21 @@ def main(argv: list[str] | None = None) -> int:
         help="Force deterministic eval status for control-path testing",
     )
     parser.add_argument("--force-control-block", action="store_true", help="Force control decision into block/freeze path")
+    parser.add_argument(
+        "--force-review-required",
+        action="store_true",
+        help="Force deterministic AG-03 review-required handoff path",
+    )
+    parser.add_argument(
+        "--policy-review-required",
+        action="store_true",
+        help="Mark valid agent output as review-required by policy",
+    )
+    parser.add_argument(
+        "--force-indeterminate-review",
+        action="store_true",
+        help="Inject indeterminate eval outcome and route to review-required handoff",
+    )
     args = parser.parse_args(argv)
 
     input_payload = _parse_json_arg(args.input_json)
@@ -79,6 +94,9 @@ def main(argv: list[str] | None = None) -> int:
             fail_enforcement=args.fail_enforcement,
             force_eval_status=args.force_eval_status,
             force_control_block=args.force_control_block,
+            force_review_required=args.force_review_required,
+            policy_review_required=args.policy_review_required,
+            force_indeterminate_review=args.force_indeterminate_review,
         )
     )
 
@@ -93,6 +111,18 @@ def main(argv: list[str] | None = None) -> int:
         }
         print(json.dumps(summary, indent=2))
         return 1
+
+    if "hitl_review_request" in artifacts:
+        review_request = artifacts["hitl_review_request"]
+        summary = {
+            "status": "review_required",
+            "review_request_id": review_request["id"],
+            "trigger_stage": review_request["trigger_stage"],
+            "trigger_reason": review_request["trigger_reason"],
+            "required_reviewer_role": review_request["required_reviewer_role"],
+        }
+        print(json.dumps(summary, indent=2))
+        return 2
 
     print(json.dumps({"status": "success", "artifacts_emitted": sorted(artifacts.keys())}, indent=2))
     return 0
