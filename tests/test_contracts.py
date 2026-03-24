@@ -164,6 +164,13 @@ class ContractSchemaTests(unittest.TestCase):
         validate_artifact(instance, "prompt_queue_review_invocation_result")
 
 
+
+
+    def test_prompt_registry_examples_validate(self) -> None:
+        for name in ("prompt_registry_entry", "prompt_alias_map", "agent_execution_trace"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]

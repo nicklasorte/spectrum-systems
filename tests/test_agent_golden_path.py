@@ -71,6 +71,9 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
 
     assert "failure_artifact" not in artifacts
     assert artifacts["agent_execution_trace"]["execution_status"] == "completed"
+    assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
+    assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_version"] == "v1.0.0"
+    assert artifacts["agent_execution_trace"]["prompt_resolution"]["requested_alias"] == "prod"
     assert artifacts["structured_output"]["artifact_type"] == "eval_case"
     assert artifacts["eval_result"]["result_status"] == "pass"
     assert artifacts["control_decision"]["system_response"] == "allow"

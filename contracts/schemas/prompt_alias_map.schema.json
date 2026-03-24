@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_alias_map.schema.json",
+  "title": "Prompt Alias Map",
+  "description": "Deterministic alias map resolving prompt_id + runtime alias to an immutable prompt version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "created_at",
+    "alias_scope",
+    "aliases"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "prompt_alias_map"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "alias_scope": {
+      "type": "string",
+      "enum": ["ag_runtime"]
+    },
+    "aliases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["prompt_id", "alias", "prompt_version", "allow_deprecated"],
+        "properties": {
+          "prompt_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+          },
+          "alias": {
+            "type": "string",
+            "enum": ["dev", "staging", "prod"]
+          },
+          "prompt_version": {
+            "type": "string",
+            "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "allow_deprecated": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

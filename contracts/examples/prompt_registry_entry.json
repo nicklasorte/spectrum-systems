@@ -1,0 +1,22 @@
+{
+  "artifact_type": "prompt_registry_entry",
+  "schema_version": "1.0.0",
+  "prompt_id": "ag.runtime.default",
+  "prompt_version": "v1.0.0",
+  "created_at": "2026-03-24T00:00:00Z",
+  "status": "approved",
+  "owner": {
+    "team": "runtime-governance",
+    "contact": "runtime-governance@spectrum-systems.test"
+  },
+  "risk_class": "high",
+  "prompt_text": "You are the AG runtime control prompt. Execute only declared bounded steps, emit governed artifacts, and fail closed on missing contracts.",
+  "prompt_purpose": "Provide deterministic execution guidance for AG runtime bounded-step orchestration.",
+  "linked_eval_set_ids": [
+    "ag-runtime-golden-path-v1"
+  ],
+  "runtime_metadata": {
+    "immutability_hash": "sha256:1a12d189e275b51fc2d911bcf191078187630cf7db6583bec7ff3cb0a31755a8",
+    "selection_key": "ag.runtime.default@v1.0.0"
+  }
+}

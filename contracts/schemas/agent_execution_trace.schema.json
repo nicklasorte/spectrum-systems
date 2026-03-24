@@ -9,6 +9,7 @@
     "agent_run_id",
     "context_bundle_id",
     "trace_id",
+    "prompt_resolution",
     "step_sequence",
     "tool_calls",
     "intermediate_artifacts",
@@ -36,14 +37,47 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["step_id", "step_type", "status"],
+        "required": [
+          "step_id",
+          "step_type",
+          "status"
+        ],
         "properties": {
-          "step_id": {"type": "string", "minLength": 1},
-          "step_type": {"type": "string", "minLength": 1},
-          "status": {"type": "string", "enum": ["planned", "completed", "failed", "blocked"]},
-          "input_ref": {"type": ["string", "null"]},
-          "output_ref": {"type": ["string", "null"]},
-          "error": {"type": ["string", "null"]}
+          "step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "step_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "completed",
+              "failed",
+              "blocked"
+            ]
+          },
+          "input_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "output_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       }
     },
@@ -52,14 +86,46 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["step_id", "tool_name", "input_ref", "output_ref", "status"],
+        "required": [
+          "step_id",
+          "tool_name",
+          "input_ref",
+          "output_ref",
+          "status"
+        ],
         "properties": {
-          "step_id": {"type": "string", "minLength": 1},
-          "tool_name": {"type": "string", "minLength": 1},
-          "input_ref": {"type": "string", "minLength": 1},
-          "output_ref": {"type": ["string", "null"]},
-          "status": {"type": "string", "enum": ["completed", "failed", "blocked"]},
-          "error": {"type": ["string", "null"]}
+          "step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tool_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "output_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "failed",
+              "blocked"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       }
     },
@@ -68,11 +134,24 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["artifact_id", "artifact_type", "schema_name"],
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "schema_name"
+        ],
         "properties": {
-          "artifact_id": {"type": "string", "minLength": 1},
-          "artifact_type": {"type": "string", "minLength": 1},
-          "schema_name": {"type": "string", "minLength": 1}
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema_name": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -82,10 +161,17 @@
     },
     "execution_status": {
       "type": "string",
-      "enum": ["completed", "failed", "blocked"]
+      "enum": [
+        "completed",
+        "failed",
+        "blocked"
+      ]
     },
     "failure_reason": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "started_at": {
       "type": "string",
@@ -94,6 +180,46 @@
     "completed_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "prompt_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prompt_id",
+        "prompt_version",
+        "requested_alias",
+        "resolution_source",
+        "status"
+      ],
+      "properties": {
+        "prompt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_alias": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "resolution_source": {
+          "type": "string",
+          "enum": [
+            "prompt_alias_map"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "resolved"
+          ]
+        }
+      }
     }
   },
   "allOf": [
@@ -101,7 +227,10 @@
       "if": {
         "properties": {
           "execution_status": {
-            "enum": ["failed", "blocked"]
+            "enum": [
+              "failed",
+              "blocked"
+            ]
           }
         }
       },

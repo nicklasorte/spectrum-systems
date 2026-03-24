@@ -26,6 +26,12 @@ from spectrum_systems.modules.ai_workflow.context_assembly import build_context_
 from spectrum_systems.modules.evaluation.eval_engine import compute_eval_summary, run_eval_case
 from spectrum_systems.modules.runtime.control_loop import run_control_loop
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
+from spectrum_systems.modules.runtime.prompt_registry import (
+    PromptRegistryError,
+    load_prompt_alias_map,
+    load_prompt_registry_entries,
+    resolve_prompt_version,
+)
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 
@@ -101,6 +107,11 @@ class GoldenPathConfig:
     force_indeterminate_review: bool = False
     override_decision_paths: Optional[List[Path]] = None
     require_override_decision: bool = False
+
+    prompt_id: str = "ag.runtime.default"
+    prompt_alias: str = "prod"
+    prompt_registry_entry_paths: Optional[List[Path]] = None
+    prompt_alias_map_path: Optional[Path] = None
 
 
 def _now_iso() -> str:
@@ -592,6 +603,24 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         refs.append(f"context_bundle:{context_bundle['context_id']}")
 
         # 2) Agent execution (bounded)
+        registry_paths = config.prompt_registry_entry_paths or [Path("contracts/examples/prompt_registry_entry.json")]
+        alias_map_path = config.prompt_alias_map_path or Path("contracts/examples/prompt_alias_map.json")
+        try:
+            prompt_entries = load_prompt_registry_entries(registry_paths)
+            prompt_alias_map = load_prompt_alias_map(alias_map_path)
+            prompt_resolution = resolve_prompt_version(
+                prompt_id=config.prompt_id,
+                alias=config.prompt_alias,
+                entries=prompt_entries,
+                alias_map=prompt_alias_map,
+            )
+        except PromptRegistryError as exc:
+            raise AgentGoldenPathStageError(
+                stage="agent",
+                failure_type="prompt_resolution_error",
+                error_message=str(exc),
+            ) from exc
+
         step_plan = generate_step_plan(
             context_bundle,
             [
@@ -623,6 +652,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             trace = execute_step_sequence(
                 agent_run_id=run_id,
                 trace_id=trace_id,
+                prompt_resolution=prompt_resolution,
                 context_bundle=context_bundle,
                 step_plan=step_plan,
                 final_output_schema="eval_case",
