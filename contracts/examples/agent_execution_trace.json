@@ -106,5 +106,20 @@
       "flagged_item_refs": [],
       "detected_pattern_refs": []
     }
+  },
+  "multi_pass_generation": {
+    "record_id": "mpg-6a0f4b8c9d1e2f30",
+    "pass_ids": [
+      "pass_1",
+      "pass_2",
+      "pass_3",
+      "final"
+    ],
+    "pass_output_refs": [
+      "multi-pass://agent-run-example-001/pass_1",
+      "multi-pass://agent-run-example-001/pass_2",
+      "multi-pass://agent-run-example-001/pass_3",
+      "multi-pass://agent-run-example-001/final"
+    ]
   }
 }

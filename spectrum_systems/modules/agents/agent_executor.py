@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.prompt_injection_defense import (
     default_prompt_injection_policy,
     evaluate_enforcement_outcome,
 )
+from spectrum_systems.modules.runtime.multi_pass_generation import (
+    MultiPassGenerationError,
+    run_multi_pass_generation,
+)
 
 SCHEMA_VERSION = "1.0.0"
 TRACE_ARTIFACT_TYPE = "agent_execution_trace"
@@ -456,6 +460,7 @@ def execute_step_sequence(
 
     completed_at = _now_iso()
 
+    multi_pass_record: Optional[Dict[str, Any]] = None
     if execution_status == EXECUTION_COMPLETED:
         builder = final_output_builder or (
             lambda bundle, steps: {
@@ -464,12 +469,18 @@ def execute_step_sequence(
                 "executed_step_ids": [s["step_id"] for s in steps if s.get("status") == STEP_STATUS_COMPLETED],
             }
         )
-        final_output = builder(bounded_context, planned_steps)
+        draft_output = builder(bounded_context, planned_steps)
         try:
+            multi_pass_record = run_multi_pass_generation(
+                run_id=agent_run_id,
+                trace_id=trace_id,
+                input_artifact=draft_output,
+            )
+            final_output = dict(multi_pass_record["final_output"])
             validate_final_output(final_output, final_output_schema)
-        except Exception as exc:
+        except (MultiPassGenerationError, Exception) as exc:
             execution_status = EXECUTION_FAILED
-            failure_reason = f"validate_final_output failed: {exc}"
+            failure_reason = f"multi_pass_generation/validate_final_output failed: {exc}"
 
     final_output_artifact_id = f"agent-output://{agent_run_id}"
     source_segmentation = dict(bounded_context.get("source_segmentation") or {})
@@ -538,6 +549,17 @@ def execute_step_sequence(
         "tool_calls": tool_calls,
         "model_invocations": model_invocations,
         "intermediate_artifacts": intermediate_artifacts,
+        "multi_pass_generation": {
+            "record_id": str((multi_pass_record or {}).get("record_id") or ""),
+            "pass_ids": [
+                str(pass_item.get("pass_id") or "")
+                for pass_item in list((multi_pass_record or {}).get("passes") or [])
+            ],
+            "pass_output_refs": [
+                str(pass_item.get("output_ref") or "")
+                for pass_item in list((multi_pass_record or {}).get("passes") or [])
+            ],
+        },
         "final_output_artifact_id": final_output_artifact_id,
         "execution_status": execution_status,
         "failure_reason": failure_reason,
