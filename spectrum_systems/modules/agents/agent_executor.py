@@ -17,6 +17,11 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.model_adapter import (
+    CanonicalModelAdapter,
+    ModelAdapterError,
+    build_canonical_request,
+)
 
 SCHEMA_VERSION = "1.0.0"
 TRACE_ARTIFACT_TYPE = "agent_execution_trace"
@@ -100,6 +105,9 @@ def generate_step_plan(
             "tool_name": raw_step.get("tool_name"),
             "tool_input": deepcopy(raw_step.get("tool_input") or {}),
             "artifact_schema": raw_step.get("artifact_schema"),
+            "requested_model_id": raw_step.get("requested_model_id"),
+            "input_text": raw_step.get("input_text"),
+            "execution_constraints": deepcopy(raw_step.get("execution_constraints") or {}),
         }
         plan.append(step)
     return plan
@@ -184,6 +192,7 @@ def execute_step_sequence(
     step_plan: Sequence[Dict[str, Any]],
     final_output_schema: str,
     tool_registry: Optional[Dict[str, ToolFn]] = None,
+    model_adapter: Optional[CanonicalModelAdapter] = None,
     final_output_builder: Optional[Callable[[Dict[str, Any], List[Dict[str, Any]]], Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Execute a bounded step sequence and emit a governed execution trace.
@@ -203,6 +212,7 @@ def execute_step_sequence(
 
     started_at = _now_iso()
     tool_calls: List[Dict[str, Any]] = []
+    model_invocations: List[Dict[str, Any]] = []
     intermediate_artifacts: List[Dict[str, Any]] = []
     execution_status = EXECUTION_COMPLETED
     failure_reason: Optional[str] = None
@@ -245,6 +255,74 @@ def execute_step_sequence(
                         "schema_name": str(output.get("schema_name") or "artifact_envelope"),
                     }
                 )
+        elif step_type == "model":
+            requested_model_id = str(step.get("requested_model_id") or "").strip()
+            if not requested_model_id:
+                step["status"] = STEP_STATUS_BLOCKED
+                step["error"] = "execute_step_sequence: model step missing requested_model_id"
+                execution_status = EXECUTION_BLOCKED
+                failure_reason = step["error"]
+                break
+            if model_adapter is None:
+                step["status"] = STEP_STATUS_BLOCKED
+                step["error"] = "execute_step_sequence: model step requires model_adapter"
+                execution_status = EXECUTION_BLOCKED
+                failure_reason = step["error"]
+                break
+            input_text = str(step.get("input_text") or bounded_context.get("primary_input") or "")
+            if not input_text.strip():
+                step["status"] = STEP_STATUS_BLOCKED
+                step["error"] = "execute_step_sequence: model step missing input_text"
+                execution_status = EXECUTION_BLOCKED
+                failure_reason = step["error"]
+                break
+
+            constraints = step.get("execution_constraints") or {}
+            max_output_tokens = int(constraints.get("max_output_tokens", 512))
+            temperature = float(constraints.get("temperature", 0.0))
+            canonical_request = build_canonical_request(
+                prompt_id=str(prompt_resolution["prompt_id"]),
+                prompt_version=str(prompt_resolution["prompt_version"]),
+                requested_model_id=requested_model_id,
+                input_text=input_text,
+                trace_id=trace_id,
+                agent_run_id=agent_run_id,
+                step_id=str(step["step_id"]),
+                max_output_tokens=max_output_tokens,
+                temperature=temperature,
+            )
+            try:
+                canonical_response = model_adapter.execute(canonical_request)
+            except ModelAdapterError as exc:
+                step["status"] = STEP_STATUS_FAILED
+                step["error"] = f"execute_step_sequence: model adapter failure: {exc}"
+                execution_status = EXECUTION_FAILED
+                failure_reason = step["error"]
+                break
+
+            step["status"] = (
+                STEP_STATUS_COMPLETED
+                if canonical_response["response_status"] == "completed"
+                else STEP_STATUS_FAILED
+            )
+            step["error"] = None if step["status"] == STEP_STATUS_COMPLETED else "model response failed"
+            step["output_ref"] = f"model-response://{canonical_response['response_id']}"
+            model_invocations.append(
+                {
+                    "step_id": str(step["step_id"]),
+                    "request_id": canonical_request["request_id"],
+                    "response_id": canonical_response["response_id"],
+                    "requested_model_id": canonical_request["requested_model_id"],
+                    "provider_name": canonical_response["provider_name"],
+                    "provider_model_name": canonical_response["provider_model_name"],
+                    "response_status": canonical_response["response_status"],
+                    "finish_reason": canonical_response["finish_reason"],
+                }
+            )
+            if step["status"] != STEP_STATUS_COMPLETED:
+                execution_status = EXECUTION_FAILED
+                failure_reason = step["error"] or "model step failed"
+                break
 
         elif step_type == "transform":
             step["status"] = STEP_STATUS_COMPLETED
@@ -298,6 +376,7 @@ def execute_step_sequence(
             for s in planned_steps
         ],
         "tool_calls": tool_calls,
+        "model_invocations": model_invocations,
         "intermediate_artifacts": intermediate_artifacts,
         "final_output_artifact_id": final_output_artifact_id,
         "execution_status": execution_status,

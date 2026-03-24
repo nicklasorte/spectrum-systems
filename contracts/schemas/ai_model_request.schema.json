@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ai_model_request.schema.json",
+  "title": "AI Model Request",
+  "description": "Canonical governed model request artifact at the AG runtime/provider boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "request_id",
+    "created_at",
+    "prompt_id",
+    "prompt_version",
+    "requested_model_id",
+    "input_text",
+    "execution_constraints",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "ai_model_request"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^amr-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "prompt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requested_model_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_output_tokens",
+        "temperature"
+      ],
+      "properties": {
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "agent_run_id",
+        "step_id"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

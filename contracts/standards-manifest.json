@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.42",
+  "artifact_version": "1.0.43",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-HS-01-PROMPT-REGISTRY",
-  "run_id": "run-20260324T010000Z",
+  "record_id": "REC-STD-2026-03-24-HS-03-MODEL-ADAPTER",
+  "run_id": "run-20260324T020000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -30,15 +30,41 @@
     {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.8",
-      "last_updated_in": "1.0.42",
+      "last_updated_in": "1.0.43",
       "example_path": "contracts/examples/agent_execution_trace.json",
-      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool calls, final output lineage, and resolved governed prompt version linkage for replay/eval attribution."
+      "notes": "Bounded agent execution trace artifact capturing deterministic step sequence, tool/model invocation lineage, final output lineage, and resolved governed prompt version linkage for replay/eval attribution."
+    },
+    {
+      "artifact_type": "ai_model_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.43",
+      "last_updated_in": "1.0.43",
+      "example_path": "contracts/examples/ai_model_request.json",
+      "notes": "HS-03 canonical request artifact for strict model-adapter boundary, deterministic request identity, and trace linkage to prompt resolution + AG execution context."
+    },
+    {
+      "artifact_type": "ai_model_response",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.43",
+      "last_updated_in": "1.0.43",
+      "example_path": "contracts/examples/ai_model_response.json",
+      "notes": "HS-03 canonical response artifact for normalized provider output, strict finish/status vocabulary, and fail-closed response boundary validation."
     },
     {
       "artifact_type": "agent_failure_record",

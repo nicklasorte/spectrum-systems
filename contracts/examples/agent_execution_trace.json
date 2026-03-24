@@ -40,5 +40,6 @@
     "requested_alias": "prod",
     "resolution_source": "prompt_alias_map",
     "status": "resolved"
-  }
+  },
+  "model_invocations": []
 }

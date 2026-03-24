@@ -74,6 +74,11 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["prompt_version"] == "v1.0.0"
     assert artifacts["agent_execution_trace"]["prompt_resolution"]["requested_alias"] == "prod"
+    assert len(artifacts["agent_execution_trace"]["model_invocations"]) == 1
+    model_invocation = artifacts["agent_execution_trace"]["model_invocations"][0]
+    assert model_invocation["requested_model_id"] == "openai:gpt-4o-mini"
+    assert model_invocation["provider_name"] == "openai"
+    assert model_invocation["provider_model_name"] == "gpt-4o-mini"
     assert artifacts["structured_output"]["artifact_type"] == "eval_case"
     assert artifacts["eval_result"]["result_status"] == "pass"
     assert artifacts["control_decision"]["system_response"] == "allow"

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ai_model_response.schema.json",
+  "title": "AI Model Response",
+  "description": "Canonical governed model response artifact at the AG runtime/provider boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "response_id",
+    "created_at",
+    "request_id",
+    "provider_name",
+    "provider_model_name",
+    "normalized_output_text",
+    "finish_reason",
+    "response_status",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "ai_model_response"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "response_id": {
+      "type": "string",
+      "pattern": "^amres-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^amr-[a-f0-9]{16}$"
+    },
+    "provider_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider_model_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalized_output_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finish_reason": {
+      "type": "string",
+      "enum": [
+        "stop",
+        "length",
+        "content_filter",
+        "error"
+      ]
+    },
+    "response_status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "failed"
+      ]
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "agent_run_id",
+        "step_id"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "ai_model_response",
+  "schema_version": "1.0.0",
+  "response_id": "amres-5d48513ea6506bd0",
+  "created_at": "2026-02-08T11:52:17Z",
+  "request_id": "amr-7d4dc9cbba9865a4",
+  "provider_name": "openai",
+  "provider_model_name": "gpt-4o-mini",
+  "normalized_output_text": "Assertion: generated summary is grounded in retrieved artifacts.",
+  "finish_reason": "stop",
+  "response_status": "completed",
+  "trace": {
+    "trace_id": "trace-example-001",
+    "agent_run_id": "agrun-1111111111111111",
+    "step_id": "step-001"
+  }
+}

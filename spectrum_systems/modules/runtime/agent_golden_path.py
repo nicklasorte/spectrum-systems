@@ -32,6 +32,7 @@ from spectrum_systems.modules.runtime.prompt_registry import (
     load_prompt_registry_entries,
     resolve_prompt_version,
 )
+from spectrum_systems.modules.runtime.model_adapter import CanonicalModelAdapter
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 
@@ -626,26 +627,35 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             [
                 {
                     "step_id": "step-001",
-                    "step_type": "tool",
-                    "tool_name": "generate_structured_signal",
+                    "step_type": "model",
+                    "requested_model_id": "openai:gpt-4o-mini",
                     "input_ref": f"context://{context_bundle['context_id']}",
-                    "tool_input": {"context_id": context_bundle["context_id"]},
+                    "input_text": json.dumps(
+                        {
+                            "context_id": context_bundle["context_id"],
+                            "task_type": context_bundle["task_type"],
+                            "goal": "generate_structured_signal",
+                        },
+                        sort_keys=True,
+                    ),
+                    "execution_constraints": {"max_output_tokens": 256, "temperature": 0.0},
                 }
             ],
         )
 
-        def _tool_fn(payload: Dict[str, Any]) -> Dict[str, Any]:
+        class _GoldenPathProvider:
+            provider_name = "openai"
+
+            def invoke(self, provider_request: Dict[str, Any]) -> Dict[str, Any]:
+                return _provider_fn(provider_request)
+
+        def _provider_fn(payload: Dict[str, Any]) -> Dict[str, Any]:
             if config.fail_agent_execution:
                 raise RuntimeError("forced_agent_execution_failure")
             return {
-                "artifact_id": deterministic_id(
-                    prefix="tool",
-                    namespace="agent_golden_path",
-                    payload={"run_id": run_id, "payload": payload},
-                ),
-                "artifact_type": "tool_output",
-                "schema_name": "artifact_envelope",
-                "payload": deepcopy(payload),
+                "model": str(payload["model"]).split(":")[-1],
+                "output_text": f"structured-signal::{payload['request_id']}",
+                "finish_reason": "stop",
             }
 
         try:
@@ -656,12 +666,12 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 context_bundle=context_bundle,
                 step_plan=step_plan,
                 final_output_schema="eval_case",
-                tool_registry={"generate_structured_signal": _tool_fn},
+                model_adapter=CanonicalModelAdapter(provider=_GoldenPathProvider()),
                 final_output_builder=lambda bundle, steps: _build_structured_output(
                     trace_id=trace_id,
                     run_id=run_id,
                     context_bundle=bundle,
-                    tool_calls=[s for s in steps if s.get("step_type") == "tool"],
+                    tool_calls=[s for s in steps if s.get("step_type") in {"tool", "model"}],
                     force_invalid=False,
                     force_eval_status=config.force_eval_status,
                 ),
