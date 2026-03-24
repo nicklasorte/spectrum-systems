@@ -12,6 +12,7 @@
     "prompt_resolution",
     "step_sequence",
     "tool_calls",
+    "model_invocations",
     "intermediate_artifacts",
     "final_output_artifact_id",
     "execution_status",
@@ -218,6 +219,65 @@
           "enum": [
             "resolved"
           ]
+        }
+      }
+    },
+    "model_invocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "request_id",
+          "response_id",
+          "requested_model_id",
+          "provider_name",
+          "provider_model_name",
+          "response_status",
+          "finish_reason"
+        ],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "pattern": "^amr-[a-f0-9]{16}$"
+          },
+          "response_id": {
+            "type": "string",
+            "pattern": "^amres-[a-f0-9]{16}$"
+          },
+          "requested_model_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider_model_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "response_status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "failed"
+            ]
+          },
+          "finish_reason": {
+            "type": "string",
+            "enum": [
+              "stop",
+              "length",
+              "content_filter",
+              "error"
+            ]
+          }
         }
       }
     }

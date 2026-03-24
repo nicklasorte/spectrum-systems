@@ -1,0 +1,19 @@
+{
+  "artifact_type": "ai_model_request",
+  "schema_version": "1.0.0",
+  "request_id": "amr-7d4dc9cbba9865a4",
+  "created_at": "2026-02-08T11:52:10Z",
+  "prompt_id": "ag.runtime.default",
+  "prompt_version": "v1.0.0",
+  "requested_model_id": "openai:gpt-4o-mini",
+  "input_text": "Summarize the context bundle into one eval-case assertion.",
+  "execution_constraints": {
+    "max_output_tokens": 256,
+    "temperature": 0.0
+  },
+  "trace": {
+    "trace_id": "trace-example-001",
+    "agent_run_id": "agrun-1111111111111111",
+    "step_id": "step-001"
+  }
+}

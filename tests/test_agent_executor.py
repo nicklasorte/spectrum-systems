@@ -18,6 +18,7 @@ from spectrum_systems.modules.agents.agent_executor import (  # noqa: E402
     execute_step_sequence,
     generate_step_plan,
 )
+from spectrum_systems.modules.runtime.model_adapter import CanonicalModelAdapter
 
 
 def _prompt_resolution() -> Dict[str, Any]:
@@ -172,6 +173,7 @@ def test_full_trace_emission_shape_validation() -> None:
             }
         ],
         "tool_calls": [],
+        "model_invocations": [],
         "intermediate_artifacts": [],
         "final_output_artifact_id": "agent-output://agent-run-005",
         "execution_status": "completed",
@@ -199,3 +201,86 @@ def test_missing_prompt_resolution_fails_closed() -> None:
             final_output_schema="context_bundle",
             final_output_builder=lambda b, _: b,
         )
+
+
+def test_model_step_records_prompt_and_model_linkage() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-001",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Summarize context",
+                "execution_constraints": {"max_output_tokens": 128, "temperature": 0.0},
+            }
+        ],
+    )
+
+    class _Provider:
+        provider_name = "openai"
+
+        def invoke(self, provider_request: Dict[str, Any]) -> Dict[str, Any]:
+            return {
+                "model": "gpt-4o-mini",
+                "output_text": f"ok::{provider_request['request_id']}",
+                "finish_reason": "stop",
+                "raw_provider_field": "do_not_leak",
+            }
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-007",
+        trace_id="trace-007",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        model_adapter=CanonicalModelAdapter(provider=_Provider()),
+        final_output_builder=lambda b, _: b,
+    )
+
+    assert trace["execution_status"] == "completed"
+    assert len(trace["model_invocations"]) == 1
+    invocation = trace["model_invocations"][0]
+    assert invocation["requested_model_id"] == "openai:gpt-4o-mini"
+    assert invocation["provider_name"] == "openai"
+    assert invocation["provider_model_name"] == "gpt-4o-mini"
+    assert "raw_provider_field" not in invocation
+    assert trace["prompt_resolution"]["prompt_id"] == "ag.runtime.default"
+    assert trace["prompt_resolution"]["prompt_version"] == "v1.0.0"
+
+
+def test_model_step_fails_closed_on_malformed_provider_response() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-001",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Summarize context",
+            }
+        ],
+    )
+
+    class _BadProvider:
+        provider_name = "openai"
+
+        def invoke(self, _: Dict[str, Any]) -> Dict[str, Any]:
+            return {"model": "gpt-4o-mini", "output_text": "bad", "finish_reason": "unknown"}
+
+    trace = execute_step_sequence(
+        agent_run_id="agent-run-008",
+        trace_id="trace-008",
+        prompt_resolution=_prompt_resolution(),
+        context_bundle=bundle,
+        step_plan=plan,
+        final_output_schema="context_bundle",
+        model_adapter=CanonicalModelAdapter(provider=_BadProvider()),
+        final_output_builder=lambda b, _: b,
+    )
+
+    assert trace["execution_status"] == "failed"
+    assert "model adapter failure" in (trace["failure_reason"] or "")
