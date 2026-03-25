@@ -13,16 +13,22 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
+from spectrum_systems.contracts import load_schema, validate_artifact  # noqa: E402
 from spectrum_systems.modules.runtime.drift_detection_engine import (  # noqa: E402
     DriftDetectionError,
     detect_drift,
 )
 
 
+def _current_replay_schema_version() -> str:
+    schema = load_schema("replay_result")
+    return str(schema["properties"]["schema_version"].get("const") or "")
+
+
 def _replay_result() -> dict:
     return {
         "artifact_type": "replay_result",
-        "schema_version": "1.1.0",
+        "schema_version": _current_replay_schema_version(),
         "replay_id": "RPL-test-001",
         "original_run_id": "eval-run-001",
         "replay_run_id": "eval-run-001",
@@ -59,6 +65,13 @@ def _expected_id(source_run_id: str, replay_run_id: str, drift_type: str) -> str
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
 
+
+
+
+def test_replay_fixture_is_schema_valid_against_current_contract() -> None:
+    fixture = _replay_result()
+    validate_artifact(fixture, "replay_result")
+    assert fixture["schema_version"] == _current_replay_schema_version()
 
 def test_perfect_match_returns_no_drift() -> None:
     replay = _replay_result()
