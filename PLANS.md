@@ -161,6 +161,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-HS-08-2026-03-24.md | HS-08 — Multi-Pass Artifact Generation Engine | Active |
 | docs/review-actions/PLAN-HS-09-2026-03-24.md | HS-09 — Evidence Binding + Citation System | Active |
 
+| docs/review-actions/PLAN-SRE-08-SRE-10-2026-03-24.md | SRE-08 + SRE-10 — SLO Definition + Observability Metrics | Active |
+
 Update this table when plans are created or completed.
 
 ---

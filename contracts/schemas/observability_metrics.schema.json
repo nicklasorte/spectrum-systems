@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/observability_metrics.schema.json",
+  "title": "Observability Metrics",
+  "description": "Deterministic governed observability metrics artifact aggregated from runtime/replay control artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "timestamp",
+    "trace_refs",
+    "measurement_scope",
+    "run_ids",
+    "source_artifact_ids",
+    "metric_window",
+    "metrics",
+    "slo_id",
+    "policy_id",
+    "breach_summary",
+    "generated_by_version"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "artifact_type": {"type": "string", "const": "observability_metrics"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "measurement_scope": {
+      "type": "string",
+      "enum": ["single_replay_run", "batch_runtime_replay"]
+    },
+    "run_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "source_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "metric_window": {
+      "type": "string",
+      "enum": ["single_run", "rolling_batch"]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_runs", "replay_success_rate"],
+      "properties": {
+        "total_runs": {"type": "integer", "minimum": 1},
+        "replay_success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "grounding_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "unsupported_claim_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "invalid_evidence_ref_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "drift_exceed_threshold_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "baseline_gate_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "regression_failure_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "slo_id": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "policy_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "breach_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["breached_metrics", "highest_severity", "reasons"],
+      "properties": {
+        "breached_metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "replay_success_rate",
+              "grounding_block_rate",
+              "unsupported_claim_rate",
+              "invalid_evidence_ref_rate",
+              "drift_exceed_threshold_rate",
+              "baseline_gate_block_rate",
+              "regression_failure_rate"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "highest_severity": {"type": "string", "enum": ["none", "warn", "block"]},
+        "reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "generated_by_version": {"type": "string", "minLength": 1}
+  }
+}

@@ -655,3 +655,16 @@ def test_run_replay_blocks_when_baseline_gate_blocks() -> None:
             _trace_context(),
             baseline_artifact=baseline,
         )
+
+
+def test_run_replay_attaches_observability_metrics_with_trace_linkage() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+    assert "observability_metrics" in result
+    observability = result["observability_metrics"]
+    assert observability["artifact_type"] == "observability_metrics"
+    assert observability["trace_refs"]["trace_id"] == result["trace_id"]
+    assert result["replay_id"] in observability["source_artifact_ids"]

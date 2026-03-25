@@ -1,6 +1,6 @@
 {
   "artifact_type": "replay_result",
-  "schema_version": "1.1.1",
+  "schema_version": "1.1.2",
   "replay_id": "RPL-trace-eval-001",
   "original_run_id": "eval-run-001",
   "replay_run_id": "eval-run-001",
@@ -48,5 +48,34 @@
       "trace_id": "trace-eval-001",
       "run_id": "eval-run-001"
     }
+  },
+  "observability_metrics": {
+    "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+    "artifact_type": "observability_metrics",
+    "schema_version": "1.0.0",
+    "timestamp": "2026-03-22T00:00:00Z",
+    "trace_refs": {
+      "trace_id": "trace-eval-001"
+    },
+    "measurement_scope": "single_replay_run",
+    "run_ids": [
+      "eval-run-001"
+    ],
+    "source_artifact_ids": [
+      "RPL-trace-eval-001"
+    ],
+    "metric_window": "single_run",
+    "metrics": {
+      "total_runs": 1,
+      "replay_success_rate": 1.0
+    },
+    "slo_id": null,
+    "policy_id": null,
+    "breach_summary": {
+      "breached_metrics": [],
+      "highest_severity": "none",
+      "reasons": []
+    },
+    "generated_by_version": "observability_metrics.py@1.0.0"
   }
 }

@@ -201,6 +201,11 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("grounding_control_decision")
         validate_artifact(instance, "grounding_control_decision")
 
+    def test_sre_observability_contract_examples_validate(self) -> None:
+        for name in ("service_level_objective", "observability_metrics"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_risk_register_category_enum_covers_required_categories(self) -> None:
         schema = load_schema("risk_register")
         categories = schema["$defs"]["risk"]["properties"]["category"]["enum"]
