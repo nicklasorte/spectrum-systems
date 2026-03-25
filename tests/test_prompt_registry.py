@@ -7,6 +7,7 @@ import pytest
 
 from spectrum_systems.modules.runtime.prompt_registry import (
     PromptRegistryError,
+    assert_prompt_registered,
     load_prompt_alias_map,
     load_prompt_registry_entries,
     resolve_prompt_version,
@@ -146,4 +147,38 @@ def test_no_fallback_to_latest_behavior(tmp_path: Path) -> None:
             alias="prod",
             entries=entries,
             alias_map=alias_map,
+        )
+
+
+def test_assert_prompt_registered_returns_entry(tmp_path: Path) -> None:
+    entry_path = _write_json(tmp_path / "entry.json", _entry(version="v1.2.3"))
+    entries = load_prompt_registry_entries([entry_path])
+
+    selected = assert_prompt_registered(
+        prompt_id="ag.runtime.default",
+        prompt_version="v1.2.3",
+        entries=entries,
+    )
+
+    assert selected["prompt_id"] == "ag.runtime.default"
+    assert selected["prompt_version"] == "v1.2.3"
+
+
+def test_assert_prompt_registered_rejects_missing_or_draft(tmp_path: Path) -> None:
+    approved_path = _write_json(tmp_path / "entry-approved.json", _entry(version="v1.0.0"))
+    draft_path = _write_json(tmp_path / "entry-draft.json", _entry(version="v2.0.0", status="draft"))
+    entries = load_prompt_registry_entries([approved_path, draft_path])
+
+    with pytest.raises(PromptRegistryError, match="not found or ambiguous"):
+        assert_prompt_registered(
+            prompt_id="ag.runtime.default",
+            prompt_version="v9.9.9",
+            entries=entries,
+        )
+
+    with pytest.raises(PromptRegistryError, match="draft"):
+        assert_prompt_registered(
+            prompt_id="ag.runtime.default",
+            prompt_version="v2.0.0",
+            entries=entries,
         )

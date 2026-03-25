@@ -18,6 +18,10 @@ from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import ValidationError
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.prompt_registry import (
+    PromptRegistryError,
+    assert_prompt_registered,
+)
 from spectrum_systems.utils.deterministic_id import canonical_json, deterministic_id
 
 REQUEST_SCHEMA = "ai_model_request"
@@ -50,9 +54,16 @@ class CanonicalModelAdapter:
     """Canonical model adapter wiring one provider path behind a governed boundary."""
 
     provider: ProviderAdapter
+    prompt_registry_entries: tuple[Dict[str, Any], ...] = ()
 
     def execute(self, canonical_request: Dict[str, Any]) -> Dict[str, Any]:
-        validated_request = validate_canonical_request(canonical_request)
+        registry_entries: list[Dict[str, Any]] | None = (
+            list(self.prompt_registry_entries) if self.prompt_registry_entries else None
+        )
+        validated_request = validate_canonical_request(
+            canonical_request,
+            prompt_registry_entries=registry_entries,
+        )
 
         structured_output = validated_request.get("structured_output")
         if structured_output is not None:
@@ -154,7 +165,11 @@ def build_canonical_request(
     return validate_canonical_request(request)
 
 
-def validate_canonical_request(canonical_request: Dict[str, Any]) -> Dict[str, Any]:
+def validate_canonical_request(
+    canonical_request: Dict[str, Any],
+    *,
+    prompt_registry_entries: list[Dict[str, Any]] | None = None,
+) -> Dict[str, Any]:
     try:
         validated = _validate_contract(canonical_request, REQUEST_SCHEMA)
     except ValidationError as exc:
@@ -163,6 +178,19 @@ def validate_canonical_request(canonical_request: Dict[str, Any]) -> Dict[str, A
     structured_output = validated.get("structured_output")
     if structured_output is not None:
         _validate_structured_target_schema_ref(structured_output["target_schema_ref"])
+
+    if prompt_registry_entries is not None:
+        try:
+            assert_prompt_registered(
+                prompt_id=str(validated["prompt_id"]),
+                prompt_version=str(validated["prompt_version"]),
+                entries=prompt_registry_entries,
+            )
+        except PromptRegistryError as exc:
+            raise ModelAdapterError(
+                "canonical request prompt identity is not registry-backed: "
+                f"{validated['prompt_id']}@{validated['prompt_version']}: {exc}"
+            ) from exc
 
     return validated
 

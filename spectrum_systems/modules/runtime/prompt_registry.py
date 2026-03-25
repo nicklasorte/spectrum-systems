@@ -91,6 +91,39 @@ def load_prompt_alias_map(path: Path) -> Dict[str, Any]:
     return alias_map
 
 
+def assert_prompt_registered(
+    *,
+    prompt_id: str,
+    prompt_version: str,
+    entries: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Fail-closed check that prompt_id@prompt_version exists and is runtime-eligible."""
+    if not prompt_id or not prompt_version:
+        raise PromptRegistryError("prompt_id and prompt_version are required")
+    if not entries:
+        raise PromptRegistryError("prompt registry is empty")
+
+    matches = [
+        entry
+        for entry in entries
+        if str(entry.get("prompt_id")) == prompt_id and str(entry.get("prompt_version")) == prompt_version
+    ]
+    if len(matches) != 1:
+        raise PromptRegistryError(
+            f"prompt registry entry not found or ambiguous for {prompt_id}@{prompt_version}"
+        )
+
+    entry = matches[0]
+    status = str(entry.get("status"))
+    if status == "draft":
+        raise PromptRegistryError(f"prompt {prompt_id}@{prompt_version} is draft and cannot be selected at runtime")
+    if status not in {"approved", "deprecated"}:
+        raise PromptRegistryError(f"prompt {prompt_id}@{prompt_version} has unsupported status '{status}'")
+
+    _assert_entry_semantics(entry)
+    return entry
+
+
 def resolve_prompt_version(
     *,
     prompt_id: str,
