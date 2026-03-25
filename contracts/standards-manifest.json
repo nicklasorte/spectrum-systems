@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.58",
+  "artifact_version": "1.0.60",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.25",
-  "record_id": "REC-STD-2026-03-25-SRE-11-ALERT-TRIGGERS",
+  "record_id": "REC-STD-2026-03-25-PQX-BACKBONE-HARDENING",
   "run_id": "run-20260325T000000Z",
   "created_at": "2026-03-25T00:00:00Z",
   "created_by": {
@@ -773,6 +773,71 @@
       "last_updated_in": "1.0.1",
       "example_path": "contracts/examples/pdf_anchored_docx_comment_injection_contract.json",
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
+    },
+    {
+      "artifact_type": "pqx_block_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.59",
+      "last_updated_in": "1.0.60",
+      "example_path": null,
+      "notes": "PQX backbone hardening: canonical block taxonomy plus blocking dependency capture for fail-closed diagnostics."
+    },
+    {
+      "artifact_type": "pqx_execution_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.59",
+      "last_updated_in": "1.0.60",
+      "example_path": null,
+      "notes": "PQX backbone hardening: execution request now carries roadmap version and row snapshot metadata for deterministic replay."
+    },
+    {
+      "artifact_type": "pqx_execution_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.59",
+      "last_updated_in": "1.0.59",
+      "example_path": null,
+      "notes": "Minimum governed PQX backbone execution result artifact capturing deterministic row run output and completion status."
+    },
+    {
+      "artifact_type": "pqx_execution_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.59",
+      "last_updated_in": "1.0.59",
+      "example_path": null,
+      "notes": "Minimum governed PQX backbone run summary artifact linking request/result/block artifacts for replay and observability."
+    },
+    {
+      "artifact_type": "pqx_row_state",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.59",
+      "last_updated_in": "1.0.59",
+      "example_path": "data/pqx_state.json",
+      "notes": "Minimum governed PQX backbone deterministic row state contract for dependency-satisfied execution progression tracking."
     },
     {
       "artifact_type": "program_brief",

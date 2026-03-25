@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_result.schema.json",
+  "title": "PQX Execution Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "step_id",
+    "execution_status",
+    "started_at",
+    "completed_at",
+    "output_text"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "minLength": 1},
+    "execution_status": {
+      "type": "string",
+      "enum": ["success", "failure"]
+    },
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "output_text": {"type": "string"},
+    "error": {"type": ["string", "null"]}
+  }
+}
