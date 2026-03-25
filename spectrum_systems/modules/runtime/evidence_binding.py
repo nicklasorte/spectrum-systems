@@ -249,6 +249,10 @@ def build_evidence_binding_record(
         validated_context_bundle
     )
     candidates = _extract_important_claim_candidates(final_artifact)
+    if cfg.mode == "required_grounded" and not candidates:
+        raise EvidenceBindingError(
+            "required-grounded mode requires at least one governable claim candidate for evidence binding"
+        )
 
     claim_records: List[Dict[str, Any]] = []
     all_claim_ids: List[str] = []
