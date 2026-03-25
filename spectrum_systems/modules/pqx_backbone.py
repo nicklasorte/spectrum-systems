@@ -24,6 +24,7 @@ class PQXBackboneError(ValueError):
 
 @dataclass(frozen=True)
 class RoadmapRow:
+    row_index: int
     step_id: str
     step_name: str
     dependencies: tuple[str, ...]
@@ -69,6 +70,7 @@ def parse_system_roadmap(path: Path = ROADMAP_PATH) -> list[RoadmapRow]:
             continue
         rows.append(
             RoadmapRow(
+                row_index=len(rows),
                 step_id=step_id,
                 step_name=cells[1],
                 dependencies=_parse_dependencies(cells[11]),
@@ -117,7 +119,6 @@ def _ensure_row_state(state: dict, step_id: str) -> dict:
         "retries": 0,
     }
     state["rows"].append(row_state)
-    state["rows"] = sorted(state["rows"], key=lambda item: item["step_id"])
     return _ensure_row_state(state, step_id)
 
 
@@ -128,51 +129,76 @@ def resolve_executable_row(
     step_id: str | None = None,
 ) -> tuple[RoadmapRow | None, dict | None]:
     row_lookup = {row.step_id: row for row in rows}
-    ordered_ids = [row.step_id for row in rows]
+    if step_id and step_id not in row_lookup:
+        return None, {
+            "block_type": "MISSING_ROW",
+            "reason": f"Requested roadmap row '{step_id}' was not found.",
+            "step_id": step_id,
+            "blocking_dependencies": [],
+        }
 
-    candidate_ids = [step_id] if step_id else ordered_ids
-    for candidate_id in candidate_ids:
-        if candidate_id not in row_lookup:
-            return None, {
-                "reason_code": "roadmap_row_missing",
-                "reason": f"Requested roadmap row '{candidate_id}' was not found.",
-                "step_id": candidate_id,
-            }
+    candidate_rows = [row_lookup[step_id]] if step_id else sorted(rows, key=lambda row: row.row_index)
+    blocked_candidates: list[dict] = []
 
-        row = row_lookup[candidate_id]
+    for row in candidate_rows:
         row_state = _ensure_row_state(state, row.step_id)
         if row_state["status"] == "complete":
             if step_id:
                 return None, {
-                    "reason_code": "roadmap_row_missing",
-                    "reason": f"Requested roadmap row '{candidate_id}' is already complete.",
-                    "step_id": candidate_id,
+                    "block_type": "MISSING_ROW",
+                    "reason": f"Requested roadmap row '{row.step_id}' is already complete.",
+                    "step_id": row.step_id,
+                    "blocking_dependencies": [],
                 }
             continue
 
+        missing_dependencies: list[str] = []
+        incomplete_dependencies: list[str] = []
         for dependency_id in row.dependencies:
             if dependency_id not in row_lookup:
-                return None, {
-                    "reason_code": "dependency_missing",
-                    "reason": f"Dependency '{dependency_id}' for row '{row.step_id}' is missing from roadmap.",
-                    "step_id": row.step_id,
-                }
+                missing_dependencies.append(dependency_id)
+                continue
             dependency_state = _ensure_row_state(state, dependency_id)
             if dependency_state["status"] != "complete":
-                row_state["dependencies_satisfied"] = False
-                return None, {
-                    "reason_code": "dependency_incomplete",
-                    "reason": f"Dependency '{dependency_id}' for row '{row.step_id}' is not complete.",
-                    "step_id": row.step_id,
-                }
+                incomplete_dependencies.append(dependency_id)
+
+        if missing_dependencies:
+            row_state["dependencies_satisfied"] = False
+            blocked = {
+                "block_type": "DEPENDENCY_UNSATISFIED",
+                "reason": f"Dependency '{missing_dependencies[0]}' for row '{row.step_id}' is missing from roadmap.",
+                "step_id": row.step_id,
+                "blocking_dependencies": missing_dependencies,
+            }
+            if step_id:
+                return None, blocked
+            blocked_candidates.append(blocked)
+            continue
+
+        if incomplete_dependencies:
+            row_state["dependencies_satisfied"] = False
+            blocked = {
+                "block_type": "DEPENDENCY_UNSATISFIED",
+                "reason": f"Dependency '{incomplete_dependencies[0]}' for row '{row.step_id}' is not complete.",
+                "step_id": row.step_id,
+                "blocking_dependencies": incomplete_dependencies,
+            }
+            if step_id:
+                return None, blocked
+            blocked_candidates.append(blocked)
+            continue
 
         row_state["dependencies_satisfied"] = True
         return row, None
 
+    if blocked_candidates:
+        return None, blocked_candidates[0]
+
     return None, {
-        "reason_code": "roadmap_row_missing",
+        "block_type": "UNKNOWN",
         "reason": "No executable roadmap row found.",
         "step_id": step_id,
+        "blocking_dependencies": [],
     }
 
 
@@ -193,18 +219,33 @@ def run_pqx_backbone(
     clock=utc_now,
 ) -> dict:
     run_id = f"pqx-run-{iso_now(clock).replace(':', '').replace('-', '')}"
-    state = load_state(state_path)
-    rows = parse_system_roadmap(roadmap_path)
+    try:
+        state = load_state(state_path)
+        rows = parse_system_roadmap(roadmap_path)
+    except PQXBackboneError as exc:
+        block_payload = {
+            "schema_version": "1.1.0",
+            "run_id": run_id,
+            "step_id": selected_step_id,
+            "blocked_at": iso_now(clock),
+            "block_type": "SCHEMA_INVALID",
+            "reason": str(exc),
+            "blocking_dependencies": [],
+        }
+        target_dir = runs_root / (selected_step_id or "_blocked")
+        block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
+        return {"status": "blocked", "block_record": str(block_path)}
 
     row, block = resolve_executable_row(rows, state, step_id=selected_step_id)
     if block:
         block_payload = {
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "run_id": run_id,
             "step_id": block.get("step_id"),
             "blocked_at": iso_now(clock),
-            "reason_code": block["reason_code"],
+            "block_type": block["block_type"],
             "reason": block["reason"],
+            "blocking_dependencies": block.get("blocking_dependencies", []),
         }
         target_dir = runs_root / (block.get("step_id") or "_blocked")
         block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
@@ -214,12 +255,13 @@ def run_pqx_backbone(
     assert row is not None
     if pqx_output_text is None:
         block_payload = {
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "run_id": run_id,
             "step_id": row.step_id,
             "blocked_at": iso_now(clock),
-            "reason_code": "execution_input_missing",
+            "block_type": "MISSING_INPUT",
             "reason": "PQX output payload is required; no fallback execution path is permitted.",
+            "blocking_dependencies": [],
         }
         target_dir = runs_root / row.step_id
         block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
@@ -237,13 +279,21 @@ def run_pqx_backbone(
 
     target_dir = runs_root / row.step_id
     request_payload = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "run_id": run_id,
         "step_id": row.step_id,
         "step_name": row.step_name,
         "dependencies": list(row.dependencies),
         "requested_at": iso_now(clock),
         "prompt": f"Implement roadmap step {row.step_id}: {row.step_name}",
+        "roadmap_version": "docs/roadmaps/system_roadmap.md",
+        "row_snapshot": {
+            "row_index": row.row_index,
+            "step_id": row.step_id,
+            "step_name": row.step_name,
+            "dependencies": list(row.dependencies),
+            "status": row.status,
+        },
     }
     request_path = _write_artifact(request_payload, "pqx_execution_request", target_dir / f"{run_id}.request.json")
 

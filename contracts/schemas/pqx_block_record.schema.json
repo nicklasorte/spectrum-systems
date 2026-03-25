@@ -9,24 +9,49 @@
     "run_id",
     "step_id",
     "blocked_at",
-    "reason_code",
-    "reason"
+    "block_type",
+    "reason",
+    "blocking_dependencies"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "run_id": {"type": "string", "minLength": 1},
-    "step_id": {"type": ["string", "null"]},
-    "blocked_at": {"type": "string", "format": "date-time"},
-    "reason_code": {
+    "schema_version": {
       "type": "string",
-      "enum": [
-        "roadmap_row_missing",
-        "dependency_missing",
-        "dependency_incomplete",
-        "schema_invalid",
-        "execution_input_missing"
+      "const": "1.1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": [
+        "string",
+        "null"
       ]
     },
-    "reason": {"type": "string", "minLength": 1}
+    "blocked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "block_type": {
+      "type": "string",
+      "enum": [
+        "MISSING_ROW",
+        "DEPENDENCY_UNSATISFIED",
+        "MISSING_INPUT",
+        "SCHEMA_INVALID",
+        "UNKNOWN"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blocking_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
   }
 }

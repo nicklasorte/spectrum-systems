@@ -14,15 +14,81 @@
     "prompt"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "run_id": {"type": "string", "minLength": 1},
-    "step_id": {"type": "string", "minLength": 1},
-    "step_name": {"type": "string", "minLength": 1},
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_name": {
+      "type": "string",
+      "minLength": 1
+    },
     "dependencies": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
-    "requested_at": {"type": "string", "format": "date-time"},
-    "prompt": {"type": "string", "minLength": 1}
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "roadmap_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "row_snapshot": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "row_index",
+        "step_id",
+        "step_name",
+        "dependencies",
+        "status"
+      ],
+      "properties": {
+        "row_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from spectrum_systems.modules.pqx_backbone import (
+    RoadmapRow,
     parse_system_roadmap,
     resolve_executable_row,
     run_pqx_backbone,
@@ -31,6 +32,9 @@ def test_roadmap_parser_extracts_rows_and_dependencies() -> None:
     rows = parse_system_roadmap(ROADMAP_PATH)
     assert rows, "Parser must extract roadmap rows"
 
+    assert rows[0].row_index == 0
+    assert rows[1].row_index == 1
+
     ai02 = next(row for row in rows if row.step_id == "AI-02")
     assert ai02.dependencies == ("AI-01",)
     assert ai02.status == "VALID"
@@ -54,7 +58,22 @@ def test_dependency_resolver_blocks_incomplete_dependency() -> None:
     row, block = resolve_executable_row(rows, state, step_id="AI-02")
     assert row is None
     assert block is not None
-    assert block["reason_code"] == "dependency_incomplete"
+    assert block["block_type"] == "DEPENDENCY_UNSATISFIED"
+    assert block["blocking_dependencies"] == ["AI-01"]
+
+
+def test_dependency_resolver_selects_lowest_row_index_with_satisfied_dependencies() -> None:
+    rows = [
+        RoadmapRow(row_index=0, step_id="STEP-20", step_name="A", dependencies=("STEP-30",), status="VALID"),
+        RoadmapRow(row_index=1, step_id="STEP-30", step_name="B", dependencies=(), status="VALID"),
+        RoadmapRow(row_index=2, step_id="STEP-10", step_name="C", dependencies=(), status="VALID"),
+    ]
+    state = {"schema_version": "1.0.0", "rows": []}
+
+    row, block = resolve_executable_row(rows, state)
+    assert block is None
+    assert row is not None
+    assert row.step_id == "STEP-30"
 
 
 def test_runner_fail_closed_when_step_missing(tmp_path: Path) -> None:
@@ -72,6 +91,9 @@ def test_runner_fail_closed_when_step_missing(tmp_path: Path) -> None:
 
     assert result["status"] == "blocked"
     assert "block_record" in result
+    block = json.loads(Path(result["block_record"]).read_text(encoding="utf-8"))
+    assert block["block_type"] == "MISSING_ROW"
+    assert block["blocking_dependencies"] == []
 
 
 def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
@@ -98,3 +120,7 @@ def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
     assert summary_path.exists()
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["final_status"] == "complete"
+
+    request = json.loads(Path(result["request"]).read_text(encoding="utf-8"))
+    assert request["roadmap_version"] == "docs/roadmaps/system_roadmap.md"
+    assert request["row_snapshot"]["step_id"] == "AI-01"
