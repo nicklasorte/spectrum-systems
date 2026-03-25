@@ -803,6 +803,216 @@
           "minLength": 1
         }
       }
+    },
+    "error_budget_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "schema_version",
+        "timestamp",
+        "trace_refs",
+        "slo_id",
+        "observability_metrics_id",
+        "policy_id",
+        "budget_window",
+        "budget_status",
+        "objectives",
+        "highest_severity",
+        "triggered_conditions",
+        "reasons",
+        "generated_by_version"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "artifact_type": {
+          "type": "string",
+          "const": "error_budget_status"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "trace_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trace_id"
+          ],
+          "properties": {
+            "trace_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "slo_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "observability_metrics_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "budget_window": {
+          "type": "string",
+          "enum": [
+            "single_run",
+            "rolling_batch"
+          ]
+        },
+        "budget_status": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "warning",
+            "exhausted",
+            "invalid"
+          ]
+        },
+        "objectives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "metric_name",
+              "target_value",
+              "observed_value",
+              "allowed_error",
+              "consumed_error",
+              "remaining_error",
+              "consumption_ratio",
+              "status"
+            ],
+            "properties": {
+              "metric_name": {
+                "type": "string",
+                "enum": [
+                  "replay_success_rate",
+                  "grounding_block_rate",
+                  "unsupported_claim_rate",
+                  "invalid_evidence_ref_rate",
+                  "drift_exceed_threshold_rate",
+                  "baseline_gate_block_rate",
+                  "regression_failure_rate"
+                ]
+              },
+              "target_value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "observed_value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "allowed_error": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "consumed_error": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "remaining_error": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "consumption_ratio": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "healthy",
+                  "warning",
+                  "exhausted",
+                  "invalid"
+                ]
+              }
+            }
+          }
+        },
+        "highest_severity": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "warning",
+            "exhausted",
+            "invalid"
+          ]
+        },
+        "triggered_conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "metric_name",
+              "status",
+              "consumption_ratio"
+            ],
+            "properties": {
+              "metric_name": {
+                "type": "string",
+                "enum": [
+                  "replay_success_rate",
+                  "grounding_block_rate",
+                  "unsupported_claim_rate",
+                  "invalid_evidence_ref_rate",
+                  "drift_exceed_threshold_rate",
+                  "baseline_gate_block_rate",
+                  "regression_failure_rate"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "warning",
+                  "exhausted",
+                  "invalid"
+                ]
+              },
+              "consumption_ratio": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "generated_by_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   },
   "allOf": [
