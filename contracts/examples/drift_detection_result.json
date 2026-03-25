@@ -1,0 +1,42 @@
+{
+  "artifact_id": "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+  "artifact_type": "drift_detection_result",
+  "schema_version": "1.1.0",
+  "timestamp": "2026-03-24T00:00:00Z",
+  "trace_refs": {
+    "trace_id": "trace-eval-001"
+  },
+  "run_id": "eval-run-001",
+  "policy_id": "baseline-gate-policy-v1",
+  "baseline_id": "baseline-replay-v1",
+  "baseline_source": "approved_replay_baseline",
+  "comparison_target_id": "RPL-abc123",
+  "comparison_target_type": "replay_result",
+  "drift_status": "within_threshold",
+  "compared_dimensions": [
+    "final_status_delta",
+    "enforcement_action_delta",
+    "consistency_mismatch_delta",
+    "drift_detected_delta",
+    "failure_reason_present_delta"
+  ],
+  "metrics": {
+    "final_status_delta": 0,
+    "enforcement_action_delta": 1,
+    "consistency_mismatch_delta": 1,
+    "drift_detected_delta": 1,
+    "failure_reason_present_delta": 0
+  },
+  "triggered_thresholds": [
+    {
+      "dimension": "enforcement_action_delta",
+      "severity": "warn",
+      "value": 1,
+      "threshold": 0
+    }
+  ],
+  "reasons": [
+    "warn threshold exceeded for enforcement_action_delta"
+  ],
+  "generated_by_version": "drift_detection.py@1.0.0"
+}

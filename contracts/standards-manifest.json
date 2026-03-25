@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.54",
+  "artifact_version": "1.0.55",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-HS-20-GROUNDING-CONTROL-GATE",
-  "run_id": "run-20260324T220000Z",
+  "record_id": "REC-STD-2026-03-24-SRE-05-SRE-06-DRIFT-BASELINE-GATE",
+  "run_id": "run-20260324T230000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -118,6 +118,32 @@
       "notes": "Structured assumptions with validation plans and dependency links."
     },
     {
+      "artifact_type": "baseline_gate_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.55",
+      "last_updated_in": "1.0.55",
+      "example_path": "contracts/examples/baseline_gate_decision.json",
+      "notes": "SRE-06 deterministic baseline gate decision artifact enforcing fail-closed promotion blocking semantics."
+    },
+    {
+      "artifact_type": "baseline_gate_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.55",
+      "last_updated_in": "1.0.55",
+      "example_path": "contracts/examples/baseline_gate_policy.json",
+      "notes": "SRE-05/06 governed policy artifact for supported dimensions, thresholds, baseline-source requirements, and invalid-comparison behavior."
+    },
+    {
       "artifact_type": "book_intelligence_pack",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -201,15 +227,15 @@
     {
       "artifact_type": "drift_detection_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.6",
-      "last_updated_in": "1.0.6",
+      "last_updated_in": "1.0.55",
       "example_path": "contracts/examples/drift_detection_result.json",
-      "notes": "Deterministic drift comparison artifact for replay-versus-baseline regression detection and control-loop gating."
+      "notes": "SRE-05/06 deterministic baseline drift artifact with policy linkage, strict dimensions, and threshold-trigger traceability."
     },
     {
       "artifact_type": "drift_result",
