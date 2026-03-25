@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_row_state.schema.json",
+  "title": "PQX Row State Store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/row_state"
+      }
+    }
+  },
+  "$defs": {
+    "row_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "status",
+        "last_run",
+        "dependencies_satisfied",
+        "retries"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_started",
+            "running",
+            "blocked",
+            "complete"
+          ]
+        },
+        "last_run": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "dependencies_satisfied": {
+          "type": "boolean"
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

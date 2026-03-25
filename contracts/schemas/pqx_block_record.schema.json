@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_block_record.schema.json",
+  "title": "PQX Block Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "step_id",
+    "blocked_at",
+    "reason_code",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": ["string", "null"]},
+    "blocked_at": {"type": "string", "format": "date-time"},
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "roadmap_row_missing",
+        "dependency_missing",
+        "dependency_incomplete",
+        "schema_invalid",
+        "execution_input_missing"
+      ]
+    },
+    "reason": {"type": "string", "minLength": 1}
+  }
+}
