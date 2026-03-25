@@ -7,7 +7,6 @@ artifactized outcomes.
 
 from __future__ import annotations
 
-import json
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -57,10 +56,6 @@ _POLICY_DISALLOWED_TRUST_SOURCE: Dict[str, Tuple[Tuple[str, str], ...]] = {
 
 class ContextAdmissionError(RuntimeError):
     """Fail-closed context admission boundary error."""
-
-
-def _canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
@@ -117,6 +112,25 @@ def _scan_item_constraints(context_items: Sequence[Dict[str, Any]], policy_id: s
     )
 
 
+def _scan_disallowed_pairs(context_items: Sequence[Dict[str, Any]], policy_id: str) -> List[Dict[str, str]]:
+    disallowed = set(_POLICY_DISALLOWED_TRUST_SOURCE.get(policy_id, ()))
+    blocked_pairs = [
+        {
+            "source_classification": str(item.get("source_classification") or ""),
+            "trust_level": str(item.get("trust_level") or ""),
+        }
+        for item in context_items
+        if (
+            str(item.get("source_classification") or ""),
+            str(item.get("trust_level") or ""),
+        ) in disallowed
+    ]
+    return sorted(
+        blocked_pairs,
+        key=lambda entry: (entry["source_classification"], entry["trust_level"]),
+    )
+
+
 def run_context_admission(
     *,
     context_bundle: Optional[Dict[str, Any]],
@@ -156,7 +170,7 @@ def run_context_admission(
             validation_reasons.append(f"context_bundle_validation_failed:{bundle_error}")
 
     if bundle and isinstance(bundle.get("context_items"), list):
-        item_reasons, blocked_pairs = _scan_item_constraints(bundle["context_items"], policy_id="permissive")
+        item_reasons, _ = _scan_item_constraints(bundle["context_items"], policy_id="")
         validation_reasons.extend(item_reasons)
 
     try:
@@ -166,8 +180,9 @@ def run_context_admission(
         validation_reasons.append(f"policy_resolution_failed:{exc}")
 
     if bundle and isinstance(bundle.get("context_items"), list) and policy_id:
-        item_reasons, blocked_pairs = _scan_item_constraints(bundle["context_items"], policy_id=policy_id)
-        validation_reasons.extend(item_reasons)
+        blocked_pairs = _scan_disallowed_pairs(bundle["context_items"], policy_id=policy_id)
+        if blocked_pairs:
+            validation_reasons.append("disallowed_trust_source_combination")
 
     unique_reasons = sorted(set(validation_reasons))
     validation_passed = len(unique_reasons) == 0
