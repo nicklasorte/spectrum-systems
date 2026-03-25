@@ -11,6 +11,7 @@ from spectrum_systems.modules.runtime.model_adapter import (
     build_canonical_request,
     normalize_provider_response,
 )
+from spectrum_systems.modules.runtime.prompt_registry import load_prompt_registry_entries
 
 
 class _Provider:
@@ -240,3 +241,40 @@ def test_adapter_execute_returns_only_canonical_response() -> None:
         "structured_output",
         "trace",
     }
+
+
+def test_adapter_rejects_request_not_backed_by_registry(tmp_path) -> None:
+    entry = {
+        "artifact_type": "prompt_registry_entry",
+        "schema_version": "1.0.0",
+        "prompt_id": "ag.runtime.default",
+        "prompt_version": "v1.0.0",
+        "created_at": "2026-03-24T00:00:00Z",
+        "status": "approved",
+        "owner": {"team": "runtime-governance", "contact": "runtime-governance@spectrum-systems.test"},
+        "risk_class": "high",
+        "prompt_text": "You are the AG runtime control prompt. Execute only declared bounded steps.",
+        "prompt_purpose": "Deterministic AG runtime execution guidance.",
+        "linked_eval_set_ids": ["ag-runtime-golden-path-v1"],
+        "runtime_metadata": {
+            "immutability_hash": "sha256:babde641d72a7df123f15ce11e89c00738f9592eb649ee6bf8afd6c14d4b4d02",
+            "selection_key": "ag.runtime.default@v1.0.0",
+        },
+    }
+    path = tmp_path / "entry.json"
+    path.write_text(json.dumps(entry, indent=2) + "\n", encoding="utf-8")
+    entries = load_prompt_registry_entries([path])
+    adapter = CanonicalModelAdapter(provider=_Provider(), prompt_registry_entries=tuple(entries))
+
+    request = build_canonical_request(
+        prompt_id="ag.runtime.default",
+        prompt_version="v9.9.9",
+        requested_model_id="openai:gpt-4o-mini",
+        input_text="Summarize bounded context",
+        trace_id="trace-001",
+        agent_run_id="agrun-001",
+        step_id="step-001",
+    )
+
+    with pytest.raises(ModelAdapterError, match="not registry-backed"):
+        adapter.execute(request)

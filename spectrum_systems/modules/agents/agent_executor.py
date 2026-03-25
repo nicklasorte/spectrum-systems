@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.prompt_injection_defense import (
     default_prompt_injection_policy,
     evaluate_enforcement_outcome,
 )
+from spectrum_systems.modules.runtime.prompt_registry import (
+    PromptRegistryError,
+    assert_prompt_registered,
+)
 from spectrum_systems.modules.runtime.multi_pass_generation import (
     MultiPassGenerationError,
     run_multi_pass_generation,
@@ -315,6 +319,30 @@ def execute_step_sequence(
         )
 
     planned_steps = [deepcopy(step) for step in step_plan]
+    has_model_steps = any(str(step.get("step_type")) == "model" for step in planned_steps)
+    if has_model_steps:
+        if model_adapter is None:
+            raise AgentExecutionError("execute_step_sequence: model steps require model_adapter")
+        prompt_entry = prompt_resolution.get("entry")
+        if not isinstance(prompt_entry, dict):
+            raise AgentExecutionError(
+                "execute_step_sequence: governed model steps require registry-backed prompt_resolution.entry"
+            )
+        try:
+            assert_prompt_registered(
+                prompt_id=str(prompt_resolution["prompt_id"]),
+                prompt_version=str(prompt_resolution["prompt_version"]),
+                entries=[prompt_entry],
+            )
+            assert_prompt_registered(
+                prompt_id=str(prompt_resolution["prompt_id"]),
+                prompt_version=str(prompt_resolution["prompt_version"]),
+                entries=list(model_adapter.prompt_registry_entries),
+            )
+        except PromptRegistryError as exc:
+            raise AgentExecutionError(
+                f"execute_step_sequence: governed model steps require registry-backed prompt identity: {exc}"
+            ) from exc
 
     started_at = _now_iso()
     tool_calls: List[Dict[str, Any]] = []

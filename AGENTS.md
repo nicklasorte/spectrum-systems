@@ -108,6 +108,6 @@ Claude review at a checkpoint blocks advancement to the next stage until finding
 
 - Only the ACTIVE roadmap may be used for implementation
 - The ACTIVE roadmap is:
-  docs/roadmaps/codex-prompt-roadmap.md
-- REFERENCE documents provide context only and must not drive execution
-- DEPRECATED documents must not be used
+  docs/roadmaps/system_roadmap.md
+- Non-authoritative roadmap files (including `docs/roadmaps/codex-prompt-roadmap.md`) provide context only and must not drive implementation execution.
+- DEPRECATED roadmap execution paths must not be used for implementation.

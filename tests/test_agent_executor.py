@@ -21,14 +21,37 @@ from spectrum_systems.modules.agents.agent_executor import (  # noqa: E402
 from spectrum_systems.modules.runtime.model_adapter import CanonicalModelAdapter
 
 
-def _prompt_resolution() -> Dict[str, Any]:
+def _prompt_registry_entry(*, version: str = "v1.0.0") -> Dict[str, Any]:
     return {
+        "artifact_type": "prompt_registry_entry",
+        "schema_version": "1.0.0",
+        "prompt_id": "ag.runtime.default",
+        "prompt_version": version,
+        "created_at": "2026-03-24T00:00:00Z",
+        "status": "approved",
+        "owner": {"team": "runtime-governance", "contact": "runtime-governance@spectrum-systems.test"},
+        "risk_class": "high",
+        "prompt_text": "You are the AG runtime control prompt. Execute only declared bounded steps.",
+        "prompt_purpose": "Deterministic AG runtime execution guidance.",
+        "linked_eval_set_ids": ["ag-runtime-golden-path-v1"],
+        "runtime_metadata": {
+            "immutability_hash": "sha256:babde641d72a7df123f15ce11e89c00738f9592eb649ee6bf8afd6c14d4b4d02",
+            "selection_key": f"ag.runtime.default@{version}",
+        },
+    }
+
+
+def _prompt_resolution(*, include_entry: bool = False) -> Dict[str, Any]:
+    resolution = {
         "prompt_id": "ag.runtime.default",
         "prompt_version": "v1.0.0",
         "requested_alias": "prod",
         "resolution_source": "prompt_alias_map",
         "status": "resolved",
     }
+    if include_entry:
+        resolution["entry"] = _prompt_registry_entry()
+    return resolution
 
 
 
@@ -160,7 +183,7 @@ def test_successful_bounded_execution() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-001",
         trace_id="trace-001",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -210,7 +233,7 @@ def test_tool_step_failure() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-002",
         trace_id="trace-002",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -231,7 +254,7 @@ def test_schema_invalid_final_output() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-003",
         trace_id="trace-003",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -276,7 +299,7 @@ def test_grounding_control_block_halts_execution(monkeypatch: pytest.MonkeyPatch
     trace = execute_step_sequence(
         agent_run_id="agent-run-003b",
         trace_id="trace-003b",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -316,7 +339,7 @@ def test_grounding_control_flag_continues_execution(monkeypatch: pytest.MonkeyPa
     trace = execute_step_sequence(
         agent_run_id="agent-run-003c",
         trace_id="trace-003c",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -338,7 +361,7 @@ def test_blocked_execution_when_context_bundle_missing_required_data() -> None:
         execute_step_sequence(
             agent_run_id="agent-run-004",
             trace_id="trace-004",
-            prompt_resolution=_prompt_resolution(),
+            prompt_resolution=_prompt_resolution(include_entry=True),
             context_bundle=bundle,
             step_plan=plan,
             final_output_schema="context_bundle",
@@ -456,7 +479,7 @@ def test_suspicious_content_preserved_when_allow_as_data_policy() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-011",
         trace_id="trace-011",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
@@ -487,7 +510,7 @@ def test_suspicious_content_blocks_when_quarantine_policy() -> None:
         execute_step_sequence(
             agent_run_id="agent-run-012",
             trace_id="trace-012",
-            prompt_resolution=_prompt_resolution(),
+            prompt_resolution=_prompt_resolution(include_entry=True),
             context_bundle=bundle,
             step_plan=plan,
             final_output_schema="context_bundle",
@@ -514,7 +537,7 @@ def test_assessment_required_missing_fails_closed(monkeypatch: pytest.MonkeyPatc
         execute_step_sequence(
             agent_run_id="agent-run-013",
             trace_id="trace-013",
-            prompt_resolution=_prompt_resolution(),
+            prompt_resolution=_prompt_resolution(include_entry=True),
             context_bundle=bundle,
             step_plan=plan,
             final_output_schema="context_bundle",
@@ -574,11 +597,14 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-007",
         trace_id="trace-007",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
-        model_adapter=CanonicalModelAdapter(provider=_Provider()),
+        model_adapter=CanonicalModelAdapter(
+            provider=_Provider(),
+            prompt_registry_entries=(_prompt_registry_entry(),),
+        ),
         final_output_builder=lambda b, _: b,
         routing_decision=_routing_decision(),
     )
@@ -604,6 +630,77 @@ def test_model_step_records_prompt_and_model_linkage() -> None:
     assert trace["context_source_summary"]["glossary_unresolved_terms"] == []
 
 
+def test_model_step_requires_registry_backed_prompt_resolution_entry() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-001",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Summarize context",
+            }
+        ],
+    )
+    prompt_resolution = _prompt_resolution()
+    prompt_resolution.pop("entry", None)
+
+    with pytest.raises(AgentExecutionError, match="prompt_resolution.entry"):
+        execute_step_sequence(
+            agent_run_id="agent-run-007-missing-entry",
+            trace_id="trace-007-missing-entry",
+            prompt_resolution=prompt_resolution,
+            context_bundle=bundle,
+            step_plan=plan,
+            final_output_schema="context_bundle",
+            model_adapter=CanonicalModelAdapter(
+                provider=type(
+                    "_P",
+                    (),
+                    {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}},
+                )(),
+                prompt_registry_entries=(_prompt_registry_entry(),),
+            ),
+            final_output_builder=lambda b, _: b,
+            routing_decision=_routing_decision(),
+        )
+
+
+def test_model_step_requires_model_adapter_registry_entries() -> None:
+    bundle = _context_bundle()
+    plan = generate_step_plan(
+        bundle,
+        [
+            {
+                "step_id": "step-001",
+                "step_type": "model",
+                "requested_model_id": "openai:gpt-4o-mini",
+                "input_text": "Summarize context",
+            }
+        ],
+    )
+
+    with pytest.raises(AgentExecutionError, match="registry-backed prompt identity"):
+        execute_step_sequence(
+            agent_run_id="agent-run-007-missing-adapter-registry",
+            trace_id="trace-007-missing-adapter-registry",
+            prompt_resolution=_prompt_resolution(include_entry=True),
+            context_bundle=bundle,
+            step_plan=plan,
+            final_output_schema="context_bundle",
+            model_adapter=CanonicalModelAdapter(
+                provider=type(
+                    "_P",
+                    (),
+                    {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}},
+                )(),
+            ),
+            final_output_builder=lambda b, _: b,
+            routing_decision=_routing_decision(),
+        )
+
+
 def test_model_step_fails_closed_on_malformed_provider_response() -> None:
     bundle = _context_bundle()
     plan = generate_step_plan(
@@ -627,11 +724,14 @@ def test_model_step_fails_closed_on_malformed_provider_response() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-008",
         trace_id="trace-008",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
-        model_adapter=CanonicalModelAdapter(provider=_BadProvider()),
+        model_adapter=CanonicalModelAdapter(
+            provider=_BadProvider(),
+            prompt_registry_entries=(_prompt_registry_entry(),),
+        ),
         final_output_builder=lambda b, _: b,
         routing_decision=_routing_decision(),
     )
@@ -658,11 +758,14 @@ def test_structured_model_step_requires_structured_declaration() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-009",
         trace_id="trace-009",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
-        model_adapter=CanonicalModelAdapter(provider=type("_P", (), {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}})()),
+        model_adapter=CanonicalModelAdapter(
+            provider=type("_P", (), {"provider_name": "openai", "invoke": lambda self, _: {"model": "gpt-4o-mini", "output_text": "ok", "finish_reason": "stop"}})(),
+            prompt_registry_entries=(_prompt_registry_entry(),),
+        ),
         final_output_builder=lambda b, _: b,
         routing_decision=_routing_decision(),
     )
@@ -717,11 +820,14 @@ def test_structured_model_step_trace_linkage_present() -> None:
     trace = execute_step_sequence(
         agent_run_id="agent-run-010",
         trace_id="trace-010",
-        prompt_resolution=_prompt_resolution(),
+        prompt_resolution=_prompt_resolution(include_entry=True),
         context_bundle=bundle,
         step_plan=plan,
         final_output_schema="context_bundle",
-        model_adapter=CanonicalModelAdapter(provider=_StructuredProvider()),
+        model_adapter=CanonicalModelAdapter(
+            provider=_StructuredProvider(),
+            prompt_registry_entries=(_prompt_registry_entry(),),
+        ),
         final_output_builder=lambda b, _: b,
         routing_decision=_routing_decision(),
     )
