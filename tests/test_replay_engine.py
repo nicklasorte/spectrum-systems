@@ -668,3 +668,57 @@ def test_run_replay_attaches_observability_metrics_with_trace_linkage() -> None:
     assert observability["artifact_type"] == "observability_metrics"
     assert observability["trace_refs"]["trace_id"] == result["trace_id"]
     assert result["replay_id"] in observability["source_artifact_ids"]
+
+
+def test_run_replay_attaches_error_budget_status_when_slo_is_provided() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    slo_definition = {
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "artifact_type": "service_level_objective",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "service_name": "spectrum-runtime-control",
+        "service_scope": "runtime_replay_control_surface",
+        "objective_window": "rolling_24h",
+        "objectives": [
+            {
+                "metric_name": "replay_success_rate",
+                "target_operator": "gte",
+                "target_value": 0.99,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "Replay consistency objective",
+            }
+        ],
+        "policy_id": "sre-observability-policy-v1",
+        "generated_by_version": "sre-08-sre-10@1.0.0",
+    }
+    error_budget_policy = {
+        "artifact_type": "error_budget_policy",
+        "schema_version": "1.0.0",
+        "policy_id": "sre-error-budget-policy-v1",
+        "measurement_window": "single_run",
+        "supported_metrics": ["replay_success_rate"],
+        "warning_consumption_ratio": 0.5,
+        "exhausted_consumption_ratio": 1.0,
+        "unknown_metric_handling": "fail_closed",
+        "missing_metric_handling": "fail_closed",
+        "generated_by_version": "sre-09@1.0.0",
+    }
+
+    result = run_replay(
+        artifact,
+        original_decision,
+        original_enforcement,
+        _trace_context(),
+        slo_definition=slo_definition,
+        error_budget_policy=error_budget_policy,
+    )
+
+    assert "error_budget_status" in result
+    assert result["error_budget_status"]["artifact_type"] == "error_budget_status"
+    assert result["error_budget_status"]["trace_refs"]["trace_id"] == result["trace_id"]
+    assert result["error_budget_status"]["observability_metrics_id"] == result["observability_metrics"]["artifact_id"]
+    validate_artifact(result, "replay_result")

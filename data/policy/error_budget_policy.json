@@ -1,0 +1,16 @@
+{
+  "artifact_type": "error_budget_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "sre-error-budget-policy-v1",
+  "measurement_window": "single_run",
+  "supported_metrics": [
+    "replay_success_rate",
+    "drift_exceed_threshold_rate",
+    "baseline_gate_block_rate"
+  ],
+  "warning_consumption_ratio": 0.5,
+  "exhausted_consumption_ratio": 1.0,
+  "unknown_metric_handling": "fail_closed",
+  "missing_metric_handling": "fail_closed",
+  "generated_by_version": "sre-09@1.0.0"
+}
