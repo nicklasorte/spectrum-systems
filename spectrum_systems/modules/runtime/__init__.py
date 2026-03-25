@@ -191,6 +191,10 @@ from spectrum_systems.modules.runtime.drift_detection_engine import (
     validate_drift_detection_result,
     validate_replay_artifact as validate_drift_replay_artifact,
 )
+from spectrum_systems.modules.runtime.context_admission import (
+    ContextAdmissionError,
+    run_context_admission,
+)
 from spectrum_systems.modules.runtime.evaluation_monitor import (
     EvaluationMonitorError,
     InvalidRegressionResultError,
@@ -348,4 +352,7 @@ __all__ = [
     "classify_trend",
     "assess_burn_rate",
     "run_evaluation_monitor",
+    # TRUST-01 — Context Admission Gate
+    "run_context_admission",
+    "ContextAdmissionError",
 ]

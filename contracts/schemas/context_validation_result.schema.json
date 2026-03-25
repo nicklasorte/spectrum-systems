@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/context_validation_result.schema.json",
+  "title": "Context Validation Result",
+  "description": "Deterministic pre-execution validation artifact for TRUST-01 context admission.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_id",
+    "context_bundle_id",
+    "trace",
+    "admission_stage",
+    "policy_resolution",
+    "checks",
+    "validation_status",
+    "reason_codes",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "context_validation_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "validation_id": { "type": "string", "minLength": 1 },
+    "context_bundle_id": { "type": "string" },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": { "type": "string" },
+        "run_id": { "type": "string" }
+      }
+    },
+    "admission_stage": { "type": "string", "minLength": 1 },
+    "policy_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_policy",
+        "resolved_policy",
+        "resolution_source",
+        "policy_registry_version",
+        "policy_contract_version"
+      ],
+      "properties": {
+        "requested_policy": { "type": ["string", "null"] },
+        "resolved_policy": { "type": ["string", "null"] },
+        "resolution_source": { "type": ["string", "null"] },
+        "policy_registry_version": { "type": "string", "minLength": 1 },
+        "policy_contract_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_present",
+        "bundle_schema_version_accepted",
+        "bundle_contract_valid",
+        "trust_levels_valid",
+        "source_classifications_valid",
+        "policy_resolution_succeeded",
+        "disallowed_trust_source_combinations"
+      ],
+      "properties": {
+        "bundle_present": { "type": "boolean" },
+        "bundle_schema_version_accepted": { "type": "boolean" },
+        "bundle_contract_valid": { "type": "boolean" },
+        "trust_levels_valid": { "type": "boolean" },
+        "source_classifications_valid": { "type": "boolean" },
+        "policy_resolution_succeeded": { "type": "boolean" },
+        "disallowed_trust_source_combinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_classification", "trust_level"],
+            "properties": {
+              "source_classification": { "type": "string", "minLength": 1 },
+              "trust_level": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/contracts/context_admission_decision.schema.json",
+  "title": "Context Admission Decision",
+  "description": "Deterministic allow/block pre-execution context gate decision for TRUST-01.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "admission_decision_id",
+    "context_bundle_id",
+    "trace",
+    "admission_stage",
+    "policy_id",
+    "policy_registry_version",
+    "decision_status",
+    "allow_execution",
+    "reason_codes",
+    "blocked_trust_source_pairs",
+    "validation_ref",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "context_admission_decision" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "admission_decision_id": { "type": "string", "minLength": 1 },
+    "context_bundle_id": { "type": "string" },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": { "type": "string" },
+        "run_id": { "type": "string" }
+      }
+    },
+    "admission_stage": { "type": "string", "minLength": 1 },
+    "policy_id": { "type": ["string", "null"] },
+    "policy_registry_version": { "type": "string", "minLength": 1 },
+    "decision_status": { "type": "string", "enum": ["allow", "block"] },
+    "allow_execution": { "type": "boolean" },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "blocked_trust_source_pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_classification", "trust_level"],
+        "properties": {
+          "source_classification": { "type": "string", "minLength": 1 },
+          "trust_level": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "validation_ref": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}
