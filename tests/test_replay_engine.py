@@ -721,4 +721,8 @@ def test_run_replay_attaches_error_budget_status_when_slo_is_provided() -> None:
     assert result["error_budget_status"]["artifact_type"] == "error_budget_status"
     assert result["error_budget_status"]["trace_refs"]["trace_id"] == result["trace_id"]
     assert result["error_budget_status"]["observability_metrics_id"] == result["observability_metrics"]["artifact_id"]
+    assert "alert_trigger" in result
+    assert result["alert_trigger"]["artifact_type"] == "alert_trigger"
+    assert result["alert_trigger"]["replay_result_id"] == result["replay_id"]
+    assert result["alert_trigger"]["trace_refs"]["trace_id"] == result["trace_id"]
     validate_artifact(result, "replay_result")

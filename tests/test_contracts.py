@@ -202,7 +202,7 @@ class ContractSchemaTests(unittest.TestCase):
         validate_artifact(instance, "grounding_control_decision")
 
     def test_sre_observability_contract_examples_validate(self) -> None:
-        for name in ("service_level_objective", "observability_metrics", "error_budget_policy", "error_budget_status"):
+        for name in ("service_level_objective", "observability_metrics", "error_budget_policy", "error_budget_status", "alert_trigger_policy", "alert_trigger"):
             instance = load_example(name)
             validate_artifact(instance, name)
 

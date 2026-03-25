@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/alert_trigger_policy.schema.json",
+  "title": "Alert Trigger Policy",
+  "description": "Governed deterministic policy for bounded alert trigger decisioning from replay-authoritative measurement artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_id",
+    "supported_signal_types",
+    "required_source_artifacts",
+    "budget_status_to_alert",
+    "breach_severity_to_alert",
+    "baseline_gate_status_to_alert",
+    "drift_status_to_alert",
+    "grounding_status_to_alert",
+    "invalid_input_behavior",
+    "recommended_actions",
+    "generated_by_version"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "alert_trigger_policy"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "policy_id": {"type": "string", "pattern": "^sre-alert-trigger-policy-v\\d+$"},
+    "supported_signal_types": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "error_budget_status",
+          "observability_metrics",
+          "baseline_gate_decision",
+          "drift_detection_result",
+          "grounding_control_decision"
+        ]
+      }
+    },
+    "required_source_artifacts": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "replay_result",
+          "observability_metrics",
+          "error_budget_status",
+          "baseline_gate_decision",
+          "drift_detection_result",
+          "grounding_control_decision"
+        ]
+      }
+    },
+    "budget_status_to_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["healthy", "warning", "exhausted", "invalid"],
+      "properties": {
+        "healthy": {"$ref": "#/$defs/mappedSignal"},
+        "warning": {"$ref": "#/$defs/mappedSignal"},
+        "exhausted": {"$ref": "#/$defs/mappedSignal"},
+        "invalid": {"$ref": "#/$defs/mappedSignal"}
+      }
+    },
+    "breach_severity_to_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["none", "warn", "block"],
+      "properties": {
+        "none": {"$ref": "#/$defs/mappedSignal"},
+        "warn": {"$ref": "#/$defs/mappedSignal"},
+        "block": {"$ref": "#/$defs/mappedSignal"}
+      }
+    },
+    "baseline_gate_status_to_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "warn", "block"],
+      "properties": {
+        "pass": {"$ref": "#/$defs/mappedSignal"},
+        "warn": {"$ref": "#/$defs/mappedSignal"},
+        "block": {"$ref": "#/$defs/mappedSignal"}
+      }
+    },
+    "drift_status_to_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_drift", "within_threshold", "exceeds_threshold", "invalid_comparison"],
+      "properties": {
+        "no_drift": {"$ref": "#/$defs/mappedSignal"},
+        "within_threshold": {"$ref": "#/$defs/mappedSignal"},
+        "exceeds_threshold": {"$ref": "#/$defs/mappedSignal"},
+        "invalid_comparison": {"$ref": "#/$defs/mappedSignal"}
+      }
+    },
+    "grounding_status_to_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "warn", "block"],
+      "properties": {
+        "pass": {"$ref": "#/$defs/mappedSignal"},
+        "warn": {"$ref": "#/$defs/mappedSignal"},
+        "block": {"$ref": "#/$defs/mappedSignal"}
+      }
+    },
+    "invalid_input_behavior": {"type": "string", "enum": ["emit_invalid_alert"]},
+    "recommended_actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_alert", "warning", "critical", "invalid"],
+      "properties": {
+        "no_alert": {"type": "string", "enum": ["none", "observe"]},
+        "warning": {"type": "string", "enum": ["observe", "open_investigation"]},
+        "critical": {"type": "string", "enum": ["open_investigation", "immediate_mitigation"]},
+        "invalid": {"type": "string", "enum": ["fix_input_contracts"]}
+      }
+    },
+    "generated_by_version": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "mappedSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alert_status", "severity", "condition"],
+      "properties": {
+        "alert_status": {"type": "string", "enum": ["no_alert", "warning", "critical", "invalid"]},
+        "severity": {"type": "string", "enum": ["none", "low", "medium", "high", "critical"]},
+        "condition": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+      }
+    }
+  }
+}

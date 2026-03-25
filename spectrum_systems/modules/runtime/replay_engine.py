@@ -63,6 +63,7 @@ from spectrum_systems.modules.runtime.drift_detection import (
     build_drift_detection_result,
 )
 from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift
+from spectrum_systems.modules.runtime.alert_triggers import build_alert_trigger
 from spectrum_systems.modules.runtime.error_budget import build_error_budget_status
 from spectrum_systems.modules.runtime.observability_metrics import build_observability_metrics
 from spectrum_systems.modules.runtime.trace_store import (
@@ -957,7 +958,7 @@ def _build_replay_result(
 
     result = {
         "artifact_type": "replay_result",
-        "schema_version": "1.1.2",
+        "schema_version": "1.1.3",
         "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
         "original_run_id": original_run_id,
         "replay_run_id": replay_run_id,
@@ -1115,6 +1116,12 @@ def run_replay(
                 replay_result["observability_metrics"],
                 slo_definition,
                 policy=error_budget_policy,
+                trace_id=trace_id,
+            )
+
+        if "error_budget_status" in replay_result:
+            replay_result["alert_trigger"] = build_alert_trigger(
+                replay_result,
                 trace_id=trace_id,
             )
 
