@@ -17,10 +17,11 @@ from spectrum_systems.modules.runtime.multi_pass_generation import (  # noqa: E4
 
 
 
-def _context_bundle() -> dict:
+def _context_bundle(*, run_id: str, trace_id: str) -> dict:
     return {
-        "context_items": [{"item_id": "ctxi-aaaaaaaaaaaaaaaa"}],
-        "retrieved_context": [{"artifact_id": "ART-001"}],
+        "trace": {"trace_id": trace_id, "run_id": run_id},
+        "context_items": [{"item_id": "ctxi-aaaaaaaaaaaaaaaa", "provenance_refs": ["ART-001"]}],
+        "retrieved_context": [{"artifact_id": "ART-001", "provenance": {"source_id": "ART-001"}}],
         "prior_artifacts": [],
         "metadata": {"source_artifact_ids": ["ART-001"]},
     }
@@ -31,17 +32,23 @@ def _input_artifact() -> dict:
         "summary": "",
         "claims": [
             {"text": "UNSUPPORTED finding", "supporting_evidence_refs": []},
-            {"text": "grounded finding", "supporting_evidence_refs": ["ctxi-aaaaaaaaaaaaaaaa"]},
+            {
+                "text": "grounded finding",
+                "supporting_evidence_refs": ["ctxi-aaaaaaaaaaaaaaaa"],
+                "source_artifact_refs": ["ART-001"],
+            },
         ],
     }
 
 
 def test_full_multi_pass_execution_path() -> None:
+    run_id = "agent-run-001"
+    trace_id = "trace-001"
     record = run_multi_pass_generation(
-        run_id="agent-run-001",
-        trace_id="trace-001",
+        run_id=run_id,
+        trace_id=trace_id,
         input_artifact=_input_artifact(),
-        validated_context_bundle=_context_bundle(),
+        validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id),
         config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"),
     )
     assert [p["pass_id"] for p in record["passes"]] == ["pass_1", "pass_2", "pass_3", "final"]
@@ -54,13 +61,17 @@ def test_full_multi_pass_execution_path() -> None:
 
 
 def test_deterministic_outputs_across_runs() -> None:
-    r1 = run_multi_pass_generation(run_id="agent-run-002", trace_id="trace-002", input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
-    r2 = run_multi_pass_generation(run_id="agent-run-002", trace_id="trace-002", input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
+    run_id = "agent-run-002"
+    trace_id = "trace-002"
+    r1 = run_multi_pass_generation(run_id=run_id, trace_id=trace_id, input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
+    r2 = run_multi_pass_generation(run_id=run_id, trace_id=trace_id, input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
     assert r1 == r2
 
 
 def test_critique_flags_known_issues() -> None:
-    record = run_multi_pass_generation(run_id="agent-run-003", trace_id="trace-003", input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
+    run_id = "agent-run-003"
+    trace_id = "trace-003"
+    record = run_multi_pass_generation(run_id=run_id, trace_id=trace_id, input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
     critique = record["critique"]
     assert {f["field"] for f in critique["inconsistencies"]} == {"artifact_id"}
     assert {f["field"] for f in critique["missing_elements"]} == {"summary"}
@@ -68,7 +79,9 @@ def test_critique_flags_known_issues() -> None:
 
 
 def test_refinement_corrects_critique_issues() -> None:
-    record = run_multi_pass_generation(run_id="agent-run-004", trace_id="trace-004", input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
+    run_id = "agent-run-004"
+    trace_id = "trace-004"
+    record = run_multi_pass_generation(run_id=run_id, trace_id=trace_id, input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
     final_output = record["final_output"]
     assert final_output["artifact_id"] == "123"
     assert final_output["summary"] == "MISSING_REQUIRED_VALUE"
@@ -81,7 +94,9 @@ def test_fail_closed_on_invalid_input_artifact() -> None:
 
 
 def test_trace_linkage_fields_present_for_all_passes() -> None:
-    record = run_multi_pass_generation(run_id="agent-run-006", trace_id="trace-006", input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
+    run_id = "agent-run-006"
+    trace_id = "trace-006"
+    record = run_multi_pass_generation(run_id=run_id, trace_id=trace_id, input_artifact=_input_artifact(), validated_context_bundle=_context_bundle(run_id=run_id, trace_id=trace_id), config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported"))
     for p in record["passes"]:
         assert p["trace_id"] == "trace-006"
         assert p["output_ref"].startswith("multi-pass://agent-run-006/")
@@ -97,7 +112,7 @@ def test_required_grounded_mode_fails_when_unsupported_claims_present() -> None:
             run_id="agent-run-007",
             trace_id="trace-007",
             input_artifact=_input_artifact(),
-            validated_context_bundle=_context_bundle(),
+            validated_context_bundle=_context_bundle(run_id="agent-run-007", trace_id="trace-007"),
             config=MultiPassConfig(evidence_binding_policy_mode="required_grounded"),
         )
 
@@ -112,6 +127,6 @@ def test_required_eval_missing_fails_closed(monkeypatch: pytest.MonkeyPatch) -> 
             run_id="agent-run-008",
             trace_id="trace-008",
             input_artifact=_input_artifact(),
-            validated_context_bundle=_context_bundle(),
+            validated_context_bundle=_context_bundle(run_id="agent-run-008", trace_id="trace-008"),
             config=MultiPassConfig(evidence_binding_policy_mode="allow_unsupported", grounding_factcheck_required=True),
         )
