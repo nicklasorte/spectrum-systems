@@ -676,7 +676,10 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 context_bundle=context_bundle,
                 step_plan=step_plan,
                 final_output_schema="eval_case",
-                model_adapter=CanonicalModelAdapter(provider=_GoldenPathProvider()),
+                model_adapter=CanonicalModelAdapter(
+                    provider=_GoldenPathProvider(),
+                    prompt_registry_entries=tuple(prompt_entries),
+                ),
                 final_output_builder=lambda bundle, steps: _build_structured_output(
                     trace_id=trace_id,
                     run_id=run_id,
