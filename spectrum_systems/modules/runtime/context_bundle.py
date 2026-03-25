@@ -22,7 +22,7 @@ from spectrum_systems.modules.runtime.glossary_registry import (
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 BUNDLE_ARTIFACT_TYPE = "context_bundle"
-BUNDLE_SCHEMA_VERSION = "2.2.1"
+BUNDLE_SCHEMA_VERSION = "2.3.0"
 
 ALLOWED_ITEM_TYPES: Tuple[str, ...] = (
     "primary_input",
@@ -157,11 +157,13 @@ def _append_item(
     if not refs:
         raise ContextBundleValidationError("context item missing required provenance linkage")
 
+    provenance_ref = refs[0]
     identity_payload = {
         "item_index": item_index,
         "item_type": item_type,
         "trust_level": trust_level,
         "source_classification": source_classification,
+        "provenance_ref": provenance_ref,
         "provenance_refs": refs,
         "content": content,
     }
@@ -176,6 +178,7 @@ def _append_item(
             "item_type": item_type,
             "trust_level": trust_level,
             "source_classification": source_classification,
+            "provenance_ref": provenance_ref,
             "provenance_refs": refs,
             "content": content,
         }
@@ -520,6 +523,31 @@ def validate_context_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
         refs = item.get("provenance_refs")
         if not isinstance(refs, list) or not refs or any(not str(ref).strip() for ref in refs):
             raise ContextBundleValidationError("context item missing required provenance linkage")
+        provenance_ref = str(item.get("provenance_ref") or "").strip()
+        if not provenance_ref:
+            raise ContextBundleValidationError("context item missing required provenance_ref")
+        if provenance_ref not in {str(ref).strip() for ref in refs}:
+            raise ContextBundleValidationError(
+                "context item provenance_ref must be a member of provenance_refs"
+            )
+
+        expected_item_id = deterministic_id(
+            prefix="ctxi",
+            namespace="context_bundle_item",
+            payload={
+                "item_index": expected_index,
+                "item_type": item_type,
+                "trust_level": trust_level,
+                "source_classification": source_classification,
+                "provenance_ref": provenance_ref,
+                "provenance_refs": sorted(str(ref).strip() for ref in refs),
+                "content": item.get("content"),
+            },
+        )
+        if item.get("item_id") != expected_item_id:
+            raise ContextBundleValidationError(
+                "non-deterministic ordering: item_id does not match deterministic identity"
+            )
 
     source_segmentation = bundle.get("source_segmentation")
     expected_segmentation = _build_source_segmentation(items)

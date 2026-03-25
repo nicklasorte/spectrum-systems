@@ -1,10 +1,10 @@
 {
   "artifact_type": "context_bundle",
-  "schema_version": "2.2.1",
-  "context_bundle_id": "ctx-8b602b2cbd9ff1c2",
-  "context_id": "ctx-8b602b2cbd9ff1c2",
+  "schema_version": "2.3.0",
+  "context_bundle_id": "ctx-909acedded5e4437",
+  "context_id": "ctx-909acedded5e4437",
   "task_type": "meeting_minutes",
-  "created_at": "2026-09-12T11:26:32Z",
+  "created_at": "2026-02-25T17:30:58Z",
   "trace": {
     "trace_id": "trace-001",
     "run_id": "run-001"
@@ -12,10 +12,11 @@
   "context_items": [
     {
       "item_index": 0,
-      "item_id": "ctxi-a979756bd8cde763",
+      "item_id": "ctxi-4ba4528c1972ad27",
       "item_type": "primary_input",
       "trust_level": "high",
       "source_classification": "user_provided",
+      "provenance_ref": "input-001",
       "provenance_refs": [
         "input-001",
         "input_payload"
@@ -27,10 +28,11 @@
     },
     {
       "item_index": 1,
-      "item_id": "ctxi-0f1d5156a981e904",
+      "item_id": "ctxi-72dba0994849713f",
       "item_type": "policy_constraints",
       "trust_level": "high",
       "source_classification": "internal",
+      "provenance_ref": "policy-001",
       "provenance_refs": [
         "policy-001",
         "policy_constraints"
@@ -44,10 +46,11 @@
     },
     {
       "item_index": 2,
-      "item_id": "ctxi-0a0671bd25be73a2",
+      "item_id": "ctxi-294055e129edf4a0",
       "item_type": "retrieved_context",
       "trust_level": "medium",
       "source_classification": "external",
+      "provenance_ref": "ext-src-001",
       "provenance_refs": [
         "ext-src-001",
         "ret-001"
@@ -66,10 +69,11 @@
     },
     {
       "item_index": 3,
-      "item_id": "ctxi-a2bbf699150fd26b",
+      "item_id": "ctxi-9e39732c8509228b",
       "item_type": "prior_artifact",
       "trust_level": "high",
       "source_classification": "internal",
+      "provenance_ref": "art-001",
       "provenance_refs": [
         "art-001"
       ],
@@ -80,10 +84,11 @@
     },
     {
       "item_index": 4,
-      "item_id": "ctxi-136d635693c6aa0a",
+      "item_id": "ctxi-7dd5cf118f41beed",
       "item_type": "glossary_definition",
       "trust_level": "medium",
       "source_classification": "internal",
+      "provenance_ref": "gle-a2f8fbe34b21d991",
       "provenance_refs": [
         "gle-a2f8fbe34b21d991",
         "rules/policy/sla.md"
@@ -106,10 +111,11 @@
     },
     {
       "item_index": 5,
-      "item_id": "ctxi-4026f4b440323302",
+      "item_id": "ctxi-6c5b6bfbfe72c1a0",
       "item_type": "unresolved_question",
       "trust_level": "low",
       "source_classification": "inferred",
+      "provenance_ref": "unresolved_question:0",
       "provenance_refs": [
         "unresolved_question:0"
       ],
@@ -131,29 +137,29 @@
     },
     "item_refs_by_class": {
       "internal": [
-        "ctxi-0f1d5156a981e904",
-        "ctxi-a2bbf699150fd26b",
-        "ctxi-136d635693c6aa0a"
+        "ctxi-72dba0994849713f",
+        "ctxi-9e39732c8509228b",
+        "ctxi-7dd5cf118f41beed"
       ],
       "external": [
-        "ctxi-0a0671bd25be73a2"
+        "ctxi-294055e129edf4a0"
       ],
       "inferred": [
-        "ctxi-4026f4b440323302"
+        "ctxi-6c5b6bfbfe72c1a0"
       ],
       "user_provided": [
-        "ctxi-a979756bd8cde763"
+        "ctxi-4ba4528c1972ad27"
       ]
     },
     "grounded_item_refs": [
-      "ctxi-0a0671bd25be73a2",
-      "ctxi-0f1d5156a981e904",
-      "ctxi-136d635693c6aa0a",
-      "ctxi-a2bbf699150fd26b",
-      "ctxi-a979756bd8cde763"
+      "ctxi-294055e129edf4a0",
+      "ctxi-4ba4528c1972ad27",
+      "ctxi-72dba0994849713f",
+      "ctxi-7dd5cf118f41beed",
+      "ctxi-9e39732c8509228b"
     ],
     "inferred_item_refs": [
-      "ctxi-4026f4b440323302"
+      "ctxi-6c5b6bfbfe72c1a0"
     ]
   },
   "primary_input": {
@@ -210,20 +216,20 @@
     }
   ],
   "glossary_canonicalization": {
+    "injection_enabled": true,
     "match_mode": "exact",
     "selection_mode": "explicit_then_exact_text",
     "fail_on_missing_required": true,
     "selected_glossary_entry_ids": [
       "gle-a2f8fbe34b21d991"
     ],
-    "unresolved_terms": [],
-    "injection_enabled": true
+    "unresolved_terms": []
   },
   "unresolved_questions": [
     "owner?"
   ],
   "metadata": {
-    "created_at": "2026-09-12T11:26:32Z",
+    "created_at": "2026-02-25T17:30:58Z",
     "retrieval_status": "available",
     "source_artifact_ids": [
       "art-001"
