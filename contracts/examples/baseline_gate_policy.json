@@ -1,0 +1,40 @@
+{
+  "policy_id": "baseline-gate-policy-v1",
+  "schema_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "supported_comparison_target_types": [
+    "replay_result"
+  ],
+  "supported_dimensions": [
+    "final_status_delta",
+    "enforcement_action_delta",
+    "consistency_mismatch_delta",
+    "drift_detected_delta",
+    "failure_reason_present_delta"
+  ],
+  "required_baseline_source": "approved_replay_baseline",
+  "invalid_comparison_action": "block",
+  "warn_on_within_threshold": true,
+  "thresholds": {
+    "final_status_delta": {
+      "warn_if_greater_than": 0,
+      "block_if_greater_than": 0
+    },
+    "enforcement_action_delta": {
+      "warn_if_greater_than": 0,
+      "block_if_greater_than": 1
+    },
+    "consistency_mismatch_delta": {
+      "warn_if_greater_than": 0,
+      "block_if_greater_than": 0
+    },
+    "drift_detected_delta": {
+      "warn_if_greater_than": 0,
+      "block_if_greater_than": 0
+    },
+    "failure_reason_present_delta": {
+      "warn_if_greater_than": 0,
+      "block_if_greater_than": 0
+    }
+  }
+}

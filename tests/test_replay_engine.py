@@ -616,3 +616,42 @@ def test_runtime_replay_observability_parity(tmp_path: Path) -> None:
     )
     replay_result = execute_replay(trace_id, base_dir=tmp_path / "traces")
     assert replay_result["source_trace_id"] == trace_id
+
+def test_run_replay_attaches_baseline_artifacts_when_baseline_present() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    baseline = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = run_replay(
+        artifact,
+        original_decision,
+        original_enforcement,
+        _trace_context(),
+        baseline_artifact=baseline,
+    )
+
+    assert "drift_detection_result" in result
+    assert "baseline_gate_decision" in result
+    assert result["baseline_gate_decision"]["status"] in {"pass", "warn"}
+
+
+def test_run_replay_blocks_when_baseline_gate_blocks() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    baseline = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    blocked = copy.deepcopy(artifact)
+    blocked["pass_rate"] = 0.0
+    blocked["failure_rate"] = 1.0
+    blocked["drift_rate"] = 1.0
+    blocked["reproducibility_score"] = 0.0
+    blocked["system_status"] = "failing"
+
+    with pytest.raises(ReplayEngineError, match="BASELINE_GATE_BLOCKED"):
+        run_replay(
+            blocked,
+            original_decision,
+            original_enforcement,
+            _trace_context(),
+            baseline_artifact=baseline,
+        )

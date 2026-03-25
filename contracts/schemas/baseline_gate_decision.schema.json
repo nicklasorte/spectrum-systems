@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/baseline_gate_decision.schema.json",
+  "title": "Baseline Gate Decision",
+  "description": "Deterministic fail-closed decision artifact derived from drift detection output and baseline gate policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_id",
+    "timestamp",
+    "trace_id",
+    "run_id",
+    "drift_result_id",
+    "policy_id",
+    "baseline_id",
+    "status",
+    "enforcement_action",
+    "triggered_thresholds",
+    "reasons",
+    "generated_by_version"
+  ],
+  "properties": {
+    "decision_id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "drift_result_id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "baseline_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["pass", "warn", "block"] },
+    "enforcement_action": { "type": "string", "enum": ["allow", "flag", "block_promotion"] },
+    "triggered_thresholds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dimension", "severity", "value", "threshold"],
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "final_status_delta",
+              "enforcement_action_delta",
+              "consistency_mismatch_delta",
+              "drift_detected_delta",
+              "failure_reason_present_delta"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["warn", "block"] },
+          "value": { "type": "number", "minimum": 0 },
+          "threshold": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "generated_by_version": { "type": "string", "minLength": 1 }
+  }
+}

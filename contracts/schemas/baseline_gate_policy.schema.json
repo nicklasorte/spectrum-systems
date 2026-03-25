@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/baseline_gate_policy.schema.json",
+  "title": "Baseline Gate Policy",
+  "description": "Governed policy defining deterministic drift dimensions, thresholds, and fail-closed baseline gating semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "schema_version",
+    "policy_version",
+    "supported_comparison_target_types",
+    "supported_dimensions",
+    "required_baseline_source",
+    "invalid_comparison_action",
+    "warn_on_within_threshold",
+    "thresholds"
+  ],
+  "properties": {
+    "policy_id": { "type": "string", "minLength": 1 },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "supported_comparison_target_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["replay_result"] }
+    },
+    "supported_dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "final_status_delta",
+          "enforcement_action_delta",
+          "consistency_mismatch_delta",
+          "drift_detected_delta",
+          "failure_reason_present_delta"
+        ]
+      }
+    },
+    "required_baseline_source": {
+      "type": "string",
+      "enum": ["approved_replay_baseline", "approved_release_baseline"]
+    },
+    "invalid_comparison_action": {
+      "type": "string",
+      "enum": ["block"]
+    },
+    "warn_on_within_threshold": { "type": "boolean" },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_status_delta",
+        "enforcement_action_delta",
+        "consistency_mismatch_delta",
+        "drift_detected_delta",
+        "failure_reason_present_delta"
+      ],
+      "properties": {
+        "final_status_delta": { "$ref": "#/$defs/threshold_rule" },
+        "enforcement_action_delta": { "$ref": "#/$defs/threshold_rule" },
+        "consistency_mismatch_delta": { "$ref": "#/$defs/threshold_rule" },
+        "drift_detected_delta": { "$ref": "#/$defs/threshold_rule" },
+        "failure_reason_present_delta": { "$ref": "#/$defs/threshold_rule" }
+      }
+    }
+  },
+  "$defs": {
+    "threshold_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["warn_if_greater_than", "block_if_greater_than"],
+      "properties": {
+        "warn_if_greater_than": { "type": "number", "minimum": 0 },
+        "block_if_greater_than": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

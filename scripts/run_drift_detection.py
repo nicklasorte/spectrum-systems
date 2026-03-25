@@ -12,9 +12,12 @@ from typing import Any, Dict, Optional
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
-from spectrum_systems.modules.runtime.drift_detection_engine import (  # noqa: E402
+from spectrum_systems.modules.runtime.baseline_gating import (  # noqa: E402
+    load_baseline_gate_policy,
+)
+from spectrum_systems.modules.runtime.drift_detection import (  # noqa: E402
     DriftDetectionError,
-    run_drift_detection,
+    build_drift_detection_result,
 )
 
 EXIT_NO_DRIFT = 0
@@ -42,8 +45,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     try:
         replay = _load_json(Path(args.replay))
         baseline = _load_json(Path(args.baseline)) if args.baseline else None
-        config = _load_json(Path(args.config)) if args.config else None
-        result = run_drift_detection(replay, baseline, config=config)
+        policy = _load_json(Path(args.config)) if args.config else load_baseline_gate_policy()
+        if baseline is None:
+            raise DriftDetectionError("--baseline is required for governed drift detection")
+        result = build_drift_detection_result(replay, baseline, policy)
     except (OSError, json.JSONDecodeError) as exc:
         print(f"ERROR: failed to load input JSON: {exc}", file=sys.stderr)
         return EXIT_FAILURE
@@ -62,7 +67,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(json.dumps(result, indent=2))
     if result.get("drift_status") == "no_drift":
         return EXIT_NO_DRIFT
-    if result.get("drift_status") == "drift_detected":
+    if result.get("drift_status") in {"within_threshold", "exceeds_threshold"}:
         return EXIT_DRIFT
     return EXIT_FAILURE
 

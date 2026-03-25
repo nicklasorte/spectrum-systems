@@ -1,0 +1,23 @@
+{
+  "decision_id": "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447",
+  "timestamp": "2026-03-24T00:00:00Z",
+  "trace_id": "trace-eval-001",
+  "run_id": "eval-run-001",
+  "drift_result_id": "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+  "policy_id": "baseline-gate-policy-v1",
+  "baseline_id": "baseline-replay-v1",
+  "status": "warn",
+  "enforcement_action": "flag",
+  "triggered_thresholds": [
+    {
+      "dimension": "enforcement_action_delta",
+      "severity": "warn",
+      "value": 1,
+      "threshold": 0
+    }
+  ],
+  "reasons": [
+    "drift status within_threshold with warn-level thresholds"
+  ],
+  "generated_by_version": "baseline_gating.py@1.0.0"
+}
