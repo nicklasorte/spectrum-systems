@@ -63,6 +63,7 @@ from spectrum_systems.modules.runtime.drift_detection import (
     build_drift_detection_result,
 )
 from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift
+from spectrum_systems.modules.runtime.observability_metrics import build_observability_metrics
 from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
     TraceStoreError,
@@ -1074,6 +1075,8 @@ def run_replay(
         )
         replay_result["drift_result"] = detect_drift(replay_result)
 
+        observability_sources = [replay_result]
+
         if baseline_artifact is not None:
             policy = baseline_policy if baseline_policy is not None else load_baseline_gate_policy()
             drift_detection_result = build_drift_detection_result(
@@ -1091,11 +1094,17 @@ def run_replay(
             )
             replay_result["drift_detection_result"] = drift_detection_result
             replay_result["baseline_gate_decision"] = baseline_gate_decision
+            observability_sources.extend([drift_detection_result, baseline_gate_decision])
             if baseline_gate_decision.get("enforcement_action") == "block_promotion":
                 raise ReplayEngineError(
                     "BASELINE_GATE_BLOCKED:"
                     + baseline_gate_decision.get("decision_id", "unknown")
                 )
+
+        replay_result["observability_metrics"] = build_observability_metrics(
+            observability_sources,
+            trace_id=trace_id,
+        )
 
         errors = validate_replay_result(replay_result)
         if errors:

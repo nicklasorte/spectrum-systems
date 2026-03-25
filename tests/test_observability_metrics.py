@@ -816,3 +816,93 @@ class TestObservabilityRecordSchema:
         d["unexpected_field"] = "should_fail"
         errors = list(validator.iter_errors(d))
         assert errors
+
+from spectrum_systems.contracts import load_example, validate_artifact  # noqa: E402
+from spectrum_systems.modules.runtime.observability_metrics import (  # noqa: E402
+    ObservabilityMetricsError,
+    build_observability_metrics,
+)
+
+
+class TestRuntimeObservabilityMetrics:
+    def test_valid_slo_definition_example_validates(self):
+        instance = load_example("service_level_objective")
+        validate_artifact(instance, "service_level_objective")
+
+    def test_invalid_metric_name_fails_slo_validation(self):
+        slo = load_example("service_level_objective")
+        slo["objectives"][0]["metric_name"] = "not_supported"
+        with pytest.raises(ObservabilityMetricsError):
+            build_observability_metrics([load_example("replay_result")], slo_definition=slo)
+
+    def test_invalid_operator_fails_slo_validation(self):
+        slo = load_example("service_level_objective")
+        slo["objectives"][0]["target_operator"] = "gt"
+        with pytest.raises(ObservabilityMetricsError):
+            build_observability_metrics([load_example("replay_result")], slo_definition=slo)
+
+    def test_observability_artifact_unknown_metrics_rejected_by_contract(self):
+        artifact = load_example("observability_metrics")
+        artifact["metrics"]["unknown_metric"] = 0.1
+        with pytest.raises(Exception):
+            validate_artifact(artifact, "observability_metrics")
+
+    def test_additional_properties_rejected(self):
+        artifact = load_example("observability_metrics")
+        artifact["unexpected"] = True
+        with pytest.raises(Exception):
+            validate_artifact(artifact, "observability_metrics")
+
+    def test_deterministic_repeated_output(self):
+        replay = load_example("replay_result")
+        drift = load_example("drift_detection_result")
+        baseline = load_example("baseline_gate_decision")
+        first = build_observability_metrics([replay, drift, baseline])
+        second = build_observability_metrics([replay, drift, baseline])
+        assert first == second
+
+    def test_missing_required_fields_fail_closed(self):
+        replay = load_example("replay_result")
+        replay.pop("replay_run_id")
+        with pytest.raises(ObservabilityMetricsError):
+            build_observability_metrics([replay])
+
+    def test_incompatible_artifact_type_fails_closed(self):
+        with pytest.raises(ObservabilityMetricsError):
+            build_observability_metrics([{"artifact_type": "working_paper_input"}])
+
+    def test_breach_summary_generated(self):
+        replay = load_example("replay_result")
+        replay["consistency_status"] = "mismatch"
+        replay["drift_detected"] = True
+        slo = load_example("service_level_objective")
+        slo["objectives"] = [
+            {
+                "metric_name": "replay_success_rate",
+                "target_operator": "gte",
+                "target_value": 1.0,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "must fully match"
+            }
+        ]
+        result = build_observability_metrics([replay], slo_definition=slo)
+        assert result["breach_summary"]["highest_severity"] == "block"
+        assert result["breach_summary"]["breached_metrics"] == ["replay_success_rate"]
+
+    def test_no_breach_summary_generated(self):
+        replay = load_example("replay_result")
+        slo = load_example("service_level_objective")
+        slo["objectives"] = [
+            {
+                "metric_name": "replay_success_rate",
+                "target_operator": "gte",
+                "target_value": 1.0,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "must fully match"
+            }
+        ]
+        result = build_observability_metrics([replay], slo_definition=slo)
+        assert result["breach_summary"]["highest_severity"] == "none"
+        assert result["breach_summary"]["breached_metrics"] == []

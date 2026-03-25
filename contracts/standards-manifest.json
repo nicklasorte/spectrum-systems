@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.55",
+  "artifact_version": "1.0.56",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.24",
-  "record_id": "REC-STD-2026-03-24-SRE-05-SRE-06-DRIFT-BASELINE-GATE",
+  "standards_version": "2026.03.25",
+  "record_id": "REC-STD-2026-03-25-SRE-08-SRE-10-SLO-OBSERVABILITY-METRICS",
   "run_id": "run-20260324T230000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
@@ -694,6 +694,19 @@
       "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "observability_metrics",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.56",
+      "last_updated_in": "1.0.56",
+      "example_path": "contracts/examples/observability_metrics.json",
+      "notes": "SRE-10 deterministic metrics aggregation artifact for replay/runtime control outputs with strict bounded metric vocabulary and optional SLO breach summary."
+    },
+    {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
       "artifact_class": "review",
       "schema_version": "1.0.1",
@@ -1034,9 +1047,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.12",
-      "last_updated_in": "1.1.2",
+      "last_updated_in": "1.0.56",
       "example_path": "contracts/examples/replay_result.json",
-      "notes": "BAG deterministic canonical trust-loop replay artifact with fail-closed linkage integrity and placeholder-free governed references."
+      "notes": "BAG deterministic canonical trust-loop replay artifact with optional embedded observability_metrics attachment for authoritative replay measurement linkage."
     },
     {
       "artifact_type": "review_artifact",
@@ -1106,6 +1119,19 @@
       "last_updated_in": "1.0.44",
       "example_path": "contracts/examples/routing_policy.json",
       "notes": "HS-04 governed deterministic routing policy mapping route_key/task_class to prompt alias and model selection inputs with fail-closed semantics."
+    },
+    {
+      "artifact_type": "service_level_objective",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.56",
+      "last_updated_in": "1.0.56",
+      "example_path": "contracts/examples/service_level_objective.json",
+      "notes": "SRE-08 governed deterministic SLO definition artifact for bounded observability metric objectives and breach severities."
     },
     {
       "artifact_type": "slide_deck",
