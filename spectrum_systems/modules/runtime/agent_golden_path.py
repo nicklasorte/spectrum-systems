@@ -26,6 +26,7 @@ from spectrum_systems.modules.ai_workflow.context_assembly import build_context_
 from spectrum_systems.modules.evaluation.eval_engine import compute_eval_summary, run_eval_case
 from spectrum_systems.modules.runtime.control_loop import run_control_loop
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
+from spectrum_systems.modules.runtime.context_admission import run_context_admission
 from spectrum_systems.modules.runtime.prompt_registry import (
     PromptRegistryError,
     load_prompt_alias_map,
@@ -603,6 +604,31 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         artifacts["context_bundle"] = context_bundle
         refs.append(f"context_bundle:{context_bundle['context_id']}")
 
+        # 1.5) Context admission gate (TRUST-01 pre-execution fail-closed boundary)
+        try:
+            admission = run_context_admission(context_bundle=context_bundle, stage="observe")
+            _validate_contract(admission["context_validation_result"], "context_validation_result", stage="context_admission")
+            _validate_contract(admission["context_admission_decision"], "context_admission_decision", stage="context_admission")
+        except AgentGoldenPathStageError:
+            raise
+        except Exception as exc:
+            raise AgentGoldenPathStageError(
+                stage="context_admission",
+                failure_type="policy_error",
+                error_message=str(exc),
+            ) from exc
+
+        artifacts["context_validation_result"] = admission["context_validation_result"]
+        artifacts["context_admission_decision"] = admission["context_admission_decision"]
+        refs.append(f"context_validation_result:{admission['context_validation_result']['validation_id']}")
+        refs.append(f"context_admission_decision:{admission['context_admission_decision']['admission_decision_id']}")
+        if admission["context_admission_decision"]["decision_status"] != "allow":
+            raise AgentGoldenPathStageError(
+                stage="context_admission",
+                failure_type="policy_error",
+                error_message="context admission blocked execution",
+            )
+
         # 2) Agent execution (bounded)
         registry_paths = config.prompt_registry_entry_paths or [Path("contracts/examples/prompt_registry_entry.json")]
         alias_map_path = config.prompt_alias_map_path or Path("contracts/examples/prompt_alias_map.json")
@@ -877,6 +903,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             ],
             "validators_run": [
                 "context_bundle",
+                "context_admission",
                 "agent_execution_trace",
                 "eval_case",
                 "eval_engine",
@@ -919,6 +946,8 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
 
     output_paths = {
         "context_bundle": config.output_dir / "context_bundle.json",
+        "context_validation_result": config.output_dir / "context_validation_result.json",
+        "context_admission_decision": config.output_dir / "context_admission_decision.json",
         "routing_decision": config.output_dir / "routing_decision.json",
         "agent_execution_trace": config.output_dir / "agent_execution_trace.json",
         "structured_output": config.output_dir / "structured_output.json",
