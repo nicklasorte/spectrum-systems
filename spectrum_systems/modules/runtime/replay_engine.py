@@ -63,6 +63,7 @@ from spectrum_systems.modules.runtime.drift_detection import (
     build_drift_detection_result,
 )
 from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift
+from spectrum_systems.modules.runtime.error_budget import build_error_budget_status
 from spectrum_systems.modules.runtime.observability_metrics import build_observability_metrics
 from spectrum_systems.modules.runtime.trace_store import (
     TraceNotFoundError as StoreTraceNotFoundError,
@@ -1007,6 +1008,8 @@ def run_replay(
     *,
     baseline_artifact: dict | None = None,
     baseline_policy: dict | None = None,
+    slo_definition: dict | None = None,
+    error_budget_policy: dict | None = None,
 ) -> dict:
     """Replay canonical trust-loop execution deterministically for a governed artifact.
 
@@ -1103,8 +1106,17 @@ def run_replay(
 
         replay_result["observability_metrics"] = build_observability_metrics(
             observability_sources,
+            slo_definition=slo_definition,
             trace_id=trace_id,
         )
+
+        if slo_definition is not None:
+            replay_result["error_budget_status"] = build_error_budget_status(
+                replay_result["observability_metrics"],
+                slo_definition,
+                policy=error_budget_policy,
+                trace_id=trace_id,
+            )
 
         errors = validate_replay_result(replay_result)
         if errors:
