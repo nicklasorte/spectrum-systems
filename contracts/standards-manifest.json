@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.56",
+  "artifact_version": "1.0.57",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.25",
-  "record_id": "REC-STD-2026-03-25-SRE-08-SRE-10-SLO-OBSERVABILITY-METRICS",
-  "run_id": "run-20260324T230000Z",
+  "record_id": "REC-STD-2026-03-25-SRE-09-ERROR-BUDGET-MODEL",
+  "run_id": "run-20260325T000000Z",
   "created_at": "2026-03-24T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -260,6 +260,32 @@
       "last_updated_in": "1.0.11",
       "example_path": "contracts/examples/enforcement_result.json",
       "notes": "Deterministic enforcement artifact generated exclusively from evaluation_control_decision via the BAF single-path enforcement mapper."
+    },
+    {
+      "artifact_type": "error_budget_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.57",
+      "last_updated_in": "1.0.57",
+      "example_path": "contracts/examples/error_budget_policy.json",
+      "notes": "SRE-09 governed deterministic policy artifact for bounded error-budget threshold mapping and fail-closed metric handling semantics."
+    },
+    {
+      "artifact_type": "error_budget_status",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.57",
+      "last_updated_in": "1.0.57",
+      "example_path": "contracts/examples/error_budget_status.json",
+      "notes": "SRE-09 deterministic error-budget measurement artifact computed from governed SLO and observability metrics inputs for replay-authoritative status reporting."
     },
     {
       "artifact_type": "eval_admission_policy",
@@ -1047,9 +1073,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.12",
-      "last_updated_in": "1.0.56",
+      "last_updated_in": "1.0.57",
       "example_path": "contracts/examples/replay_result.json",
-      "notes": "BAG deterministic canonical trust-loop replay artifact with optional embedded observability_metrics attachment for authoritative replay measurement linkage."
+      "notes": "BAG deterministic canonical trust-loop replay artifact with optional embedded observability_metrics and error_budget_status attachments for authoritative replay measurement linkage."
     },
     {
       "artifact_type": "review_artifact",
