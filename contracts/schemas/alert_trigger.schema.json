@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/alert_trigger.schema.json",
+  "title": "Alert Trigger",
+  "description": "Deterministic governed alert decision artifact derived from replay-authoritative measurement and control artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "timestamp",
+    "trace_refs",
+    "replay_result_id",
+    "source_artifact_ids",
+    "policy_id",
+    "alert_status",
+    "severity",
+    "triggered_conditions",
+    "reasons",
+    "recommended_action",
+    "generated_by_version"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "artifact_type": {"type": "string", "const": "alert_trigger"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "replay_result_id": {"type": "string", "minLength": 1},
+    "source_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "policy_id": {"type": "string", "pattern": "^sre-alert-trigger-policy-v\\d+$"},
+    "alert_status": {"type": "string", "enum": ["no_alert", "warning", "critical", "invalid"]},
+    "severity": {"type": "string", "enum": ["none", "low", "medium", "high", "critical"]},
+    "triggered_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "budget_healthy",
+          "budget_warning",
+          "budget_exhausted",
+          "budget_invalid",
+          "no_breach",
+          "slo_warn_breach",
+          "slo_block_breach",
+          "baseline_pass",
+          "baseline_warn",
+          "baseline_block",
+          "drift_none",
+          "drift_within_threshold",
+          "drift_exceeds_threshold",
+          "drift_invalid_comparison",
+          "grounding_pass",
+          "grounding_warn",
+          "grounding_block",
+          "missing_required_source_artifacts"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "no_alert_conditions_detected",
+          "budget_warning",
+          "budget_exhausted",
+          "budget_invalid",
+          "slo_warn_breach",
+          "slo_block_breach",
+          "baseline_warn",
+          "baseline_block",
+          "drift_within_threshold",
+          "drift_exceeds_threshold",
+          "drift_invalid_comparison",
+          "grounding_warn",
+          "grounding_block",
+          "missing_required_source_artifacts"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["none", "observe", "open_investigation", "immediate_mitigation", "fix_input_contracts"]
+    },
+    "generated_by_version": {"type": "string", "minLength": 1}
+  }
+}

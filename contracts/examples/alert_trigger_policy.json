@@ -1,0 +1,52 @@
+{
+  "artifact_type": "alert_trigger_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "sre-alert-trigger-policy-v1",
+  "supported_signal_types": [
+    "error_budget_status",
+    "observability_metrics",
+    "baseline_gate_decision",
+    "drift_detection_result",
+    "grounding_control_decision"
+  ],
+  "required_source_artifacts": [
+    "replay_result",
+    "observability_metrics",
+    "error_budget_status"
+  ],
+  "budget_status_to_alert": {
+    "healthy": {"alert_status": "no_alert", "severity": "none", "condition": "budget_healthy"},
+    "warning": {"alert_status": "warning", "severity": "medium", "condition": "budget_warning"},
+    "exhausted": {"alert_status": "critical", "severity": "critical", "condition": "budget_exhausted"},
+    "invalid": {"alert_status": "invalid", "severity": "high", "condition": "budget_invalid"}
+  },
+  "breach_severity_to_alert": {
+    "none": {"alert_status": "no_alert", "severity": "none", "condition": "no_breach"},
+    "warn": {"alert_status": "warning", "severity": "medium", "condition": "slo_warn_breach"},
+    "block": {"alert_status": "critical", "severity": "high", "condition": "slo_block_breach"}
+  },
+  "baseline_gate_status_to_alert": {
+    "pass": {"alert_status": "no_alert", "severity": "none", "condition": "baseline_pass"},
+    "warn": {"alert_status": "warning", "severity": "low", "condition": "baseline_warn"},
+    "block": {"alert_status": "critical", "severity": "high", "condition": "baseline_block"}
+  },
+  "drift_status_to_alert": {
+    "no_drift": {"alert_status": "no_alert", "severity": "none", "condition": "drift_none"},
+    "within_threshold": {"alert_status": "warning", "severity": "low", "condition": "drift_within_threshold"},
+    "exceeds_threshold": {"alert_status": "critical", "severity": "high", "condition": "drift_exceeds_threshold"},
+    "invalid_comparison": {"alert_status": "invalid", "severity": "high", "condition": "drift_invalid_comparison"}
+  },
+  "grounding_status_to_alert": {
+    "pass": {"alert_status": "no_alert", "severity": "none", "condition": "grounding_pass"},
+    "warn": {"alert_status": "warning", "severity": "low", "condition": "grounding_warn"},
+    "block": {"alert_status": "critical", "severity": "high", "condition": "grounding_block"}
+  },
+  "invalid_input_behavior": "emit_invalid_alert",
+  "recommended_actions": {
+    "no_alert": "none",
+    "warning": "observe",
+    "critical": "open_investigation",
+    "invalid": "fix_input_contracts"
+  },
+  "generated_by_version": "sre-11@1.0.0"
+}

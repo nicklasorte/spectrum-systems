@@ -1,0 +1,24 @@
+{
+  "artifact_id": "ba8f9b9583f18baa1b45fa89533939159b953668d1a436d701f7f7654e9ab8b1",
+  "artifact_type": "alert_trigger",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-03-22T00:00:00Z",
+  "trace_refs": {
+    "trace_id": "trace-eval-001"
+  },
+  "replay_result_id": "RPL-trace-eval-001",
+  "source_artifact_ids": [
+    "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+    "RPL-trace-eval-001",
+    "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e"
+  ],
+  "policy_id": "sre-alert-trigger-policy-v1",
+  "alert_status": "no_alert",
+  "severity": "none",
+  "triggered_conditions": [],
+  "reasons": [
+    "no_alert_conditions_detected"
+  ],
+  "recommended_action": "none",
+  "generated_by_version": "alert_triggers.py@1.0.0"
+}
