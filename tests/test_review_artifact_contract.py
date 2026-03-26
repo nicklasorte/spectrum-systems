@@ -76,6 +76,42 @@ def test_review_artifact_findings_require_canonical_fields() -> None:
     assert any("file" in error for error in errors)
 
 
+
+
+def test_review_artifact_finding_shape_is_canonical_and_legacy_free() -> None:
+    instance = _load_example()
+    finding = instance["critical_findings"][0]
+
+    required_canonical_fields = {
+        "id",
+        "severity",
+        "file",
+        "function",
+        "failure_mode",
+        "impact",
+        "minimal_fix",
+    }
+    assert required_canonical_fields.issubset(finding.keys())
+
+    legacy_fields = {
+        "finding_id",
+        "title",
+        "description",
+        "why_dangerous",
+        "location",
+        "failure_scenario",
+        "optional_improvements",
+    }
+    assert legacy_fields.isdisjoint(finding.keys())
+    assert "optional_improvements" not in instance
+    assert "watch_items" in instance and isinstance(instance["watch_items"], list)
+
+
+def test_review_artifact_status_and_trust_assessment_use_canonical_values() -> None:
+    instance = _load_example()
+    assert instance["status"] == "final"
+    assert instance["trust_assessment"] in {"high", "medium", "low"}
+
 def test_markdown_review_metadata_validation(tmp_path: Path) -> None:
     review_md = tmp_path / "2026-03-23-governed_prompt_queue-codex_review.md"
     review_md.write_text(
