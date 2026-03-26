@@ -176,6 +176,35 @@ def test_run_replay_rejects_unsupported_artifact_type_at_boundary() -> None:
         run_replay(unsupported, original_decision, original_enforcement, _trace_context())
 
 
+def test_run_replay_fails_closed_on_missing_prerequisite_decision_reference() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    original_decision.pop("decision_id", None)
+
+    with pytest.raises(ReplayEngineError, match="failed validation"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+
+
+def test_run_replay_fails_closed_on_broken_lineage_chain() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    broken_enforcement = copy.deepcopy(original_enforcement)
+    broken_enforcement["input_decision_reference"] = "ECD-broken-link"
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_LINEAGE"):
+        run_replay(artifact, original_decision, broken_enforcement, _trace_context())
+
+
+def test_run_replay_fails_closed_on_trace_id_mismatch() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+    mismatched_context = _trace_context()
+    mismatched_context["trace_id"] = "99999999-9999-4999-8999-999999999999"
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_LINKAGE"):
+        run_replay(artifact, original_decision, original_enforcement, mismatched_context)
+
+
 def test_deterministic_outcome_classification_and_no_input_mutation() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
