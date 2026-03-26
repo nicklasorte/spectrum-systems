@@ -171,6 +171,18 @@ def validate_replay_result_boundary_or_raise(replay_result: Dict[str, Any]) -> N
         raise EvaluationMonitorError("REPLAY_INVALID_TRACE_LINKAGE: observability_metrics.trace_refs.trace_id mismatch")
     if error_budget.get("trace_refs", {}).get("trace_id") != trace_id:
         raise EvaluationMonitorError("REPLAY_INVALID_TRACE_LINKAGE: error_budget_status.trace_refs.trace_id mismatch")
+    observability_metrics_id = error_budget.get("observability_metrics_id")
+    observability_artifact_id = observability.get("artifact_id")
+    if (
+        not isinstance(observability_metrics_id, str)
+        or not observability_metrics_id
+        or not isinstance(observability_artifact_id, str)
+        or not observability_artifact_id
+        or observability_metrics_id != observability_artifact_id
+    ):
+        raise EvaluationMonitorError(
+            "REPLAY_INVALID_LINEAGE: error_budget_status.observability_metrics_id must match observability_metrics.artifact_id"
+        )
 
 
 def _compute_replay_consistency_sli(replay_status: str) -> float:
