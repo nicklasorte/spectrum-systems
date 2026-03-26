@@ -53,6 +53,35 @@ def _trace_context() -> dict:
     }
 
 
+
+
+def _slo_definition() -> dict:
+    return {
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "artifact_type": "service_level_objective",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "service_name": "spectrum-runtime-control",
+        "service_scope": "runtime_replay_control_surface",
+        "objective_window": "rolling_24h",
+        "objectives": [
+            {
+                "metric_name": "replay_success_rate",
+                "target_operator": "gte",
+                "target_value": 0.99,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "Replay consistency objective",
+            }
+        ],
+        "policy_id": "sre-observability-policy-v1",
+        "generated_by_version": "sre-08-sre-10@1.0.0",
+    }
+
+
+def _run_replay(*args, **kwargs) -> dict:
+    kwargs.setdefault("slo_definition", _slo_definition())
+    return run_replay(*args, **kwargs)
 def _originals(artifact: dict | None = None, trace_context: dict | None = None) -> tuple[dict, dict]:
     payload = copy.deepcopy(artifact or _artifact())
     context = copy.deepcopy(trace_context or _trace_context())
@@ -65,12 +94,15 @@ def test_matching_replay_returns_match_and_no_drift() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
     assert result["consistency_status"] == "match"
     assert result["drift_detected"] is False
     assert result["failure_reason"] is None
     assert "drift_result" in result
+    assert "observability_metrics" in result
+    assert "error_budget_status" in result
+    assert "alert_trigger" in result
     assert result["drift_result"]["drift_type"] == "none"
     assert result["drift_result"]["drift_detected"] is False
 
@@ -78,7 +110,7 @@ def test_matching_replay_round_trip_contract_validation() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
     validate_artifact(result, "replay_result")
 
@@ -112,7 +144,7 @@ def test_mismatched_replay_returns_mismatch_and_drift(monkeypatch: pytest.Monkey
         _force_mismatch,
     )
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
     assert result["consistency_status"] == "mismatch"
     assert result["drift_detected"] is True
     assert result["failure_reason"] is None
@@ -125,14 +157,14 @@ def test_invalid_original_decision_fails_closed() -> None:
     artifact = _artifact()
     _, original_enforcement = _originals(artifact)
     with pytest.raises(ReplayEngineError):
-        run_replay(artifact, {"artifact_type": "evaluation_control_decision"}, original_enforcement, _trace_context())
+        _run_replay(artifact, {"artifact_type": "evaluation_control_decision"}, original_enforcement, _trace_context())
 
 
 def test_invalid_original_enforcement_fails_closed() -> None:
     artifact = _artifact()
     original_decision, _ = _originals(artifact)
     with pytest.raises(ReplayEngineError):
-        run_replay(artifact, original_decision, {"artifact_type": "enforcement_result"}, _trace_context())
+        _run_replay(artifact, original_decision, {"artifact_type": "enforcement_result"}, _trace_context())
 
 
 def test_malformed_input_artifact_fails_closed() -> None:
@@ -143,7 +175,7 @@ def test_malformed_input_artifact_fails_closed() -> None:
         "eval_run_id": "missing-required-fields"
     }
     with pytest.raises(ReplayEngineError):
-        run_replay(malformed, original_decision, original_enforcement, _trace_context())
+        _run_replay(malformed, original_decision, original_enforcement, _trace_context())
 
 
 def test_run_replay_rejects_unsupported_artifact_type_at_boundary() -> None:
@@ -173,7 +205,7 @@ def test_run_replay_rejects_unsupported_artifact_type_at_boundary() -> None:
     }
 
     with pytest.raises(ReplayEngineError, match="REPLAY_UNSUPPORTED_INPUT_ARTIFACT"):
-        run_replay(unsupported, original_decision, original_enforcement, _trace_context())
+        _run_replay(unsupported, original_decision, original_enforcement, _trace_context())
 
 
 def test_run_replay_fails_closed_on_missing_prerequisite_decision_reference() -> None:
@@ -182,7 +214,7 @@ def test_run_replay_fails_closed_on_missing_prerequisite_decision_reference() ->
     original_decision.pop("decision_id", None)
 
     with pytest.raises(ReplayEngineError, match="failed validation"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_run_replay_fails_closed_on_broken_lineage_chain() -> None:
@@ -192,7 +224,7 @@ def test_run_replay_fails_closed_on_broken_lineage_chain() -> None:
     broken_enforcement["input_decision_reference"] = "ECD-broken-link"
 
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_LINEAGE"):
-        run_replay(artifact, original_decision, broken_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, broken_enforcement, _trace_context())
 
 
 def test_run_replay_fails_closed_on_trace_id_mismatch() -> None:
@@ -202,7 +234,7 @@ def test_run_replay_fails_closed_on_trace_id_mismatch() -> None:
     mismatched_context["trace_id"] = "99999999-9999-4999-8999-999999999999"
 
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_LINKAGE"):
-        run_replay(artifact, original_decision, original_enforcement, mismatched_context)
+        _run_replay(artifact, original_decision, original_enforcement, mismatched_context)
 
 
 def test_run_replay_fails_closed_when_trace_context_trace_id_missing() -> None:
@@ -210,14 +242,14 @@ def test_run_replay_fails_closed_when_trace_context_trace_id_missing() -> None:
     original_decision, original_enforcement = _originals(artifact)
 
     with pytest.raises(ReplayEngineError, match="trace_context.trace_id is required"):
-        run_replay(artifact, original_decision, original_enforcement, {})
+        _run_replay(artifact, original_decision, original_enforcement, {})
 
 
 def test_run_replay_succeeds_with_explicit_trace_context_trace_id() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    result = run_replay(
+    result = _run_replay(
         artifact,
         original_decision,
         original_enforcement,
@@ -236,16 +268,22 @@ def test_deterministic_outcome_classification_and_no_input_mutation() -> None:
     decision_before = copy.deepcopy(original_decision)
     enforcement_before = copy.deepcopy(original_enforcement)
 
-    result_1 = run_replay(artifact, original_decision, original_enforcement, _trace_context())
-    result_2 = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result_1 = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result_2 = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
-    assert result_1["consistency_status"] == result_2["consistency_status"]
-    assert result_1["drift_detected"] == result_2["drift_detected"]
-    assert result_1["replay_id"] == result_2["replay_id"]
+    assert result_1 == result_2
 
     assert artifact == artifact_before
     assert original_decision == decision_before
     assert original_enforcement == enforcement_before
+
+
+def test_run_replay_requires_slo_definition_for_authoritative_seam() -> None:
+    artifact = _artifact()
+    original_decision, original_enforcement = _originals(artifact)
+
+    with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_REQUIRED_GOVERNED_ARTIFACT"):
+        run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_replay_uses_canonical_enforcement_path_not_legacy(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -272,7 +310,7 @@ def test_replay_uses_canonical_enforcement_path_not_legacy(monkeypatch: pytest.M
         _legacy_forbidden,
     )
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
     assert result["replay_path"] == "bag_replay_engine"
     assert called["canonical"] == 1
@@ -291,7 +329,7 @@ def test_run_replay_does_not_use_legacy_execute_replay(monkeypatch: pytest.Monke
         _forbidden_execute_replay,
     )
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
     assert result["replay_path"] == "bag_replay_engine"
 
 
@@ -308,7 +346,7 @@ def test_run_replay_raises_on_canonical_path_exception(monkeypatch: pytest.Monke
     )
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:RuntimeError"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_run_replay_wraps_control_loop_error_as_hard_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -324,7 +362,7 @@ def test_run_replay_wraps_control_loop_error_as_hard_failure(monkeypatch: pytest
     )
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:ControlLoopError"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_run_replay_wraps_enforcement_error_as_hard_failure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -340,7 +378,7 @@ def test_run_replay_wraps_enforcement_error_as_hard_failure(monkeypatch: pytest.
     )
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:EnforcementError"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_replay_run_raises_hard_failure_on_control_loop_error(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -422,14 +460,14 @@ def test_run_replay_rejects_unknown_enforcement_status_without_defaulting(
     )
 
     with pytest.raises(ReplayEngineError, match="unsupported final_status"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])
 def test_run_replay_rejects_invalid_artifact_types(invalid_value: object) -> None:
     original_decision, original_enforcement = _originals()
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_ARTIFACT"):
-        run_replay(invalid_value, original_decision, original_enforcement, _trace_context())
+        _run_replay(invalid_value, original_decision, original_enforcement, _trace_context())
 
 
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])
@@ -437,7 +475,7 @@ def test_run_replay_rejects_invalid_original_decision_types(invalid_value: objec
     artifact = _artifact()
     _, original_enforcement = _originals(artifact)
     with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_ORIGINAL_DECISION"):
-        run_replay(artifact, invalid_value, original_enforcement, _trace_context())
+        _run_replay(artifact, invalid_value, original_enforcement, _trace_context())
 
 
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])
@@ -445,7 +483,7 @@ def test_run_replay_rejects_invalid_original_enforcement_types(invalid_value: ob
     artifact = _artifact()
     original_decision, _ = _originals(artifact)
     with pytest.raises(ReplayEngineError, match="REPLAY_MISSING_ORIGINAL_ENFORCEMENT"):
-        run_replay(artifact, original_decision, invalid_value, _trace_context())
+        _run_replay(artifact, original_decision, invalid_value, _trace_context())
 
 
 @pytest.mark.parametrize("invalid_value", [None, "bad", 42])
@@ -453,7 +491,7 @@ def test_run_replay_rejects_invalid_trace_context_types(invalid_value: object) -
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
     with pytest.raises(ReplayEngineError, match="REPLAY_INVALID_TRACE_CONTEXT"):
-        run_replay(artifact, original_decision, original_enforcement, invalid_value)
+        _run_replay(artifact, original_decision, original_enforcement, invalid_value)
 
 
 def test_replay_missing_linkage_fails() -> None:
@@ -461,7 +499,7 @@ def test_replay_missing_linkage_fails() -> None:
     original_decision, original_enforcement = _originals(artifact)
     original_decision.pop("decision_id", None)
     with pytest.raises(ReplayEngineError, match="decision_id|linkage requires"):
-        run_replay(artifact, original_decision, original_enforcement, _trace_context())
+        _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
 
 def test_replay_persistence_matches_runtime_rules(
@@ -673,8 +711,8 @@ def test_run_replay_attaches_baseline_artifacts_when_baseline_present() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    baseline = run_replay(artifact, original_decision, original_enforcement, _trace_context())
-    result = run_replay(
+    baseline = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(
         artifact,
         original_decision,
         original_enforcement,
@@ -691,7 +729,7 @@ def test_run_replay_blocks_when_baseline_gate_blocks() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    baseline = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    baseline = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
     blocked = copy.deepcopy(artifact)
     blocked["pass_rate"] = 0.0
     blocked["failure_rate"] = 1.0
@@ -700,7 +738,7 @@ def test_run_replay_blocks_when_baseline_gate_blocks() -> None:
     blocked["system_status"] = "failing"
 
     with pytest.raises(ReplayEngineError, match="BASELINE_GATE_BLOCKED"):
-        run_replay(
+        _run_replay(
             blocked,
             original_decision,
             original_enforcement,
@@ -713,7 +751,7 @@ def test_run_replay_attaches_observability_metrics_with_trace_linkage() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    result = run_replay(artifact, original_decision, original_enforcement, _trace_context())
+    result = _run_replay(artifact, original_decision, original_enforcement, _trace_context())
 
     assert "observability_metrics" in result
     observability = result["observability_metrics"]
@@ -760,7 +798,7 @@ def test_run_replay_attaches_error_budget_status_when_slo_is_provided() -> None:
         "generated_by_version": "sre-09@1.0.0",
     }
 
-    result = run_replay(
+    result = _run_replay(
         artifact,
         original_decision,
         original_enforcement,

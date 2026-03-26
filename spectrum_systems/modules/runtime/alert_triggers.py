@@ -214,12 +214,10 @@ def build_alert_trigger(
     reasons: List[str] = []
 
     if missing:
-        if resolved_policy["invalid_input_behavior"] != "emit_invalid_alert":
-            raise AlertTriggerError("alert_trigger_policy.invalid_input_behavior is unsupported")
-        alert_status = "invalid"
-        severity = "high"
-        triggered_conditions = ["missing_required_source_artifacts"]
-        reasons = ["missing_required_source_artifacts"]
+        raise AlertTriggerError(
+            "replay_result missing required replay-attached governed artifacts: "
+            + ", ".join(sorted(missing))
+        )
     else:
         for signal_type in resolved_policy["supported_signal_types"]:
             if signal_type not in sources:

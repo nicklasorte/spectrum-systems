@@ -92,13 +92,11 @@ def test_exhausted_budget_returns_critical_alert() -> None:
     assert "budget_exhausted" in result["triggered_conditions"]
 
 
-def test_missing_required_source_artifact_emits_invalid_alert() -> None:
+def test_missing_required_source_artifact_fails_closed() -> None:
     replay = _replay_example()
     replay.pop("error_budget_status", None)
-    result = build_alert_trigger(replay, policy=_policy_example())
-    assert result["alert_status"] == "invalid"
-    assert result["recommended_action"] == "fix_input_contracts"
-    assert result["reasons"] == ["missing_required_source_artifacts"]
+    with pytest.raises(AlertTriggerError, match="missing required replay-attached governed artifacts"):
+        build_alert_trigger(replay, policy=_policy_example())
 
 
 def test_malformed_replay_result_fails_closed() -> None:
