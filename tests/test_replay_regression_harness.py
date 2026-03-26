@@ -19,6 +19,7 @@ from spectrum_systems.modules.runtime.regression_harness import (  # noqa: E402
     run_trace_regression,
     validate_regression_run_result,
 )
+from tests.helpers.replay_result_builder import make_canonical_replay_result  # noqa: E402
 
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> Path:
@@ -27,33 +28,24 @@ def _write_json(path: Path, payload: Dict[str, Any]) -> Path:
 
 
 def _make_replay_result(*, replay_id: str = "r-1", trace_id: str = "trace-001") -> Dict[str, Any]:
-    return {
-        "artifact_type": "replay_result",
-        "schema_version": "1.1.3",
-        "replay_id": replay_id,
-        "original_run_id": "run-original-1",
-        "replay_run_id": "run-replay-1",
-        "timestamp": "2026-03-26T00:00:00Z",
-        "trace_id": trace_id,
-        "input_artifact_reference": "eval_summary:artifact-1",
-        "original_decision_reference": "decision-1",
-        "original_enforcement_reference": "enforcement-1",
-        "replay_decision_reference": "decision-r1",
-        "replay_enforcement_reference": "enforcement-r1",
-        "replay_decision": "allow",
-        "replay_enforcement_action": "allow_execution",
-        "replay_final_status": "allow",
-        "original_enforcement_action": "allow_execution",
-        "original_final_status": "allow",
-        "consistency_status": "match",
-        "drift_detected": False,
-        "failure_reason": None,
-        "replay_path": "bag_replay_engine",
-        "provenance": {
-            "source_artifact_type": "eval_summary",
-            "source_artifact_id": "artifact-1",
+    return make_canonical_replay_result(
+        replay_id=replay_id,
+        trace_id=trace_id,
+        original_run_id="run-original-1",
+        replay_run_id="run-replay-1",
+        overrides={
+            "input_artifact_reference": "eval_summary:artifact-1",
+            "original_decision_reference": "decision-1",
+            "original_enforcement_reference": "enforcement-1",
+            "replay_decision_reference": "decision-r1",
+            "replay_enforcement_reference": "enforcement-r1",
+            "provenance": {
+                "source_artifact_type": "eval_summary",
+                "source_artifact_id": "artifact-1",
+                "trace_id": trace_id,
+            },
         },
-    }
+    )
 
 
 def _suite(tmp: Path, baseline_path: Path, current_path: Path) -> Path:

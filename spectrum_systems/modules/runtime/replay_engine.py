@@ -45,6 +45,7 @@ from __future__ import annotations
 import json
 import os
 import uuid
+import hashlib
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -134,6 +135,29 @@ def _now_iso() -> str:
 
 def _new_id() -> str:
     return str(uuid.uuid4())
+
+
+def _stable_sha256(payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _canonical_timestamp_from_inputs(
+    original_decision: Dict[str, Any],
+    original_enforcement: Dict[str, Any],
+) -> str:
+    for field in ("timestamp", "created_at"):
+        value = original_enforcement.get(field)
+        if isinstance(value, str) and value.strip():
+            return value
+    for field in ("created_at", "timestamp"):
+        value = original_decision.get(field)
+        if isinstance(value, str) and value.strip():
+            return value
+    raise ReplayEngineError(
+        "REPLAY_MISSING_PREREQUISITE_ARTIFACT: canonical replay timestamp "
+        "must be derivable from original_decision/original_enforcement"
+    )
 
 
 def _load_replay_result_schema() -> Dict[str, Any]:
@@ -969,6 +993,36 @@ def _classify_consistency(
     return "mismatch"
 
 
+def _enforce_authoritative_replay_seam_or_raise(replay_result: Dict[str, Any]) -> None:
+    """Fail-closed validation that replay_result is fully governed and non-bypassable."""
+    required_embedded = ("observability_metrics", "error_budget_status", "alert_trigger")
+    for field in required_embedded:
+        value = replay_result.get(field)
+        if not isinstance(value, dict):
+            raise ReplayEngineError(
+                f"REPLAY_MISSING_REQUIRED_GOVERNED_ARTIFACT: replay_result.{field} must be present"
+            )
+
+    _validate_schema_or_raise(replay_result["observability_metrics"], "observability_metrics", context="replay_result.observability_metrics")
+    _validate_schema_or_raise(replay_result["error_budget_status"], "error_budget_status", context="replay_result.error_budget_status")
+    _validate_schema_or_raise(replay_result["alert_trigger"], "alert_trigger", context="replay_result.alert_trigger")
+
+    trace_id = replay_result.get("trace_id")
+    if replay_result["observability_metrics"].get("trace_refs", {}).get("trace_id") != trace_id:
+        raise ReplayEngineError("REPLAY_INVALID_TRACE_LINKAGE: observability_metrics.trace_refs.trace_id mismatch")
+    if replay_result["error_budget_status"].get("trace_refs", {}).get("trace_id") != trace_id:
+        raise ReplayEngineError("REPLAY_INVALID_TRACE_LINKAGE: error_budget_status.trace_refs.trace_id mismatch")
+    if replay_result["alert_trigger"].get("trace_refs", {}).get("trace_id") != trace_id:
+        raise ReplayEngineError("REPLAY_INVALID_TRACE_LINKAGE: alert_trigger.trace_refs.trace_id mismatch")
+
+    if replay_result["error_budget_status"].get("observability_metrics_id") != replay_result["observability_metrics"].get("artifact_id"):
+        raise ReplayEngineError(
+            "REPLAY_INVALID_LINEAGE: error_budget_status.observability_metrics_id must reference embedded observability_metrics.artifact_id"
+        )
+    if replay_result["alert_trigger"].get("replay_result_id") != replay_result.get("replay_id"):
+        raise ReplayEngineError("REPLAY_INVALID_LINEAGE: alert_trigger.replay_result_id must reference replay_result.replay_id")
+
+
 def _build_replay_result(
     *,
     artifact: Dict[str, Any],
@@ -977,6 +1031,7 @@ def _build_replay_result(
     replay_decision: Dict[str, Any],
     replay_enforcement: Dict[str, Any],
     trace_id: str,
+    canonical_timestamp: str,
     consistency_status: str,
     failure_reason: Optional[str],
 ) -> Dict[str, Any]:
@@ -1020,21 +1075,25 @@ def _build_replay_result(
 
     source_id = _require_non_empty_ref(_resolve_source_artifact_id(artifact), "source_artifact_id")
     original_run_id = _require_non_empty_ref(original_decision.get("run_id"), "original_run_id")
-    replay_run_id = _require_non_empty_ref(replay_decision.get("run_id"), "replay_run_id")
     source_artifact_type = _require_non_empty_ref(
         artifact.get("artifact_type"),
         "source_artifact_type",
     )
     source_ref = f"{source_artifact_type}:{source_id}"
+    deterministic_seed = f"{original_run_id}|{trace_id}|{source_ref}"
+    replay_run_id = f"rplrun-{_stable_sha256({'seed': deterministic_seed})[:20]}"
     drift_detected = consistency_status == "mismatch"
+    replay_decision_reference = f"ECD-{_stable_sha256({'seed': deterministic_seed, 'kind': 'decision'})[:24]}"
+    replay_enforcement_reference = f"ENF-{_stable_sha256({'seed': deterministic_seed, 'kind': 'enforcement'})[:24]}"
 
     result = {
+        "artifact_id": "",
         "artifact_type": "replay_result",
-        "schema_version": "1.1.3",
+        "schema_version": "1.2.0",
         "replay_id": _stable_replay_id(original_run_id, trace_id, source_ref),
         "original_run_id": original_run_id,
         "replay_run_id": replay_run_id,
-        "timestamp": _now_iso(),
+        "timestamp": canonical_timestamp,
         "trace_id": trace_id,
         "input_artifact_reference": source_ref,
         "original_decision_reference": _require_non_empty_ref(
@@ -1046,11 +1105,11 @@ def _build_replay_result(
             "original_enforcement_reference",
         ),
         "replay_decision_reference": _require_non_empty_ref(
-            replay_decision.get("decision_id"),
+            replay_decision_reference,
             "replay_decision_reference",
         ),
         "replay_enforcement_reference": _require_non_empty_ref(
-            replay_enforcement.get("enforcement_result_id"),
+            replay_enforcement_reference,
             "replay_enforcement_reference",
         ),
         "replay_decision": replay_decision_value,
@@ -1065,11 +1124,12 @@ def _build_replay_result(
         "provenance": {
             "source_artifact_type": source_artifact_type,
             "source_artifact_id": source_id,
+            "trace_id": trace_id,
         },
     }
-    errors = validate_replay_result(result)
-    if errors:
-        raise ReplayEngineError("replay_result failed validation: " + "; ".join(errors))
+    preimage = dict(result)
+    preimage.pop("artifact_id", None)
+    result["artifact_id"] = _stable_sha256(preimage)
     return result
 
 
@@ -1125,6 +1185,11 @@ def run_replay(
             f"REPLAY_INVALID_TRACE_LINKAGE: placeholder trace_id is forbidden ({trace_id_value!r})"
         )
     trace_id = trace_id_value
+    if slo_definition is None:
+        raise ReplayEngineError(
+            "REPLAY_MISSING_REQUIRED_GOVERNED_ARTIFACT: slo_definition is required to produce "
+            "authoritative error_budget_status and alert_trigger artifacts"
+        )
     _validate_replay_lineage_or_raise(
         artifact=artifact_input,
         original_decision=original_decision_input,
@@ -1140,6 +1205,10 @@ def run_replay(
             "evaluation_control_decision"
         ]
         replay_enforcement = enforce_control_decision(replay_decision)
+        canonical_timestamp = _canonical_timestamp_from_inputs(
+            original_decision_input,
+            original_enforcement_input,
+        )
         consistency_status = _classify_consistency(replay_enforcement, original_enforcement_input)
         replay_result = _build_replay_result(
             artifact=artifact_input,
@@ -1148,11 +1217,10 @@ def run_replay(
             replay_decision=replay_decision,
             replay_enforcement=replay_enforcement,
             trace_id=trace_id,
+            canonical_timestamp=canonical_timestamp,
             consistency_status=consistency_status,
             failure_reason=None,
         )
-        replay_result["drift_result"] = detect_drift(replay_result)
-
         observability_sources = [replay_result]
 
         if baseline_artifact is not None:
@@ -1185,19 +1253,18 @@ def run_replay(
             trace_id=trace_id,
         )
 
-        if slo_definition is not None:
-            replay_result["error_budget_status"] = build_error_budget_status(
-                replay_result["observability_metrics"],
-                slo_definition,
-                policy=error_budget_policy,
-                trace_id=trace_id,
-            )
-
-        if "error_budget_status" in replay_result:
-            replay_result["alert_trigger"] = build_alert_trigger(
-                replay_result,
-                trace_id=trace_id,
-            )
+        replay_result["error_budget_status"] = build_error_budget_status(
+            replay_result["observability_metrics"],
+            slo_definition,
+            policy=error_budget_policy,
+            trace_id=trace_id,
+        )
+        replay_result["drift_result"] = detect_drift(replay_result)
+        replay_result["alert_trigger"] = build_alert_trigger(
+            replay_result,
+            trace_id=trace_id,
+        )
+        _enforce_authoritative_replay_seam_or_raise(replay_result)
 
         errors = validate_replay_result(replay_result)
         if errors:

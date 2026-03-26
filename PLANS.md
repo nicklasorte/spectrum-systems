@@ -186,3 +186,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-SF-14.5-2026-03-24.md | SF-14.5 — Trust hardening for deterministic identity, precedence, indeterminate handling, and coverage parity | Active |
 | docs/review-actions/PLAN-SF-14.6-2026-03-24.md | SF-14.6 — Cleanup for script boundaries, dependency bootstrap, and envelope consistency | Active |
 | docs/review-actions/PLAN-ARTIFACT-ENVELOPE-HARDENING-2026-03-24.md | Artifact envelope hardening — canonical governed envelope enforcement | Active |
+| docs/review-actions/PLAN-SRE-03-REPLAY-AUTH-SEAM-2026-03-26.md | SRE-03 — Replay authoritative seam hardening | Active |
+| docs/review-actions/PLAN-SRE-03-REPLAY-FIXTURE-ALIGN-2026-03-26.md | SRE-03 — Replay fixture alignment follow-on | Active |
