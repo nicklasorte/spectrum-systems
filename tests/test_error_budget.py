@@ -20,6 +20,9 @@ from spectrum_systems.modules.runtime.error_budget import (  # noqa: E402
     compute_burn_rate,
     update_error_budget,
 )
+from tests.helpers.replay_adjacent_builders import (  # noqa: E402
+    make_canonical_observability_metrics,
+)
 
 
 def _slo(operator: str = "gte", target: float = 0.99, metric: str = "replay_success_rate") -> dict:
@@ -47,29 +50,13 @@ def _slo(operator: str = "gte", target: float = 0.99, metric: str = "replay_succ
 
 
 def _observability(value: float = 1.0) -> dict:
-    return {
-        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
-        "artifact_type": "observability_metrics",
-        "schema_version": "1.0.0",
-        "timestamp": "2026-03-24T00:00:00Z",
-        "trace_refs": {"trace_id": "trace-eval-001"},
-        "measurement_scope": "single_replay_run",
-        "run_ids": ["eval-run-001"],
-        "source_artifact_ids": ["RPL-trace-eval-001"],
-        "metric_window": "single_run",
-        "metrics": {
-            "total_runs": 1,
-            "replay_success_rate": value,
+    return make_canonical_observability_metrics(
+        replay_success_rate=value,
+        overrides={
+            "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+            "policy_id": "sre-observability-policy-v1",
         },
-        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
-        "policy_id": "sre-observability-policy-v1",
-        "breach_summary": {
-            "breached_metrics": [],
-            "highest_severity": "none",
-            "reasons": [],
-        },
-        "generated_by_version": "observability_metrics.py@1.0.0",
-    }
+    )
 
 
 def _policy(warning: float = 0.5, exhausted: float = 1.0) -> dict:
