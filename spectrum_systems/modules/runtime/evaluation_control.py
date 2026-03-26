@@ -95,6 +95,18 @@ def _require_metric(metrics: Dict[str, Any], metric_name: str) -> float:
     return float(value)
 
 
+def _optional_drift_rate(metrics: Dict[str, Any], *, drift_detected: bool) -> float:
+    """Return drift metric when present, else deterministically derive from replay drift flag."""
+    value = metrics.get("drift_exceed_threshold_rate")
+    if value is None:
+        return 1.0 if drift_detected else 0.0
+    if not isinstance(value, (int, float)):
+        raise EvaluationControlError(
+            "replay_result.observability_metrics.metrics.drift_exceed_threshold_rate must be numeric when present"
+        )
+    return float(value)
+
+
 def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[str, Any]:
     replay_schema = load_schema("replay_result")
     errors = _validate(replay_result, replay_schema)
@@ -130,6 +142,9 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
     metrics = observability.get("metrics")
     if not isinstance(metrics, dict):
         raise EvaluationControlError("observability_metrics.metrics must be an object")
+    drift_detected = replay_result.get("drift_detected")
+    if not isinstance(drift_detected, bool):
+        raise EvaluationControlError("replay_result.drift_detected must be boolean")
     consistency_status = replay_result.get("consistency_status")
     if consistency_status not in {"match", "mismatch", "indeterminate"}:
         raise EvaluationControlError("replay_result.consistency_status must be match|mismatch|indeterminate")
@@ -141,7 +156,7 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
         "trace_id": trace_id,
         "eval_run_id": replay_result.get("replay_run_id"),
         "pass_rate": _require_metric(metrics, "replay_success_rate"),
-        "drift_rate": _require_metric(metrics, "drift_exceed_threshold_rate"),
+        "drift_rate": _optional_drift_rate(metrics, drift_detected=drift_detected),
         "reproducibility_score": reproducibility_score,
         "indeterminate_failure_count": 1 if consistency_status == "indeterminate" else 0,
         "created_at": _canonical_timestamp(replay_result.get("timestamp")),
