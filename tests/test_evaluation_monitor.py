@@ -22,6 +22,7 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (  # noqa: E402
     compute_alert_recommendation,
     run_evaluation_monitor,
     summarize_monitor_records,
+    validate_replay_result_boundary_or_raise,
     validate_monitor_record,
     validate_monitor_summary,
 )
@@ -182,3 +183,15 @@ def test_run_evaluation_monitor_end_to_end() -> None:
     records, summary = run_evaluation_monitor([_HEALTHY_1, _HEALTHY_2])
     assert len(records) == 2
     assert validate_monitor_summary(summary) == []
+
+
+def test_replay_boundary_rejects_non_replay_input() -> None:
+    with pytest.raises(EvaluationMonitorError, match="replay_result failed validation"):
+        validate_replay_result_boundary_or_raise({"artifact_type": "eval_summary"})
+
+
+def test_replay_boundary_rejects_partial_replay() -> None:
+    replay = _load_json(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    replay.pop("error_budget_status", None)
+    with pytest.raises(EvaluationMonitorError, match="missing required error_budget_status"):
+        validate_replay_result_boundary_or_raise(replay)

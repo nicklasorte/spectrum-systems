@@ -57,6 +57,7 @@ _MONITOR_RECORD_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_monitor_record.schema.js
 _MONITOR_SUMMARY_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_monitor_summary.schema.json"
 _RUN_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "regression_run_result.schema.json"
 _REPLAY_ANALYSIS_SCHEMA_PATH = _SCHEMA_DIR / "replay_decision_analysis.schema.json"
+_REPLAY_RESULT_SCHEMA_PATH = _SCHEMA_DIR / "replay_result.schema.json"
 
 STATUS_DRIFTED = "drifted"
 STATUS_INDETERMINATE = "indeterminate"
@@ -147,6 +148,29 @@ def _validate_replay_analysis(artifact: Any) -> List[str]:
     """Validate *artifact* against the replay_decision_analysis schema."""
     schema = _load_schema(_REPLAY_ANALYSIS_SCHEMA_PATH)
     return _validate_against_schema(artifact, schema)
+
+
+def validate_replay_result_boundary_or_raise(replay_result: Dict[str, Any]) -> None:
+    replay_errors = _validate_against_schema(replay_result, _load_schema(_REPLAY_RESULT_SCHEMA_PATH))
+    if replay_errors:
+        raise EvaluationMonitorError("replay_result failed validation: " + "; ".join(replay_errors))
+    observability = replay_result.get("observability_metrics")
+    error_budget = replay_result.get("error_budget_status")
+    if not isinstance(observability, dict):
+        raise EvaluationMonitorError("replay_result missing required observability_metrics")
+    if not isinstance(error_budget, dict):
+        raise EvaluationMonitorError("replay_result missing required error_budget_status")
+    obs_errors = _validate_against_schema(observability, _load_schema(_SCHEMA_DIR / "observability_metrics.schema.json"))
+    if obs_errors:
+        raise EvaluationMonitorError("replay_result.observability_metrics failed validation: " + "; ".join(obs_errors))
+    budget_errors = _validate_against_schema(error_budget, _load_schema(_SCHEMA_DIR / "error_budget_status.schema.json"))
+    if budget_errors:
+        raise EvaluationMonitorError("replay_result.error_budget_status failed validation: " + "; ".join(budget_errors))
+    trace_id = replay_result.get("trace_id")
+    if observability.get("trace_refs", {}).get("trace_id") != trace_id:
+        raise EvaluationMonitorError("REPLAY_INVALID_TRACE_LINKAGE: observability_metrics.trace_refs.trace_id mismatch")
+    if error_budget.get("trace_refs", {}).get("trace_id") != trace_id:
+        raise EvaluationMonitorError("REPLAY_INVALID_TRACE_LINKAGE: error_budget_status.trace_refs.trace_id mismatch")
 
 
 def _compute_replay_consistency_sli(replay_status: str) -> float:

@@ -161,6 +161,22 @@ def _extract_sources(replay_result: Dict[str, Any]) -> Dict[str, Dict[str, Any]]
     return sources
 
 
+def _validate_replay_linkage(replay_result: Dict[str, Any], sources: Dict[str, Dict[str, Any]]) -> None:
+    trace_id = _require_non_empty_str(replay_result.get("trace_id"), "replay_result.trace_id")
+    observability = sources.get("observability_metrics")
+    error_budget = sources.get("error_budget_status")
+    if observability is None or error_budget is None:
+        return
+    if observability.get("trace_refs", {}).get("trace_id") != trace_id:
+        raise AlertTriggerError("REPLAY_INVALID_TRACE_LINKAGE: observability_metrics.trace_refs.trace_id mismatch")
+    if error_budget.get("trace_refs", {}).get("trace_id") != trace_id:
+        raise AlertTriggerError("REPLAY_INVALID_TRACE_LINKAGE: error_budget_status.trace_refs.trace_id mismatch")
+    if error_budget.get("observability_metrics_id") != observability.get("artifact_id"):
+        raise AlertTriggerError(
+            "REPLAY_INVALID_LINEAGE: error_budget_status.observability_metrics_id must reference observability_metrics.artifact_id"
+        )
+
+
 def _severity_rank(severity: str) -> int:
     return {"none": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}[severity]
 
@@ -219,6 +235,7 @@ def build_alert_trigger(
             + ", ".join(sorted(missing))
         )
     else:
+        _validate_replay_linkage(replay_input, sources)
         for signal_type in resolved_policy["supported_signal_types"]:
             if signal_type not in sources:
                 continue

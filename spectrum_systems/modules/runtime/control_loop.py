@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import hashlib
-import json
 from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.evaluation_control import (
-    DEFAULT_THRESHOLDS,
     build_evaluation_control_decision,
 )
 
@@ -24,12 +21,6 @@ def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _deterministic_id(prefix: str, payload: Dict[str, Any]) -> str:
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
-    return f"{prefix}-{digest}"
-
-
 def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.absolute_path))
@@ -38,9 +29,8 @@ def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
 
 def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
     artifact_type = artifact.get("artifact_type")
-    if artifact_type not in {"eval_summary", "failure_eval_case"}:
+    if artifact_type not in {"eval_summary", "failure_eval_case", "replay_result"}:
         raise ControlLoopError(f"unsupported artifact_type for control loop: {artifact_type}")
-
     if artifact_type == "eval_summary":
         source_artifact_id = str(artifact.get("eval_run_id") or "")
         decision_inputs = {
@@ -49,11 +39,18 @@ def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
             "reproducibility_score": artifact.get("reproducibility_score"),
             "indeterminate_failure_count": artifact.get("indeterminate_failure_count", 0),
         }
-    else:
+    elif artifact_type == "failure_eval_case":
         source_artifact_id = str(artifact.get("eval_case_id") or "")
         decision_inputs = {
             "evaluation_type": artifact.get("evaluation_type"),
             "created_from": artifact.get("created_from"),
+        }
+    else:
+        source_artifact_id = str(artifact.get("replay_id") or "")
+        decision_inputs = {
+            "consistency_status": artifact.get("consistency_status"),
+            "has_observability_metrics": isinstance(artifact.get("observability_metrics"), dict),
+            "has_error_budget_status": isinstance(artifact.get("error_budget_status"), dict),
         }
 
     return {
@@ -72,7 +69,13 @@ def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
         },
         "decision_inputs": decision_inputs,
         "trace_id": str(artifact.get("trace_id") or ""),
-        "run_id": str(artifact.get("eval_run_id") or artifact.get("source_run_id") or source_artifact_id or ""),
+        "run_id": str(
+            artifact.get("eval_run_id")
+            or artifact.get("source_run_id")
+            or artifact.get("replay_run_id")
+            or source_artifact_id
+            or ""
+        ),
         "artifact_type": artifact_type,
     }
 
@@ -91,7 +94,7 @@ def _evaluate_signal(
 ) -> Dict[str, Any]:
     signal_type = signal["signal_type"]
 
-    if signal_type == "eval_summary":
+    if signal_type in {"eval_summary", "replay_result"}:
         return build_evaluation_control_decision(artifact)
 
     if signal_type == "failure_eval_case":
@@ -102,30 +105,18 @@ def _evaluate_signal(
         if not isinstance(signal.get("trace_id"), str) or not signal["trace_id"]:
             raise ControlLoopError("failure_eval_case missing trace_id for deterministic identity")
 
-        deterministic_identity_payload = {
-            "artifact_type": "evaluation_control_decision",
-            "schema_version": "1.1.0",
-            "signal_type": "failure_eval_case",
-            "run_id": signal["run_id"],
-            "trace_id": signal["trace_id"],
-            "source_artifact_id": signal["source_artifact_id"],
-            "evaluation_type": signal["decision_inputs"].get("evaluation_type"),
-            "created_from": signal["decision_inputs"].get("created_from"),
-            "decision": "deny",
-            "rationale_code": "deny_failure_eval_case",
-        }
         decision = {
             "artifact_type": "evaluation_control_decision",
             "schema_version": "1.1.0",
-            "decision_id": _deterministic_id("ECD", deterministic_identity_payload),
+            "decision_id": f"ECD-{signal['run_id']}",
             "eval_run_id": signal["run_id"],
             "system_status": "blocked",
             "system_response": "block",
             "triggered_signals": ["indeterminate_failure"],
             "threshold_snapshot": {
-                "reliability_threshold": DEFAULT_THRESHOLDS["reliability_threshold"],
-                "drift_threshold": DEFAULT_THRESHOLDS["drift_threshold"],
-                "trust_threshold": DEFAULT_THRESHOLDS["trust_threshold"],
+                "reliability_threshold": 0.85,
+                "drift_threshold": 0.20,
+                "trust_threshold": 0.80,
             },
             "trace_id": signal["trace_id"],
             "created_at": _now_iso(),
@@ -159,12 +150,13 @@ def _validate_control_trace(control_trace: Dict[str, Any]) -> None:
             "trace_id": {"type": "string", "minLength": 1},
             "run_id": {"type": "string", "minLength": 1},
             "input_artifact_id": {"type": "string", "minLength": 1},
-            "signal_type": {"type": "string", "enum": ["eval_summary", "failure_eval_case"]},
+            "signal_type": {"type": "string", "enum": ["eval_summary", "failure_eval_case", "replay_result"]},
             "evaluation_path": {
                 "type": "string",
                 "enum": [
                     "evaluation_control_from_eval_summary",
                     "failure_eval_case_auto_deny",
+                    "evaluation_control_from_replay_result",
                 ],
             },
             "decision": {"type": "string", "enum": ["allow", "deny", "require_review"]},
@@ -203,7 +195,9 @@ def run_control_loop(
         "input_artifact_id": signal["source_artifact_id"],
         "signal_type": signal["signal_type"],
         "evaluation_path": (
-            "evaluation_control_from_eval_summary"
+            "evaluation_control_from_replay_result"
+            if signal["signal_type"] == "replay_result"
+            else "evaluation_control_from_eval_summary"
             if signal["signal_type"] == "eval_summary"
             else "failure_eval_case_auto_deny"
         ),

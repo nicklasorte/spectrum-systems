@@ -72,7 +72,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _REQUIRED_CONTEXT_KEYS: Tuple[str, ...] = ("artifact", "stage", "runtime_environment")
-_SUPPORTED_GOVERNED_ARTIFACT_TYPES: Tuple[str, ...] = ("eval_summary", "failure_eval_case")
+_SUPPORTED_GOVERNED_ARTIFACT_TYPES: Tuple[str, ...] = ("replay_result",)
 
 
 def _validate_context(context: Dict[str, Any]) -> List[str]:
