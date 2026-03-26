@@ -46,7 +46,7 @@ def test_review_artifact_example_validates() -> None:
         "related_plan",
         "critical_findings",
         "required_fixes",
-        "optional_improvements",
+        "watch_items",
         "failure_mode_summary",
     ],
 )
@@ -68,12 +68,12 @@ def test_review_artifact_invalid_enums_fail() -> None:
     assert any("status" in error for error in errors)
 
 
-def test_review_artifact_findings_require_locations() -> None:
+def test_review_artifact_findings_require_canonical_fields() -> None:
     instance = _load_example()
-    del instance["critical_findings"][0]["location"]
+    del instance["critical_findings"][0]["file"]
     errors = _validate(instance)
     assert errors
-    assert any("location" in error for error in errors)
+    assert any("file" in error for error in errors)
 
 
 def test_markdown_review_metadata_validation(tmp_path: Path) -> None:
@@ -85,8 +85,8 @@ review_type: codex_review
 review_date: 2026-03-23
 reviewer: Codex
 decision: FAIL
-trust_assessment: NO
-status: open
+trust_assessment: medium
+status: final
 related_plan: docs/review-actions/PLAN-REVIEW-ARTIFACT-STANDARD-2026-03-23.md
 ---
 
@@ -115,4 +115,6 @@ status: open
     assert errors
     assert any("related_plan" in error for error in errors)
     assert any("decision" in error for error in errors)
+    assert any("trust_assessment" in error for error in errors)
+    assert any("status" in error for error in errors)
     assert any("review_date" in error for error in errors)
