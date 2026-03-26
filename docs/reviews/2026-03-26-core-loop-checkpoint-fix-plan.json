@@ -1,0 +1,72 @@
+{
+  "review_id": "REV-CORE-LOOP-2026-03-26",
+  "ordered_bundles": [
+    {
+      "bundle_id": "BUNDLE-01-AG01-ENFORCEMENT-AUTHORITY",
+      "priority": "P0",
+      "blocking": true,
+      "findings_included": [
+        "F-001",
+        "FIX-001"
+      ],
+      "rationale": "Critical trust-boundary enforcement defect at final continuation seam; must be isolated and fixed first to prevent enforcement-vs-execution split-brain success recording.",
+      "files_to_modify": [
+        "spectrum_systems/modules/runtime/agent_golden_path.py",
+        "tests/modules/runtime/test_agent_golden_path.py"
+      ],
+      "tests_to_run": [
+        "pytest tests/modules/runtime/test_agent_golden_path.py -k \"enforcement or final_status or fail_closed\"",
+        "pytest tests/modules/runtime/test_agent_golden_path.py"
+      ],
+      "codex_prompt": "Type: BUILD\\n\\nApply a surgical fix for AG-01 enforcement authority in spectrum_systems/modules/runtime/agent_golden_path.py (run_agent_golden_path).\\n\\nRequirements:\\n1) Derive continuation and execution status strictly from enforcement.final_status.\\n2) Preserve replay_result-only enforcement authority and fail-closed behavior whenever final_status is not \"allow\".\\n3) Remove/avoid any success path derived from decision.system_response when it conflicts with enforcement authority.\\n4) Keep the patch minimal; no redesign, refactor, or surface expansion.\\n5) Add/update targeted tests in tests/modules/runtime/test_agent_golden_path.py that prove: allow -> continuation permitted; non-allow -> blocked/fail-closed execution record; contradictory decision.system_response cannot override enforcement.final_status.\\n\\nRun:\\n- pytest tests/modules/runtime/test_agent_golden_path.py -k \"enforcement or final_status or fail_closed\"\\n- pytest tests/modules/runtime/test_agent_golden_path.py"
+    },
+    {
+      "bundle_id": "BUNDLE-02-REPLAY-BOUNDARY-HARDENING",
+      "priority": "P1",
+      "blocking": true,
+      "findings_included": [
+        "FIX-002",
+        "FIX-003"
+      ],
+      "rationale": "Shared replay-boundary seam and contract lineage surface across evaluation_control and evaluation_monitor; bundling minimizes seam churn while preserving fail-closed runtime behavior.",
+      "files_to_modify": [
+        "spectrum_systems/modules/runtime/evaluation_control.py",
+        "spectrum_systems/modules/runtime/evaluation_monitor.py",
+        "tests/modules/runtime/test_evaluation_control.py",
+        "tests/modules/runtime/test_evaluation_monitor.py"
+      ],
+      "tests_to_run": [
+        "pytest tests/modules/runtime/test_evaluation_control.py -k \"replay_result or fail_closed\"",
+        "pytest tests/modules/runtime/test_evaluation_monitor.py -k \"lineage or observability_metrics_id\"",
+        "pytest tests/modules/runtime/test_evaluation_control.py tests/modules/runtime/test_evaluation_monitor.py"
+      ],
+      "codex_prompt": "Type: BUILD\\n\\nImplement replay-boundary hardening with a minimal patch across spectrum_systems/modules/runtime/evaluation_control.py and spectrum_systems/modules/runtime/evaluation_monitor.py.\\n\\nScope:\\nA) Constrain evaluation_control runtime path to replay_result-only inputs; if eval_summary mode appears in runtime seams, fail closed.\\nB) In evaluation_monitor, assert lineage consistency so error_budget_status.observability_metrics_id references embedded observability_metrics.artifact_id.\\n\\nGuardrails:\\n1) Preserve replay_result-only enforcement invariant.\\n2) Preserve fail-closed behavior.\\n3) Keep change surgical; no redesign or unrelated refactors.\\n4) Add/update targeted tests only for these seams.\\n\\nRun:\\n- pytest tests/modules/runtime/test_evaluation_control.py -k \"replay_result or fail_closed\"\\n- pytest tests/modules/runtime/test_evaluation_monitor.py -k \"lineage or observability_metrics_id\"\\n- pytest tests/modules/runtime/test_evaluation_control.py tests/modules/runtime/test_evaluation_monitor.py"
+    },
+    {
+      "bundle_id": "BUNDLE-03-CONTROL-LOOP-TRACE-CONTEXT",
+      "priority": "P2",
+      "blocking": false,
+      "findings_included": [
+        "FIX-004"
+      ],
+      "rationale": "Trace-context identity binding hardening is narrower blast radius and lower trust severity than enforcement authority and replay-boundary defects, so it follows after blocking bundles.",
+      "files_to_modify": [
+        "spectrum_systems/modules/runtime/control_loop.py",
+        "tests/modules/runtime/test_control_loop.py"
+      ],
+      "tests_to_run": [
+        "pytest tests/modules/runtime/test_control_loop.py -k \"trace_context or replay artifact identity\"",
+        "pytest tests/modules/runtime/test_control_loop.py"
+      ],
+      "codex_prompt": "Type: BUILD\\n\\nApply a surgical trace-context validation fix in spectrum_systems/modules/runtime/control_loop.py.\\n\\nRequirements:\\n1) Validate and bind control_loop.trace_context to replay artifact identity.\\n2) Eliminate replay/control split-brain continuation paths.\\n3) Preserve replay_result-only and fail-closed invariants.\\n4) Do not redesign loop architecture; minimal targeted edits only.\\n5) Add/update focused tests in tests/modules/runtime/test_control_loop.py for mismatched vs aligned trace_context/replay identity behavior.\\n\\nRun:\\n- pytest tests/modules/runtime/test_control_loop.py -k \"trace_context or replay artifact identity\"\\n- pytest tests/modules/runtime/test_control_loop.py"
+    }
+  ],
+  "blocking_bundles": [
+    "BUNDLE-01-AG01-ENFORCEMENT-AUTHORITY",
+    "BUNDLE-02-REPLAY-BOUNDARY-HARDENING"
+  ],
+  "deferred_watch_items": [
+    "Keep replay-related helper builders aligned with replay-authoritative lineage assumptions to avoid normalizing weaker fixture patterns.",
+    "Retain isolated trace_store injection discipline in chaos cases to avoid accidental fallback to process-global trace state."
+  ]
+}
