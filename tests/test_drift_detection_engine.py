@@ -18,6 +18,7 @@ from spectrum_systems.modules.runtime.drift_detection_engine import (  # noqa: E
     DriftDetectionError,
     detect_drift,
 )
+from tests.helpers.replay_result_builder import make_canonical_replay_result  # noqa: E402
 
 
 def _current_replay_schema_version() -> str:
@@ -26,33 +27,10 @@ def _current_replay_schema_version() -> str:
 
 
 def _replay_result() -> dict:
-    return {
-        "artifact_type": "replay_result",
-        "schema_version": _current_replay_schema_version(),
-        "replay_id": "RPL-test-001",
-        "original_run_id": "eval-run-001",
-        "replay_run_id": "eval-run-001",
-        "timestamp": "2026-03-22T00:00:00Z",
-        "trace_id": "trace-eval-001",
-        "input_artifact_reference": "eval_summary:eval-run-001",
-        "original_decision_reference": "ECD-eval-run-001-ALLOW",
-        "original_enforcement_reference": "ENF-000000000001",
-        "replay_decision_reference": "ECD-eval-run-001-ALLOW",
-        "replay_enforcement_reference": "ENF-000000000002",
-        "replay_decision": "allow",
-        "replay_enforcement_action": "allow_execution",
-        "replay_final_status": "allow",
-        "original_enforcement_action": "allow_execution",
-        "original_final_status": "allow",
-        "consistency_status": "match",
-        "drift_detected": False,
-        "failure_reason": None,
-        "replay_path": "bag_replay_engine",
-        "provenance": {
-            "source_artifact_type": "eval_summary",
-            "source_artifact_id": "eval-run-001",
-        },
-    }
+    return make_canonical_replay_result(
+        replay_id="RPL-test-001",
+        trace_id="trace-eval-001",
+    )
 
 
 def _expected_id(source_run_id: str, replay_run_id: str, drift_type: str) -> str:
