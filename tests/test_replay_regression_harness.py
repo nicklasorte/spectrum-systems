@@ -125,6 +125,25 @@ def test_incompatible_artifact_type_fails_closed(tmp_path: Path) -> None:
         run_trace_regression(entry)
 
 
+def test_legacy_replay_shape_fails_closed(tmp_path: Path) -> None:
+    baseline = {
+        "artifact_type": "replay_result",
+        "schema_version": "1.0.0",
+        "replay_id": "legacy-rb",
+        "source_trace_id": "trace-001",
+        "status": "success",
+    }
+    baseline_path = _write_json(tmp_path / "baseline_legacy.json", baseline)
+    current_path = _write_json(tmp_path / "current.json", _make_replay_result(replay_id="rc"))
+    entry = {
+        "trace_id": "trace-001",
+        "baseline_replay_result_path": str(baseline_path),
+        "current_replay_result_path": str(current_path),
+    }
+    with pytest.raises(RegressionHarnessError, match="schema validation failed"):
+        run_trace_regression(entry)
+
+
 def test_deterministic_same_input_same_regression_result_behavior(tmp_path: Path) -> None:
     baseline = _write_json(tmp_path / "baseline.json", _make_replay_result(replay_id="rb"))
     current = _write_json(tmp_path / "current.json", _make_replay_result(replay_id="rc"))
