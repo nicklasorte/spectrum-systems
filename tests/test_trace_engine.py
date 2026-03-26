@@ -38,6 +38,7 @@ from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
     TraceNotFoundError,
     attach_artifact,
     clear_trace_store,
+    create_trace_store,
     end_span,
     get_all_trace_ids,
     get_trace,
@@ -682,3 +683,38 @@ class TestNoOrphanSpans:
                 assert pid in span_ids, (
                     f"Orphan span detected: '{span['name']}' has parent '{pid}'"
                 )
+
+
+class TestInjectedStoreIsolation:
+    def test_downstream_helpers_honor_injected_store(self):
+        isolated = create_trace_store()
+        trace_id = start_trace({"trace_id": "trace-injected"}, store=isolated)
+        span_id = start_span(trace_id, "isolated-span", store=isolated)
+        record_event(span_id, "isolated-event", {"k": "v"}, store=isolated)
+        attach_artifact(trace_id, "ART-ISO-001", "isolated_artifact", span_id=span_id, store=isolated)
+        end_span(span_id, SPAN_STATUS_OK, store=isolated)
+
+        isolated_trace = get_trace(trace_id, store=isolated)
+        assert isolated_trace["spans"][0]["events"][0]["event_type"] == "isolated-event"
+        assert isolated_trace["artifacts"][0]["artifact_id"] == "ART-ISO-001"
+        assert trace_id not in get_all_trace_ids()
+
+    def test_mixed_default_and_injected_paths_do_not_cross_contaminate(self):
+        global_trace = start_trace({"trace_id": "trace-global"})
+        global_span = start_span(global_trace, "global-span")
+        record_event(global_span, "global-event", {"path": "default"})
+        end_span(global_span, SPAN_STATUS_OK)
+
+        isolated = create_trace_store()
+        isolated_trace = start_trace({"trace_id": "trace-isolated"}, store=isolated)
+        isolated_span = start_span(isolated_trace, "isolated-span", store=isolated)
+        record_event(isolated_span, "isolated-event", {"path": "injected"}, store=isolated)
+        end_span(isolated_span, SPAN_STATUS_OK, store=isolated)
+
+        global_snapshot = get_trace(global_trace)
+        isolated_snapshot = get_trace(isolated_trace, store=isolated)
+
+        assert global_snapshot["trace_id"] == "trace-global"
+        assert isolated_snapshot["trace_id"] == "trace-isolated"
+        assert all(item["event_type"] != "isolated-event" for span in global_snapshot["spans"] for item in span["events"])
+        assert all(item["event_type"] != "global-event" for span in isolated_snapshot["spans"] for item in span["events"])

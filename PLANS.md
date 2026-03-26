@@ -163,6 +163,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-SRE-08-SRE-10-2026-03-24.md | SRE-08 + SRE-10 — SLO Definition + Observability Metrics | Active |
 
+| docs/review-actions/PLAN-TRACE-STORE-ISOLATION-HARDENING-2026-03-26.md | TRACE-STORE-ISOLATION-HARDENING — narrow global trace-state regression hardening | Active |
+
 Update this table when plans are created or completed.
 
 ---
