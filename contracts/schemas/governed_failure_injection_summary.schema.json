@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/governed_failure_injection_summary.schema.json",
+  "title": "Governed Failure Injection Summary",
+  "description": "Deterministic fail-closed chaos/failure validation summary for governed runtime seams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "trace_refs",
+    "chaos_run_id",
+    "case_count",
+    "pass_count",
+    "fail_count",
+    "results"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "governed_failure_injection_summary"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_refs": {
+      "$ref": "#/$defs/trace_refs"
+    },
+    "chaos_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pass_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fail_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/case_result"
+      }
+    }
+  },
+  "$defs": {
+    "case_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "artifact_id",
+        "trace_refs",
+        "injection_case_id",
+        "seam",
+        "failure_mode",
+        "expected_outcome",
+        "observed_outcome",
+        "passed",
+        "blocking_reason",
+        "invariant_violations",
+        "provenance_refs",
+        "created_at"
+      ],
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "const": "governed_failure_injection_case_result"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_refs": {
+          "$ref": "#/$defs/trace_refs"
+        },
+        "run_linkage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "run_id",
+            "trace_id"
+          ],
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "trace_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "injection_case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seam": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failure_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_outcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_outcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "blocking_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "invariant_violations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "provenance_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "related"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
