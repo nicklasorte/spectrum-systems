@@ -86,6 +86,24 @@ class AgentGoldenPathOverrideEnforcementError(AgentGoldenPathError):
         self.override_decision = override_decision
 
 
+_ARTIFACT_ID_KEYS: Dict[str, str] = {
+    "context_bundle": "context_id",
+    "context_validation_result": "validation_id",
+    "context_admission_decision": "admission_decision_id",
+    "routing_decision": "routing_decision_id",
+    "agent_execution_trace": "agent_run_id",
+    "structured_output": "eval_case_id",
+    "eval_result": "eval_case_id",
+    "eval_summary": "eval_run_id",
+    "control_decision": "decision_id",
+    "enforcement": "enforcement_result_id",
+    "final_execution_record": "artifact_id",
+    "failure_artifact": "id",
+    "hitl_review_request": "id",
+    "hitl_override_decision": "override_decision_id",
+}
+
+
 @dataclass(frozen=True)
 class GoldenPathConfig:
     """Runtime configuration for deterministic AG-01 execution."""
@@ -422,6 +440,7 @@ def _build_structured_output(
     run_id: str,
     context_bundle: Dict[str, Any],
     tool_calls: List[Dict[str, Any]],
+    upstream_refs: List[str],
     force_invalid: bool,
     force_eval_status: Optional[str],
 ) -> Dict[str, Any]:
@@ -435,10 +454,7 @@ def _build_structured_output(
         "schema_version": "1.0.0",
         "trace_id": trace_id,
         "eval_case_id": eval_case_id,
-        "input_artifact_refs": [
-            f"context_bundle:{context_bundle['context_id']}",
-            f"agent_execution_trace:{run_id}",
-        ],
+        "input_artifact_refs": sorted(set(upstream_refs)),
         "expected_output_spec": {
             "forced_status": force_eval_status or "pass",
             "forced_score": 1.0 if (force_eval_status or "pass") == "pass" else 0.0,
@@ -455,6 +471,107 @@ def _build_structured_output(
     if force_invalid:
         structured_output.pop("evaluation_type", None)
     return structured_output
+
+
+def _artifact_ref(artifact_type: str, artifact_id: str) -> str:
+    return f"{artifact_type}:{artifact_id}"
+
+
+def _artifact_id(artifacts: Dict[str, Dict[str, Any]], key: str) -> Optional[str]:
+    payload = artifacts.get(key)
+    if not isinstance(payload, dict):
+        return None
+    id_key = _ARTIFACT_ID_KEYS.get(key)
+    if not id_key:
+        return None
+    value = payload.get(id_key)
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise AgentGoldenPathStageError(stage="enforcement", failure_type="validation_error", error_message=message)
+
+
+def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_id: str, run_id: str) -> None:
+    """Fail-closed trace/linkage checks for emitted governed artifacts."""
+    for name, payload in artifacts.items():
+        if not isinstance(payload, dict):
+            continue
+        if name == "context_bundle":
+            trace = payload.get("trace", {})
+            _require(trace.get("trace_id") == trace_id, "context_bundle missing canonical trace_id linkage")
+            _require(trace.get("run_id") == run_id, "context_bundle missing canonical run_id linkage")
+        elif name in {"context_validation_result", "context_admission_decision"}:
+            trace = payload.get("trace", {})
+            _require(trace.get("trace_id") == trace_id, f"{name} missing canonical trace_id linkage")
+            _require(trace.get("run_id") == run_id, f"{name} missing canonical run_id linkage")
+        elif name == "routing_decision":
+            trace = payload.get("trace", {})
+            _require(trace.get("trace_id") == trace_id, "routing_decision missing canonical trace_id linkage")
+            _require(trace.get("agent_run_id") == run_id, "routing_decision missing canonical agent_run_id linkage")
+        elif name == "agent_execution_trace":
+            _require(payload.get("trace_id") == trace_id, "agent_execution_trace missing canonical trace_id linkage")
+            _require(payload.get("agent_run_id") == run_id, "agent_execution_trace missing canonical agent_run_id linkage")
+        elif name in {"structured_output", "eval_result", "eval_summary", "control_decision", "enforcement", "final_execution_record", "failure_artifact"}:
+            _require(payload.get("trace_id") == trace_id, f"{name} missing canonical trace_id linkage")
+        elif name == "hitl_review_request":
+            _require(payload.get("trace_id") == trace_id, "hitl_review_request missing canonical trace_id linkage")
+            _require(payload.get("source_run_id") == run_id, "hitl_review_request missing canonical source_run_id linkage")
+        elif name == "hitl_override_decision":
+            _require(payload.get("trace_id") == trace_id, "hitl_override_decision missing canonical trace_id linkage")
+
+    eval_summary = artifacts.get("eval_summary")
+    if isinstance(eval_summary, dict):
+        _require(eval_summary.get("eval_run_id") == run_id, "eval_summary.eval_run_id must match canonical run_id")
+    control = artifacts.get("control_decision")
+    if isinstance(control, dict):
+        _require(control.get("run_id") == run_id, "control_decision.run_id must match canonical run_id")
+    enforcement = artifacts.get("enforcement")
+    if isinstance(enforcement, dict):
+        _require(enforcement.get("run_id") == run_id, "enforcement.run_id must match canonical run_id")
+    execution = artifacts.get("final_execution_record")
+    if isinstance(execution, dict):
+        _require(execution.get("run_id") == run_id, "final_execution_record.run_id must match canonical run_id")
+
+    context_id = _artifact_id(artifacts, "context_bundle")
+    validation_id = _artifact_id(artifacts, "context_validation_result")
+    admission_id = _artifact_id(artifacts, "context_admission_decision")
+    routing_id = _artifact_id(artifacts, "routing_decision")
+    agent_run_id = _artifact_id(artifacts, "agent_execution_trace")
+    eval_case_id = _artifact_id(artifacts, "structured_output")
+    eval_run_id = _artifact_id(artifacts, "eval_summary")
+    decision_id = _artifact_id(artifacts, "control_decision")
+
+    if isinstance(artifacts.get("context_validation_result"), dict):
+        _require(artifacts["context_validation_result"].get("context_bundle_id") == context_id, "context_validation_result must reference context_bundle parent")
+    if isinstance(artifacts.get("context_admission_decision"), dict):
+        _require(artifacts["context_admission_decision"].get("context_bundle_id") == context_id, "context_admission_decision must reference context_bundle parent")
+        _require(artifacts["context_admission_decision"].get("validation_ref") == validation_id, "context_admission_decision must reference context_validation_result parent")
+    if isinstance(artifacts.get("routing_decision"), dict):
+        refs = set(artifacts["routing_decision"].get("related_artifact_refs") or [])
+        _require(_artifact_ref("context_bundle", context_id or "") in refs, "routing_decision missing context_bundle lineage ref")
+        _require(_artifact_ref("context_validation_result", validation_id or "") in refs, "routing_decision missing context_validation_result lineage ref")
+        _require(_artifact_ref("context_admission_decision", admission_id or "") in refs, "routing_decision missing context_admission_decision lineage ref")
+    if isinstance(artifacts.get("structured_output"), dict):
+        refs = set(artifacts["structured_output"].get("input_artifact_refs") or [])
+        required_refs = {
+            _artifact_ref("context_bundle", context_id or ""),
+            _artifact_ref("routing_decision", routing_id or ""),
+            _artifact_ref("context_admission_decision", admission_id or ""),
+            _artifact_ref("agent_execution_trace", agent_run_id or ""),
+        }
+        _require(required_refs.issubset(refs), "eval_case missing required upstream lineage refs")
+    if isinstance(artifacts.get("eval_result"), dict):
+        refs = set(artifacts["eval_result"].get("provenance_refs") or [])
+        _require(_artifact_ref("eval_case", eval_case_id or "") in refs, "eval_result missing eval_case lineage ref")
+    if isinstance(artifacts.get("control_decision"), dict):
+        in_ref = artifacts["control_decision"].get("input_signal_reference", {})
+        _require(in_ref.get("source_artifact_id") == eval_run_id, "control_decision must reference eval_summary upstream artifact")
+    if isinstance(artifacts.get("enforcement"), dict):
+        _require(artifacts["enforcement"].get("input_decision_reference") == decision_id, "enforcement must reference control_decision upstream artifact")
 
 
 def _handle_review_gate(
@@ -655,6 +772,16 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                 error_message=str(exc),
             ) from exc
         artifacts["routing_decision"] = routing_decision
+        artifacts["routing_decision"]["related_artifact_refs"] = sorted(
+            set(
+                list(routing_decision.get("related_artifact_refs") or [])
+                + [
+                    f"context_bundle:{context_bundle['context_id']}",
+                    f"context_validation_result:{admission['context_validation_result']['validation_id']}",
+                    f"context_admission_decision:{admission['context_admission_decision']['admission_decision_id']}",
+                ]
+            )
+        )
         refs.append(f"routing_decision:{routing_decision['routing_decision_id']}")
 
         step_plan = generate_step_plan(
@@ -711,6 +838,12 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                     run_id=run_id,
                     context_bundle=bundle,
                     tool_calls=[s for s in steps if s.get("step_type") in {"tool", "model"}],
+                    upstream_refs=[
+                        f"context_bundle:{bundle['context_id']}",
+                        f"routing_decision:{routing_decision['routing_decision_id']}",
+                        f"context_admission_decision:{admission['context_admission_decision']['admission_decision_id']}",
+                        f"agent_execution_trace:{run_id}",
+                    ],
                     force_invalid=False,
                     force_eval_status=config.force_eval_status,
                 ),
@@ -733,6 +866,12 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             run_id=run_id,
             context_bundle=context_bundle,
             tool_calls=trace["tool_calls"],
+            upstream_refs=[
+                f"context_bundle:{context_bundle['context_id']}",
+                f"routing_decision:{routing_decision['routing_decision_id']}",
+                f"context_admission_decision:{admission['context_admission_decision']['admission_decision_id']}",
+                f"agent_execution_trace:{run_id}",
+            ],
             force_invalid=config.emit_invalid_structured_output,
             force_eval_status=config.force_eval_status,
         )
@@ -745,6 +884,16 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             if config.fail_eval_execution:
                 raise RuntimeError("forced_eval_execution_failure")
             eval_result = run_eval_case(structured_output)
+            eval_result["provenance_refs"] = sorted(
+                set(
+                    list(eval_result.get("provenance_refs") or [])
+                    + [
+                        f"eval_case:{structured_output['eval_case_id']}",
+                        f"agent_execution_trace:{run_id}",
+                        f"routing_decision:{routing_decision['routing_decision_id']}",
+                    ]
+                )
+            )
             _validate_contract(eval_result, "eval_result", stage="eval")
             eval_summary = compute_eval_summary(
                 eval_run_id=run_id,
@@ -920,6 +1069,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         }
         _validate_contract(execution_record, "control_execution_result", stage="enforcement")
         artifacts["final_execution_record"] = execution_record
+        _validate_trace_and_lineage(artifacts, trace_id=trace_id, run_id=run_id)
 
     except AgentGoldenPathOverrideEnforcementError as exc:
         artifacts["hitl_review_request"] = exc.review_request

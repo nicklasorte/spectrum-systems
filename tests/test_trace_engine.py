@@ -33,6 +33,7 @@ from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
     SPAN_STATUS_BLOCKED,
     SPAN_STATUS_ERROR,
     SPAN_STATUS_OK,
+    TraceConflictError,
     SpanNotFoundError,
     TraceNotFoundError,
     attach_artifact,
@@ -101,6 +102,18 @@ class TestTraceCreatedOnEveryRun:
     def test_get_all_trace_ids_includes_new_trace(self):
         trace_id = start_trace()
         assert trace_id in get_all_trace_ids()
+
+    def test_start_trace_deterministic_seed_reuses_same_id(self):
+        trace_a = start_trace({"deterministic_seed": "seed-001", "run_id": "run-001"})
+        with pytest.raises(TraceConflictError):
+            start_trace({"deterministic_seed": "seed-001", "run_id": "run-001"})
+        assert isinstance(trace_a, str)
+        assert len(trace_a) == 36
+
+    def test_start_trace_explicit_trace_id_conflict_is_blocked(self):
+        start_trace({"trace_id": "trace-001", "run_id": "run-001"})
+        with pytest.raises(TraceConflictError):
+            start_trace({"trace_id": "trace-001", "run_id": "run-002"})
 
 
 # ---------------------------------------------------------------------------
