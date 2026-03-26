@@ -878,6 +878,84 @@ def _stable_replay_id(original_run_id: str, trace_id: str, source_ref: str) -> s
     return f"RPL-{uuid.uuid5(uuid.NAMESPACE_URL, seed).hex[:12]}"
 
 
+def _resolve_source_artifact_id(artifact: Dict[str, Any]) -> str:
+    source_id = (
+        artifact.get("eval_run_id")
+        or artifact.get("eval_case_id")
+        or artifact.get("run_id")
+        or artifact.get("artifact_id")
+    )
+    if not isinstance(source_id, str) or not source_id.strip():
+        raise ReplayEngineError(
+            "REPLAY_MISSING_PREREQUISITE_ARTIFACT: source artifact must include one of "
+            "eval_run_id, eval_case_id, run_id, or artifact_id"
+        )
+    if source_id.startswith("unknown-") or source_id == "unknown":
+        raise ReplayEngineError(
+            f"REPLAY_INVALID_LINEAGE: source artifact id contains forbidden placeholder {source_id!r}"
+        )
+    return source_id
+
+
+def _validate_replay_lineage_or_raise(
+    *,
+    artifact: Dict[str, Any],
+    original_decision: Dict[str, Any],
+    original_enforcement: Dict[str, Any],
+    trace_id: str,
+) -> None:
+    """Fail-closed lineage/trace continuity checks for governed replay."""
+    source_artifact_type = artifact.get("artifact_type")
+    source_artifact_id = _resolve_source_artifact_id(artifact)
+
+    input_signal_ref = original_decision.get("input_signal_reference")
+    if not isinstance(input_signal_ref, dict):
+        raise ReplayEngineError(
+            "REPLAY_INVALID_LINEAGE: original_decision.input_signal_reference must be present"
+        )
+    if input_signal_ref.get("signal_type") != source_artifact_type:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_LINEAGE: original_decision.input_signal_reference.signal_type "
+            f"{input_signal_ref.get('signal_type')!r} does not match replay source artifact_type "
+            f"{source_artifact_type!r}"
+        )
+    if input_signal_ref.get("source_artifact_id") != source_artifact_id:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_LINEAGE: original_decision.input_signal_reference.source_artifact_id "
+            f"{input_signal_ref.get('source_artifact_id')!r} does not match replay source artifact id "
+            f"{source_artifact_id!r}"
+        )
+
+    decision_id = original_decision.get("decision_id")
+    if not isinstance(decision_id, str) or not decision_id.strip():
+        raise ReplayEngineError(
+            "REPLAY_MISSING_PREREQUISITE_ARTIFACT: original_decision.decision_id is required for lineage"
+        )
+
+    enf_input_ref = original_enforcement.get("input_decision_reference")
+    if enf_input_ref != decision_id:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_LINEAGE: original_enforcement.input_decision_reference does not "
+            "match original_decision.decision_id"
+        )
+
+    artifact_trace_id = artifact.get("trace_id")
+    decision_trace_id = original_decision.get("trace_id")
+    enforcement_trace_id = original_enforcement.get("trace_id")
+    trace_ids = [artifact_trace_id, decision_trace_id, enforcement_trace_id, trace_id]
+    if any(not isinstance(value, str) or not value.strip() for value in trace_ids):
+        raise ReplayEngineError(
+            "REPLAY_INVALID_TRACE_LINKAGE: artifact, original_decision, original_enforcement, "
+            "and replay trace context must all include non-empty trace_id values"
+        )
+    if len(set(trace_ids)) != 1:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_TRACE_LINKAGE: trace_id mismatch across replay source chain "
+            f"(artifact={artifact_trace_id!r}, original_decision={decision_trace_id!r}, "
+            f"original_enforcement={enforcement_trace_id!r}, replay_trace={trace_id!r})"
+        )
+
+
 def _classify_consistency(
     replay_enforcement: Dict[str, Any],
     original_enforcement: Dict[str, Any],
@@ -940,13 +1018,7 @@ def _build_replay_result(
             f"original_enforcement contains unsupported final_status: {original_status!r}"
         )
 
-    source_id = _require_non_empty_ref(
-        artifact.get("eval_run_id")
-        or artifact.get("eval_case_id")
-        or artifact.get("run_id")
-        or artifact.get("artifact_id"),
-        "source_artifact_id",
-    )
+    source_id = _require_non_empty_ref(_resolve_source_artifact_id(artifact), "source_artifact_id")
     original_run_id = _require_non_empty_ref(original_decision.get("run_id"), "original_run_id")
     replay_run_id = _require_non_empty_ref(replay_decision.get("run_id"), "replay_run_id")
     source_artifact_type = _require_non_empty_ref(
@@ -1043,20 +1115,22 @@ def run_replay(
         context="original_enforcement",
     )
 
-    trace_id_value = (
-        trace_context_input.get("trace_id")
-        or original_decision_input.get("trace_id")
-        or artifact_input.get("trace_id")
-    )
+    trace_id_value = trace_context_input.get("trace_id")
     if not isinstance(trace_id_value, str) or not trace_id_value.strip():
         raise ReplayEngineError(
-            "REPLAY_INVALID_TRACE_LINKAGE: trace_id is required for governed replay flows"
+            "REPLAY_INVALID_TRACE_LINKAGE: trace_context.trace_id is required for governed replay flows"
         )
     if trace_id_value.startswith("unknown-") or trace_id_value == "unknown":
         raise ReplayEngineError(
             f"REPLAY_INVALID_TRACE_LINKAGE: placeholder trace_id is forbidden ({trace_id_value!r})"
         )
     trace_id = trace_id_value
+    _validate_replay_lineage_or_raise(
+        artifact=artifact_input,
+        original_decision=original_decision_input,
+        original_enforcement=original_enforcement_input,
+        trace_id=trace_id,
+    )
 
     try:
         from spectrum_systems.modules.runtime.control_loop import run_control_loop
