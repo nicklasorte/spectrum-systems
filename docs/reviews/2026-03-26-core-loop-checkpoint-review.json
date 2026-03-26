@@ -25,10 +25,10 @@
     {
       "finding_id": "F-001",
       "title": "AG-01 continuation is not strictly enforcement-authoritative",
-      "description": "run_agent_golden_path derives continuation from decision.system_response and can diverge from enforcement.final_status in review-required paths.",
-      "why_dangerous": "This creates a split-brain seam where final execution can be reported as success while enforcement indicates require_review.",
+      "description": "run_agent_golden_path derives continuation from decision.system_response and can diverge from enforcement.final_status in review-required paths. [id=AG-01; severity=P0; file=spectrum_systems/modules/runtime/agent_golden_path.py; function=run_agent_golden_path; minimal_fix=FIX-001]",
+      "why_dangerous": "This creates a split-brain seam where final execution can be reported as success while enforcement indicates require_review. [impact=execution status can contradict enforcement authority]",
       "location": "spectrum_systems/modules/runtime/agent_golden_path.py::run_agent_golden_path",
-      "failure_scenario": "A control decision resolves to warn/require_review; enforcement returns require_review but final execution record remains success due to decision-based continuation logic."
+      "failure_scenario": "A control decision resolves to warn/require_review; enforcement returns require_review but final execution record remains success due to decision-based continuation logic. [failure_mode=decision-based continuation bypasses enforcement-final-status authority]"
     }
   ],
   "required_fixes": [
