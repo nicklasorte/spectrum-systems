@@ -1,0 +1,47 @@
+{
+  "artifact_type": "governed_failure_injection_summary",
+  "schema_version": "1.0.0",
+  "id": "gfi-3a83d3f1f6b0f0b8",
+  "timestamp": "2026-03-26T00:00:00Z",
+  "trace_refs": {
+    "primary": "chaos-run-001",
+    "related": [
+      "trace-context-admission"
+    ]
+  },
+  "chaos_run_id": "chaos-run-001",
+  "case_count": 1,
+  "pass_count": 1,
+  "fail_count": 0,
+  "results": [
+    {
+      "artifact_type": "governed_failure_injection_case_result",
+      "schema_version": "1.0.0",
+      "artifact_id": "gficr-1ab4a301f53d1f80",
+      "trace_refs": {
+        "primary": "trace-context-admission",
+        "related": [
+          "chaos-run-001"
+        ]
+      },
+      "run_linkage": {
+        "run_id": "run-chaos-001",
+        "trace_id": "trace-context-admission"
+      },
+      "injection_case_id": "context_missing_upstream_refs",
+      "seam": "context_admission",
+      "failure_mode": "missing_required_upstream_refs",
+      "expected_outcome": "block",
+      "observed_outcome": "block",
+      "passed": true,
+      "blocking_reason": "missing_context_bundle",
+      "invariant_violations": [
+        "missing_context_bundle"
+      ],
+      "provenance_refs": [
+        "context_admission_decision:ctxa-example"
+      ],
+      "created_at": "2026-03-26T00:00:00Z"
+    }
+  ]
+}

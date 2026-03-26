@@ -59,7 +59,7 @@ import threading
 import uuid
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -86,6 +86,14 @@ _traces: Dict[str, Dict[str, Any]] = {}
 _span_index: Dict[str, tuple] = {}  # span_id → (trace_id, span_dict)
 
 
+class TraceStore(TypedDict):
+    """Isolated trace-store container for dependency-injected trace operations."""
+
+    lock: threading.Lock
+    traces: Dict[str, Dict[str, Any]]
+    span_index: Dict[str, tuple]
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -107,12 +115,31 @@ def _find_span(span_id: str) -> Optional[Dict[str, Any]]:
     return entry[1]
 
 
+def create_trace_store() -> TraceStore:
+    """Create an isolated in-memory trace store.
+
+    This enables callers (e.g. chaos validation) to run trace checks without
+    mutating the process-global trace registry.
+    """
+    return {
+        "lock": threading.Lock(),
+        "traces": {},
+        "span_index": {},
+    }
+
+
+def _resolve_store(store: Optional[TraceStore]) -> tuple[threading.Lock, Dict[str, Dict[str, Any]], Dict[str, tuple]]:
+    if store is None:
+        return _store_lock, _traces, _span_index
+    return store["lock"], store["traces"], store["span_index"]
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
 
-def start_trace(context: Optional[Dict[str, Any]] = None) -> str:
+def start_trace(context: Optional[Dict[str, Any]] = None, *, store: Optional[TraceStore] = None) -> str:
     """Create a new Trace and return its ``trace_id``.
 
     Parameters
@@ -146,8 +173,9 @@ def start_trace(context: Optional[Dict[str, Any]] = None) -> str:
         "context": ctx,
         "schema_version": SCHEMA_VERSION,
     }
-    with _store_lock:
-        existing = _traces.get(trace_id)
+    store_lock, traces, _ = _resolve_store(store)
+    with store_lock:
+        existing = traces.get(trace_id)
         if existing is not None:
             if existing.get("context") != ctx:
                 raise TraceConflictError(
@@ -156,7 +184,7 @@ def start_trace(context: Optional[Dict[str, Any]] = None) -> str:
             raise TraceConflictError(
                 f"start_trace: trace_id '{trace_id}' already exists"
             )
-        _traces[trace_id] = trace
+        traces[trace_id] = trace
     return trace_id
 
 
@@ -397,6 +425,8 @@ def summarize_trace(trace_id: str) -> str:
 def validate_trace_context(
     trace_id: Optional[str],
     span_id: Optional[str] = None,
+    *,
+    store: Optional[TraceStore] = None,
 ) -> List[str]:
     """Validate that a trace context is complete and well-formed.
 
@@ -414,8 +444,9 @@ def validate_trace_context(
         errors.append("validate_trace_context: trace_id is missing or empty")
         return errors  # Cannot proceed without trace_id
 
-    with _store_lock:
-        trace = _traces.get(trace_id)
+    store_lock, traces, span_index = _resolve_store(store)
+    with store_lock:
+        trace = traces.get(trace_id)
 
     if trace is None:
         errors.append(f"validate_trace_context: trace_id '{trace_id}' not found in store")
@@ -430,8 +461,8 @@ def validate_trace_context(
         errors.append(f"validate_trace_context: trace '{trace_id}' is missing 'start_time' field")
 
     if span_id is not None:
-        with _store_lock:
-            entry = _span_index.get(span_id)
+        with store_lock:
+            entry = span_index.get(span_id)
         if entry is None or entry[0] != trace_id:
             errors.append(
                 f"validate_trace_context: span_id '{span_id}' not found in trace '{trace_id}'"
