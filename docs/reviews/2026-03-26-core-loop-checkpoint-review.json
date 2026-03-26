@@ -1,0 +1,61 @@
+{
+  "review_id": "REV-CORE-LOOP-2026-03-26",
+  "module": "core_runtime",
+  "review_type": "architecture_checkpoint",
+  "review_date": "2026-03-26",
+  "reviewer": "codex",
+  "decision": "FAIL",
+  "trust_assessment": "NO",
+  "status": "open",
+  "scope": [
+    "spectrum_systems/modules/runtime/trace_engine.py",
+    "spectrum_systems/modules/runtime/governed_failure_injection.py",
+    "spectrum_systems/modules/runtime/replay_engine.py",
+    "spectrum_systems/modules/runtime/evaluation_control.py",
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/control_integration.py",
+    "spectrum_systems/modules/runtime/evaluation_monitor.py",
+    "spectrum_systems/modules/runtime/alert_triggers.py",
+    "spectrum_systems/modules/runtime/agent_golden_path.py",
+    "tests/helpers/replay_result_builder.py",
+    "tests/helpers/replay_adjacent_builders.py"
+  ],
+  "related_plan": "docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT.md",
+  "critical_findings": [
+    {
+      "finding_id": "F-001",
+      "title": "AG-01 continuation is not strictly enforcement-authoritative",
+      "description": "run_agent_golden_path derives continuation from decision.system_response and can diverge from enforcement.final_status in review-required paths.",
+      "why_dangerous": "This creates a split-brain seam where final execution can be reported as success while enforcement indicates require_review.",
+      "location": "spectrum_systems/modules/runtime/agent_golden_path.py::run_agent_golden_path",
+      "failure_scenario": "A control decision resolves to warn/require_review; enforcement returns require_review but final execution record remains success due to decision-based continuation logic."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Make AG-01 continuation/status derivation strictly enforcement.final_status-based and keep execution record fail-closed when enforcement is not allow.",
+      "priority": "P0"
+    },
+    {
+      "fix_id": "FIX-002",
+      "description": "Constrain evaluation_control runtime path to replay_result-only inputs (or fail closed when eval_summary mode is used in runtime seams).",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-003",
+      "description": "Add monitor replay-boundary lineage assertion: error_budget_status.observability_metrics_id must reference embedded observability_metrics.artifact_id.",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-004",
+      "description": "Validate and bind control_loop.trace_context to replay artifact identity to eliminate replay/control context split-brain paths.",
+      "priority": "P2"
+    }
+  ],
+  "optional_improvements": [
+    "Keep replay-related helper builders aligned with replay-authoritative lineage assumptions to avoid normalizing weaker fixture patterns.",
+    "Retain isolated trace_store injection discipline in chaos cases to avoid accidental fallback to process-global trace state."
+  ],
+  "failure_mode_summary": "Replay-authoritative enforcement is significantly improved, but one critical enforcement-vs-execution split-brain defect and additional replay-boundary consistency gaps remain open."
+}
