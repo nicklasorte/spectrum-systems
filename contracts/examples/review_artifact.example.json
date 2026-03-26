@@ -5,8 +5,8 @@
   "review_date": "2026-03-23",
   "reviewer": "Codex",
   "decision": "FAIL",
-  "trust_assessment": "NO",
-  "status": "open",
+  "trust_assessment": "medium",
+  "status": "final",
   "scope": [
     "docs/reviews/",
     "contracts/schemas/review_artifact.schema.json",
@@ -15,12 +15,13 @@
   "related_plan": "docs/review-actions/PLAN-REVIEW-ARTIFACT-STANDARD-2026-03-23.md",
   "critical_findings": [
     {
-      "finding_id": "F-001",
-      "title": "Metadata fields are not machine-consistent",
-      "description": "Review markdown files do not share an enforceable metadata header contract.",
-      "why_dangerous": "Automation cannot deterministically parse module, decision, and trust fields.",
-      "location": "docs/reviews/*.md",
-      "failure_scenario": "Review retrieval jobs misclassify outcomes and generate incorrect follow-up actions."
+      "id": "F-001",
+      "severity": "high",
+      "file": "docs/reviews/*.md",
+      "function": "metadata_frontmatter_validation",
+      "failure_mode": "metadata fields are not machine-consistent across review artifacts",
+      "impact": "automation cannot deterministically parse module, decision, and trust fields",
+      "minimal_fix": "enforce canonical review metadata keys and values for all governed review artifacts"
     }
   ],
   "required_fixes": [
@@ -30,7 +31,7 @@
       "priority": "P0"
     }
   ],
-  "optional_improvements": [
+  "watch_items": [
     "Backfill historical review markdown files with standardized frontmatter when practical.",
     "Add CI-level linting for markdown review filenames."
   ],

@@ -18,7 +18,7 @@
     "related_plan",
     "critical_findings",
     "required_fixes",
-    "optional_improvements",
+    "watch_items",
     "failure_mode_summary"
   ],
   "properties": {
@@ -49,11 +49,11 @@
     },
     "trust_assessment": {
       "type": "string",
-      "enum": ["YES", "NO"]
+      "enum": ["high", "medium", "low"]
     },
     "status": {
       "type": "string",
-      "enum": ["open", "resolved", "superseded"]
+      "enum": ["final"]
     },
     "scope": {
       "type": "array",
@@ -79,7 +79,7 @@
         "$ref": "#/$defs/required_fix"
       }
     },
-    "optional_improvements": {
+    "watch_items": {
       "type": "array",
       "items": {
         "type": "string",
@@ -111,23 +111,6 @@
           }
         }
       }
-    },
-    {
-      "if": {
-        "properties": {
-          "status": {
-            "const": "resolved"
-          }
-        },
-        "required": ["status"]
-      },
-      "then": {
-        "properties": {
-          "required_fixes": {
-            "maxItems": 0
-          }
-        }
-      }
     }
   ],
   "$defs": {
@@ -135,35 +118,40 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "finding_id",
-        "title",
-        "description",
-        "why_dangerous",
-        "location",
-        "failure_scenario"
+        "id",
+        "severity",
+        "file",
+        "function",
+        "failure_mode",
+        "impact",
+        "minimal_fix"
       ],
       "properties": {
-        "finding_id": {
+        "id": {
           "type": "string",
           "pattern": "^F-[0-9]{3}$"
         },
-        "title": {
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "file": {
           "type": "string",
           "minLength": 1
         },
-        "description": {
+        "function": {
           "type": "string",
           "minLength": 1
         },
-        "why_dangerous": {
+        "failure_mode": {
           "type": "string",
           "minLength": 1
         },
-        "location": {
+        "impact": {
           "type": "string",
           "minLength": 1
         },
-        "failure_scenario": {
+        "minimal_fix": {
           "type": "string",
           "minLength": 1
         }

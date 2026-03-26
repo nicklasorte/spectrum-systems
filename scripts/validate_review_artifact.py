@@ -70,10 +70,10 @@ def validate_markdown_metadata(path: Path) -> list[str]:
 
     if metadata.get("decision") not in {"PASS", "FAIL"}:
         errors.append("decision must be PASS or FAIL")
-    if metadata.get("trust_assessment") not in {"YES", "NO"}:
-        errors.append("trust_assessment must be YES or NO")
-    if metadata.get("status") not in {"open", "resolved", "superseded"}:
-        errors.append("status must be open, resolved, or superseded")
+    if metadata.get("trust_assessment") not in {"high", "medium", "low"}:
+        errors.append("trust_assessment must be high, medium, or low")
+    if metadata.get("status") not in {"final"}:
+        errors.append("status must be final")
     if metadata.get("review_date") and not re.match(r"^\d{4}-\d{2}-\d{2}$", metadata["review_date"]):
         errors.append("review_date must use YYYY-MM-DD")
 
