@@ -12,8 +12,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.contracts import validate_artifact  # noqa: E402
-from spectrum_systems.modules.runtime.control_loop import run_control_loop  # noqa: E402
-from spectrum_systems.modules.runtime.control_loop import ControlLoopError  # noqa: E402
+from spectrum_systems.modules.runtime.control_loop import run_control_loop, ControlLoopError  # noqa: E402
+from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision  # noqa: E402
 from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
     EnforcementError,
     enforce_control_decision,
@@ -85,9 +85,16 @@ def _run_replay(*args, **kwargs) -> dict:
 def _originals(artifact: dict | None = None, trace_context: dict | None = None) -> tuple[dict, dict]:
     payload = copy.deepcopy(artifact or _artifact())
     context = copy.deepcopy(trace_context or _trace_context())
-    decision = run_control_loop(payload, context)["evaluation_control_decision"]
+    decision = build_evaluation_control_decision(payload)
+    decision["trace_id"] = context["trace_id"]
+    decision["run_id"] = decision["eval_run_id"]
     enforcement = enforce_control_decision(decision)
     return decision, enforcement
+
+
+def test_downstream_control_loop_rejects_legacy_eval_summary_boundary() -> None:
+    with pytest.raises(ControlLoopError, match="unsupported artifact_type"):
+        run_control_loop(_artifact(), _trace_context())
 
 
 def test_matching_replay_returns_match_and_no_drift() -> None:
@@ -337,12 +344,12 @@ def test_run_replay_raises_on_canonical_path_exception(monkeypatch: pytest.Monke
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    def _raise_control_loop(_artifact: dict, _trace_context: dict) -> dict:
+    def _raise_decision(_artifact: dict) -> dict:
         raise RuntimeError("boom")
 
     monkeypatch.setattr(
-        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
-        _raise_control_loop,
+        "spectrum_systems.modules.runtime.evaluation_control.build_evaluation_control_decision",
+        _raise_decision,
     )
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:RuntimeError"):
@@ -353,12 +360,12 @@ def test_run_replay_wraps_control_loop_error_as_hard_failure(monkeypatch: pytest
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
 
-    def _raise_control_loop(_artifact: dict, _trace_context: dict) -> dict:
+    def _raise_decision(_artifact: dict) -> dict:
         raise ControlLoopError("boom")
 
     monkeypatch.setattr(
-        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
-        _raise_control_loop,
+        "spectrum_systems.modules.runtime.evaluation_control.build_evaluation_control_decision",
+        _raise_decision,
     )
 
     with pytest.raises(ReplayEngineError, match="REPLAY_EXECUTION_FAILED:ControlLoopError"):
@@ -400,11 +407,11 @@ def test_replay_run_raises_hard_failure_on_control_loop_error(monkeypatch: pytes
         },
     )
 
-    def _raise_control_loop(_artifact: dict, _ctx: dict) -> dict:
+    def _raise_control_loop(_artifact: dict) -> dict:
         raise ControlLoopError("control loop exploded")
 
     monkeypatch.setattr(
-        "spectrum_systems.modules.runtime.control_loop.run_control_loop",
+        "spectrum_systems.modules.runtime.evaluation_control.build_evaluation_control_decision",
         _raise_control_loop,
     )
 
@@ -678,7 +685,7 @@ def test_execute_replay_can_hard_fail_prerequisites() -> None:
 
 
 def test_runtime_replay_observability_parity(tmp_path: Path) -> None:
-    runtime_result = run_control_loop(_artifact(), _trace_context())["evaluation_control_decision"]
+    runtime_result = build_evaluation_control_decision(_artifact())
     assert runtime_result["trace_id"] == _trace_context()["trace_id"]
 
     trace_id = "trace-replay-parity-001"

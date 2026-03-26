@@ -7,7 +7,7 @@ import json
 from copy import deepcopy
 from typing import Any, Dict, Optional
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_example, load_schema
 
 
 def _current_replay_schema_version() -> str:
@@ -29,6 +29,16 @@ def make_canonical_replay_result(
     overrides: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Return a minimal schema-valid replay_result payload for tests."""
+    observability = deepcopy(load_example("observability_metrics"))
+    observability["trace_refs"]["trace_id"] = trace_id
+    observability["metrics"]["drift_exceed_threshold_rate"] = float(
+        observability["metrics"].get("drift_exceed_threshold_rate", 0.0)
+    )
+
+    error_budget = deepcopy(load_example("error_budget_status"))
+    error_budget["trace_refs"]["trace_id"] = trace_id
+    error_budget["observability_metrics_id"] = observability["artifact_id"]
+
     result: Dict[str, Any] = {
         "artifact_id": "",
         "artifact_type": "replay_result",
@@ -57,6 +67,8 @@ def make_canonical_replay_result(
             "source_artifact_id": "eval-run-001",
             "trace_id": trace_id,
         },
+        "observability_metrics": observability,
+        "error_budget_status": error_budget,
     }
     result["artifact_id"] = _stable_artifact_id({k: v for k, v in result.items() if k != "artifact_id"})
     if overrides:
@@ -66,7 +78,11 @@ def make_canonical_replay_result(
             merged_prov = deepcopy(result["provenance"])
             merged_prov.update(overrides["provenance"])
             merged["provenance"] = merged_prov
+        if merged.get("consistency_status") == "mismatch":
+            merged["drift_detected"] = True
         if "artifact_id" not in overrides:
             merged["artifact_id"] = _stable_artifact_id({k: v for k, v in merged.items() if k != "artifact_id"})
         return merged
+    if result.get("consistency_status") == "mismatch":
+        result["drift_detected"] = True
     return result

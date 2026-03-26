@@ -162,6 +162,7 @@ def build_evaluation_control_decision(
     if artifact_type == "replay_result":
         eval_summary = _to_eval_summary_from_replay_result(signal_artifact)
         source_artifact_id = signal_artifact["replay_id"]
+        created_at = _canonical_timestamp(eval_summary.get("created_at"))
     elif artifact_type == "eval_summary":
         eval_schema = load_schema("eval_summary")
         errors = _validate(signal_artifact, eval_schema)
@@ -169,6 +170,7 @@ def build_evaluation_control_decision(
             raise EvaluationControlError("eval_summary failed validation: " + "; ".join(errors))
         eval_summary = signal_artifact
         source_artifact_id = eval_summary["eval_run_id"]
+        created_at = str(eval_summary.get("created_at") or "1970-01-01T00:00:00Z")
     else:
         raise EvaluationControlError("signal_artifact must be replay_result or eval_summary")
 
@@ -237,7 +239,7 @@ def build_evaluation_control_decision(
             "trust_threshold": t["trust_threshold"],
         },
         "trace_id": eval_summary["trace_id"],
-        "created_at": _canonical_timestamp(eval_summary.get("created_at")),
+        "created_at": created_at,
         "decision": decision_label,
         "rationale_code": rationale_code,
         "input_signal_reference": {

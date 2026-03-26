@@ -190,3 +190,4 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-SRE-03-REPLAY-AUTH-SEAM-2026-03-26.md | SRE-03 — Replay authoritative seam hardening | Active |
 | docs/review-actions/PLAN-SRE-03-REPLAY-FIXTURE-ALIGN-2026-03-26.md | SRE-03 — Replay fixture alignment follow-on | Active |
 | docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT-COMPLETION-2026-03-26.md | SRE-03 — Replay enforcement completion (replay-only downstream runtime boundary) | Active |
+| docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT-TEST-MIGRATION-2026-03-26.md | SRE-03 — Replay enforcement test migration for replay-only boundaries | Active |
