@@ -120,6 +120,13 @@ def _extract_important_claim_candidates(final_artifact: Mapping[str, Any]) -> Li
     return candidates
 
 
+def _claim_extraction_applicable(final_artifact: Mapping[str, Any]) -> bool:
+    """Whether this artifact shape declares claim-bearing fields for grounding checks."""
+    if "claims" in final_artifact:
+        return True
+    return any(field in final_artifact for field in _IMPORTANT_TOP_LEVEL_FIELDS)
+
+
 def _claim_text(payload: Any) -> str:
     if isinstance(payload, str):
         return payload.strip()
@@ -249,7 +256,11 @@ def build_evidence_binding_record(
         validated_context_bundle
     )
     candidates = _extract_important_claim_candidates(final_artifact)
-
+    claim_extraction_applicable = _claim_extraction_applicable(final_artifact)
+    if cfg.mode == "required_grounded" and claim_extraction_applicable and not candidates:
+        raise EvidenceBindingError(
+            "required-grounded mode requires governable claim candidates when claim-bearing fields are present"
+        )
     claim_records: List[Dict[str, Any]] = []
     all_claim_ids: List[str] = []
 

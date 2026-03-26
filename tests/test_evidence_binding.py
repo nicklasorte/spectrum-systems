@@ -146,6 +146,32 @@ def test_inferred_claim_marked_inferred_when_direct_claim_present() -> None:
     assert inferred["claims"][1]["claim_classification"] == "inferred"
 
 
+def test_required_grounded_mode_blocks_empty_claims_field() -> None:
+    with pytest.raises(EvidenceBindingError, match="requires governable claim candidates"):
+        build_evidence_binding_record(
+            run_id="agent-run-001",
+            trace_id="trace-001",
+            final_artifact={"claims": []},
+            validated_context_bundle=_context_bundle(),
+            parent_multi_pass_record_id="mpg-1212121212121212",
+            policy=EvidenceBindingPolicy(mode="required_grounded"),
+        )
+
+
+def test_required_grounded_mode_allows_non_claim_applicable_output() -> None:
+    record = build_evidence_binding_record(
+        run_id="agent-run-001",
+        trace_id="trace-001",
+        final_artifact={"context_id": "ctx-1", "task_type": "analysis"},
+        validated_context_bundle=_context_bundle(),
+        parent_multi_pass_record_id="mpg-1313131313131313",
+        policy=EvidenceBindingPolicy(mode="required_grounded"),
+    )
+    assert record["claims"] == []
+
+
+
+
 def test_required_grounded_mode_fails_on_unsupported_claims() -> None:
     with pytest.raises(EvidenceBindingError, match="required-grounded mode"):
         build_evidence_binding_record(
