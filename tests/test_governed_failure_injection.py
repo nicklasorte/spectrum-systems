@@ -19,6 +19,7 @@ from spectrum_systems.modules.runtime.trace_engine import (  # noqa: E402
     clear_trace_store,
     create_trace_store,
     get_all_trace_ids,
+    get_trace,
     start_trace,
 )
 
@@ -77,6 +78,7 @@ def test_required_failure_classes_fail_closed_or_allowed_by_policy() -> None:
 def test_global_trace_store_is_preserved_and_chaos_traces_are_isolated() -> None:
     clear_trace_store()
     preexisting = start_trace({"trace_id": "trace-preexisting", "run_id": "run-preexisting"})
+    preexisting_snapshot = get_trace(preexisting)
     before = sorted(get_all_trace_ids())
 
     isolated_store = create_trace_store()
@@ -85,8 +87,29 @@ def test_global_trace_store_is_preserved_and_chaos_traces_are_isolated() -> None
     after = sorted(get_all_trace_ids())
     assert before == after
     assert preexisting in after
+    assert get_trace(preexisting) == preexisting_snapshot
     assert all(item["run_linkage"]["trace_id"] != "trace-chaos-orphan" for item in summary["results"] if item["injection_case_id"] != "trace_orphaned_parent_refs")
     assert "trace-chaos-orphan" not in after
+    clear_trace_store()
+
+
+def test_mixed_global_and_injected_governed_runs_do_not_cross_contaminate() -> None:
+    clear_trace_store()
+    global_trace = start_trace({"trace_id": "trace-global-preexisting", "run_id": "run-global"})
+    global_snapshot = get_trace(global_trace)
+    before_global = sorted(get_all_trace_ids())
+
+    isolated_store = create_trace_store()
+    summary_isolated = run_governed_failure_injection(
+        case_filter=["trace_orphaned_parent_refs"],
+        trace_store=isolated_store,
+    )
+    final_global = sorted(get_all_trace_ids())
+    assert final_global == before_global
+    assert summary_isolated["results"][0]["passed"] is True
+    assert global_trace in final_global
+    assert get_trace(global_trace) == global_snapshot
+
     clear_trace_store()
 
 

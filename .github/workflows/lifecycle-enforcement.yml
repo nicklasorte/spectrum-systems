@@ -117,3 +117,33 @@ jobs:
         with:
           name: eval-ci-gate-artifacts
           path: outputs/eval_ci_gate/
+
+  governed-failure-injection-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Verify dependency bootstrap contract
+        run: python scripts/verify_environment.py --python-only
+
+      - name: Run governed failure injection regression gate
+        run: python scripts/run_governed_failure_injection.py --output-dir outputs/governed_failure_injection
+
+      - name: Run governed failure injection isolation tests
+        run: pytest tests/test_governed_failure_injection.py -v
+
+      - name: Upload governed failure injection artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: governed-failure-injection-artifacts
+          path: outputs/governed_failure_injection/

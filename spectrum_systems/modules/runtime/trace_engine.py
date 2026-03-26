@@ -107,9 +107,9 @@ def _new_id() -> str:
     return str(uuid.uuid4())
 
 
-def _find_span(span_id: str) -> Optional[Dict[str, Any]]:
+def _find_span(span_id: str, span_index: Dict[str, tuple]) -> Optional[Dict[str, Any]]:
     """Return the Span dict for *span_id* or ``None``."""
-    entry = _span_index.get(span_id)
+    entry = span_index.get(span_id)
     if entry is None:
         return None
     return entry[1]
@@ -192,6 +192,8 @@ def start_span(
     trace_id: str,
     name: str,
     parent_span_id: Optional[str] = None,
+    *,
+    store: Optional[TraceStore] = None,
 ) -> str:
     """Create a new Span inside *trace_id* and return its ``span_id``.
 
@@ -219,13 +221,14 @@ def start_span(
     if not isinstance(name, str) or not name:
         raise ValueError("start_span: name must be a non-empty string")
 
-    with _store_lock:
-        trace = _traces.get(trace_id)
+    store_lock, traces, span_index = _resolve_store(store)
+    with store_lock:
+        trace = traces.get(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"start_span: trace_id '{trace_id}' not found")
 
         if parent_span_id is not None:
-            parent_entry = _span_index.get(parent_span_id)
+            parent_entry = span_index.get(parent_span_id)
             if parent_entry is None or parent_entry[0] != trace_id:
                 raise SpanNotFoundError(
                     f"start_span: parent_span_id '{parent_span_id}' not found in trace '{trace_id}'"
@@ -244,7 +247,7 @@ def start_span(
             "events": [],
         }
         trace["spans"].append(span)
-        _span_index[span_id] = (trace_id, span)
+        span_index[span_id] = (trace_id, span)
 
         # First span created becomes the root span
         if trace["root_span_id"] is None:
@@ -253,7 +256,12 @@ def start_span(
     return span_id
 
 
-def end_span(span_id: str, status: str = SPAN_STATUS_OK) -> None:
+def end_span(
+    span_id: str,
+    status: str = SPAN_STATUS_OK,
+    *,
+    store: Optional[TraceStore] = None,
+) -> None:
     """Close a Span and record its status.
 
     Fail-closed: invalid span_id or unrecognised status → raises.
@@ -269,8 +277,9 @@ def end_span(span_id: str, status: str = SPAN_STATUS_OK) -> None:
         raise ValueError(
             f"end_span: status '{status}' is not valid; must be one of {sorted(_VALID_STATUSES)}"
         )
-    with _store_lock:
-        span = _find_span(span_id)
+    store_lock, _, span_index = _resolve_store(store)
+    with store_lock:
+        span = _find_span(span_id, span_index)
         if span is None:
             raise SpanNotFoundError(f"end_span: span_id '{span_id}' not found")
         span["status"] = status
@@ -281,6 +290,8 @@ def record_event(
     span_id: str,
     event_type: str,
     payload: Optional[Dict[str, Any]] = None,
+    *,
+    store: Optional[TraceStore] = None,
 ) -> None:
     """Append a structured Event to a Span.
 
@@ -299,8 +310,9 @@ def record_event(
     if not isinstance(event_type, str) or not event_type:
         raise ValueError("record_event: event_type must be a non-empty string")
 
-    with _store_lock:
-        span = _find_span(span_id)
+    store_lock, _, span_index = _resolve_store(store)
+    with store_lock:
+        span = _find_span(span_id, span_index)
         if span is None:
             raise SpanNotFoundError(f"record_event: span_id '{span_id}' not found")
         event: Dict[str, Any] = {
@@ -316,6 +328,8 @@ def attach_artifact(
     artifact_id: str,
     artifact_type: str,
     span_id: Optional[str] = None,
+    *,
+    store: Optional[TraceStore] = None,
 ) -> None:
     """Link an artifact to a Trace.
 
@@ -335,8 +349,9 @@ def attach_artifact(
         Optional span that produced the artifact; records ``parent_span_id``
         in the attachment record.
     """
-    with _store_lock:
-        trace = _traces.get(trace_id)
+    store_lock, traces, _ = _resolve_store(store)
+    with store_lock:
+        trace = traces.get(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"attach_artifact: trace_id '{trace_id}' not found")
         attachment: Dict[str, Any] = {
@@ -348,19 +363,20 @@ def attach_artifact(
         trace["artifacts"].append(attachment)
 
 
-def get_trace(trace_id: str) -> Dict[str, Any]:
+def get_trace(trace_id: str, *, store: Optional[TraceStore] = None) -> Dict[str, Any]:
     """Return a deep copy of the full Trace dict.
 
     Fail-closed: unknown trace_id → raises ``TraceNotFoundError``.
     """
-    with _store_lock:
-        trace = _traces.get(trace_id)
+    store_lock, traces, _ = _resolve_store(store)
+    with store_lock:
+        trace = traces.get(trace_id)
         if trace is None:
             raise TraceNotFoundError(f"get_trace: trace_id '{trace_id}' not found")
         return deepcopy(trace)
 
 
-def summarize_trace(trace_id: str) -> str:
+def summarize_trace(trace_id: str, *, store: Optional[TraceStore] = None) -> str:
     """Return an operator-readable summary of a Trace.
 
     Shows:
@@ -370,7 +386,7 @@ def summarize_trace(trace_id: str) -> str:
 
     Fail-closed: unknown trace_id → raises ``TraceNotFoundError``.
     """
-    trace = get_trace(trace_id)
+    trace = get_trace(trace_id, store=store)
     lines: List[str] = [
         "Trace Summary (BK–BM)",
         "---------------------",
@@ -471,23 +487,25 @@ def validate_trace_context(
     return errors
 
 
-def get_all_trace_ids() -> List[str]:
+def get_all_trace_ids(*, store: Optional[TraceStore] = None) -> List[str]:
     """Return a list of all trace IDs currently in the store.
 
     Useful for diagnostics and test teardown.
     """
-    with _store_lock:
-        return list(_traces.keys())
+    store_lock, traces, _ = _resolve_store(store)
+    with store_lock:
+        return list(traces.keys())
 
 
-def clear_trace_store() -> None:
+def clear_trace_store(*, store: Optional[TraceStore] = None) -> None:
     """Remove all traces from the in-process store.
 
     For use in testing only.  Not safe to call in production.
     """
-    with _store_lock:
-        _traces.clear()
-        _span_index.clear()
+    store_lock, traces, span_index = _resolve_store(store)
+    with store_lock:
+        traces.clear()
+        span_index.clear()
 
 
 # ---------------------------------------------------------------------------
