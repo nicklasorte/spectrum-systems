@@ -3,7 +3,7 @@
   "module": "core_runtime",
   "review_type": "architecture_checkpoint",
   "review_date": "2026-03-26",
-  "reviewer": "codex",
+  "reviewer": "Codex",
   "decision": "FAIL",
   "trust_assessment": "medium",
   "status": "final",
@@ -20,7 +20,7 @@
     "tests/helpers/replay_result_builder.py",
     "tests/helpers/replay_adjacent_builders.py"
   ],
-  "related_plan": "docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT.md",
+  "related_plan": "docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT-COMPLETION-2026-03-26.md",
   "critical_findings": [
     {
       "id": "F-001",
