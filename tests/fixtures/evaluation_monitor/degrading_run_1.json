@@ -16,7 +16,15 @@
       "reproducibility_score": 0.85,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-201",
+      "current_replay_result_id": "replay-201",
+      "baseline_trace_id": "trace-001",
+      "current_trace_id": "trace-001",
+      "baseline_reference": "replay_result:base-replay-201",
+      "current_reference": "replay_result:replay-201",
+      "mismatch_summary": [],
+      "comparison_digest": "07cca937d2d8213f00e92128a4764c007986f1adcc1f34d6d84f6bbd8b3cc12e"
     },
     {
       "trace_id": "trace-002",
@@ -26,7 +34,15 @@
       "reproducibility_score": 0.82,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-202",
+      "current_replay_result_id": "replay-202",
+      "baseline_trace_id": "trace-002",
+      "current_trace_id": "trace-002",
+      "baseline_reference": "replay_result:base-replay-202",
+      "current_reference": "replay_result:replay-202",
+      "mismatch_summary": [],
+      "comparison_digest": "0c3bba180cb209424ee589c8dc17945c770af66859617cf180ab8f85484bc9f0"
     },
     {
       "trace_id": "trace-003",
@@ -36,7 +52,15 @@
       "reproducibility_score": 0.83,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-203",
+      "current_replay_result_id": "replay-203",
+      "baseline_trace_id": "trace-003",
+      "current_trace_id": "trace-003",
+      "baseline_reference": "replay_result:base-replay-203",
+      "current_reference": "replay_result:replay-203",
+      "mismatch_summary": [],
+      "comparison_digest": "95b22419bca0acb2f3969e8f2e381a3963601ad77df6f5d86034b06580eb1154"
     },
     {
       "trace_id": "trace-004",
@@ -46,7 +70,15 @@
       "reproducibility_score": 0.84,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-204",
+      "current_replay_result_id": "replay-204",
+      "baseline_trace_id": "trace-004",
+      "current_trace_id": "trace-004",
+      "baseline_reference": "replay_result:base-replay-204",
+      "current_reference": "replay_result:replay-204",
+      "mismatch_summary": [],
+      "comparison_digest": "eb4d5cf93c41668f1cbcc2963a7d367246cb14633ef728fbaeca4b5673f2479d"
     },
     {
       "trace_id": "trace-005",
@@ -56,11 +88,33 @@
       "reproducibility_score": 0.65,
       "drift_type": "semantic_drift",
       "passed": false,
-      "failure_reasons": ["Drift detected: semantic_drift"]
+      "failure_reasons": [
+        "Drift detected: semantic_drift"
+      ],
+      "baseline_replay_result_id": "base-replay-205",
+      "current_replay_result_id": "replay-205",
+      "baseline_trace_id": "trace-005",
+      "current_trace_id": "trace-005",
+      "baseline_reference": "replay_result:base-replay-205",
+      "current_reference": "replay_result:replay-205",
+      "mismatch_summary": [
+        {
+          "field": "replay_final_status",
+          "baseline_value": "allow",
+          "current_value": "deny"
+        }
+      ],
+      "comparison_digest": "901adf73f76ac35a270bd26badbb1dbc43dd3d6596197a50fabff0d44895534d"
     }
   ],
   "summary": {
-    "drift_counts": {"semantic_drift": 1},
+    "drift_counts": {
+      "semantic_drift": 1
+    },
     "average_reproducibility_score": 0.798
-  }
+  },
+  "artifact_type": "regression_result",
+  "schema_version": "1.1.0",
+  "blocked": false,
+  "regression_status": "fail"
 }

@@ -1,10 +1,23 @@
 {
-  "run_id": "MISSING_REQUIRED_FIELD",
+  "artifact_type": "regression_result",
+  "schema_version": "1.1.0",
+  "run_id": "run-invalid",
   "suite_id": "suite-invalid",
-  "created_at": "not-a-valid-timestamp",
-  "total_traces": "should-be-integer",
-  "passed_traces": 0,
+  "created_at": "not-a-timestamp",
+  "blocked": "not-a-bool",
+  "regression_status": "unknown",
+  "total_traces": 1,
+  "passed_traces": 1,
   "failed_traces": 0,
-  "pass_rate": 1.5,
-  "overall_status": "unknown_status"
+  "pass_rate": 1.2,
+  "overall_status": "maybe",
+  "results": [
+    {
+      "trace_id": "trace-1"
+    }
+  ],
+  "summary": {
+    "drift_counts": {},
+    "average_reproducibility_score": 0.1
+  }
 }
