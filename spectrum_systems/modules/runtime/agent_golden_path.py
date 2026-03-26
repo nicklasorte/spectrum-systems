@@ -20,7 +20,7 @@ from uuid import NAMESPACE_URL, uuid5
 from jsonschema import Draft202012Validator, FormatChecker
 from jsonschema.exceptions import ValidationError
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_example, load_schema
 from spectrum_systems.modules.agents.agent_executor import execute_step_sequence, generate_step_plan
 from spectrum_systems.modules.ai_workflow.context_assembly import build_context_bundle
 from spectrum_systems.modules.evaluation.eval_engine import compute_eval_summary, run_eval_case
@@ -95,6 +95,7 @@ _ARTIFACT_ID_KEYS: Dict[str, str] = {
     "structured_output": "eval_case_id",
     "eval_result": "eval_case_id",
     "eval_summary": "eval_run_id",
+    "replay_result": "replay_id",
     "control_decision": "decision_id",
     "enforcement": "enforcement_result_id",
     "final_execution_record": "artifact_id",
@@ -166,6 +167,45 @@ def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
     offset_seconds = int(digest[:8], 16) % (365 * 24 * 60 * 60)
     base = datetime(2026, 1, 1, tzinfo=timezone.utc)
     return (base + timedelta(seconds=offset_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _build_replay_result_for_control(
+    *,
+    eval_summary: Dict[str, Any],
+    run_id: str,
+    trace_id: str,
+    force_control_block: bool,
+) -> Dict[str, Any]:
+    replay = deepcopy(load_example("replay_result"))
+    replay["replay_id"] = f"RPL-{run_id}"
+    replay["original_run_id"] = run_id
+    replay["replay_run_id"] = run_id
+    replay["trace_id"] = trace_id
+    replay["timestamp"] = str(eval_summary.get("created_at") or _deterministic_timestamp({"run_id": run_id, "trace_id": trace_id}))
+    replay["input_artifact_reference"] = f"eval_summary:{run_id}"
+
+    pass_rate = float(eval_summary.get("pass_rate", 0.0))
+    drift_rate = float(eval_summary.get("drift_rate", 1.0))
+    reproducibility = float(eval_summary.get("reproducibility_score", 0.0))
+    if force_control_block:
+        pass_rate = 0.0
+        drift_rate = 1.0
+        reproducibility = 0.0
+    consistency_status = "mismatch" if reproducibility < 0.8 else "match"
+
+    replay["consistency_status"] = consistency_status
+    replay["drift_detected"] = consistency_status == "mismatch"
+    replay["failure_reason"] = None
+    replay["provenance"]["trace_id"] = trace_id
+    replay["provenance"]["source_artifact_id"] = run_id
+
+    replay["observability_metrics"]["trace_refs"]["trace_id"] = trace_id
+    replay["observability_metrics"]["metrics"]["replay_success_rate"] = pass_rate
+    replay["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+
+    replay["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
+    replay["error_budget_status"]["observability_metrics_id"] = replay["observability_metrics"]["artifact_id"]
+    return replay
 
 
 _OVERRIDE_STATUS_TO_ACTION = {
@@ -515,7 +555,7 @@ def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_i
         elif name == "agent_execution_trace":
             _require(payload.get("trace_id") == trace_id, "agent_execution_trace missing canonical trace_id linkage")
             _require(payload.get("agent_run_id") == run_id, "agent_execution_trace missing canonical agent_run_id linkage")
-        elif name in {"structured_output", "eval_result", "eval_summary", "control_decision", "enforcement", "final_execution_record", "failure_artifact"}:
+        elif name in {"structured_output", "eval_result", "eval_summary", "replay_result", "control_decision", "enforcement", "final_execution_record", "failure_artifact"}:
             _require(payload.get("trace_id") == trace_id, f"{name} missing canonical trace_id linkage")
         elif name == "hitl_review_request":
             _require(payload.get("trace_id") == trace_id, "hitl_review_request missing canonical trace_id linkage")
@@ -543,6 +583,7 @@ def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_i
     agent_run_id = _artifact_id(artifacts, "agent_execution_trace")
     eval_case_id = _artifact_id(artifacts, "structured_output")
     eval_run_id = _artifact_id(artifacts, "eval_summary")
+    replay_id = _artifact_id(artifacts, "replay_result")
     decision_id = _artifact_id(artifacts, "control_decision")
 
     if isinstance(artifacts.get("context_validation_result"), dict):
@@ -567,9 +608,13 @@ def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_i
     if isinstance(artifacts.get("eval_result"), dict):
         refs = set(artifacts["eval_result"].get("provenance_refs") or [])
         _require(_artifact_ref("eval_case", eval_case_id or "") in refs, "eval_result missing eval_case lineage ref")
+    if isinstance(artifacts.get("replay_result"), dict):
+        _require(artifacts["replay_result"].get("trace_id") == trace_id, "replay_result missing canonical trace_id linkage")
+        _require(artifacts["replay_result"].get("replay_run_id") == run_id, "replay_result.replay_run_id must match canonical run_id")
     if isinstance(artifacts.get("control_decision"), dict):
         in_ref = artifacts["control_decision"].get("input_signal_reference", {})
-        _require(in_ref.get("source_artifact_id") == eval_run_id, "control_decision must reference eval_summary upstream artifact")
+        expected_source = replay_id or eval_run_id
+        _require(in_ref.get("source_artifact_id") == expected_source, "control_decision must reference replay_result upstream artifact")
     if isinstance(artifacts.get("enforcement"), dict):
         _require(artifacts["enforcement"].get("input_decision_reference") == decision_id, "enforcement must reference control_decision upstream artifact")
 
@@ -977,7 +1022,19 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         try:
             if config.fail_control_decision:
                 raise RuntimeError("forced_control_decision_failure")
-            control = run_control_loop(eval_summary, {"run_id": run_id, "trace_id": trace_id})
+            replay_result = _build_replay_result_for_control(
+                eval_summary=eval_summary,
+                run_id=run_id,
+                trace_id=trace_id,
+                force_control_block=config.force_control_block,
+            )
+            _validate_contract(replay_result, "replay_result", stage="control")
+            artifacts["replay_result"] = replay_result
+            refs.append(f"replay_result:{replay_result['replay_id']}")
+            control = run_control_loop(
+                replay_result,
+                {"execution_id": run_id, "stage": "control", "runtime_environment": "agent_golden_path"},
+            )
             decision = control["evaluation_control_decision"]
             _validate_contract(decision, "evaluation_control_decision", stage="control")
         except AgentGoldenPathStageError:
@@ -1103,6 +1160,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         "structured_output": config.output_dir / "structured_output.json",
         "eval_result": config.output_dir / "eval_result.json",
         "eval_summary": config.output_dir / "eval_summary.json",
+        "replay_result": config.output_dir / "replay_result.json",
         "control_decision": config.output_dir / "control_decision.json",
         "enforcement": config.output_dir / "enforcement.json",
         "final_execution_record": config.output_dir / "final_execution_record.json",
