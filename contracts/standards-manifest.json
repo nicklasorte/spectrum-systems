@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.62",
+  "artifact_version": "1.0.63",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.25",
-  "record_id": "REC-STD-2026-03-25-PQX-TRUST-01-CONTEXT-ADMISSION",
-  "run_id": "run-20260325T000000Z",
-  "created_at": "2026-03-25T00:00:00Z",
+  "standards_version": "2026.03.26",
+  "record_id": "REC-STD-2026-03-26-CORE-CHAOS-VALIDATION",
+  "run_id": "run-20260326T000000Z",
+  "created_at": "2026-03-26T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -617,7 +617,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "glossary_entry",
@@ -631,6 +631,19 @@
       "last_updated_in": "1.0.48",
       "example_path": "contracts/examples/glossary_entry.json",
       "notes": "HS-18 canonical glossary definition contract with deterministic identity, explicit domain scope, and provenance refs for governed term injection."
+    },
+    {
+      "artifact_type": "governed_failure_injection_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.63",
+      "last_updated_in": "1.0.63",
+      "example_path": "contracts/examples/governed_failure_injection_summary.json",
+      "notes": "Deterministic fail-closed chaos/failure validation summary across governed runtime seams with per-case invariant outcomes."
     },
     {
       "artifact_type": "grounding_control_decision",
