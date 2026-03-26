@@ -5,6 +5,10 @@
   "description": "Governed artifact produced by the BR Replay Regression Harness after executing a full regression suite. Records per-trace outcomes and aggregate statistics.",
   "type": "object",
   "required": [
+    "blocked",
+    "regression_status",
+    "schema_version",
+    "artifact_type",
     "run_id",
     "suite_id",
     "created_at",
@@ -56,7 +60,10 @@
     },
     "overall_status": {
       "type": "string",
-      "enum": ["pass", "fail"],
+      "enum": [
+        "pass",
+        "fail"
+      ],
       "description": "Overall suite status. 'pass' only when all traces pass; 'fail' if any trace fails."
     },
     "results": {
@@ -72,7 +79,15 @@
           "reproducibility_score",
           "drift_type",
           "passed",
-          "failure_reasons"
+          "failure_reasons",
+          "baseline_replay_result_id",
+          "current_replay_result_id",
+          "baseline_trace_id",
+          "current_trace_id",
+          "baseline_reference",
+          "current_reference",
+          "mismatch_summary",
+          "comparison_digest"
         ],
         "additionalProperties": false,
         "properties": {
@@ -93,7 +108,11 @@
           },
           "decision_status": {
             "type": "string",
-            "enum": ["consistent", "drifted", "indeterminate"],
+            "enum": [
+              "consistent",
+              "drifted",
+              "indeterminate"
+            ],
             "description": "Decision consistency status from the replay analysis."
           },
           "reproducibility_score": {
@@ -117,13 +136,66 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "baseline_replay_result_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "current_replay_result_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "baseline_trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "current_trace_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "baseline_reference": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Traceable baseline artifact reference."
+          },
+          "current_reference": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Traceable current compared artifact reference."
+          },
+          "mismatch_summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field",
+                "baseline_value",
+                "current_value"
+              ],
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "baseline_value": {},
+                "current_value": {}
+              }
+            }
+          },
+          "comparison_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           }
         }
       }
     },
     "summary": {
       "type": "object",
-      "required": ["drift_counts", "average_reproducibility_score"],
+      "required": [
+        "drift_counts",
+        "average_reproducibility_score"
+      ],
       "additionalProperties": false,
       "description": "Aggregate statistics across all traces in the suite.",
       "properties": {
@@ -142,6 +214,25 @@
           "description": "Mean reproducibility score across all traces."
         }
       }
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "regression_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "regression_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "blocked": {
+      "type": "boolean",
+      "description": "True only when prerequisites are invalid and execution is blocked fail-closed."
     }
   }
 }

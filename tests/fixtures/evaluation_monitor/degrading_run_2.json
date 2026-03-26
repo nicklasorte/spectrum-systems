@@ -16,17 +16,41 @@
       "reproducibility_score": 0.75,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-301",
+      "current_replay_result_id": "replay-301",
+      "baseline_trace_id": "trace-001",
+      "current_trace_id": "trace-001",
+      "baseline_reference": "replay_result:base-replay-301",
+      "current_reference": "replay_result:replay-301",
+      "mismatch_summary": [],
+      "comparison_digest": "c221d69e8dcdf7aef98e8fe71449e5062f74fe7f48b87ad70c66b2d42459798d"
     },
     {
       "trace_id": "trace-002",
       "replay_result_id": "replay-302",
       "analysis_id": "analysis-302",
       "decision_status": "drifted",
-      "reproducibility_score": 0.60,
+      "reproducibility_score": 0.6,
       "drift_type": "semantic_drift",
       "passed": false,
-      "failure_reasons": ["Drift detected: semantic_drift"]
+      "failure_reasons": [
+        "Drift detected: semantic_drift"
+      ],
+      "baseline_replay_result_id": "base-replay-302",
+      "current_replay_result_id": "replay-302",
+      "baseline_trace_id": "trace-002",
+      "current_trace_id": "trace-002",
+      "baseline_reference": "replay_result:base-replay-302",
+      "current_reference": "replay_result:replay-302",
+      "mismatch_summary": [
+        {
+          "field": "replay_final_status",
+          "baseline_value": "allow",
+          "current_value": "deny"
+        }
+      ],
+      "comparison_digest": "a1e90d3d693945b78ad0c7cd6ff4f641a630da36c27a8c0938862dd03d55035e"
     },
     {
       "trace_id": "trace-003",
@@ -36,7 +60,23 @@
       "reproducibility_score": 0.55,
       "drift_type": "structural_drift",
       "passed": false,
-      "failure_reasons": ["Drift detected: structural_drift"]
+      "failure_reasons": [
+        "Drift detected: structural_drift"
+      ],
+      "baseline_replay_result_id": "base-replay-303",
+      "current_replay_result_id": "replay-303",
+      "baseline_trace_id": "trace-003",
+      "current_trace_id": "trace-003",
+      "baseline_reference": "replay_result:base-replay-303",
+      "current_reference": "replay_result:replay-303",
+      "mismatch_summary": [
+        {
+          "field": "replay_final_status",
+          "baseline_value": "allow",
+          "current_value": "deny"
+        }
+      ],
+      "comparison_digest": "7a210dcefa2868e93dd08bc3803b0d0da625e8a906d112c8a47280c66210ea89"
     },
     {
       "trace_id": "trace-004",
@@ -46,21 +86,52 @@
       "reproducibility_score": 0.78,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-304",
+      "current_replay_result_id": "replay-304",
+      "baseline_trace_id": "trace-004",
+      "current_trace_id": "trace-004",
+      "baseline_reference": "replay_result:base-replay-304",
+      "current_reference": "replay_result:replay-304",
+      "mismatch_summary": [],
+      "comparison_digest": "a27422efaa2c4ed919b45650e001f7628d74021a33f97075a5b9056b548cc6d0"
     },
     {
       "trace_id": "trace-005",
       "replay_result_id": "replay-305",
       "analysis_id": "analysis-305",
       "decision_status": "drifted",
-      "reproducibility_score": 0.50,
+      "reproducibility_score": 0.5,
       "drift_type": "semantic_drift",
       "passed": false,
-      "failure_reasons": ["Drift detected: semantic_drift"]
+      "failure_reasons": [
+        "Drift detected: semantic_drift"
+      ],
+      "baseline_replay_result_id": "base-replay-305",
+      "current_replay_result_id": "replay-305",
+      "baseline_trace_id": "trace-005",
+      "current_trace_id": "trace-005",
+      "baseline_reference": "replay_result:base-replay-305",
+      "current_reference": "replay_result:replay-305",
+      "mismatch_summary": [
+        {
+          "field": "replay_final_status",
+          "baseline_value": "allow",
+          "current_value": "deny"
+        }
+      ],
+      "comparison_digest": "6cf575f40f0e24d67e5c73e458904780e197ef3fbfe5beca20e9c0df93049545"
     }
   ],
   "summary": {
-    "drift_counts": {"semantic_drift": 2, "structural_drift": 1},
+    "drift_counts": {
+      "semantic_drift": 2,
+      "structural_drift": 1
+    },
     "average_reproducibility_score": 0.636
-  }
+  },
+  "artifact_type": "regression_result",
+  "schema_version": "1.1.0",
+  "blocked": false,
+  "regression_status": "fail"
 }

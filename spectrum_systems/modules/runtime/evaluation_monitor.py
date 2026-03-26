@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,6 +73,7 @@ _REPLAY_SLI_INDETERMINATE = 0.5  # upper bound; must not exceed 0.5
 
 # Threshold below which low replay consistency escalates burn-rate in summary
 _REPLAY_SLI_BURN_RATE_THRESHOLD = 0.5
+_DIGEST_RE = re.compile(r"^[a-f0-9]{64}$")
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_monitor"
@@ -173,6 +175,111 @@ def _compute_replay_consistency_sli(replay_status: str) -> float:
     )
 
 
+def _derive_governed_metrics(regression_run_result: Dict[str, Any]) -> Dict[str, Any]:
+    """Derive monitor metrics from governed regression fields only.
+
+    Legacy top-level fields (pass_rate, failed_traces, overall_status) are not
+    trusted as primary inputs; values are derived from ``blocked``,
+    ``regression_status``, and per-trace governed ``results`` content.
+    """
+    results = regression_run_result.get("results")
+    if not isinstance(results, list):
+        raise EvaluationMonitorError("regression_run_result.results must be a list")
+
+    total = len(results)
+    declared_total = regression_run_result.get("total_traces")
+    if declared_total != total:
+        raise EvaluationMonitorError(
+            f"regression_run_result total_traces={declared_total} does not match "
+            f"len(results)={total}"
+        )
+
+    mismatch_by_field: Dict[str, int] = {}
+    drifted_count = 0
+    indeterminate_count = 0
+    passed_count = 0
+    repro_sum = 0.0
+    replay_status_from_results = REPLAY_STATUS_CONSISTENT
+
+    for idx, result in enumerate(results):
+        if not isinstance(result, dict):
+            raise EvaluationMonitorError(f"results[{idx}] must be an object")
+
+        digest = result.get("comparison_digest")
+        if not isinstance(digest, str) or not _DIGEST_RE.fullmatch(digest):
+            raise EvaluationMonitorError(
+                f"results[{idx}] has invalid comparison_digest: {digest!r}"
+            )
+
+        mismatch_summary = result.get("mismatch_summary")
+        if not isinstance(mismatch_summary, list):
+            raise EvaluationMonitorError(f"results[{idx}].mismatch_summary must be a list")
+
+        if len(mismatch_summary) > 0:
+            drifted_count += 1
+            if replay_status_from_results == REPLAY_STATUS_CONSISTENT:
+                replay_status_from_results = REPLAY_STATUS_DRIFTED
+
+        for mismatch in mismatch_summary:
+            field = mismatch.get("field")
+            if not isinstance(field, str) or not field:
+                raise EvaluationMonitorError(
+                    f"results[{idx}].mismatch_summary contains invalid field"
+                )
+            mismatch_by_field[field] = mismatch_by_field.get(field, 0) + 1
+
+        decision_status = result.get("decision_status")
+        if decision_status == STATUS_INDETERMINATE:
+            indeterminate_count += 1
+            replay_status_from_results = REPLAY_STATUS_INDETERMINATE
+
+        passed = result.get("passed")
+        if passed is True:
+            passed_count += 1
+        elif passed is not False:
+            raise EvaluationMonitorError(f"results[{idx}].passed must be boolean")
+
+        repro = result.get("reproducibility_score")
+        if not isinstance(repro, (int, float)):
+            raise EvaluationMonitorError(
+                f"results[{idx}].reproducibility_score must be numeric"
+            )
+        repro_sum += float(repro)
+
+    failed_count = total - passed_count
+    blocked = bool(regression_run_result.get("blocked"))
+    regression_status = regression_run_result.get("regression_status")
+    if regression_status not in ("pass", "fail"):
+        raise EvaluationMonitorError(
+            f"regression_status must be 'pass' or 'fail'; got {regression_status!r}"
+        )
+
+    if blocked and regression_status != "fail":
+        raise EvaluationMonitorError("blocked=true requires regression_status='fail'")
+    if regression_status == "pass" and failed_count > 0:
+        raise EvaluationMonitorError(
+            "regression_status='pass' cannot contain failed per-trace results"
+        )
+
+    overall_status = "fail" if blocked or regression_status == "fail" else "pass"
+    drift_rate = _safe_divide(drifted_count, total)
+    pass_rate = _safe_divide(passed_count, total)
+    avg_repro = (repro_sum / total) if total > 0 else 0.0
+
+    return {
+        "total": total,
+        "passed": passed_count,
+        "failed": failed_count,
+        "pass_rate": pass_rate,
+        "overall_status": overall_status,
+        "drift_rate": drift_rate,
+        "drift_counts": mismatch_by_field,
+        "indeterminate_count": indeterminate_count,
+        "average_reproducibility_score": avg_repro,
+        "replay_status": replay_status_from_results,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Public API — single-record operations
 # ---------------------------------------------------------------------------
@@ -272,33 +379,27 @@ def build_monitor_record(
             replay_consistency_sli,
         )
 
-    results: List[Dict[str, Any]] = regression_run_result.get("results", [])
-    total = regression_run_result["total_traces"]
-    passed = regression_run_result["passed_traces"]
-    failed = regression_run_result["failed_traces"]
-    pass_rate = regression_run_result["pass_rate"]
-    overall_status = regression_run_result["overall_status"]
-    summary_block = regression_run_result.get("summary", {})
-    drift_counts: Dict[str, int] = dict(summary_block.get("drift_counts", {}))
-    avg_repro = summary_block.get("average_reproducibility_score", 0.0)
-
-    # Compute SLI snapshot
-    drifted_count = sum(
-        1 for r in results if r.get("decision_status") == STATUS_DRIFTED
-    )
-    indeterminate_count = sum(
-        1 for r in results if r.get("decision_status") == STATUS_INDETERMINATE
-    )
-    drift_rate = _safe_divide(drifted_count, total)
+    governed = _derive_governed_metrics(regression_run_result)
+    total = governed["total"]
+    passed = governed["passed"]
+    failed = governed["failed"]
+    pass_rate = governed["pass_rate"]
+    overall_status = governed["overall_status"]
+    drift_counts = governed["drift_counts"]
+    avg_repro = governed["average_reproducibility_score"]
+    indeterminate_count = governed["indeterminate_count"]
+    drift_rate = governed["drift_rate"]
 
     sli_snapshot: Dict[str, Any] = {
         "regression_pass_rate": pass_rate,
         "drift_rate": drift_rate,
         "average_reproducibility_score": avg_repro,
     }
-    if replay_status is not None:
-        sli_snapshot["replay_status"] = replay_status
-        sli_snapshot["replay_consistency_sli"] = replay_consistency_sli
+    if replay_status is None:
+        replay_status = governed["replay_status"]
+        replay_consistency_sli = _compute_replay_consistency_sli(replay_status)
+    sli_snapshot["replay_status"] = replay_status
+    sli_snapshot["replay_consistency_sli"] = replay_consistency_sli
 
     # Build partial record for alert computation (fields needed by the policy)
     partial_record: Dict[str, Any] = {

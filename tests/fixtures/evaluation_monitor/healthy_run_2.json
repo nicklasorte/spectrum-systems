@@ -16,7 +16,15 @@
       "reproducibility_score": 0.96,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-101",
+      "current_replay_result_id": "replay-101",
+      "baseline_trace_id": "trace-001",
+      "current_trace_id": "trace-001",
+      "baseline_reference": "replay_result:base-replay-101",
+      "current_reference": "replay_result:replay-101",
+      "mismatch_summary": [],
+      "comparison_digest": "51c7e0f60ea2e195595e07cb3cb851c9e97aa8f1bc04b05362d25c358291031e"
     },
     {
       "trace_id": "trace-002",
@@ -26,7 +34,15 @@
       "reproducibility_score": 0.93,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-102",
+      "current_replay_result_id": "replay-102",
+      "baseline_trace_id": "trace-002",
+      "current_trace_id": "trace-002",
+      "baseline_reference": "replay_result:base-replay-102",
+      "current_reference": "replay_result:replay-102",
+      "mismatch_summary": [],
+      "comparison_digest": "5ad20f06bd6a5d0797959c1a7c24e7f27707bc5c88fdc5b26fd24b3ec077deab"
     },
     {
       "trace_id": "trace-003",
@@ -36,7 +52,15 @@
       "reproducibility_score": 0.91,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-103",
+      "current_replay_result_id": "replay-103",
+      "baseline_trace_id": "trace-003",
+      "current_trace_id": "trace-003",
+      "baseline_reference": "replay_result:base-replay-103",
+      "current_reference": "replay_result:replay-103",
+      "mismatch_summary": [],
+      "comparison_digest": "62d8401fc032e649ac45ed8eccd28defffcffb2c559b531ba112697a49231e90"
     },
     {
       "trace_id": "trace-004",
@@ -46,7 +70,15 @@
       "reproducibility_score": 0.89,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-104",
+      "current_replay_result_id": "replay-104",
+      "baseline_trace_id": "trace-004",
+      "current_trace_id": "trace-004",
+      "baseline_reference": "replay_result:base-replay-104",
+      "current_reference": "replay_result:replay-104",
+      "mismatch_summary": [],
+      "comparison_digest": "fd6cfc7128737db3f6c7b89ce6996446c140ef61d01b3a96b327c593956ce1b1"
     },
     {
       "trace_id": "trace-005",
@@ -56,11 +88,23 @@
       "reproducibility_score": 0.92,
       "drift_type": "",
       "passed": true,
-      "failure_reasons": []
+      "failure_reasons": [],
+      "baseline_replay_result_id": "base-replay-105",
+      "current_replay_result_id": "replay-105",
+      "baseline_trace_id": "trace-005",
+      "current_trace_id": "trace-005",
+      "baseline_reference": "replay_result:base-replay-105",
+      "current_reference": "replay_result:replay-105",
+      "mismatch_summary": [],
+      "comparison_digest": "13b69d8fbcbd2248436d88a801414f420ca7fce1930c78ac13f5cedf65c4ddb9"
     }
   ],
   "summary": {
     "drift_counts": {},
     "average_reproducibility_score": 0.922
-  }
+  },
+  "artifact_type": "regression_result",
+  "schema_version": "1.1.0",
+  "blocked": false,
+  "regression_status": "pass"
 }
