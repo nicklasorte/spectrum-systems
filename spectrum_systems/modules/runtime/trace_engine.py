@@ -126,7 +126,15 @@ def start_trace(context: Optional[Dict[str, Any]] = None) -> str:
     str
         A new ``trace_id`` (UUID-4).
     """
-    trace_id = _new_id()
+    ctx = dict(context or {})
+    explicit_trace_id = ctx.get("trace_id")
+    deterministic_seed = ctx.get("deterministic_seed")
+    if isinstance(explicit_trace_id, str) and explicit_trace_id:
+        trace_id = explicit_trace_id
+    elif isinstance(deterministic_seed, str) and deterministic_seed:
+        trace_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"trace::{deterministic_seed}"))
+    else:
+        trace_id = _new_id()
     now = _now_iso()
     trace: Dict[str, Any] = {
         "trace_id": trace_id,
@@ -135,10 +143,19 @@ def start_trace(context: Optional[Dict[str, Any]] = None) -> str:
         "artifacts": [],
         "start_time": now,
         "end_time": None,
-        "context": dict(context or {}),
+        "context": ctx,
         "schema_version": SCHEMA_VERSION,
     }
     with _store_lock:
+        existing = _traces.get(trace_id)
+        if existing is not None:
+            if existing.get("context") != ctx:
+                raise TraceConflictError(
+                    f"start_trace: trace_id '{trace_id}' already exists with conflicting context"
+                )
+            raise TraceConflictError(
+                f"start_trace: trace_id '{trace_id}' already exists"
+            )
         _traces[trace_id] = trace
     return trace_id
 
@@ -457,3 +474,7 @@ class TraceNotFoundError(TraceEngineError):
 
 class SpanNotFoundError(TraceEngineError):
     """Raised when a span_id cannot be found in the store."""
+
+
+class TraceConflictError(TraceEngineError):
+    """Raised when start_trace attempts to reuse an existing trace_id."""

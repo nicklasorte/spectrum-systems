@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 from spectrum_systems.modules.runtime.agent_golden_path import GoldenPathConfig, run_agent_golden_path
 
@@ -203,6 +204,76 @@ def test_routing_decision_trace_linkage_present(tmp_path: Path) -> None:
     assert routing["trace"]["trace_id"] == trace["trace_id"]
     assert routing["trace"]["agent_run_id"] == trace["agent_run_id"]
     assert invocation["requested_model_id"] == routing["selected_model_id"]
+
+
+def test_pipeline_trace_and_run_are_consistent_across_artifacts(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path))
+    trace_id = artifacts["agent_execution_trace"]["trace_id"]
+    run_id = artifacts["agent_execution_trace"]["agent_run_id"]
+
+    assert artifacts["context_bundle"]["trace"]["trace_id"] == trace_id
+    assert artifacts["context_bundle"]["trace"]["run_id"] == run_id
+    assert artifacts["context_validation_result"]["trace"]["trace_id"] == trace_id
+    assert artifacts["context_validation_result"]["trace"]["run_id"] == run_id
+    assert artifacts["context_admission_decision"]["trace"]["trace_id"] == trace_id
+    assert artifacts["context_admission_decision"]["trace"]["run_id"] == run_id
+    assert artifacts["routing_decision"]["trace"]["trace_id"] == trace_id
+    assert artifacts["routing_decision"]["trace"]["agent_run_id"] == run_id
+    assert artifacts["structured_output"]["trace_id"] == trace_id
+    assert artifacts["eval_result"]["trace_id"] == trace_id
+    assert artifacts["eval_summary"]["trace_id"] == trace_id
+    assert artifacts["control_decision"]["trace_id"] == trace_id
+    assert artifacts["control_decision"]["run_id"] == run_id
+    assert artifacts["enforcement"]["trace_id"] == trace_id
+    assert artifacts["enforcement"]["run_id"] == run_id
+    assert artifacts["final_execution_record"]["trace_id"] == trace_id
+    assert artifacts["final_execution_record"]["run_id"] == run_id
+
+
+def test_pipeline_lineage_references_are_present_and_non_orphaned(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path))
+    context_ref = f"context_bundle:{artifacts['context_bundle']['context_id']}"
+    validation_ref = f"context_validation_result:{artifacts['context_validation_result']['validation_id']}"
+    admission_ref = f"context_admission_decision:{artifacts['context_admission_decision']['admission_decision_id']}"
+    routing_ref = f"routing_decision:{artifacts['routing_decision']['routing_decision_id']}"
+    trace_ref = f"agent_execution_trace:{artifacts['agent_execution_trace']['agent_run_id']}"
+    eval_case_ref = f"eval_case:{artifacts['structured_output']['eval_case_id']}"
+
+    assert context_ref in artifacts["routing_decision"]["related_artifact_refs"]
+    assert validation_ref in artifacts["routing_decision"]["related_artifact_refs"]
+    assert admission_ref in artifacts["routing_decision"]["related_artifact_refs"]
+    assert context_ref in artifacts["structured_output"]["input_artifact_refs"]
+    assert routing_ref in artifacts["structured_output"]["input_artifact_refs"]
+    assert admission_ref in artifacts["structured_output"]["input_artifact_refs"]
+    assert trace_ref in artifacts["structured_output"]["input_artifact_refs"]
+    assert eval_case_ref in artifacts["eval_result"]["provenance_refs"]
+    assert artifacts["context_admission_decision"]["validation_ref"] == artifacts["context_validation_result"]["validation_id"]
+    assert artifacts["context_validation_result"]["context_bundle_id"] == artifacts["context_bundle"]["context_id"]
+    assert artifacts["enforcement"]["input_decision_reference"] == artifacts["control_decision"]["decision_id"]
+
+
+def test_missing_lineage_linkage_fails_closed(tmp_path: Path) -> None:
+    def _break_lineage(*, trace_id, run_id, context_bundle, tool_calls, upstream_refs, force_invalid, force_eval_status):
+        payload = {
+            "artifact_type": "eval_case",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "eval_case_id": "ec-bad-lineage",
+            "input_artifact_refs": [f"context_bundle:{context_bundle['context_id']}"],
+            "expected_output_spec": {"forced_status": force_eval_status or "pass", "forced_score": 1.0},
+            "scoring_rubric": {"name": "ag01_runtime_golden_path", "version": "1.0.0", "dimensions": ["traceability"]},
+            "evaluation_type": "deterministic",
+            "created_from": "synthetic",
+            "tool_call_count": len(tool_calls),
+        }
+        return payload
+
+    with patch("spectrum_systems.modules.runtime.agent_golden_path._build_structured_output", side_effect=_break_lineage):
+        artifacts = run_agent_golden_path(_config(tmp_path))
+
+    assert artifacts["failure_artifact"]["failure_stage"] == "enforcement"
+    assert artifacts["failure_artifact"]["failure_type"] == "validation_error"
+    assert "missing required upstream lineage refs" in artifacts["failure_artifact"]["error_message"]
 
 def test_deterministic_repeated_runs(tmp_path: Path) -> None:
     first = run_agent_golden_path(_config(tmp_path / "run1"))
