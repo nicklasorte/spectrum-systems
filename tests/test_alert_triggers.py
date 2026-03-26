@@ -104,6 +104,20 @@ def test_malformed_replay_result_fails_closed() -> None:
         build_alert_trigger({"artifact_type": "replay_result"}, policy=_policy_example())
 
 
+def test_partial_replay_missing_observability_metrics_fails_closed() -> None:
+    replay = _replay_example()
+    replay.pop("observability_metrics", None)
+    with pytest.raises(AlertTriggerError, match="missing required replay-attached governed artifacts"):
+        build_alert_trigger(replay, policy=_policy_example())
+
+
+def test_invalid_trace_linkage_fails_closed() -> None:
+    replay = _replay_example()
+    replay["error_budget_status"]["trace_refs"]["trace_id"] = "trace-mismatch"
+    with pytest.raises(AlertTriggerError, match="REPLAY_INVALID_TRACE_LINKAGE"):
+        build_alert_trigger(replay, policy=_policy_example())
+
+
 def test_alert_trigger_deterministic_for_repeated_runs() -> None:
     replay = _replay_example()
     policy = _policy_example()

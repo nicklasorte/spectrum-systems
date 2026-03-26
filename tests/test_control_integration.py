@@ -21,69 +21,32 @@ from spectrum_systems.modules.runtime.control_integration import (  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError  # noqa: E402
 from spectrum_systems.modules.runtime.enforcement_engine import EnforcementError  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import EvalCaseGenerationError  # noqa: E402
+from tests.helpers.replay_result_builder import make_canonical_replay_result  # noqa: E402
 
 
-def _eval_summary_artifact() -> Dict[str, Any]:
-    return {
-        "artifact_type": "eval_summary",
-        "schema_version": "1.0.0",
-        "trace_id": "44444444-4444-4444-8444-444444444444",
-        "eval_run_id": "eval-run-20260322T000000Z",
-        "pass_rate": 0.95,
-        "failure_rate": 0.05,
-        "drift_rate": 0.05,
-        "reproducibility_score": 0.95,
-        "system_status": "healthy",
-    }
+def _replay_result_artifact(*, replay_success_rate: float = 0.95, drift_rate: float = 0.05, consistency_status: str = "match") -> Dict[str, Any]:
+    artifact = make_canonical_replay_result(
+        replay_id="RPL-control-integration-001",
+        trace_id="44444444-4444-4444-8444-444444444444",
+        replay_run_id="eval-run-20260322T000000Z",
+    )
+    artifact["observability_metrics"]["metrics"]["replay_success_rate"] = replay_success_rate
+    artifact["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    artifact["consistency_status"] = consistency_status
+    artifact["drift_detected"] = consistency_status == "mismatch"
+    artifact["failure_reason"] = None
+    return artifact
 
 
 def _ctx(artifact: Any | None = None) -> Dict[str, Any]:
     return {
-        "artifact": artifact if artifact is not None else _eval_summary_artifact(),
+        "artifact": artifact if artifact is not None else _replay_result_artifact(),
         "stage": "synthesis",
         "runtime_environment": "test",
     }
 
 
-def _failure_eval_case_artifact() -> Dict[str, Any]:
-    return {
-        "artifact_type": "failure_eval_case",
-        "schema_version": "1.1.0",
-        "trace_id": "11111111-1111-4111-8111-111111111111",
-        "eval_case_id": "fec-001",
-        "created_at": "2026-03-24T00:00:00Z",
-        "source_run_id": "agrun-001",
-        "source_artifact_type": "agent_failure_record",
-        "source_artifact_id": "afr-001",
-        "failure_class": "runtime_failure",
-        "failure_stage": "runtime_boundary",
-        "triggering_condition": "governed_runtime_failure_artifact",
-        "normalized_inputs": {
-            "stage": "eval",
-            "runtime_environment": "agent_golden_path",
-            "continuation_allowed": False,
-            "publication_blocked": True,
-            "decision_blocked": True,
-            "human_review_required": False,
-            "escalation_triggered": True,
-        },
-        "expected_system_behavior": "system_must_fail_closed_and_emit_failure_artifact",
-        "observed_system_behavior": "runtime_failed_with_governed_failure_artifact",
-        "evaluation_goal": "controller_must_deny_and_require_remediation",
-        "pass_criteria": {
-            "decision_must_remain_denied": True,
-            "review_or_remediation_required": True,
-            "replay_reproducible": True,
-        },
-        "provenance": {
-            "source_artifact_ref": "agent_failure_record:afr-001",
-            "generation_path": "ag_runtime_failure_eval_auto_generation",
-            "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation",
-        },
-    }
-
-
-def test_eval_summary_path_allows_and_emits_decision() -> None:
+def test_replay_result_path_allows_and_emits_decision() -> None:
     result = enforce_control_before_execution(_ctx())
     assert result["continuation_allowed"] is True
     assert result["execution_status"] == "success"
@@ -91,8 +54,8 @@ def test_eval_summary_path_allows_and_emits_decision() -> None:
     assert result["enforcement_result"]["final_status"] == "allow"
 
 
-def test_failure_eval_case_path_denies_and_blocks() -> None:
-    artifact = _failure_eval_case_artifact()
+def test_replay_result_block_path_denies_and_blocks() -> None:
+    artifact = _replay_result_artifact(replay_success_rate=0.3, drift_rate=0.9, consistency_status="mismatch")
     result = enforce_control_before_execution(_ctx(artifact=artifact))
     assert result["continuation_allowed"] is False
     assert result["execution_status"] == "blocked"
@@ -101,7 +64,7 @@ def test_failure_eval_case_path_denies_and_blocks() -> None:
 
 
 def test_unsupported_artifact_type_raises_hard_error() -> None:
-    artifact = {"artifact_type": "run_bundle", "schema_version": "1.0.0"}
+    artifact = {"artifact_type": "eval_summary", "schema_version": "1.0.0"}
     with pytest.raises(ContractRuntimeError, match="unsupported governed artifact_type"):
         enforce_control_before_execution(_ctx(artifact=artifact))
 
@@ -149,7 +112,10 @@ def test_simulation_adapter_blocks_execution() -> None:
         called.append("ran")
         return "ok"
 
-    result, integration = run_simulation_with_control(_ctx(artifact=_failure_eval_case_artifact()), sim_fn)
+    result, integration = run_simulation_with_control(
+        _ctx(artifact=_replay_result_artifact(replay_success_rate=0.3, drift_rate=0.9, consistency_status="mismatch")),
+        sim_fn,
+    )
 
     assert result is None
     assert integration["continuation_allowed"] is False
@@ -166,7 +132,9 @@ def test_working_paper_adapter_allows_execution() -> None:
 
 
 def test_summarize_control_integration_is_structured() -> None:
-    result = enforce_control_before_execution(_ctx(artifact=_failure_eval_case_artifact()))
+    result = enforce_control_before_execution(
+        _ctx(artifact=_replay_result_artifact(replay_success_rate=0.3, drift_rate=0.9, consistency_status="mismatch"))
+    )
     summary = summarize_control_integration(_ctx(), result)
     assert "BN.7" in summary
     assert "continuation_allowed" in summary

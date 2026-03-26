@@ -11,6 +11,7 @@
 - Provenance and reproducibility metadata are required for every material artifact.
 - Implementation code lives elsewhere; this repo defines interfaces, prompts, schemas, and evaluation plans.
 - Artifact contracts live in `contracts/` and are the authoritative source for inputs/outputs shared across engines.
+- **Runtime replay invariant:** All downstream runtime logic must operate exclusively on `replay_result` artifacts. No module may derive signals from pre-replay or non-governed data.
 
 ## System Catalog
 

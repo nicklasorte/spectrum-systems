@@ -722,7 +722,7 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
         return _indeterminate(f"original decision malformed: missing required fields {missing}")
 
     try:
-        from spectrum_systems.modules.runtime.control_loop import run_control_loop
+        from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
         from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
         from spectrum_systems.modules.runtime.evaluation_monitor import (
             build_validation_monitor_record,
@@ -769,14 +769,7 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
             ),
         }
 
-        replay_decision = run_control_loop(
-            replay_eval_summary,
-            {
-                "trace_id": replay_trace_id,
-                "run_id": replay_eval_summary["eval_run_id"],
-                "replay_id": replay_id,
-            },
-        )["evaluation_control_decision"]
+        replay_decision = build_evaluation_control_decision(replay_eval_summary)
         replay_enforcement = enforce_control_decision(replay_decision)
     except Exception as exc:  # noqa: BLE001
         raise ReplayEngineError(
@@ -1147,7 +1140,7 @@ def run_replay(
     """Replay canonical trust-loop execution deterministically for a governed artifact.
 
     Canonical path only:
-        artifact -> run_control_loop(...) -> enforce_control_decision(...)
+        artifact -> build_evaluation_control_decision(...) -> enforce_control_decision(...)
     """
     if not isinstance(artifact, dict):
         raise ReplayEngineError("REPLAY_INVALID_ARTIFACT: artifact must be a dict")
@@ -1198,12 +1191,10 @@ def run_replay(
     )
 
     try:
-        from spectrum_systems.modules.runtime.control_loop import run_control_loop
+        from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
         from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
 
-        replay_decision = run_control_loop(artifact_input, trace_context_input)[
-            "evaluation_control_decision"
-        ]
+        replay_decision = build_evaluation_control_decision(artifact_input)
         replay_enforcement = enforce_control_decision(replay_decision)
         canonical_timestamp = _canonical_timestamp_from_inputs(
             original_decision_input,

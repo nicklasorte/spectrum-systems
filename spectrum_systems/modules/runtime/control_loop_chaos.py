@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop
+from spectrum_systems.modules.runtime.evaluation_control import EvaluationControlError
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 
 SCHEMA_VERSION = "1.0.0"
@@ -100,7 +101,7 @@ def _evaluate_once(artifact: Any) -> dict[str, Any]:
             "decision_id": decision.get("decision_id"),
             "error": None,
         }
-    except (ControlLoopError, ValueError, TypeError, KeyError) as exc:
+    except (ControlLoopError, EvaluationControlError, ValueError, TypeError, KeyError) as exc:
         return {
             "actual_status": "blocked",
             "actual_response": "block",

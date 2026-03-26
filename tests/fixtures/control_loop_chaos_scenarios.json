@@ -30,19 +30,16 @@
   {
     "scenario_id": "invalid-002",
     "category": "missing_or_invalid",
-    "description": "Malformed eval_summary with missing required fields fails closed via decision artifact.",
+    "description": "Malformed replay_result with missing required fields fails closed via decision artifact.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
-      "trace_id": "22222222-2222-4222-8222-222222222222",
-      "eval_run_id": "eval-chaos-invalid-002"
+      "artifact_type": "replay_result",
+      "replay_id": "eval-chaos-invalid-002"
     },
     "expected_status": "blocked",
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_malformed_signal",
-      "malformed_eval_summary"
+      "control_loop_error"
     ]
   },
   {
@@ -50,43 +47,227 @@
     "category": "missing_or_invalid",
     "description": "Invalid enum in system_status is rejected and fails closed.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "67721f5ed3156ca478d63be1bf9e2d1e5e2511971d9c8f233c669963d752454a",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-invalid-003",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-invalid-003",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "33333333-3333-4333-8333-333333333333",
-      "eval_run_id": "eval-chaos-invalid-003",
-      "pass_rate": 0.95,
-      "failure_rate": 0.05,
-      "drift_rate": 0.02,
-      "reproducibility_score": 0.95,
-      "system_status": "unsupported"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "33333333-3333-4333-8333-333333333333"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "33333333-3333-4333-8333-333333333333"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 1.0,
+          "drift_exceed_threshold_rate": 0.0,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "mismatch-trace"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_malformed_signal",
-      "malformed_eval_summary"
+      "control_loop_error"
     ]
   },
   {
     "scenario_id": "indeterminate-001",
     "category": "indeterminate",
-    "description": "Indeterminate case folded into failure_eval_case auto-deny path.",
+    "description": "Indeterminate case folded into replay_result auto-deny path.",
     "artifact": {
-      "artifact_type": "failure_eval_case",
-      "schema_version": "1.0.0",
+      "artifact_id": "e9adea746b68f3f6da38ad953e0006af202d0cf016cc51c0bce307cfae7b43c4",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-indeterminate-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-indeterminate-001",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "44444444-4444-4444-8444-444444444444",
-      "eval_run_id": "eval-chaos-indeterminate-001",
-      "eval_case_id": "case-chaos-indeterminate-001",
-      "evaluation_type": "replay",
-      "created_from": "indeterminate"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "indeterminate",
+      "drift_detected": false,
+      "failure_reason": "indeterminate_replay_consistency",
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "44444444-4444-4444-8444-444444444444"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "44444444-4444-4444-8444-444444444444"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 1.0,
+          "drift_exceed_threshold_rate": 0.0,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "44444444-4444-4444-8444-444444444444"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_failure_eval_case",
-      "indeterminate_failure"
+      "deny_trust_breach",
+      "indeterminate_failure",
+      "trust_breach"
     ]
   },
   {
@@ -94,15 +275,106 @@
     "category": "threshold_boundary",
     "description": "Pass rate exactly at threshold remains allow.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "f44aff1643f650f349f53cce7cb0d1f1721652ad15c7e962663a7de7fd161009",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-threshold-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-threshold-001",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "55555555-5555-4555-8555-555555555555",
-      "eval_run_id": "eval-chaos-threshold-001",
-      "pass_rate": 0.85,
-      "failure_rate": 0.15,
-      "drift_rate": 0.2,
-      "reproducibility_score": 0.8,
-      "system_status": "healthy"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "55555555-5555-4555-8555-555555555555"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "55555555-5555-4555-8555-555555555555"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.85,
+          "drift_exceed_threshold_rate": 0.2,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "55555555-5555-4555-8555-555555555555"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "healthy",
     "expected_response": "allow",
@@ -116,15 +388,106 @@
     "category": "threshold_boundary",
     "description": "Pass rate just below threshold triggers warning.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "8450346c338a90d885c62705aa6743397aea80ba570d4ee3221c1507100e3c7a",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-threshold-002",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-threshold-002",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "66666666-6666-4666-8666-666666666666",
-      "eval_run_id": "eval-chaos-threshold-002",
-      "pass_rate": 0.8499,
-      "failure_rate": 0.1501,
-      "drift_rate": 0.02,
-      "reproducibility_score": 0.95,
-      "system_status": "degraded"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "66666666-6666-4666-8666-666666666666"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "66666666-6666-4666-8666-666666666666"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.8499,
+          "drift_exceed_threshold_rate": 0.02,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "66666666-6666-4666-8666-666666666666"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "warning",
     "expected_response": "warn",
@@ -139,15 +502,106 @@
     "category": "threshold_boundary",
     "description": "Drift just above threshold triggers freeze.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "1276341a5ca4e86510bcc40e56ef77ee24e015f1d4fb74172028dd4bd97012ac",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-threshold-003",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-threshold-003",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "77777777-7777-4777-8777-777777777777",
-      "eval_run_id": "eval-chaos-threshold-003",
-      "pass_rate": 0.95,
-      "failure_rate": 0.05,
-      "drift_rate": 0.2001,
-      "reproducibility_score": 0.95,
-      "system_status": "degraded"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "77777777-7777-4777-8777-777777777777"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "77777777-7777-4777-8777-777777777777"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.95,
+          "drift_exceed_threshold_rate": 0.2001,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "77777777-7777-4777-8777-777777777777"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "exhausted",
     "expected_response": "freeze",
@@ -162,15 +616,106 @@
     "category": "threshold_boundary",
     "description": "Reproducibility just below threshold triggers block.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "cc67dda255b0ff071963376a4c814db2d0997f50c80d07209aa0d4c0d28b0eef",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-threshold-004",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-threshold-004",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "88888888-8888-4888-8888-888888888888",
-      "eval_run_id": "eval-chaos-threshold-004",
-      "pass_rate": 0.95,
-      "failure_rate": 0.05,
-      "drift_rate": 0.02,
-      "reproducibility_score": 0.7999,
-      "system_status": "failing"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "mismatch",
+      "drift_detected": true,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "88888888-8888-4888-8888-888888888888"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "88888888-8888-4888-8888-888888888888"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.95,
+          "drift_exceed_threshold_rate": 0.02,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "88888888-8888-4888-8888-888888888888"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
@@ -185,15 +730,106 @@
     "category": "conflicting_signals",
     "description": "Healthy pass rate is overridden by drift breach (freeze precedence).",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "4815ab2c2887bab81df29778c3acc17ac71378287e539af2068eec118f5cd6e7",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-conflict-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-conflict-001",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "99999999-9999-4999-8999-999999999999",
-      "eval_run_id": "eval-chaos-conflict-001",
-      "pass_rate": 0.99,
-      "failure_rate": 0.01,
-      "drift_rate": 0.9,
-      "reproducibility_score": 0.99,
-      "system_status": "degraded"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "99999999-9999-4999-8999-999999999999"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "99999999-9999-4999-8999-999999999999"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.99,
+          "drift_exceed_threshold_rate": 0.9,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "99999999-9999-4999-8999-999999999999"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "exhausted",
     "expected_response": "freeze",
@@ -208,15 +844,106 @@
     "category": "conflicting_signals",
     "description": "Good pass rate and low drift are overridden by trust breach (block precedence).",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "cff4fdc4eb8c3f7951f405760f2d2883f01e695dba50951ecb981529c9c4c665",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-conflict-002",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-conflict-002",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      "eval_run_id": "eval-chaos-conflict-002",
-      "pass_rate": 0.99,
-      "failure_rate": 0.01,
-      "drift_rate": 0.01,
-      "reproducibility_score": 0.1,
-      "system_status": "failing"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "mismatch",
+      "drift_detected": true,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.99,
+          "drift_exceed_threshold_rate": 0.01,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
@@ -231,15 +958,106 @@
     "category": "conflicting_signals",
     "description": "Drift breach + trust breach together resolve to block (most severe signal wins).",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "1a785ee3308ccd34dc61e02f892344b406a872adb0d64553a571f9f90222f90f",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-conflict-003",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-conflict-003",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      "eval_run_id": "eval-chaos-conflict-003",
-      "pass_rate": 0.95,
-      "failure_rate": 0.05,
-      "drift_rate": 0.9,
-      "reproducibility_score": 0.2,
-      "system_status": "failing"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "mismatch",
+      "drift_detected": true,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 0.95,
+          "drift_exceed_threshold_rate": 0.9,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
@@ -255,20 +1073,114 @@
     "category": "blocking_states",
     "description": "Failure eval case is canonical blocking control state.",
     "artifact": {
-      "artifact_type": "failure_eval_case",
-      "schema_version": "1.0.0",
+      "artifact_id": "7decad98636012b717df48f5351dc3a05b83d896827e5725b0e898a0f961c7df",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-blocking-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-blocking-001",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-      "eval_run_id": "eval-chaos-blocking-001",
-      "eval_case_id": "case-chaos-001",
-      "evaluation_type": "reliability",
-      "created_from": "indeterminate"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "indeterminate",
+      "drift_detected": false,
+      "failure_reason": "indeterminate_replay_consistency",
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 1.0,
+          "drift_exceed_threshold_rate": 0.0,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "blocked",
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_failure_eval_case",
-      "indeterminate_failure"
+      "deny_trust_breach",
+      "indeterminate_failure",
+      "trust_breach"
     ]
   },
   {
@@ -276,15 +1188,106 @@
     "category": "determinism",
     "description": "Stable healthy input returns deterministic allow decision on repeat execution.",
     "artifact": {
-      "artifact_type": "eval_summary",
-      "schema_version": "1.0.0",
+      "artifact_id": "347b715f061e98601aae66f3433c2078595ff9e1eed7a07388f97c491cf133e5",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-determinism-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-determinism-001",
+      "timestamp": "2026-03-22T00:00:00Z",
       "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-      "eval_run_id": "eval-chaos-determinism-001",
-      "pass_rate": 1.0,
-      "failure_rate": 0.0,
-      "drift_rate": 0.0,
-      "reproducibility_score": 1.0,
-      "system_status": "healthy"
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "match",
+      "drift_detected": false,
+      "failure_reason": null,
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 1.0,
+          "drift_exceed_threshold_rate": 0.0,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
     },
     "expected_status": "healthy",
     "expected_response": "allow",
