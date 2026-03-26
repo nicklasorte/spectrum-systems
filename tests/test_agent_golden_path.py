@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+from spectrum_systems.contracts import load_example
 from spectrum_systems.modules.runtime.agent_golden_path import GoldenPathConfig, run_agent_golden_path
 
 
@@ -94,7 +95,52 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert artifacts["structured_output"]["artifact_type"] == "eval_case"
     assert artifacts["eval_result"]["result_status"] == "pass"
     assert artifacts["control_decision"]["system_response"] == "allow"
+    assert artifacts["enforcement"]["final_status"] == "allow"
     assert artifacts["final_execution_record"]["execution_status"] == "success"
+
+
+def test_enforcement_final_status_non_allow_blocks_execution(tmp_path: Path) -> None:
+    def _force_require_review(decision: dict) -> dict:
+        result = load_example("enforcement_result")
+        result["enforcement_result_id"] = "ENF-test-require-review"
+        result["trace_id"] = decision["trace_id"]
+        result["run_id"] = decision["run_id"]
+        result["input_decision_reference"] = decision["decision_id"]
+        result["final_status"] = "require_review"
+        result["enforcement_action"] = "require_manual_review"
+        result["fail_closed"] = True
+        result["provenance"]["source_artifact_id"] = decision["decision_id"]
+        return result
+
+    with patch("spectrum_systems.modules.runtime.agent_golden_path.enforce_control_decision", side_effect=_force_require_review):
+        artifacts = run_agent_golden_path(_config(tmp_path))
+
+    assert artifacts["control_decision"]["system_response"] == "allow"
+    assert artifacts["enforcement"]["final_status"] == "require_review"
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    assert artifacts["final_execution_record"]["publication_blocked"] is True
+    assert artifacts["final_execution_record"]["decision_blocked"] is True
+
+
+def test_decision_system_response_cannot_override_enforcement_final_status(tmp_path: Path) -> None:
+    def _force_deny(decision: dict) -> dict:
+        result = load_example("enforcement_result")
+        result["enforcement_result_id"] = "ENF-test-deny"
+        result["trace_id"] = decision["trace_id"]
+        result["run_id"] = decision["run_id"]
+        result["input_decision_reference"] = decision["decision_id"]
+        result["final_status"] = "deny"
+        result["enforcement_action"] = "deny_execution"
+        result["fail_closed"] = True
+        result["provenance"]["source_artifact_id"] = decision["decision_id"]
+        return result
+
+    with patch("spectrum_systems.modules.runtime.agent_golden_path.enforce_control_decision", side_effect=_force_deny):
+        artifacts = run_agent_golden_path(_config(tmp_path))
+
+    assert artifacts["control_decision"]["system_response"] == "allow"
+    assert artifacts["enforcement"]["final_status"] == "deny"
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
 
 
 def test_context_failure_stops_pipeline(tmp_path: Path) -> None:

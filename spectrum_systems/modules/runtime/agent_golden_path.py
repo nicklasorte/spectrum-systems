@@ -1083,9 +1083,9 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         artifacts["enforcement"] = enforcement
         refs.append(f"enforcement_result:{enforcement['enforcement_result_id']}")
 
-        system_response = str(decision.get("system_response", "block"))
-        continuation_allowed = system_response in {"allow", "warn"}
-        warning_flag = system_response == "warn"
+        final_status = str(enforcement.get("final_status", "deny"))
+        continuation_allowed = final_status == "allow"
+        warning_flag = final_status == "require_review"
 
         # 7) Final execution record
         execution_record = {
@@ -1102,7 +1102,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
                     "action_type": "agent_golden_path_completed",
                     "status": "proceed" if continuation_allowed else "blocked",
                     "warning": warning_flag,
-                    "control_decision": system_response,
+                    "control_decision": final_status,
                     "artifact_references": sorted(set(refs)),
                     "timestamp": _now_iso(),
                 }
