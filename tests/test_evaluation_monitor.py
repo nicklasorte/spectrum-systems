@@ -195,3 +195,17 @@ def test_replay_boundary_rejects_partial_replay() -> None:
     replay.pop("error_budget_status", None)
     with pytest.raises(EvaluationMonitorError, match="missing required error_budget_status"):
         validate_replay_result_boundary_or_raise(replay)
+
+
+def test_replay_boundary_rejects_observability_lineage_mismatch() -> None:
+    replay = _load_json(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    replay["error_budget_status"]["observability_metrics_id"] = "f" * 64
+    with pytest.raises(EvaluationMonitorError, match="REPLAY_INVALID_LINEAGE"):
+        validate_replay_result_boundary_or_raise(replay)
+
+
+def test_replay_boundary_rejects_missing_observability_lineage_link() -> None:
+    replay = _load_json(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    replay["error_budget_status"].pop("observability_metrics_id", None)
+    with pytest.raises(EvaluationMonitorError, match="failed validation|REPLAY_INVALID_LINEAGE"):
+        validate_replay_result_boundary_or_raise(replay)

@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_example, load_schema
 from spectrum_systems.modules.runtime.decision_precedence import most_severe
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
@@ -135,6 +135,47 @@ def _threshold_result(threshold: str, passed: bool, actual: Any, expected: Any) 
     }
 
 
+def _replay_result_from_eval_summary(eval_summary: dict[str, Any]) -> dict[str, Any]:
+    replay_result = load_example("replay_result")
+    if not isinstance(replay_result, dict):
+        raise ReleaseCanaryError("contracts example replay_result must be an object")
+
+    eval_run_id = str(eval_summary.get("eval_run_id") or "").strip()
+    trace_id = str(eval_summary.get("trace_id") or "").strip()
+    created_at = str(eval_summary.get("created_at") or "").strip()
+    if not eval_run_id or not trace_id:
+        raise ReleaseCanaryError("eval_summary must include eval_run_id and trace_id")
+
+    pass_rate = float(eval_summary.get("pass_rate", 0.0))
+    drift_rate = float(eval_summary.get("drift_rate", 1.0))
+    reproducibility_score = float(eval_summary.get("reproducibility_score", 0.0))
+    consistency_status = "match" if reproducibility_score >= 0.8 else "mismatch"
+
+    replay_result["replay_id"] = f"RPL-{eval_run_id}"
+    replay_result["replay_run_id"] = eval_run_id
+    replay_result["original_run_id"] = eval_run_id
+    replay_result["trace_id"] = trace_id
+    replay_result["timestamp"] = created_at or replay_result.get("timestamp")
+    replay_result["input_artifact_reference"] = f"eval_summary:{eval_run_id}"
+    replay_result["consistency_status"] = consistency_status
+    replay_result["drift_detected"] = consistency_status == "mismatch"
+    replay_result["failure_reason"] = None
+    replay_result["provenance"]["source_artifact_id"] = eval_run_id
+    replay_result["provenance"]["trace_id"] = trace_id
+    replay_result["observability_metrics"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["observability_metrics"]["metrics"]["replay_success_rate"] = pass_rate
+    replay_result["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    replay_result["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["error_budget_status"]["observability_metrics_id"] = replay_result["observability_metrics"]["artifact_id"]
+    summary_status = str(eval_summary.get("system_status") or "invalid")
+    replay_result["error_budget_status"]["budget_status"] = (
+        summary_status if summary_status in {"healthy", "warning", "exhausted", "invalid"} else "invalid"
+    )
+    replay_result["alert_trigger"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["alert_trigger"]["replay_result_id"] = replay_result["replay_id"]
+    return replay_result
+
+
 def build_release_record(
     *,
     release_id: str,
@@ -172,8 +213,12 @@ def build_release_record(
         _validate(item, "eval_slice_summary")
 
     control_thresholds = dict(policy.get("control_thresholds") or {})
-    baseline_control = build_evaluation_control_decision(baseline_eval_summary, thresholds=control_thresholds)
-    candidate_control = build_evaluation_control_decision(candidate_eval_summary, thresholds=control_thresholds)
+    baseline_replay_result = _replay_result_from_eval_summary(baseline_eval_summary)
+    candidate_replay_result = _replay_result_from_eval_summary(candidate_eval_summary)
+    _validate(baseline_replay_result, "replay_result")
+    _validate(candidate_replay_result, "replay_result")
+    baseline_control = build_evaluation_control_decision(baseline_replay_result, thresholds=control_thresholds)
+    candidate_control = build_evaluation_control_decision(candidate_replay_result, thresholds=control_thresholds)
 
     sample_size = int(candidate_coverage_summary.get("total_eval_cases", 0))
     pass_rate_delta = _round_delta(

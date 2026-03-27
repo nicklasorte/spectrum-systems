@@ -11,7 +11,7 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
-from spectrum_systems.contracts import validate_artifact  # noqa: E402
+from spectrum_systems.contracts import load_example, validate_artifact  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import run_control_loop, ControlLoopError  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision  # noqa: E402
 from spectrum_systems.modules.runtime.enforcement_engine import (  # noqa: E402
@@ -42,6 +42,37 @@ def _artifact() -> dict:
         "reproducibility_score": 0.99,
         "system_status": "healthy",
     }
+
+
+def _artifact_as_replay_result(artifact: dict | None = None) -> dict:
+    summary = copy.deepcopy(artifact or _artifact())
+    replay_result = copy.deepcopy(load_example("replay_result"))
+    trace_id = str(summary.get("trace_id"))
+    run_id = str(summary.get("eval_run_id"))
+    pass_rate = float(summary.get("pass_rate", 0.0))
+    drift_rate = float(summary.get("drift_rate", 1.0))
+    reproducibility = float(summary.get("reproducibility_score", 0.0))
+    replay_result["replay_id"] = f"RPL-{run_id}"
+    replay_result["replay_run_id"] = run_id
+    replay_result["original_run_id"] = run_id
+    replay_result["trace_id"] = trace_id
+    replay_result["input_artifact_reference"] = f"eval_summary:{run_id}"
+    replay_result["consistency_status"] = "match" if reproducibility >= 0.8 else "mismatch"
+    replay_result["drift_detected"] = replay_result["consistency_status"] == "mismatch"
+    replay_result["failure_reason"] = None
+    replay_result["provenance"]["trace_id"] = trace_id
+    replay_result["provenance"]["source_artifact_id"] = run_id
+    replay_result["observability_metrics"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["observability_metrics"]["metrics"]["replay_success_rate"] = pass_rate
+    replay_result["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    replay_result["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["error_budget_status"]["observability_metrics_id"] = replay_result["observability_metrics"]["artifact_id"]
+    replay_result["error_budget_status"]["budget_status"] = (
+        "healthy" if pass_rate >= 0.95 else "warning" if pass_rate > 0.0 else "invalid"
+    )
+    replay_result["alert_trigger"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["alert_trigger"]["replay_result_id"] = replay_result["replay_id"]
+    return replay_result
 
 
 def _trace_context() -> dict:
@@ -85,7 +116,10 @@ def _run_replay(*args, **kwargs) -> dict:
 def _originals(artifact: dict | None = None, trace_context: dict | None = None) -> tuple[dict, dict]:
     payload = copy.deepcopy(artifact or _artifact())
     context = copy.deepcopy(trace_context or _trace_context())
-    decision = build_evaluation_control_decision(payload)
+    decision = build_evaluation_control_decision(_artifact_as_replay_result(payload))
+    if payload.get("artifact_type") == "eval_summary":
+        decision["input_signal_reference"]["signal_type"] = "eval_summary"
+        decision["input_signal_reference"]["source_artifact_id"] = payload["eval_run_id"]
     decision["trace_id"] = context["trace_id"]
     decision["run_id"] = decision["eval_run_id"]
     enforcement = enforce_control_decision(decision)
@@ -685,7 +719,7 @@ def test_execute_replay_can_hard_fail_prerequisites() -> None:
 
 
 def test_runtime_replay_observability_parity(tmp_path: Path) -> None:
-    runtime_result = build_evaluation_control_decision(_artifact())
+    runtime_result = build_evaluation_control_decision(_artifact_as_replay_result())
     assert runtime_result["trace_id"] == _trace_context()["trace_id"]
 
     trace_id = "trace-replay-parity-001"

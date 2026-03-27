@@ -53,7 +53,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_example, load_schema
 from spectrum_systems.modules.runtime.baseline_gating import (
     BaselineGatingError,
     build_baseline_gate_decision,
@@ -751,25 +751,33 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
         reproducibility_score = float(
             (replay_summary.get("aggregated_slis") or {}).get("provenance_required_rate", 0.0)
         )
-        replay_eval_summary = {
-            "artifact_type": "eval_summary",
-            "schema_version": "1.0.0",
-            "trace_id": replay_trace_id,
-            "eval_run_id": str(replay_validation_decision.get("run_id") or "unknown-run"),
-            "pass_rate": success_rate,
-            "failure_rate": max(0.0, min(1.0, 1.0 - success_rate)),
-            "drift_rate": max(0.0, min(1.0, 1.0 - success_rate)),
-            "reproducibility_score": reproducibility_score,
-            "system_status": (
-                "healthy"
-                if success_rate >= 0.95
-                else "degraded"
-                if success_rate > 0.0
-                else "failing"
-            ),
-        }
+        replay_run_id = str(replay_validation_decision.get("run_id") or "unknown-run")
+        replay_result = load_example("replay_result")
+        if not isinstance(replay_result, dict):
+            raise ReplayEngineError("contracts example replay_result must be an object")
+        replay_result["replay_id"] = f"RPL-{replay_run_id}"
+        replay_result["original_run_id"] = replay_run_id
+        replay_result["replay_run_id"] = replay_run_id
+        replay_result["trace_id"] = replay_trace_id
+        replay_result["input_artifact_reference"] = f"run_bundle_validation:{replay_run_id}"
+        replay_result["provenance"]["trace_id"] = replay_trace_id
+        replay_result["provenance"]["source_artifact_id"] = replay_run_id
+        replay_result["consistency_status"] = "match" if reproducibility_score >= 0.8 else "mismatch"
+        replay_result["drift_detected"] = replay_result["consistency_status"] == "mismatch"
+        replay_result["failure_reason"] = None
+        replay_result["observability_metrics"]["trace_refs"]["trace_id"] = replay_trace_id
+        replay_result["observability_metrics"]["metrics"]["replay_success_rate"] = success_rate
+        replay_result["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = max(0.0, min(1.0, 1.0 - success_rate))
+        replay_result["error_budget_status"]["trace_refs"]["trace_id"] = replay_trace_id
+        replay_result["error_budget_status"]["observability_metrics_id"] = replay_result["observability_metrics"]["artifact_id"]
+        replay_result["error_budget_status"]["budget_status"] = (
+            "healthy" if success_rate >= 0.95 else "warning" if success_rate > 0.0 else "invalid"
+        )
+        replay_result["alert_trigger"]["trace_refs"]["trace_id"] = replay_trace_id
+        replay_result["alert_trigger"]["replay_result_id"] = replay_result["replay_id"]
+        _validate_schema_or_raise(replay_result, "replay_result", context="replay_result")
 
-        replay_decision = build_evaluation_control_decision(replay_eval_summary)
+        replay_decision = build_evaluation_control_decision(replay_result)
         replay_enforcement = enforce_control_decision(replay_decision)
     except Exception as exc:  # noqa: BLE001
         raise ReplayEngineError(
@@ -912,6 +920,53 @@ def _resolve_source_artifact_id(artifact: Dict[str, Any]) -> str:
             f"REPLAY_INVALID_LINEAGE: source artifact id contains forbidden placeholder {source_id!r}"
         )
     return source_id
+
+
+def _runtime_replay_result_from_governed_artifact(artifact: Dict[str, Any], *, trace_id: str) -> Dict[str, Any]:
+    """Project governed replay inputs into canonical replay_result for runtime control seams."""
+    source_artifact_type = str(artifact.get("artifact_type") or "")
+    source_artifact_id = _resolve_source_artifact_id(artifact)
+
+    replay_result = load_example("replay_result")
+    if not isinstance(replay_result, dict):
+        raise ReplayEngineError("contracts example replay_result must be an object")
+
+    if source_artifact_type == "eval_summary":
+        pass_rate = float(artifact.get("pass_rate", 0.0))
+        drift_rate = float(artifact.get("drift_rate", 1.0))
+        reproducibility = float(artifact.get("reproducibility_score", 0.0))
+        created_at = str(artifact.get("created_at") or "").strip()
+    else:
+        pass_rate = 0.0
+        drift_rate = 1.0
+        reproducibility = 0.0
+        created_at = ""
+
+    consistency_status = "match" if reproducibility >= 0.8 else "mismatch"
+    replay_result["replay_id"] = _stable_replay_id(source_artifact_id, trace_id, f"{source_artifact_type}:{source_artifact_id}")
+    replay_result["original_run_id"] = source_artifact_id
+    replay_result["replay_run_id"] = source_artifact_id
+    replay_result["trace_id"] = trace_id
+    replay_result["timestamp"] = created_at or replay_result.get("timestamp")
+    replay_result["input_artifact_reference"] = f"{source_artifact_type}:{source_artifact_id}"
+    replay_result["consistency_status"] = consistency_status
+    replay_result["drift_detected"] = consistency_status == "mismatch"
+    replay_result["failure_reason"] = None
+
+    replay_result["provenance"]["trace_id"] = trace_id
+    replay_result["provenance"]["source_artifact_id"] = source_artifact_id
+    replay_result["observability_metrics"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["observability_metrics"]["metrics"]["replay_success_rate"] = pass_rate
+    replay_result["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    replay_result["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["error_budget_status"]["observability_metrics_id"] = replay_result["observability_metrics"]["artifact_id"]
+    replay_result["error_budget_status"]["budget_status"] = (
+        "healthy" if pass_rate >= 0.95 else "warning" if pass_rate > 0.0 else "invalid"
+    )
+    replay_result["alert_trigger"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["alert_trigger"]["replay_result_id"] = replay_result["replay_id"]
+    _validate_schema_or_raise(replay_result, "replay_result", context="runtime replay_result")
+    return replay_result
 
 
 def _validate_replay_lineage_or_raise(
@@ -1194,7 +1249,11 @@ def run_replay(
         from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
         from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
 
-        replay_decision = build_evaluation_control_decision(artifact_input)
+        runtime_replay_result = _runtime_replay_result_from_governed_artifact(
+            artifact_input,
+            trace_id=trace_id,
+        )
+        replay_decision = build_evaluation_control_decision(runtime_replay_result)
         replay_enforcement = enforce_control_decision(replay_decision)
         canonical_timestamp = _canonical_timestamp_from_inputs(
             original_decision_input,
