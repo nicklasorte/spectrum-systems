@@ -555,6 +555,43 @@ def test_promotion_missing_certification_blocks():
     assert action["certification_gate"]["block_reason"]
 
 
+
+def test_promotion_missing_certification_path_blocks_fail_closed(tmp_path: Path):
+    missing = tmp_path / "missing-certification-pack.json"
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(missing)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["artifact_reference"] == str(missing)
+    assert action["certification_gate"]["certification_status"] == "missing"
+    assert action["certification_gate"]["certification_decision"] == "missing"
+    assert action["certification_gate"]["block_reason"] == (
+        f"control_loop_certification_pack file not found: {missing}"
+    )
+    assert action["status"] == "enforced"
+    assert action["required_human_actions"][-1] == action["certification_gate"]["block_reason"]
+
+
+def test_promotion_schema_invalid_certification_blocks_as_malformed(tmp_path: Path):
+    schema_invalid = tmp_path / "schema-invalid-certification-pack.json"
+    schema_invalid.write_text(json.dumps({"artifact_type": "control_loop_certification_pack"}), encoding="utf-8")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(schema_invalid)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["artifact_reference"] == str(schema_invalid)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
+    assert "is a required property" in str(action["certification_gate"]["block_reason"])
+    assert "not valid JSON" not in str(action["certification_gate"]["block_reason"])
+    assert action["status"] == "enforced"
+
+
 def test_promotion_malformed_certification_blocks(tmp_path: Path):
     malformed = tmp_path / "bad-cert.json"
     malformed.write_text("{not-json", encoding="utf-8")
