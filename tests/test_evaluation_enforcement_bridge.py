@@ -93,6 +93,7 @@ _FREEZE = _FIXTURE_DIR / "decision_freeze_changes.json"
 _BLOCK = _FIXTURE_DIR / "decision_block_release.json"
 _INVALID = _FIXTURE_DIR / "invalid_decision.json"
 _OVERRIDE_AUTHORIZATION = _FIXTURE_DIR / "override_authorization.json"
+_CERTIFICATION_PACK = _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
 
 
 # ---------------------------------------------------------------------------
@@ -160,6 +161,20 @@ def _make_override_auth(
     }
 
 
+def _write_certification_pack(
+    tmp_path: Path,
+    *,
+    decision: str = "pass",
+    certification_status: str = "certified",
+) -> Path:
+    payload = _load_json(_CERTIFICATION_PACK)
+    payload["decision"] = decision
+    payload["certification_status"] = certification_status
+    out = tmp_path / f"cert-{decision}-{certification_status}.json"
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    return out
+
+
 # ---------------------------------------------------------------------------
 # 1–3. load_budget_decision
 # ---------------------------------------------------------------------------
@@ -223,6 +238,12 @@ def test_validate_enforcement_action_valid():
         reasons=["All healthy."],
         required_human_actions=[],
         allowed_to_proceed=True,
+        certification_gate={
+            "artifact_reference": "not_applicable",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+        },
     )
     errors = validate_enforcement_action(action)
     assert errors == [], f"Unexpected errors: {errors}"
@@ -354,6 +375,12 @@ def test_build_enforcement_action_schema_valid():
         reasons=["Critical failure rate."],
         required_human_actions=["Block all release activity."],
         allowed_to_proceed=False,
+        certification_gate={
+            "artifact_reference": "not_applicable",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+        },
     )
     errors = validate_enforcement_action(action)
     assert errors == [], f"Schema errors: {errors}"
@@ -368,11 +395,17 @@ def test_build_enforcement_action_required_fields():
         reasons=["Elevated drift."],
         required_human_actions=["Review before promoting."],
         allowed_to_proceed=True,
+        certification_gate={
+            "artifact_reference": "not_applicable",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+        },
     )
     for field in (
         "action_id", "decision_id", "summary_id", "status", "action_type",
         "enforcement_scope", "allowed_to_proceed", "reasons",
-        "required_human_actions", "created_at",
+        "required_human_actions", "certification_gate", "created_at",
     ):
         assert field in action, f"Missing field: {field}"
     assert action["decision_id"] == "dec-002"
@@ -389,6 +422,12 @@ def test_build_enforcement_action_raises_on_unknown_response():
             reasons=["test"],
             required_human_actions=[],
             allowed_to_proceed=False,
+            certification_gate={
+                "artifact_reference": "not_applicable",
+                "certification_decision": "not_applicable",
+                "certification_status": "not_applicable",
+                "block_reason": None,
+            },
         )
 
 
@@ -402,6 +441,12 @@ def test_build_enforcement_action_rejects_blocking_allowed_to_proceed_true():
             reasons=["Critical failures"],
             required_human_actions=["Stop release"],
             allowed_to_proceed=True,
+            certification_gate={
+                "artifact_reference": "not_applicable",
+                "certification_decision": "not_applicable",
+                "certification_status": "not_applicable",
+                "block_reason": None,
+            },
         )
 
 
@@ -462,6 +507,78 @@ def test_run_enforcement_bridge_respects_scope():
     assert action["enforcement_scope"] == "schema_change"
 
 
+def test_promotion_certified_pass_allows(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is True
+    assert action["action_type"] == "allow"
+    assert action["certification_gate"]["certification_status"] == "certified"
+    assert action["certification_gate"]["certification_decision"] == "pass"
+    assert action["certification_gate"]["artifact_reference"].startswith(str(certification_path))
+
+
+def test_promotion_uncertified_fail_blocks(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path, decision="fail", certification_status="uncertified")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["certification_status"] == "uncertified"
+    assert action["certification_gate"]["certification_decision"] == "fail"
+    assert action["certification_gate"]["block_reason"]
+
+
+def test_promotion_blocked_certification_blocks(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path, decision="blocked", certification_status="blocked")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["certification_status"] == "blocked"
+    assert action["certification_gate"]["certification_decision"] == "blocked"
+
+
+def test_promotion_missing_certification_blocks():
+    action = run_enforcement_bridge(_ALLOW, context={"enforcement_scope": "promotion"})
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["artifact_reference"] == "missing"
+    assert action["certification_gate"]["certification_status"] == "missing"
+    assert action["certification_gate"]["certification_decision"] == "missing"
+    assert action["certification_gate"]["block_reason"]
+
+
+def test_promotion_malformed_certification_blocks(tmp_path: Path):
+    malformed = tmp_path / "bad-cert.json"
+    malformed.write_text("{not-json", encoding="utf-8")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(malformed)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["certification_gate"]["artifact_reference"] == str(malformed)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "not valid JSON" in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_missing_certification_is_deterministically_fail_closed():
+    first = run_enforcement_bridge(_ALLOW, context={"enforcement_scope": "promotion"})
+    second = run_enforcement_bridge(_ALLOW, context={"enforcement_scope": "promotion"})
+    assert first["action_type"] == second["action_type"] == "block"
+    assert first["allowed_to_proceed"] is False and second["allowed_to_proceed"] is False
+    assert first["certification_gate"] == second["certification_gate"]
+    assert first["reasons"] == second["reasons"]
+
+
 # ---------------------------------------------------------------------------
 # 30–37. CLI
 # ---------------------------------------------------------------------------
@@ -478,6 +595,30 @@ def test_cli_exit_0_warn(tmp_path):
     from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
 
     exit_code = main(["--input", str(_WARN), "--output-dir", str(tmp_path)])
+    assert exit_code == 0
+
+
+def test_cli_promotion_requires_certification_and_blocks_when_missing(tmp_path):
+    from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
+
+    exit_code = main([
+        "--input", str(_ALLOW),
+        "--scope", "promotion",
+        "--output-dir", str(tmp_path),
+    ])
+    assert exit_code == 2
+
+
+def test_cli_promotion_certified_pass_allows(tmp_path: Path):
+    from scripts.run_evaluation_enforcement_bridge import main  # noqa: PLC0415
+
+    certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
+    exit_code = main([
+        "--input", str(_ALLOW),
+        "--scope", "promotion",
+        "--control-loop-certification", str(certification_path),
+        "--output-dir", str(tmp_path),
+    ])
     assert exit_code == 0
 
 
@@ -534,6 +675,12 @@ def test_cli_exit_2_catch_all_when_not_allowed_even_with_unexpected_action_type(
             "allowed_to_proceed": False,
             "reasons": ["fixture"],
             "required_human_actions": [],
+            "certification_gate": {
+                "artifact_reference": "not_applicable",
+                "certification_decision": "not_applicable",
+                "certification_status": "not_applicable",
+                "block_reason": None,
+            },
             "created_at": "2026-03-22T00:00:00Z",
         }
 
@@ -581,6 +728,12 @@ def test_enforcement_action_schema_canonical_only():
         "allowed_to_proceed": False,
         "reasons": ["legacy response should fail"],
         "required_human_actions": [],
+        "certification_gate": {
+            "artifact_reference": "not_applicable",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+        },
         "created_at": "2026-03-23T00:00:00Z",
     }
     errors = validate_enforcement_action(invalid_action)

@@ -14,6 +14,7 @@
     "allowed_to_proceed",
     "reasons",
     "required_human_actions",
+    "certification_gate",
     "created_at"
   ],
   "additionalProperties": false,
@@ -148,6 +149,34 @@
       "items": {
         "type": "string",
         "minLength": 1
+      }
+    },
+    "certification_gate": {
+      "type": "object",
+      "description": "Deterministic control-loop certification gate output. Promotion scope must record certification artifact lineage and fail-closed block reason when certification is not certified/pass.",
+      "additionalProperties": false,
+      "required": [
+        "artifact_reference",
+        "certification_decision",
+        "certification_status",
+        "block_reason"
+      ],
+      "properties": {
+        "artifact_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "certification_decision": {
+          "type": "string",
+          "enum": ["pass", "fail", "blocked", "missing", "malformed", "not_applicable"]
+        },
+        "certification_status": {
+          "type": "string",
+          "enum": ["certified", "uncertified", "blocked", "missing", "malformed", "not_applicable"]
+        },
+        "block_reason": {
+          "type": ["string", "null"]
+        }
       }
     },
     "created_at": {
