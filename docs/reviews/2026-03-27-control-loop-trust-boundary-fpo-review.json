@@ -1,0 +1,72 @@
+{
+  "review_id": "REV-CONTROL_LOOP_TRUST_BOUNDARY_FPO_REVIEW",
+  "module": "control_loop_trust_boundary",
+  "review_type": "fpo_surgical_trust",
+  "review_date": "2026-03-27",
+  "reviewer": "Claude",
+  "decision": "FAIL",
+  "trust_assessment": "low",
+  "status": "final",
+  "scope": [
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/evaluation_control.py",
+    "spectrum_systems/modules/runtime/control_integration.py",
+    "spectrum_systems/modules/runtime/control_loop_chaos.py",
+    "scripts/run_eval_ci_gate.py",
+    "tests/test_control_loop_chaos.py",
+    "tests/test_eval_ci_gate.py",
+    "tests/helpers/replay_result_builder.py",
+    "tests/fixtures/control_loop_chaos_scenarios.json"
+  ],
+  "related_plan": "docs/review-actions/PLAN-PQX-CONTROL-LOOP-TRUST-BOUNDARY-REVIEW-FIXES-2026-03-27.md",
+  "critical_findings": [
+    {
+      "id": "F-001",
+      "severity": "critical",
+      "file": "tests/fixtures/control_loop_chaos_scenarios.json",
+      "function": "threshold-001",
+      "failure_mode": "[S1] Scenario description is inverted relative to expected freeze/deny outputs.",
+      "impact": "Future authors can encode incorrect threshold-boundary assumptions.",
+      "minimal_fix": "Correct threshold-001 description to reflect exhausted-budget override semantics."
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "file": "scripts/run_eval_ci_gate.py",
+      "function": "blocking policy defaults",
+      "failure_mode": "[S2] Gate does not block require_review by default because warn is excluded.",
+      "impact": "CI can report pass while runtime integration expects review blocking.",
+      "minimal_fix": "Block on decision=require_review or include warn in blocking responses by default."
+    },
+    {
+      "id": "F-003",
+      "severity": "high",
+      "file": "tests/fixtures/control_loop_chaos_scenarios.json",
+      "function": "budget warning deny-preservation coverage",
+      "failure_mode": "[S2] No scenario validates budget_warning + preexisting_deny preservation path.",
+      "impact": "Critical guard can regress unnoticed.",
+      "minimal_fix": "Add explicit chaos scenarios for warning+deny and warning+healthy branches."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Fix threshold-001 scenario description and keep it semantically aligned with expected outputs.",
+      "priority": "P0"
+    },
+    {
+      "fix_id": "FIX-002",
+      "description": "Harden eval CI gate to block require_review decisions.",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-003",
+      "description": "Add chaos scenarios that cover budget warning preservation behavior.",
+      "priority": "P1"
+    }
+  ],
+  "watch_items": [
+    "Test unreachable threshold-only fail status path to keep observability semantics intentional."
+  ],
+  "failure_mode_summary": "FPO trust review identified merge-blocking inconsistencies in CI gate semantics and chaos fixture governance."
+}

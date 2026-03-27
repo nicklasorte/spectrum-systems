@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""
-Validate review artifact JSON files against the canonical review-artifact schema.
+"""Repo-level review artifact validator.
 
-Validates that every review artifact under docs/reviews/, design-reviews/, and
-docs/review-actions/ conforms to schemas/review-artifact.schema.json.
+This wrapper provides a single authoritative path by reusing the canonical
+pairwise validator (`scripts/validate_review_artifact.py`) for every discovered
+review artifact JSON + markdown pair.
 
 Usage:
-    python scripts/validate_review_artifacts.py                   # scan all known review dirs
-    python scripts/validate_review_artifacts.py <file.json> ...   # validate specific files
-    python scripts/validate_review_artifacts.py --dirs <dir> ...  # validate a specific directory
+    python scripts/validate_review_artifacts.py
+    python scripts/validate_review_artifacts.py <file.json> ...
+    python scripts/validate_review_artifacts.py --dirs <dir> ...
 """
 
 from __future__ import annotations
@@ -17,101 +17,94 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from jsonschema import Draft202012Validator
-from jsonschema.exceptions import ValidationError
+from validate_review_artifact import validate_markdown_metadata, validate_review_json
 
 _BASE_DIR = Path(__file__).resolve().parents[1]
-_SCHEMA_PATH = _BASE_DIR / "schemas" / "review-artifact.schema.json"
 
-# Directories that may contain review artifact JSON files
 _DEFAULT_REVIEW_DIRS = [
     _BASE_DIR / "docs" / "reviews",
     _BASE_DIR / "design-reviews",
     _BASE_DIR / "docs" / "review-actions",
 ]
 
-
-def load_schema() -> Dict[str, Any]:
-    """Load the canonical review-artifact JSON Schema."""
-    return json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-
-
-def validate_review_artifact(
-    instance: Dict[str, Any],
-    schema: Optional[Dict[str, Any]] = None,
-) -> List[str]:
-    """Validate a review artifact instance against the schema.
-
-    Returns a list of human-readable error strings (empty list means valid).
-    """
-    if schema is None:
-        schema = load_schema()
-    validator = Draft202012Validator(schema)
-    errors: List[str] = []
-    for error in sorted(validator.iter_errors(instance), key=lambda e: list(e.path)):
-        path = list(error.path)
-        location = f"[{'.'.join(str(p) for p in path)}]" if path else "[root]"
-        errors.append(f"Schema error at {location}: {error.message}")
-    return errors
+_CANONICAL_REVIEW_KEYS = {
+    "review_id",
+    "module",
+    "review_type",
+    "review_date",
+    "reviewer",
+    "decision",
+    "trust_assessment",
+    "status",
+    "scope",
+    "related_plan",
+    "critical_findings",
+    "required_fixes",
+    "watch_items",
+    "failure_mode_summary",
+}
 
 
-def validate_file(path: Path, schema: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Load and validate a single review artifact JSON file.
-
-    Returns a result dict with keys: ``file``, ``review_id``, ``status``,
-    and ``errors``.
-    """
+def _load_json(path: Path) -> dict[str, Any] | None:
     try:
-        instance: Dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as exc:
-        return {
-            "file": str(path),
-            "review_id": "unknown",
-            "status": "fail",
-            "errors": [f"Cannot load file: {exc}"],
-        }
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if isinstance(data, dict):
+        return data
+    return None
 
-    # Only validate files that look like review artifacts (have review_id or source)
-    if not isinstance(instance, dict):
-        return {
-            "file": str(path),
-            "review_id": "unknown",
-            "status": "skip",
-            "errors": ["Not a JSON object — skipping"],
-        }
 
-    # Skip JSON files that are clearly not review artifacts
-    if "review_id" not in instance and "source" not in instance and "findings" not in instance:
-        return {
-            "file": str(path),
-            "review_id": "unknown",
-            "status": "skip",
-            "errors": [],
-        }
+def _is_canonical_review_artifact(path: Path) -> bool:
+    if path.name.endswith(".failure.json") or path.name.endswith(".schema.json"):
+        return False
+    payload = _load_json(path)
+    if payload is None:
+        return False
+    return _CANONICAL_REVIEW_KEYS.issubset(payload.keys())
 
-    errors = validate_review_artifact(instance, schema)
+
+def discover_review_artifacts(directories: list[Path]) -> list[Path]:
+    paths: list[Path] = []
+    for directory in directories:
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("*.json")):
+            if _is_canonical_review_artifact(path):
+                paths.append(path)
+    return paths
+
+
+def _markdown_pair(path: Path) -> Path:
+    return path.with_suffix(".md")
+
+
+def validate_artifact_pair(path: Path) -> dict[str, Any]:
+    json_errors = validate_review_json(path)
+
+    markdown_path = _markdown_pair(path)
+    markdown_errors: list[str]
+    if markdown_path.is_file():
+        markdown_errors = validate_markdown_metadata(markdown_path)
+    else:
+        markdown_errors = [f"missing markdown companion: {markdown_path}"]
+
+    errors = [f"JSON: {e}" for e in json_errors] + [f"MARKDOWN: {e}" for e in markdown_errors]
+
+    payload = _load_json(path) or {}
     return {
         "file": str(path),
-        "review_id": instance.get("review_id", "unknown"),
+        "review_id": payload.get("review_id", "unknown"),
         "status": "pass" if not errors else "fail",
         "errors": errors,
     }
 
 
-def discover_review_artifacts(directories: List[Path]) -> List[Path]:
-    """Find all JSON files in the given directories (non-recursive for top level)."""
-    paths: List[Path] = []
-    for directory in directories:
-        if directory.is_dir():
-            paths.extend(sorted(directory.glob("*.json")))
-    return paths
-
-
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate review artifact JSON files against the canonical schema."
+        description="Validate governed review artifacts via canonical pairwise validator logic."
     )
     parser.add_argument(
         "files",
@@ -126,46 +119,33 @@ def main(argv: List[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    if not _SCHEMA_PATH.is_file():
-        print(f"ERROR: Review artifact schema not found at {_SCHEMA_PATH}", file=sys.stderr)
-        return 1
-
-    schema = load_schema()
-
     if args.files:
         paths = [Path(f).resolve() for f in args.files]
     elif args.dirs:
-        paths = discover_review_artifacts([Path(d) for d in args.dirs])
+        paths = discover_review_artifacts([Path(d).resolve() for d in args.dirs])
     else:
         paths = discover_review_artifacts(_DEFAULT_REVIEW_DIRS)
 
     if not paths:
-        print("No review artifact JSON files found to validate.")
+        print("No canonical review artifact JSON files found to validate.")
         return 0
 
-    results = [validate_file(p, schema) for p in paths]
-    validated = [r for r in results if r["status"] != "skip"]
-    failures = [r for r in validated if r["status"] == "fail"]
+    results = [validate_artifact_pair(path) for path in paths]
+    failures = [result for result in results if result["status"] == "fail"]
 
     for result in results:
-        if result["status"] == "skip":
-            continue
         if result["status"] == "pass":
             print(f"PASS  {result['file']}")
-        else:
-            print(f"FAIL  {result['file']}")
-            for error in result["errors"]:
-                print(f"      - {error}")
-
-    if not validated:
-        print("No review artifact files matched the schema (no files with review_id/source/findings).")
-        return 0
+            continue
+        print(f"FAIL  {result['file']}")
+        for error in result["errors"]:
+            print(f"      - {error}")
 
     if failures:
-        print(f"\n{len(failures)} of {len(validated)} file(s) failed review artifact validation.")
+        print(f"\n{len(failures)} of {len(results)} file(s) failed review artifact validation.")
         return 1
 
-    print(f"\nAll {len(validated)} review artifact(s) passed validation.")
+    print(f"\nAll {len(results)} review artifact(s) passed validation.")
     return 0
 
 
