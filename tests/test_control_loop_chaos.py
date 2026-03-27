@@ -30,6 +30,17 @@ def _base_replay_result() -> dict[str, object]:
     )
 
 
+def _trace_context_for(artifact: dict[str, object]) -> dict[str, str]:
+    return {
+        "execution_id": "x",
+        "stage": "chaos",
+        "runtime_environment": "test",
+        "trace_id": str(artifact.get("trace_id") or ""),
+        "replay_id": str(artifact.get("replay_id") or ""),
+        "replay_run_id": str(artifact.get("replay_run_id") or ""),
+    }
+
+
 def test_chaos_runner_passes_all_declared_expectations() -> None:
     scenarios = load_scenarios(_FIXTURE_PATH)
     summary = run_chaos_scenarios(scenarios=scenarios, chaos_run_id="chaos-test")
@@ -60,7 +71,7 @@ def test_chaos_runner_reports_mismatch_when_expectation_is_wrong() -> None:
 )
 def test_fail_closed_on_malformed_input(artifact: dict[str, object], expected_signal: str) -> None:
     with pytest.raises(ControlLoopError, match=expected_signal):
-        run_control_loop(artifact, {"execution_id": "x", "stage": "chaos", "runtime_environment": "test"})  # type: ignore[arg-type]
+        run_control_loop(artifact, _trace_context_for(artifact))  # type: ignore[arg-type]
 
 
 def test_runner_is_deterministic_across_repeated_runs() -> None:
@@ -92,7 +103,7 @@ def test_precedence_rules_are_explicitly_enforced(
     if "consistency_status" in replay_patch:
         replay["consistency_status"] = replay_patch["consistency_status"]
         replay["drift_detected"] = replay_patch["consistency_status"] == "mismatch"
-    decision = run_control_loop(replay, {"execution_id": "x", "stage": "chaos", "runtime_environment": "test"})["evaluation_control_decision"]  # type: ignore[arg-type]
+    decision = run_control_loop(replay, _trace_context_for(replay))["evaluation_control_decision"]  # type: ignore[arg-type]
     assert decision["system_response"] == expected_response
 
 
