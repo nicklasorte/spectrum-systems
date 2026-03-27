@@ -19,6 +19,7 @@ from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
 from spectrum_systems.modules.runtime.decision_precedence import most_severe  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop  # noqa: E402
 from tests.helpers.replay_result_builder import (  # noqa: E402
+    align_replay_budget_with_observability,
     make_canonical_replay_result,
 )
 
@@ -92,7 +93,7 @@ def test_runner_is_deterministic_across_repeated_runs() -> None:
         (
             {"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.01}}},
             {"observed_values": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.01}, "budget_status": "healthy"},
-            "warn",
+            "freeze",
         ),
         (
             {"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}},
@@ -123,9 +124,16 @@ def test_precedence_rules_are_explicitly_enforced(
         replay_run_id="eval-chaos-precedence",
         budget_patch=budget_patch,
     )
-    if "consistency_status" in replay_patch:
-        replay["consistency_status"] = replay_patch["consistency_status"]
-        replay["drift_detected"] = replay_patch["consistency_status"] == "mismatch"
+    observability_patch = replay_patch.get("observability_metrics")
+    if isinstance(observability_patch, dict):
+        metrics_patch = observability_patch.get("metrics")
+        if isinstance(metrics_patch, dict):
+            replay["observability_metrics"]["metrics"].update(metrics_patch)  # type: ignore[index]
+    consistency_status = replay_patch.get("consistency_status")
+    if isinstance(consistency_status, str):
+        replay["consistency_status"] = consistency_status
+        replay["drift_detected"] = consistency_status == "mismatch"
+    align_replay_budget_with_observability(replay)
     decision = run_control_loop(replay, _trace_context_for(replay))["evaluation_control_decision"]  # type: ignore[arg-type]
     assert decision["system_response"] == expected_response
 

@@ -104,6 +104,9 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
     budget = artifact.get("error_budget_status")
     if not isinstance(budget, dict):
         raise ControlLoopError("normalized signal missing required field")
+    budget_errors = _validate(budget, load_schema("error_budget_status"))
+    if budget_errors:
+        raise ControlLoopError("error_budget_status failed validation: " + "; ".join(budget_errors))
 
     metrics = observability.get("metrics")
     if not isinstance(metrics, dict):
@@ -133,6 +136,8 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
         raise ControlLoopError("replay_result.error_budget_status.highest_severity must be healthy|warning|exhausted|invalid")
     if _ERROR_BUDGET_SEVERITY_ORDER[highest_severity] > _ERROR_BUDGET_SEVERITY_ORDER[budget_status]:
         raise ControlLoopError("inconsistent replay_result error_budget_status highest_severity exceeds budget_status")
+    if _ERROR_BUDGET_SEVERITY_ORDER[budget_status] > _ERROR_BUDGET_SEVERITY_ORDER[highest_severity]:
+        raise ControlLoopError("inconsistent replay_result error_budget_status budget_status exceeds highest_severity")
     if budget_status == "healthy" and budget.get("triggered_conditions"):
         raise ControlLoopError("inconsistent replay_result error_budget_status: healthy budget cannot have triggered_conditions")
 
