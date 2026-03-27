@@ -236,6 +236,8 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
             "unsupported governed artifact_type; expected one of "
             f"{_SUPPORTED_GOVERNED_ARTIFACT_TYPES}, got {artifact_type!r}"
         )
+    if artifact_type == "replay_result" and not isinstance(artifact.get("error_budget_status"), dict):
+        raise ContractRuntimeError("replay_result artifact missing required error_budget_status")
 
     try:
         control_trace_context = build_trace_context_from_replay_artifact(

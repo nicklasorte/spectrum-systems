@@ -208,6 +208,71 @@ def _build_replay_result_for_control(
 
     replay["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
     replay["error_budget_status"]["observability_metrics_id"] = replay["observability_metrics"]["artifact_id"]
+    objectives = replay["error_budget_status"].get("objectives", [])
+    triggered_conditions = []
+    objective_statuses = []
+    for objective in objectives:
+        if not isinstance(objective, dict):
+            continue
+        metric_name = objective.get("metric_name")
+        target_value = float(objective.get("target_value", 0.0))
+        if metric_name == "replay_success_rate":
+            observed_value = pass_rate
+            consumed_error = max(0.0, target_value - observed_value)
+        elif metric_name == "drift_exceed_threshold_rate":
+            observed_value = drift_rate
+            consumed_error = max(0.0, observed_value - target_value)
+        else:
+            continue
+        allowed_error = float(objective.get("allowed_error", max(0.0, 1.0 - target_value)))
+        consumption_ratio = 1.0 if allowed_error <= 0 else min(1.0, consumed_error / allowed_error)
+        if consumption_ratio >= 1.0:
+            objective_status = "exhausted"
+        elif consumption_ratio >= 0.8:
+            objective_status = "warning"
+        else:
+            objective_status = "healthy"
+        objective["observed_value"] = observed_value
+        objective["consumed_error"] = consumed_error
+        objective["remaining_error"] = max(0.0, allowed_error - consumed_error)
+        objective["consumption_ratio"] = consumption_ratio
+        objective["status"] = objective_status
+        objective_statuses.append(objective_status)
+        if objective_status in {"warning", "exhausted", "invalid"}:
+            triggered_conditions.append(
+                {
+                    "metric_name": metric_name,
+                    "status": objective_status,
+                    "consumption_ratio": consumption_ratio,
+                }
+            )
+
+    if "exhausted" in objective_statuses:
+        aggregate_budget_status = "exhausted"
+    elif "warning" in objective_statuses:
+        aggregate_budget_status = "warning"
+    else:
+        aggregate_budget_status = "healthy"
+    replay["error_budget_status"]["budget_status"] = aggregate_budget_status
+    replay["error_budget_status"]["highest_severity"] = aggregate_budget_status
+    replay["error_budget_status"]["triggered_conditions"] = triggered_conditions
+    replay["error_budget_status"]["reasons"] = [
+        "error_budget_derived_from_replay_metrics"
+    ] if triggered_conditions else []
+
+    if force_control_block and aggregate_budget_status != "exhausted":
+        replay["error_budget_status"]["budget_status"] = "exhausted"
+        replay["error_budget_status"]["highest_severity"] = "exhausted"
+        replay["error_budget_status"]["triggered_conditions"] = [
+            {
+                "metric_name": "replay_success_rate",
+                "status": "exhausted",
+                "consumption_ratio": 1.0,
+            }
+        ]
+        replay["error_budget_status"]["reasons"] = ["forced_control_block_budget_exhausted"]
+    if not isinstance(replay.get("error_budget_status"), dict):
+        raise AgentGoldenPathError("replay_result for control must include error_budget_status")
     return replay
 
 

@@ -17,7 +17,10 @@ from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
 )
 from spectrum_systems.modules.runtime.decision_precedence import most_severe  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop  # noqa: E402
-from tests.helpers.replay_result_builder import make_canonical_replay_result  # noqa: E402
+from tests.helpers.replay_result_builder import (  # noqa: E402
+    align_replay_budget_with_observability,
+    make_canonical_replay_result,
+)
 
 _FIXTURE_PATH = _REPO_ROOT / "tests" / "fixtures" / "control_loop_chaos_scenarios.json"
 
@@ -66,7 +69,7 @@ def test_chaos_runner_reports_mismatch_when_expectation_is_wrong() -> None:
     ("artifact", "expected_signal"),
     [
         ({"artifact_type": "eval_summary", "eval_run_id": "x"}, "unsupported artifact_type"),
-        ({"artifact_type": "replay_result", "replay_id": "x"}, "normalized signal missing required field"),
+        ({"artifact_type": "replay_result", "replay_id": "x"}, "replay_result must include observability_metrics"),
     ],
 )
 def test_fail_closed_on_malformed_input(artifact: dict[str, object], expected_signal: str) -> None:
@@ -100,6 +103,7 @@ def test_precedence_rules_are_explicitly_enforced(
     replay = _base_replay_result()
     if "observability_metrics" in replay_patch:
         replay["observability_metrics"]["metrics"].update(replay_patch["observability_metrics"]["metrics"])  # type: ignore[index]
+        align_replay_budget_with_observability(replay)  # type: ignore[arg-type]
     if "consistency_status" in replay_patch:
         replay["consistency_status"] = replay_patch["consistency_status"]
         replay["drift_detected"] = replay_patch["consistency_status"] == "mismatch"

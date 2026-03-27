@@ -43,6 +43,9 @@
           "stability_breach",
           "trust_breach",
           "indeterminate_failure",
+          "budget_warning",
+          "budget_exhausted",
+          "budget_invalid",
           "malformed_eval_summary",
           "missing_required_signal"
         ]
@@ -78,6 +81,9 @@
         "deny_trust_breach",
         "deny_indeterminate_failure",
         "require_review_warning_signal",
+        "require_review_budget_warning",
+        "deny_budget_exhausted",
+        "deny_budget_invalid",
         "deny_failure_eval_case",
         "deny_malformed_signal",
         "deny_missing_required_signal"
