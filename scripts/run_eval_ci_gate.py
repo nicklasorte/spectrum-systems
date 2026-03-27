@@ -39,7 +39,6 @@ _DEFAULT_OUTPUT_DIR = _REPO_ROOT / "outputs" / "eval_ci_gate"
 
 _EXIT_PASS = 0
 _EXIT_FAIL = 1
-_EXIT_BLOCKED = 2
 
 
 @dataclass
@@ -335,7 +334,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         }
         _write_json(output_dir / "evaluation_ci_gate_result.json", summary)
         print(f"[eval-ci-gate] BLOCKED: {', '.join(blocking_reasons)}")
-        return _EXIT_BLOCKED
+        return _EXIT_FAIL
 
     try:
         policy = _load_json(policy_path)
@@ -369,7 +368,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         }
         _write_json(output_dir / "evaluation_ci_gate_result.json", summary)
         print(f"[eval-ci-gate] BLOCKED: invalid policy ({exc})")
-        return _EXIT_BLOCKED
+        return _EXIT_FAIL
 
     artifacts, invalid_artifacts, blocking_reasons, threshold_results, indeterminate_hits = _run_gate(
         eval_run_path=Path(args.eval_run),
@@ -402,7 +401,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             exit_code = _EXIT_FAIL
         else:
             status = "blocked"
-            exit_code = _EXIT_BLOCKED
+            exit_code = _EXIT_FAIL
 
     if (
         indeterminate_hits
@@ -411,7 +410,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     ):
         blocking_reasons.append("indeterminate_eval_outcome_detected")
         status = "blocked"
-        exit_code = _EXIT_BLOCKED
+        exit_code = _EXIT_FAIL
 
     summary_id = _gate_run_id(
         seed_payload={
@@ -453,7 +452,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "invalid_schema: evaluation_ci_gate_result"
         ]
         summary["invalid_artifacts"] = sorted(set(summary.get("invalid_artifacts", []) + ["evaluation_ci_gate_result"]))
-        exit_code = _EXIT_BLOCKED
+        exit_code = _EXIT_FAIL
 
     summary_path = output_dir / "evaluation_ci_gate_result.json"
     _write_json(summary_path, summary)

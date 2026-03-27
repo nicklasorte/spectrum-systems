@@ -50,7 +50,7 @@ def test_non_replay_artifact_rejected() -> None:
 def test_partial_replay_rejected() -> None:
     replay = _replay_result()
     replay.pop("error_budget_status")
-    with pytest.raises(ControlLoopError, match="must include error_budget_status"):
+    with pytest.raises(ControlLoopError, match="normalized signal missing required field"):
         run_control_loop(replay, _trace_context())
 
 
@@ -89,6 +89,15 @@ def test_budget_observability_mismatch_fails_closed() -> None:
     replay["error_budget_status"]["objectives"][0]["observed_value"] = 0.01
     with pytest.raises(ControlLoopError, match="inconsistent replay_result observability_metrics vs error_budget_status"):
         run_control_loop(replay, _trace_context(replay))
+
+
+def test_budget_observability_small_float_delta_is_tolerated() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["objectives"][0]["observed_value"] = (
+        replay["observability_metrics"]["metrics"]["replay_success_rate"] - 1e-7
+    )
+    decision = run_control_loop(replay, _trace_context(replay))["evaluation_control_decision"]
+    assert decision["system_response"] in {"allow", "warn", "freeze", "block"}
 
 
 def test_decision_deterministic_for_identical_replay_input() -> None:

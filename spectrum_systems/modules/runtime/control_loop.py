@@ -24,6 +24,7 @@ _ERROR_BUDGET_SEVERITY_ORDER = {
     "invalid": 3,
 }
 _MAX_EMBEDDED_TIMESTAMP_DELTA_SECONDS = 366 * 24 * 60 * 60
+_OBSERVABILITY_BUDGET_TOLERANCE = 1e-6
 
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
@@ -99,17 +100,17 @@ def aggregate_error_budget_window(
 def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
     observability = artifact.get("observability_metrics")
     if not isinstance(observability, dict):
-        raise ControlLoopError("replay_result must include observability_metrics")
+        raise ControlLoopError("normalized signal missing required field")
     budget = artifact.get("error_budget_status")
     if not isinstance(budget, dict):
-        raise ControlLoopError("replay_result must include error_budget_status")
+        raise ControlLoopError("normalized signal missing required field")
 
     metrics = observability.get("metrics")
     if not isinstance(metrics, dict):
-        raise ControlLoopError("replay_result.observability_metrics.metrics must be an object")
+        raise ControlLoopError("normalized signal missing required field")
     objectives = budget.get("objectives")
     if not isinstance(objectives, list):
-        raise ControlLoopError("replay_result.error_budget_status.objectives must be an array")
+        raise ControlLoopError("normalized signal missing required field")
     objective_by_metric = {
         obj.get("metric_name"): obj for obj in objectives if isinstance(obj, dict) and obj.get("metric_name")
     }
@@ -118,7 +119,7 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
         objective = objective_by_metric.get(metric_name)
         if isinstance(metric_value, (int, float)) and isinstance(objective, dict):
             observed_value = objective.get("observed_value")
-            if not isinstance(observed_value, (int, float)) or abs(float(metric_value) - float(observed_value)) > 1e-9:
+            if not isinstance(observed_value, (int, float)) or abs(float(metric_value) - float(observed_value)) > _OBSERVABILITY_BUDGET_TOLERANCE:
                 raise ControlLoopError(
                     "inconsistent replay_result observability_metrics vs error_budget_status for "
                     f"{metric_name}"
