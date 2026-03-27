@@ -19,6 +19,20 @@ def _stable_artifact_id(payload: Dict[str, Any]) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
+def _deep_merge(base: Dict[str, Any], patch: Dict[str, Any]) -> Dict[str, Any]:
+    merged = deepcopy(base)
+    for key, value in patch.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = deepcopy(value)
+    return merged
+
+
+def enforce_replay_budget_consistency(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Enforce replay invariant: observability metrics equal objective observed_value fields."""
+    return align_replay_budget_with_observability(result)
+
 
 def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, Any]:
     """Mutate and return replay_result with metric/objective budget consistency."""
@@ -171,8 +185,8 @@ def make_canonical_replay_result(
 ) -> Dict[str, Any]:
     """Return a minimal schema-valid replay_result payload for tests.
 
-    Note: if callers override ``observability_metrics.metrics``, they must keep
-    ``error_budget_status`` objective and budget values semantically aligned.
+    Invariant: ``observability_metrics.metrics`` values must equal
+    ``error_budget_status.objectives[*].observed_value`` for governed metrics.
     """
     observability = deepcopy(load_example("observability_metrics"))
     observability["trace_refs"]["trace_id"] = trace_id
@@ -215,26 +229,22 @@ def make_canonical_replay_result(
         "observability_metrics": observability,
         "error_budget_status": error_budget,
     }
-    align_replay_budget_with_observability(result)
+    enforce_replay_budget_consistency(result)
     _apply_budget_patch(result, budget_patch)
     result["artifact_id"] = _stable_artifact_id({k: v for k, v in result.items() if k != "artifact_id"})
     if overrides:
-        merged = deepcopy(result)
-        merged.update(overrides)
-        if "provenance" in overrides and isinstance(overrides["provenance"], dict):
-            merged_prov = deepcopy(result["provenance"])
-            merged_prov.update(overrides["provenance"])
-            merged["provenance"] = merged_prov
+        merged = _deep_merge(result, overrides)
         if merged.get("consistency_status") == "mismatch":
             merged["drift_detected"] = True
-        align_replay_budget_with_observability(merged)
+        enforce_replay_budget_consistency(merged)
         _apply_budget_patch(merged, budget_patch)
+        enforce_replay_budget_consistency(merged)
         if "artifact_id" not in overrides:
             merged["artifact_id"] = _stable_artifact_id({k: v for k, v in merged.items() if k != "artifact_id"})
         return merged
     if result.get("consistency_status") == "mismatch":
         result["drift_detected"] = True
-    align_replay_budget_with_observability(result)
+    enforce_replay_budget_consistency(result)
     _apply_budget_patch(result, budget_patch)
     result["artifact_id"] = _stable_artifact_id({k: v for k, v in result.items() if k != "artifact_id"})
     return result

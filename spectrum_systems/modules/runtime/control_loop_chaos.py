@@ -38,7 +38,6 @@ class ScenarioExpectation:
     expected_response: str
     expected_decision: str
     expected_reasons: list[str]
-    allow_extra_reasons: bool
 
 
 def _utc_now() -> str:
@@ -73,11 +72,6 @@ def _validate_scenario_shape(scenario: dict[str, Any]) -> None:
         raise ControlLoopChaosError(
             f"scenario '{scenario.get('scenario_id')}' has invalid expected_decision: {expected_decision!r}"
         )
-    allow_extra_reasons = scenario.get("allow_extra_reasons", False)
-    if not isinstance(allow_extra_reasons, bool):
-        raise ControlLoopChaosError(
-            f"scenario '{scenario.get('scenario_id')}' allow_extra_reasons must be a boolean when provided"
-        )
 
 
 def load_scenarios(path: Path) -> list[dict[str, Any]]:
@@ -109,10 +103,19 @@ def _evaluate_once(artifact: Any) -> dict[str, Any]:
         )
         result = run_control_loop(artifact, trace_context)
         decision = result["evaluation_control_decision"]
+        actual_status = decision.get("system_status")
+        actual_response = decision.get("system_response")
+        actual_decision = decision.get("decision")
+        if actual_status not in {"healthy", "warning", "exhausted", "blocked"}:
+            raise ValueError("control loop returned invalid status")
+        if actual_response not in {"allow", "warn", "freeze", "block"}:
+            raise ValueError("control loop returned invalid response")
+        if actual_decision not in {"allow", "deny", "require_review"}:
+            raise ValueError("control loop returned invalid decision")
         return {
-            "actual_status": str(decision.get("system_status") or "blocked"),
-            "actual_response": str(decision.get("system_response") or "block"),
-            "actual_decision": str(decision.get("decision") or "deny"),
+            "actual_status": actual_status,
+            "actual_response": actual_response,
+            "actual_decision": actual_decision,
             "reasons": _normalize_reasons(
                 rationale_code=decision.get("rationale_code"),
                 triggered_signals=decision.get("triggered_signals"),
@@ -120,7 +123,7 @@ def _evaluate_once(artifact: Any) -> dict[str, Any]:
             "decision_id": decision.get("decision_id"),
             "error": None,
         }
-    except (ControlLoopError, EvaluationControlError, ValueError, TypeError, KeyError) as exc:
+    except (ControlLoopError, EvaluationControlError, ValueError, TypeError, KeyError, AttributeError, Exception) as exc:
         return {
             "actual_status": "blocked",
             "actual_response": "block",
@@ -143,7 +146,6 @@ def _build_expectation(scenario: dict[str, Any]) -> ScenarioExpectation:
         expected_response=str(scenario["expected_response"]),
         expected_decision=str(scenario["expected_decision"]),
         expected_reasons=[str(item) for item in expected_reasons_raw if str(item)],
-        allow_extra_reasons=bool(scenario.get("allow_extra_reasons", False)),
     )
 
 
@@ -158,10 +160,7 @@ def _is_match(expectation: ScenarioExpectation, actual: dict[str, Any]) -> tuple
 
     actual_reasons = set(actual.get("reasons") or [])
     expected_reasons = set(expectation.expected_reasons)
-    if expectation.allow_extra_reasons:
-        if not expected_reasons.issubset(actual_reasons):
-            mismatches.append("reasons")
-    elif actual_reasons != expected_reasons:
+    if actual_reasons != expected_reasons:
         mismatches.append("reasons")
 
     return not mismatches, mismatches
