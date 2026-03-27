@@ -30,6 +30,7 @@ from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     DEFAULT_THRESHOLDS,
     build_evaluation_control_decision,
 )
+from spectrum_systems.modules.runtime.contract_runtime import ContractRuntimeError  # noqa: E402
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope  # noqa: E402
 from spectrum_systems.utils.deterministic_id import deterministic_id  # noqa: E402
 
@@ -39,6 +40,7 @@ _DEFAULT_OUTPUT_DIR = _REPO_ROOT / "outputs" / "eval_ci_gate"
 
 _EXIT_PASS = 0
 _EXIT_FAIL = 1
+_EXIT_BLOCKED = 2
 
 
 @dataclass
@@ -79,6 +81,16 @@ def _validate_schema(instance: Dict[str, Any], schema_name: str) -> List[str]:
     validator = Draft202012Validator(load_schema(schema_name), format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.absolute_path))
     return [e.message for e in errors]
+
+
+def _exit_code_for_decision(decision: str) -> int:
+    if decision == "allow":
+        return _EXIT_PASS
+    if decision == "require_review":
+        return _EXIT_BLOCKED
+    if decision == "deny":
+        return _EXIT_BLOCKED
+    raise ContractRuntimeError(f"unsupported decision value: {decision!r}")
 
 
 def _git_info() -> Dict[str, Optional[str]]:
@@ -256,10 +268,9 @@ def _run_gate(
         invalid_artifacts.append("evaluation_control_decision")
         blocking_reasons.append("invalid_schema: evaluation_control_decision")
 
-    if control_decision.get("system_response") in set(policy.get("blocking_system_responses", ["freeze", "block"])):
-        blocking_reasons.append(
-            f"control_decision_blocked: {control_decision.get('system_response')}"
-        )
+    decision_value = str(control_decision.get("decision") or "")
+    if decision_value in {"require_review", "deny"}:
+        blocking_reasons.append(f"control_decision_blocked: {decision_value}")
 
     artifacts = GateArtifacts(
         eval_run=eval_run,
@@ -334,7 +345,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         }
         _write_json(output_dir / "evaluation_ci_gate_result.json", summary)
         print(f"[eval-ci-gate] BLOCKED: {', '.join(blocking_reasons)}")
-        return _EXIT_FAIL
+        return _EXIT_BLOCKED
 
     try:
         policy = _load_json(policy_path)
@@ -368,7 +379,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         }
         _write_json(output_dir / "evaluation_ci_gate_result.json", summary)
         print(f"[eval-ci-gate] BLOCKED: invalid policy ({exc})")
-        return _EXIT_FAIL
+        return _EXIT_BLOCKED
 
     artifacts, invalid_artifacts, blocking_reasons, threshold_results, indeterminate_hits = _run_gate(
         eval_run_path=Path(args.eval_run),
@@ -391,17 +402,21 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     status = "pass"
     exit_code = _EXIT_PASS
+    decision_exit_code = _EXIT_PASS
+    if artifacts is not None:
+        decision_value = str(artifacts.evaluation_control_decision.get("decision") or "")
+        decision_exit_code = _exit_code_for_decision(decision_value)
     if blocking_reasons:
         threshold_failed = any(reason.startswith("threshold_failed:") for reason in blocking_reasons)
         only_threshold_failures = threshold_failed and all(
             reason.startswith("threshold_failed:") for reason in blocking_reasons
         )
-        if only_threshold_failures:
+        if only_threshold_failures and decision_exit_code == _EXIT_PASS:
             status = "fail"
             exit_code = _EXIT_FAIL
         else:
             status = "blocked"
-            exit_code = _EXIT_FAIL
+            exit_code = _EXIT_BLOCKED
 
     if (
         indeterminate_hits
@@ -410,7 +425,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     ):
         blocking_reasons.append("indeterminate_eval_outcome_detected")
         status = "blocked"
-        exit_code = _EXIT_FAIL
+        exit_code = _EXIT_BLOCKED
+
+    if artifacts is not None and decision_exit_code == _EXIT_BLOCKED:
+        status = "blocked"
+        exit_code = _EXIT_BLOCKED
 
     summary_id = _gate_run_id(
         seed_payload={
@@ -452,7 +471,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "invalid_schema: evaluation_ci_gate_result"
         ]
         summary["invalid_artifacts"] = sorted(set(summary.get("invalid_artifacts", []) + ["evaluation_ci_gate_result"]))
-        exit_code = _EXIT_FAIL
+        exit_code = _EXIT_BLOCKED
 
     summary_path = output_dir / "evaluation_ci_gate_result.json"
     _write_json(summary_path, summary)

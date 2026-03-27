@@ -30,8 +30,56 @@ def _deep_merge(base: Dict[str, Any], patch: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def enforce_replay_budget_consistency(result: Dict[str, Any]) -> Dict[str, Any]:
-    """Enforce replay invariant: observability metrics equal objective observed_value fields."""
-    return align_replay_budget_with_observability(result)
+    """Recompute replay budget state and fail fast if metric/objective invariants remain broken."""
+    align_replay_budget_with_observability(result)
+    observability = result.get("observability_metrics")
+    budget = result.get("error_budget_status")
+    if not isinstance(observability, dict) or not isinstance(budget, dict):
+        return result
+    metrics = observability.get("metrics")
+    objectives = budget.get("objectives")
+    if not isinstance(metrics, dict) or not isinstance(objectives, list):
+        return result
+
+    supported_statuses = {"healthy", "warning", "exhausted", "invalid"}
+    severity_rank = {"healthy": 0, "warning": 1, "exhausted": 2, "invalid": 3}
+
+    computed_highest = "healthy"
+    for objective in objectives:
+        if not isinstance(objective, dict):
+            continue
+        metric_name = str(objective.get("metric_name") or "")
+        if metric_name not in {"replay_success_rate", "drift_exceed_threshold_rate"}:
+            continue
+        metric_value = metrics.get(metric_name)
+        observed_value = objective.get("observed_value")
+        if not isinstance(metric_value, (int, float)) or not isinstance(observed_value, (int, float)):
+            raise ValueError(f"budget consistency mismatch for {metric_name}: missing numeric observed values")
+        if abs(float(metric_value) - float(observed_value)) > 1e-9:
+            raise ValueError(
+                f"budget consistency mismatch for {metric_name}: metric={metric_value} observed={observed_value}"
+            )
+        status = str(objective.get("status") or "")
+        if status not in supported_statuses:
+            raise ValueError(f"unsupported objective status: {status!r}")
+        if severity_rank[status] > severity_rank[computed_highest]:
+            computed_highest = status
+
+    budget_status = str(budget.get("budget_status") or "")
+    highest_severity = str(budget.get("highest_severity") or "")
+    if budget_status not in supported_statuses:
+        raise ValueError(f"unsupported budget_status value: {budget_status!r}")
+    if highest_severity not in supported_statuses:
+        raise ValueError(f"unsupported highest_severity value: {highest_severity!r}")
+    if budget_status != highest_severity:
+        raise ValueError(
+            f"budget consistency mismatch: budget_status={budget_status!r} highest_severity={highest_severity!r}"
+        )
+    if budget_status != "invalid" and budget_status != computed_highest:
+        raise ValueError(
+            f"budget consistency mismatch: budget_status={budget_status!r} computed_highest={computed_highest!r}"
+        )
+    return result
 
 
 def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, Any]:
@@ -167,10 +215,11 @@ def _apply_budget_patch(result: Dict[str, Any], budget_patch: Optional[Dict[str,
             for metric_name, observed_value in observed_values.items():
                 if isinstance(observed_value, (int, float)):
                     metrics[metric_name] = float(observed_value)
-        align_replay_budget_with_observability(result)
+        enforce_replay_budget_consistency(result)
     budget_status = budget_patch.get("budget_status")
     if isinstance(budget_status, str):
         align_replay_budget_state(result, budget_status=budget_status)
+        enforce_replay_budget_consistency(result)
     return result
 
 

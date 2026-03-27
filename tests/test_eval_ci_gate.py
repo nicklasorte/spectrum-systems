@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from scripts.run_eval_ci_gate import main
+from scripts.run_eval_ci_gate import _exit_code_for_decision, main
 from spectrum_systems.contracts import load_schema
 
 
@@ -152,7 +152,7 @@ def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
     ])
 
     summary = json.loads((out_dir / "evaluation_ci_gate_result.json").read_text(encoding="utf-8"))
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
     assert "eval_cases" in summary["missing_artifacts"]
     assert summary["id"] == summary["gate_run_id"]
@@ -164,7 +164,7 @@ def test_invalid_schema_artifact_fails_closed(tmp_path: Path) -> None:
 
     code, summary = _run_gate(tmp_path, case=bad_case)
 
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
     assert any(item.startswith("eval_case[") for item in summary["invalid_artifacts"])
 
@@ -172,7 +172,7 @@ def test_invalid_schema_artifact_fails_closed(tmp_path: Path) -> None:
 def test_indeterminate_eval_outcome_fails_closed(tmp_path: Path) -> None:
     code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="indeterminate", forced_score=0.0))
 
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
     assert "indeterminate_eval_outcome_detected" in summary["blocking_reasons"]
 
@@ -188,9 +188,10 @@ def test_indeterminate_can_be_explicitly_overridden_by_policy(tmp_path: Path) ->
 
     # Exit code contract:
     # - 0 => pass
-    # - 1 => any fail/blocked condition
-    # Even when indeterminate blocking is disabled, threshold/control gating can still block.
-    assert code == 1
+    # - 1 => threshold-only failure
+    # - 2 => control/enforcement blocked
+    # Even when indeterminate blocking is disabled, control gating can still block.
+    assert code == 2
     assert summary["status"] == "blocked"
     assert "indeterminate_eval_outcome_detected" not in summary["blocking_reasons"]
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
@@ -203,7 +204,7 @@ def test_threshold_failure_fails_closed(tmp_path: Path) -> None:
     )
 
     # Threshold failures are now coupled to control-loop blocking in this path.
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
     assert any(reason.startswith("threshold_failed:") for reason in summary["blocking_reasons"])
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
@@ -250,7 +251,7 @@ def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> 
         policy=_policy(reproducibility_score_min=0.1, control_thresholds={"trust_threshold": 0.8}),
     )
 
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
 
@@ -290,9 +291,9 @@ def test_budget_exhausted_control_decision_blocks_gate(tmp_path: Path, monkeypat
 
     monkeypatch.setattr("scripts.run_eval_ci_gate.run_eval_run", _stubbed_run_eval_run)
     code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="pass", forced_score=1.0))
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
-    assert any(reason == "control_decision_blocked: freeze" for reason in summary["blocking_reasons"])
+    assert any(reason == "control_decision_blocked: deny" for reason in summary["blocking_reasons"])
 
 
 def test_budget_invalid_control_decision_blocks_gate(tmp_path: Path, monkeypatch) -> None:
@@ -330,9 +331,9 @@ def test_budget_invalid_control_decision_blocks_gate(tmp_path: Path, monkeypatch
 
     monkeypatch.setattr("scripts.run_eval_ci_gate.run_eval_run", _stubbed_run_eval_run)
     code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="pass", forced_score=1.0))
-    assert code == 1
+    assert code == 2
     assert summary["status"] == "blocked"
-    assert any(reason == "control_decision_blocked: block" for reason in summary["blocking_reasons"])
+    assert any(reason == "control_decision_blocked: deny" for reason in summary["blocking_reasons"])
 
 
 def test_gate_run_id_is_deterministic_for_same_inputs(tmp_path: Path) -> None:
@@ -342,3 +343,9 @@ def test_gate_run_id_is_deterministic_for_same_inputs(tmp_path: Path) -> None:
     assert code_one == 0
     assert code_two == 0
     assert summary_one["gate_run_id"] == summary_two["gate_run_id"]
+
+
+def test_decision_to_exit_code_mapping_is_enforced() -> None:
+    assert _exit_code_for_decision("allow") == 0
+    assert _exit_code_for_decision("require_review") == 2
+    assert _exit_code_for_decision("deny") == 2
