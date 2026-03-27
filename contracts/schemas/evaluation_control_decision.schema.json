@@ -133,6 +133,34 @@
         },
         "required": ["triggered_signals"]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "deny" }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "system_response": { "enum": ["freeze", "block"] }
+        },
+        "required": ["system_response"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "require_review" }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "system_response": { "const": "warn" }
+        },
+        "required": ["system_response"]
+      }
     }
   ]
 }

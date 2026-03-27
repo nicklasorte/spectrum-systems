@@ -13,11 +13,9 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.control_loop import (
-    ControlLoopError,
     build_trace_context_from_replay_artifact,
     run_control_loop,
 )
-from spectrum_systems.modules.runtime.evaluation_control import EvaluationControlError
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 
 SCHEMA_VERSION = "1.0.0"
@@ -38,6 +36,7 @@ class ScenarioExpectation:
     expected_response: str
     expected_decision: str
     expected_reasons: list[str]
+    allow_extra_reasons: bool
 
 
 def _utc_now() -> str:
@@ -123,7 +122,7 @@ def _evaluate_once(artifact: Any) -> dict[str, Any]:
             "decision_id": decision.get("decision_id"),
             "error": None,
         }
-    except (ControlLoopError, EvaluationControlError, ValueError, TypeError, KeyError, AttributeError, Exception) as exc:
+    except Exception as exc:
         return {
             "actual_status": "blocked",
             "actual_response": "block",
@@ -146,6 +145,7 @@ def _build_expectation(scenario: dict[str, Any]) -> ScenarioExpectation:
         expected_response=str(scenario["expected_response"]),
         expected_decision=str(scenario["expected_decision"]),
         expected_reasons=[str(item) for item in expected_reasons_raw if str(item)],
+        allow_extra_reasons=bool(scenario.get("allow_extra_reasons", False)),
     )
 
 
@@ -160,7 +160,10 @@ def _is_match(expectation: ScenarioExpectation, actual: dict[str, Any]) -> tuple
 
     actual_reasons = set(actual.get("reasons") or [])
     expected_reasons = set(expectation.expected_reasons)
-    if actual_reasons != expected_reasons:
+    if expectation.allow_extra_reasons:
+        if not expected_reasons.issubset(actual_reasons):
+            mismatches.append("reasons")
+    elif actual_reasons != expected_reasons:
         mismatches.append("reasons")
 
     return not mismatches, mismatches

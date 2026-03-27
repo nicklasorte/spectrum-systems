@@ -341,13 +341,16 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
                 execution_result=integration_result,
             )
         except EvalCaseGenerationError as exc:
-            integration_result["generated_failure_eval_case_error"] = {
+            error_payload = {
                 "error_type": "EvalCaseGenerationError",
                 "message": str(exc),
                 "stage": stage,
                 "runtime_environment": runtime_environment,
                 "execution_id": execution_id,
             }
+            integration_result["failure_eval_case_error"] = error_payload
+            # Backward-compatible alias for existing consumers/tests.
+            integration_result["generated_failure_eval_case_error"] = error_payload
             logger.exception(
                 "enforce_control_before_execution: blocked execution failure_eval_case generation failed "
                 "(execution_id=%s stage=%s runtime=%s): %s",

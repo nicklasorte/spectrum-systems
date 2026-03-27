@@ -240,3 +240,38 @@ def test_reason_matching_is_exact_and_extra_reasons_fail() -> None:
     strict_mismatch = [{**scenario, "expected_reasons": ["deny_budget_invalid"]}]
     summary_strict = run_chaos_scenarios(scenarios=strict_mismatch, chaos_run_id="chaos-reasons-strict")
     assert summary_strict["fail_count"] == 1
+
+
+def test_reason_matching_allows_superset_with_explicit_override() -> None:
+    scenarios = load_scenarios(_FIXTURE_PATH)
+    scenario = next(item for item in scenarios if item["scenario_id"] == "indeterminate-001")
+    relaxed = [{**scenario, "expected_reasons": ["deny_budget_invalid"], "allow_extra_reasons": True}]
+    summary = run_chaos_scenarios(scenarios=relaxed, chaos_run_id="chaos-reasons-relaxed")
+    assert summary["fail_count"] == 0
+
+
+def test_chaos_runner_catches_unexpected_exceptions_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _raise_runtime_error(*args: object, **kwargs: object) -> object:
+        raise RuntimeError("unexpected chaos failure")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.control_loop_chaos.run_control_loop",
+        _raise_runtime_error,
+    )
+    scenario = {
+        "scenario_id": "exception-001",
+        "description": "unexpected exception should fail closed",
+        "artifact": {
+            "artifact_type": "replay_result",
+            "trace_id": "abababab-abab-4bab-8bab-abababababab",
+            "replay_id": "RPL-chaos-exception-001",
+            "replay_run_id": "eval-chaos-exception-001",
+        },
+        "expected_status": "blocked",
+        "expected_response": "block",
+        "expected_decision": "deny",
+        "expected_reasons": ["control_loop_error"],
+    }
+    summary = run_chaos_scenarios(scenarios=[scenario], chaos_run_id="chaos-exception")
+    assert summary["fail_count"] == 0
+    assert "error=unexpected chaos failure" in summary["scenario_results"][0]["notes"]

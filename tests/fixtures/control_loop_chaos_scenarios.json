@@ -1756,5 +1756,120 @@
       "deny_trust_breach",
       "trust_breach"
     ]
+  },
+  {
+    "scenario_id": "indeterminate-healthy-001",
+    "category": "indeterminate",
+    "description": "Indeterminate consistency with valid trace linkage and healthy aligned budget remains deny via trust boundary.",
+    "artifact": {
+      "artifact_id": "e9adea746b68f3f6da38ad953e0006af202d0cf016cc51c0bce307cfae7b43c4",
+      "artifact_type": "replay_result",
+      "schema_version": "1.2.0",
+      "replay_id": "RPL-indeterminate-healthy-001",
+      "original_run_id": "eval-run-001",
+      "replay_run_id": "eval-chaos-indeterminate-healthy-001",
+      "timestamp": "2026-03-22T00:00:00Z",
+      "trace_id": "44555555-4444-4444-8444-444444444444",
+      "input_artifact_reference": "eval_summary:eval-run-001",
+      "original_decision_reference": "ECD-eval-run-001-ALLOW",
+      "original_enforcement_reference": "ENF-000000000001",
+      "replay_decision_reference": "ECD-eval-run-001-ALLOW",
+      "replay_enforcement_reference": "ENF-000000000002",
+      "replay_decision": "allow",
+      "replay_enforcement_action": "allow_execution",
+      "replay_final_status": "allow",
+      "original_enforcement_action": "allow_execution",
+      "original_final_status": "allow",
+      "consistency_status": "indeterminate",
+      "drift_detected": false,
+      "failure_reason": "indeterminate_replay_consistency",
+      "replay_path": "bag_replay_engine",
+      "provenance": {
+        "source_artifact_type": "eval_summary",
+        "source_artifact_id": "eval-run-001",
+        "trace_id": "44555555-4444-4444-8444-444444444444"
+      },
+      "observability_metrics": {
+        "artifact_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "artifact_type": "observability_metrics",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "44555555-4444-4444-8444-444444444444"
+        },
+        "measurement_scope": "single_replay_run",
+        "run_ids": [
+          "eval-run-001"
+        ],
+        "source_artifact_ids": [
+          "RPL-trace-eval-001",
+          "5ecf8d6ba668bf6fb5230f069f527cbf718f93bfdd1d4bdb8ce72d77f7a50844",
+          "1d32814942f6d86f6f1f0d9cf4d12f42cf36e2498f5fd2f16ad66f8f80f3f447"
+        ],
+        "metric_window": "single_run",
+        "metrics": {
+          "total_runs": 1,
+          "replay_success_rate": 1.0,
+          "drift_exceed_threshold_rate": 0.0,
+          "baseline_gate_block_rate": 0.0
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "policy_id": "sre-observability-policy-v1",
+        "breach_summary": {
+          "breached_metrics": [],
+          "highest_severity": "none",
+          "reasons": []
+        },
+        "generated_by_version": "observability_metrics.py@1.0.0"
+      },
+      "error_budget_status": {
+        "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+        "artifact_type": "error_budget_status",
+        "schema_version": "1.0.0",
+        "timestamp": "2026-03-24T00:00:00Z",
+        "trace_refs": {
+          "trace_id": "44555555-4444-4444-8444-444444444444"
+        },
+        "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+        "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+        "policy_id": "sre-error-budget-policy-v1",
+        "budget_window": "single_run",
+        "budget_status": "healthy",
+        "objectives": [
+          {
+            "metric_name": "replay_success_rate",
+            "target_value": 0.99,
+            "observed_value": 1.0,
+            "allowed_error": 0.01,
+            "consumed_error": 0.0,
+            "remaining_error": 0.01,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "target_value": 0.05,
+            "observed_value": 0.0,
+            "allowed_error": 0.05,
+            "consumed_error": 0.0,
+            "remaining_error": 0.05,
+            "consumption_ratio": 0.0,
+            "status": "healthy"
+          }
+        ],
+        "highest_severity": "healthy",
+        "triggered_conditions": [],
+        "reasons": [],
+        "generated_by_version": "error_budget.py@1.0.0"
+      }
+    },
+    "expected_status": "blocked",
+    "expected_response": "block",
+    "expected_decision": "deny",
+    "expected_reasons": [
+      "deny_trust_breach",
+      "indeterminate_failure",
+      "trust_breach"
+    ]
   }
 ]
