@@ -32,6 +32,12 @@ def _replay_result_artifact(*, replay_success_rate: float = 0.95, drift_rate: fl
     )
     artifact["observability_metrics"]["metrics"]["replay_success_rate"] = replay_success_rate
     artifact["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    for objective in artifact["error_budget_status"]["objectives"]:
+        metric_name = objective["metric_name"]
+        if metric_name == "replay_success_rate":
+            objective["observed_value"] = replay_success_rate
+        if metric_name == "drift_exceed_threshold_rate":
+            objective["observed_value"] = drift_rate
     artifact["consistency_status"] = consistency_status
     artifact["drift_detected"] = consistency_status == "mismatch"
     artifact["failure_reason"] = None
@@ -94,6 +100,13 @@ def test_control_loop_error_is_wrapped_as_contract_runtime_error() -> None:
     ):
         with pytest.raises(ContractRuntimeError, match="control loop evaluation failed"):
             enforce_control_before_execution(_ctx())
+
+
+def test_missing_error_budget_status_fails_closed() -> None:
+    artifact = _replay_result_artifact()
+    artifact.pop("error_budget_status")
+    with pytest.raises(ContractRuntimeError, match="missing required error_budget_status"):
+        enforce_control_before_execution(_ctx(artifact=artifact))
 
 
 def test_enforcement_error_is_wrapped_as_contract_runtime_error() -> None:

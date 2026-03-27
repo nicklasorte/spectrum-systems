@@ -81,3 +81,37 @@ def test_explicit_drift_metric_is_deterministic() -> None:
     first = build_evaluation_control_decision(replay)
     second = build_evaluation_control_decision(copy.deepcopy(replay))
     assert first["decision_id"] == second["decision_id"]
+
+
+def test_budget_warning_forces_warn_response() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "warning"
+    replay["error_budget_status"]["highest_severity"] = "warning"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {
+            "metric_name": "replay_success_rate",
+            "status": "warning",
+            "consumption_ratio": 0.9,
+        }
+    ]
+    decision = build_evaluation_control_decision(replay)
+    assert decision["system_response"] == "warn"
+    assert decision["decision"] == "require_review"
+    assert "budget_warning" in decision["triggered_signals"]
+
+
+def test_budget_exhausted_forces_non_allow_response() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "exhausted"
+    replay["error_budget_status"]["highest_severity"] = "exhausted"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0,
+        }
+    ]
+    decision = build_evaluation_control_decision(replay)
+    assert decision["system_response"] in {"freeze", "block"}
+    assert decision["decision"] == "deny"
+    assert "budget_exhausted" in decision["triggered_signals"]

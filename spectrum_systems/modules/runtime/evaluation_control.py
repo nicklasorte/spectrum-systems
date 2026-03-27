@@ -160,8 +160,37 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
         "reproducibility_score": reproducibility_score,
         "indeterminate_failure_count": 1 if consistency_status == "indeterminate" else 0,
         "created_at": _canonical_timestamp(replay_result.get("timestamp")),
-        "system_status": str(error_budget.get("budget_status") or "blocked"),
+        "budget_status": str(error_budget.get("budget_status") or "invalid"),
     }
+
+
+def _apply_budget_status_override(
+    *,
+    budget_status: str,
+    triggered_signals: List[str],
+    system_status: str,
+    system_response: str,
+    decision_label: str,
+    rationale_code: str,
+) -> tuple[str, str, str, str]:
+    if budget_status == "healthy":
+        return system_status, system_response, decision_label, rationale_code
+
+    if budget_status == "warning":
+        if "budget_warning" not in triggered_signals:
+            triggered_signals.append("budget_warning")
+        return "warning", "warn", "require_review", "require_review_budget_warning"
+
+    if budget_status == "exhausted":
+        if "budget_exhausted" not in triggered_signals:
+            triggered_signals.append("budget_exhausted")
+        if "trust_breach" in triggered_signals or "indeterminate_failure" in triggered_signals:
+            return "blocked", "block", "deny", "deny_budget_exhausted"
+        return "exhausted", "freeze", "deny", "deny_budget_exhausted"
+
+    if "budget_invalid" not in triggered_signals:
+        triggered_signals.append("budget_invalid")
+    return "blocked", "block", "deny", "deny_budget_invalid"
 
 
 def build_evaluation_control_decision(
@@ -230,6 +259,15 @@ def build_evaluation_control_decision(
     else:
         decision_label = "deny"
         rationale_code = "deny_reliability_breach"
+    budget_status = str(eval_summary.get("budget_status") or "invalid")
+    system_status, system_response, decision_label, rationale_code = _apply_budget_status_override(
+        budget_status=budget_status,
+        triggered_signals=triggered_signals,
+        system_status=system_status,
+        system_response=system_response,
+        decision_label=decision_label,
+        rationale_code=rationale_code,
+    )
 
     schema_version = "1.1.0"
     decision = {
