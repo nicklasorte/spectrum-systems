@@ -12,7 +12,11 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
-from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop
+from spectrum_systems.modules.runtime.control_loop import (
+    ControlLoopError,
+    build_trace_context_from_replay_artifact,
+    run_control_loop,
+)
 from spectrum_systems.modules.runtime.evaluation_control import EvaluationControlError
 from spectrum_systems.utils.artifact_envelope import build_artifact_envelope
 
@@ -88,7 +92,11 @@ def load_scenarios(path: Path) -> list[dict[str, Any]]:
 
 def _evaluate_once(artifact: Any) -> dict[str, Any]:
     try:
-        result = run_control_loop(artifact, {"trigger": "control_loop_chaos"})
+        trace_context = build_trace_context_from_replay_artifact(
+            artifact,
+            base_context={"trigger": "control_loop_chaos"},
+        )
+        result = run_control_loop(artifact, trace_context)
         decision = result["evaluation_control_decision"]
         return {
             "actual_status": str(decision.get("system_status") or "blocked"),

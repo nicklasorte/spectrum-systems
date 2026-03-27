@@ -54,6 +54,7 @@ from spectrum_systems.modules.runtime.contract_runtime import (
 )
 from spectrum_systems.modules.runtime.control_loop import (
     ControlLoopError,
+    build_trace_context_from_replay_artifact,
     run_control_loop,
 )
 from spectrum_systems.modules.runtime.enforcement_engine import (
@@ -237,13 +238,17 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     try:
-        loop_result = run_control_loop(
+        control_trace_context = build_trace_context_from_replay_artifact(
             artifact,
-            {
+            base_context={
                 "execution_id": execution_id,
                 "stage": stage,
                 "runtime_environment": runtime_environment,
             },
+        )
+        loop_result = run_control_loop(
+            artifact,
+            control_trace_context,
         )
     except ControlLoopError as exc:
         raise ContractRuntimeError(f"control loop evaluation failed: {exc}") from exc

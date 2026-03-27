@@ -67,6 +67,43 @@ def _validate_normalized_signal(signal: Dict[str, Any]) -> None:
             raise ControlLoopError(f"normalized signal missing required field: {key}")
 
 
+def _validate_trace_context_binding(
+    trace_context: Dict[str, Any],
+    artifact: Dict[str, Any],
+) -> None:
+    required_linkage = ("trace_id", "replay_id", "replay_run_id")
+    for key in required_linkage:
+        trace_value = trace_context.get(key)
+        if not isinstance(trace_value, str) or not trace_value.strip():
+            raise ControlLoopError(f"trace_context missing required linkage field: {key}")
+
+        artifact_value = artifact.get(key)
+        if not isinstance(artifact_value, str) or not artifact_value.strip():
+            raise ControlLoopError(f"artifact missing required trace linkage field: {key}")
+
+        if trace_value != artifact_value:
+            raise ControlLoopError(
+                f"trace_context linkage mismatch for {key}: expected artifact identity binding"
+            )
+
+
+def build_trace_context_from_replay_artifact(
+    artifact: Dict[str, Any],
+    *,
+    base_context: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    if not isinstance(artifact, dict):
+        raise ControlLoopError("artifact must be a dict")
+
+    trace_context = dict(base_context or {})
+    for key in ("trace_id", "replay_id", "replay_run_id"):
+        value = artifact.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise ControlLoopError(f"artifact missing required trace linkage field: {key}")
+        trace_context[key] = value
+    return trace_context
+
+
 def _evaluate_signal(
     signal: Dict[str, Any],
     artifact: Dict[str, Any],
@@ -122,6 +159,7 @@ def run_control_loop(
 
     signal = _normalize_signal(artifact)
     _validate_normalized_signal(signal)
+    _validate_trace_context_binding(trace_context, artifact)
 
     decision = _evaluate_signal(signal, artifact)
     decision_schema = load_schema("evaluation_control_decision")

@@ -24,7 +24,10 @@ from spectrum_systems.contracts import load_example, load_schema
 from spectrum_systems.modules.agents.agent_executor import execute_step_sequence, generate_step_plan
 from spectrum_systems.modules.ai_workflow.context_assembly import build_context_bundle
 from spectrum_systems.modules.evaluation.eval_engine import compute_eval_summary, run_eval_case
-from spectrum_systems.modules.runtime.control_loop import run_control_loop
+from spectrum_systems.modules.runtime.control_loop import (
+    build_trace_context_from_replay_artifact,
+    run_control_loop,
+)
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
 from spectrum_systems.modules.runtime.context_admission import run_context_admission
 from spectrum_systems.modules.runtime.prompt_registry import (
@@ -1031,9 +1034,17 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
             _validate_contract(replay_result, "replay_result", stage="control")
             artifacts["replay_result"] = replay_result
             refs.append(f"replay_result:{replay_result['replay_id']}")
+            control_trace_context = build_trace_context_from_replay_artifact(
+                replay_result,
+                base_context={
+                    "execution_id": run_id,
+                    "stage": "control",
+                    "runtime_environment": "agent_golden_path",
+                },
+            )
             control = run_control_loop(
                 replay_result,
-                {"execution_id": run_id, "stage": "control", "runtime_environment": "agent_golden_path"},
+                control_trace_context,
             )
             decision = control["evaluation_control_decision"]
             _validate_contract(decision, "evaluation_control_decision", stage="control")
