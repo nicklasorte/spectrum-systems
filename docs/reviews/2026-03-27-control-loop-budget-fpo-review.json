@@ -1,0 +1,71 @@
+{
+  "review_id": "REV-CONTROL_LOOP_BUDGET_FPO_REVIEW",
+  "module": "control_loop_budget",
+  "review_type": "fpo_targeted_correctness",
+  "review_date": "2026-03-27",
+  "reviewer": "Claude",
+  "decision": "FAIL",
+  "trust_assessment": "medium",
+  "status": "final",
+  "scope": [
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/evaluation_control.py",
+    "spectrum_systems/modules/runtime/control_integration.py",
+    "spectrum_systems/modules/runtime/agent_golden_path.py",
+    "tests/test_control_loop_chaos.py",
+    "tests/test_eval_ci_gate.py",
+    "tests/helpers/replay_result_builder.py",
+    "contracts/schemas/evaluation_control_decision.schema.json"
+  ],
+  "related_plan": "docs/review-actions/PLAN-PQX-CLT-002-2026-03-27.md",
+  "critical_findings": [
+    {
+      "id": "F-001",
+      "severity": "critical",
+      "file": "spectrum_systems/modules/runtime/evaluation_control.py",
+      "function": "_apply_budget_status_override",
+      "failure_mode": "[S1] Budget warning path may downgrade deny outcomes in reviewed slice output.",
+      "impact": "Creates a fail-open governance risk where hard deny outcomes can be softened to require_review.",
+      "minimal_fix": "Preserve deny/system_response outputs when preexisting deny is true; only escalate healthy states."
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "file": "tests/helpers/replay_result_builder.py",
+      "function": "align_replay_budget_with_observability",
+      "failure_mode": "[S2] Builder updates objective observed_value without recomputing aggregate budget status fields.",
+      "impact": "Budget-aware chaos tests can miss warning/exhausted/invalid branches.",
+      "minimal_fix": "Recalculate budget_status/highest_severity/triggered_conditions after metric overrides."
+    },
+    {
+      "id": "F-003",
+      "severity": "high",
+      "file": "tests/test_eval_ci_gate.py",
+      "function": "budget state coverage",
+      "failure_mode": "[S2] CI gate lacks direct tests for warning/exhausted/invalid budget states.",
+      "impact": "Regressions in gate behavior can pass unnoticed.",
+      "minimal_fix": "Add explicit gate tests for warning, exhausted, and invalid states."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Prevent warning-state override from weakening deny decisions in evaluation control.",
+      "priority": "P0"
+    },
+    {
+      "fix_id": "FIX-002",
+      "description": "Recompute aggregate budget fields in replay builder after objective edits.",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-003",
+      "description": "Add CI gate tests covering warning/exhausted/invalid budget paths.",
+      "priority": "P1"
+    }
+  ],
+  "watch_items": [
+    "Track schema constraints linking decision and system_response to prevent drift."
+  ],
+  "failure_mode_summary": "Targeted budget-control review passed core architecture but identified fail-open and coverage defects requiring remediation."
+}

@@ -1,0 +1,68 @@
+{
+  "review_id": "REV-CONTROL_LOOP_TRUST_BOUNDARY_SURGICAL_REVIEW",
+  "module": "control_loop_trust_boundary",
+  "review_type": "trust_boundary_surgical",
+  "review_date": "2026-03-27",
+  "reviewer": "Claude",
+  "decision": "FAIL",
+  "trust_assessment": "medium",
+  "status": "final",
+  "scope": [
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/control_integration.py",
+    "spectrum_systems/modules/runtime/evaluation_control.py",
+    "spectrum_systems/modules/runtime/control_loop_chaos.py",
+    "contracts/schemas/evaluation_control_decision.schema.json"
+  ],
+  "related_plan": "docs/review-actions/PLAN-PQX-CONTROL-LOOP-TRUST-BOUNDARY-REVIEW-FIXES-2026-03-27.md",
+  "critical_findings": [
+    {
+      "id": "F-001",
+      "severity": "critical",
+      "file": "spectrum_systems/modules/runtime/evaluation_control.py",
+      "function": "build_evaluation_control_decision",
+      "failure_mode": "[S1] deny_indeterminate_failure path is effectively unreachable with current indeterminate mapping.",
+      "impact": "Dead schema vocabulary obscures real routing behavior.",
+      "minimal_fix": "Either realign reproducibility mapping or remove unreachable rationale code from schema and code."
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "file": "spectrum_systems/modules/runtime/control_integration.py",
+      "function": "enforcement result mapping",
+      "failure_mode": "[S2] require_review uses blocked execution state with non-blocked publication/decision flags.",
+      "impact": "Consumers can misread artifact usability before review.",
+      "minimal_fix": "Align publication_blocked/decision_blocked semantics with require_review enforcement intent."
+    },
+    {
+      "id": "F-003",
+      "severity": "medium",
+      "file": "spectrum_systems/modules/runtime/control_loop_chaos.py",
+      "function": "scenario expectation builder",
+      "failure_mode": "[S3] expected_decision defaults to deny when omitted.",
+      "impact": "Chaos scenarios can silently misclassify require_review paths.",
+      "minimal_fix": "Require explicit expected_decision in scenario validation."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Remove or make reachable deny_indeterminate_failure rationale path.",
+      "priority": "P0"
+    },
+    {
+      "fix_id": "FIX-002",
+      "description": "Align require_review blocked flags with execution status semantics.",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-003",
+      "description": "Require explicit expected_decision in chaos scenarios.",
+      "priority": "P1"
+    }
+  ],
+  "watch_items": [
+    "Expand indeterminate-path fixture coverage in chaos or golden-path corpus."
+  ],
+  "failure_mode_summary": "Trust-boundary review was conditionally positive but identified critical schema/logic alignment issues and gating semantics gaps."
+}

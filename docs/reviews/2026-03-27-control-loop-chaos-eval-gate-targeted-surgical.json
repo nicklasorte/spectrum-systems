@@ -1,0 +1,56 @@
+{
+  "review_id": "REV-CONTROL_LOOP_CHAOS_EVAL_GATE_TARGETED_SURGICAL",
+  "module": "control_loop_chaos_eval_gate",
+  "review_type": "targeted_surgical",
+  "review_date": "2026-03-27",
+  "reviewer": "Claude",
+  "decision": "FAIL",
+  "trust_assessment": "medium",
+  "status": "final",
+  "scope": [
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/control_loop_chaos.py",
+    "spectrum_systems/modules/runtime/evaluation_control.py",
+    "scripts/run_eval_ci_gate.py",
+    "tests/test_control_loop_chaos.py",
+    "tests/test_eval_ci_gate.py",
+    "tests/helpers/replay_result_builder.py"
+  ],
+  "related_plan": "docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md",
+  "critical_findings": [
+    {
+      "id": "F-001",
+      "severity": "high",
+      "file": "tests/helpers/replay_result_builder.py",
+      "function": "align_replay_budget_with_observability",
+      "failure_mode": "[S2] Fixture/objective values can diverge from observability metrics in reviewed scenarios.",
+      "impact": "Trust-boundary consistency checks are underrepresented in chaos tests.",
+      "minimal_fix": "Ensure builder keeps objective observed values and aggregate budget fields synchronized."
+    },
+    {
+      "id": "F-002",
+      "severity": "medium",
+      "file": "spectrum_systems/modules/runtime/evaluation_control.py",
+      "function": "status mapping",
+      "failure_mode": "[S3] Invalid budget status mapping can yield semantically ambiguous status labeling.",
+      "impact": "Outputs remain fail-closed but diagnostics can mislead operators.",
+      "minimal_fix": "Clarify/normalize invalid-state status mapping and assert expected labels in tests."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Repair replay builder alignment so chaos fixtures preserve internal consistency.",
+      "priority": "P1"
+    },
+    {
+      "fix_id": "FIX-002",
+      "description": "Add tests for invalid-budget status labeling to prevent ambiguity drift.",
+      "priority": "P2"
+    }
+  ],
+  "watch_items": [
+    "Keep eval CI gate exit semantics aligned with control decision reasons."
+  ],
+  "failure_mode_summary": "Surgical review reported concerns; runtime logic is mostly sound but fixture consistency and status semantics need correction."
+}

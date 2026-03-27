@@ -1,0 +1,39 @@
+{
+  "review_id": "REV-CONTROL_LOOP_TRACE_CONTEXT_STABILIZATION_CHECKPOINT",
+  "module": "control_loop_trace_context",
+  "review_type": "stabilization_checkpoint",
+  "review_date": "2026-03-27",
+  "reviewer": "Claude",
+  "decision": "FAIL",
+  "trust_assessment": "low",
+  "status": "final",
+  "scope": [
+    "spectrum_systems/modules/runtime/control_loop.py",
+    "spectrum_systems/modules/runtime/control_integration.py",
+    "spectrum_systems/modules/runtime/agent_golden_path.py",
+    "spectrum_systems/modules/runtime/control_loop_chaos.py"
+  ],
+  "related_plan": "docs/review-actions/PLAN-SRE-09-SRE-10-INTEGRATION-2026-03-27.md",
+  "critical_findings": [
+    {
+      "id": "F-001",
+      "severity": "critical",
+      "file": "docs/reviews/2026-03-27-control-loop-trace-context-stabilization.md",
+      "function": "review output completeness",
+      "failure_mode": "[S0] Missing or incomplete review output.",
+      "impact": "Cannot derive governed decision/trust/findings deterministically from checkpoint note alone.",
+      "minimal_fix": "Regenerate full Claude review output with explicit verdict rubric, trust assessment, and required fixes."
+    }
+  ],
+  "required_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "description": "Produce complete review output including decision, trust assessment, and actionable findings.",
+      "priority": "P0"
+    }
+  ],
+  "watch_items": [
+    "Keep stabilization notes and governed review artifacts separate to avoid metadata loss."
+  ],
+  "failure_mode_summary": "Checkpoint note lacked required governed review fields; artifact is blocked pending complete review output."
+}
