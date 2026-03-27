@@ -253,9 +253,6 @@ def build_evaluation_control_decision(
     elif "stability_breach" in triggered_signals:
         decision_label = "deny"
         rationale_code = "deny_stability_breach"
-    elif "indeterminate_failure" in triggered_signals:
-        decision_label = "deny"
-        rationale_code = "deny_indeterminate_failure"
     else:
         decision_label = "deny"
         rationale_code = "deny_reliability_breach"

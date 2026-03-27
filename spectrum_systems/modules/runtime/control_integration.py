@@ -111,7 +111,7 @@ def _execution_result_from_enforcement_result(enforcement_result: Dict[str, Any]
         review_required = False
         execution_status = "blocked"
     elif final_status == "require_review":
-        blocked = False
+        blocked = True
         review_required = True
         execution_status = "blocked"
     else:
@@ -125,7 +125,7 @@ def _execution_result_from_enforcement_result(enforcement_result: Dict[str, Any]
         "publication_blocked": blocked,
         "decision_blocked": blocked,
         "rerun_triggered": False,
-        "escalation_triggered": blocked,
+        "escalation_triggered": final_status == "deny",
         "human_review_required": review_required,
         "actions_taken": [
             {
@@ -341,10 +341,21 @@ def enforce_control_before_execution(context: Dict[str, Any]) -> Dict[str, Any]:
                 execution_result=integration_result,
             )
         except EvalCaseGenerationError as exc:
-            raise ContractRuntimeError(
-                "enforce_control_before_execution: failure_eval_case generation required "
-                f"for blocked execution but failed: {exc}"
-            ) from exc
+            integration_result["generated_failure_eval_case_error"] = {
+                "error_type": "EvalCaseGenerationError",
+                "message": str(exc),
+                "stage": stage,
+                "runtime_environment": runtime_environment,
+                "execution_id": execution_id,
+            }
+            logger.exception(
+                "enforce_control_before_execution: blocked execution failure_eval_case generation failed "
+                "(execution_id=%s stage=%s runtime=%s): %s",
+                execution_id,
+                stage,
+                runtime_environment,
+                exc,
+            )
 
     # Log outcome for observability (G section)
     _log_integration_outcome(integration_result)

@@ -79,7 +79,6 @@
         "deny_reliability_breach",
         "deny_stability_breach",
         "deny_trust_breach",
-        "deny_indeterminate_failure",
         "require_review_warning_signal",
         "require_review_budget_warning",
         "deny_budget_exhausted",

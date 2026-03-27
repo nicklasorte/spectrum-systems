@@ -115,3 +115,16 @@ def test_budget_exhausted_forces_non_allow_response() -> None:
     assert decision["system_response"] in {"freeze", "block"}
     assert decision["decision"] == "deny"
     assert "budget_exhausted" in decision["triggered_signals"]
+
+
+def test_indeterminate_replay_routes_to_trust_breach_rationale() -> None:
+    replay = _replay_result()
+    replay["consistency_status"] = "indeterminate"
+    replay["failure_reason"] = "indeterminate_replay_consistency"
+    replay["drift_detected"] = False
+
+    decision = build_evaluation_control_decision(replay)
+
+    assert decision["decision"] == "deny"
+    assert decision["rationale_code"] == "deny_trust_breach"
+    assert "indeterminate_failure" in decision["triggered_signals"]
