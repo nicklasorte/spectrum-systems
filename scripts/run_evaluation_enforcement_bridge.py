@@ -15,6 +15,7 @@ Usage
         --input path/to/evaluation_budget_decision.json \\
         [--output-dir path/to/output/] \\
         [--scope release|promotion|schema_change|prompt_change|pipeline_change] \\
+        [--control-loop-certification path/to/control_loop_certification_pack.json] \\
         [--override-authorization path/to/override_authorization.json]
 
 Examples
@@ -140,6 +141,15 @@ def main(argv: Optional[List[str]] = None) -> int:
             "The artifact is fully validated and verified before use."
         ),
     )
+    parser.add_argument(
+        "--control-loop-certification",
+        default=None,
+        metavar="PATH",
+        help=(
+            "Path to a control_loop_certification_pack JSON artifact. "
+            "Required for fail-closed promotion gating in control-loop slice."
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -150,6 +160,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     context: Dict[str, Any] = {}
     if args.scope:
         context["enforcement_scope"] = args.scope
+    if args.control_loop_certification:
+        context["control_loop_certification_path"] = args.control_loop_certification
     if args.override_authorization:
         try:
             override_auth = load_override_authorization(args.override_authorization)
@@ -195,8 +207,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"  Action type:        {action['action_type']}\n"
         f"  Enforcement scope:  {action['enforcement_scope']}\n"
         f"  Allowed to proceed: {action['allowed_to_proceed']}\n"
+        f"  Certification ref:  {action['certification_gate']['artifact_reference']}\n"
+        f"  Certification dec:  {action['certification_gate']['certification_decision']}\n"
+        f"  Certification stat: {action['certification_gate']['certification_status']}\n"
         f"  Created at:         {action['created_at']}"
     )
+    if action["certification_gate"]["block_reason"]:
+        print(f"  Certification block reason: {action['certification_gate']['block_reason']}")
 
     print("  Reasons:")
     for r in action["reasons"]:

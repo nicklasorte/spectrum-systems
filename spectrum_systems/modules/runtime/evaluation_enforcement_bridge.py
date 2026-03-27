@@ -74,6 +74,7 @@ _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _BUDGET_DECISION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_budget_decision.schema.json"
 _ENFORCEMENT_ACTION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_enforcement_action.schema.json"
 _OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authorization.schema.json"
+_CONTROL_LOOP_CERTIFICATION_SCHEMA_PATH = _SCHEMA_DIR / "control_loop_certification_pack.schema.json"
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
@@ -89,6 +90,7 @@ _DEFAULT_SCOPE = "release"
 
 # Context key for a governed override authorization artifact
 _OVERRIDE_AUTHORIZATION_KEY = "override_authorization"
+_CONTROL_LOOP_CERTIFICATION_PATH_KEY = "control_loop_certification_path"
 
 # Module-level mapping of system_response → action_type (used in multiple places)
 _RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
@@ -162,6 +164,106 @@ def _canonical_response_for_enforcement(decision: Dict[str, Any]) -> str:
             f"'{system_response}' for decision_dialect '{decision_dialect}'."
         )
     return system_response
+
+
+def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
+    if enforcement_scope != "promotion":
+        return {
+            "artifact_reference": "not_applicable",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+            "gate_passed": True,
+        }
+    return {
+        "artifact_reference": "missing",
+        "certification_decision": "missing",
+        "certification_status": "missing",
+        "block_reason": "control_loop_certification_pack is required for promotion scope.",
+        "gate_passed": False,
+    }
+
+
+def _evaluate_certification_gate(
+    context: Optional[Dict[str, Any]],
+    enforcement_scope: str,
+) -> Dict[str, Any]:
+    """Evaluate promotion certification requirements with fail-closed behavior."""
+    gate = _default_certification_gate(enforcement_scope)
+    if enforcement_scope != "promotion":
+        return gate
+
+    path_value: Optional[str] = None
+    if context:
+        raw = context.get(_CONTROL_LOOP_CERTIFICATION_PATH_KEY)
+        if raw is not None:
+            path_value = str(raw)
+
+    if not path_value:
+        return gate
+
+    artifact_path = Path(path_value)
+    gate["artifact_reference"] = str(artifact_path)
+    if not artifact_path.is_file():
+        gate["certification_decision"] = "missing"
+        gate["certification_status"] = "missing"
+        gate["block_reason"] = (
+            "control_loop_certification_pack file not found: "
+            f"{artifact_path}"
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    try:
+        with artifact_path.open(encoding="utf-8") as fh:
+            artifact = json.load(fh)
+    except json.JSONDecodeError as exc:
+        gate["certification_decision"] = "malformed"
+        gate["certification_status"] = "malformed"
+        gate["block_reason"] = (
+            "control_loop_certification_pack is not valid JSON: "
+            f"{exc}"
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    schema = _load_schema(_CONTROL_LOOP_CERTIFICATION_SCHEMA_PATH)
+    errors = _validate_against_schema(artifact, schema)
+    if errors:
+        gate["certification_decision"] = "malformed"
+        gate["certification_status"] = "malformed"
+        gate["block_reason"] = (
+            "control_loop_certification_pack failed schema validation: "
+            + "; ".join(errors)
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    certification_id = str(artifact.get("certification_id") or "")
+    if certification_id:
+        gate["artifact_reference"] = f"{artifact_path}#{certification_id}"
+    gate["certification_decision"] = str(artifact.get("decision") or "")
+    gate["certification_status"] = str(artifact.get("certification_status") or "")
+
+    if gate["certification_status"] != "certified":
+        gate["block_reason"] = (
+            "control_loop_certification_pack must have "
+            "certification_status='certified' for promotion."
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    if gate["certification_decision"] != "pass":
+        gate["block_reason"] = (
+            "control_loop_certification_pack must have decision='pass' "
+            "for promotion."
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    gate["block_reason"] = None
+    gate["gate_passed"] = True
+    return gate
 
 
 # ---------------------------------------------------------------------------
@@ -495,6 +597,7 @@ def build_enforcement_action(
     reasons: List[str],
     required_human_actions: List[str],
     allowed_to_proceed: bool,
+    certification_gate: Dict[str, Any],
     action_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Assemble and schema-validate an evaluation_enforcement_action artifact.
@@ -563,6 +666,7 @@ def build_enforcement_action(
         "allowed_to_proceed": allowed_to_proceed,
         "reasons": reasons,
         "required_human_actions": required_human_actions,
+        "certification_gate": certification_gate,
         "created_at": _now_iso(),
     }
 
@@ -625,11 +729,20 @@ def enforce_budget_decision(
     enforcement_scope = determine_enforcement_scope(decision, context)
     required_human_actions = _build_required_human_actions(system_response, decision)
     reasons: List[str] = list(decision.get("reasons", []))
+    certification_gate = _evaluate_certification_gate(context, enforcement_scope)
 
     if context and _OVERRIDE_AUTHORIZATION_KEY in context:
         raise EnforcementBridgeError(
             "override_authorization is not supported for canonical enforcement responses."
         )
+
+    if not certification_gate["gate_passed"]:
+        gate_reason = str(certification_gate.get("block_reason") or "Certification gate blocked promotion.")
+        if gate_reason not in reasons:
+            reasons.append(gate_reason)
+        if gate_reason not in required_human_actions:
+            required_human_actions.append(gate_reason)
+        system_response = "block"
 
     if system_response in {"allow", "warn"}:
         allowed_to_proceed = True
@@ -648,6 +761,12 @@ def enforce_budget_decision(
         reasons=reasons,
         required_human_actions=required_human_actions,
         allowed_to_proceed=allowed_to_proceed,
+        certification_gate={
+            "artifact_reference": certification_gate["artifact_reference"],
+            "certification_decision": certification_gate["certification_decision"],
+            "certification_status": certification_gate["certification_status"],
+            "block_reason": certification_gate["block_reason"],
+        },
         action_id=None,
     )
 

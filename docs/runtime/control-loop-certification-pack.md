@@ -49,15 +49,35 @@ This pack does not certify:
 
 It is a narrow trust-boundary/runtime control-loop certification checkpoint.
 
-## Operational usage before promotion/merge/roadmap advancement
+## Mandatory promotion gate behavior (control-loop slice)
 
-Run certification and require a `certified/pass` artifact before promotion/merge/roadmap advancement steps that depend on this slice.
+Control-loop promotion now fails closed unless a valid certification artifact is provided and it reports:
+
+- `certification_status=certified`
+- `decision=pass`
+
+This is **mandatory**, not advisory:
+
+- missing artifact ⇒ promotion blocked
+- malformed/schema-invalid artifact ⇒ promotion blocked
+- `certification_status != certified` ⇒ promotion blocked
+- `decision != pass` ⇒ promotion blocked
+
+The canonical promotion/governance seam is the evaluation enforcement bridge in promotion scope (`scripts/run_evaluation_enforcement_bridge.py --scope promotion`), which records certification reference + status + decision + block reason in the emitted `evaluation_enforcement_action` artifact.
+
+## Operational usage before promotion/merge/roadmap advancement
 
 Example:
 
 ```bash
 python scripts/run_control_loop_certification.py \
   --output outputs/control_loop_certification/control_loop_certification_pack.json
+
+python scripts/run_evaluation_enforcement_bridge.py \
+  --input outputs/evaluation_budget_governor/evaluation_budget_decision.json \
+  --scope promotion \
+  --control-loop-certification outputs/control_loop_certification/control_loop_certification_pack.json \
+  --output-dir outputs/evaluation_enforcement_bridge
 ```
 
 Interpret exit code:
@@ -66,4 +86,4 @@ Interpret exit code:
 - `1` = uncertified/fail
 - `2` = blocked
 
-Consume the emitted JSON artifact as the canonical evidence record for this checkpoint.
+Consume the emitted certification JSON and promotion enforcement JSON artifacts as the canonical evidence record for this checkpoint.
