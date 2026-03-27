@@ -82,8 +82,12 @@ python scripts/run_evaluation_enforcement_bridge.py \
 
 Interpret exit code:
 
-- `0` = certified/pass
-- `1` = uncertified/fail
-- `2` = blocked
+- For `python scripts/run_evaluation_enforcement_bridge.py ...`:
+  - `0` = allowed to proceed (`allowed_to_proceed=True`; action type allow or warn)
+  - `2` = blocked or failure (`allowed_to_proceed=False` or any CLI error path)
+- For `python scripts/run_control_loop_certification.py ...` (different script):
+  - `0` = `certification_status=certified`, `decision=pass`
+  - `1` = `certification_status=uncertified`, `decision=fail`
+  - `2` = `certification_status=blocked`, `decision=blocked` or script error
 
 Consume the emitted certification JSON and promotion enforcement JSON artifacts as the canonical evidence record for this checkpoint.
