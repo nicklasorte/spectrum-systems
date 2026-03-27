@@ -147,7 +147,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         metavar="PATH",
         help=(
             "Path to a control_loop_certification_pack JSON artifact. "
-            "Required for fail-closed promotion gating in control-loop slice."
+            "Optional at CLI parse time. Runtime enforcement is fail-closed for "
+            "promotion scope: missing or invalid certification causes a blocked outcome."
         ),
     )
 
