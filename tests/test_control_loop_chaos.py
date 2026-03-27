@@ -19,7 +19,7 @@ from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
 from spectrum_systems.modules.runtime.decision_precedence import most_severe  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop  # noqa: E402
 from tests.helpers.replay_result_builder import (  # noqa: E402
-    align_replay_budget_with_observability,
+    enforce_replay_budget_consistency,
     make_canonical_replay_result,
 )
 
@@ -133,7 +133,7 @@ def test_precedence_rules_are_explicitly_enforced(
     if isinstance(consistency_status, str):
         replay["consistency_status"] = consistency_status
         replay["drift_detected"] = consistency_status == "mismatch"
-    align_replay_budget_with_observability(replay)
+    enforce_replay_budget_consistency(replay)
     decision = run_control_loop(replay, _trace_context_for(replay))["evaluation_control_decision"]  # type: ignore[arg-type]
     assert decision["system_response"] == expected_response
 
@@ -227,7 +227,7 @@ def test_load_scenarios_requires_expected_decision(tmp_path: Path) -> None:
         load_scenarios(path)
 
 
-def test_reason_matching_is_exact_by_default_and_opt_in_allows_extra() -> None:
+def test_reason_matching_is_exact_and_extra_reasons_fail() -> None:
     scenarios = load_scenarios(_FIXTURE_PATH)
     scenario = next(item for item in scenarios if item["scenario_id"] == "indeterminate-001")
     assert "trust_breach" in scenario["expected_reasons"]
@@ -237,6 +237,6 @@ def test_reason_matching_is_exact_by_default_and_opt_in_allows_extra() -> None:
     assert summary_exact["fail_count"] == 1
     assert "reasons" in summary_exact["mismatches"][0]["mismatch_fields"]
 
-    allow_extra = [{**scenario, "expected_reasons": ["deny_budget_invalid"], "allow_extra_reasons": True}]
-    summary_allow_extra = run_chaos_scenarios(scenarios=allow_extra, chaos_run_id="chaos-reasons-allow-extra")
-    assert summary_allow_extra["fail_count"] == 0
+    strict_mismatch = [{**scenario, "expected_reasons": ["deny_budget_invalid"]}]
+    summary_strict = run_chaos_scenarios(scenarios=strict_mismatch, chaos_run_id="chaos-reasons-strict")
+    assert summary_strict["fail_count"] == 1

@@ -139,3 +139,18 @@ def test_rolling_window_aggregation_returns_deterministic_budget_summary() -> No
     summary = aggregate_error_budget_window([replay, exhausted], last_n_runs=2)
     assert summary["aggregated_budget_status"] == "exhausted"
     assert summary["window_size"] == 2
+
+
+def test_budget_status_more_severe_than_highest_severity_fails_closed() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "exhausted"
+    replay["error_budget_status"]["highest_severity"] = "warning"
+    with pytest.raises(ControlLoopError, match="budget_status exceeds highest_severity"):
+        run_control_loop(replay, _trace_context(replay))
+
+
+def test_error_budget_schema_delegation_rejects_invalid_objective_status() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["objectives"][0]["status"] = "not-a-valid-status"
+    with pytest.raises(ControlLoopError, match="error_budget_status failed validation"):
+        run_control_loop(replay, _trace_context(replay))

@@ -58,6 +58,7 @@ def aggregate_error_budget_window(
         raise ControlLoopError("replay_results must be a list")
 
     normalized_rows: List[Dict[str, Any]] = []
+    budget_schema = load_schema("error_budget_status")
     for row in replay_results:
         if not isinstance(row, dict):
             raise ControlLoopError("each replay result in replay_results must be a dict")
@@ -67,6 +68,9 @@ def aggregate_error_budget_window(
         budget = row.get("error_budget_status")
         if not isinstance(budget, dict):
             raise ControlLoopError("each replay result must include error_budget_status")
+        budget_errors = _validate(budget, budget_schema)
+        if budget_errors:
+            raise ControlLoopError("error_budget_status failed validation: " + "; ".join(budget_errors))
         budget_status = budget.get("budget_status")
         if budget_status not in _ERROR_BUDGET_SEVERITY_ORDER:
             raise ControlLoopError("each error_budget_status.budget_status must be healthy|warning|exhausted|invalid")
@@ -104,7 +108,8 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
     budget = artifact.get("error_budget_status")
     if not isinstance(budget, dict):
         raise ControlLoopError("normalized signal missing required field")
-    budget_errors = _validate(budget, load_schema("error_budget_status"))
+    budget_schema = load_schema("error_budget_status")
+    budget_errors = _validate(budget, budget_schema)
     if budget_errors:
         raise ControlLoopError("error_budget_status failed validation: " + "; ".join(budget_errors))
 
@@ -159,13 +164,6 @@ def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
         raise ControlLoopError(f"unsupported artifact_type for control loop: {artifact_type}")
     _validate_replay_budget_inputs(artifact)
     source_artifact_id = str(artifact.get("replay_id") or "")
-    budget_status = artifact.get("error_budget_status", {}).get("budget_status")
-    decision_inputs = {
-        "consistency_status": artifact.get("consistency_status"),
-        "has_observability_metrics": isinstance(artifact.get("observability_metrics"), dict),
-        "has_error_budget_status": isinstance(artifact.get("error_budget_status"), dict),
-        "error_budget_status": budget_status,
-    }
 
     return {
         "signal_type": artifact_type,
@@ -181,7 +179,6 @@ def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
             )
             if key in artifact
         },
-        "decision_inputs": decision_inputs,
         "trace_id": str(artifact.get("trace_id") or ""),
         "run_id": str(artifact.get("replay_run_id") or source_artifact_id or ""),
         "artifact_type": artifact_type,
