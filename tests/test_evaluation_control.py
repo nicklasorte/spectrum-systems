@@ -35,7 +35,7 @@ def test_replay_result_with_explicit_drift_metric_is_supported() -> None:
 
 
 def test_non_replay_input_fails_closed() -> None:
-    with pytest.raises(EvaluationControlError, match="failed validation"):
+    with pytest.raises(EvaluationControlError, match="RUNTIME_REPLAY_BOUNDARY_VIOLATION"):
         build_evaluation_control_decision({"artifact_type": "eval_summary"})
 
 
