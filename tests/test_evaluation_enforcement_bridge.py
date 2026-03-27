@@ -10,7 +10,7 @@ Covers:
  7.  validate_enforcement_action returns errors for invalid action
  8.  determine_enforcement_scope defaults to 'release' when no context
  9.  determine_enforcement_scope reads scope from context
-10.  determine_enforcement_scope falls back to default on unknown scope
+10.  determine_enforcement_scope fails closed on unknown scope
 11.  enforce_budget_decision — allow → advisory allow, allowed_to_proceed=True
 12.  enforce_budget_decision — allow_with_warning → advisory warn, allowed_to_proceed=True
 13.  enforce_budget_decision — require_review → enforced, allowed_to_proceed=False (no override)
@@ -271,10 +271,10 @@ def test_determine_enforcement_scope_from_context():
     assert scope == "promotion"
 
 
-def test_determine_enforcement_scope_unknown_falls_back():
+def test_determine_enforcement_scope_unknown_fails_closed():
     decision = _make_decision()
-    scope = determine_enforcement_scope(decision, context={"enforcement_scope": "unknown_scope"})
-    assert scope == "release"
+    with pytest.raises(EnforcementBridgeError, match="Invalid enforcement_scope 'unknown_scope'"):
+        determine_enforcement_scope(decision, context={"enforcement_scope": "unknown_scope"})
 
 
 # ---------------------------------------------------------------------------
@@ -505,6 +505,11 @@ def test_run_enforcement_bridge_raises_on_invalid_decision():
 def test_run_enforcement_bridge_respects_scope():
     action = run_enforcement_bridge(_ALLOW, context={"enforcement_scope": "schema_change"})
     assert action["enforcement_scope"] == "schema_change"
+
+
+def test_run_enforcement_bridge_invalid_scope_fails_closed():
+    with pytest.raises(EnforcementBridgeError, match="Invalid enforcement_scope 'unknown_scope'"):
+        run_enforcement_bridge(_ALLOW, context={"enforcement_scope": "unknown_scope"})
 
 
 def test_promotion_certified_pass_allows(tmp_path: Path):

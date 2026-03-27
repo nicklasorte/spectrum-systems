@@ -517,7 +517,8 @@ def determine_enforcement_scope(
     """Determine the enforcement scope for this decision.
 
     The scope is read from ``context["enforcement_scope"]`` when present and
-    valid.  Otherwise the default scope (``"release"``) is used.
+    valid. Unknown values fail closed with ``EnforcementBridgeError``.
+    Otherwise the default scope (``"release"``) is used.
 
     Parameters
     ----------
@@ -541,10 +542,10 @@ def determine_enforcement_scope(
         if scope in valid_scopes:
             return scope
         if scope is not None:
-            logger.warning(
-                "Unknown enforcement_scope '%s' in context; falling back to default '%s'",
-                scope,
-                _DEFAULT_SCOPE,
+            allowed_scopes = ", ".join(sorted(valid_scopes))
+            raise EnforcementBridgeError(
+                "Invalid enforcement_scope "
+                f"'{scope}'. Allowed values: {allowed_scopes}."
             )
 
     return _DEFAULT_SCOPE
