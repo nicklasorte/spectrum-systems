@@ -38,6 +38,7 @@ class ScenarioExpectation:
     expected_response: str
     expected_decision: str
     expected_reasons: list[str]
+    allow_extra_reasons: bool
 
 
 def _utc_now() -> str:
@@ -63,10 +64,20 @@ def _normalize_reasons(*, rationale_code: str | None, triggered_signals: list[An
 
 
 def _validate_scenario_shape(scenario: dict[str, Any]) -> None:
-    required = ("scenario_id", "description", "expected_status", "expected_response")
+    required = ("scenario_id", "description", "expected_status", "expected_response", "expected_decision")
     missing = [field for field in required if field not in scenario]
     if missing:
         raise ControlLoopChaosError(f"scenario missing required fields {missing}: {scenario}")
+    expected_decision = scenario.get("expected_decision")
+    if expected_decision not in {"allow", "deny", "require_review"}:
+        raise ControlLoopChaosError(
+            f"scenario '{scenario.get('scenario_id')}' has invalid expected_decision: {expected_decision!r}"
+        )
+    allow_extra_reasons = scenario.get("allow_extra_reasons", False)
+    if not isinstance(allow_extra_reasons, bool):
+        raise ControlLoopChaosError(
+            f"scenario '{scenario.get('scenario_id')}' allow_extra_reasons must be a boolean when provided"
+        )
 
 
 def load_scenarios(path: Path) -> list[dict[str, Any]]:
@@ -130,8 +141,9 @@ def _build_expectation(scenario: dict[str, Any]) -> ScenarioExpectation:
         scenario_id=str(scenario["scenario_id"]),
         expected_status=str(scenario["expected_status"]),
         expected_response=str(scenario["expected_response"]),
-        expected_decision=str(scenario.get("expected_decision", "deny")),
+        expected_decision=str(scenario["expected_decision"]),
         expected_reasons=[str(item) for item in expected_reasons_raw if str(item)],
+        allow_extra_reasons=bool(scenario.get("allow_extra_reasons", False)),
     )
 
 
@@ -145,8 +157,11 @@ def _is_match(expectation: ScenarioExpectation, actual: dict[str, Any]) -> tuple
         mismatches.append("decision")
 
     actual_reasons = set(actual.get("reasons") or [])
-    missing_reasons = [item for item in expectation.expected_reasons if item not in actual_reasons]
-    if missing_reasons:
+    expected_reasons = set(expectation.expected_reasons)
+    if expectation.allow_extra_reasons:
+        if not expected_reasons.issubset(actual_reasons):
+            mismatches.append("reasons")
+    elif actual_reasons != expected_reasons:
         mismatches.append("reasons")
 
     return not mismatches, mismatches

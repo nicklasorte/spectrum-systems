@@ -11,6 +11,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
+    ControlLoopChaosError,
     load_scenarios,
     run_chaos_scenarios,
     run_chaos_scenarios_from_file,
@@ -178,3 +179,38 @@ def test_canonical_precedence_order_is_stable() -> None:
     assert most_severe(["promote", "warn", "hold"], default="promote") == "hold"
     assert most_severe(["warn", "freeze"], default="promote") == "freeze"
     assert most_severe(["hold", "rollback"], default="promote") == "rollback"
+
+
+def test_load_scenarios_requires_expected_decision(tmp_path: Path) -> None:
+    path = tmp_path / "missing_expected_decision.json"
+    path.write_text(
+        json.dumps(
+            [
+                {
+                    "scenario_id": "s-1",
+                    "description": "missing expected_decision",
+                    "artifact": None,
+                    "expected_status": "blocked",
+                    "expected_response": "block",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ControlLoopChaosError, match="missing required fields"):
+        load_scenarios(path)
+
+
+def test_reason_matching_is_exact_by_default_and_opt_in_allows_extra() -> None:
+    scenarios = load_scenarios(_FIXTURE_PATH)
+    scenario = next(item for item in scenarios if item["scenario_id"] == "indeterminate-001")
+    assert "trust_breach" in scenario["expected_reasons"]
+
+    exact_only = [{**scenario, "expected_reasons": ["deny_trust_breach"]}]
+    summary_exact = run_chaos_scenarios(scenarios=exact_only, chaos_run_id="chaos-reasons-exact")
+    assert summary_exact["fail_count"] == 1
+    assert "reasons" in summary_exact["mismatches"][0]["mismatch_fields"]
+
+    allow_extra = [{**scenario, "expected_reasons": ["deny_trust_breach"], "allow_extra_reasons": True}]
+    summary_allow_extra = run_chaos_scenarios(scenarios=allow_extra, chaos_run_id="chaos-reasons-allow-extra")
+    assert summary_allow_extra["fail_count"] == 0

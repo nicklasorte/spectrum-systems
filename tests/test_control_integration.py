@@ -180,5 +180,41 @@ def test_blocked_execution_fails_closed_if_auto_generation_fails() -> None:
         "spectrum_systems.modules.runtime.control_integration.generate_failure_eval_case",
         side_effect=EvalCaseGenerationError("boom"),
     ):
-        with pytest.raises(ContractRuntimeError, match="failure_eval_case generation required"):
-            enforce_control_before_execution(_ctx())
+        result = enforce_control_before_execution(_ctx())
+
+    assert result["continuation_allowed"] is False
+    assert result["execution_status"] == "blocked"
+    assert result["generated_failure_eval_case_error"]["error_type"] == "EvalCaseGenerationError"
+    assert result["generated_failure_eval_case_error"]["message"] == "boom"
+
+
+def test_require_review_is_blocked_for_publication_and_decision() -> None:
+    with patch(
+        "spectrum_systems.modules.runtime.control_integration.enforce_control_decision",
+        return_value={
+            "artifact_type": "enforcement_result",
+            "schema_version": "1.1.0",
+            "enforcement_result_id": "ENF-REVIEW-1",
+            "timestamp": "2026-03-22T00:00:00Z",
+            "trace_id": "44444444-4444-4444-8444-444444444444",
+            "run_id": "eval-run-20260322T000000Z",
+            "input_decision_reference": "ecd-review-1",
+            "enforcement_action": "require_manual_review",
+            "final_status": "require_review",
+            "rationale_code": "require_review_warning_signal",
+            "fail_closed": True,
+            "enforcement_path": "baf_single_path",
+            "provenance": {
+                "source_artifact_type": "evaluation_control_decision",
+                "source_artifact_id": "ecd-review-1",
+            },
+        },
+    ):
+        result = enforce_control_before_execution(_ctx())
+
+    assert result["continuation_allowed"] is False
+    assert result["execution_status"] == "blocked"
+    assert result["publication_blocked"] is True
+    assert result["decision_blocked"] is True
+    assert result["human_review_required"] is True
+    assert result["escalation_triggered"] is False

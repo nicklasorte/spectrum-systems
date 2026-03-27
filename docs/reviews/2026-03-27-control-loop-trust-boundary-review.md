@@ -219,6 +219,19 @@ Add at least one chaos scenario with a raw `replay_result` artifact where `consi
 
 ### REC-07 (Medium → R3) — Change chaos `_is_match` reason check to exact-set equality
 
+---
+
+## Follow-up Closure Note — 2026-03-27 (PQX hardening slice)
+
+The highest-priority remediation items were implemented in a focused hardening pass:
+
+- Removed unreachable `deny_indeterminate_failure` vocabulary from both implementation and schema; indeterminate routing now explicitly resolves through `deny_trust_breach`.
+- Updated integration blocked-path behavior so `EvalCaseGenerationError` no longer escapes as a top-level runtime exception; blocked integration results now return deterministically with structured secondary-failure details.
+- Tightened `require_review` enforcement mapping so publication and decision usage remain blocked until review completion.
+- Hardened chaos scenario semantics by requiring explicit `expected_decision` and making reason matching exact by default (with explicit `allow_extra_reasons` opt-in).
+
+These changes materially resolve diagnostic ambiguity and blocked-path observability concerns called out in G1, G2, R1, R2, and R3.
+
 Replace the subset check with `actual_reasons == set(expectation.expected_reasons)` to catch unexpected signal codes. Where extra reasons are intentionally acceptable, allow scenarios to specify an `allow_extra_reasons: true` flag.
 
 **Expected outcome:** Reason set pollution triggers scenario failure.
