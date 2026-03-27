@@ -133,6 +133,12 @@ def _write_certification_pack(
     return out
 
 
+def _write_certification_payload(tmp_path: Path, filename: str, payload: Dict[str, Any]) -> Path:
+    out = tmp_path / filename
+    out.write_text(json.dumps(payload), encoding="utf-8")
+    return out
+
+
 # ---------------------------------------------------------------------------
 # 1–3. load_budget_decision
 # ---------------------------------------------------------------------------
@@ -592,6 +598,153 @@ def test_promotion_missing_certification_is_deterministically_fail_closed():
     assert first["allowed_to_proceed"] is False and second["allowed_to_proceed"] is False
     assert first["certification_gate"] == second["certification_gate"]
     assert first["reasons"] == second["reasons"]
+
+
+@pytest.mark.parametrize(
+    ("decision", "certification_status", "expected_fragments"),
+    [
+        ("fail", "certified", ["'decision': 'fail'", "'certification_status': 'certified'"]),
+        ("pass", "uncertified", ["'decision': 'pass'", "'certification_status': 'uncertified'"]),
+    ],
+    ids=["certified-with-fail-decision", "pass-decision-with-uncertified-status"],
+)
+def test_promotion_contradictory_certification_state_blocks_fail_closed(
+    tmp_path: Path,
+    decision: str,
+    certification_status: str,
+    expected_fragments: list[str],
+):
+    certification_path = _write_certification_pack(
+        tmp_path,
+        decision=decision,
+        certification_status=certification_status,
+    )
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"] == {
+        "artifact_reference": str(certification_path),
+        "certification_decision": "malformed",
+        "certification_status": "malformed",
+        "block_reason": action["certification_gate"]["block_reason"],
+    }
+    assert str(action["certification_gate"]["block_reason"]).startswith(
+        "control_loop_certification_pack failed schema validation:"
+    )
+    assert "not valid under any of the given schemas" in str(action["certification_gate"]["block_reason"])
+    for fragment in expected_fragments:
+        assert fragment in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_enum_violation_blocks_as_malformed(tmp_path: Path):
+    payload = _load_json(_CERTIFICATION_PACK)
+    payload["decision"] = "p4ss"
+    certification_path = _write_certification_payload(tmp_path, "enum-violation-certification-pack.json", payload)
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"]["artifact_reference"] == str(certification_path)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
+    assert "'p4ss' is not one of ['pass', 'fail', 'blocked']" in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_additional_properties_violation_blocks(tmp_path: Path):
+    payload = _load_json(_CERTIFICATION_PACK)
+    payload["unexpected_flag"] = "adversarial"
+    certification_path = _write_certification_payload(
+        tmp_path,
+        "additional-properties-certification-pack.json",
+        payload,
+    )
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"]["artifact_reference"] == str(certification_path)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
+    assert "Additional properties are not allowed ('unexpected_flag' was unexpected)" in str(
+        action["certification_gate"]["block_reason"]
+    )
+
+
+def test_promotion_missing_required_field_blocks(tmp_path: Path):
+    payload = _load_json(_CERTIFICATION_PACK)
+    payload.pop("decision")
+    certification_path = _write_certification_payload(tmp_path, "missing-required-certification-pack.json", payload)
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"]["artifact_reference"] == str(certification_path)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
+    assert "'decision' is a required property" in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_trace_provenance_inconsistency_blocks(tmp_path: Path):
+    payload = _load_json(_CERTIFICATION_PACK)
+    payload["provenance_trace_refs"] = {
+        "commit_sha": "abcd1234ef567890",
+        "branch": "main",
+        "trace_refs": [],
+    }
+    certification_path = _write_certification_payload(
+        tmp_path,
+        "invalid-trace-provenance-certification-pack.json",
+        payload,
+    )
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"]["artifact_reference"] == str(certification_path)
+    assert action["certification_gate"]["certification_status"] == "malformed"
+    assert action["certification_gate"]["certification_decision"] == "malformed"
+    assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
+    assert "[] should be non-empty" in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_semantically_impossible_certified_blocked_combination_blocks(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path, decision="blocked", certification_status="certified")
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+    assert action["status"] == "enforced"
+    assert action["certification_gate"] == {
+        "artifact_reference": str(certification_path),
+        "certification_decision": "malformed",
+        "certification_status": "malformed",
+        "block_reason": action["certification_gate"]["block_reason"],
+    }
+    assert str(action["certification_gate"]["block_reason"]).startswith(
+        "control_loop_certification_pack failed schema validation:"
+    )
+    assert "not valid under any of the given schemas" in str(action["certification_gate"]["block_reason"])
 
 
 # ---------------------------------------------------------------------------
