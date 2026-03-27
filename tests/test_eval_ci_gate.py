@@ -152,7 +152,7 @@ def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
     ])
 
     summary = json.loads((out_dir / "evaluation_ci_gate_result.json").read_text(encoding="utf-8"))
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert "eval_cases" in summary["missing_artifacts"]
     assert summary["id"] == summary["gate_run_id"]
@@ -164,7 +164,7 @@ def test_invalid_schema_artifact_fails_closed(tmp_path: Path) -> None:
 
     code, summary = _run_gate(tmp_path, case=bad_case)
 
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert any(item.startswith("eval_case[") for item in summary["invalid_artifacts"])
 
@@ -172,7 +172,7 @@ def test_invalid_schema_artifact_fails_closed(tmp_path: Path) -> None:
 def test_indeterminate_eval_outcome_fails_closed(tmp_path: Path) -> None:
     code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="indeterminate", forced_score=0.0))
 
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert "indeterminate_eval_outcome_detected" in summary["blocking_reasons"]
 
@@ -187,10 +187,10 @@ def test_indeterminate_can_be_explicitly_overridden_by_policy(tmp_path: Path) ->
     )
 
     # Exit code contract:
-    # - 1 => non-blocking quality failure
-    # - 2 => blocked control/runtime governance condition
+    # - 0 => pass
+    # - 1 => any fail/blocked condition
     # Even when indeterminate blocking is disabled, threshold/control gating can still block.
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert "indeterminate_eval_outcome_detected" not in summary["blocking_reasons"]
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
@@ -203,7 +203,7 @@ def test_threshold_failure_fails_closed(tmp_path: Path) -> None:
     )
 
     # Threshold failures are now coupled to control-loop blocking in this path.
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert any(reason.startswith("threshold_failed:") for reason in summary["blocking_reasons"])
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
@@ -250,7 +250,7 @@ def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> 
         policy=_policy(reproducibility_score_min=0.1, control_thresholds={"trust_threshold": 0.8}),
     )
 
-    assert code == 2
+    assert code == 1
     assert summary["status"] == "blocked"
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
 

@@ -69,7 +69,7 @@ def test_chaos_runner_reports_mismatch_when_expectation_is_wrong() -> None:
     ("artifact", "expected_signal"),
     [
         ({"artifact_type": "eval_summary", "eval_run_id": "x"}, "unsupported artifact_type"),
-        ({"artifact_type": "replay_result", "replay_id": "x"}, "replay_result must include observability_metrics"),
+        ({"artifact_type": "replay_result", "replay_id": "x"}, "normalized signal missing required field"),
     ],
 )
 def test_fail_closed_on_malformed_input(artifact: dict[str, object], expected_signal: str) -> None:
@@ -143,6 +143,35 @@ def test_cli_returns_zero_when_no_mismatch(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["fail_count"] == 0
+
+
+def test_cli_returns_one_when_mismatch(tmp_path: Path) -> None:
+    output = tmp_path / "summary.json"
+    script = _REPO_ROOT / "scripts" / "run_control_loop_chaos_tests.py"
+    scenarios = load_scenarios(_FIXTURE_PATH)
+    tampered_path = tmp_path / "tampered_scenarios.json"
+    tampered_path.write_text(
+        json.dumps([{**scenarios[0], "expected_response": "allow"}], indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--scenarios",
+            str(tampered_path),
+            "--output",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 1, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["fail_count"] == 1
 
 
 def test_canonical_precedence_order_is_stable() -> None:
