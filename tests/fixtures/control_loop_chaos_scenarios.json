@@ -45,7 +45,7 @@
   {
     "scenario_id": "invalid-003",
     "category": "missing_or_invalid",
-    "description": "Invalid enum in system_status is rejected and fails closed.",
+    "description": "Trace linkage mismatch in error_budget_status.trace_refs.trace_id is rejected and fails closed.",
     "artifact": {
       "artifact_id": "67721f5ed3156ca478d63be1bf9e2d1e5e2511971d9c8f233c669963d752454a",
       "artifact_type": "replay_result",
@@ -232,7 +232,7 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "invalid",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
@@ -255,7 +255,7 @@
             "status": "healthy"
           }
         ],
-        "highest_severity": "healthy",
+        "highest_severity": "invalid",
         "triggered_conditions": [],
         "reasons": [],
         "generated_by_version": "error_budget.py@1.0.0"
@@ -265,7 +265,8 @@
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_trust_breach",
+      "budget_invalid",
+      "deny_budget_invalid",
       "indeterminate_failure",
       "trust_breach"
     ]
@@ -347,40 +348,55 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
             "observed_value": 0.85,
             "allowed_error": 0.01,
-            "consumed_error": 0.0,
-            "remaining_error": 0.01,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.14,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           },
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
             "observed_value": 0.2,
             "allowed_error": 0.05,
-            "consumed_error": 0.0,
-            "remaining_error": 0.05,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.15,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "replay_success_rate consumption_ratio=1.000000 status=exhausted",
+          "drift_exceed_threshold_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "healthy",
-    "expected_response": "allow",
-    "expected_decision": "allow",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
+    "expected_decision": "deny",
     "expected_reasons": [
-      "allow_healthy_eval_summary"
+      "budget_exhausted",
+      "deny_budget_exhausted"
     ]
   },
   {
@@ -460,17 +476,17 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
             "observed_value": 0.8499,
             "allowed_error": 0.01,
-            "consumed_error": 0.0,
-            "remaining_error": 0.01,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.1401,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           },
           {
             "metric_name": "drift_exceed_threshold_rate",
@@ -483,17 +499,26 @@
             "status": "healthy"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "replay_success_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "warning",
-    "expected_response": "warn",
-    "expected_decision": "require_review",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
+    "expected_decision": "deny",
     "expected_reasons": [
-      "require_review_warning_signal",
+      "budget_exhausted",
+      "deny_budget_exhausted",
       "reliability_breach"
     ]
   },
@@ -574,32 +599,46 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
             "observed_value": 0.95,
             "allowed_error": 0.01,
-            "consumed_error": 0.0,
-            "remaining_error": 0.01,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.04,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           },
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
             "observed_value": 0.2001,
             "allowed_error": 0.05,
-            "consumed_error": 0.0,
-            "remaining_error": 0.05,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.1501,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "replay_success_rate consumption_ratio=1.000000 status=exhausted",
+          "drift_exceed_threshold_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
@@ -607,7 +646,8 @@
     "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_stability_breach",
+      "budget_exhausted",
+      "deny_budget_exhausted",
       "stability_breach"
     ]
   },
@@ -688,17 +728,17 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
             "observed_value": 0.95,
             "allowed_error": 0.01,
-            "consumed_error": 0.0,
-            "remaining_error": 0.01,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.04,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           },
           {
             "metric_name": "drift_exceed_threshold_rate",
@@ -711,9 +751,17 @@
             "status": "healthy"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "replay_success_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
@@ -721,7 +769,8 @@
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_trust_breach",
+      "budget_exhausted",
+      "deny_budget_exhausted",
       "trust_breach"
     ]
   },
@@ -802,7 +851,7 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
@@ -819,15 +868,23 @@
             "target_value": 0.05,
             "observed_value": 0.9,
             "allowed_error": 0.05,
-            "consumed_error": 0.0,
-            "remaining_error": 0.05,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.85,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "drift_exceed_threshold_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
@@ -835,7 +892,8 @@
     "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_stability_breach",
+      "budget_exhausted",
+      "deny_budget_exhausted",
       "stability_breach"
     ]
   },
@@ -1030,32 +1088,46 @@
         "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
         "policy_id": "sre-error-budget-policy-v1",
         "budget_window": "single_run",
-        "budget_status": "healthy",
+        "budget_status": "exhausted",
         "objectives": [
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
             "observed_value": 0.95,
             "allowed_error": 0.01,
-            "consumed_error": 0.0,
-            "remaining_error": 0.01,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.04,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           },
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
             "observed_value": 0.9,
             "allowed_error": 0.05,
-            "consumed_error": 0.0,
-            "remaining_error": 0.05,
-            "consumption_ratio": 0.0,
-            "status": "healthy"
+            "consumed_error": 0.85,
+            "remaining_error": 0.0,
+            "consumption_ratio": 1.0,
+            "status": "exhausted"
           }
         ],
-        "highest_severity": "healthy",
-        "triggered_conditions": [],
-        "reasons": [],
+        "highest_severity": "exhausted",
+        "triggered_conditions": [
+          {
+            "metric_name": "replay_success_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          },
+          {
+            "metric_name": "drift_exceed_threshold_rate",
+            "status": "exhausted",
+            "consumption_ratio": 1.0
+          }
+        ],
+        "reasons": [
+          "replay_success_rate consumption_ratio=1.000000 status=exhausted",
+          "drift_exceed_threshold_rate consumption_ratio=1.000000 status=exhausted"
+        ],
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
@@ -1063,7 +1135,8 @@
     "expected_response": "block",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_trust_breach",
+      "budget_exhausted",
+      "deny_budget_exhausted",
       "stability_breach",
       "trust_breach"
     ]
