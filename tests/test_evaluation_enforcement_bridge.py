@@ -1,58 +1,16 @@
 """Tests for BU — Governor Enforcement Bridge (evaluation_enforcement_bridge.py).
 
-Covers:
- 1.  load_budget_decision loads a valid decision
- 2.  load_budget_decision raises on missing file
- 3.  load_budget_decision raises InvalidDecisionError on invalid JSON structure
- 4.  validate_budget_decision returns empty list for valid decision
- 5.  validate_budget_decision returns errors for invalid decision
- 6.  validate_enforcement_action returns empty list for valid action
- 7.  validate_enforcement_action returns errors for invalid action
- 8.  determine_enforcement_scope defaults to 'release' when no context
- 9.  determine_enforcement_scope reads scope from context
-10.  determine_enforcement_scope fails closed on unknown scope
-11.  enforce_budget_decision — allow → advisory allow, allowed_to_proceed=True
-12.  enforce_budget_decision — allow_with_warning → advisory warn, allowed_to_proceed=True
-13.  enforce_budget_decision — require_review → enforced, allowed_to_proceed=False (no override)
-14.  enforce_budget_decision — require_review + valid override_authorization → enforced, allowed_to_proceed=True
-15.  enforce_budget_decision — freeze_changes → enforced, allowed_to_proceed=False
-16.  enforce_budget_decision — block_release → enforced, allowed_to_proceed=False
-17.  enforce_budget_decision raises InvalidDecisionError on invalid decision
-18.  build_enforcement_action produces schema-valid artifact
-19.  build_enforcement_action includes all required fields
-20.  build_enforcement_action raises on unknown system_response
-21.  run_enforcement_bridge — allow fixture → allow action
-22.  run_enforcement_bridge — warn fixture → warn action
-23.  run_enforcement_bridge — require_review fixture → blocked action (no override)
-24.  run_enforcement_bridge — require_review fixture + override_authorization → allowed action
-25.  run_enforcement_bridge — freeze_changes fixture → blocked action
-26.  run_enforcement_bridge — block_release fixture → blocked action
-27.  run_enforcement_bridge raises on missing file
-28.  run_enforcement_bridge raises InvalidDecisionError on invalid decision
-29.  run_enforcement_bridge respects context enforcement_scope
-30.  CLI exit 0 — allow
-31.  CLI exit 0 — warn
-32.  CLI exit 1 — require_review (no override)
-33.  CLI exit 0 — require_review with override-authorization
-34.  CLI exit 2 — freeze_changes
-35.  CLI exit 2 — block_release
-36.  CLI exit 2 — invalid input
-37.  CLI writes enforcement action artifact to output-dir
-38.  All produced enforcement actions are schema-valid
-39.  load_override_authorization loads a valid override authorization
-40.  load_override_authorization raises on missing file
-41.  load_override_authorization raises on schema-invalid override
-42.  validate_override_authorization returns empty list for valid override
-43.  validate_override_authorization returns errors for invalid override
-44.  verify_override_applicability passes for matching override/decision/action
-45.  verify_override_applicability fails on decision_id mismatch
-46.  verify_override_applicability fails on summary_id mismatch
-47.  verify_override_applicability fails on action_id mismatch
-48.  verify_override_applicability fails on scope mismatch
-49.  verify_override_applicability fails when override is expired
-50.  verify_override_applicability fails when action_type not in allowed_actions
-51.  enforce_budget_decision fails closed when override_authorization is schema-invalid
-52.  enforce_budget_decision fails closed when override_authorization is expired
+Coverage manifest (current behavior):
+1. Decision/action loading and validation fail closed on malformed or missing inputs.
+2. Scope resolution supports release/promotion/schema_change and rejects unknown scopes.
+3. Canonical control_loop responses map to stable enforcement actions (allow/warn/block/freeze).
+4. Promotion scope applies control-loop certification gating:
+   - certified/pass preserves allow/warn semantics and allows proceed
+   - missing/malformed/blocked/uncertified artifacts fail closed to block
+5. CLI exit behavior:
+   - exit 0 for allowed outcomes (allow, warn, certified promotion pass)
+   - exit 2 for blocked/freeze/invalid/unsupported override paths
+6. Override authorization artifacts and applicability checks are validated directly.
 """
 from __future__ import annotations
 
@@ -522,7 +480,22 @@ def test_promotion_certified_pass_allows(tmp_path: Path):
     assert action["action_type"] == "allow"
     assert action["certification_gate"]["certification_status"] == "certified"
     assert action["certification_gate"]["certification_decision"] == "pass"
+    assert action["certification_gate"]["block_reason"] is None
     assert action["certification_gate"]["artifact_reference"].startswith(str(certification_path))
+
+
+def test_promotion_warn_with_certified_pass_preserves_warn(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
+    action = run_enforcement_bridge(
+        _WARN,
+        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+    )
+    assert action["allowed_to_proceed"] is True
+    assert action["action_type"] == "warn"
+    assert action["status"] == "advisory"
+    assert action["certification_gate"]["certification_status"] == "certified"
+    assert action["certification_gate"]["certification_decision"] == "pass"
+    assert action["certification_gate"]["block_reason"] is None
 
 
 def test_promotion_uncertified_fail_blocks(tmp_path: Path):
