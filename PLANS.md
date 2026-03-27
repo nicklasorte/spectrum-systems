@@ -166,6 +166,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-SRE-09-SRE-10-TEST-SCAFFOLD-TIGHTENING-2026-03-27.md | SRE-09/SRE-10 — test/fixture alignment with replay budget consistency hardening | Active |
 
 | docs/review-actions/PLAN-PQX-CLT-002-2026-03-27.md | PQX-CLT-002 — Control Loop Trust Hardening | Active |
+| docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md | PQX-CLT-003 — Governed Control-Loop Certification Pack (trust-boundary/runtime) | Active |
 
 | docs/review-actions/PLAN-TRACE-STORE-ISOLATION-HARDENING-2026-03-26.md | TRACE-STORE-ISOLATION-HARDENING — narrow global trace-state regression hardening | Active |
 | docs/review-actions/PLAN-SRE-03-REPLAY-CONTRACT-BOUNDARY-HARDENING-2026-03-26.md | SRE-03 — replay-adjacent governed contract boundary hardening slice | Active |
