@@ -20,6 +20,30 @@ def _stable_artifact_id(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Mutate and return replay_result with metric/objective observed-value consistency."""
+    observability = result.get("observability_metrics")
+    budget = result.get("error_budget_status")
+    if not isinstance(observability, dict) or not isinstance(budget, dict):
+        return result
+    metrics = observability.get("metrics")
+    objectives = budget.get("objectives")
+    if not isinstance(metrics, dict) or not isinstance(objectives, list):
+        return result
+
+    for objective in objectives:
+        if not isinstance(objective, dict):
+            continue
+        metric_name = objective.get("metric_name")
+        if metric_name not in {"replay_success_rate", "drift_exceed_threshold_rate"}:
+            continue
+        observed_metric = metrics.get(metric_name)
+        if not isinstance(observed_metric, (int, float)):
+            continue
+        objective["observed_value"] = float(observed_metric)
+    return result
+
+
 def make_canonical_replay_result(
     *,
     replay_id: str = "RPL-test-001",
@@ -70,6 +94,7 @@ def make_canonical_replay_result(
         "observability_metrics": observability,
         "error_budget_status": error_budget,
     }
+    align_replay_budget_with_observability(result)
     result["artifact_id"] = _stable_artifact_id({k: v for k, v in result.items() if k != "artifact_id"})
     if overrides:
         merged = deepcopy(result)
@@ -80,9 +105,12 @@ def make_canonical_replay_result(
             merged["provenance"] = merged_prov
         if merged.get("consistency_status") == "mismatch":
             merged["drift_detected"] = True
+        align_replay_budget_with_observability(merged)
         if "artifact_id" not in overrides:
             merged["artifact_id"] = _stable_artifact_id({k: v for k, v in merged.items() if k != "artifact_id"})
         return merged
     if result.get("consistency_status") == "mismatch":
         result["drift_detected"] = True
+    align_replay_budget_with_observability(result)
+    result["artifact_id"] = _stable_artifact_id({k: v for k, v in result.items() if k != "artifact_id"})
     return result

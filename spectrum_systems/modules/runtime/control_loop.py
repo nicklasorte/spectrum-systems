@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -17,8 +17,13 @@ class ControlLoopError(Exception):
     """Raised when control-loop evaluation cannot produce a governed decision."""
 
 
-def _now_iso() -> str:
-    return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+_ERROR_BUDGET_SEVERITY_ORDER = {
+    "healthy": 0,
+    "warning": 1,
+    "exhausted": 2,
+    "invalid": 3,
+}
+_MAX_EMBEDDED_TIMESTAMP_DELTA_SECONDS = 366 * 24 * 60 * 60
 
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
@@ -27,15 +32,133 @@ def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
     return [e.message for e in errors]
 
 
+def _parse_rfc3339_utc(value: Any, *, field_name: str) -> datetime:
+    if not isinstance(value, str) or not value:
+        raise ControlLoopError(f"{field_name} must be a non-empty RFC3339 timestamp string")
+    normalized = value.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise ControlLoopError(f"{field_name} must be a valid RFC3339 timestamp string") from exc
+    if parsed.tzinfo is None:
+        raise ControlLoopError(f"{field_name} must include timezone information")
+    return parsed
+
+
+def aggregate_error_budget_window(
+    replay_results: List[Dict[str, Any]],
+    *,
+    last_n_runs: int = 5,
+) -> Dict[str, Any]:
+    """Thin deterministic rolling-window aggregation for replay error-budget statuses."""
+    if not isinstance(last_n_runs, int) or last_n_runs <= 0:
+        raise ControlLoopError("last_n_runs must be a positive integer")
+    if not isinstance(replay_results, list):
+        raise ControlLoopError("replay_results must be a list")
+
+    normalized_rows: List[Dict[str, Any]] = []
+    for row in replay_results:
+        if not isinstance(row, dict):
+            raise ControlLoopError("each replay result in replay_results must be a dict")
+        replay_run_id = row.get("replay_run_id")
+        if not isinstance(replay_run_id, str) or not replay_run_id.strip():
+            raise ControlLoopError("each replay result must include replay_run_id")
+        budget = row.get("error_budget_status")
+        if not isinstance(budget, dict):
+            raise ControlLoopError("each replay result must include error_budget_status")
+        budget_status = budget.get("budget_status")
+        if budget_status not in _ERROR_BUDGET_SEVERITY_ORDER:
+            raise ControlLoopError("each error_budget_status.budget_status must be healthy|warning|exhausted|invalid")
+        timestamp = str(row.get("timestamp") or "")
+        normalized_rows.append(
+            {
+                "replay_run_id": replay_run_id,
+                "budget_status": budget_status,
+                "timestamp": timestamp,
+            }
+        )
+
+    sorted_rows = sorted(normalized_rows, key=lambda item: (item["timestamp"], item["replay_run_id"]))
+    window = sorted_rows[-last_n_runs:]
+    counts = {key: 0 for key in _ERROR_BUDGET_SEVERITY_ORDER}
+    for row in window:
+        counts[row["budget_status"]] += 1
+    aggregate_status = "healthy"
+    for row in window:
+        if _ERROR_BUDGET_SEVERITY_ORDER[row["budget_status"]] > _ERROR_BUDGET_SEVERITY_ORDER[aggregate_status]:
+            aggregate_status = row["budget_status"]
+    return {
+        "window_size": len(window),
+        "requested_window_size": last_n_runs,
+        "run_ids": [row["replay_run_id"] for row in window],
+        "budget_status_counts": counts,
+        "aggregated_budget_status": aggregate_status,
+    }
+
+
+def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
+    observability = artifact.get("observability_metrics")
+    if not isinstance(observability, dict):
+        raise ControlLoopError("replay_result must include observability_metrics")
+    budget = artifact.get("error_budget_status")
+    if not isinstance(budget, dict):
+        raise ControlLoopError("replay_result must include error_budget_status")
+
+    metrics = observability.get("metrics")
+    if not isinstance(metrics, dict):
+        raise ControlLoopError("replay_result.observability_metrics.metrics must be an object")
+    objectives = budget.get("objectives")
+    if not isinstance(objectives, list):
+        raise ControlLoopError("replay_result.error_budget_status.objectives must be an array")
+    objective_by_metric = {
+        obj.get("metric_name"): obj for obj in objectives if isinstance(obj, dict) and obj.get("metric_name")
+    }
+    for metric_name in ("replay_success_rate", "drift_exceed_threshold_rate"):
+        metric_value = metrics.get(metric_name)
+        objective = objective_by_metric.get(metric_name)
+        if isinstance(metric_value, (int, float)) and isinstance(objective, dict):
+            observed_value = objective.get("observed_value")
+            if not isinstance(observed_value, (int, float)) or abs(float(metric_value) - float(observed_value)) > 1e-9:
+                raise ControlLoopError(
+                    "inconsistent replay_result observability_metrics vs error_budget_status for "
+                    f"{metric_name}"
+                )
+
+    budget_status = budget.get("budget_status")
+    highest_severity = budget.get("highest_severity")
+    if budget_status not in _ERROR_BUDGET_SEVERITY_ORDER:
+        raise ControlLoopError("replay_result.error_budget_status.budget_status must be healthy|warning|exhausted|invalid")
+    if highest_severity not in _ERROR_BUDGET_SEVERITY_ORDER:
+        raise ControlLoopError("replay_result.error_budget_status.highest_severity must be healthy|warning|exhausted|invalid")
+    if _ERROR_BUDGET_SEVERITY_ORDER[highest_severity] > _ERROR_BUDGET_SEVERITY_ORDER[budget_status]:
+        raise ControlLoopError("inconsistent replay_result error_budget_status highest_severity exceeds budget_status")
+    if budget_status == "healthy" and budget.get("triggered_conditions"):
+        raise ControlLoopError("inconsistent replay_result error_budget_status: healthy budget cannot have triggered_conditions")
+
+    replay_timestamp = _parse_rfc3339_utc(artifact.get("timestamp"), field_name="replay_result.timestamp")
+    for field_name, source in (
+        ("replay_result.observability_metrics.timestamp", observability.get("timestamp")),
+        ("replay_result.error_budget_status.timestamp", budget.get("timestamp")),
+    ):
+        if source is None:
+            continue
+        nested_timestamp = _parse_rfc3339_utc(source, field_name=field_name)
+        if abs((replay_timestamp - nested_timestamp).total_seconds()) > _MAX_EMBEDDED_TIMESTAMP_DELTA_SECONDS:
+            raise ControlLoopError(f"stale timestamps detected: {field_name} is too far from replay_result.timestamp")
+
+
 def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
     artifact_type = artifact.get("artifact_type")
     if artifact_type != "replay_result":
         raise ControlLoopError(f"unsupported artifact_type for control loop: {artifact_type}")
+    _validate_replay_budget_inputs(artifact)
     source_artifact_id = str(artifact.get("replay_id") or "")
+    budget_status = artifact.get("error_budget_status", {}).get("budget_status")
     decision_inputs = {
         "consistency_status": artifact.get("consistency_status"),
         "has_observability_metrics": isinstance(artifact.get("observability_metrics"), dict),
         "has_error_budget_status": isinstance(artifact.get("error_budget_status"), dict),
+        "error_budget_status": budget_status,
     }
 
     return {
@@ -178,7 +301,7 @@ def run_control_loop(
             "evaluation_control_from_replay_result"
         ),
         "decision": decision["decision"],
-        "timestamp": _now_iso(),
+        "timestamp": decision["created_at"],
     }
     _validate_control_trace(control_trace)
 

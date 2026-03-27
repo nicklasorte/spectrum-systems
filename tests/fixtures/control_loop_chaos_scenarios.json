@@ -352,7 +352,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.85,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -362,7 +362,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.2,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -465,7 +465,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.8499,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -475,7 +475,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.02,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -579,7 +579,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.95,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -589,7 +589,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.2001,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -693,7 +693,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.95,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -703,7 +703,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.02,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -807,7 +807,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.99,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -817,7 +817,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.9,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -921,7 +921,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.99,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -931,7 +931,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.01,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,
@@ -1035,7 +1035,7 @@
           {
             "metric_name": "replay_success_rate",
             "target_value": 0.99,
-            "observed_value": 1.0,
+            "observed_value": 0.95,
             "allowed_error": 0.01,
             "consumed_error": 0.0,
             "remaining_error": 0.01,
@@ -1045,7 +1045,7 @@
           {
             "metric_name": "drift_exceed_threshold_rate",
             "target_value": 0.05,
-            "observed_value": 0.0,
+            "observed_value": 0.9,
             "allowed_error": 0.05,
             "consumed_error": 0.0,
             "remaining_error": 0.05,

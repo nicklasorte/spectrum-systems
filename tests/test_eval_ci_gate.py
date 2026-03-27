@@ -186,9 +186,14 @@ def test_indeterminate_can_be_explicitly_overridden_by_policy(tmp_path: Path) ->
         policy=policy,
     )
 
-    assert code == 1
-    assert summary["status"] == "fail"
+    # Exit code contract:
+    # - 1 => non-blocking quality failure
+    # - 2 => blocked control/runtime governance condition
+    # Even when indeterminate blocking is disabled, threshold/control gating can still block.
+    assert code == 2
+    assert summary["status"] == "blocked"
     assert "indeterminate_eval_outcome_detected" not in summary["blocking_reasons"]
+    assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
 
 
 def test_threshold_failure_fails_closed(tmp_path: Path) -> None:
@@ -197,9 +202,11 @@ def test_threshold_failure_fails_closed(tmp_path: Path) -> None:
         case=_eval_case(forced_status="fail", forced_score=0.0),
     )
 
-    assert code == 1
-    assert summary["status"] == "fail"
+    # Threshold failures are now coupled to control-loop blocking in this path.
+    assert code == 2
+    assert summary["status"] == "blocked"
     assert any(reason.startswith("threshold_failed:") for reason in summary["blocking_reasons"])
+    assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
 
 
 def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> None:

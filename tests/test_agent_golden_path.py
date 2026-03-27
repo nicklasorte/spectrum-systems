@@ -94,6 +94,7 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert model_invocation["structured_output_status"] == "not_requested"
     assert artifacts["structured_output"]["artifact_type"] == "eval_case"
     assert artifacts["eval_result"]["result_status"] == "pass"
+    assert artifacts["replay_result"]["error_budget_status"]["artifact_type"] == "error_budget_status"
     assert artifacts["control_decision"]["system_response"] == "allow"
     assert artifacts["enforcement"]["final_status"] == "allow"
     assert artifacts["final_execution_record"]["execution_status"] == "success"
