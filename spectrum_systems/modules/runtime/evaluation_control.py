@@ -179,15 +179,11 @@ def build_evaluation_control_decision(
         source_artifact_id = signal_artifact["replay_id"]
         created_at = _canonical_timestamp(eval_summary.get("created_at"))
     elif artifact_type == "eval_summary":
-        eval_schema = load_schema("eval_summary")
-        errors = _validate(signal_artifact, eval_schema)
-        if errors:
-            raise EvaluationControlError("eval_summary failed validation: " + "; ".join(errors))
-        eval_summary = signal_artifact
-        source_artifact_id = eval_summary["eval_run_id"]
-        created_at = str(eval_summary.get("created_at") or "1970-01-01T00:00:00Z")
+        raise EvaluationControlError(
+            "RUNTIME_REPLAY_BOUNDARY_VIOLATION: eval_summary is not permitted in runtime seams; replay_result is required"
+        )
     else:
-        raise EvaluationControlError("signal_artifact must be replay_result or eval_summary")
+        raise EvaluationControlError("signal_artifact must be replay_result")
 
     pass_rate = float(eval_summary["pass_rate"])
     drift_rate = float(eval_summary["drift_rate"])

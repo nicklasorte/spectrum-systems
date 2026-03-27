@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
@@ -238,3 +239,17 @@ def test_release_decision_precedence_prefers_rollback_over_hold() -> None:
     )
     assert precedence_rank("rollback") < precedence_rank("hold")
     assert record["decision"] == "rollback"
+
+
+def test_release_canary_invokes_control_with_replay_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    observed_types: list[str] = []
+
+    def _capture(signal_artifact: dict, *, thresholds: dict | None = None) -> dict:
+        observed_types.append(str(signal_artifact.get("artifact_type")))
+        from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision as _real
+
+        return _real(signal_artifact, thresholds=thresholds)
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.release_canary.build_evaluation_control_decision", _capture)
+    _build()
+    assert observed_types == ["replay_result", "replay_result"]

@@ -24,7 +24,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from spectrum_systems.contracts import load_schema  # noqa: E402
+from spectrum_systems.contracts import load_example, load_schema  # noqa: E402
 from spectrum_systems.modules.evaluation.eval_engine import run_eval_run  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     DEFAULT_THRESHOLDS,
@@ -48,6 +48,7 @@ class GateArtifacts:
     eval_cases: List[Dict[str, Any]]
     eval_results: List[Dict[str, Any]]
     eval_summary: Dict[str, Any]
+    replay_result: Dict[str, Any]
     evaluation_control_decision: Dict[str, Any]
 
 
@@ -109,6 +110,50 @@ def _load_eval_cases(path: Path) -> List[Dict[str, Any]]:
     if isinstance(raw, dict):
         return [raw]
     raise ValueError("eval cases payload must be a JSON object or array")
+
+
+def _build_replay_result_from_eval_summary(eval_summary: Dict[str, Any]) -> Dict[str, Any]:
+    replay_result = load_example("replay_result")
+    if not isinstance(replay_result, dict):
+        raise ValueError("contracts example replay_result must be an object")
+
+    eval_run_id = str(eval_summary.get("eval_run_id") or "").strip()
+    trace_id = str(eval_summary.get("trace_id") or "").strip()
+    created_at = str(eval_summary.get("created_at") or "").strip()
+    if not eval_run_id:
+        raise ValueError("eval_summary.eval_run_id must be present to build replay_result")
+    if not trace_id:
+        raise ValueError("eval_summary.trace_id must be present to build replay_result")
+
+    pass_rate = float(eval_summary.get("pass_rate", 0.0))
+    drift_rate = float(eval_summary.get("drift_rate", 1.0))
+    reproducibility_score = float(eval_summary.get("reproducibility_score", 0.0))
+    consistency_status = "match" if reproducibility_score >= 0.8 else "mismatch"
+
+    replay_result["replay_id"] = f"RPL-{eval_run_id}"
+    replay_result["replay_run_id"] = eval_run_id
+    replay_result["original_run_id"] = eval_run_id
+    replay_result["trace_id"] = trace_id
+    replay_result["timestamp"] = created_at or replay_result.get("timestamp")
+    replay_result["input_artifact_reference"] = f"eval_summary:{eval_run_id}"
+    replay_result["consistency_status"] = consistency_status
+    replay_result["drift_detected"] = consistency_status == "mismatch"
+    replay_result["failure_reason"] = None
+
+    replay_result["provenance"]["trace_id"] = trace_id
+    replay_result["provenance"]["source_artifact_id"] = eval_run_id
+    replay_result["observability_metrics"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["observability_metrics"]["metrics"]["replay_success_rate"] = pass_rate
+    replay_result["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
+    replay_result["error_budget_status"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["error_budget_status"]["observability_metrics_id"] = replay_result["observability_metrics"]["artifact_id"]
+    summary_status = str(eval_summary.get("system_status") or "blocked")
+    replay_result["error_budget_status"]["budget_status"] = (
+        summary_status if summary_status in {"healthy", "warning", "exhausted", "invalid"} else "invalid"
+    )
+    replay_result["alert_trigger"]["trace_refs"]["trace_id"] = trace_id
+    replay_result["alert_trigger"]["replay_result_id"] = replay_result["replay_id"]
+    return replay_result
 
 
 def _run_gate(
@@ -196,7 +241,13 @@ def _run_gate(
     control_thresholds.update(policy.get("control_thresholds", {}))
 
     try:
-        control_decision = build_evaluation_control_decision(eval_summary, thresholds=control_thresholds)
+        replay_result = _build_replay_result_from_eval_summary(eval_summary)
+        replay_errors = _validate_schema(replay_result, "replay_result")
+        if replay_errors:
+            invalid_artifacts.append("replay_result")
+            blocking_reasons.append("invalid_schema: replay_result")
+            return None, invalid_artifacts, blocking_reasons, threshold_results, indeterminate_hits
+        control_decision = build_evaluation_control_decision(replay_result, thresholds=control_thresholds)
     except Exception as exc:  # noqa: BLE001
         blocking_reasons.append(f"execution_error: control decision failed ({exc})")
         return None, invalid_artifacts, blocking_reasons, threshold_results, indeterminate_hits
@@ -216,6 +267,7 @@ def _run_gate(
         eval_cases=eval_cases,
         eval_results=eval_results,
         eval_summary=eval_summary,
+        replay_result=replay_result,
         evaluation_control_decision=control_decision,
     )
     return artifacts, invalid_artifacts, blocking_reasons, threshold_results, indeterminate_hits
@@ -236,6 +288,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     required_input_artifacts = ["eval_run", "eval_cases"]
     required_emitted_artifacts = [
         "eval_summary",
+        "replay_result",
         "evaluation_control_decision",
         "evaluation_ci_gate_result",
     ]
@@ -331,6 +384,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         eval_summary_ref = _ref_path(output_dir / "eval_summary.json")
         control_ref = _ref_path(output_dir / "evaluation_control_decision.json")
         _write_json(output_dir / "eval_summary.json", artifacts.eval_summary)
+        _write_json(output_dir / "replay_result.json", artifacts.replay_result)
         _write_json(output_dir / "evaluation_control_decision.json", artifacts.evaluation_control_decision)
         trace_id = artifacts.eval_summary.get("trace_id")
         if isinstance(trace_id, str) and trace_id.strip():

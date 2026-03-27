@@ -108,9 +108,28 @@ def test_happy_path_passes_and_emits_schema_valid_summary(tmp_path: Path) -> Non
     assert summary["id"] == summary["gate_run_id"]
     assert summary["schema_version"] == "1.1.0"
     assert summary["trace_refs"] == {"primary": "22222222-2222-4222-8222-222222222222", "related": []}
+    assert (tmp_path / "out" / "replay_result.json").is_file()
 
     validator = Draft202012Validator(load_schema("evaluation_ci_gate_result"), format_checker=FormatChecker())
     validator.validate(summary)
+
+
+def test_gate_invokes_runtime_control_with_replay_result(tmp_path: Path, monkeypatch) -> None:
+    observed: dict = {}
+
+    def _capture(signal_artifact: dict, *, thresholds: dict | None = None) -> dict:
+        observed["artifact_type"] = signal_artifact.get("artifact_type")
+        observed["artifact"] = signal_artifact
+        from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision as _real
+
+        return _real(signal_artifact, thresholds=thresholds)
+
+    monkeypatch.setattr("scripts.run_eval_ci_gate.build_evaluation_control_decision", _capture)
+
+    code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="pass", forced_score=1.0))
+    assert code == 0
+    assert summary["status"] == "pass"
+    assert observed["artifact_type"] == "replay_result"
 
 
 def test_missing_required_artifact_fails_closed(tmp_path: Path) -> None:
