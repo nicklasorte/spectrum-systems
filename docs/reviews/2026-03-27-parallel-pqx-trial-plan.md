@@ -2,7 +2,7 @@
 
 - **Date:** 2026-03-27
 - **Owner:** PQX Governance (TBD assignee)
-- **Status:** PLANNED
+- **Status:** EXECUTED (Controlled 2-slice trial)
 - **Type:** Governance experiment protocol (not runtime implementation)
 
 ## Objective
@@ -110,6 +110,16 @@ Publish a short closure artifact that states:
 - whether isolation held,
 - what failed or passed,
 - final decision: **approved**, **conditionally approved**, or **denied** for broader 2-slice PQX usage.
+
+## Executed trial pair (PQX-CLT-012)
+
+- **Slice A:** PQX-CLT-012A — Trial-plan governance execution record update (`docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`).
+- **Slice B:** PQX-CLT-012B — Trial action-tracker execution and closure record (`docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`).
+- **Baseline commit:** `1aa1ff8991234b7320102563029ea8794c00c528`
+- **Branch A:** `pqx-clt-012-slice-a-plan-governance`
+- **Branch B:** `pqx-clt-012-slice-b-action-tracker`
+
+This pair satisfies the protocol's non-overlap constraints because each slice edits a distinct governance document and does not touch runtime modules, contracts/schemas, or certification/control-loop logic.
 
 ## Discipline constraints
 
