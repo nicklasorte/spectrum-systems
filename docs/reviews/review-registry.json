@@ -262,5 +262,19 @@
     ],
     "carried_forward_finding_ids": [],
     "follow_up_trigger": "When LI-CR-3 (write ordering spec) and LI-CR-4 (failure-to-state mapping) are published: implementation may begin. When first live invocation implementation is complete: re-review for partial failure handling correctness and idempotency guard enforcement."
+  },
+  {
+    "review_id": "2026-03-27-budget-control-loop-review",
+    "review_date": "2026-03-27",
+    "review_type": "FPO targeted correctness review — budget-aware control-loop slice",
+    "repo": "spectrum-systems",
+    "reviewer": "Claude (Reasoning Agent — Sonnet 4.6)",
+    "status": "Open",
+    "artifact_path": "docs/reviews/2026-03-27-budget-control-loop-review.md",
+    "action_tracker_path": "docs/review-actions/2026-03-27-budget-control-loop-actions.md",
+    "scope": "SRE-09/SRE-10 budget-aware control-loop slice: control_loop.py, evaluation_control.py, control_integration.py, agent_golden_path.py (budget construction), test_control_loop_chaos.py, test_eval_ci_gate.py, replay_result_builder.py, evaluation_control_decision.schema.json. Focus: error_budget_status as runtime contract, consistency check correctness, budget state → control decision semantics, CI gate coherence, chaos test invariant coverage, policy logic duplication, fail-open risks. 6 findings (1 critical, 2 high, 2 medium, 1 low); 6 actions (2 critical, 2 high, 1 medium, 1 low).",
+    "notes": "Verdict: PASS WITH FINDINGS. Critical defect: budget warning override unconditionally downgrades deny decisions (trust_breach, stability_breach) to require_review — fail-open governance regression. Exhausted and invalid states are correctly fail-closed. Safe to build on after BCL-CR-1 is fixed.",
+    "reconciles_prior_review_ids": ["2026-03-22-control-loop-enforcement-review"],
+    "follow_up_trigger": "When BCL-CR-1 (warning downgrade fix) and BCL-CR-2 (budget-state test suite) are resolved: re-review budget-aware control semantics. Before any production-grade gating workflow is deployed: confirm BCL-CR-1 is resolved."
   }
 ]
