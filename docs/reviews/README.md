@@ -71,4 +71,8 @@ JSON review artifacts are governed by:
 - Schema: `contracts/schemas/review_artifact.schema.json`
 - Golden example: `contracts/examples/review_artifact.json`
 
-Use `python scripts/validate_review_artifact.py` to validate JSON artifacts and markdown metadata compliance.
+Canonical validator: `python scripts/validate_review_artifact.py <artifact.json> --markdown <artifact.md>` (pairwise).
+
+Repository-wide validator: `python scripts/validate_review_artifacts.py` (aggregates every canonical JSON artifact and enforces the same pairwise checks, including required markdown companions).
+
+Single source of truth for schema validation is `contracts/schemas/review_artifact.schema.json`.

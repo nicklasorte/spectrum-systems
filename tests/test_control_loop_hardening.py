@@ -342,27 +342,78 @@ def test_validate_review_artifacts_script_runs(tmp_path: Path) -> None:
 
 
 def test_validate_review_artifacts_passes_valid_file(tmp_path: Path) -> None:
-    """Script must exit 0 for a well-formed review artifact."""
+    """Script must exit 0 for a canonical review artifact with markdown pair."""
     review = {
-        "review_id": "2026-03-17-test-review",
-        "source": "claude",
-        "timestamp": "2026-03-17T12:00:00Z",
-        "repo": "nicklasorte/spectrum-systems",
-        "scope": "control loop test",
-        "findings": [
+        "review_id": "REV-TEST-REPO-VALIDATOR",
+        "module": "validator",
+        "review_type": "repo_level",
+        "review_date": "2026-03-27",
+        "reviewer": "Codex",
+        "decision": "FAIL",
+        "trust_assessment": "medium",
+        "status": "final",
+        "scope": ["scripts/validate_review_artifacts.py"],
+        "related_plan": "docs/review-actions/PLAN-PQX-FIX-REVIEW-VALIDATOR-ALIGNMENT-2026-03-27.md",
+        "critical_findings": [
             {
-                "id": "F-1",
+                "id": "F-001",
                 "severity": "low",
-                "category": "test",
-                "description": "A test finding.",
+                "file": "scripts/validate_review_artifacts.py",
+                "function": "main",
+                "failure_mode": "Synthetic finding for validator script test.",
+                "impact": "Synthetic impact.",
+                "minimal_fix": "Synthetic fix.",
             }
         ],
-        "recommendations": [
-            {"id": "REC-1", "statement": "A test recommendation."}
+        "required_fixes": [
+            {
+                "fix_id": "FIX-001",
+                "description": "Synthetic required fix.",
+                "priority": "P2",
+            }
         ],
+        "watch_items": ["Synthetic watch item"],
+        "failure_mode_summary": "Synthetic summary",
     }
     review_file = tmp_path / "test-review.json"
     review_file.write_text(json.dumps(review), encoding="utf-8")
+
+    markdown_file = tmp_path / "test-review.md"
+    markdown_file.write_text(
+        """---
+module: validator
+review_type: repo_level
+review_date: 2026-03-27
+reviewer: Codex
+decision: FAIL
+trust_assessment: medium
+status: final
+related_plan: docs/review-actions/PLAN-PQX-FIX-REVIEW-VALIDATOR-ALIGNMENT-2026-03-27.md
+---
+
+## Scope
+- test
+
+## Decision
+- test
+
+## Trust Assessment
+- test
+
+## Critical Findings
+- test
+
+## Required Fixes
+- test
+
+## Optional Improvements
+- test
+
+## Failure Mode Summary
+- test
+""",
+        encoding="utf-8",
+    )
 
     result = subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "validate_review_artifacts.py"),
@@ -377,18 +428,28 @@ def test_validate_review_artifacts_passes_valid_file(tmp_path: Path) -> None:
 
 
 def test_validate_review_artifacts_fails_invalid_file(tmp_path: Path) -> None:
-    """Script must exit non-zero for an invalid review artifact."""
+    """Script must exit non-zero for an invalid canonical review artifact."""
     bad_review = {
-        "review_id": "2026-03-17-bad",
-        "source": "not-a-valid-source",  # invalid
-        "timestamp": "2026-03-17T12:00:00Z",
-        "repo": "nicklasorte/spectrum-systems",
-        "scope": "test",
-        "findings": [],
-        "recommendations": [],
+        "review_id": "REV-TEST-REPO-INVALID",
+        "module": "validator",
+        "review_type": "repo_level",
+        "review_date": "2026-03-27",
+        "reviewer": "Codex",
+        "decision": "FAIL",
+        "trust_assessment": "medium",
+        "status": "final",
+        "scope": ["scripts/validate_review_artifacts.py"],
+        "related_plan": "docs/review-actions/PLAN-PQX-FIX-REVIEW-VALIDATOR-ALIGNMENT-2026-03-27.md",
+        "critical_findings": [],
+        "required_fixes": [],
+        "watch_items": [],
+        "failure_mode_summary": "",
     }
     bad_file = tmp_path / "bad-review.json"
     bad_file.write_text(json.dumps(bad_review), encoding="utf-8")
+
+    bad_markdown = tmp_path / "bad-review.md"
+    bad_markdown.write_text("---\nmodule: validator\n---\n", encoding="utf-8")
 
     result = subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "validate_review_artifacts.py"),
