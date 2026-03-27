@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_loop_certification_pack.schema.json",
+  "title": "Control Loop Certification Pack",
+  "description": "Governed certification artifact for trust-boundary/runtime control-loop checkpoint outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "certification_id",
+    "certification_scope",
+    "certification_status",
+    "decision",
+    "executed_checks",
+    "scenario_summary",
+    "test_summary",
+    "artifact_validation_summary",
+    "related_review_refs",
+    "related_plan_refs",
+    "generated_at",
+    "provenance_trace_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "control_loop_certification_pack"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "certification_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "certification_scope": {
+      "type": "string",
+      "const": "trust-boundary/runtime"
+    },
+    "certification_status": {
+      "type": "string",
+      "enum": [
+        "certified",
+        "uncertified",
+        "blocked"
+      ]
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "blocked"
+      ]
+    },
+    "executed_checks": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "$ref": "#/$defs/executed_check"
+      }
+    },
+    "scenario_summary": {
+      "$ref": "#/$defs/scenario_summary"
+    },
+    "test_summary": {
+      "$ref": "#/$defs/test_summary"
+    },
+    "artifact_validation_summary": {
+      "$ref": "#/$defs/artifact_validation_summary"
+    },
+    "related_review_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "related_plan_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance_trace_refs": {
+      "$ref": "#/$defs/provenance_trace_refs"
+    }
+  },
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "certification_status": {
+              "const": "certified"
+            },
+            "decision": {
+              "const": "pass"
+            }
+          }
+        },
+        {
+          "properties": {
+            "certification_status": {
+              "const": "uncertified"
+            },
+            "decision": {
+              "const": "fail"
+            }
+          }
+        },
+        {
+          "properties": {
+            "certification_status": {
+              "const": "blocked"
+            },
+            "decision": {
+              "const": "blocked"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "$defs": {
+    "executed_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "check_name",
+        "status",
+        "exit_code",
+        "command",
+        "evidence_ref",
+        "summary"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "enum": [
+            "control_loop_chaos_runner",
+            "targeted_control_loop_eval_gate_tests",
+            "review_artifact_validation",
+            "repo_review_validator"
+          ]
+        },
+        "check_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "blocked"
+          ]
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "scenario_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chaos_run_id",
+        "scenario_count",
+        "pass_count",
+        "fail_count"
+      ],
+      "properties": {
+        "chaos_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scenario_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pass_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fail_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "test_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targeted_test_command",
+        "targeted_test_status",
+        "targeted_test_exit_code"
+      ],
+      "properties": {
+        "targeted_test_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targeted_test_status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "blocked"
+          ]
+        },
+        "targeted_test_exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "artifact_validation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_artifact_validation_status",
+        "repo_review_validator_status"
+      ],
+      "properties": {
+        "review_artifact_validation_status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "blocked"
+          ]
+        },
+        "repo_review_validator_status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "provenance_trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commit_sha",
+        "branch",
+        "trace_refs"
+      ],
+      "properties": {
+        "commit_sha": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
