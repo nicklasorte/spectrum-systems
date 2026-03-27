@@ -173,12 +173,16 @@ def _apply_budget_status_override(
     decision_label: str,
     rationale_code: str,
 ) -> tuple[str, str, str, str]:
+    preexisting_deny = decision_label == "deny" or system_response in {"block", "freeze"}
+
     if budget_status == "healthy":
         return system_status, system_response, decision_label, rationale_code
 
     if budget_status == "warning":
         if "budget_warning" not in triggered_signals:
             triggered_signals.append("budget_warning")
+        if preexisting_deny:
+            return system_status, system_response, decision_label, rationale_code
         return "warning", "warn", "require_review", "require_review_budget_warning"
 
     if budget_status == "exhausted":

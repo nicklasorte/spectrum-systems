@@ -88,6 +88,60 @@ def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, 
     return result
 
 
+def align_replay_budget_state(
+    result: Dict[str, Any],
+    *,
+    budget_status: str,
+) -> Dict[str, Any]:
+    """Force a budget status while keeping objective and summary fields internally consistent."""
+    align_replay_budget_with_observability(result)
+    observability = result.get("observability_metrics")
+    budget = result.get("error_budget_status")
+    if not isinstance(observability, dict) or not isinstance(budget, dict):
+        return result
+    metrics = observability.get("metrics")
+    objectives = budget.get("objectives")
+    if not isinstance(metrics, dict) or not isinstance(objectives, list):
+        return result
+
+    for objective in objectives:
+        if not isinstance(objective, dict):
+            continue
+        metric_name = objective.get("metric_name")
+        if metric_name == "replay_success_rate":
+            target = float(objective.get("target_value", 0.0))
+            allowed = float(objective.get("allowed_error", 0.0))
+            if budget_status == "healthy":
+                observed_value = target
+            elif budget_status == "warning":
+                observed_value = target - (allowed * 0.6 if allowed > 0.0 else 0.0)
+            elif budget_status == "exhausted":
+                observed_value = target - allowed - 0.01
+            else:
+                continue
+            metrics[metric_name] = float(observed_value)
+        elif metric_name == "drift_exceed_threshold_rate":
+            target = float(objective.get("target_value", 0.0))
+            allowed = float(objective.get("allowed_error", 0.0))
+            if budget_status == "healthy":
+                observed_value = target
+            elif budget_status == "warning":
+                observed_value = target + (allowed * 0.6 if allowed > 0.0 else 0.01)
+            elif budget_status == "exhausted":
+                observed_value = target + allowed + 0.01
+            else:
+                continue
+            metrics[metric_name] = float(observed_value)
+
+    align_replay_budget_with_observability(result)
+    if budget_status == "invalid":
+        budget["budget_status"] = "invalid"
+        budget["highest_severity"] = "invalid"
+        budget["triggered_conditions"] = []
+        budget["reasons"] = []
+    return result
+
+
 def _apply_budget_patch(result: Dict[str, Any], budget_patch: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     if not budget_patch or not isinstance(result.get("error_budget_status"), dict):
         return result
@@ -102,23 +156,7 @@ def _apply_budget_patch(result: Dict[str, Any], budget_patch: Optional[Dict[str,
         align_replay_budget_with_observability(result)
     budget_status = budget_patch.get("budget_status")
     if isinstance(budget_status, str):
-        budget["budget_status"] = budget_status
-        budget["highest_severity"] = budget_status
-        if budget_status == "healthy":
-            budget["triggered_conditions"] = []
-            budget["reasons"] = []
-        elif budget_status == "warning":
-            budget["triggered_conditions"] = [
-                condition
-                for condition in budget.get("triggered_conditions", [])
-                if isinstance(condition, dict) and condition.get("status") == "warning"
-            ]
-            budget["reasons"] = [
-                reason for reason in budget.get("reasons", []) if isinstance(reason, str) and "status=warning" in reason
-            ]
-        elif budget_status == "invalid":
-            budget["triggered_conditions"] = []
-            budget["reasons"] = []
+        align_replay_budget_state(result, budget_status=budget_status)
     return result
 
 

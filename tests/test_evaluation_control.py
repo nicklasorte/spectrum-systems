@@ -100,6 +100,26 @@ def test_budget_warning_forces_warn_response() -> None:
     assert "budget_warning" in decision["triggered_signals"]
 
 
+def test_trust_breach_with_budget_warning_remains_deny() -> None:
+    replay = _replay_result()
+    replay["consistency_status"] = "mismatch"
+    replay["drift_detected"] = True
+    replay["error_budget_status"]["budget_status"] = "warning"
+    replay["error_budget_status"]["highest_severity"] = "warning"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {
+            "metric_name": "replay_success_rate",
+            "status": "warning",
+            "consumption_ratio": 0.9,
+        }
+    ]
+    decision = build_evaluation_control_decision(replay)
+    assert decision["system_response"] == "block"
+    assert decision["decision"] == "deny"
+    assert decision["rationale_code"] == "deny_trust_breach"
+    assert "budget_warning" in decision["triggered_signals"]
+
+
 def test_budget_exhausted_forces_non_allow_response() -> None:
     replay = _replay_result()
     replay["error_budget_status"]["budget_status"] = "exhausted"
@@ -115,6 +135,18 @@ def test_budget_exhausted_forces_non_allow_response() -> None:
     assert decision["system_response"] in {"freeze", "block"}
     assert decision["decision"] == "deny"
     assert "budget_exhausted" in decision["triggered_signals"]
+
+
+def test_budget_invalid_forces_deny_response() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "invalid"
+    replay["error_budget_status"]["highest_severity"] = "invalid"
+    replay["error_budget_status"]["triggered_conditions"] = []
+    decision = build_evaluation_control_decision(replay)
+    assert decision["system_response"] == "block"
+    assert decision["decision"] == "deny"
+    assert decision["rationale_code"] == "deny_budget_invalid"
+    assert "budget_invalid" in decision["triggered_signals"]
 
 
 def test_indeterminate_replay_routes_to_trust_breach_rationale() -> None:

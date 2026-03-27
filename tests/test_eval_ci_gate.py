@@ -255,6 +255,86 @@ def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> 
     assert any(reason.startswith("control_decision_blocked:") for reason in summary["blocking_reasons"])
 
 
+def test_budget_exhausted_control_decision_blocks_gate(tmp_path: Path, monkeypatch) -> None:
+    def _stubbed_run_eval_run(_eval_run: dict, _eval_cases: list[dict]) -> dict:
+        return {
+            "artifact_type": "eval_run_execution",
+            "schema_version": "1.0.0",
+            "trace_id": "22222222-2222-4222-8222-222222222222",
+            "executed_at": "2026-03-23T00:00:00Z",
+            "eval_run": _eval_run,
+            "eval_results": [
+                {
+                    "artifact_type": "eval_result",
+                    "schema_version": "1.0.0",
+                    "eval_case_id": "eval-case-001",
+                    "trace_id": "11111111-1111-4111-8111-111111111111",
+                    "result_status": "pass",
+                    "score": 1.0,
+                    "failure_modes": [],
+                    "provenance_refs": ["trace://11111111-1111-4111-8111-111111111111"],
+                }
+            ],
+            "eval_summary": {
+                "artifact_type": "eval_summary",
+                "schema_version": "1.0.0",
+                "trace_id": "22222222-2222-4222-8222-222222222222",
+                "eval_run_id": "eval-run-test-001",
+                "pass_rate": 1.0,
+                "failure_rate": 0.0,
+                "drift_rate": 0.0,
+                "reproducibility_score": 1.0,
+                "system_status": "exhausted",
+            },
+        }
+
+    monkeypatch.setattr("scripts.run_eval_ci_gate.run_eval_run", _stubbed_run_eval_run)
+    code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="pass", forced_score=1.0))
+    assert code == 1
+    assert summary["status"] == "blocked"
+    assert any(reason == "control_decision_blocked: freeze" for reason in summary["blocking_reasons"])
+
+
+def test_budget_invalid_control_decision_blocks_gate(tmp_path: Path, monkeypatch) -> None:
+    def _stubbed_run_eval_run(_eval_run: dict, _eval_cases: list[dict]) -> dict:
+        return {
+            "artifact_type": "eval_run_execution",
+            "schema_version": "1.0.0",
+            "trace_id": "22222222-2222-4222-8222-222222222222",
+            "executed_at": "2026-03-23T00:00:00Z",
+            "eval_run": _eval_run,
+            "eval_results": [
+                {
+                    "artifact_type": "eval_result",
+                    "schema_version": "1.0.0",
+                    "eval_case_id": "eval-case-001",
+                    "trace_id": "11111111-1111-4111-8111-111111111111",
+                    "result_status": "pass",
+                    "score": 1.0,
+                    "failure_modes": [],
+                    "provenance_refs": ["trace://11111111-1111-4111-8111-111111111111"],
+                }
+            ],
+            "eval_summary": {
+                "artifact_type": "eval_summary",
+                "schema_version": "1.0.0",
+                "trace_id": "22222222-2222-4222-8222-222222222222",
+                "eval_run_id": "eval-run-test-001",
+                "pass_rate": 1.0,
+                "failure_rate": 0.0,
+                "drift_rate": 0.0,
+                "reproducibility_score": 1.0,
+                "system_status": "invalid",
+            },
+        }
+
+    monkeypatch.setattr("scripts.run_eval_ci_gate.run_eval_run", _stubbed_run_eval_run)
+    code, summary = _run_gate(tmp_path, case=_eval_case(forced_status="pass", forced_score=1.0))
+    assert code == 1
+    assert summary["status"] == "blocked"
+    assert any(reason == "control_decision_blocked: block" for reason in summary["blocking_reasons"])
+
+
 def test_gate_run_id_is_deterministic_for_same_inputs(tmp_path: Path) -> None:
     case = _eval_case(forced_status="pass", forced_score=1.0)
     code_one, summary_one = _run_gate(tmp_path, case=case)
