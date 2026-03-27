@@ -19,7 +19,6 @@ from spectrum_systems.modules.runtime.control_loop_chaos import (  # noqa: E402
 from spectrum_systems.modules.runtime.decision_precedence import most_severe  # noqa: E402
 from spectrum_systems.modules.runtime.control_loop import ControlLoopError, run_control_loop  # noqa: E402
 from tests.helpers.replay_result_builder import (  # noqa: E402
-    align_replay_budget_with_observability,
     make_canonical_replay_result,
 )
 
@@ -88,23 +87,42 @@ def test_runner_is_deterministic_across_repeated_runs() -> None:
 
 
 @pytest.mark.parametrize(
-    ("replay_patch", "expected_response"),
+    ("replay_patch", "budget_patch", "expected_response"),
     [
-        ({"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.01}}}, "warn"),
-        ({"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}}, "freeze"),
-        ({"consistency_status": "mismatch"}, "block"),
-        ({"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.50}}}, "freeze"),
-        ({"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}, "consistency_status": "mismatch"}, "block"),
+        (
+            {"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.01}}},
+            {"observed_values": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.01}, "budget_status": "healthy"},
+            "warn",
+        ),
+        (
+            {"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}},
+            {"observed_values": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
+            "freeze",
+        ),
+        ({"consistency_status": "mismatch"}, None, "block"),
+        (
+            {"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.50}}},
+            {"observed_values": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
+            "freeze",
+        ),
+        (
+            {"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}, "consistency_status": "mismatch"},
+            {"observed_values": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
+            "block",
+        ),
     ],
 )
 def test_precedence_rules_are_explicitly_enforced(
     replay_patch: dict[str, object],
+    budget_patch: dict[str, object] | None,
     expected_response: str,
 ) -> None:
-    replay = _base_replay_result()
-    if "observability_metrics" in replay_patch:
-        replay["observability_metrics"]["metrics"].update(replay_patch["observability_metrics"]["metrics"])  # type: ignore[index]
-        align_replay_budget_with_observability(replay)  # type: ignore[arg-type]
+    replay = make_canonical_replay_result(
+        replay_id="RPL-chaos-precedence",
+        trace_id="eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        replay_run_id="eval-chaos-precedence",
+        budget_patch=budget_patch,
+    )
     if "consistency_status" in replay_patch:
         replay["consistency_status"] = replay_patch["consistency_status"]
         replay["drift_detected"] = replay_patch["consistency_status"] == "mismatch"
@@ -206,11 +224,11 @@ def test_reason_matching_is_exact_by_default_and_opt_in_allows_extra() -> None:
     scenario = next(item for item in scenarios if item["scenario_id"] == "indeterminate-001")
     assert "trust_breach" in scenario["expected_reasons"]
 
-    exact_only = [{**scenario, "expected_reasons": ["deny_trust_breach"]}]
+    exact_only = [{**scenario, "expected_reasons": ["deny_budget_invalid"]}]
     summary_exact = run_chaos_scenarios(scenarios=exact_only, chaos_run_id="chaos-reasons-exact")
     assert summary_exact["fail_count"] == 1
     assert "reasons" in summary_exact["mismatches"][0]["mismatch_fields"]
 
-    allow_extra = [{**scenario, "expected_reasons": ["deny_trust_breach"], "allow_extra_reasons": True}]
+    allow_extra = [{**scenario, "expected_reasons": ["deny_budget_invalid"], "allow_extra_reasons": True}]
     summary_allow_extra = run_chaos_scenarios(scenarios=allow_extra, chaos_run_id="chaos-reasons-allow-extra")
     assert summary_allow_extra["fail_count"] == 0
