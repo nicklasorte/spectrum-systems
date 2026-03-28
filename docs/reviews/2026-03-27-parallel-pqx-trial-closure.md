@@ -1,28 +1,57 @@
-# PQX-CLT-013 — Parallel PQX Trial Closure Artifact
+# PQX-CLT-013 — Parallel PQX Trial Closure
 
 - **Date:** 2026-03-28
-- **Prompt type:** REVIEW
-- **Parent protocol:** `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+- **Owner:** PQX Governance
+- **Status:** CLOSED
+- **Trial reference:**
+  - Plan: `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+  - Action tracker: `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
 
-## Slices used
+## Trial configuration
 
-- **Slice A:** PQX-CLT-013 — Parallel PQX trial closure artifact (`docs/reviews/2026-03-27-parallel-pqx-trial-closure.md`)
-- **Slice B:** Step 11 — Activate governance enforcement roadmap (`docs/governance/governance-enforcement-step-11-activation.md`, `docs/review-actions/2026-03-28-pqx-clt-012-parallel-trial-actions.md`)
+- **Slice A:** PQX-CLT-012A — trial-plan governance execution record update
+- **Slice B:** PQX-CLT-012B — action-tracker execution/closure record update
+- **Baseline commit:** `1aa1ff8991234b7320102563029ea8794c00c528`
+- **Branch names:**
+  - Slice A: `pqx-clt-012-slice-a-plan-governance`
+  - Slice B: `pqx-clt-012-slice-b-action-tracker`
+- **Merge order:** Slice A first, then Slice B
 
-## Merge order
+## Files touched
 
-- **Planned:** Slice A first, Slice B second.
-- **Executed:** Slice A first (`c152f83`), Slice B second (`a7d7e1b`).
+- **Slice A files touched:**
+  - `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+- **Slice B files touched:**
+  - `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
 
-## Validation outcomes
+## Execution summary
 
-- **Slice A validation:** PASS (`pytest -q tests/test_control_loop_certification.py`, `pytest -q tests/test_evaluation_enforcement_bridge.py`; scope diff only closure artifact).
-- **Slice B validation:** PASS (`pytest -q tests/test_control_loop_certification.py`, `pytest -q tests/test_evaluation_enforcement_bridge.py`; scope diff only Step 11 governance docs).
-- **Cross-diff isolation check:** PASS (no file overlap, no semantic overlap, no shared mutable assumptions).
-- **Post-merge validation:** PASS (certification/promotional path checks unchanged and deterministic).
+- **Did both slices pass independently?:** YES
+- **Did cross-diff confirm isolation?:** YES
+- **Did any overlap occur?:** NO
+
+## Merge behavior
+
+- **Did Slice B behavior change after Slice A merge?:** NO
+- **Any adjustments required?:** NO
+
+## Post-merge validation
+
+- **promotion/certification path status:** CLEAN
+- **any unexpected behavior:** NO
+- **attribution clarity:** CLEAR
 
 ## Decision
 
-- **Isolation held:** YES
 - **Decision:** approved
-- **Decision rationale:** Both slices were created from a shared baseline, implemented in isolated branch/file scopes, validated independently, merged in risk order without conflict, and revalidated post-merge with no certification/control-path regressions.
+- **Basis:** no overlap detected, no ambiguity detected, and no regression observed in post-merge validation evidence.
+
+## Forward policy
+
+2-slice parallel PQX is approved for non-overlapping slices under current constraints.
+
+## Key findings
+
+- Parallel execution remained isolated at file and semantic levels for the documented trial pair.
+- Sequential merges completed without conflicts and without requiring slice adjustments.
+- Post-merge certification-path checks remained deterministic and clean.
