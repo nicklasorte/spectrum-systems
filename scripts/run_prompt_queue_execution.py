@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Thin CLI for governed prompt queue controlled execution."""
+"""Thin CLI for governed prompt queue controlled execution.
+
+This utility remains specialized for work-item execution adapter runs.
+For legacy queue-loop invocation compatibility, it can delegate queue-loop
+execution to the canonical `scripts/run_prompt_queue.py` entrypoint.
+"""
 
 from __future__ import annotations
 
@@ -12,6 +17,7 @@ from typing import Optional
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.run_prompt_queue import main as run_prompt_queue_main  # noqa: E402
 from spectrum_systems.modules.prompt_queue import (  # noqa: E402
     default_execution_result_path,
     read_execution_result_artifact,
@@ -23,8 +29,10 @@ from spectrum_systems.modules.prompt_queue.execution_gating_artifact_io import r
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run one deterministic controlled execution for a runnable work item")
-    parser.add_argument("--work-item-id", required=True)
+    parser.add_argument("--work-item-id")
     parser.add_argument("--queue-state-path", required=True)
+    parser.add_argument("--manifest-path", help="When set, delegate queue-loop execution to canonical run_prompt_queue CLI")
+    parser.add_argument("--output-path", help="Optional output path for delegated canonical queue-loop execution")
     return parser.parse_args(argv)
 
 
@@ -35,8 +43,11 @@ def _find_work_item(queue_state: dict, work_item_id: str) -> dict:
     raise ValueError(f"work item '{work_item_id}' not found")
 
 
-def main(argv: Optional[list[str]] = None) -> int:
-    args = _parse_args(argv)
+def _run_specialized_execution(args: argparse.Namespace) -> int:
+    if not args.work_item_id:
+        print(json.dumps({"error": "--work-item-id is required unless --manifest-path is provided"}, indent=2), file=sys.stderr)
+        return 2
+
     queue_state_path = Path(args.queue_state_path)
     queue_state = read_json_artifact(queue_state_path)
 
@@ -105,6 +116,23 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
     )
     return 0
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    args = _parse_args(argv)
+
+    if args.manifest_path:
+        delegated_argv = [
+            "--manifest-path",
+            args.manifest_path,
+            "--queue-state-path",
+            args.queue_state_path,
+        ]
+        if args.output_path:
+            delegated_argv.extend(["--output-path", args.output_path])
+        return run_prompt_queue_main(delegated_argv)
+
+    return _run_specialized_execution(args)
 
 
 if __name__ == "__main__":
