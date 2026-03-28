@@ -187,6 +187,7 @@ def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
 def _evaluate_certification_gate(
     context: Optional[Dict[str, Any]],
     enforcement_scope: str,
+    decision: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Evaluate promotion certification requirements with fail-closed behavior."""
     gate = _default_certification_gate(enforcement_scope)
@@ -273,6 +274,43 @@ def _evaluate_certification_gate(
         )
         gate["gate_passed"] = False
         return gate
+
+    check_results = artifact.get("check_results")
+    if not isinstance(check_results, dict):
+        gate["certification_decision"] = "malformed"
+        gate["certification_status"] = "malformed"
+        gate["block_reason"] = "done_certification_record check_results must be an object."
+        gate["gate_passed"] = False
+        return gate
+
+    for check_name in ("replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency"):
+        check_entry = check_results.get(check_name)
+        if not isinstance(check_entry, dict):
+            gate["certification_decision"] = "malformed"
+            gate["certification_status"] = "malformed"
+            gate["block_reason"] = f"done_certification_record missing check_results.{check_name}."
+            gate["gate_passed"] = False
+            return gate
+        if not bool(check_entry.get("passed")):
+            gate["certification_decision"] = "fail"
+            gate["certification_status"] = "uncertified"
+            gate["block_reason"] = (
+                "done_certification_record requires all check_results entries to pass for promotion."
+            )
+            gate["gate_passed"] = False
+            return gate
+
+    if decision is not None:
+        decision_trace_id = str(decision.get("trace_id") or "")
+        certification_trace_id = str(artifact.get("trace_id") or "")
+        if decision_trace_id and certification_trace_id != decision_trace_id:
+            gate["certification_decision"] = "blocked"
+            gate["certification_status"] = "blocked"
+            gate["block_reason"] = (
+                "done_certification_record trace_id does not match evaluation decision trace_id for promotion."
+            )
+            gate["gate_passed"] = False
+            return gate
 
     gate["block_reason"] = None
     gate["gate_passed"] = True
@@ -743,7 +781,7 @@ def enforce_budget_decision(
     enforcement_scope = determine_enforcement_scope(decision, context)
     required_human_actions = _build_required_human_actions(system_response, decision)
     reasons: List[str] = list(decision.get("reasons", []))
-    certification_gate = _evaluate_certification_gate(context, enforcement_scope)
+    certification_gate = _evaluate_certification_gate(context, enforcement_scope, decision=decision)
 
     if context and _OVERRIDE_AUTHORIZATION_KEY in context:
         raise EnforcementBridgeError(

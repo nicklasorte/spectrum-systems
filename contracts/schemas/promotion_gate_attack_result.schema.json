@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/promotion_gate_attack_result.schema.json",
+  "title": "Promotion Gate Attack Result",
+  "description": "Governed VAL-01 promotion-boundary attack result artifact proving fail-closed DONE-01 enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attack_run_id",
+    "timestamp",
+    "target_boundary",
+    "input_refs",
+    "attack_cases",
+    "summary",
+    "final_status",
+    "trace_id"
+  ],
+  "properties": {
+    "attack_run_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "target_boundary": {"type": "string", "minLength": 1},
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid_done_certification_ref", "enforcement_input_ref"],
+      "properties": {
+        "valid_done_certification_ref": {"type": "string", "minLength": 1},
+        "invalid_done_certification_ref": {"type": "string", "minLength": 1},
+        "failed_done_certification_ref": {"type": "string", "minLength": 1},
+        "malformed_done_certification_ref": {"type": "string", "minLength": 1},
+        "missing_done_certification_ref": {"type": "string", "minLength": 1},
+        "enforcement_input_ref": {"type": "string", "minLength": 1},
+        "policy_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "attack_cases": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/attack_case"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_cases", "blocked_cases", "failed_cases", "bypass_detected"],
+      "properties": {
+        "total_cases": {"type": "integer", "minimum": 0},
+        "blocked_cases": {"type": "integer", "minimum": 0},
+        "failed_cases": {"type": "integer", "minimum": 0},
+        "bypass_detected": {"type": "boolean"}
+      }
+    },
+    "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},
+    "trace_id": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "attack_case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id",
+        "case_type",
+        "expected_outcome",
+        "actual_outcome",
+        "passed",
+        "blocking_reason"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "case_type": {
+          "type": "string",
+          "enum": [
+            "missing_certification",
+            "malformed_certification",
+            "failed_certification",
+            "structurally_valid_but_incomplete_certification",
+            "mismatched_trace_certification",
+            "corrupted_certification_payload"
+          ]
+        },
+        "expected_outcome": {"type": "string", "enum": ["block"]},
+        "actual_outcome": {"type": "string", "enum": ["block", "allow", "warn", "ambiguous", "unhandled_exception"]},
+        "passed": {"type": "boolean"},
+        "blocking_reason": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"final_status": {"const": "PASSED"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "failed_cases": {"const": 0},
+              "bypass_detected": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"summary": {"properties": {"bypass_detected": {"const": true}}, "required": ["bypass_detected"]}}, "required": ["summary"]},
+      "then": {"properties": {"final_status": {"const": "FAILED"}}}
+    }
+  ]
+}

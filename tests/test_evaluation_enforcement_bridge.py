@@ -124,11 +124,13 @@ def _write_certification_pack(
     *,
     decision: str = "pass",
     certification_status: str = "certified",
+    trace_id: str = "trace-healthy-001",
 ) -> Path:
     payload = _load_json(_DONE_CERTIFICATION_RECORD)
     payload["final_status"] = "PASSED" if decision == "pass" and certification_status == "certified" else "FAILED"
     payload["system_response"] = "allow" if payload["final_status"] == "PASSED" else "block"
     payload["blocking_reasons"] = [] if payload["final_status"] == "PASSED" else ["done gate failed"]
+    payload["trace_id"] = trace_id
     out = tmp_path / f"cert-{decision}-{certification_status}.json"
     out.write_text(json.dumps(payload), encoding="utf-8")
     return out
@@ -492,7 +494,9 @@ def test_promotion_certified_pass_allows(tmp_path: Path):
 
 
 def test_promotion_warn_with_certified_pass_preserves_warn(tmp_path: Path):
-    certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
+    certification_path = _write_certification_pack(
+        tmp_path, decision="pass", certification_status="certified", trace_id="trace-warning-001"
+    )
     action = run_enforcement_bridge(
         _WARN,
         context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
@@ -1030,3 +1034,34 @@ def test_enforce_budget_decision_fails_closed_on_expired_override():
     expired_override = _make_override_auth(expires_at="2000-01-01T00:00:00Z")
     with pytest.raises(EnforcementBridgeError, match="not supported"):
         enforce_budget_decision(decision, context={"override_authorization": expired_override})
+
+
+def test_promotion_gate_blocks_semantically_failed_check_results(tmp_path: Path):
+    decision = _load_json(_ALLOW)
+    cert = _load_json(_DONE_CERTIFICATION_RECORD)
+    cert["check_results"]["contracts"] = {
+        "passed": False,
+        "details": ["contracts evidence missing"],
+    }
+    cert_path = _write_certification_payload(tmp_path, "cert-semantic-fail.json", cert)
+
+    action = run_enforcement_bridge(
+        _write_certification_payload(tmp_path, "decision.json", decision),
+        context={"enforcement_scope": "promotion", "done_certification_path": str(cert_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["action_type"] == "block"
+
+
+def test_promotion_gate_blocks_trace_mismatch(tmp_path: Path):
+    decision = _load_json(_ALLOW)
+    cert = _load_json(_DONE_CERTIFICATION_RECORD)
+    cert["trace_id"] = "trace-mismatch"
+    cert_path = _write_certification_payload(tmp_path, "cert-trace-mismatch.json", cert)
+
+    action = run_enforcement_bridge(
+        _write_certification_payload(tmp_path, "decision-trace.json", decision),
+        context={"enforcement_scope": "promotion", "done_certification_path": str(cert_path)},
+    )
+    assert action["allowed_to_proceed"] is False
+    assert action["certification_gate"]["certification_decision"] == "blocked"
