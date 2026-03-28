@@ -1,0 +1,38 @@
+{
+  "simulation_run_id": "VAL08-1234567890AB",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "replay_result_ref": "outputs/replay/replay_result.json"
+  },
+  "simulation_cases": [
+    {
+      "case_id": "VAL08-A",
+      "case_type": "context_downstream_failure",
+      "injected_faults": [
+        "malformed_context_bundle"
+      ],
+      "expected_outcome": "blocked_before_downstream_promotion",
+      "actual_outcome": "blocked_before_downstream_promotion",
+      "blocked": true,
+      "failure_artifact_refs": [
+        "context_admission_decision:cad-001"
+      ],
+      "control_decision_ref": "context_admission_decision:cad-001",
+      "enforcement_action_ref": "",
+      "passed": true,
+      "divergence_reason": ""
+    }
+  ],
+  "summary": {
+    "total_cases": 1,
+    "passed_cases": 1,
+    "failed_cases": 0,
+    "silent_propagation_detected": false,
+    "missing_failure_artifact_detected": false,
+    "end_to_end_block_failure_detected": false
+  },
+  "final_status": "PASSED",
+  "trace_ids": [
+    "trace-001"
+  ]
+}
