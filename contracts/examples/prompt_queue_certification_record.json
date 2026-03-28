@@ -1,0 +1,22 @@
+{
+  "certification_id": "6f9b95f4f0b5f45084f14ced8effce77c96f4ea03f9d31853f6a0a4fa58ba9cb",
+  "queue_id": "queue-pqx-001",
+  "manifest_ref": "contracts/examples/prompt_queue_manifest.json",
+  "final_queue_state_ref": "artifacts/prompt_queue/queue-pqx-001.state.completed.json",
+  "replay_checkpoint_refs": [
+    "contracts/examples/prompt_queue_resume_checkpoint.json"
+  ],
+  "observability_ref": "contracts/examples/prompt_queue_observability_snapshot.json",
+  "certification_status": "passed",
+  "system_response": "allow",
+  "check_results": {
+    "queue_completion": {"passed": true, "details": []},
+    "state_integrity": {"passed": true, "details": []},
+    "replay_integrity": {"passed": true, "details": []},
+    "observability_integrity": {"passed": true, "details": []},
+    "artifact_completeness": {"passed": true, "details": []}
+  },
+  "blocking_reasons": [],
+  "trace_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "timestamp": "2026-03-28T12:40:00Z"
+}

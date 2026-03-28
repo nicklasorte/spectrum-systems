@@ -59,6 +59,10 @@ def validate_replay_record(record: dict) -> None:
     _validate(record, "prompt_queue_replay_record")
 
 
+def validate_queue_certification_record(record: dict) -> None:
+    _validate(record, "prompt_queue_certification_record")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

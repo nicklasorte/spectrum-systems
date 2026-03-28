@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_certification_record.schema.json",
+  "title": "Prompt Queue Certification Record",
+  "description": "Deterministic fail-closed queue certification trust-gate artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "certification_id",
+    "queue_id",
+    "manifest_ref",
+    "final_queue_state_ref",
+    "replay_checkpoint_refs",
+    "observability_ref",
+    "certification_status",
+    "system_response",
+    "check_results",
+    "blocking_reasons",
+    "trace_id",
+    "timestamp"
+  ],
+  "properties": {
+    "certification_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "queue_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "final_queue_state_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_checkpoint_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "observability_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "certification_status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "system_response": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "block"
+      ]
+    },
+    "check_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queue_completion",
+        "state_integrity",
+        "replay_integrity",
+        "observability_integrity",
+        "artifact_completeness"
+      ],
+      "properties": {
+        "queue_completion": {"$ref": "#/$defs/check_result"},
+        "state_integrity": {"$ref": "#/$defs/check_result"},
+        "replay_integrity": {"$ref": "#/$defs/check_result"},
+        "observability_integrity": {"$ref": "#/$defs/check_result"},
+        "artifact_completeness": {"$ref": "#/$defs/check_result"}
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "check_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "details"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "certification_status": {"const": "passed"}
+        },
+        "required": ["certification_status"]
+      },
+      "then": {
+        "properties": {
+          "system_response": {"const": "allow"},
+          "blocking_reasons": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "certification_status": {"const": "failed"}
+        },
+        "required": ["certification_status"]
+      },
+      "then": {
+        "properties": {
+          "system_response": {"const": "block"},
+          "blocking_reasons": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}
