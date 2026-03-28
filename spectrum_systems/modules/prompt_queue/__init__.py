@@ -34,17 +34,20 @@ from spectrum_systems.modules.prompt_queue.retry_queue_integration import (
 )
 from spectrum_systems.modules.prompt_queue.execution_artifact_io import (
     default_execution_result_path,
+    read_execution_result_artifact,
     validate_execution_result_artifact,
     write_execution_result_artifact,
 )
 from spectrum_systems.modules.prompt_queue.execution_queue_integration import (
     ExecutionQueueIntegrationError,
     finalize_execution,
+    run_queue_step_execution_adapter,
     transition_to_executing,
 )
 from spectrum_systems.modules.prompt_queue.execution_runner import (
     ExecutionRunnerError,
     revalidate_execution_entry,
+    run_queue_step_execution,
     run_simulated_execution,
 )
 from spectrum_systems.modules.prompt_queue.execution_gating_artifact_io import (
@@ -213,6 +216,7 @@ from spectrum_systems.modules.prompt_queue.review_invocation_provider_adapter im
 )
 from spectrum_systems.modules.prompt_queue.review_invocation_runner import (
     build_invocation_id,
+    run_review_invocation_step_adapter,
     run_live_review_invocation,
 )
 from spectrum_systems.modules.prompt_queue.review_invocation_artifact_io import (
@@ -252,13 +256,16 @@ __all__ = [
     "RetryArtifactValidationError",
     "RetryArtifactIOError",
     "default_execution_result_path",
+    "read_execution_result_artifact",
     "validate_execution_result_artifact",
     "write_execution_result_artifact",
     "ExecutionQueueIntegrationError",
     "transition_to_executing",
+    "run_queue_step_execution_adapter",
     "finalize_execution",
     "ExecutionRunnerError",
     "revalidate_execution_entry",
+    "run_queue_step_execution",
     "run_simulated_execution",
     "write_execution_gating_decision_artifact",
     "validate_execution_gating_decision_artifact",
@@ -359,6 +366,7 @@ __all__ = [
     "ReviewInvocationProviderError",
     "invoke_review_provider",
     "build_invocation_id",
+    "run_review_invocation_step_adapter",
     "run_live_review_invocation",
     "ReviewInvocationArtifactIOError",
     "default_review_invocation_result_path",

@@ -6,6 +6,10 @@
   "additionalProperties": false,
   "required": [
     "execution_result_artifact_id",
+    "step_id",
+    "queue_id",
+    "trace_linkage",
+    "execution_type",
     "work_item_id",
     "parent_work_item_id",
     "repair_prompt_artifact_path",
@@ -14,6 +18,7 @@
     "spawned_from_review_artifact_path",
     "execution_mode",
     "execution_status",
+    "produced_artifact_refs",
     "started_at",
     "completed_at",
     "output_reference",
@@ -23,6 +28,10 @@
   ],
   "properties": {
     "execution_result_artifact_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": ["string", "null"], "pattern": "^step-[0-9]{3}$"},
+    "queue_id": {"type": ["string", "null"], "minLength": 1},
+    "trace_linkage": {"type": ["string", "null"], "minLength": 1},
+    "execution_type": {"type": "string", "enum": ["queue_step"]},
     "work_item_id": {"type": "string", "minLength": 1},
     "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
     "repair_prompt_artifact_path": {"type": ["string", "null"], "minLength": 1},
@@ -34,6 +43,10 @@
     "started_at": {"type": "string", "format": "date-time"},
     "completed_at": {"type": "string", "format": "date-time"},
     "output_reference": {"type": ["string", "null"], "minLength": 1},
+    "produced_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
     "error_summary": {"type": ["string", "null"], "minLength": 1},
     "generated_at": {"type": "string", "format": "date-time"},
     "generator_version": {"type": "string", "minLength": 1},

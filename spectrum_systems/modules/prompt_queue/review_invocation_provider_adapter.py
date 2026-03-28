@@ -39,8 +39,23 @@ _ALLOWED_FALLBACK_REASONS = {
 }
 
 
+def _normalize_provider_result(provider: str, result: InvocationProviderResult) -> InvocationProviderResult:
+    if not isinstance(result, InvocationProviderResult):
+        raise ReviewInvocationProviderError(f"{provider} provider returned malformed result type.")
+
+    if result.success and (not isinstance(result.output_reference, str) or not result.output_reference):
+        raise ReviewInvocationProviderError(f"{provider} provider success requires non-empty output_reference.")
+
+    if not result.success and result.output_reference is not None:
+        raise ReviewInvocationProviderError(f"{provider} provider failure must not set output_reference.")
+
+    if result.failure_reason is not None and not isinstance(result.failure_reason, str):
+        raise ReviewInvocationProviderError(f"{provider} provider failure_reason must be a string.")
+    return result
+
+
 def invoke_review_provider(*, work_item: dict, run_codex: ProviderRunner, run_claude: ProviderRunner) -> InvocationProviderOutcome:
-    primary = run_codex(work_item)
+    primary = _normalize_provider_result("codex", run_codex(work_item))
     if primary.success:
         return InvocationProviderOutcome(
             provider_requested="codex",
@@ -63,7 +78,7 @@ def invoke_review_provider(*, work_item: dict, run_codex: ProviderRunner, run_cl
             error_summary=primary.error_message or "codex invocation failed",
         )
 
-    fallback = run_claude(work_item)
+    fallback = _normalize_provider_result("claude", run_claude(work_item))
     if fallback.success:
         return InvocationProviderOutcome(
             provider_requested="codex",

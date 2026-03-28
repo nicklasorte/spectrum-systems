@@ -9,6 +9,7 @@ from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
 )
 from spectrum_systems.modules.prompt_queue.queue_models import WorkItemStatus, iso_now, utc_now
 from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
+from spectrum_systems.modules.prompt_queue.execution_runner import run_queue_step_execution
 
 
 class ExecutionQueueIntegrationError(ValueError):
@@ -54,6 +55,26 @@ def transition_to_executing(*, queue_state: dict, work_item_id: str, clock=utc_n
         raise ExecutionQueueIntegrationError(str(exc)) from exc
 
     return queue_copy, target
+
+
+def run_queue_step_execution_adapter(
+    *,
+    queue_state: dict,
+    step: dict,
+    input_refs: dict | None = None,
+    clock=utc_now,
+) -> dict:
+    """Normalized queue-step execution adapter integration.
+
+    This function intentionally does not mutate queue state, transition status,
+    or perform queue advancement. It only routes a queue step through the
+    normalized execution adapter boundary.
+    """
+
+    try:
+        return run_queue_step_execution(step=step, queue_state=queue_state, input_refs=input_refs, clock=clock)
+    except (ExecutionQueueIntegrationError, ArtifactValidationError, ValueError) as exc:
+        raise ExecutionQueueIntegrationError(str(exc)) from exc
 
 
 def finalize_execution(

@@ -20,6 +20,7 @@ from spectrum_systems.modules.prompt_queue import (  # noqa: E402
     apply_live_review_invocation,
     make_queue_state,
     make_work_item,
+    run_review_invocation_step_adapter,
     validate_review_invocation_result,
     write_review_invocation_result_artifact,
 )
@@ -282,3 +283,23 @@ def test_deterministic_behavior_for_same_input_and_provider_outcome(tmp_path: Pa
     )
 
     assert result_1 == result_2
+
+
+def test_review_invocation_step_adapter_keeps_normalized_boundary(tmp_path: Path):
+    queue_state, _, _, trigger_rel, output_rel = _base_queue(tmp_path)
+    work_item = queue_state["work_items"][0]
+    normalized, _ = run_review_invocation_step_adapter(
+        step={"step_id": "step-001"},
+        queue_state=queue_state,
+        work_item=work_item,
+        repo_root=REPO_ROOT,
+        lineage_context={
+            "review_trigger_artifact_path": str(trigger_rel),
+            "execution_result_artifact_path": "artifacts/prompt_queue/execution_results/wi-live-1.execution_result.json",
+        },
+        run_codex=_ok_provider(str(output_rel)),
+        run_claude=_ok_provider(str(output_rel)),
+    )
+    assert normalized["step_id"] == "step-001"
+    assert normalized["queue_id"] == queue_state["queue_id"]
+    assert normalized["execution_type"] == "review_invocation"
