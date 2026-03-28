@@ -30,14 +30,68 @@ _ACTION_MAP = {
 }
 
 
+def _transition_from_legacy_post_execution(
+    *,
+    work_item: dict,
+    post_execution_decision_artifact: dict,
+    post_execution_decision_artifact_path: str,
+) -> tuple[dict, str]:
+    decision_status = post_execution_decision_artifact.get("decision_status")
+    legacy_map = {
+        "complete": "continue",
+        "review_required": "request_review",
+        "reentry_eligible": "reenter_with_findings",
+        "reentry_blocked": "block",
+    }
+    if decision_status not in legacy_map:
+        raise NextStepOrchestrationError(f"Unsupported decision_status for compatibility mapping: {decision_status}")
+
+    transition_artifact = {
+        "transition_decision_id": f"compat-{post_execution_decision_artifact.get('post_execution_decision_artifact_id', 'unknown')}",
+        "step_id": "step-001",
+        "queue_id": None,
+        "trace_linkage": str(work_item.get("work_item_id") or "unknown-step"),
+        "source_decision_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
+        or post_execution_decision_artifact_path,
+        "transition_action": legacy_map[decision_status],
+        "transition_status": "blocked" if decision_status == "reentry_blocked" else "allowed",
+        "reason_codes": [
+            "block_invalid_report_fail_closed" if decision_status == "reentry_blocked" else "warn_findings_request_review"
+        ],
+        "blocking_reasons": ["unsupported_decision"] if decision_status == "reentry_blocked" else [],
+        "derived_from_artifacts": [
+            post_execution_decision_artifact.get("execution_result_artifact_path")
+            or post_execution_decision_artifact_path
+        ],
+        "timestamp": post_execution_decision_artifact.get("generated_at") or iso_now(utc_now),
+    }
+    return transition_artifact, post_execution_decision_artifact_path
+
+
 def determine_next_step_action(
     *,
-    transition_decision_artifact: dict,
-    transition_decision_artifact_path: str,
+    transition_decision_artifact: dict | None = None,
+    transition_decision_artifact_path: str | None = None,
     source_queue_state_path: str | None,
     config: NextStepOrchestrationConfig = NextStepOrchestrationConfig(),
     clock=utc_now,
+    work_item: dict | None = None,
+    post_execution_decision_artifact: dict | None = None,
+    post_execution_decision_artifact_path: str | None = None,
+    execution_result_artifact_path: str | None = None,
 ) -> dict:
+    if transition_decision_artifact is None:
+        if work_item is None or post_execution_decision_artifact is None or post_execution_decision_artifact_path is None:
+            raise NextStepOrchestrationError("Missing transition decision and insufficient compatibility inputs.")
+        transition_decision_artifact, transition_decision_artifact_path = _transition_from_legacy_post_execution(
+            work_item=work_item,
+            post_execution_decision_artifact=post_execution_decision_artifact,
+            post_execution_decision_artifact_path=post_execution_decision_artifact_path,
+        )
+
+    if not transition_decision_artifact_path:
+        raise NextStepOrchestrationError("transition_decision_artifact_path is required.")
+
     try:
         validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
     except PromptQueueTransitionArtifactValidationError as exc:
@@ -54,7 +108,8 @@ def determine_next_step_action(
         "work_item_id": transition_decision_artifact["step_id"],
         "parent_work_item_id": None,
         "post_execution_decision_artifact_path": transition_decision_artifact_path,
-        "execution_result_artifact_path": transition_decision_artifact.get("source_decision_ref"),
+        "execution_result_artifact_path": execution_result_artifact_path
+        or transition_decision_artifact.get("source_decision_ref"),
         "action_status": action_status,
         "action_reason_code": action_reason_code,
         "decision_status": {
