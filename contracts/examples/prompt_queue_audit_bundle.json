@@ -1,0 +1,25 @@
+{
+  "audit_bundle_id": "69de96eb10033e01af53595f448959126ce23d7ba946ecece5d91dcf72ec9d20",
+  "queue_id": "queue-pqx-001",
+  "manifest_ref": "contracts/examples/prompt_queue_manifest.json",
+  "final_queue_state_ref": "artifacts/prompt_queue/queue-pqx-001.state.completed.json",
+  "execution_result_refs": [
+    "artifacts/prompt_queue/execution_results/step-001.execution_result.json"
+  ],
+  "step_decision_refs": [
+    "artifacts/prompt_queue/step_decisions/step-001.step_decision.json"
+  ],
+  "transition_decision_refs": [
+    "artifacts/prompt_queue/transitions/step-001.transition_decision.json"
+  ],
+  "replay_refs": [
+    "contracts/examples/prompt_queue_resume_checkpoint.json",
+    "contracts/examples/prompt_queue_replay_record.json"
+  ],
+  "observability_ref": "contracts/examples/prompt_queue_observability_snapshot.json",
+  "certification_ref": "contracts/examples/prompt_queue_certification_record.json",
+  "lineage_status": "complete",
+  "completeness_status": "complete",
+  "trace_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "timestamp": "2026-03-28T12:40:00Z"
+}
