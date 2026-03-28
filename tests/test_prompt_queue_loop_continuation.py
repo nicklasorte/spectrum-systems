@@ -143,6 +143,25 @@ def test_loop_control_blocked_returns_continuation_blocked_and_no_child():
     assert result["spawned_child_work_item"] is None
 
 
+def test_missing_loop_control_artifact_blocks_continuation():
+    work_item = _work_item()
+    work_item["loop_control_decision_artifact_path"] = None
+    queue = make_queue_state(queue_id="queue-loop", work_items=[work_item], clock=FixedClock(["2026-03-22T00:00:01Z"]))
+    result = run_loop_continuation(
+        queue_state=queue,
+        work_item=queue["work_items"][0],
+        findings_reentry_artifact=_findings_reentry(),
+        findings_reentry_artifact_path="artifacts/prompt_queue/findings_reentries/wi-loop-1.findings_reentry.json",
+        repair_prompt_artifact=_repair_prompt(),
+        repair_prompt_artifact_path="artifacts/prompt_queue/repair_prompts/wi-loop-1.repair_prompt.json",
+        loop_control_decision_artifact=None,
+        loop_control_decision_artifact_path=None,
+        clock=FixedClock(["2026-03-22T00:01:00Z"]),
+    )
+    assert result["loop_continuation_artifact"]["continuation_status"] == "continuation_blocked"
+    assert result["loop_continuation_artifact"]["continuation_reason_code"] == "continuation_blocked_loop_control"
+
+
 def test_duplicate_continuation_attempt_is_prevented():
     queue = make_queue_state(queue_id="queue-loop", work_items=[_work_item()], clock=FixedClock(["2026-03-22T00:00:01Z"]))
     existing_child = make_work_item(

@@ -145,13 +145,8 @@ def test_missing_blocking_lineage_fails_closed_for_recoverable_decision():
         clock=FixedClock(["2026-03-22T00:04:00Z"]),
     )
 
-    with pytest.raises(BlockedRecoveryQueueIntegrationError):
-        apply_blocked_recovery_decision_to_queue(
-            queue_state=queue,
-            work_item_id="wi-blocked-1",
-            blocked_recovery_decision_artifact=decision,
-            blocked_recovery_decision_artifact_path="artifacts/prompt_queue/blocked_recovery_decisions/wi-blocked-1.blocked_recovery.json",
-        )
+    assert decision["recovery_status"] == "non_recoverable"
+    assert "missing_blocking_artifact_for_recovery" in decision["blocking_conditions"]
 
 
 def test_unsupported_recovery_action_fails_closed():

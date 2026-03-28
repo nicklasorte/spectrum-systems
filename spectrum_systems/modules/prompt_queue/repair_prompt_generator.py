@@ -91,6 +91,9 @@ def generate_repair_prompt_artifact(
     source_findings_artifact_path: str,
     clock=utc_now,
 ) -> dict:
+    if findings_artifact.get("work_item_id") != work_item.get("work_item_id"):
+        raise RepairPromptGenerationError("Findings artifact work_item_id does not match target work item.")
+
     validate_findings_artifact(findings_artifact)
 
     if findings_artifact.get("review_decision") != "FAIL":

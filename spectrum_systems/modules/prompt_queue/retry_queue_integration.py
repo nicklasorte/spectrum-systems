@@ -40,6 +40,9 @@ def apply_retry_decision_to_queue(
     retry_decision_artifact_path: str,
     clock=utc_now,
 ) -> tuple[dict, dict]:
+    if not retry_decision_artifact_path:
+        raise RetryQueueIntegrationError("Retry decision artifact path is required.")
+
     queue_copy = dict(queue_state)
     queue_copy["work_items"] = [dict(item) for item in queue_state.get("work_items", [])]
 
@@ -65,6 +68,11 @@ def apply_retry_decision_to_queue(
         raise RetryQueueIntegrationError("Retry decision retry_count does not match target work item retry_count.")
     if retry_decision_artifact["retry_budget"] != target.get("retry_budget"):
         raise RetryQueueIntegrationError("Retry decision retry_budget does not match target work item retry_budget.")
+    existing_retry_path = target.get("retry_decision_artifact_path")
+    if existing_retry_path is not None:
+        if existing_retry_path == retry_decision_artifact_path:
+            raise RetryQueueIntegrationError("Duplicate retry request detected: retry decision artifact already applied.")
+        raise RetryQueueIntegrationError("Conflicting retry request detected: retry decision artifact path mismatch.")
 
     if target.get("status") == "blocked":
         raise RetryQueueIntegrationError("Retry integration forbids blocked work items.")

@@ -164,6 +164,22 @@ def run_loop_continuation(
     generated_at = iso_now(clock)
 
     if findings_reentry_artifact.get("reentry_status") != "reentry_completed":
+        if (
+            loop_control_decision_artifact is not None
+            and loop_control_decision_artifact.get("enforcement_action") == "allow_reentry"
+            and findings_reentry_artifact.get("reentry_status") in {"reentry_failed", "reentry_blocked"}
+        ):
+            return _build_outcome(
+                work_item=work_item,
+                findings_reentry_artifact_path=findings_reentry_artifact_path,
+                repair_prompt_artifact_path=repair_prompt_artifact_path,
+                loop_control_decision_artifact_path=loop_control_decision_artifact_path,
+                continuation_status="continuation_failed",
+                continuation_reason_code="continuation_failed_invalid_lineage",
+                generated_at=generated_at,
+                source_queue_state_path=source_queue_state_path,
+                blocking_conditions=["conflicting_reentry_and_continuation_signals"],
+            )
         return _build_outcome(
             work_item=work_item,
             findings_reentry_artifact_path=findings_reentry_artifact_path,
@@ -173,6 +189,19 @@ def run_loop_continuation(
             continuation_reason_code="continuation_not_needed_reentry_not_completed",
             generated_at=generated_at,
             source_queue_state_path=source_queue_state_path,
+        )
+
+    if loop_control_decision_artifact is None:
+        return _build_outcome(
+            work_item=work_item,
+            findings_reentry_artifact_path=findings_reentry_artifact_path,
+            repair_prompt_artifact_path=repair_prompt_artifact_path,
+            loop_control_decision_artifact_path=loop_control_decision_artifact_path,
+            continuation_status="continuation_blocked",
+            continuation_reason_code="continuation_blocked_loop_control",
+            generated_at=generated_at,
+            source_queue_state_path=source_queue_state_path,
+            blocking_conditions=["missing_loop_control_decision_artifact"],
         )
 
     if _has_duplicate_spawn(queue_state, work_item["work_item_id"], repair_prompt_artifact_path):

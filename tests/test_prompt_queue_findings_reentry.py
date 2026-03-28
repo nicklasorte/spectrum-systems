@@ -200,6 +200,22 @@ def test_repair_prompt_generation_failure_fails_closed():
         )
 
 
+def test_findings_reentry_requires_required_fixes():
+    findings = _findings()
+    findings["required_fixes"] = []
+    with pytest.raises(FindingsReentryError, match="at least one required fix"):
+        run_findings_reentry(
+            work_item=_work_item(),
+            findings_artifact=findings,
+            findings_artifact_path=_work_item()["findings_artifact_path"],
+            review_parsing_handoff_artifact=_handoff(),
+            review_parsing_handoff_artifact_path=_work_item()["review_parsing_handoff_artifact_path"],
+            review_invocation_result_artifact=_invocation_result(),
+            review_invocation_result_artifact_path=_work_item()["review_invocation_result_artifact_path"],
+            repair_prompt_artifact_path="artifacts/prompt_queue/repair_prompts/wi-reentry-1.repair_prompt.json",
+        )
+
+
 def test_duplicate_reentry_attempt_is_prevented():
     item = _work_item()
     item["findings_reentry_artifact_path"] = "artifacts/prompt_queue/findings_reentries/existing.json"

@@ -62,6 +62,9 @@ def _validate_spawn_preconditions(parent_work_item: dict, repair_prompt_artifact
         raise RepairChildCreationError(
             "Parent work item must be in 'repair_prompt_generated' state before child creation."
         )
+    for child_work_item_id in parent_work_item.get("child_work_item_ids", []):
+        if not isinstance(child_work_item_id, str) or not child_work_item_id:
+            raise RepairChildCreationError("Parent work item child_work_item_ids contains invalid lineage entry.")
 
 
 def build_repair_child_work_item(
@@ -72,6 +75,9 @@ def build_repair_child_work_item(
     clock=utc_now,
 ) -> dict:
     """Build a deterministic child work item with explicit parent→review→findings→repair lineage."""
+
+    if not repair_prompt_artifact_path:
+        raise RepairChildCreationError("repair_prompt_artifact_path is required for explicit child creation lineage.")
 
     _validate_spawn_preconditions(parent_work_item, repair_prompt_artifact)
 
@@ -102,6 +108,9 @@ def build_repair_child_work_item(
             "updated_at": now,
         }
     )
+
+    if child_work_item["work_item_id"] in set(parent_work_item.get("child_work_item_ids", [])):
+        raise RepairChildCreationError("Duplicate child creation attempt detected for parent work item.")
 
     validate_work_item(child_work_item)
     return child_work_item

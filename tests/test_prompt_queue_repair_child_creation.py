@@ -129,6 +129,19 @@ def test_duplicate_spawn_attempt_fails_closed():
         )
 
 
+def test_missing_repair_prompt_path_fails_closed():
+    parent = _parent()
+    queue = make_queue_state(queue_id="queue-01", work_items=[parent], clock=FixedClock(["2026-03-22T00:00:00Z"]))
+    with pytest.raises(RepairChildQueueIntegrationError, match="repair_prompt_artifact_path is required"):
+        spawn_repair_child_in_queue(
+            queue_state=queue,
+            parent_work_item_id="wi-parent",
+            repair_prompt_artifact=_repair_prompt(),
+            repair_prompt_artifact_path="",
+            clock=FixedClock(["2026-03-22T00:00:10Z"]),
+        )
+
+
 def test_pass_derived_repair_prompt_artifact_cannot_spawn_child():
     parent = _parent()
     queue = make_queue_state(queue_id="queue-01", work_items=[parent], clock=FixedClock(["2026-03-22T00:00:00Z"]))

@@ -62,12 +62,28 @@ def _queue(item: dict | None = None) -> dict:
     )
 
 
+def _retry_transition(*, source_decision_ref: str = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json") -> dict:
+    artifact = load_example("prompt_queue_transition_decision")
+    artifact["step_id"] = "step-001"
+    artifact["source_decision_ref"] = source_decision_ref
+    artifact["transition_action"] = "retry_allowed"
+    artifact["transition_status"] = "allowed"
+    artifact["reason_codes"] = ["block_errors_retry_allowed"]
+    artifact["blocking_reasons"] = []
+    artifact["derived_from_artifacts"] = [source_decision_ref]
+    artifact["timestamp"] = "2026-03-22T00:00:59Z"
+    artifact["trace_linkage"] = "queue-retry"
+    return artifact
+
+
 def test_retry_allowed_when_under_budget():
     queue = _queue(_failed_item(status="executed_failure", retry_count=0, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision = evaluate_retry_policy(
         work_item=queue["work_items"][0],
         failure_reason_code="execution_failure_non_lineage_non_schema",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:01:00Z"]),
     )
 
@@ -88,10 +104,12 @@ def test_retry_allowed_when_under_budget():
 
 def test_retry_blocked_when_over_budget():
     queue = _queue(_failed_item(status="executed_failure", retry_count=2, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision = evaluate_retry_policy(
         work_item=queue["work_items"][0],
         failure_reason_code="timeout",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:02:00Z"]),
     )
 
@@ -113,10 +131,12 @@ def test_retry_blocked_when_over_budget():
 
 def test_retry_blocked_for_non_retryable_failure():
     queue = _queue(_failed_item(status="executed_failure", retry_count=0, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision = evaluate_retry_policy(
         work_item=queue["work_items"][0],
         failure_reason_code="lineage_mismatch",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:03:00Z"]),
     )
 
@@ -139,10 +159,12 @@ def test_retry_does_not_apply_to_blocked_items():
 
 def test_retry_count_increments_only_when_retry_occurs():
     queue = _queue(_failed_item(status="review_provider_failed", retry_count=1, retry_budget=3))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision = evaluate_retry_policy(
         work_item=queue["work_items"][0],
         failure_reason_code="provider_transient_failure",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:05:00Z"]),
     )
 
@@ -162,10 +184,12 @@ def test_retry_count_increments_only_when_retry_occurs():
 
 def test_duplicate_retry_attempt_is_prevented_after_state_transition():
     queue = _queue(_failed_item(status="executed_failure", retry_count=0, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision = evaluate_retry_policy(
         work_item=queue["work_items"][0],
         failure_reason_code="timeout",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:06:00Z"]),
     )
     updated_queue, _ = apply_retry_decision_to_queue(
@@ -192,10 +216,12 @@ def test_retry_decision_artifact_validates_against_schema():
 
 def test_deterministic_queue_update_for_same_inputs():
     queue_a = _queue(_failed_item(status="review_invocation_failed", retry_count=0, retry_budget=2))
+    queue_a["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision_a = evaluate_retry_policy(
         work_item=queue_a["work_items"][0],
         failure_reason_code="provider_transient_failure",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:07:00Z"]),
     )
     updated_queue_a, updated_item_a = apply_retry_decision_to_queue(
@@ -207,10 +233,12 @@ def test_deterministic_queue_update_for_same_inputs():
     )
 
     queue_b = copy.deepcopy(_queue(_failed_item(status="review_invocation_failed", retry_count=0, retry_budget=2)))
+    queue_b["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
     decision_b = evaluate_retry_policy(
         work_item=queue_b["work_items"][0],
         failure_reason_code="provider_transient_failure",
         source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
         clock=FixedClock(["2026-03-22T00:07:00Z"]),
     )
     updated_queue_b, updated_item_b = apply_retry_decision_to_queue(
@@ -224,3 +252,38 @@ def test_deterministic_queue_update_for_same_inputs():
     assert decision_a == decision_b
     assert updated_queue_a == updated_queue_b
     assert updated_item_a == updated_item_b
+
+
+def test_retry_blocked_without_transition_eligibility_artifact():
+    queue = _queue(_failed_item(status="executed_failure", retry_count=0, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
+    decision = evaluate_retry_policy(
+        work_item=queue["work_items"][0],
+        failure_reason_code="timeout",
+        source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=None,
+        clock=FixedClock(["2026-03-22T00:08:00Z"]),
+    )
+    assert decision["retry_status"] == "retry_blocked"
+    assert decision["retry_reason_code"] == "retry_blocked_transition_ineligible"
+
+
+def test_conflicting_retry_artifact_path_fails_closed():
+    queue = _queue(_failed_item(status="executed_failure", retry_count=0, retry_budget=2))
+    queue["work_items"][0]["execution_result_artifact_path"] = "artifacts/prompt_queue/execution_results/wi-retry-1.execution.json"
+    queue["work_items"][0]["retry_decision_artifact_path"] = "artifacts/prompt_queue/retry_decisions/original.json"
+    decision = evaluate_retry_policy(
+        work_item=queue["work_items"][0],
+        failure_reason_code="timeout",
+        source_queue_state_path="artifacts/prompt_queue/queue-retry.state.json",
+        transition_decision_artifact=_retry_transition(),
+        clock=FixedClock(["2026-03-22T00:09:00Z"]),
+    )
+    with pytest.raises(RetryQueueIntegrationError, match="Conflicting retry request"):
+        apply_retry_decision_to_queue(
+            queue_state=queue,
+            work_item_id="wi-retry-1",
+            retry_decision_artifact=decision,
+            retry_decision_artifact_path="artifacts/prompt_queue/retry_decisions/new.json",
+            clock=FixedClock(["2026-03-22T00:09:01Z"]),
+        )
