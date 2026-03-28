@@ -1,0 +1,139 @@
+{
+  "validation_run_id": "VAL09-E4A939A64A04",
+  "drift_sequence": [
+    {
+      "case_id": "VAL09-A-0",
+      "case_type": "gradual_drift_increase",
+      "run_index": 0,
+      "drift_detected": false,
+      "drift_status": "no_drift"
+    },
+    {
+      "case_id": "VAL09-A-1",
+      "case_type": "gradual_drift_increase",
+      "run_index": 1,
+      "drift_detected": true,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-A-2",
+      "case_type": "gradual_drift_increase",
+      "run_index": 2,
+      "drift_detected": true,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-A-3",
+      "case_type": "gradual_drift_increase",
+      "run_index": 3,
+      "drift_detected": true,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-D",
+      "case_type": "flat_no_drift_baseline",
+      "run_index": 0,
+      "drift_detected": false,
+      "drift_status": "no_drift"
+    }
+  ],
+  "detection_points": [
+    {
+      "case_id": "VAL09-A-0",
+      "run_index": 0,
+      "signal_strength": 0.0,
+      "drift_status": "no_drift"
+    },
+    {
+      "case_id": "VAL09-A-1",
+      "run_index": 1,
+      "signal_strength": 3.0,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-A-2",
+      "run_index": 2,
+      "signal_strength": 4.0,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-A-3",
+      "run_index": 3,
+      "signal_strength": 4.0,
+      "drift_status": "exceeds_threshold"
+    },
+    {
+      "case_id": "VAL09-D",
+      "run_index": 0,
+      "signal_strength": 0.0,
+      "drift_status": "no_drift"
+    }
+  ],
+  "control_responses": [
+    {
+      "case_id": "VAL09-A-0",
+      "run_index": 0,
+      "system_status": "healthy",
+      "system_response": "allow",
+      "decision": "allow"
+    },
+    {
+      "case_id": "VAL09-A-1",
+      "run_index": 1,
+      "system_status": "blocked",
+      "system_response": "block",
+      "decision": "deny"
+    },
+    {
+      "case_id": "VAL09-A-2",
+      "run_index": 2,
+      "system_status": "blocked",
+      "system_response": "block",
+      "decision": "deny"
+    },
+    {
+      "case_id": "VAL09-A-3",
+      "run_index": 3,
+      "system_status": "blocked",
+      "system_response": "block",
+      "decision": "deny"
+    },
+    {
+      "case_id": "VAL09-D",
+      "run_index": 0,
+      "system_status": "healthy",
+      "system_response": "allow",
+      "decision": "allow"
+    }
+  ],
+  "threshold_crossings": [
+    {
+      "case_id": "VAL09-B",
+      "threshold_type": "warning_or_freeze",
+      "crossed": true,
+      "expected_response": "freeze",
+      "actual_response": "block",
+      "response_on_time": true
+    },
+    {
+      "case_id": "VAL09-C",
+      "threshold_type": "severe",
+      "crossed": true,
+      "expected_response": "block",
+      "actual_response": "block",
+      "response_on_time": true
+    },
+    {
+      "case_id": "VAL09-E",
+      "threshold_type": "insufficient_input_fail_closed",
+      "crossed": true,
+      "expected_response": "fail_closed",
+      "actual_response": "fail_closed",
+      "response_on_time": true
+    }
+  ],
+  "missed_detection": false,
+  "delayed_response": false,
+  "incorrect_response": false,
+  "final_status": "PASSED"
+}
