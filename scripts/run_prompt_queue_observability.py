@@ -32,20 +32,24 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    args = _parse_args(argv)
-    queue_path = Path(args.queue_path)
-    output_path = Path(args.output_path)
+    try:
+        args = _parse_args(argv)
+        queue_path = Path(args.queue_path)
+        output_path = Path(args.output_path)
 
-    queue_state = json.loads(queue_path.read_text(encoding="utf-8"))
-    snapshot = generate_queue_snapshot(queue_state)
-    violations = validate_queue_invariants(queue_state)
-    if violations != snapshot["invariant_violations"]:
-        raise ValueError("Invariant mismatch between snapshot generation and direct invariant validation")
+        queue_state = json.loads(queue_path.read_text(encoding="utf-8"))
+        snapshot = generate_queue_snapshot(queue_state)
+        violations = validate_queue_invariants(queue_state)
+        if violations != snapshot["invariant_violations"]:
+            raise ValueError("Invariant mismatch between snapshot generation and direct invariant validation")
 
-    validate_observability_snapshot(snapshot)
-    written = write_artifact(snapshot, output_path)
-    print(json.dumps({"snapshot_path": str(written), "invariant_violations": violations}, indent=2))
-    return 0
+        validate_observability_snapshot(snapshot)
+        written = write_artifact(snapshot, output_path)
+        print(json.dumps({"snapshot_path": str(written), "invariant_violations": violations}, indent=2))
+        return 0
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

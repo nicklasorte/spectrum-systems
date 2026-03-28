@@ -13,7 +13,11 @@
     "blocked_items_count",
     "exhausted_retry_count",
     "active_run_ids",
-    "invariant_violations"
+    "invariant_violations",
+    "trace_linkage",
+    "queue_health_state",
+    "health_reason_codes",
+    "health_metrics"
   ],
   "properties": {
     "snapshot_id": {
@@ -80,6 +84,62 @@
       "items": {
         "type": "string",
         "minLength": 1
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["linkage_type", "linkage_id"],
+      "properties": {
+        "linkage_type": {
+          "type": "string",
+          "enum": ["run_id", "result_ref"]
+        },
+        "linkage_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "queue_health_state": {
+      "type": "string",
+      "enum": ["stable", "degraded", "unstable"]
+    },
+    "health_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "health_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queue_id",
+        "current_step_index",
+        "total_steps",
+        "queue_status",
+        "last_transition_action",
+        "blocked_count",
+        "retry_count",
+        "remediation_count",
+        "ambiguous_signal_count",
+        "recovery_count",
+        "completion_progress"
+      ],
+      "properties": {
+        "queue_id": { "type": "string", "minLength": 1 },
+        "current_step_index": { "type": "integer", "minimum": 0 },
+        "total_steps": { "type": "integer", "minimum": 1 },
+        "queue_status": { "type": "string", "enum": ["pending", "running", "blocked", "completed"] },
+        "last_transition_action": { "type": "string", "enum": ["none", "continue", "block", "unknown"] },
+        "blocked_count": { "type": "integer", "minimum": 0 },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "remediation_count": { "type": "integer", "minimum": 0 },
+        "ambiguous_signal_count": { "type": "integer", "minimum": 0 },
+        "recovery_count": { "type": "integer", "minimum": 0 },
+        "completion_progress": { "type": "number", "minimum": 0, "maximum": 1 }
       }
     }
   }

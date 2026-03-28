@@ -178,6 +178,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-PQX-QUEUE-04-2026-03-28.md | [ROW: QUEUE-04] Unified Transition Policy and Next-Step Decision Spine | Active |
 | docs/review-actions/PLAN-PQX-QUEUE-04A-2026-03-28.md | [ROW: QUEUE-04] Repair Slice QUEUE-04A — Export Compatibility Fix | Active |
 | docs/review-actions/PLAN-PQX-QUEUE-04B-2026-03-28.md | [ROW: QUEUE-04] Repair Slice QUEUE-04B — Legacy Queue-Integration Semantics Compatibility | Active |
+| docs/review-actions/PLAN-PQX-QUEUE-07-2026-03-28.md | [ROW: QUEUE-07] Queue Observability and Health Classification | Active |
 
 Update this table when plans are created or completed.
 
