@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_audit_bundle.schema.json",
+  "title": "Prompt Queue Audit Bundle",
+  "description": "Deterministic fail-closed full evidence package for a single prompt queue run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audit_bundle_id",
+    "queue_id",
+    "manifest_ref",
+    "final_queue_state_ref",
+    "execution_result_refs",
+    "step_decision_refs",
+    "transition_decision_refs",
+    "replay_refs",
+    "observability_ref",
+    "certification_ref",
+    "lineage_status",
+    "completeness_status",
+    "trace_id",
+    "timestamp"
+  ],
+  "properties": {
+    "audit_bundle_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "queue_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "final_queue_state_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "execution_result_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      },
+      "uniqueItems": true
+    },
+    "step_decision_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      },
+      "uniqueItems": true
+    },
+    "transition_decision_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      },
+      "uniqueItems": true
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      },
+      "uniqueItems": true
+    },
+    "observability_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "certification_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "lineage_status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "incomplete"
+      ]
+    },
+    "completeness_status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "incomplete"
+      ]
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "artifact_ref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[-A-Za-z0-9_./:]+$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "completeness_status": {
+            "const": "complete"
+          }
+        },
+        "required": [
+          "completeness_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "lineage_status": {
+            "const": "complete"
+          }
+        }
+      }
+    }
+  ]
+}

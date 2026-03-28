@@ -186,12 +186,13 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     read_json_artifact,
+    validate_queue_audit_bundle,
+    validate_queue_certification_record,
     validate_findings_reentry,
     validate_loop_continuation,
     validate_observability_snapshot,
     validate_queue_state,
     validate_replay_record,
-    validate_queue_certification_record,
     validate_review_parsing_handoff,
     validate_review_invocation_result,
     validate_resume_checkpoint,
@@ -206,6 +207,10 @@ from spectrum_systems.modules.prompt_queue.queue_observability import (
 from spectrum_systems.modules.prompt_queue.queue_certification import (
     QueueCertificationError,
     run_queue_certification,
+)
+from spectrum_systems.modules.prompt_queue.queue_audit_bundle import (
+    QueueAuditBundleError,
+    build_queue_audit_bundle,
 )
 from spectrum_systems.modules.prompt_queue.queue_models import (
     Priority,
@@ -365,6 +370,8 @@ __all__ = [
     "QueueLoopError",
     "QueueCertificationError",
     "run_queue_certification",
+    "QueueAuditBundleError",
+    "build_queue_audit_bundle",
     "run_queue_once",
     "build_queue_resume_checkpoint",
     "resume_queue_from_checkpoint",
@@ -402,6 +409,7 @@ __all__ = [
     "validate_queue_state",
     "validate_resume_checkpoint",
     "validate_replay_record",
+    "validate_queue_audit_bundle",
     "validate_queue_certification_record",
     "validate_queue_invariants",
     "validate_review_parsing_handoff",
