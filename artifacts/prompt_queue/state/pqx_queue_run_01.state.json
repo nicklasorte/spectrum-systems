@@ -1,0 +1,76 @@
+{
+  "queue_id": "queue-pqx-run-01",
+  "queue_status": "completed",
+  "work_items": [
+    {
+      "work_item_id": "wi-pqx-run-01",
+      "parent_work_item_id": null,
+      "prompt_id": "prompt-pqx-queue-run-01",
+      "title": "PQX Queue governed sequential run",
+      "status": "runnable",
+      "priority": "high",
+      "risk_level": "medium",
+      "repo": "spectrum-systems",
+      "branch": "feature/pqx-queue-run-01",
+      "scope_paths": [
+        "artifacts/prompt_queue",
+        "scripts/run_prompt_queue.py",
+        "spectrum_systems/modules/prompt_queue"
+      ],
+      "review_provider_primary": "codex",
+      "review_provider_actual": "codex",
+      "review_attempt_count": 0,
+      "review_fallback_used": false,
+      "review_fallback_reason": null,
+      "findings_artifact_path": "artifacts/prompt_queue/findings/wi-parent.findings.json",
+      "created_at": "2026-03-28T12:00:00Z",
+      "updated_at": "2026-03-28T12:00:00Z",
+      "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-parent.repair_prompt.json",
+      "gating_decision_artifact_path": "artifacts/prompt_queue/gating/wi-pqx-run-01.execution_gating_decision.json",
+      "spawned_from_repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-parent.repair_prompt.json",
+      "spawned_from_findings_artifact_path": "artifacts/prompt_queue/findings/wi-parent.findings.json",
+      "spawned_from_review_artifact_path": "docs/reviews/2026-03-28-queue-parent.md",
+      "generation_count": 0,
+      "repair_loop_generation": 0,
+      "child_work_item_ids": [],
+      "loop_control_decision_artifact_path": null,
+      "execution_result_artifact_path": null,
+      "post_execution_decision_artifact_path": null,
+      "next_step_action_artifact_path": null,
+      "review_trigger_artifact_path": null,
+      "review_invocation_result_artifact_path": null,
+      "review_parsing_handoff_artifact_path": null,
+      "findings_reentry_artifact_path": null,
+      "spawned_from_execution_result_artifact_path": null,
+      "spawned_from_post_execution_decision_artifact_path": null,
+      "spawned_from_loop_control_decision_artifact_path": null,
+      "loop_continuation_artifact_path": null,
+      "blocked_recovery_decision_artifact_path": null,
+      "retry_count": 0,
+      "retry_budget": 2,
+      "retry_decision_artifact_path": null
+    }
+  ],
+  "active_work_item_id": null,
+  "created_at": "2026-03-28T12:00:00Z",
+  "updated_at": "2026-03-28T16:46:38Z",
+  "current_step_index": 2,
+  "total_steps": 2,
+  "step_results": [
+    {
+      "step_id": "step-001",
+      "step_index": 0,
+      "status": "completed",
+      "result_ref": "step-decision-step-001-20260328T164634Z",
+      "updated_at": "2026-03-28T16:46:34Z"
+    },
+    {
+      "step_id": "step-002",
+      "step_index": 1,
+      "status": "completed",
+      "result_ref": "step-decision-step-002-20260328T164638Z",
+      "updated_at": "2026-03-28T16:46:38Z"
+    }
+  ],
+  "last_updated": "2026-03-28T16:46:38Z"
+}

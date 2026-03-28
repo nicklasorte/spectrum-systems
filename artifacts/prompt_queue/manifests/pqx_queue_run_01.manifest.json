@@ -1,0 +1,48 @@
+{
+  "queue_id": "queue-pqx-run-01",
+  "created_at": "2026-03-28T12:00:00Z",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "step_id": "step-001",
+      "step_type": "QUEUE-06",
+      "input_refs": [
+        "prompt_queue_work_item:wi-pqx-run-01"
+      ],
+      "expected_outputs": [
+        "prompt_queue_execution_result",
+        "prompt_queue_step_decision",
+        "prompt_queue_transition_decision"
+      ],
+      "metadata": {
+        "roadmap_row": "QUEUE-06",
+        "source_queue_state_path": "artifacts/prompt_queue/state/pqx_queue_run_01.state.json",
+        "execution_mode": "simulated"
+      }
+    },
+    {
+      "step_id": "step-002",
+      "step_type": "QUEUE-07",
+      "input_refs": [
+        "prompt_queue_work_item:wi-pqx-run-01",
+        "prompt_queue_transition_decision:step-001"
+      ],
+      "expected_outputs": [
+        "prompt_queue_execution_result",
+        "prompt_queue_step_decision",
+        "prompt_queue_transition_decision",
+        "prompt_queue_observability_snapshot"
+      ],
+      "metadata": {
+        "roadmap_row": "QUEUE-07",
+        "source_queue_state_path": "artifacts/prompt_queue/state/pqx_queue_run_01.state.json",
+        "execution_mode": "simulated"
+      }
+    }
+  ],
+  "execution_policy": {
+    "stop_on_block": true,
+    "allow_warn": false,
+    "trace_id": "dc9125b16d9646d5a8f800c5718e2ea9973dd8b0005349c1dcba006731f27694"
+  }
+}
