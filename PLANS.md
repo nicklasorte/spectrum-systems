@@ -183,6 +183,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-VAL-11-2026-03-28.md | VAL-11 — Certification Integrity | Active |
 | docs/review-actions/PLAN-VAL-11-TRACE-HARDENING-2026-03-28.md | VAL-11 — Trace Linkage Hardening Defect Fix | Active |
 | docs/review-actions/PLAN-VAL-04-2026-03-28.md | VAL-04 — Control Decision Consistency | Active |
+| docs/review-actions/PLAN-VAL-06-2026-03-28.md | VAL-06 — XRUN Signal Quality | Active |
 
 Update this table when plans are created or completed.
 

@@ -1,0 +1,109 @@
+{
+  "validation_run_id": "VAL06-3A7A9B3F2C10",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "replay_results": ["replay-1", "replay-2"],
+    "eval_summaries": ["eval-1", "eval-2"],
+    "regression_results": ["reg-1", "reg-2"],
+    "drift_results": ["drift-1", "drift-2"],
+    "monitor_records": ["monitor-1", "monitor-2"],
+    "policy_ref": "xrun-policy-v1"
+  },
+  "validation_cases": [
+    {
+      "case_id": "VAL06-A",
+      "case_type": "stable_baseline",
+      "expected_patterns": [],
+      "actual_patterns": [],
+      "expected_actions": [],
+      "actual_actions": [],
+      "expected_system_signal": "stable",
+      "actual_system_signal": "stable",
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL06-B",
+      "case_type": "repeated_failure_cluster",
+      "expected_patterns": ["recurring_failure_type"],
+      "actual_patterns": ["recurring_failure_type"],
+      "expected_actions": ["generate_eval_cases"],
+      "actual_actions": ["generate_eval_cases"],
+      "expected_system_signal": "warning",
+      "actual_system_signal": "warning",
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL06-C",
+      "case_type": "rising_drift_trend",
+      "expected_patterns": ["drift_cluster"],
+      "actual_patterns": ["drift_cluster"],
+      "expected_actions": ["tighten_policy_threshold", "trigger_drift_alert"],
+      "actual_actions": ["tighten_policy_threshold", "trigger_drift_alert"],
+      "expected_system_signal": "warning",
+      "actual_system_signal": "warning",
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL06-D",
+      "case_type": "regression_density_spike",
+      "expected_patterns": ["unstable_module"],
+      "actual_patterns": ["unstable_module"],
+      "expected_actions": ["require_manual_review"],
+      "actual_actions": ["require_manual_review"],
+      "expected_system_signal": "unstable",
+      "actual_system_signal": "unstable",
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL06-E",
+      "case_type": "reproducibility_instability",
+      "expected_patterns": ["unstable_module"],
+      "actual_patterns": ["unstable_module"],
+      "expected_actions": ["require_manual_review"],
+      "actual_actions": ["require_manual_review"],
+      "expected_system_signal": "unstable",
+      "actual_system_signal": "unstable",
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL06-F",
+      "case_type": "insufficient_input",
+      "expected_patterns": [],
+      "actual_patterns": [],
+      "expected_actions": [],
+      "actual_actions": [],
+      "expected_system_signal": "fail_closed",
+      "actual_system_signal": "fail_closed",
+      "passed": true,
+      "blocking_reason": "trend calculation requires at least two points"
+    },
+    {
+      "case_id": "VAL06-G",
+      "case_type": "malformed_input",
+      "expected_patterns": [],
+      "actual_patterns": [],
+      "expected_actions": [],
+      "actual_actions": [],
+      "expected_system_signal": "fail_closed",
+      "actual_system_signal": "fail_closed",
+      "passed": true,
+      "blocking_reason": "eval_summaries[0] failed schema validation"
+    }
+  ],
+  "summary": {
+    "total_cases": 7,
+    "passed_cases": 7,
+    "failed_cases": 0,
+    "false_pattern_detected": false,
+    "missed_pattern_detected": false,
+    "incorrect_action_detected": false,
+    "incorrect_signal_detected": false
+  },
+  "final_status": "PASSED",
+  "trace_ids": ["11111111-1111-4111-8111-111111111111"]
+}

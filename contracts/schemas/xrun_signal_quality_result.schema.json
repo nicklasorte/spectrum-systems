@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/xrun_signal_quality_result.schema.json",
+  "title": "XRUN Signal Quality Result",
+  "description": "VAL-06 governed validation artifact proving XRUN-01 pattern/action/signal quality under repeated trust-hardening scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "validation_run_id": { "type": "string", "pattern": "^VAL06-[A-F0-9]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_results",
+        "eval_summaries",
+        "regression_results",
+        "drift_results",
+        "monitor_records",
+        "policy_ref"
+      ],
+      "properties": {
+        "replay_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "eval_summaries": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "regression_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "drift_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "monitor_records": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "policy_ref": { "type": "string", "minLength": 1 },
+        "expected_outcomes_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "case_type",
+          "expected_patterns",
+          "actual_patterns",
+          "expected_actions",
+          "actual_actions",
+          "expected_system_signal",
+          "actual_system_signal",
+          "passed",
+          "blocking_reason"
+        ],
+        "properties": {
+          "case_id": { "type": "string", "pattern": "^VAL06-[A-Z]$" },
+          "case_type": {
+            "type": "string",
+            "enum": [
+              "stable_baseline",
+              "repeated_failure_cluster",
+              "rising_drift_trend",
+              "regression_density_spike",
+              "reproducibility_instability",
+              "insufficient_input",
+              "malformed_input"
+            ]
+          },
+          "expected_patterns": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "actual_patterns": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "expected_actions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "actual_actions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "expected_system_signal": { "type": "string", "enum": ["stable", "warning", "unstable", "fail_closed"] },
+          "actual_system_signal": { "type": "string", "enum": ["stable", "warning", "unstable", "fail_closed", "error"] },
+          "passed": { "type": "boolean" },
+          "blocking_reason": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "false_pattern_detected",
+        "missed_pattern_detected",
+        "incorrect_action_detected",
+        "incorrect_signal_detected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 0 },
+        "passed_cases": { "type": "integer", "minimum": 0 },
+        "failed_cases": { "type": "integer", "minimum": 0 },
+        "false_pattern_detected": { "type": "boolean" },
+        "missed_pattern_detected": { "type": "boolean" },
+        "incorrect_action_detected": { "type": "boolean" },
+        "incorrect_signal_detected": { "type": "boolean" }
+      }
+    },
+    "final_status": { "type": "string", "enum": ["PASSED", "FAILED"] },
+    "trace_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
