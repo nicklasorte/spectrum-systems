@@ -144,6 +144,25 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
         "certification_pack": _default_certification_pack(),
         "omit_certification_pack_ref": False,
     }
+    trace_id = str(payload["replay"].get("trace_id") or "")
+    if not trace_id:
+        raise CertificationIntegrityError("replay_results[0].trace_id is required")
+
+    payload["error_budget"]["trace_refs"]["trace_id"] = trace_id
+    payload["control_decision"]["trace_id"] = trace_id
+    payload["policy_ref"]["trace_id"] = trace_id
+    payload["certification_pack"]["provenance_trace_refs"]["trace_refs"] = [trace_id]
+
+    for result in payload["regression"].get("results") or []:
+        result["trace_id"] = trace_id
+        result["baseline_trace_id"] = trace_id
+        result["current_trace_id"] = trace_id
+
+    payload["failure_injection"]["trace_refs"]["primary"] = trace_id
+    payload["failure_injection"]["trace_refs"]["related"] = []
+    for result in payload["failure_injection"].get("results") or []:
+        result["trace_refs"]["primary"] = trace_id
+        result["trace_refs"]["related"] = []
 
     if case_type == "replay_pass_regression_fail":
         payload["regression"]["overall_status"] = "fail"
@@ -173,7 +192,9 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
     elif case_type == "all_pass_missing_certification_input":
         payload["omit_certification_pack_ref"] = True
     elif case_type == "all_pass_inconsistent_trace_linkage":
-        payload["control_decision"]["trace_id"] = f"{payload['replay']['trace_id']}-mismatch"
+        mismatched = f"{payload['replay']['trace_id']}-mismatch"
+        payload["control_decision"]["trace_id"] = mismatched
+        payload["policy_ref"]["trace_id"] = mismatched
     elif case_type == "all_signals_valid":
         pass
     else:

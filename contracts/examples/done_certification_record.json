@@ -14,7 +14,8 @@
     "contracts": {"passed": true, "details": []},
     "reliability": {"passed": true, "details": []},
     "fail_closed": {"passed": true, "details": []},
-    "control_consistency": {"passed": true, "details": []}
+    "control_consistency": {"passed": true, "details": []},
+    "trace_linkage": {"passed": true, "details": []}
   },
   "final_status": "PASSED",
   "system_response": "allow",

@@ -80,6 +80,109 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
     return refs
 
 
+def _normalize_trace(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    return value.strip()
+
+
+def _extend_trace_candidates(candidates: List[str], values: List[str]) -> None:
+    for value in values:
+        normalized = _normalize_trace(value)
+        if normalized:
+            candidates.append(normalized)
+
+
+def _validate_trace_linkage(
+    *,
+    replay: Dict[str, Any],
+    regression: Dict[str, Any],
+    error_budget: Dict[str, Any],
+    control_decision: Dict[str, Any],
+    certification_pack: Dict[str, Any],
+    failure_injection: Optional[Dict[str, Any]],
+) -> tuple[bool, List[str], str]:
+    details: List[str] = []
+
+    replay_trace = _normalize_trace(replay.get("trace_id"))
+    if not replay_trace:
+        details.append("TRACE_LINKAGE_MISSING: replay_result.trace_id is required")
+
+    reference_trace = replay_trace
+    def _require_exact(label: str, value: Any) -> None:
+        normalized = _normalize_trace(value)
+        if not normalized:
+            details.append(f"TRACE_LINKAGE_MISSING: {label} is required")
+            return
+        if reference_trace and normalized != reference_trace:
+            details.append(
+                f"TRACE_LINKAGE_MISMATCH: {label}={normalized!r} does not match replay_result.trace_id={reference_trace!r}"
+            )
+
+    _require_exact("error_budget_status.trace_refs.trace_id", (error_budget.get("trace_refs") or {}).get("trace_id"))
+    _require_exact("evaluation_control_decision.trace_id", control_decision.get("trace_id"))
+
+    regression_trace_ids: List[str] = []
+    for idx, result in enumerate(regression.get("results") or []):
+        trace_id = _normalize_trace(result.get("trace_id"))
+        if not trace_id:
+            details.append(f"TRACE_LINKAGE_MISSING: regression_result.results[{idx}].trace_id is required")
+            continue
+        regression_trace_ids.append(trace_id)
+        if reference_trace and trace_id != reference_trace:
+            details.append(
+                "TRACE_LINKAGE_MISMATCH: "
+                f"regression_result.results[{idx}].trace_id={trace_id!r} "
+                f"does not match replay_result.trace_id={reference_trace!r}"
+            )
+    certification_trace_ids: List[str] = []
+    _extend_trace_candidates(
+        certification_trace_ids,
+        list((certification_pack.get("provenance_trace_refs") or {}).get("trace_refs") or []),
+    )
+    if not certification_trace_ids:
+        details.append("TRACE_LINKAGE_MISSING: control_loop_certification_pack provenance trace_refs are required")
+    if len(set(certification_trace_ids)) > 1:
+        details.append("TRACE_LINKAGE_AMBIGUOUS: control_loop_certification_pack has multiple trace_refs values")
+    for trace_id in certification_trace_ids:
+        if reference_trace and trace_id != reference_trace:
+            details.append(
+                "TRACE_LINKAGE_MISMATCH: "
+                f"control_loop_certification_pack.provenance_trace_refs.trace_refs contains {trace_id!r} "
+                f"which does not match replay_result.trace_id={reference_trace!r}"
+            )
+
+    if failure_injection is not None:
+        fi_summary_primary = _normalize_trace((failure_injection.get("trace_refs") or {}).get("primary"))
+        if not fi_summary_primary:
+            details.append("TRACE_LINKAGE_MISSING: governed_failure_injection_summary.trace_refs.primary is required")
+        elif reference_trace and fi_summary_primary != reference_trace:
+            details.append(
+                "TRACE_LINKAGE_MISMATCH: "
+                f"governed_failure_injection_summary.trace_refs.primary={fi_summary_primary!r} "
+                f"does not match replay_result.trace_id={reference_trace!r}"
+            )
+
+        for idx, result in enumerate(failure_injection.get("results") or []):
+            primary = _normalize_trace((result.get("trace_refs") or {}).get("primary"))
+            if not primary:
+                details.append(
+                    f"TRACE_LINKAGE_MISSING: governed_failure_injection_summary.results[{idx}].trace_refs.primary is required"
+                )
+            elif reference_trace and primary != reference_trace:
+                details.append(
+                    "TRACE_LINKAGE_MISMATCH: "
+                    f"governed_failure_injection_summary.results[{idx}].trace_refs.primary={primary!r} "
+                    f"does not match replay_result.trace_id={reference_trace!r}"
+                )
+
+    passed = len(details) == 0
+    resolved_trace = reference_trace
+    if not resolved_trace and passed:
+        raise DoneCertificationError("TRACE_LINKAGE_MISSING: replay_result.trace_id is required")
+    return passed, details, resolved_trace
+
+
 def run_done_certification(input_refs: dict) -> dict:
     """Run deterministic fail-closed done certification and return governed artifact."""
     refs = _require_refs(input_refs)
@@ -209,6 +312,17 @@ def run_done_certification(input_refs: dict) -> dict:
     if not control_consistency_pass:
         blocking_reasons.extend(control_consistency_details)
 
+    trace_linkage_pass, trace_linkage_details, resolved_trace_id = _validate_trace_linkage(
+        replay=replay,
+        regression=regression,
+        error_budget=error_budget,
+        control_decision=control_decision,
+        certification_pack=certification_pack,
+        failure_injection=failure_injection,
+    )
+    if not trace_linkage_pass:
+        blocking_reasons.extend(trace_linkage_details)
+
     final_status = "PASSED" if not blocking_reasons else "FAILED"
     system_response = "allow" if final_status == "PASSED" else "block"
 
@@ -224,11 +338,7 @@ def run_done_certification(input_refs: dict) -> dict:
     }
     certification_id = _stable_hash(deterministic_context)
 
-    trace_id = (
-        str(replay.get("trace_id") or "")
-        or str((error_budget.get("trace_refs") or {}).get("trace_id") or "")
-        or str(control_decision.get("trace_id") or "")
-    )
+    trace_id = resolved_trace_id
     if not trace_id:
         raise DoneCertificationError("trace_id cannot be derived from replay/error_budget/control_decision inputs")
 
@@ -249,6 +359,10 @@ def run_done_certification(input_refs: dict) -> dict:
             "control_consistency": {
                 "passed": control_consistency_pass,
                 "details": control_consistency_details,
+            },
+            "trace_linkage": {
+                "passed": trace_linkage_pass,
+                "details": trace_linkage_details,
             },
         },
         "final_status": final_status,

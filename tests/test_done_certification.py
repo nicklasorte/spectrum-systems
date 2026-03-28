@@ -69,28 +69,39 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
     replay["consistency_status"] = "match"
     replay["drift_detected"] = False
     replay["failure_reason"] = None
+    trace_id = replay["trace_id"]
 
     regression = _regression_result_pass()
+    regression["results"][0]["trace_id"] = trace_id
+    regression["results"][0]["baseline_trace_id"] = trace_id
+    regression["results"][0]["current_trace_id"] = trace_id
     certification_pack = _load_example("control_loop_certification_pack")
     certification_pack["decision"] = "pass"
     certification_pack["certification_status"] = "certified"
+    certification_pack["provenance_trace_refs"]["trace_refs"] = [trace_id]
 
     error_budget = _load_example("error_budget_status")
     error_budget["budget_status"] = "healthy"
+    error_budget["trace_refs"]["trace_id"] = trace_id
 
     control_decision = _load_example("evaluation_control_decision")
     control_decision["system_status"] = "healthy"
     control_decision["system_response"] = "allow"
     control_decision["decision"] = "allow"
+    control_decision["trace_id"] = trace_id
 
     failure_injection = _load_example("governed_failure_injection_summary")
     failure_injection["fail_count"] = 0
     failure_injection["pass_count"] = failure_injection["case_count"]
+    failure_injection["trace_refs"]["primary"] = trace_id
+    failure_injection["trace_refs"]["related"] = []
     for result in failure_injection["results"]:
         result["passed"] = True
         result["expected_outcome"] = "block"
         result["observed_outcome"] = "block"
         result["invariant_violations"] = []
+        result["trace_refs"]["primary"] = trace_id
+        result["trace_refs"]["related"] = []
 
     return {
         "replay_result_ref": _write_json(tmp_path / "replay.json", replay),
@@ -179,3 +190,43 @@ def test_invalid_schema_blocks(tmp_path: Path) -> None:
 
     with pytest.raises(DoneCertificationError, match="failed schema validation"):
         run_done_certification(refs)
+
+
+def test_trace_mismatch_blocks(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    control_decision = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control_decision["trace_id"] = "trace-mismatch-999"
+    Path(refs["policy_ref"]).write_text(json.dumps(control_decision), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert result["system_response"] == "block"
+    assert any(reason.startswith("TRACE_LINKAGE_MISMATCH:") for reason in result["blocking_reasons"])
+    assert result["check_results"]["trace_linkage"]["passed"] is False
+
+
+def test_missing_trace_on_required_artifact_fails_closed(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    regression = json.loads(Path(refs["regression_result_ref"]).read_text(encoding="utf-8"))
+    regression["results"][0].pop("trace_id", None)
+    Path(refs["regression_result_ref"]).write_text(json.dumps(regression), encoding="utf-8")
+
+    with pytest.raises(DoneCertificationError, match="failed schema validation"):
+        run_done_certification(refs)
+
+
+def test_ambiguous_certification_pack_trace_refs_blocks(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    certification_pack = json.loads(Path(refs["certification_pack_ref"]).read_text(encoding="utf-8"))
+    replay = json.loads(Path(refs["replay_result_ref"]).read_text(encoding="utf-8"))
+    certification_pack["provenance_trace_refs"]["trace_refs"] = [
+        replay["trace_id"],
+        f"{replay['trace_id']}-other",
+    ]
+    Path(refs["certification_pack_ref"]).write_text(json.dumps(certification_pack), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert result["system_response"] == "block"
+    assert any(reason.startswith("TRACE_LINKAGE_AMBIGUOUS:") for reason in result["blocking_reasons"])
+    assert result["check_results"]["trace_linkage"]["passed"] is False

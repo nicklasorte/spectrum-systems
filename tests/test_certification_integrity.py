@@ -84,11 +84,15 @@ def _valid_input_refs() -> Dict[str, Any]:
     failure = _load_example("governed_failure_injection_summary")
     failure["fail_count"] = 0
     failure["pass_count"] = failure["case_count"]
+    failure["trace_refs"]["primary"] = trace_id
+    failure["trace_refs"]["related"] = []
     for result in failure["results"]:
         result["passed"] = True
         result["expected_outcome"] = "block"
         result["observed_outcome"] = "block"
         result["invariant_violations"] = []
+        result["trace_refs"]["primary"] = trace_id
+        result["trace_refs"]["related"] = []
 
     return {
         "replay_results": [replay],
@@ -133,15 +137,11 @@ def test_missing_input_fails_closed() -> None:
     assert case["passed"] is True
 
 
-def test_trace_mismatch_blocks_or_is_flagged_false_certification() -> None:
+def test_trace_mismatch_blocks() -> None:
     result = run_certification_integrity_validation(_valid_input_refs())
     case = _case_map(result)["VAL11-F"]
-    if case["actual_outcome"] == "PASSED":
-        assert result["summary"]["false_certification_detected"] is True
-        assert result["final_status"] == "FAILED"
-    else:
-        assert case["actual_outcome"] == "FAILED"
-        assert case["passed"] is True
+    assert case["actual_outcome"] == "FAILED"
+    assert case["passed"] is True
 
 
 def test_valid_case_passes() -> None:
@@ -153,12 +153,9 @@ def test_valid_case_passes() -> None:
 
 def test_any_false_certification_causes_failed_final_status() -> None:
     result = run_certification_integrity_validation(_valid_input_refs())
-    case = _case_map(result)["VAL11-F"]
-    if case["actual_outcome"] == "PASSED":
-        assert result["summary"]["false_certification_detected"] is True
-        assert result["final_status"] == "FAILED"
-    else:
-        assert result["summary"]["false_certification_detected"] is False
+    assert result["summary"]["false_certification_detected"] is False
+    assert result["summary"]["inconsistent_signal_detected"] is False
+    assert result["final_status"] == "PASSED"
 
 
 def test_missing_input_array_rejected() -> None:
