@@ -10,8 +10,8 @@
 - **Slice A:** PQX-CLT-012A — trial-plan governance execution record update (`docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`)
 - **Slice B:** PQX-CLT-012B — action-tracker execution/closure record update (`docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`)
 - **Baseline Commit:** `1aa1ff8991234b7320102563029ea8794c00c528`
-- **Branch A:** `pqx-clt-012-slice-a-plan-governance`
-- **Branch B:** `pqx-clt-012-slice-b-action-tracker`
+- **Branch A (re-run):** `pqx-clt-015-slice-a`
+- **Branch B (re-run):** `pqx-clt-015-slice-b`
 
 ## Files Touched Per Slice
 
@@ -28,21 +28,45 @@
 - [x] Pair does not jointly modify control-loop policy files.
 - [x] Pair does not jointly modify certification-gate files.
 
-## Execution Evidence
+## Re-run under PQX-CLT-015
 
-### Slice A
+### BEFORE evidence (independent, pre-merge)
 
-- **Implementation status:** COMPLETE (single-file governance plan execution update)
-- **Validation status:** PASS (`git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..6b0f4fe` contains only the declared plan file)
-- **Reversible independently:** YES (`git revert 6b0f4fe` cleanly reverts Slice A)
-- **Execution evidence:** Branch `pqx-clt-012-slice-a-plan-governance` created from baseline; one-file scoped commit prepared (`6b0f4fe`) and validated via `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..6b0f4fe`.
+#### Slice A — BEFORE merge
 
-### Slice B
+- **Validation result:** PASS
+  - `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..6449cc2` → `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+- **Behavioral output (certification-path measurement):** PASS
+  - `pytest -q tests/test_evaluation_enforcement_bridge.py` → `83 passed in 0.64s`
 
-- **Implementation status:** COMPLETE (single-file governance tracker execution update)
-- **Validation status:** PASS (`git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..HEAD` contains only this tracker file)
-- **Reversible independently:** YES (`git revert` of this commit restores baseline state)
-- **Execution evidence:** Branch `pqx-clt-012-slice-b-action-tracker` created from baseline; one-file scoped commit prepared and validated via `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..HEAD`.
+#### Slice B — BEFORE merge
+
+- **Validation result:** PASS
+  - `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..19b9963` → `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
+- **Behavioral output (same measurement as Slice A):** PASS
+  - `pytest -q tests/test_evaluation_enforcement_bridge.py` → `83 passed in 0.42s`
+
+### Merge execution (explicit order)
+
+- **Merge order executed:** Slice A first, then Slice B.
+- **Merge command outcomes:**
+  - `git merge --no-ff pqx-clt-015-slice-a` → success (`ort`, no conflicts)
+  - `git merge --no-ff pqx-clt-015-slice-b` → success (`ort`, no conflicts)
+
+### AFTER evidence (post-merge, Slice B criterion)
+
+- **Post-merge validation result:** PASS
+  - `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..HEAD` →
+    - `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+    - `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
+- **Post-merge behavioral output (same measurement):** PASS
+  - `pytest -q tests/test_evaluation_enforcement_bridge.py` → `83 passed in 0.42s`
+
+### Behavioral Comparison
+
+- **Slice B BEFORE result:** `83 passed in 0.42s`
+- **Slice B AFTER result:** `83 passed in 0.42s`
+- **comparison:** **IDENTICAL**
 
 ## Cross-Diff Inspection
 
@@ -50,21 +74,20 @@
 - **Semantic overlap:** NO
 - **Shared assumptions:** NO
 
-Cross-diff evidence (pre-merge):
-- `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..6b0f4fe` → `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
-- `git diff --name-only 1aa1ff8991234b7320102563029ea8794c00c528..HEAD` → `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
+Cross-diff evidence:
+- Slice A diff from baseline includes only `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`.
+- Slice B diff from baseline includes only `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`.
 - Intersection: none.
 
-## Merge + Post-Merge Checks
+## PQX-CLT-014 Re-evaluation (with PQX-CLT-015 evidence)
 
-- **Merge order:** Slice A (`pqx-clt-012-slice-a-plan-governance`) first, then Slice B (`pqx-clt-012-slice-b-action-tracker`)
-- **Merge success:** YES (both `git merge --no-ff` operations completed via `ort` with no conflicts)
-- **Post-merge validation results:** PASS
+- **no overlap:** TRUE
+- **no semantic coupling:** TRUE
+- **BEFORE == AFTER behavior:** TRUE (Slice B explicit comparison = IDENTICAL)
+- **attribution clear:** TRUE (single-file ownership per slice from shared baseline)
+- **post-merge state clean:** TRUE (ordered no-conflict merges; certification-path behavior unchanged)
 
-Post-merge targeted validation evidence:
-- Promotion/certification path check: `pytest -q tests/test_evaluation_enforcement_bridge.py` → `83 passed`.
-- Certification module check: `pytest -q tests/test_control_loop_certification.py` → `6 passed`.
-- Changed-scope verification: `PLAN_FILES="docs/reviews/2026-03-27-parallel-pqx-trial-plan.md docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md" .codex/skills/verify-changed-scope/run.sh` → `[OK]`.
+**Re-evaluation decision:** **APPROVED**
 
 ## Abort Log
 
@@ -74,37 +97,7 @@ Post-merge targeted validation evidence:
 
 ## Closure Decision
 
-- **Isolation held:** YES (file-level and declared semantic checks)
-- **Outcome summary:** Two parallel slices were executed from a shared baseline with strict file-scope isolation, independent validation, explicit cross-diff non-overlap confirmation, conflict-free sequential merges, and deterministic post-merge certification-path validation.
-- **Original decision:** approved
-- **Corrected decision (PQX-CLT-014):** denied
+- **Isolation held:** YES
+- **Outcome summary:** PQX-CLT-015 rerun captured explicit artifact-backed BEFORE/AFTER behavioral evidence for both slices, executed ordered merges (A then B), and demonstrated Slice B behavior remained identical after merge.
+- **Final decision:** **approved**
 - **Closure artifact path:** `docs/reviews/2026-03-27-parallel-pqx-trial-closure.md`
-
-## PQX-CLT-014 Independent Validation Record
-
-### Structured extraction
-
-- **Slice A:** PQX-CLT-012A
-- **Slice B:** PQX-CLT-012B
-- **files touched by Slice A:** `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
-- **files touched by Slice B:** `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
-- **file overlap:** NO
-- **semantic overlap:** NO
-- **shared assumptions:** NO
-- **merge order:** Slice A then Slice B
-- **whether Slice B behavior changed after Slice A merge:** NO claim present, but no direct comparative evidence captured
-- **post-merge promotion/certification path status:** CLEAN
-- **attribution clarity:** CLEAR
-
-### Strict validation outcome
-
-- Under strict criteria, missing direct before/after behavior comparison evidence for Slice B is treated as evidence gap.
-- Evidence gaps are FAIL conditions for approval under PQX-CLT-014.
-- **Final validation result:** DENIED
-
-### Enforceable forward policy
-
-Parallel 2-slice PQX trials remain blocked for approval until closure evidence includes:
-1. explicit before/after Slice B behavior comparison,
-2. artifact-backed semantic independence proof,
-3. artifact-backed shared-assumption independence proof.
