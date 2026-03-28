@@ -1,0 +1,67 @@
+{
+  "attack_run_id": "2222222222222222222222222222222222222222222222222222222222222222",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "target_boundary": "runtime.evaluation_enforcement_bridge:promotion_gate",
+  "input_refs": {
+    "valid_done_certification_ref": "outputs/governance/done_certification_record.json",
+    "enforcement_input_ref": "outputs/runtime/evaluation_budget_decision.json"
+  },
+  "attack_cases": [
+    {
+      "case_id": "VAL-01-A",
+      "case_type": "missing_certification",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record is required for promotion scope."
+    },
+    {
+      "case_id": "VAL-01-B",
+      "case_type": "malformed_certification",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record failed schema validation"
+    },
+    {
+      "case_id": "VAL-01-C",
+      "case_type": "failed_certification",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record must have final_status='PASSED' for promotion."
+    },
+    {
+      "case_id": "VAL-01-D",
+      "case_type": "structurally_valid_but_incomplete_certification",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record requires all check_results entries to pass for promotion."
+    },
+    {
+      "case_id": "VAL-01-E",
+      "case_type": "mismatched_trace_certification",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record trace_id does not match evaluation decision trace_id for promotion."
+    },
+    {
+      "case_id": "VAL-01-F",
+      "case_type": "corrupted_certification_payload",
+      "expected_outcome": "block",
+      "actual_outcome": "block",
+      "passed": true,
+      "blocking_reason": "done_certification_record requires all check_results entries to pass for promotion."
+    }
+  ],
+  "summary": {
+    "total_cases": 6,
+    "blocked_cases": 6,
+    "failed_cases": 0,
+    "bypass_detected": false
+  },
+  "final_status": "PASSED",
+  "trace_id": "trace-example-001"
+}
