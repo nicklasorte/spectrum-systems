@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_backtest_result.schema.json",
+  "title": "Policy Backtest Result",
+  "description": "Deterministic, fail-closed policy backtesting artifact comparing baseline and candidate policy outcomes against authoritative replay inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "backtest_id",
+    "timestamp",
+    "input_refs",
+    "baseline_policy_version",
+    "candidate_policy_version",
+    "comparison_summary",
+    "decision_deltas",
+    "detected_risks",
+    "recommended_action",
+    "system_confidence",
+    "trace_ids"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "policy_backtest_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "backtest_id": { "type": "string", "pattern": "^PBT-[A-F0-9]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_results",
+        "eval_summaries",
+        "error_budget_statuses",
+        "cross_run_intelligence_decisions",
+        "baseline_policy_ref",
+        "candidate_policy_ref"
+      ],
+      "properties": {
+        "replay_results": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "eval_summaries": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "error_budget_statuses": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "cross_run_intelligence_decisions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "baseline_policy_ref": { "type": "string", "minLength": 1 },
+        "candidate_policy_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "baseline_policy_version": { "type": "string", "minLength": 1 },
+    "candidate_policy_version": { "type": "string", "minLength": 1 },
+    "comparison_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_pass_rate",
+        "candidate_pass_rate",
+        "baseline_block_rate",
+        "candidate_block_rate",
+        "delta_pass_rate",
+        "delta_block_rate",
+        "error_budget_impact"
+      ],
+      "properties": {
+        "baseline_pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "candidate_pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "baseline_block_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "candidate_block_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "delta_pass_rate": { "type": "number", "minimum": -1, "maximum": 1 },
+        "delta_block_rate": { "type": "number", "minimum": -1, "maximum": 1 },
+        "error_budget_impact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["healthy", "warning", "exhausted", "invalid"],
+          "properties": {
+            "healthy": { "type": "integer", "minimum": 0 },
+            "warning": { "type": "integer", "minimum": 0 },
+            "exhausted": { "type": "integer", "minimum": 0 },
+            "invalid": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "decision_deltas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["trace_id", "baseline_decision", "candidate_decision", "change_type"],
+        "properties": {
+          "trace_id": { "type": "string", "minLength": 1 },
+          "baseline_decision": { "type": "string", "enum": ["allow", "warn", "freeze", "block"] },
+          "candidate_decision": { "type": "string", "enum": ["allow", "warn", "freeze", "block"] },
+          "change_type": {
+            "type": "string",
+            "enum": [
+              "no_change",
+              "allow→warn",
+              "allow→freeze",
+              "allow→block",
+              "warn→allow",
+              "warn→freeze",
+              "warn→block",
+              "freeze→allow",
+              "freeze→warn",
+              "freeze→block",
+              "block→allow",
+              "block→warn",
+              "block→freeze"
+            ]
+          }
+        }
+      }
+    },
+    "detected_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["missed_failures", "overblocking", "instability"]
+      },
+      "uniqueItems": true
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["accept_policy", "reject_policy", "require_review"]
+    },
+    "system_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "trace_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}
