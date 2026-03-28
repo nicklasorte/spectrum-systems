@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.73",
+  "artifact_version": "1.0.74",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1103,16 +1103,16 @@
     {
       "artifact_type": "prompt_queue_observability_snapshot",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems prompt-queue module",
         "governance and audit workflows"
       ],
       "introduced_in": "1.0.31",
-      "last_updated_in": "1.0.31",
+      "last_updated_in": "1.0.74",
       "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
-      "notes": "Deterministic, read-only queue observability snapshot with invariant reporting and stable ordering guarantees."
+      "notes": "QUEUE-07 deterministic bounded queue health classification metrics with fail-closed lineage/ambiguity handling."
     },
     {
       "artifact_type": "prompt_queue_post_execution_decision",

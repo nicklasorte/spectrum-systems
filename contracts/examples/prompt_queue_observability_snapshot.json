@@ -1,5 +1,5 @@
 {
-  "snapshot_id": "pqo-4a07af737e5b95da",
+  "snapshot_id": "pqo-8f0c4de5b77a0a81",
   "timestamp": "2026-03-22T00:00:00Z",
   "total_items": 5,
   "items_by_status": {
@@ -19,5 +19,26 @@
   "active_run_ids": [
     "run-100"
   ],
-  "invariant_violations": []
+  "invariant_violations": [],
+  "trace_linkage": {
+    "linkage_type": "run_id",
+    "linkage_id": "run-100"
+  },
+  "queue_health_state": "unstable",
+  "health_reason_codes": [
+    "blocked_items_present"
+  ],
+  "health_metrics": {
+    "queue_id": "queue-001",
+    "current_step_index": 1,
+    "total_steps": 3,
+    "queue_status": "running",
+    "last_transition_action": "continue",
+    "blocked_count": 1,
+    "retry_count": 4,
+    "remediation_count": 0,
+    "ambiguous_signal_count": 0,
+    "recovery_count": 0,
+    "completion_progress": 0.3333
+  }
 }
