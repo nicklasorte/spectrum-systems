@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_backtest_accuracy_result.schema.json",
+  "title": "Policy Backtest Accuracy Result",
+  "description": "VAL-05 governed validation artifact proving deterministic policy backtest recommendation correctness and fail-closed handling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "policy_backtest_accuracy_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "validation_run_id": { "type": "string", "pattern": "^PBTA-[A-F0-9]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "replay_results",
+        "eval_summaries",
+        "error_budget_statuses",
+        "cross_run_intelligence_decisions",
+        "baseline_policy_ref",
+        "candidate_policy_refs"
+      ],
+      "properties": {
+        "replay_results": { "type": "array", "minItems": 1 },
+        "eval_summaries": { "type": "array", "minItems": 1 },
+        "error_budget_statuses": { "type": "array", "minItems": 1 },
+        "cross_run_intelligence_decisions": { "type": "array", "minItems": 1 },
+        "baseline_policy_ref": { "type": ["object", "string"] },
+        "candidate_policy_refs": { "type": "array", "minItems": 1 },
+        "expected_outcomes_ref": { "type": ["object", "string"] }
+      }
+    },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "case_type",
+          "expected_recommendation",
+          "actual_recommendation",
+          "expected_risks",
+          "actual_risks",
+          "passed",
+          "blocking_reason"
+        ],
+        "properties": {
+          "case_id": { "type": "string", "minLength": 1 },
+          "case_type": {
+            "type": "string",
+            "enum": [
+              "identical_policy_no_change",
+              "candidate_improves_without_new_risk",
+              "candidate_introduces_missed_failure",
+              "candidate_overblocks_significantly",
+              "mixed_delta_requires_review",
+              "malformed_candidate_policy",
+              "inconsistent_input_bundle"
+            ]
+          },
+          "expected_recommendation": {
+            "type": "string",
+            "enum": ["accept_policy", "reject_policy", "require_review", "fail_closed"]
+          },
+          "actual_recommendation": {
+            "type": "string",
+            "enum": ["accept_policy", "reject_policy", "require_review", "fail_closed"]
+          },
+          "expected_risks": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "actual_risks": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
+          "passed": { "type": "boolean" },
+          "blocking_reason": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "false_accept_detected",
+        "false_reject_detected",
+        "ambiguous_review_detected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 1 },
+        "passed_cases": { "type": "integer", "minimum": 0 },
+        "failed_cases": { "type": "integer", "minimum": 0 },
+        "false_accept_detected": { "type": "boolean" },
+        "false_reject_detected": { "type": "boolean" },
+        "ambiguous_review_detected": { "type": "boolean" }
+      }
+    },
+    "final_status": { "type": "string", "enum": ["PASSED", "FAILED"] },
+    "trace_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

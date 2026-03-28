@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.77",
+  "artifact_version": "1.0.78",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -879,6 +879,19 @@
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
     },
     {
+      "artifact_type": "policy_backtest_accuracy_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.78",
+      "last_updated_in": "1.0.78",
+      "example_path": "",
+      "notes": "VAL-05 governed validation artifact proving ADV-01 policy-backtest recommendation accuracy, false accept/reject detection, and fail-closed malformed/inconsistent input handling."
+    },
+    {
       "artifact_type": "policy_backtest_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1023,6 +1036,19 @@
       "notes": "Deterministic blocked-item recovery classification and bounded recovery-action contract for governed prompt queue operations."
     },
     {
+      "artifact_type": "prompt_queue_certification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.77",
+      "last_updated_in": "1.0.77",
+      "example_path": "contracts/examples/prompt_queue_certification_record.json",
+      "notes": "QUEUE-10 deterministic fail-closed certification trust gate artifact requiring complete queue, replay/resume, observability, and lineage integrity evidence."
+    },
+    {
       "artifact_type": "prompt_queue_execution_gating_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1126,19 +1152,6 @@
       "last_updated_in": "1.0.74",
       "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
       "notes": "QUEUE-07 deterministic bounded queue health classification metrics with fail-closed lineage/ambiguity handling."
-    },
-    {
-      "artifact_type": "prompt_queue_certification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.77",
-      "last_updated_in": "1.0.77",
-      "example_path": "contracts/examples/prompt_queue_certification_record.json",
-      "notes": "QUEUE-10 deterministic fail-closed certification trust gate artifact requiring complete queue, replay/resume, observability, and lineage integrity evidence."
     },
     {
       "artifact_type": "prompt_queue_post_execution_decision",
