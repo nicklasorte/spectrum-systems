@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_decision_consistency_result.schema.json",
+  "title": "Control Decision Consistency Result",
+  "description": "VAL-04 governed validation artifact proving deterministic control-decision consistency under repeated identical governed inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "repeat_count",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "validation_run_id": { "type": "string", "pattern": "^VAL04-[A-F0-9]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eval_summaries",
+        "error_budget_statuses",
+        "monitor_records",
+        "cross_run_intelligence_decisions",
+        "policy_ref"
+      ],
+      "properties": {
+        "eval_summaries": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "error_budget_statuses": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "monitor_records": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "cross_run_intelligence_decisions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "policy_ref": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "object" }
+          ]
+        }
+      }
+    },
+    "repeat_count": { "type": "integer", "minimum": 2 },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "input_signature",
+          "repeated_outputs",
+          "expected_consistency",
+          "actual_consistency",
+          "passed",
+          "divergence_reason"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "enum": ["VAL04-A", "VAL04-B", "VAL04-C", "VAL04-D", "VAL04-E"]
+          },
+          "input_signature": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "repeated_outputs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["repeat_index", "outcome", "output", "error"],
+              "properties": {
+                "repeat_index": { "type": "integer", "minimum": 1 },
+                "outcome": { "type": "string", "enum": ["decision", "error"] },
+                "output": { "type": "object" },
+                "error": { "type": "string" }
+              }
+            }
+          },
+          "expected_consistency": { "type": "boolean", "const": true },
+          "actual_consistency": { "type": "boolean" },
+          "passed": { "type": "boolean" },
+          "divergence_reason": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "divergence_detected",
+        "hidden_state_suspected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 0 },
+        "passed_cases": { "type": "integer", "minimum": 0 },
+        "failed_cases": { "type": "integer", "minimum": 0 },
+        "divergence_detected": { "type": "boolean" },
+        "hidden_state_suspected": { "type": "boolean" }
+      }
+    },
+    "final_status": { "type": "string", "enum": ["PASSED", "FAILED"] },
+    "trace_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
