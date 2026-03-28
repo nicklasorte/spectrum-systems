@@ -1011,3 +1011,228 @@ def compare_normalized_runs(
         "cross_run_intelligence_decision": decision,
         "findings": findings,
     }
+
+
+# ---------------------------------------------------------------------------
+# XRUN-01 decision-driving cross-run intelligence
+# ---------------------------------------------------------------------------
+
+from statistics import mean
+from jsonschema import FormatChecker
+from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (
+    generate_eval_cases_from_cross_run_intelligence,
+)
+
+
+class CrossRunIntelligenceError(ValueError):
+    """Raised when cross-run intelligence inputs are missing/malformed (fail-closed)."""
+
+
+def _canonical_json(payload: Any) -> str:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _sha12(prefix: str, payload: Any) -> str:
+    digest = hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()[:12].upper()
+    return f"{prefix}-{digest}"
+
+
+def _validate_schema_or_raise(instance: Dict[str, Any], schema_name: str, label: str) -> None:
+    schema = load_schema(schema_name)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise CrossRunIntelligenceError(f"{label} failed schema validation: {details}")
+
+
+def _require_sequence(input_refs: Dict[str, Any], key: str) -> List[Dict[str, Any]]:
+    value = input_refs.get(key)
+    if not isinstance(value, list) or not value:
+        raise CrossRunIntelligenceError(f"{key} must be a non-empty list")
+    for idx, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise CrossRunIntelligenceError(f"{key}[{idx}] must be an object")
+    return value
+
+
+def _trend(values: List[float]) -> float:
+    if len(values) < 2:
+        raise CrossRunIntelligenceError("trend calculation requires at least two points")
+    first = float(values[0])
+    last = float(values[-1])
+    return max(-1.0, min(1.0, round(last - first, 6)))
+
+
+def _variance(values: List[float]) -> float:
+    if not values:
+        raise CrossRunIntelligenceError("variance calculation requires values")
+    avg = mean(values)
+    return round(min(1.0, max(0.0, mean([(v - avg) ** 2 for v in values]))), 6)
+
+
+def _extract_trace_ids(*artifact_lists: List[Dict[str, Any]]) -> List[str]:
+    trace_ids: List[str] = []
+    for items in artifact_lists:
+        for item in items:
+            trace_id = item.get("trace_id")
+            if isinstance(trace_id, str) and trace_id and trace_id not in trace_ids:
+                trace_ids.append(trace_id)
+    if not trace_ids:
+        raise CrossRunIntelligenceError("no trace_ids resolved from input artifacts")
+    return trace_ids
+
+
+def run_cross_run_intelligence(input_refs: dict) -> dict:
+    """Deterministic XRUN-01 cross-run intelligence.
+
+    Fail-closed rules:
+    - missing required inputs -> CrossRunIntelligenceError
+    - malformed object/list/schema -> CrossRunIntelligenceError
+    - insufficient data for trend calculations -> CrossRunIntelligenceError
+    """
+    if not isinstance(input_refs, dict):
+        raise CrossRunIntelligenceError("input_refs must be an object")
+
+    replay_results = _require_sequence(input_refs, "replay_results")
+    eval_summaries = _require_sequence(input_refs, "eval_summaries")
+    regression_results = _require_sequence(input_refs, "regression_results")
+    drift_results = _require_sequence(input_refs, "drift_results")
+    monitor_records = _require_sequence(input_refs, "monitor_records")
+    policy_ref = input_refs.get("policy_ref")
+    if not isinstance(policy_ref, dict):
+        raise CrossRunIntelligenceError("policy_ref must be an object")
+
+    for idx, replay in enumerate(replay_results):
+        replay_id = replay.get("replay_id") or replay.get("artifact_id")
+        trace_id = replay.get("trace_id")
+        if not isinstance(replay_id, str) or not replay_id:
+            raise CrossRunIntelligenceError(f"replay_results[{idx}] missing replay_id/artifact_id")
+        if not isinstance(trace_id, str) or not trace_id:
+            raise CrossRunIntelligenceError(f"replay_results[{idx}] missing trace_id")
+    for idx, summary in enumerate(eval_summaries):
+        _validate_schema_or_raise(summary, "eval_summary", f"eval_summaries[{idx}]")
+    for idx, drift in enumerate(drift_results):
+        _validate_schema_or_raise(drift, "drift_detection_result", f"drift_results[{idx}]")
+    for idx, monitor in enumerate(monitor_records):
+        _validate_schema_or_raise(monitor, "evaluation_monitor_record", f"monitor_records[{idx}]")
+
+    failure_series = [float(item.get("failure_rate")) for item in eval_summaries]
+    drift_series = [float(item.get("drift_rate")) for item in eval_summaries]
+    reproducibility_series = [float(item.get("reproducibility_score")) for item in eval_summaries]
+
+    for idx, reg in enumerate(regression_results):
+        if not isinstance(reg.get("results"), list):
+            raise CrossRunIntelligenceError(f"regression_results[{idx}].results must be a list")
+
+    total_results = sum(len(reg["results"]) for reg in regression_results)
+    mismatch_results = sum(
+        1
+        for reg in regression_results
+        for item in reg["results"]
+        if isinstance(item, dict) and bool(item.get("mismatch_summary"))
+    )
+    if total_results == 0:
+        raise CrossRunIntelligenceError("regression_results contain zero comparable trace results")
+
+    drift_exceeded_count = sum(
+        1 for drift in drift_results if drift.get("drift_status") == "exceeds_threshold"
+    )
+
+    aggregated_metrics = {
+        "failure_rate_trend": _trend(failure_series),
+        "drift_trend": _trend(drift_series),
+        "regression_density": round(mismatch_results / total_results, 6),
+        "reproducibility_variance": _variance(reproducibility_series),
+    }
+
+    detected_patterns: List[str] = []
+    if aggregated_metrics["failure_rate_trend"] > 0.05:
+        detected_patterns.append("recurring_failure_type")
+    if aggregated_metrics["drift_trend"] > 0.05 or drift_exceeded_count >= 2:
+        detected_patterns.append("drift_cluster")
+    if aggregated_metrics["regression_density"] >= 0.3 or aggregated_metrics["reproducibility_variance"] >= 0.05:
+        detected_patterns.append("unstable_module")
+
+    if detected_patterns:
+        recommended_actions: List[str] = []
+        if "recurring_failure_type" in detected_patterns:
+            recommended_actions.append("generate_eval_cases")
+        if "drift_cluster" in detected_patterns:
+            recommended_actions.extend(["tighten_policy_threshold", "trigger_drift_alert"])
+        if "unstable_module" in detected_patterns:
+            recommended_actions.append("require_manual_review")
+    else:
+        recommended_actions = []
+
+    if not detected_patterns:
+        system_signal = "stable"
+    elif "unstable_module" in detected_patterns:
+        system_signal = "unstable"
+    else:
+        system_signal = "warning"
+
+    trace_ids = _extract_trace_ids(replay_results, eval_summaries)
+
+    policy_version = str(policy_ref.get("policy_version") or "").strip()
+    if not policy_version:
+        raise CrossRunIntelligenceError("policy_ref.policy_version must be a non-empty string")
+
+    input_identity = {
+        "replay_results": [str(item.get("replay_id") or item.get("artifact_id") or "") for item in replay_results],
+        "eval_summaries": [str(item.get("eval_run_id") or "") for item in eval_summaries],
+        "regression_results": [str(item.get("run_id") or item.get("suite_id") or "") for item in regression_results],
+        "drift_results": [str(item.get("artifact_id") or "") for item in drift_results],
+        "monitor_records": [str(item.get("monitor_record_id") or item.get("record_id") or "") for item in monitor_records],
+        "policy_ref": str(policy_ref.get("policy_id") or policy_version),
+    }
+
+    timestamp = max(str(item.get("timestamp") or item.get("created_at") or "") for item in (drift_results + eval_summaries + monitor_records))
+    if not timestamp:
+        raise CrossRunIntelligenceError("unable to derive timestamp from governed inputs")
+
+    decision = {
+        "artifact_type": "cross_run_intelligence_decision",
+        "schema_version": "2.0.0",
+        "intelligence_id": _sha12("XRI", {"inputs": input_identity, "metrics": aggregated_metrics}),
+        "timestamp": timestamp,
+        "input_refs": input_identity,
+        "aggregated_metrics": aggregated_metrics,
+        "detected_patterns": detected_patterns,
+        "recommended_actions": sorted(set(recommended_actions)),
+        "system_signal": system_signal,
+        "trace_ids": trace_ids,
+        "policy_version": policy_version,
+    }
+
+    decision_errors = validate_cross_run_intelligence_decision(decision)
+    if decision_errors:
+        raise CrossRunIntelligenceError("cross_run_intelligence_decision validation failed")
+
+    generated_eval_cases = []
+    if "generate_eval_cases" in decision["recommended_actions"]:
+        generated_eval_cases = generate_eval_cases_from_cross_run_intelligence(decision)
+
+    control_signal = {
+        "artifact_type": "cross_run_intelligence_decision",
+        "intelligence_id": decision["intelligence_id"],
+        "trace_id": decision["trace_ids"][0],
+        "timestamp": decision["timestamp"],
+        "system_signal": decision["system_signal"],
+        "recommended_actions": decision["recommended_actions"],
+        "policy_version": decision["policy_version"],
+    }
+
+    monitor_signal = {
+        "cross_run_signal": decision["system_signal"],
+        "cross_run_intelligence_id": decision["intelligence_id"],
+        "cross_run_reasons": [f"pattern:{pattern}" for pattern in decision["detected_patterns"]],
+    }
+
+    return {
+        "cross_run_intelligence_decision": decision,
+        "generated_eval_cases": generated_eval_cases,
+        "control_signal": control_signal,
+        "monitor_signal": monitor_signal,
+    }
