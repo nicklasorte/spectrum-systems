@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/done_certification_record.schema.json",
+  "title": "Done Certification Record",
+  "description": "Deterministic fail-closed DONE-01 certification artifact for governed promotion readiness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "certification_id",
+    "timestamp",
+    "input_refs",
+    "check_results",
+    "final_status",
+    "system_response",
+    "blocking_reasons",
+    "trace_id"
+  ],
+  "properties": {
+    "certification_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_result_ref",
+        "regression_result_ref",
+        "certification_pack_ref",
+        "error_budget_ref",
+        "policy_ref"
+      ],
+      "properties": {
+        "replay_result_ref": {"type": "string", "minLength": 1},
+        "regression_result_ref": {"type": "string", "minLength": 1},
+        "certification_pack_ref": {"type": "string", "minLength": 1},
+        "error_budget_ref": {"type": "string", "minLength": 1},
+        "failure_injection_ref": {"type": "string", "minLength": 1},
+        "policy_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "check_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency"],
+      "properties": {
+        "replay": {"$ref": "#/$defs/check_result"},
+        "regression": {"$ref": "#/$defs/check_result"},
+        "contracts": {"$ref": "#/$defs/check_result"},
+        "reliability": {"$ref": "#/$defs/check_result"},
+        "fail_closed": {"$ref": "#/$defs/check_result"},
+        "control_consistency": {"$ref": "#/$defs/check_result"}
+      }
+    },
+    "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},
+    "system_response": {"type": "string", "enum": ["allow", "block"]},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "trace_id": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "check_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "details"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "details": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"final_status": {"const": "PASSED"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "system_response": {"const": "allow"},
+          "blocking_reasons": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"final_status": {"const": "FAILED"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "system_response": {"const": "block"},
+          "blocking_reasons": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}

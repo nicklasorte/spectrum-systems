@@ -74,7 +74,7 @@ _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
 _BUDGET_DECISION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_budget_decision.schema.json"
 _ENFORCEMENT_ACTION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_enforcement_action.schema.json"
 _OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authorization.schema.json"
-_CONTROL_LOOP_CERTIFICATION_SCHEMA_PATH = _SCHEMA_DIR / "control_loop_certification_pack.schema.json"
+_DONE_CERTIFICATION_SCHEMA_PATH = _SCHEMA_DIR / "done_certification_record.schema.json"
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
@@ -90,7 +90,7 @@ _DEFAULT_SCOPE = "release"
 
 # Context key for a governed override authorization artifact
 _OVERRIDE_AUTHORIZATION_KEY = "override_authorization"
-_CONTROL_LOOP_CERTIFICATION_PATH_KEY = "control_loop_certification_path"
+_DONE_CERTIFICATION_PATH_KEY = "done_certification_path"
 
 # Module-level mapping of system_response → action_type (used in multiple places)
 _RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
@@ -179,7 +179,7 @@ def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
         "artifact_reference": "missing",
         "certification_decision": "missing",
         "certification_status": "missing",
-        "block_reason": "control_loop_certification_pack is required for promotion scope.",
+        "block_reason": "done_certification_record is required for promotion scope.",
         "gate_passed": False,
     }
 
@@ -195,7 +195,7 @@ def _evaluate_certification_gate(
 
     path_value: Optional[str] = None
     if context:
-        raw = context.get(_CONTROL_LOOP_CERTIFICATION_PATH_KEY)
+        raw = context.get(_DONE_CERTIFICATION_PATH_KEY)
         if raw is not None:
             path_value = str(raw)
 
@@ -208,7 +208,7 @@ def _evaluate_certification_gate(
         gate["certification_decision"] = "missing"
         gate["certification_status"] = "missing"
         gate["block_reason"] = (
-            "control_loop_certification_pack file not found: "
+            "done_certification_record file not found: "
             f"{artifact_path}"
         )
         gate["gate_passed"] = False
@@ -221,19 +221,19 @@ def _evaluate_certification_gate(
         gate["certification_decision"] = "malformed"
         gate["certification_status"] = "malformed"
         gate["block_reason"] = (
-            "control_loop_certification_pack is not valid JSON: "
+            "done_certification_record is not valid JSON: "
             f"{exc}"
         )
         gate["gate_passed"] = False
         return gate
 
-    schema = _load_schema(_CONTROL_LOOP_CERTIFICATION_SCHEMA_PATH)
+    schema = _load_schema(_DONE_CERTIFICATION_SCHEMA_PATH)
     errors = _validate_against_schema(artifact, schema)
     if errors:
         gate["certification_decision"] = "malformed"
         gate["certification_status"] = "malformed"
         gate["block_reason"] = (
-            "control_loop_certification_pack failed schema validation: "
+            "done_certification_record failed schema validation: "
             + "; ".join(errors)
         )
         gate["gate_passed"] = False
@@ -242,20 +242,33 @@ def _evaluate_certification_gate(
     certification_id = str(artifact.get("certification_id") or "")
     if certification_id:
         gate["artifact_reference"] = f"{artifact_path}#{certification_id}"
-    gate["certification_decision"] = str(artifact.get("decision") or "")
-    gate["certification_status"] = str(artifact.get("certification_status") or "")
-
-    if gate["certification_status"] != "certified":
+    final_status = str(artifact.get("final_status") or "")
+    system_response = str(artifact.get("system_response") or "")
+    if final_status == "PASSED":
+        gate["certification_decision"] = "pass"
+        gate["certification_status"] = "certified"
+    elif final_status == "FAILED":
+        gate["certification_decision"] = "fail"
+        gate["certification_status"] = "uncertified"
+    else:
+        gate["certification_decision"] = "malformed"
+        gate["certification_status"] = "malformed"
         gate["block_reason"] = (
-            "control_loop_certification_pack must have "
-            "certification_status='certified' for promotion."
+            "done_certification_record has invalid final_status; expected PASSED|FAILED."
         )
         gate["gate_passed"] = False
         return gate
 
-    if gate["certification_decision"] != "pass":
+    if final_status != "PASSED":
         gate["block_reason"] = (
-            "control_loop_certification_pack must have decision='pass' "
+            "done_certification_record must have final_status='PASSED' for promotion."
+        )
+        gate["gate_passed"] = False
+        return gate
+
+    if system_response != "allow":
+        gate["block_reason"] = (
+            "done_certification_record must have system_response='allow' "
             "for promotion."
         )
         gate["gate_passed"] = False

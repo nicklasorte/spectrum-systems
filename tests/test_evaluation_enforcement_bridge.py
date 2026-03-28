@@ -4,7 +4,7 @@ Coverage manifest (current behavior):
 1. Decision/action loading and validation fail closed on malformed or missing inputs.
 2. Scope resolution supports release/promotion/schema_change and rejects unknown scopes.
 3. Canonical control_loop responses map to stable enforcement actions (allow/warn/block/freeze).
-4. Promotion scope applies control-loop certification gating:
+4. Promotion scope applies done certification gating:
    - certified/pass preserves allow/warn semantics and allows proceed
    - missing/malformed/blocked/uncertified artifacts fail closed to block
 5. CLI exit behavior:
@@ -51,7 +51,7 @@ _FREEZE = _FIXTURE_DIR / "decision_freeze_changes.json"
 _BLOCK = _FIXTURE_DIR / "decision_block_release.json"
 _INVALID = _FIXTURE_DIR / "invalid_decision.json"
 _OVERRIDE_AUTHORIZATION = _FIXTURE_DIR / "override_authorization.json"
-_CERTIFICATION_PACK = _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
+_DONE_CERTIFICATION_RECORD = _REPO_ROOT / "contracts" / "examples" / "done_certification_record.json"
 
 
 # ---------------------------------------------------------------------------
@@ -125,9 +125,10 @@ def _write_certification_pack(
     decision: str = "pass",
     certification_status: str = "certified",
 ) -> Path:
-    payload = _load_json(_CERTIFICATION_PACK)
-    payload["decision"] = decision
-    payload["certification_status"] = certification_status
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = "PASSED" if decision == "pass" and certification_status == "certified" else "FAILED"
+    payload["system_response"] = "allow" if payload["final_status"] == "PASSED" else "block"
+    payload["blocking_reasons"] = [] if payload["final_status"] == "PASSED" else ["done gate failed"]
     out = tmp_path / f"cert-{decision}-{certification_status}.json"
     out.write_text(json.dumps(payload), encoding="utf-8")
     return out
@@ -480,7 +481,7 @@ def test_promotion_certified_pass_allows(tmp_path: Path):
     certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is True
     assert action["action_type"] == "allow"
@@ -494,7 +495,7 @@ def test_promotion_warn_with_certified_pass_preserves_warn(tmp_path: Path):
     certification_path = _write_certification_pack(tmp_path, decision="pass", certification_status="certified")
     action = run_enforcement_bridge(
         _WARN,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is True
     assert action["action_type"] == "warn"
@@ -508,7 +509,7 @@ def test_promotion_uncertified_fail_blocks(tmp_path: Path):
     certification_path = _write_certification_pack(tmp_path, decision="fail", certification_status="uncertified")
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -521,12 +522,12 @@ def test_promotion_blocked_certification_blocks(tmp_path: Path):
     certification_path = _write_certification_pack(tmp_path, decision="blocked", certification_status="blocked")
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
-    assert action["certification_gate"]["certification_status"] == "blocked"
-    assert action["certification_gate"]["certification_decision"] == "blocked"
+    assert action["certification_gate"]["certification_status"] == "uncertified"
+    assert action["certification_gate"]["certification_decision"] == "fail"
 
 
 def test_promotion_missing_certification_blocks():
@@ -544,7 +545,7 @@ def test_promotion_missing_certification_path_blocks_fail_closed(tmp_path: Path)
     missing = tmp_path / "missing-certification-pack.json"
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(missing)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(missing)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -552,7 +553,7 @@ def test_promotion_missing_certification_path_blocks_fail_closed(tmp_path: Path)
     assert action["certification_gate"]["certification_status"] == "missing"
     assert action["certification_gate"]["certification_decision"] == "missing"
     assert action["certification_gate"]["block_reason"] == (
-        f"control_loop_certification_pack file not found: {missing}"
+        f"done_certification_record file not found: {missing}"
     )
     assert action["status"] == "enforced"
     assert action["required_human_actions"][-1] == action["certification_gate"]["block_reason"]
@@ -560,10 +561,10 @@ def test_promotion_missing_certification_path_blocks_fail_closed(tmp_path: Path)
 
 def test_promotion_schema_invalid_certification_blocks_as_malformed(tmp_path: Path):
     schema_invalid = tmp_path / "schema-invalid-certification-pack.json"
-    schema_invalid.write_text(json.dumps({"artifact_type": "control_loop_certification_pack"}), encoding="utf-8")
+    schema_invalid.write_text(json.dumps({"artifact_type": "done_certification_record"}), encoding="utf-8")
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(schema_invalid)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(schema_invalid)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -581,7 +582,7 @@ def test_promotion_malformed_certification_blocks(tmp_path: Path):
     malformed.write_text("{not-json", encoding="utf-8")
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(malformed)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(malformed)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -601,52 +602,43 @@ def test_promotion_missing_certification_is_deterministically_fail_closed():
 
 
 @pytest.mark.parametrize(
-    ("decision", "certification_status", "expected_fragments"),
+    ("final_status", "system_response", "expected_fragment"),
     [
-        ("fail", "certified", ["'decision': 'fail'", "'certification_status': 'certified'"]),
-        ("pass", "uncertified", ["'decision': 'pass'", "'certification_status': 'uncertified'"]),
+        ("PASSED", "block", "'allow' was expected"),
+        ("FAILED", "allow", "'block' was expected"),
     ],
-    ids=["certified-with-fail-decision", "pass-decision-with-uncertified-status"],
+    ids=["passed-with-block-response", "failed-with-allow-response"],
 )
 def test_promotion_contradictory_certification_state_blocks_fail_closed(
     tmp_path: Path,
-    decision: str,
-    certification_status: str,
-    expected_fragments: list[str],
+    final_status: str,
+    system_response: str,
+    expected_fragment: str,
 ):
-    certification_path = _write_certification_pack(
-        tmp_path,
-        decision=decision,
-        certification_status=certification_status,
-    )
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = final_status
+    payload["system_response"] = system_response
+    payload["blocking_reasons"] = [] if final_status == "PASSED" else ["unexpected"]
+    certification_path = _write_certification_payload(tmp_path, "contradictory-done-cert.json", payload)
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
     assert action["status"] == "enforced"
-    assert action["certification_gate"] == {
-        "artifact_reference": str(certification_path),
-        "certification_decision": "malformed",
-        "certification_status": "malformed",
-        "block_reason": action["certification_gate"]["block_reason"],
-    }
-    assert str(action["certification_gate"]["block_reason"]).startswith(
-        "control_loop_certification_pack failed schema validation:"
-    )
-    assert "not valid under any of the given schemas" in str(action["certification_gate"]["block_reason"])
-    for fragment in expected_fragments:
-        assert fragment in str(action["certification_gate"]["block_reason"])
+    assert expected_fragment in str(action["certification_gate"]["block_reason"])
 
 
 def test_promotion_enum_violation_blocks_as_malformed(tmp_path: Path):
-    payload = _load_json(_CERTIFICATION_PACK)
-    payload["decision"] = "p4ss"
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = "p4ss"
+    payload["blocking_reasons"] = ["schema violation"]
+    payload["system_response"] = "block"
     certification_path = _write_certification_payload(tmp_path, "enum-violation-certification-pack.json", payload)
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -655,11 +647,11 @@ def test_promotion_enum_violation_blocks_as_malformed(tmp_path: Path):
     assert action["certification_gate"]["certification_status"] == "malformed"
     assert action["certification_gate"]["certification_decision"] == "malformed"
     assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
-    assert "'p4ss' is not one of ['pass', 'fail', 'blocked']" in str(action["certification_gate"]["block_reason"])
+    assert "'p4ss' is not one of ['PASSED', 'FAILED']" in str(action["certification_gate"]["block_reason"])
 
 
 def test_promotion_additional_properties_violation_blocks(tmp_path: Path):
-    payload = _load_json(_CERTIFICATION_PACK)
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
     payload["unexpected_flag"] = "adversarial"
     certification_path = _write_certification_payload(
         tmp_path,
@@ -668,7 +660,7 @@ def test_promotion_additional_properties_violation_blocks(tmp_path: Path):
     )
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -683,12 +675,12 @@ def test_promotion_additional_properties_violation_blocks(tmp_path: Path):
 
 
 def test_promotion_missing_required_field_blocks(tmp_path: Path):
-    payload = _load_json(_CERTIFICATION_PACK)
-    payload.pop("decision")
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload.pop("final_status")
     certification_path = _write_certification_payload(tmp_path, "missing-required-certification-pack.json", payload)
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -697,16 +689,12 @@ def test_promotion_missing_required_field_blocks(tmp_path: Path):
     assert action["certification_gate"]["certification_status"] == "malformed"
     assert action["certification_gate"]["certification_decision"] == "malformed"
     assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
-    assert "'decision' is a required property" in str(action["certification_gate"]["block_reason"])
+    assert "'final_status' is a required property" in str(action["certification_gate"]["block_reason"])
 
 
 def test_promotion_trace_provenance_inconsistency_blocks(tmp_path: Path):
-    payload = _load_json(_CERTIFICATION_PACK)
-    payload["provenance_trace_refs"] = {
-        "commit_sha": "abcd1234ef567890",
-        "branch": "main",
-        "trace_refs": [],
-    }
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["trace_id"] = ""
     certification_path = _write_certification_payload(
         tmp_path,
         "invalid-trace-provenance-certification-pack.json",
@@ -714,7 +702,7 @@ def test_promotion_trace_provenance_inconsistency_blocks(tmp_path: Path):
     )
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -723,14 +711,18 @@ def test_promotion_trace_provenance_inconsistency_blocks(tmp_path: Path):
     assert action["certification_gate"]["certification_status"] == "malformed"
     assert action["certification_gate"]["certification_decision"] == "malformed"
     assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
-    assert "[] should be non-empty" in str(action["certification_gate"]["block_reason"])
+    assert "should be non-empty" in str(action["certification_gate"]["block_reason"])
 
 
 def test_promotion_semantically_impossible_certified_blocked_combination_blocks(tmp_path: Path):
-    certification_path = _write_certification_pack(tmp_path, decision="blocked", certification_status="certified")
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = "PASSED"
+    payload["system_response"] = "allow"
+    payload["blocking_reasons"] = ["cannot exist for passed state"]
+    certification_path = _write_certification_payload(tmp_path, "impossible-combination-certification-pack.json", payload)
     action = run_enforcement_bridge(
         _ALLOW,
-        context={"enforcement_scope": "promotion", "control_loop_certification_path": str(certification_path)},
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
     )
     assert action["allowed_to_proceed"] is False
     assert action["action_type"] == "block"
@@ -741,10 +733,7 @@ def test_promotion_semantically_impossible_certified_blocked_combination_blocks(
         "certification_status": "malformed",
         "block_reason": action["certification_gate"]["block_reason"],
     }
-    assert str(action["certification_gate"]["block_reason"]).startswith(
-        "control_loop_certification_pack failed schema validation:"
-    )
-    assert "not valid under any of the given schemas" in str(action["certification_gate"]["block_reason"])
+    assert "done_certification_record failed schema validation" in str(action["certification_gate"]["block_reason"])
 
 
 # ---------------------------------------------------------------------------
@@ -784,7 +773,7 @@ def test_cli_promotion_certified_pass_allows(tmp_path: Path):
     exit_code = main([
         "--input", str(_ALLOW),
         "--scope", "promotion",
-        "--control-loop-certification", str(certification_path),
+        "--done-certification", str(certification_path),
         "--output-dir", str(tmp_path),
     ])
     assert exit_code == 0
