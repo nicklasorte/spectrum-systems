@@ -1,0 +1,121 @@
+{
+  "validation_run_id": "VAL04-0D1D7ACD2A96",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "eval_summaries": [
+      "eval-run-001"
+    ],
+    "error_budget_statuses": [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "monitor_records": [
+      "monitor-record-001"
+    ],
+    "cross_run_intelligence_decisions": [
+      "XRI-AAAAAAAAAAAA"
+    ],
+    "policy_ref": "policy://control-decision-consistency/v1"
+  },
+  "repeat_count": 3,
+  "validation_cases": [
+    {
+      "case_id": "VAL04-A",
+      "input_signature": "1111111111111111111111111111111111111111111111111111111111111111",
+      "repeated_outputs": [
+        {
+          "repeat_index": 1,
+          "outcome": "decision",
+          "output": {
+            "decision_id": "ECD-EXAMPLE"
+          },
+          "error": ""
+        }
+      ],
+      "expected_consistency": true,
+      "actual_consistency": true,
+      "passed": true,
+      "divergence_reason": ""
+    },
+    {
+      "case_id": "VAL04-B",
+      "input_signature": "2222222222222222222222222222222222222222222222222222222222222222",
+      "repeated_outputs": [
+        {
+          "repeat_index": 1,
+          "outcome": "decision",
+          "output": {
+            "decision_id": "ECD-EXAMPLE"
+          },
+          "error": ""
+        }
+      ],
+      "expected_consistency": true,
+      "actual_consistency": true,
+      "passed": true,
+      "divergence_reason": ""
+    },
+    {
+      "case_id": "VAL04-C",
+      "input_signature": "3333333333333333333333333333333333333333333333333333333333333333",
+      "repeated_outputs": [
+        {
+          "repeat_index": 1,
+          "outcome": "decision",
+          "output": {
+            "decision_id": "ECD-EXAMPLE"
+          },
+          "error": ""
+        }
+      ],
+      "expected_consistency": true,
+      "actual_consistency": true,
+      "passed": true,
+      "divergence_reason": ""
+    },
+    {
+      "case_id": "VAL04-D",
+      "input_signature": "4444444444444444444444444444444444444444444444444444444444444444",
+      "repeated_outputs": [
+        {
+          "repeat_index": 1,
+          "outcome": "decision",
+          "output": {
+            "decision_id": "ECD-EXAMPLE"
+          },
+          "error": ""
+        }
+      ],
+      "expected_consistency": true,
+      "actual_consistency": true,
+      "passed": true,
+      "divergence_reason": ""
+    },
+    {
+      "case_id": "VAL04-E",
+      "input_signature": "5555555555555555555555555555555555555555555555555555555555555555",
+      "repeated_outputs": [
+        {
+          "repeat_index": 1,
+          "outcome": "error",
+          "output": {},
+          "error": "signal_artifact missing required fields"
+        }
+      ],
+      "expected_consistency": true,
+      "actual_consistency": true,
+      "passed": true,
+      "divergence_reason": ""
+    }
+  ],
+  "summary": {
+    "total_cases": 5,
+    "passed_cases": 5,
+    "failed_cases": 0,
+    "divergence_detected": false,
+    "hidden_state_suspected": false
+  },
+  "final_status": "PASSED",
+  "trace_ids": [
+    "11111111-1111-4111-8111-111111111111"
+  ]
+}

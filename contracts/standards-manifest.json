@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.80",
+  "artifact_version": "1.0.81",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -263,6 +263,19 @@
       "last_updated_in": "1.0.62",
       "example_path": "contracts/examples/context_validation_result.json",
       "notes": "TRUST-01 deterministic fail-closed pre-execution context validation artifact for bundle/schema/trust/source/policy checks."
+    },
+    {
+      "artifact_type": "control_decision_consistency_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.81",
+      "last_updated_in": "1.0.81",
+      "example_path": "contracts/examples/control_decision_consistency_result.json",
+      "notes": "VAL-04 governed validation artifact verifying deterministic control decisions across repeated identical governed inputs with fail-closed malformed-input handling."
     },
     {
       "artifact_type": "control_execution_result",
@@ -695,7 +708,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "glossary_entry",
