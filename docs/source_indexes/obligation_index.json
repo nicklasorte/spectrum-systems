@@ -1,0 +1,66 @@
+{
+  "index_name": "obligation_index",
+  "obligations": [
+    {
+      "component_id": "COMP-AGENT-EVAL",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-AGENT-EVAL-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-AGENT-EVAL-INTEGRATION",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-AGENT-EVAL-INTEGRATION-001"
+    },
+    {
+      "component_id": "COMP-GOVERNED-API-ADAPTER",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-AI-ADAPTER-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-AI-ADAPTER-DESIGN",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-AI-ADAPTER-DESIGN-001"
+    },
+    {
+      "component_id": "COMP-GOVERNED-EXTRACTION",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-AI-WORKFLOW-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-AI-WORKFLOW-PRACTICES",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-AI-WORKFLOW-PRACTICES-001"
+    },
+    {
+      "component_id": "COMP-DONE-CERTIFICATION",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-GOV10-CERT-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-GOV10-CERTIFICATION",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-GOV10-CERTIFICATION-001"
+    },
+    {
+      "component_id": "COMP-BUILD-GOVERNANCE",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-SBGE-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-SBGE-DESIGN",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-SBGE-DESIGN-001"
+    },
+    {
+      "component_id": "COMP-SOURCE-INGESTION",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "obligation_id": "OBL-SRE-RELIABILITY-INGEST",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_id": "SRC-SRE-RELIABILITY",
+      "source_section": "starter_extraction_placeholder",
+      "trace_id": "TRACE-SRC-SRE-RELIABILITY-001"
+    }
+  ],
+  "schema_version": "1.0.0"
+}

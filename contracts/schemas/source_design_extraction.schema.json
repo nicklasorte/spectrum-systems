@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/source_design_extraction.schema.json",
+  "title": "Source Design Extraction",
+  "description": "Canonical structured extraction artifact for governed source design documents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_document",
+    "extraction",
+    "source_traceability_rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "title",
+        "file_path",
+        "status"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^SRC-[A-Z0-9_-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file_path": {
+          "type": "string",
+          "pattern": "^docs/source_raw/.+\\.pdf$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "missing"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key_components",
+        "architectural_invariants",
+        "authority_boundaries",
+        "artifact_families",
+        "required_schemas",
+        "sequencing_constraints",
+        "failure_modes",
+        "fail_closed_requirements",
+        "replayability_requirements",
+        "observability_requirements",
+        "certification_requirements",
+        "sre_alignment",
+        "explicit_non_goals",
+        "roadmap_implications"
+      ],
+      "properties": {
+        "key_components": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "architectural_invariants": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "authority_boundaries": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "artifact_families": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "required_schemas": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "sequencing_constraints": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "failure_modes": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "fail_closed_requirements": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "replayability_requirements": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "observability_requirements": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "certification_requirements": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "sre_alignment": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "explicit_non_goals": {
+          "$ref": "#/$defs/id_statement_list"
+        },
+        "roadmap_implications": {
+          "$ref": "#/$defs/id_statement_list"
+        }
+      }
+    },
+    "source_traceability_rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trace_id",
+          "obligation_id",
+          "component_id",
+          "obligation_statement",
+          "source_section"
+        ],
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "pattern": "^TRACE-[A-Z0-9_-]+$"
+          },
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^OBL-[A-Z0-9_-]+$"
+          },
+          "component_id": {
+            "type": "string",
+            "pattern": "^COMP-[A-Z0-9_-]+$"
+          },
+          "obligation_statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_excerpt": {
+            "type": "string"
+          },
+          "duplicate_allowed": {
+            "type": "boolean"
+          },
+          "duplicate_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id_statement_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "statement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]+-[A-Z0-9_-]+$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

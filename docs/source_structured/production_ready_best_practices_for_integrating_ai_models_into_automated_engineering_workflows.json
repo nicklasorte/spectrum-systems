@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0.0",
+  "source_document": {
+    "source_id": "SRC-AI-WORKFLOW-PRACTICES",
+    "title": "Production-Ready Best Practices for Integrating AI Models into Automated Engineering Workflows",
+    "file_path": "docs/source_raw/production_ready_best_practices_for_integrating_ai_models_into_automated_engineering_workflows.pdf",
+    "status": "missing",
+    "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only."
+  },
+  "extraction": {
+    "key_components": [
+      {
+        "id": "COMP-SRC-AI-WORKFLOW-PRACTICES-KEY",
+        "statement": "Governed source-ingestion component must register this source and gate downstream usage on structured extraction availability."
+      }
+    ],
+    "architectural_invariants": [
+      {
+        "id": "INV-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Structured extraction artifacts are authoritative for automation; raw PDFs are reference inputs only."
+      }
+    ],
+    "authority_boundaries": [
+      {
+        "id": "AUTH-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Source-derived obligations must remain traceable to source_document metadata and traceability rows."
+      }
+    ],
+    "artifact_families": [
+      {
+        "id": "ART-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "This source contributes to governed extraction, source inventory, obligation index, and component-source map artifacts."
+      }
+    ],
+    "required_schemas": [
+      {
+        "id": "SCHEMA-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Structured extraction files must validate against contracts/schemas/source_design_extraction.schema.json."
+      }
+    ],
+    "sequencing_constraints": [
+      {
+        "id": "SEQ-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Schema validation must pass before index build writes any output files."
+      }
+    ],
+    "failure_modes": [
+      {
+        "id": "FAIL-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Missing source PDF or malformed extraction must block trusted index generation for authoritative consumption."
+      }
+    ],
+    "fail_closed_requirements": [
+      {
+        "id": "FC-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Pipeline must fail closed on malformed extraction content and avoid inferred obligations without traceability rows."
+      }
+    ],
+    "replayability_requirements": [
+      {
+        "id": "REPLAY-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Index generation over unchanged structured inputs must produce byte-stable ordered outputs."
+      }
+    ],
+    "observability_requirements": [
+      {
+        "id": "OBS-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Inventory status must explicitly expose missing vs available source files for governance visibility."
+      }
+    ],
+    "certification_requirements": [
+      {
+        "id": "CERT-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Roadmap and architecture prompts must cite source_inventory and obligation_index records as evidence artifacts."
+      }
+    ],
+    "sre_alignment": [
+      {
+        "id": "SRE-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Governed extraction supports reliability by enforcing deterministic validation, traceability, and explicit failure signaling."
+      }
+    ],
+    "explicit_non_goals": [
+      {
+        "id": "NG-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "This starter artifact does not claim semantic extraction of unavailable PDF body content."
+      }
+    ],
+    "roadmap_implications": [
+      {
+        "id": "RM-SRC-AI-WORKFLOW-PRACTICES-01",
+        "statement": "Future roadmap generation must consume governed source indexes instead of relying on unstructured raw PDFs."
+      }
+    ]
+  },
+  "source_traceability_rows": [
+    {
+      "trace_id": "TRACE-SRC-AI-WORKFLOW-PRACTICES-001",
+      "obligation_id": "OBL-AI-WORKFLOW-INGEST",
+      "component_id": "COMP-GOVERNED-EXTRACTION",
+      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
+      "source_section": "starter_extraction_placeholder",
+      "source_excerpt": "No excerpt available because source PDF is missing in-repo at extraction time."
+    }
+  ]
+}
