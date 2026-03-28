@@ -51,6 +51,14 @@ def validate_observability_snapshot(observability_snapshot: dict) -> None:
     _validate(observability_snapshot, "prompt_queue_observability_snapshot")
 
 
+def validate_resume_checkpoint(checkpoint: dict) -> None:
+    _validate(checkpoint, "prompt_queue_resume_checkpoint")
+
+
+def validate_replay_record(record: dict) -> None:
+    _validate(record, "prompt_queue_replay_record")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
@@ -59,6 +67,10 @@ def _validate(instance: Any, schema_name: str) -> None:
         raise ArtifactValidationError(
             "; ".join(error.message for error in errors)
         )
+
+
+def read_json_artifact(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def write_artifact(artifact: dict, output_path: Path) -> Path:

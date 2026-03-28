@@ -1,0 +1,21 @@
+{
+  "replay_id": "queue-replay-5f8eea39d25e41395c5e0a56f4f430ce6aec7c9f8a78b151489615f37c32c8a7",
+  "queue_id": "queue-pqx-001",
+  "checkpoint_ref": "contracts/examples/prompt_queue_resume_checkpoint.json",
+  "input_refs": [
+    "contracts/examples/prompt_queue_resume_checkpoint.json",
+    "contracts/examples/prompt_queue_manifest.json",
+    "contracts/examples/prompt_queue_state.json",
+    "contracts/examples/prompt_queue_transition_decision.json"
+  ],
+  "replay_result_summary": {
+    "replayed_step_id": "step-002",
+    "decision_match": true,
+    "state_match": true,
+    "transition_match": true
+  },
+  "parity_status": "match",
+  "mismatch_summary": null,
+  "trace_id": "trace-queue-pqx-001",
+  "timestamp": "2026-03-28T12:30:00Z"
+}
