@@ -74,7 +74,37 @@ Post-merge targeted validation evidence:
 
 ## Closure Decision
 
-- **Isolation held:** YES
+- **Isolation held:** YES (file-level and declared semantic checks)
 - **Outcome summary:** Two parallel slices were executed from a shared baseline with strict file-scope isolation, independent validation, explicit cross-diff non-overlap confirmation, conflict-free sequential merges, and deterministic post-merge certification-path validation.
-- **Decision:** approved (`approved` / `conditionally approved` / `denied`)
+- **Original decision:** approved
+- **Corrected decision (PQX-CLT-014):** denied
 - **Closure artifact path:** `docs/reviews/2026-03-27-parallel-pqx-trial-closure.md`
+
+## PQX-CLT-014 Independent Validation Record
+
+### Structured extraction
+
+- **Slice A:** PQX-CLT-012A
+- **Slice B:** PQX-CLT-012B
+- **files touched by Slice A:** `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+- **files touched by Slice B:** `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
+- **file overlap:** NO
+- **semantic overlap:** NO
+- **shared assumptions:** NO
+- **merge order:** Slice A then Slice B
+- **whether Slice B behavior changed after Slice A merge:** NO claim present, but no direct comparative evidence captured
+- **post-merge promotion/certification path status:** CLEAN
+- **attribution clarity:** CLEAR
+
+### Strict validation outcome
+
+- Under strict criteria, missing direct before/after behavior comparison evidence for Slice B is treated as evidence gap.
+- Evidence gaps are FAIL conditions for approval under PQX-CLT-014.
+- **Final validation result:** DENIED
+
+### Enforceable forward policy
+
+Parallel 2-slice PQX trials remain blocked for approval until closure evidence includes:
+1. explicit before/after Slice B behavior comparison,
+2. artifact-backed semantic independence proof,
+3. artifact-backed shared-assumption independence proof.

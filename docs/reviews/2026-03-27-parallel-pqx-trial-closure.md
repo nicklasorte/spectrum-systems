@@ -32,7 +32,7 @@
 
 ## Merge behavior
 
-- **Did Slice B behavior change after Slice A merge?:** NO
+- **Did Slice B behavior change after Slice A merge?:** NO (not directly evidenced; see correction)
 - **Any adjustments required?:** NO
 
 ## Post-merge validation
@@ -43,15 +43,45 @@
 
 ## Decision
 
-- **Decision:** approved
-- **Basis:** no overlap detected, no ambiguity detected, and no regression observed in post-merge validation evidence.
+- **Original decision (PQX-CLT-013):** approved
+- **Current decision (after PQX-CLT-014 validation):** denied
+- **Basis:** strict isolation approval requires complete direct evidence for every required criterion. A direct before/after behavioral comparison for Slice B is not present in the tracker/closure evidence bundle.
+
+## Decision Correction
+
+PQX-CLT-014 independently validated the closure using only the completed action tracker and closure artifact.
+
+### Extracted evidence (PQX-CLT-014)
+
+- **Slice A:** PQX-CLT-012A
+- **Slice B:** PQX-CLT-012B
+- **files touched by Slice A:** `docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`
+- **files touched by Slice B:** `docs/review-actions/2026-03-27-parallel-pqx-trial-actions.md`
+- **file overlap:** NO
+- **semantic overlap:** NO (asserted in cross-diff inspection)
+- **shared assumptions:** NO (asserted in cross-diff inspection)
+- **merge order:** Slice A then Slice B
+- **whether Slice B behavior changed after Slice A merge:** NO claim present, but no explicit comparative test/result proving unchanged behavior before vs after merge
+- **post-merge promotion/certification path status:** CLEAN (`83 passed`, `6 passed`)
+- **attribution clarity:** CLEAR
+
+### Strict rule validation outcome
+
+- **FAIL checks triggered:**
+  - Missing direct evidence for "Slice B behavior changed after Slice A merge" comparison under strict no-assumption criteria.
+- **Result:** Trial cannot remain approved under strict PQX-CLT-014 validation rules.
 
 ## Forward policy
 
-2-slice parallel PQX is approved for non-overlapping slices under current constraints.
+**DENIED policy (enforced):**
+- 2-slice parallel PQX approval is blocked until each trial closure includes:
+  1. explicit before/after behavioral comparison for Slice B (pre-merge vs post-merge evidence),
+  2. direct semantic independence evidence (not only declared outcome),
+  3. explicit shared-assumption check evidence tied to concrete artifacts.
+- Until these are present, closure decisions for parallel trials must be `denied`.
 
 ## Key findings
 
-- Parallel execution remained isolated at file and semantic levels for the documented trial pair.
-- Sequential merges completed without conflicts and without requiring slice adjustments.
-- Post-merge certification-path checks remained deterministic and clean.
+- File-level isolation evidence is present and consistent.
+- Post-merge certification-path checks are clean.
+- Approval standard is not met because one required criterion (explicit Slice B behavior-comparison evidence) is not directly evidenced.
