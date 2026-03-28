@@ -22,6 +22,10 @@ Evolve Spectrum Systems from a roadmap-driven execution engine into a **self-gov
 - Protocol enforcement must run automatically with each PQX slice
 - No slice may bypass protocol validation
 
+## Relationship to PQX Queue Roadmap
+
+The PQX Queue Roadmap defines the queue execution system itself. This PQX Protocol Hardening Roadmap defines the governance and enforcement layers that reduce reliance on repeated prompt text. Queue rows build system capability, while protocol rows bake repeated execution rules into repo-native enforcement. This protocol roadmap hardens and governs queue execution; it does not replace the queue roadmap. Future work may map protocol rows to queue rows explicitly, but this file remains a protocol-layer roadmap.
+
 ## Roadmap Table
 
 | Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Existing Repo Seams | Implementation Mode | Contracts / Schemas | Artifact Outputs | Integration Points | Control Loop Coverage | Dependencies | Definition of Done | Prompt Class | Status |
