@@ -1,0 +1,119 @@
+{
+  "validation_run_id": "VAL10-37413938F72C",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "policy_ref": "slo_policy_registry",
+    "alternate_policy_ref": "policy-val10-strict",
+    "eval_summary_ref": "eval-val10",
+    "error_budget_status_ref": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+    "monitor_record_ref": "summary-example-001",
+    "control_decision_ref": "ecd-20260321T000000Z",
+    "certification_pack_ref": "certification-pack",
+    "done_certification_ref": "1111111111111111111111111111111111111111111111111111111111111111",
+    "replay_result_ref": "replay-val10",
+    "routing_input_ref": "rp-ag-runtime-v1"
+  },
+  "validation_cases": [
+    {
+      "case_id": "VAL10-A",
+      "case_type": "missing_policy_input",
+      "target_seam": "policy_registry",
+      "expected_outcome": "policy_resolution_error",
+      "actual_outcome": "policy_resolution_error",
+      "policy_applied": "missing",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-B",
+      "case_type": "malformed_policy_input",
+      "target_seam": "policy_registry",
+      "expected_outcome": "registry_rejected",
+      "actual_outcome": "registry_rejected",
+      "policy_applied": "malformed",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-C",
+      "case_type": "control_seam_policy_enforcement",
+      "target_seam": "evaluation_control",
+      "expected_outcome": "distinct_decisions",
+      "actual_outcome": "distinct:allow->warn",
+      "policy_applied": "threshold_policies",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-D",
+      "case_type": "enforcement_seam_policy_enforcement",
+      "target_seam": "evaluation_enforcement_bridge",
+      "expected_outcome": "blocked_or_frozen",
+      "actual_outcome": "block",
+      "policy_applied": "restrictive_enforcement",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-E",
+      "case_type": "certification_seam_policy_enforcement",
+      "target_seam": "done_certification",
+      "expected_outcome": "done_certification_error",
+      "actual_outcome": "done_certification_error",
+      "policy_applied": "done_certification_policy_ref_required",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-F",
+      "case_type": "backtesting_policy_identity_integrity",
+      "target_seam": "policy_backtesting",
+      "expected_outcome": "distinct_policy_identities_honored",
+      "actual_outcome": "distinct_policy_identities_honored",
+      "policy_applied": "baseline_vs_candidate_identity",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-G",
+      "case_type": "routing_adapter_policy_integrity",
+      "target_seam": "routing_policy",
+      "expected_outcome": "disallow_out_of_catalog_model",
+      "actual_outcome": "disallow_out_of_catalog_model",
+      "policy_applied": "routing_policy_constraints",
+      "bypass_detected": false,
+      "passed": true,
+      "blocking_reason": ""
+    },
+    {
+      "case_id": "VAL10-H",
+      "case_type": "inconsistent_policy_application",
+      "target_seam": "evaluation_control",
+      "expected_outcome": "detect_inconsistent_policy_application",
+      "actual_outcome": "detected_inconsistent_policy_application",
+      "policy_applied": "cross_seam_consistency",
+      "bypass_detected": true,
+      "passed": true,
+      "blocking_reason": "control seam blocks while routing seam still resolves model selection under same restrictive context"
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "policy_bypass_detected": true,
+    "malformed_policy_accepted": false,
+    "missing_policy_accepted": false,
+    "inconsistent_policy_application_detected": true
+  },
+  "final_status": "FAILED",
+  "trace_ids": [
+    "11111111-1111-4111-8111-111111111111"
+  ]
+}

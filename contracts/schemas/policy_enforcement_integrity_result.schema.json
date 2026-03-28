@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_enforcement_integrity_result.schema.json",
+  "title": "Policy Enforcement Integrity Result",
+  "description": "VAL-10 governed validation artifact proving policy enforcement integrity across control, enforcement, certification, backtesting, and routing seams with fail-closed behavior.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "validation_run_id": { "type": "string", "pattern": "^VAL10-[A-F0-9]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_ref",
+        "alternate_policy_ref",
+        "eval_summary_ref",
+        "error_budget_status_ref",
+        "monitor_record_ref",
+        "control_decision_ref",
+        "certification_pack_ref",
+        "done_certification_ref",
+        "replay_result_ref",
+        "routing_input_ref"
+      ],
+      "properties": {
+        "policy_ref": { "type": "string", "minLength": 1 },
+        "alternate_policy_ref": { "type": "string", "minLength": 1 },
+        "eval_summary_ref": { "type": "string", "minLength": 1 },
+        "error_budget_status_ref": { "type": "string", "minLength": 1 },
+        "monitor_record_ref": { "type": "string", "minLength": 1 },
+        "control_decision_ref": { "type": "string", "minLength": 1 },
+        "certification_pack_ref": { "type": "string", "minLength": 1 },
+        "done_certification_ref": { "type": "string", "minLength": 1 },
+        "replay_result_ref": { "type": "string", "minLength": 1 },
+        "routing_input_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "case_type",
+          "target_seam",
+          "expected_outcome",
+          "actual_outcome",
+          "policy_applied",
+          "bypass_detected",
+          "passed",
+          "blocking_reason"
+        ],
+        "properties": {
+          "case_id": { "type": "string", "minLength": 1 },
+          "case_type": {
+            "type": "string",
+            "enum": [
+              "missing_policy_input",
+              "malformed_policy_input",
+              "control_seam_policy_enforcement",
+              "enforcement_seam_policy_enforcement",
+              "certification_seam_policy_enforcement",
+              "backtesting_policy_identity_integrity",
+              "routing_adapter_policy_integrity",
+              "inconsistent_policy_application"
+            ]
+          },
+          "target_seam": {
+            "type": "string",
+            "enum": ["policy_registry", "evaluation_control", "evaluation_enforcement_bridge", "done_certification", "policy_backtesting", "routing_policy"]
+          },
+          "expected_outcome": { "type": "string", "minLength": 1 },
+          "actual_outcome": { "type": "string", "minLength": 1 },
+          "policy_applied": { "type": "string", "minLength": 1 },
+          "bypass_detected": { "type": "boolean" },
+          "passed": { "type": "boolean" },
+          "blocking_reason": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "policy_bypass_detected",
+        "malformed_policy_accepted",
+        "missing_policy_accepted",
+        "inconsistent_policy_application_detected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 1 },
+        "passed_cases": { "type": "integer", "minimum": 0 },
+        "failed_cases": { "type": "integer", "minimum": 0 },
+        "policy_bypass_detected": { "type": "boolean" },
+        "malformed_policy_accepted": { "type": "boolean" },
+        "missing_policy_accepted": { "type": "boolean" },
+        "inconsistent_policy_application_detected": { "type": "boolean" }
+      }
+    },
+    "final_status": { "type": "string", "enum": ["PASSED", "FAILED"] },
+    "trace_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

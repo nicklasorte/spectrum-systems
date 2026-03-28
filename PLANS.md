@@ -185,6 +185,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-VAL-04-2026-03-28.md | VAL-04 — Control Decision Consistency | Active |
 | docs/review-actions/PLAN-VAL-06-2026-03-28.md | VAL-06 — XRUN Signal Quality | Active |
 | docs/review-actions/PLAN-VAL-07-2026-03-28.md | VAL-07 — Eval Auto-Generation Quality | Active |
+| docs/review-actions/PLAN-VAL-10-2026-03-28.md | VAL-10 — Policy Enforcement Integrity | Active |
 
 Update this table when plans are created or completed.
 
