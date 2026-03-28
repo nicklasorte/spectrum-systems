@@ -10,6 +10,7 @@ from .control_decision_consistency import (
     run_control_decision_consistency_validation,
 )
 from .policy_backtest_accuracy import PolicyBacktestAccuracyError, run_policy_backtest_accuracy
+from .xrun_signal_quality import XRunSignalQualityError, run_xrun_signal_quality_validation
 
 __all__ = [
     "DoneCertificationError",
@@ -20,4 +21,6 @@ __all__ = [
     "run_control_decision_consistency_validation",
     "PolicyBacktestAccuracyError",
     "run_policy_backtest_accuracy",
+    "XRunSignalQualityError",
+    "run_xrun_signal_quality_validation",
 ]

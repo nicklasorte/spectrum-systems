@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.81",
+  "artifact_version": "1.0.82",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
-  "record_id": "REC-STD-2026-03-28-XRUN-01",
+  "record_id": "REC-STD-2026-03-28-VAL06-01",
   "run_id": "run-20260328T000000Z",
   "created_at": "2026-03-28T00:00:00Z",
   "created_by": {
@@ -1662,6 +1662,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/working_paper_input.json",
       "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
+    },
+    {
+      "artifact_type": "xrun_signal_quality_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.82",
+      "last_updated_in": "1.0.82",
+      "example_path": "contracts/examples/xrun_signal_quality_result.json",
+      "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
     }
   ]
 }
