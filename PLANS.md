@@ -174,6 +174,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-ADV-01-2026-03-28.md | ADV-01 — Policy Backtesting / Scenario Simulation | Active |
 
 | docs/review-actions/PLAN-PQX-QUEUE-01-2026-03-28.md | [ROW: QUEUE-01] Queue Manifest and State Contract Spine | Active |
+| docs/review-actions/PLAN-PQX-QUEUE-02-2026-03-28.md | [ROW: QUEUE-02] Step Execution Adapter Normalization | Active |
 
 Update this table when plans are created or completed.
 

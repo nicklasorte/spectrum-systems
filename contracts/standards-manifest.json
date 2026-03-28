@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.70",
+  "artifact_version": "1.0.71",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1025,15 +1025,15 @@
     {
       "artifact_type": "prompt_queue_execution_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.19",
-      "last_updated_in": "1.0.19",
+      "last_updated_in": "1.0.71",
       "example_path": "contracts/examples/prompt_queue_execution_result.json",
-      "notes": "Bounded controlled execution result artifact with deterministic simulated execution outcome, lifecycle timestamps, and repair-loop lineage references."
+      "notes": "QUEUE-02 normalized queue-step execution adapter result contract with deterministic step/queue linkage, execution typing, and produced artifact reference surface."
     },
     {
       "artifact_type": "prompt_queue_findings_reentry",

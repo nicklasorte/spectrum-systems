@@ -61,3 +61,42 @@ def run_live_review_invocation(
         "error_summary": provider_outcome.error_summary,
     }
     return invocation_result, provider_outcome
+
+
+def run_review_invocation_step_adapter(
+    *,
+    step: dict,
+    queue_state: dict,
+    work_item: dict,
+    repo_root: Path,
+    run_codex: ProviderRunner,
+    run_claude: ProviderRunner,
+    lineage_context: dict | None = None,
+    clock=utc_now,
+) -> tuple[dict, InvocationProviderOutcome]:
+    """Normalized review-invocation adapter compatible with queue-step execution boundary."""
+
+    step_id = step.get("step_id")
+    if not isinstance(step_id, str) or not step_id:
+        raise ValueError("Review invocation adapter requires step_id.")
+    queue_id = queue_state.get("queue_id")
+    if not isinstance(queue_id, str) or not queue_id:
+        raise ValueError("Review invocation adapter requires queue_state.queue_id.")
+
+    invocation_result, provider_outcome = run_live_review_invocation(
+        work_item=work_item,
+        repo_root=repo_root,
+        run_codex=run_codex,
+        run_claude=run_claude,
+        lineage_context=lineage_context,
+        clock=clock,
+    )
+    normalized = dict(invocation_result)
+    normalized.update(
+        {
+            "step_id": step_id,
+            "queue_id": queue_id,
+            "execution_type": "review_invocation",
+        }
+    )
+    return normalized, provider_outcome
