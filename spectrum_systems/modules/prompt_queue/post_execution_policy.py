@@ -207,3 +207,109 @@ def _decision_artifact(
 def default_post_execution_decision_path(work_item_id: str, queue_state_path: Path) -> Path:
     stem = queue_state_path.stem
     return queue_state_path.parent / "post_execution_decisions" / f"{stem}.{work_item_id}.post_execution_decision.json"
+
+
+class TransitionDecisionBuildError(ValueError):
+    """Raised when unified transition decision generation fails closed."""
+
+
+def _as_sorted_unique(values: list[str]) -> list[str]:
+    return sorted(dict.fromkeys(values))
+
+
+def build_queue_transition_decision(step_decision: dict, findings_handoff: dict | None = None, *, clock=utc_now) -> dict:
+    """Build a unified fail-closed queue transition decision artifact from QUEUE-03 outputs."""
+    if not isinstance(step_decision, dict):
+        raise TransitionDecisionBuildError("missing prompt_queue_step_decision artifact")
+
+    step_id = step_decision.get("step_id")
+    source_decision_ref = step_decision.get("decision_id")
+    if not step_id:
+        raise TransitionDecisionBuildError("missing required lineage: step_id")
+    if not source_decision_ref:
+        raise TransitionDecisionBuildError("missing required lineage: source decision reference")
+
+    queue_id = step_decision.get("queue_id")
+    trace_linkage = step_decision.get("trace_linkage")
+    if not queue_id and not trace_linkage:
+        raise TransitionDecisionBuildError("missing required lineage: queue_id or trace_linkage")
+
+    raw_decision = step_decision.get("decision")
+    if raw_decision not in {"allow", "warn", "block"}:
+        raise TransitionDecisionBuildError("unsupported step decision value")
+
+    reason_codes = set(step_decision.get("reason_codes") or [])
+    blocking_reasons = list(step_decision.get("blocking_reasons") or [])
+
+    candidates: list[tuple[str, str, str]] = []
+    if raw_decision == "allow":
+        candidates.append(("continue", "allowed", "allow_clean_findings_continue"))
+    if raw_decision == "warn":
+        candidates.append(("request_review", "allowed", "warn_findings_request_review"))
+    if raw_decision == "block" and findings_handoff is not None:
+        handoff_status = findings_handoff.get("handoff_status")
+        handoff_reason = findings_handoff.get("handoff_reason_code")
+        if handoff_status == "handoff_completed" and handoff_reason == "handoff_completed_findings_emitted":
+            candidates.append(("reenter_with_findings", "allowed", "block_findings_reenter_with_handoff"))
+        elif handoff_status in {"handoff_failed", "handoff_blocked"}:
+            candidates.append(("block", "blocked", "blocked_conflicting_inputs"))
+            blocking_reasons.append("invalid_handoff")
+        else:
+            raise TransitionDecisionBuildError("ambiguous handoff status")
+
+    if raw_decision == "block" and "errors_detected" in reason_codes and findings_handoff is None:
+        candidates.append(("retry_allowed", "allowed", "block_errors_retry_allowed"))
+
+    if raw_decision == "block" and "ambiguity_detected" in reason_codes:
+        candidates.append(("block", "blocked", "block_ambiguity_fail_closed"))
+        blocking_reasons.append("ambiguous_transition")
+
+    if raw_decision == "block" and "invalid_report" in reason_codes:
+        candidates.append(("block", "blocked", "block_invalid_report_fail_closed"))
+        blocking_reasons.append("conflicting_signals")
+
+    if not candidates:
+        raise TransitionDecisionBuildError("no transition action inferred")
+
+    unique_actions = {(action, status, code) for action, status, code in candidates}
+    if len(unique_actions) > 1:
+        raise TransitionDecisionBuildError("more than one transition action inferred")
+
+    transition_action, transition_status, transition_reason_code = next(iter(unique_actions))
+    if transition_status not in {"allowed", "blocked"}:
+        raise TransitionDecisionBuildError("ambiguous transition status")
+
+    derived = list(step_decision.get("derived_from_artifacts") or [])
+    if findings_handoff is not None:
+        derived.extend(
+            [
+                findings_handoff.get("review_parsing_handoff_artifact_id", ""),
+                findings_handoff.get("findings_artifact_path", ""),
+                findings_handoff.get("review_invocation_result_artifact_path", ""),
+            ]
+        )
+    derived = [item for item in derived if item]
+    if not derived:
+        raise TransitionDecisionBuildError("missing required lineage: derived_from_artifacts")
+
+    timestamp = iso_now(clock)
+    artifact = {
+        "transition_decision_id": f"transition-decision-{step_id}-{timestamp.replace('-', '').replace(':', '')}",
+        "step_id": step_id,
+        "queue_id": queue_id,
+        "trace_linkage": trace_linkage,
+        "source_decision_ref": source_decision_ref,
+        "transition_action": transition_action,
+        "transition_status": transition_status,
+        "reason_codes": [transition_reason_code],
+        "blocking_reasons": _as_sorted_unique(blocking_reasons if transition_status == "blocked" else []),
+        "derived_from_artifacts": _as_sorted_unique(derived),
+        "timestamp": timestamp,
+    }
+
+    from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+        validate_prompt_queue_transition_decision_artifact,
+    )
+
+    validate_prompt_queue_transition_decision_artifact(artifact)
+    return artifact

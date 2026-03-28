@@ -1,10 +1,14 @@
-"""Pure deterministic queue integration for next-step orchestration actions."""
+"""Deterministic next-step integration with legacy mutation and transition receipt surfaces."""
 
 from __future__ import annotations
 
 from spectrum_systems.modules.prompt_queue.next_step_action_artifact_io import (
     NextStepActionArtifactValidationError,
     validate_next_step_action_artifact,
+)
+from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+    PromptQueueTransitionArtifactValidationError,
+    validate_prompt_queue_transition_decision_artifact,
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     ArtifactValidationError,
@@ -89,6 +93,67 @@ def _detect_duplicate_spawn(queue_state: dict, parent_work_item_id: str, action_
             )
 
 
+def _transition_from_next_step_action(next_step_action_artifact: dict) -> dict:
+    action = next_step_action_artifact.get("action_status")
+    mapping = {
+        "marked_complete": "continue",
+        "spawn_review": "request_review",
+        "spawn_reentry_child": "reenter_with_findings",
+        "blocked_no_action": "block",
+    }
+    transition_action = mapping.get(action)
+    if not transition_action:
+        raise NextStepQueueIntegrationError("Invalid next-step action for transition compatibility mapping.")
+    return {
+        "transition_decision_id": f"compat-next-step-{next_step_action_artifact.get('next_step_action_artifact_id', 'unknown')}",
+        "step_id": "step-001",
+        "queue_id": None,
+        "trace_linkage": next_step_action_artifact.get("work_item_id") or "unknown",
+        "source_decision_ref": next_step_action_artifact.get("execution_result_artifact_path")
+        or next_step_action_artifact.get("post_execution_decision_artifact_path")
+        or "unknown",
+        "transition_action": transition_action,
+        "transition_status": "blocked" if transition_action == "block" else "allowed",
+        "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],
+        "blocking_reasons": ["unsupported_decision"] if transition_action == "block" else [],
+        "derived_from_artifacts": [
+            next_step_action_artifact.get("execution_result_artifact_path")
+            or next_step_action_artifact.get("post_execution_decision_artifact_path")
+            or "unknown"
+        ],
+        "timestamp": next_step_action_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
+    }
+
+
+def emit_next_step_transition_receipt(
+    *,
+    queue_state: dict,
+    transition_decision_artifact: dict,
+    transition_decision_artifact_path: str,
+) -> dict:
+    try:
+        validate_queue_state(queue_state)
+    except ArtifactValidationError as exc:
+        raise NextStepQueueIntegrationError(str(exc)) from exc
+
+    try:
+        validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    except PromptQueueTransitionArtifactValidationError as exc:
+        raise NextStepQueueIntegrationError(str(exc)) from exc
+
+    if transition_decision_artifact["transition_action"] == "block" and transition_decision_artifact["transition_status"] != "blocked":
+        raise NextStepQueueIntegrationError("Ambiguous transition status for block action.")
+
+    return {
+        "integration_type": "next_step_transition",
+        "queue_mutation_performed": False,
+        "transition_decision_artifact_path": transition_decision_artifact_path,
+        "transition_action": transition_decision_artifact["transition_action"],
+        "transition_status": transition_decision_artifact["transition_status"],
+        "reason_codes": list(transition_decision_artifact.get("reason_codes") or []),
+    }
+
+
 def apply_next_step_action_to_queue(
     *,
     queue_state: dict,
@@ -104,6 +169,13 @@ def apply_next_step_action_to_queue(
         validate_next_step_action_artifact(next_step_action_artifact)
     except NextStepActionArtifactValidationError as exc:
         raise NextStepQueueIntegrationError(str(exc)) from exc
+
+    transition = _transition_from_next_step_action(next_step_action_artifact)
+    emit_next_step_transition_receipt(
+        queue_state=queue_copy,
+        transition_decision_artifact=transition,
+        transition_decision_artifact_path=next_step_action_artifact_path,
+    )
 
     idx = _find_work_item_index(queue_copy, work_item_id)
     target = dict(queue_copy["work_items"][idx])

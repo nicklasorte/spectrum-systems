@@ -1,10 +1,14 @@
-"""Deterministic queue integration for loop control decisions."""
+"""Loop-control integration with legacy queue mutation and transition receipt surfaces."""
 
 from __future__ import annotations
 
 from spectrum_systems.modules.prompt_queue.loop_control_artifact_io import (
     LoopControlArtifactValidationError,
     validate_loop_control_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+    PromptQueueTransitionArtifactValidationError,
+    validate_prompt_queue_transition_decision_artifact,
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     ArtifactValidationError,
@@ -53,6 +57,62 @@ def _resolve_target_status(artifact: dict) -> str:
     return _ALLOWED_TUPLES[key]
 
 
+def _transition_from_loop_control(loop_control_decision_artifact: dict) -> dict:
+    action = loop_control_decision_artifact.get("enforcement_action")
+    mapping = {
+        "allow_reentry": "retry_allowed",
+        "require_review": "reenter_with_findings",
+        "block_reentry": "block",
+    }
+    transition_action = mapping.get(action)
+    if not transition_action:
+        raise LoopControlQueueIntegrationError("Invalid canonical loop control tuple; refusing queue mutation.")
+
+    return {
+        "transition_decision_id": f"compat-loop-{loop_control_decision_artifact.get('loop_control_decision_artifact_id', 'unknown')}",
+        "step_id": "step-001",
+        "queue_id": None,
+        "trace_linkage": loop_control_decision_artifact.get("work_item_id") or "unknown",
+        "source_decision_ref": loop_control_decision_artifact.get("loop_control_decision_artifact_id") or "unknown",
+        "transition_action": transition_action,
+        "transition_status": "blocked" if transition_action == "block" else "allowed",
+        "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],
+        "blocking_reasons": ["unsupported_decision"] if transition_action == "block" else [],
+        "derived_from_artifacts": [loop_control_decision_artifact.get("loop_control_decision_artifact_id") or "unknown"],
+        "timestamp": loop_control_decision_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
+    }
+
+
+def emit_loop_control_transition_receipt(
+    *,
+    queue_state: dict,
+    transition_decision_artifact: dict,
+    transition_decision_artifact_path: str,
+) -> dict:
+    try:
+        validate_queue_state(queue_state)
+    except ArtifactValidationError as exc:
+        raise LoopControlQueueIntegrationError(str(exc)) from exc
+
+    try:
+        validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    except PromptQueueTransitionArtifactValidationError as exc:
+        raise LoopControlQueueIntegrationError(str(exc)) from exc
+
+    action = transition_decision_artifact["transition_action"]
+    if action not in {"reenter_with_findings", "retry_allowed", "block"}:
+        raise LoopControlQueueIntegrationError("Transition action is not loop-control eligible.")
+
+    return {
+        "integration_type": "loop_control_transition",
+        "queue_mutation_performed": False,
+        "transition_decision_artifact_path": transition_decision_artifact_path,
+        "transition_action": action,
+        "transition_status": transition_decision_artifact["transition_status"],
+        "blocking_reasons": list(transition_decision_artifact.get("blocking_reasons") or []),
+    }
+
+
 def apply_loop_control_decision_to_queue(
     *,
     queue_state: dict,
@@ -68,6 +128,13 @@ def apply_loop_control_decision_to_queue(
         validate_loop_control_decision_artifact(loop_control_decision_artifact)
     except LoopControlArtifactValidationError as exc:
         raise LoopControlQueueIntegrationError(str(exc)) from exc
+
+    transition = _transition_from_loop_control(loop_control_decision_artifact)
+    emit_loop_control_transition_receipt(
+        queue_state=queue_copy,
+        transition_decision_artifact=transition,
+        transition_decision_artifact_path=loop_control_decision_artifact_path,
+    )
 
     idx = _find_work_item_index(queue_copy, work_item_id)
     target = dict(queue_copy["work_items"][idx])

@@ -1,10 +1,14 @@
-"""Pure queue mutation for prompt queue post-execution decisions."""
+"""Post-execution integration with legacy queue mutation and transition receipt surfaces."""
 
 from __future__ import annotations
 
 from spectrum_systems.modules.prompt_queue.post_execution_artifact_io import (
     PostExecutionArtifactValidationError,
     validate_post_execution_decision_artifact,
+)
+from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+    PromptQueueTransitionArtifactValidationError,
+    validate_prompt_queue_transition_decision_artifact,
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     ArtifactValidationError,
@@ -38,6 +42,61 @@ def _decision_to_status(decision_status: str) -> str:
     return mapping[decision_status]
 
 
+def _transition_from_post_execution(post_execution_decision_artifact: dict) -> dict:
+    decision_status = post_execution_decision_artifact.get("decision_status")
+    mapping = {
+        "complete": "continue",
+        "review_required": "request_review",
+        "reentry_eligible": "reenter_with_findings",
+        "reentry_blocked": "block",
+    }
+    transition_action = mapping.get(decision_status)
+    if not transition_action:
+        raise PostExecutionQueueIntegrationError(f"Unsupported decision_status: {decision_status}")
+
+    return {
+        "transition_decision_id": f"compat-postexec-{post_execution_decision_artifact.get('post_execution_decision_artifact_id', 'unknown')}",
+        "step_id": "step-001",
+        "queue_id": None,
+        "trace_linkage": post_execution_decision_artifact.get("work_item_id") or "unknown",
+        "source_decision_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
+        or post_execution_decision_artifact.get("execution_result_artifact_path")
+        or "unknown",
+        "transition_action": transition_action,
+        "transition_status": "blocked" if transition_action == "block" else "allowed",
+        "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],
+        "blocking_reasons": ["unsupported_decision"] if transition_action == "block" else [],
+        "derived_from_artifacts": [post_execution_decision_artifact.get("execution_result_artifact_path") or "unknown"],
+        "timestamp": post_execution_decision_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
+    }
+
+
+def emit_post_execution_transition_receipt(
+    *,
+    queue_state: dict,
+    transition_decision_artifact: dict,
+    transition_decision_artifact_path: str,
+) -> dict:
+    try:
+        validate_queue_state(queue_state)
+    except ArtifactValidationError as exc:
+        raise PostExecutionQueueIntegrationError(str(exc)) from exc
+
+    try:
+        validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    except PromptQueueTransitionArtifactValidationError as exc:
+        raise PostExecutionQueueIntegrationError(str(exc)) from exc
+
+    return {
+        "integration_type": "post_execution_transition",
+        "queue_mutation_performed": False,
+        "transition_decision_artifact_path": transition_decision_artifact_path,
+        "transition_action": transition_decision_artifact["transition_action"],
+        "transition_status": transition_decision_artifact["transition_status"],
+        "source_decision_ref": transition_decision_artifact["source_decision_ref"],
+    }
+
+
 def apply_post_execution_decision_to_queue(
     *,
     queue_state: dict,
@@ -53,6 +112,13 @@ def apply_post_execution_decision_to_queue(
         validate_post_execution_decision_artifact(post_execution_decision_artifact)
     except PostExecutionArtifactValidationError as exc:
         raise PostExecutionQueueIntegrationError(str(exc)) from exc
+
+    transition = _transition_from_post_execution(post_execution_decision_artifact)
+    emit_post_execution_transition_receipt(
+        queue_state=queue_copy,
+        transition_decision_artifact=transition,
+        transition_decision_artifact_path=post_execution_decision_artifact_path,
+    )
 
     idx = _find_work_item_index(queue_copy, work_item_id)
     target = dict(queue_copy["work_items"][idx])
