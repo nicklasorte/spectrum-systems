@@ -29,7 +29,7 @@ from spectrum_systems.modules.runtime.evaluation_control import (
 )
 from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import (
     EnforcementBridgeError,
-    enforce_budget_decision,
+    run_enforcement_bridge,
 )
 from spectrum_systems.modules.runtime.policy_backtesting import (
     PolicyBacktestingError,
@@ -144,17 +144,34 @@ def _eval_case_ambiguous_value() -> Dict[str, Any]:
     return _unexpected("allow", str(decision.get("decision_id") or "evaluation_control_decision"), blocking_reason="indeterminate was not fail-closed")
 
 
+def _run_enforcement_bridge_with_decision(
+    decision_payload: Dict[str, Any],
+    *,
+    context: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    with TemporaryDirectory(prefix="val02-enf-") as tmp_dir:
+        decision_path = Path(tmp_dir) / "evaluation_budget_decision.json"
+        decision_path.write_text(json.dumps(decision_payload), encoding="utf-8")
+        return run_enforcement_bridge(decision_path, context=context)
+
+
 def _enforcement_case_invalid_input() -> Dict[str, Any]:
-    try:
-        enforce_budget_decision({"decision_id": "bad"})
-    except (EnforcementBridgeError, Exception) as exc:  # InvalidDecisionError derives from EnforcementBridgeError
-        return _ok("block", "evaluation_enforcement_action", blocking_reason=str(exc))
+    with TemporaryDirectory(prefix="val02-enf-") as tmp_dir:
+        decision_path = Path(tmp_dir) / "invalid_decision.json"
+        decision_path.write_text(json.dumps({"decision_id": "bad"}), encoding="utf-8")
+        try:
+            run_enforcement_bridge(decision_path)
+        except (EnforcementBridgeError, Exception) as exc:  # InvalidDecisionError derives from EnforcementBridgeError
+            return _ok("block", "evaluation_enforcement_action", blocking_reason=str(exc))
     return _unexpected("allow", "", blocking_reason="invalid enforcement input unexpectedly allowed")
 
 
 def _enforcement_case_missing_promotion_evidence() -> Dict[str, Any]:
     decision = copy.deepcopy(load_example("evaluation_budget_decision"))
-    action = enforce_budget_decision(decision, context={"enforcement_scope": "promotion"})
+    action = _run_enforcement_bridge_with_decision(
+        decision,
+        context={"enforcement_scope": "promotion"},
+    )
     if action.get("allowed_to_proceed") is False and action.get("action_type") == "block":
         return _ok("block", str(action.get("action_id") or "evaluation_enforcement_action"), blocking_reason="promotion missing done_certification blocked")
     return _unexpected(str(action.get("action_type") or "allow"), str(action.get("action_id") or ""), blocking_reason="promotion evidence missing did not block")
@@ -165,7 +182,7 @@ def _enforcement_case_malformed_cert_or_trace_linkage() -> Dict[str, Any]:
     with TemporaryDirectory(prefix="val02-enf-") as tmp_dir:
         cert_path = Path(tmp_dir) / "bad_done_cert.json"
         cert_path.write_text(json.dumps({"certification_id": "bad", "trace_id": "wrong-trace"}), encoding="utf-8")
-        action = enforce_budget_decision(
+        action = _run_enforcement_bridge_with_decision(
             decision,
             context={
                 "enforcement_scope": "promotion",
