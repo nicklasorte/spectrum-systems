@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fail_closed_exhaustive_result.schema.json",
+  "title": "Fail-Closed Exhaustive Result",
+  "description": "Deterministic VAL-02 seam-failure matrix summary proving fail-closed behavior across governed runtime seams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "seam_results",
+    "summary",
+    "final_status",
+    "trace_id"
+  ],
+  "properties": {
+    "validation_run_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "input_refs": { "type": "object" },
+    "seam_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "seam_name",
+          "case_id",
+          "case_type",
+          "expected_outcome",
+          "actual_outcome",
+          "passed",
+          "failure_artifact_ref",
+          "blocking_reason"
+        ],
+        "properties": {
+          "seam_name": { "type": "string", "minLength": 1 },
+          "case_id": { "type": "string", "minLength": 1 },
+          "case_type": { "type": "string", "minLength": 1 },
+          "expected_outcome": { "type": "string", "minLength": 1 },
+          "actual_outcome": { "type": "string", "minLength": 1 },
+          "passed": { "type": "boolean" },
+          "failure_artifact_ref": { "type": "string", "minLength": 1 },
+          "blocking_reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "total_passed",
+        "total_failed",
+        "silent_success_detected",
+        "ambiguous_outcome_detected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 0 },
+        "total_passed": { "type": "integer", "minimum": 0 },
+        "total_failed": { "type": "integer", "minimum": 0 },
+        "silent_success_detected": { "type": "boolean" },
+        "ambiguous_outcome_detected": { "type": "boolean" }
+      }
+    },
+    "final_status": {
+      "type": "string",
+      "enum": ["PASSED", "FAILED"]
+    },
+    "trace_id": { "type": "string", "minLength": 1 }
+  }
+}
