@@ -1,9 +1,11 @@
-"""Deterministic state transitions for prompt queue work items."""
+"""Deterministic state transitions and fail-closed queue loop orchestration."""
 
 from __future__ import annotations
 
 from typing import Callable
 
+from spectrum_systems.modules.prompt_queue.queue_artifact_io import ArtifactValidationError, validate_queue_state
+from spectrum_systems.modules.prompt_queue.queue_manifest_validator import validate_queue_manifest
 from spectrum_systems.modules.prompt_queue.queue_models import WorkItemStatus, iso_now, utc_now
 
 
@@ -78,6 +80,265 @@ _ALLOWED_TRANSITIONS = {
 
 
 Clock = Callable
+
+
+class QueueLoopError(ValueError):
+    """Raised when a queue loop iteration cannot proceed deterministically."""
+
+
+def _clone_queue_state(queue_state: dict) -> dict:
+    clone = dict(queue_state)
+    clone["work_items"] = [dict(item) for item in queue_state.get("work_items", [])]
+    clone["step_results"] = [dict(result) for result in queue_state.get("step_results", [])]
+    return clone
+
+
+def _validate_loop_inputs(queue_state: dict, manifest: dict) -> tuple[dict, dict]:
+    if not isinstance(queue_state, dict):
+        raise QueueLoopError("invalid queue_state: expected object")
+    if not isinstance(manifest, dict):
+        raise QueueLoopError("missing manifest or invalid manifest object")
+
+    try:
+        normalized_queue_state = validate_queue_state(queue_state) or queue_state
+    except ArtifactValidationError as exc:
+        raise QueueLoopError(f"invalid queue_state: {exc}") from exc
+
+    try:
+        normalized_manifest = validate_queue_manifest(manifest)
+    except ValueError as exc:
+        raise QueueLoopError(f"missing manifest or invalid manifest: {exc}") from exc
+
+    if normalized_queue_state.get("queue_id") != normalized_manifest.get("queue_id"):
+        raise QueueLoopError("queue_state.queue_id must match manifest.queue_id")
+
+    declared_total_steps = len(normalized_manifest["steps"])
+    if normalized_queue_state.get("total_steps") != declared_total_steps:
+        raise QueueLoopError("queue_state total_steps mismatch with manifest steps")
+
+    step_results = normalized_queue_state.get("step_results", [])
+    current_step_index = int(normalized_queue_state.get("current_step_index", -1))
+    if len(step_results) != current_step_index:
+        raise QueueLoopError("queue_state progression mismatch: current_step_index must equal len(step_results)")
+
+    for index, result in enumerate(step_results):
+        expected_step_id = normalized_manifest["steps"][index]["step_id"]
+        if result.get("step_id") != expected_step_id:
+            raise QueueLoopError("no step skipping permitted: step_results contain out-of-order step_id")
+        if result.get("status") != "completed":
+            raise QueueLoopError("no eligible next step: prior step not completed cleanly")
+
+    return normalized_queue_state, normalized_manifest
+
+
+def _select_next_eligible_step(queue_state: dict, manifest: dict) -> dict | None:
+    status = queue_state.get("queue_status")
+    if status in {"blocked", "completed"}:
+        return None
+
+    current_step_index = int(queue_state["current_step_index"])
+    steps = manifest["steps"]
+    if current_step_index == len(steps):
+        return None
+    if current_step_index < 0 or current_step_index > len(steps):
+        raise QueueLoopError("next step cannot be determined: current_step_index out of bounds")
+
+    return dict(steps[current_step_index])
+
+
+def _build_step_execution_inputs(queue_state: dict, step: dict) -> tuple[dict, dict]:
+    work_item_id = queue_state.get("active_work_item_id")
+    if not isinstance(work_item_id, str) or not work_item_id:
+        raise QueueLoopError("next step cannot be determined: active_work_item_id is required")
+
+    work_item = None
+    for candidate in queue_state.get("work_items", []):
+        if candidate.get("work_item_id") == work_item_id:
+            work_item = candidate
+            break
+    if work_item is None:
+        raise QueueLoopError("next step cannot be determined: active work item missing from queue_state")
+
+    metadata = step.get("metadata") or {}
+    gating_decision_artifact = {
+        "gating_decision_artifact_id": f"generated-gating-{step['step_id']}",
+        "work_item_id": work_item_id,
+        "parent_work_item_id": work_item.get("parent_work_item_id"),
+        "repair_prompt_artifact_path": work_item.get("repair_prompt_artifact_path"),
+        "findings_artifact_path": work_item.get("spawned_from_findings_artifact_path"),
+        "review_artifact_path": work_item.get("spawned_from_review_artifact_path"),
+        "repair_loop_generation": int(work_item.get("repair_loop_generation") or 0),
+        "risk_level": work_item.get("risk_level"),
+        "decision_status": "runnable",
+        "decision_reason_code": "runnable_within_policy",
+        "approval_required": False,
+        "approval_present": False,
+        "max_generation_allowed": 2,
+        "gating_policy_id": "prompt_queue_execution_gating_policy.v1",
+        "generated_at": iso_now(utc_now),
+        "generator_version": "prompt_queue_execution_loop.v1",
+        "blocking_conditions": [],
+        "warnings": [],
+        "lineage_summary": {
+            "has_parent": bool(work_item.get("parent_work_item_id")),
+            "has_repair_prompt_lineage": bool(work_item.get("repair_prompt_artifact_path")),
+            "has_findings_lineage": bool(work_item.get("spawned_from_findings_artifact_path")),
+            "has_review_lineage": bool(work_item.get("spawned_from_review_artifact_path")),
+        },
+        "source_queue_state_path": metadata.get("source_queue_state_path"),
+    }
+
+    execution_mode = metadata.get("execution_mode") or metadata.get("run_mode") or "simulated"
+    execution_step = {
+        "step_id": step["step_id"],
+        "work_item_id": work_item_id,
+        "execution_mode": execution_mode,
+    }
+    input_refs = {
+        "gating_decision_artifact": gating_decision_artifact,
+        "source_queue_state_path": metadata.get("source_queue_state_path"),
+    }
+    return execution_step, input_refs
+
+
+def apply_transition_to_queue_state(queue_state: dict, transition_decision: dict, *, clock: Clock = utc_now) -> dict:
+    """Apply a single transition decision to queue state deterministically."""
+    if not isinstance(transition_decision, dict):
+        raise QueueLoopError("transition decision missing")
+
+    required = {"step_id", "source_decision_ref", "transition_action", "transition_status"}
+    missing = sorted(required - set(transition_decision))
+    if missing:
+        raise QueueLoopError(f"transition decision missing required fields: {', '.join(missing)}")
+
+    state = _clone_queue_state(queue_state)
+    current_step_index = int(state["current_step_index"])
+    total_steps = int(state["total_steps"])
+    if current_step_index >= total_steps:
+        raise QueueLoopError("multiple steps executed in one loop or queue already exhausted")
+
+    expected_step_id = f"step-{current_step_index + 1:03d}"
+    if transition_decision["step_id"] != expected_step_id:
+        raise QueueLoopError("multiple steps executed in one loop or step_id mismatch")
+
+    transition_action = transition_decision["transition_action"]
+    transition_status = transition_decision["transition_status"]
+    blocked = transition_action == "block" or transition_status == "blocked"
+
+    step_result = {
+        "step_id": transition_decision["step_id"],
+        "step_index": current_step_index,
+        "status": "blocked" if blocked else "completed",
+        "result_ref": transition_decision["source_decision_ref"],
+        "updated_at": iso_now(clock),
+    }
+    state["step_results"] = [*state["step_results"], step_result]
+
+    if blocked:
+        state["queue_status"] = "blocked"
+        state["current_step_index"] = current_step_index + 1
+    else:
+        next_index = current_step_index + 1
+        state["current_step_index"] = next_index
+        if next_index == total_steps:
+            state["queue_status"] = "completed"
+            state["active_work_item_id"] = None
+        else:
+            state["queue_status"] = "running"
+
+    now = iso_now(clock)
+    state["updated_at"] = now
+    state["last_updated"] = now
+    return state
+
+
+def run_queue_once(queue_state: dict, manifest: dict) -> dict:
+    """Execute exactly one deterministic, fail-closed queue step iteration."""
+    from spectrum_systems.modules.prompt_queue.execution_queue_integration import (
+        ExecutionQueueIntegrationError,
+        run_queue_step_execution_adapter,
+    )
+    from spectrum_systems.modules.prompt_queue.post_execution_policy import (
+        TransitionDecisionBuildError,
+        build_queue_transition_decision,
+    )
+    from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report
+    from spectrum_systems.modules.prompt_queue.step_decision import StepDecisionError, build_step_decision
+
+    state, normalized_manifest = _validate_loop_inputs(queue_state, manifest)
+    step = _select_next_eligible_step(state, normalized_manifest)
+
+    if step is None:
+        if (
+            state.get("current_step_index") == state.get("total_steps")
+            and all(result.get("status") == "completed" for result in state.get("step_results", []))
+        ):
+            completed = _clone_queue_state(state)
+            completed["queue_status"] = "completed"
+            completed["active_work_item_id"] = None
+            now = iso_now(utc_now)
+            completed["updated_at"] = now
+            completed["last_updated"] = now
+            return completed
+        raise QueueLoopError("next step cannot be determined")
+
+    execution_step, input_refs = _build_step_execution_inputs(state, step)
+
+    try:
+        execution_result = run_queue_step_execution_adapter(
+            queue_state=state,
+            step=execution_step,
+            input_refs=input_refs,
+        )
+    except ExecutionQueueIntegrationError as exc:
+        raise QueueLoopError(f"execution failed without valid artifact: {exc}") from exc
+
+    if execution_result.get("execution_status") != "success" and not execution_result.get("output_reference"):
+        raise QueueLoopError("execution fails without valid artifact output_reference")
+
+    try:
+        findings = parse_queue_step_report(execution_result)
+    except ReviewParseError as exc:
+        raise QueueLoopError(f"parsing fails: {exc}") from exc
+
+    try:
+        step_decision = build_step_decision(findings)
+    except StepDecisionError as exc:
+        raise QueueLoopError(f"step decision failed closed: {exc}") from exc
+
+    try:
+        transition_decision = build_queue_transition_decision(step_decision)
+    except TransitionDecisionBuildError as exc:
+        raise QueueLoopError(f"transition decision missing or ambiguous: {exc}") from exc
+
+    if not isinstance(transition_decision, dict):
+        raise QueueLoopError("transition decision missing")
+
+    allow_warn = bool(normalized_manifest.get("execution_policy", {}).get("allow_warn"))
+    action = transition_decision.get("transition_action")
+    status = transition_decision.get("transition_status")
+
+    if action == "block" or status == "blocked":
+        return apply_transition_to_queue_state(state, transition_decision)
+
+    if action == "continue" and status == "allowed":
+        return apply_transition_to_queue_state(state, transition_decision)
+
+    if action == "request_review" and status == "allowed" and allow_warn:
+        return apply_transition_to_queue_state(state, transition_decision)
+
+    blocked_transition = dict(transition_decision)
+    blocked_transition["transition_action"] = "block"
+    blocked_transition["transition_status"] = "blocked"
+    reason_codes = list(blocked_transition.get("reason_codes") or [])
+    if "unsupported_transition_for_queue_loop" not in reason_codes:
+        reason_codes.append("unsupported_transition_for_queue_loop")
+    blocked_transition["reason_codes"] = reason_codes
+    blocking_reasons = list(blocked_transition.get("blocking_reasons") or [])
+    if "unsupported_transition" not in blocking_reasons:
+        blocking_reasons.append("unsupported_transition")
+    blocked_transition["blocking_reasons"] = blocking_reasons
+    return apply_transition_to_queue_state(state, blocked_transition)
 
 
 def transition_work_item(
