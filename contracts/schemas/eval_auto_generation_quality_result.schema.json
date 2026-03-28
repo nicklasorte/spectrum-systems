@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_auto_generation_quality_result.schema.json",
+  "title": "Eval Auto-Generation Quality Result",
+  "description": "Governed VAL-07 validation artifact proving auto-generated eval-case quality over the real generation seam.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "eval_auto_generation_quality_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "validation_run_id": {
+      "type": "string",
+      "pattern": "^EAGQ-[A-F0-9]{12}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_results",
+        "eval_summaries",
+        "regression_results",
+        "drift_results",
+        "monitor_records",
+        "policy_ref"
+      ],
+      "properties": {
+        "replay_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "eval_summaries": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "regression_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "drift_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "monitor_records": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "cross_run_intelligence_decisions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "failure_injection_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "policy_ref": { "type": "string", "minLength": 1 },
+        "expected_outcomes_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "case_type",
+          "source_signal",
+          "generated_eval_refs",
+          "expected_properties",
+          "actual_properties",
+          "executable",
+          "meaningful",
+          "passed",
+          "blocking_reason"
+        ],
+        "properties": {
+          "case_id": { "type": "string", "minLength": 1 },
+          "case_type": { "type": "string", "minLength": 1 },
+          "source_signal": { "type": "string", "minLength": 1 },
+          "generated_eval_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "expected_properties": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+          "actual_properties": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "executable": { "type": "boolean" },
+          "meaningful": { "type": "boolean" },
+          "passed": { "type": "boolean" },
+          "blocking_reason": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "non_executable_eval_detected",
+        "low_signal_eval_detected",
+        "missed_generation_detected",
+        "malformed_generation_detected"
+      ],
+      "properties": {
+        "total_cases": { "type": "integer", "minimum": 0 },
+        "passed_cases": { "type": "integer", "minimum": 0 },
+        "failed_cases": { "type": "integer", "minimum": 0 },
+        "non_executable_eval_detected": { "type": "boolean" },
+        "low_signal_eval_detected": { "type": "boolean" },
+        "missed_generation_detected": { "type": "boolean" },
+        "malformed_generation_detected": { "type": "boolean" }
+      }
+    },
+    "final_status": {
+      "type": "string",
+      "enum": ["PASSED", "FAILED"]
+    },
+    "trace_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}

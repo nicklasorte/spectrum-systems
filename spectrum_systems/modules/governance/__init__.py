@@ -11,6 +11,10 @@ from .control_decision_consistency import (
 )
 from .policy_backtest_accuracy import PolicyBacktestAccuracyError, run_policy_backtest_accuracy
 from .xrun_signal_quality import XRunSignalQualityError, run_xrun_signal_quality_validation
+from .eval_auto_generation_quality import (
+    EvalAutoGenerationQualityError,
+    run_eval_auto_generation_quality_validation,
+)
 
 __all__ = [
     "DoneCertificationError",
@@ -23,4 +27,6 @@ __all__ = [
     "run_policy_backtest_accuracy",
     "XRunSignalQualityError",
     "run_xrun_signal_quality_validation",
+    "EvalAutoGenerationQualityError",
+    "run_eval_auto_generation_quality_validation",
 ]
