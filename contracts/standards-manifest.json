@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.67",
+  "artifact_version": "1.0.68",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -929,6 +929,19 @@
       "last_updated_in": "1.0.59",
       "example_path": "data/pqx_state.json",
       "notes": "Minimum governed PQX backbone deterministic row state contract for dependency-satisfied execution progression tracking."
+    },
+    {
+      "artifact_type": "policy_backtest_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.68",
+      "last_updated_in": "1.0.68",
+      "example_path": null,
+      "notes": "ADV-01 deterministic policy backtesting result artifact for replay-authoritative baseline-vs-candidate control decision simulation and pre-promotion governance readiness."
     },
     {
       "artifact_type": "program_brief",
