@@ -15,7 +15,7 @@ Usage
         --input path/to/evaluation_budget_decision.json \\
         [--output-dir path/to/output/] \\
         [--scope release|promotion|schema_change|prompt_change|pipeline_change] \\
-        [--control-loop-certification path/to/control_loop_certification_pack.json] \\
+        [--done-certification path/to/done_certification_record.json] \\
         [--override-authorization path/to/override_authorization.json]
 
 Examples
@@ -142,13 +142,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         ),
     )
     parser.add_argument(
-        "--control-loop-certification",
+        "--done-certification",
         default=None,
         metavar="PATH",
         help=(
-            "Path to a control_loop_certification_pack JSON artifact. "
+            "Path to a done_certification_record JSON artifact. "
             "Optional at CLI parse time. Runtime enforcement is fail-closed for "
-            "promotion scope: missing or invalid certification causes a blocked outcome."
+            "promotion scope: missing or invalid done certification causes a blocked outcome."
         ),
     )
 
@@ -161,8 +161,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     context: Dict[str, Any] = {}
     if args.scope:
         context["enforcement_scope"] = args.scope
-    if args.control_loop_certification:
-        context["control_loop_certification_path"] = args.control_loop_certification
+    if args.done_certification:
+        context["done_certification_path"] = args.done_certification
     if args.override_authorization:
         try:
             override_auth = load_override_authorization(args.override_authorization)

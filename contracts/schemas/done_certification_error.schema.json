@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/done_certification_error.schema.json",
+  "title": "Done Certification Error",
+  "description": "Fail-closed error artifact emitted when DONE-01 certification cannot produce a valid certification record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "timestamp",
+    "error_code",
+    "message",
+    "input_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "done_certification_error"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "error_code": {"type": "string", "enum": ["DONE_CERTIFICATION_FAILED"]},
+    "message": {"type": "string", "minLength": 1},
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "replay_result_ref": {"type": "string", "minLength": 1},
+        "regression_result_ref": {"type": "string", "minLength": 1},
+        "certification_pack_ref": {"type": "string", "minLength": 1},
+        "error_budget_ref": {"type": "string", "minLength": 1},
+        "failure_injection_ref": {"type": "string", "minLength": 1},
+        "policy_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "trace_id": {"type": ["string", "null"]}
+  }
+}

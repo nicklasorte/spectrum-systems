@@ -1,0 +1,23 @@
+{
+  "certification_id": "1111111111111111111111111111111111111111111111111111111111111111",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "replay_result_ref": "outputs/replay/replay_result.json",
+    "regression_result_ref": "outputs/regression/regression_result.json",
+    "certification_pack_ref": "outputs/control_loop_certification/control_loop_certification_pack.json",
+    "error_budget_ref": "outputs/error_budget/error_budget_status.json",
+    "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json"
+  },
+  "check_results": {
+    "replay": {"passed": true, "details": []},
+    "regression": {"passed": true, "details": []},
+    "contracts": {"passed": true, "details": []},
+    "reliability": {"passed": true, "details": []},
+    "fail_closed": {"passed": true, "details": []},
+    "control_consistency": {"passed": true, "details": []}
+  },
+  "final_status": "PASSED",
+  "system_response": "allow",
+  "blocking_reasons": [],
+  "trace_id": "trace-example-001"
+}
