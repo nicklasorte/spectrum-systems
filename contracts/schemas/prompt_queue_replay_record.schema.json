@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_replay_record.schema.json",
+  "title": "Prompt Queue Replay Record",
+  "description": "Queue-scoped deterministic replay parity record bound to a validated resume checkpoint.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "replay_id",
+    "queue_id",
+    "checkpoint_ref",
+    "input_refs",
+    "replay_result_summary",
+    "parity_status",
+    "mismatch_summary",
+    "trace_id",
+    "timestamp"
+  ],
+  "properties": {
+    "replay_id": {
+      "type": "string",
+      "pattern": "^queue-replay-[a-f0-9]{64}$"
+    },
+    "queue_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "input_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      }
+    },
+    "replay_result_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replayed_step_id",
+        "decision_match",
+        "state_match",
+        "transition_match"
+      ],
+      "properties": {
+        "replayed_step_id": {
+          "type": "string",
+          "pattern": "^step-[0-9]{3}$"
+        },
+        "decision_match": {
+          "type": "boolean"
+        },
+        "state_match": {
+          "type": "boolean"
+        },
+        "transition_match": {
+          "type": "boolean"
+        }
+      }
+    },
+    "parity_status": {
+      "type": "string",
+      "enum": ["match", "mismatch"]
+    },
+    "mismatch_summary": {
+      "type": ["string", "null"]
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "artifact_ref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[-A-Za-z0-9_./:]+$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "parity_status": {
+            "const": "match"
+          }
+        },
+        "required": ["parity_status"]
+      },
+      "then": {
+        "properties": {
+          "mismatch_summary": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "parity_status": {
+            "const": "mismatch"
+          }
+        },
+        "required": ["parity_status"]
+      },
+      "then": {
+        "properties": {
+          "mismatch_summary": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "checkpoint_id": "checkpoint-bf5ad95fdd0f9ca9eaf887f0694f7030a1fa6e73f3cea06f491d9583378f66b2",
+  "queue_id": "queue-pqx-001",
+  "manifest_ref": "contracts/examples/prompt_queue_manifest.json",
+  "queue_state_ref": "contracts/examples/prompt_queue_state.json",
+  "last_completed_step_index": 1,
+  "last_transition_decision_ref": "contracts/examples/prompt_queue_transition_decision.json",
+  "trace_id": "trace-queue-pqx-001",
+  "created_at": "2026-03-28T12:00:01Z"
+}

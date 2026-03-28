@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.74",
+  "artifact_version": "1.0.75",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1139,6 +1139,32 @@
       "last_updated_in": "1.0.16",
       "example_path": "contracts/examples/prompt_queue_repair_prompt.json",
       "notes": "Deterministic, bounded repair prompt artifact derived from FAIL review findings with provider/fallback lineage preserved."
+    },
+    {
+      "artifact_type": "prompt_queue_replay_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.75",
+      "last_updated_in": "1.0.75",
+      "example_path": "contracts/examples/prompt_queue_replay_record.json",
+      "notes": "QUEUE-08 queue-scoped replay parity artifact with explicit mismatch reporting and deterministic replay ID."
+    },
+    {
+      "artifact_type": "prompt_queue_resume_checkpoint",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.75",
+      "last_updated_in": "1.0.75",
+      "example_path": "contracts/examples/prompt_queue_resume_checkpoint.json",
+      "notes": "QUEUE-08 deterministic artifact-backed resume checkpoint contract with fail-closed reference validation."
     },
     {
       "artifact_type": "prompt_queue_retry_decision",

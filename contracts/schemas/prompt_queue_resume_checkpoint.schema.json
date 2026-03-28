@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_resume_checkpoint.schema.json",
+  "title": "Prompt Queue Resume Checkpoint",
+  "description": "Deterministic, artifact-backed queue checkpoint for validated resume operations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "checkpoint_id",
+    "queue_id",
+    "manifest_ref",
+    "queue_state_ref",
+    "last_completed_step_index",
+    "last_transition_decision_ref",
+    "trace_id",
+    "created_at"
+  ],
+  "properties": {
+    "checkpoint_id": {
+      "type": "string",
+      "pattern": "^checkpoint-[a-f0-9]{64}$"
+    },
+    "queue_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "queue_state_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "last_completed_step_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "last_transition_decision_ref": {
+      "$ref": "#/$defs/artifact_ref"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "artifact_ref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[-A-Za-z0-9_./:]+$"
+    }
+  }
+}
