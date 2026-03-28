@@ -70,6 +70,11 @@ def evaluate_blocked_recovery_policy(
             recovery_action = "no_action"
             recovery_reason_code = "non_recoverable_missing_critical_lineage"
             blocking_conditions.append("missing_prior_state_for_recovery")
+        if source_blocking_artifact_path is None:
+            recovery_status = "non_recoverable"
+            recovery_action = "no_action"
+            recovery_reason_code = "non_recoverable_missing_critical_lineage"
+            blocking_conditions.append("missing_blocking_artifact_for_recovery")
     elif blocking_reason_code in _MANUAL_REVIEW_REASON_CODES:
         recovery_status = "manual_review_required"
         recovery_action = "no_action"
@@ -89,6 +94,8 @@ def evaluate_blocked_recovery_policy(
             "blocked_unsupported_reason": "non_recoverable_unsupported_blocked_reason",
         }
         recovery_reason_code = recovery_reason_map[blocking_reason_code]
+        if prior_state is not None:
+            blocking_conditions.append("prior_state_present_for_non_recoverable_reason")
     else:
         recovery_status = "non_recoverable"
         recovery_action = "no_action"

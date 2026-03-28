@@ -5,6 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import ArtifactValidationError, validate_work_item
+from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+    PromptQueueTransitionArtifactValidationError,
+    validate_prompt_queue_transition_decision_artifact,
+)
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 from spectrum_systems.modules.prompt_queue.retry_artifact_io import validate_retry_decision_artifact
 
@@ -26,6 +30,16 @@ _ELIGIBLE_FAILURE_STATES = {
     "review_invocation_failed",
 }
 
+_RETRY_ELIGIBLE_TRANSITION_ACTIONS = {"retry_allowed"}
+
+
+def _is_transition_retry_eligible(transition_decision_artifact: dict | None) -> bool:
+    if transition_decision_artifact is None:
+        return False
+    action = transition_decision_artifact.get("transition_action")
+    status = transition_decision_artifact.get("transition_status")
+    return action in _RETRY_ELIGIBLE_TRANSITION_ACTIONS and status == "allowed"
+
 
 @dataclass(frozen=True)
 class RetryPolicyConfig:
@@ -41,6 +55,7 @@ def evaluate_retry_policy(
     work_item: dict,
     failure_reason_code: str,
     source_queue_state_path: str | None,
+    transition_decision_artifact: dict | None = None,
     config: RetryPolicyConfig = RetryPolicyConfig(),
     clock=utc_now,
 ) -> dict:
@@ -49,6 +64,17 @@ def evaluate_retry_policy(
         validate_work_item(work_item)
     except ArtifactValidationError as exc:
         raise RetryPolicyError(str(exc)) from exc
+
+    if transition_decision_artifact is not None:
+        try:
+            validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+        except PromptQueueTransitionArtifactValidationError as exc:
+            raise RetryPolicyError(f"Malformed transition decision artifact: {exc}") from exc
+
+        if transition_decision_artifact.get("source_decision_ref") != work_item.get("execution_result_artifact_path"):
+            raise RetryPolicyError(
+                "Retry decision requires transition decision source_decision_ref to match work_item execution lineage."
+            )
 
     current_status = work_item.get("status")
     retry_count = work_item.get("retry_count")
@@ -84,6 +110,10 @@ def evaluate_retry_policy(
         retry_status = "retry_exhausted"
         retry_action = "no_action"
         retry_reason_code = "retry_exhausted_budget_reached"
+    elif not _is_transition_retry_eligible(transition_decision_artifact):
+        retry_status = "retry_blocked"
+        retry_action = "no_action"
+        retry_reason_code = "retry_blocked_transition_ineligible"
     else:
         retry_status = "retry_allowed"
         retry_action = "retry"

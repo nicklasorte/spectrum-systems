@@ -6,6 +6,7 @@ from typing import Callable
 
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import validate_findings_artifact
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
+    validate_findings_reentry,
     validate_review_invocation_result,
     validate_review_parsing_handoff,
 )
@@ -96,6 +97,10 @@ def run_findings_reentry(
         raise FindingsReentryError("Missing review invocation result artifact path.")
     if not repair_prompt_artifact_path:
         raise FindingsReentryError("Missing repair prompt artifact path.")
+    if findings_artifact.get("review_decision") != "FAIL":
+        raise FindingsReentryError("Findings reentry only supports FAIL findings artifacts.")
+    if not findings_artifact.get("required_fixes"):
+        raise FindingsReentryError("Findings reentry requires at least one required fix.")
 
     _validate_lineage(
         work_item=work_item,
@@ -134,5 +139,6 @@ def run_findings_reentry(
         "generated_at": generated_at,
         "generator_version": GENERATOR_VERSION,
     }
+    validate_findings_reentry(reentry_artifact)
 
     return {"repair_prompt_artifact": repair_prompt_artifact, "reentry_artifact": reentry_artifact}
