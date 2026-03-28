@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Thin CLI for governed prompt queue MVP orchestration."""
+"""Thin CLI for one deterministic fail-closed prompt-queue loop iteration."""
 
 from __future__ import annotations
 
@@ -13,87 +13,57 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.modules.prompt_queue import (  # noqa: E402
-    Priority,
-    ProviderResult,
-    RiskLevel,
-    make_queue_state,
-    make_work_item,
-    run_review_with_fallback,
-    validate_queue_state,
-    validate_review_attempt,
-    validate_work_item,
+    QueueLoopError,
+    run_queue_once,
     write_artifact,
 )
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run governed prompt queue MVP flow")
-    parser.add_argument("--queue-id", required=True)
-    parser.add_argument("--work-item-id", required=True)
-    parser.add_argument("--prompt-id", required=True)
-    parser.add_argument("--title", required=True)
-    parser.add_argument("--repo", required=True)
-    parser.add_argument("--branch", required=True)
-    parser.add_argument("--scope-path", action="append", required=True, dest="scope_paths")
-    parser.add_argument("--priority", choices=[e.value for e in Priority], default=Priority.MEDIUM.value)
-    parser.add_argument("--risk-level", choices=[e.value for e in RiskLevel], default=RiskLevel.MEDIUM.value)
-    parser.add_argument("--claude-result", choices=["success", "usage_limit", "timeout", "provider_unavailable", "failure"], default="success")
-    parser.add_argument("--codex-result", choices=["success", "failure"], default="success")
-    parser.add_argument("--output-dir", default=str(REPO_ROOT / "artifacts" / "prompt_queue"))
+    parser = argparse.ArgumentParser(description="Run one fail-closed prompt queue execution-loop iteration.")
+    parser.add_argument("--manifest-path", required=True, help="Path to prompt_queue_manifest JSON artifact.")
+    parser.add_argument("--queue-state-path", required=True, help="Path to prompt_queue_state JSON artifact.")
     return parser.parse_args(argv)
 
 
-def _simulate_provider(result: str, success_artifact: str):
-    if result == "success":
-        return lambda _wi: ProviderResult(success=True, review_artifact_path=success_artifact)
-    if result in {"usage_limit", "timeout", "provider_unavailable"}:
-        return lambda _wi: ProviderResult(success=False, failure_reason=result, error_message=f"Simulated {result}")
-    return lambda _wi: ProviderResult(success=False, failure_reason="unknown_failure", error_message="Simulated failure")
+def _read_json(path: Path) -> dict:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - exercised through CLI integration behavior
+        raise QueueLoopError(f"unable to read JSON artifact '{path}': {exc}") from exc
+    if not isinstance(payload, dict):
+        raise QueueLoopError(f"artifact '{path}' must be a JSON object")
+    return payload
 
 
 def main(argv: Optional[list[str]] = None) -> int:
     args = _parse_args(argv)
-    output_dir = Path(args.output_dir)
+    manifest_path = Path(args.manifest_path)
+    queue_state_path = Path(args.queue_state_path)
 
-    work_item = make_work_item(
-        work_item_id=args.work_item_id,
-        prompt_id=args.prompt_id,
-        title=args.title,
-        priority=Priority(args.priority),
-        risk_level=RiskLevel(args.risk_level),
-        repo=args.repo,
-        branch=args.branch,
-        scope_paths=args.scope_paths,
+    try:
+        manifest = _read_json(manifest_path)
+        queue_state = _read_json(queue_state_path)
+        updated_queue_state = run_queue_once(queue_state=queue_state, manifest=manifest)
+        write_artifact(updated_queue_state, queue_state_path)
+    except QueueLoopError as exc:
+        print(json.dumps({"error": str(exc)}, indent=2), file=sys.stderr)
+        return 2
+
+    print(
+        json.dumps(
+            {
+                "queue_state_path": str(queue_state_path),
+                "queue_status": updated_queue_state["queue_status"],
+                "current_step_index": updated_queue_state["current_step_index"],
+                "total_steps": updated_queue_state["total_steps"],
+            },
+            indent=2,
+        )
     )
-    queue_state = make_queue_state(queue_id=args.queue_id, work_items=[work_item])
 
-    claude_runner = _simulate_provider(args.claude_result, "artifacts/prompt_queue/claude_review.json")
-    codex_runner = _simulate_provider(args.codex_result, "artifacts/prompt_queue/codex_review.json")
-    updated_item, attempts = run_review_with_fallback(
-        work_item,
-        run_claude=claude_runner,
-        run_codex=codex_runner,
-    )
-
-    queue_state["work_items"] = [updated_item]
-
-    validate_work_item(updated_item)
-    validate_queue_state(queue_state)
-    for attempt in attempts:
-        validate_review_attempt(attempt)
-
-    work_item_path = write_artifact(updated_item, output_dir / f"{args.work_item_id}.work_item.json")
-    queue_path = write_artifact(queue_state, output_dir / f"{args.queue_id}.queue_state.json")
-    attempt_paths = [
-        write_artifact(attempt, output_dir / f"{attempt['review_attempt_id']}.review_attempt.json")
-        for attempt in attempts
-    ]
-
-    print(json.dumps({
-        "work_item": str(work_item_path),
-        "queue_state": str(queue_path),
-        "review_attempts": [str(path) for path in attempt_paths],
-    }, indent=2))
+    if updated_queue_state["queue_status"] == "blocked":
+        return 2
     return 0
 
 

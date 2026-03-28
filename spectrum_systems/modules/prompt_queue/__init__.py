@@ -206,7 +206,13 @@ from spectrum_systems.modules.prompt_queue.queue_models import (
     make_queue_state,
     make_work_item,
 )
-from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
+from spectrum_systems.modules.prompt_queue.queue_state_machine import (
+    IllegalTransitionError,
+    QueueLoopError,
+    apply_transition_to_queue_state,
+    run_queue_once,
+    transition_work_item,
+)
 from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report, parse_review_markdown
 from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
     PromptQueueTransitionArtifactValidationError,
@@ -345,6 +351,9 @@ __all__ = [
     "attach_repair_prompt_to_work_item",
     "RepairPromptGenerationError",
     "IllegalTransitionError",
+    "QueueLoopError",
+    "run_queue_once",
+    "apply_transition_to_queue_state",
     "Priority",
     "ProviderResult",
     "ReviewParseError",
