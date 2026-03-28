@@ -21,14 +21,8 @@ from spectrum_systems.modules.runtime.evaluation_control import (
     EvaluationControlError,
     build_evaluation_control_decision,
 )
-from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import (
-    EnforcementBridgeError,
-    enforce_budget_decision,
-)
-from spectrum_systems.modules.runtime.policy_backtesting import (
-    PolicyBacktestingError,
-    run_policy_backtest,
-)
+from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import run_enforcement_bridge
+from spectrum_systems.modules.runtime.policy_backtesting import run_policy_backtest
 from spectrum_systems.modules.runtime.policy_registry import (
     PolicyResolutionError,
     resolve_effective_slo_policy,
@@ -306,7 +300,10 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
         monitor["overall_status"] = "blocked"
         monitor.setdefault("aggregated_slis", {})["output_paths_valid_rate"] = 0.0
         budget_decision = build_validation_budget_decision(monitor)
-        action = enforce_budget_decision(budget_decision, context={"enforcement_scope": "release"})
+        with TemporaryDirectory(prefix="val10-d-") as tmp:
+            decision_path = Path(tmp) / "evaluation_budget_decision.json"
+            _write_json(decision_path, budget_decision)
+            action = run_enforcement_bridge(str(decision_path), context={"enforcement_scope": "release"})
         if action["allowed_to_proceed"] is False and action["action_type"] in {"freeze", "block"}:
             actual_outcome = action["action_type"]
         else:
