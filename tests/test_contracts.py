@@ -172,6 +172,11 @@ class ContractSchemaTests(unittest.TestCase):
 
 
 
+    def test_prompt_queue_step_decision_example_validates(self) -> None:
+        instance = load_example("prompt_queue_step_decision")
+        validate_artifact(instance, "prompt_queue_step_decision")
+
+
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):
             instance = load_example(name)

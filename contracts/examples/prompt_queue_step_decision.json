@@ -1,0 +1,16 @@
+{
+  "decision_id": "step-decision-step-001-20260322T021001Z",
+  "step_id": "step-001",
+  "queue_id": "queue-001",
+  "trace_linkage": "queue-001",
+  "decision": "allow",
+  "reason_codes": [
+    "clean_findings"
+  ],
+  "blocking_reasons": [],
+  "derived_from_artifacts": [
+    "execres-wi-001-attempt-1"
+  ],
+  "timestamp": "2026-03-22T02:10:01Z",
+  "generator_version": "prompt_queue_step_decision.v1"
+}

@@ -1,9 +1,14 @@
-"""Fail-closed markdown parser for governed prompt queue review artifacts."""
+"""Fail-closed parsing seams for governed prompt queue review + execution artifacts."""
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+
+from spectrum_systems.modules.prompt_queue.execution_artifact_io import (
+    ExecutionResultArtifactValidationError,
+    validate_execution_result_artifact,
+)
 
 
 class ReviewParseError(ValueError):
@@ -107,3 +112,24 @@ def parse_review_markdown(markdown_text: str, *, provider: str) -> ParsedReview:
         review_decision=review_decision,
         trust_assessment=_extract_trust(sections),
     )
+
+
+def parse_queue_step_report(execution_result: dict) -> dict:
+    """Parse and normalize a queue execution-result report into deterministic findings."""
+    try:
+        validate_execution_result_artifact(execution_result)
+    except ExecutionResultArtifactValidationError as exc:
+        raise ReviewParseError(f"Invalid execution_result artifact: {exc}") from exc
+
+    step_id = execution_result.get("step_id")
+    if not isinstance(step_id, str) or not step_id.strip():
+        raise ReviewParseError("execution_result.step_id must be a non-empty string for parsing.")
+
+    queue_id = execution_result.get("queue_id")
+    trace_linkage = execution_result.get("trace_linkage")
+    if not queue_id and not trace_linkage:
+        raise ReviewParseError("execution_result must include queue_id or trace_linkage.")
+
+    from spectrum_systems.modules.prompt_queue.findings_normalizer import normalize_queue_step_findings
+
+    return normalize_queue_step_findings(execution_result)

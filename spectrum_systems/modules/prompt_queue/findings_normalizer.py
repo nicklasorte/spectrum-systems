@@ -1,4 +1,4 @@
-"""Provider-aware normalization from parsed review markdown into findings artifacts."""
+"""Provider-aware normalization into governed findings artifacts."""
 
 from __future__ import annotations
 
@@ -8,9 +8,19 @@ from pathlib import Path
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 from spectrum_systems.modules.prompt_queue.review_parser import ParsedReview
 
-PARSER_VERSION = "1.0.0"
+PARSER_VERSION = "1.1.0"
 _FILE_REF_RE = re.compile(r"`([^`]+\.[a-zA-Z0-9]+)`")
 _SEVERITY_HINTS = ("critical", "high", "medium", "low")
+
+FINDING_TYPE_ENUM = {
+    "execution_status",
+    "error_summary",
+    "output_reference",
+    "artifact_reference",
+    "validation",
+}
+SEVERITY_ENUM = {"info", "warning", "error", "ambiguous"}
+_VALIDATION_STATUS_ENUM = {"valid", "invalid"}
 
 
 def _parse_fallback_metadata(metadata_text: str) -> tuple[bool | None, str | None]:
@@ -76,6 +86,87 @@ def _normalize_items(section_body: str, *, source_section: str) -> list[dict]:
         )
 
     return normalized
+
+
+def normalize_queue_step_findings(execution_result: dict) -> dict:
+    """Normalize prompt_queue_execution_result into deterministic queue-step findings."""
+    step_id = execution_result["step_id"]
+    validation_status = "valid"
+    findings: list[dict] = []
+
+    status = execution_result["execution_status"]
+    if status == "failure":
+        findings.append(
+            {
+                "finding_id": f"{step_id}-status-failure",
+                "finding_type": "execution_status",
+                "severity": "error",
+                "summary": "execution_status indicates failure",
+                "details": execution_result.get("error_summary") or "Execution failure with no explicit summary.",
+            }
+        )
+
+    error_summary = execution_result.get("error_summary")
+    if error_summary:
+        findings.append(
+            {
+                "finding_id": f"{step_id}-error-summary",
+                "finding_type": "error_summary",
+                "severity": "error",
+                "summary": "error_summary present",
+                "details": error_summary,
+            }
+        )
+
+    output_reference = execution_result.get("output_reference")
+    if not output_reference:
+        findings.append(
+            {
+                "finding_id": f"{step_id}-output-missing",
+                "finding_type": "output_reference",
+                "severity": "ambiguous",
+                "summary": "output_reference missing",
+                "details": "Execution result is missing output_reference.",
+            }
+        )
+
+    produced_refs = execution_result.get("produced_artifact_refs", [])
+    if isinstance(produced_refs, list) and output_reference and output_reference not in produced_refs:
+        findings.append(
+            {
+                "finding_id": f"{step_id}-output-unlisted",
+                "finding_type": "artifact_reference",
+                "severity": "warning",
+                "summary": "output_reference not included in produced_artifact_refs",
+                "details": "Output reference is not present in produced_artifact_refs.",
+            }
+        )
+
+    for finding in findings:
+        if finding["finding_type"] not in FINDING_TYPE_ENUM:
+            raise ValueError("Unsupported finding_type during normalization.")
+        if finding["severity"] not in SEVERITY_ENUM:
+            raise ValueError("Unsupported severity during normalization.")
+
+    summary = {
+        "error": sum(1 for finding in findings if finding["severity"] == "error"),
+        "warning": sum(1 for finding in findings if finding["severity"] == "warning"),
+        "ambiguous": sum(1 for finding in findings if finding["severity"] == "ambiguous"),
+        "info": sum(1 for finding in findings if finding["severity"] == "info"),
+    }
+
+    if validation_status not in _VALIDATION_STATUS_ENUM:
+        raise ValueError("Unsupported validation_status during normalization.")
+
+    return {
+        "step_id": step_id,
+        "queue_id": execution_result.get("queue_id"),
+        "trace_linkage": execution_result.get("trace_linkage"),
+        "source_execution_result_artifact_id": execution_result["execution_result_artifact_id"],
+        "findings": findings,
+        "severity_summary": summary,
+        "validation_status": validation_status,
+    }
 
 
 def build_findings_artifact(

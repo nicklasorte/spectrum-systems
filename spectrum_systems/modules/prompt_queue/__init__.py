@@ -202,7 +202,13 @@ from spectrum_systems.modules.prompt_queue.queue_models import (
     make_work_item,
 )
 from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
-from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_review_markdown
+from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report, parse_review_markdown
+from spectrum_systems.modules.prompt_queue.step_decision import (
+    StepDecisionError,
+    build_step_decision,
+    default_step_decision_path,
+    validate_step_decision_artifact,
+)
 from spectrum_systems.modules.prompt_queue.review_provider_orchestrator import ProviderResult, run_review_with_fallback
 from spectrum_systems.modules.prompt_queue.review_invocation_entry_validation import (
     ReviewInvocationEntryValidationError,
@@ -379,4 +385,9 @@ __all__ = [
     "default_review_parsing_handoff_path",
     "write_review_parsing_handoff_artifact",
     "ReviewParsingHandoffQueueIntegrationError",
+    "parse_queue_step_report",
+    "build_step_decision",
+    "validate_step_decision_artifact",
+    "default_step_decision_path",
+    "StepDecisionError",
 ]
