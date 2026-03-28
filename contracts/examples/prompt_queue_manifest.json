@@ -1,0 +1,57 @@
+{
+  "queue_id": "queue-pqx-001",
+  "created_at": "2026-03-28T00:00:00Z",
+  "version": "1.0.0",
+  "steps": [
+    {
+      "step_id": "step-001",
+      "step_type": "review",
+      "input_refs": [
+        "prompt_queue_work_item:wi-001"
+      ],
+      "expected_outputs": [
+        "prompt_queue_review_invocation_result",
+        "prompt_queue_review_findings"
+      ],
+      "metadata": {
+        "risk_level": "medium",
+        "priority": "high"
+      }
+    },
+    {
+      "step_id": "step-002",
+      "step_type": "repair",
+      "input_refs": [
+        "prompt_queue_review_findings:findings-001"
+      ],
+      "expected_outputs": [
+        "prompt_queue_repair_prompt",
+        "prompt_queue_work_item"
+      ],
+      "metadata": {
+        "generation": 0,
+        "requires_child": true
+      }
+    },
+    {
+      "step_id": "step-003",
+      "step_type": "execution",
+      "input_refs": [
+        "prompt_queue_work_item:wi-002"
+      ],
+      "expected_outputs": [
+        "prompt_queue_execution_result",
+        "prompt_queue_post_execution_decision"
+      ],
+      "metadata": {
+        "requires_gate": true,
+        "run_mode": "bounded"
+      }
+    }
+  ],
+  "execution_policy": {
+    "stop_on_block": true,
+    "allow_warn": false,
+    "trace_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  }
+}
