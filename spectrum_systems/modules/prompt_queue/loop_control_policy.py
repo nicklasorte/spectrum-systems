@@ -118,3 +118,18 @@ def evaluate_loop_control_policy(
     }
     validate_loop_control_decision_artifact(artifact)
     return artifact
+
+
+def evaluate_transition_loop_control(transition_decision_artifact: dict) -> dict:
+    """Return bounded loop-control compatibility for a unified transition decision."""
+    from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+        validate_prompt_queue_transition_decision_artifact,
+    )
+
+    validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    action = transition_decision_artifact["transition_action"]
+    if action in {"reenter_with_findings", "retry_allowed"}:
+        return {"loop_control_status": "within_budget", "enforcement_action": "allow_reentry"}
+    if action == "block":
+        return {"loop_control_status": "limit_exceeded", "enforcement_action": "block_reentry"}
+    return {"loop_control_status": "limit_reached", "enforcement_action": "require_review"}

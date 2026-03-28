@@ -1,0 +1,17 @@
+{
+  "transition_decision_id": "transition-decision-step-001-20260328T120001Z",
+  "step_id": "step-001",
+  "queue_id": "queue-001",
+  "trace_linkage": "trace-queue-001",
+  "source_decision_ref": "step-decision-step-001-20260328T115959Z",
+  "transition_action": "continue",
+  "transition_status": "allowed",
+  "reason_codes": [
+    "allow_clean_findings_continue"
+  ],
+  "blocking_reasons": [],
+  "derived_from_artifacts": [
+    "execres-wi-001-attempt-1"
+  ],
+  "timestamp": "2026-03-28T12:00:01Z"
+}

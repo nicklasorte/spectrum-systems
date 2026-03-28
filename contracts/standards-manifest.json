@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.72",
+  "artifact_version": "1.0.73",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1243,6 +1243,19 @@
       "last_updated_in": "1.0.72",
       "example_path": "contracts/examples/prompt_queue_step_decision.json",
       "notes": "QUEUE-03 deterministic fail-closed step decision artifact derived from normalized queue execution findings."
+    },
+    {
+      "artifact_type": "prompt_queue_transition_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.73",
+      "last_updated_in": "1.0.73",
+      "example_path": "contracts/examples/prompt_queue_transition_decision.json",
+      "notes": "QUEUE-04 unified fail-closed transition decision artifact mapping step decisions and findings handoff lineage to explicit bounded transition outcomes."
     },
     {
       "artifact_type": "prompt_queue_work_item",

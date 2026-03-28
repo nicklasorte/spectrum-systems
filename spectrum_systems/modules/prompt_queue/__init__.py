@@ -75,7 +75,7 @@ from spectrum_systems.modules.prompt_queue.loop_control_policy import (
 )
 from spectrum_systems.modules.prompt_queue.loop_control_queue_integration import (
     LoopControlQueueIntegrationError,
-    apply_loop_control_decision_to_queue,
+    emit_loop_control_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.loop_continuation import LoopContinuationError, run_loop_continuation
 from spectrum_systems.modules.prompt_queue.loop_continuation_artifact_io import (
@@ -93,12 +93,14 @@ from spectrum_systems.modules.prompt_queue.post_execution_artifact_io import (
 )
 from spectrum_systems.modules.prompt_queue.post_execution_policy import (
     PostExecutionPolicyConfig,
+    TransitionDecisionBuildError,
+    build_queue_transition_decision,
     default_post_execution_decision_path,
     evaluate_post_execution_policy,
 )
 from spectrum_systems.modules.prompt_queue.post_execution_queue_integration import (
     PostExecutionQueueIntegrationError,
-    apply_post_execution_decision_to_queue,
+    emit_post_execution_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.review_trigger_artifact_io import (
     default_review_trigger_path,
@@ -125,7 +127,7 @@ from spectrum_systems.modules.prompt_queue.next_step_orchestrator import (
 )
 from spectrum_systems.modules.prompt_queue.next_step_queue_integration import (
     NextStepQueueIntegrationError,
-    apply_next_step_action_to_queue,
+    emit_next_step_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
     validate_findings_artifact,
@@ -203,6 +205,11 @@ from spectrum_systems.modules.prompt_queue.queue_models import (
 )
 from spectrum_systems.modules.prompt_queue.queue_state_machine import IllegalTransitionError, transition_work_item
 from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report, parse_review_markdown
+from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+    PromptQueueTransitionArtifactValidationError,
+    validate_prompt_queue_transition_decision_artifact,
+    write_prompt_queue_transition_decision_artifact,
+)
 from spectrum_systems.modules.prompt_queue.step_decision import (
     StepDecisionError,
     build_step_decision,
@@ -286,7 +293,7 @@ __all__ = [
     "evaluate_loop_control_policy",
     "LoopControlPolicyConfig",
     "LoopControlPolicyError",
-    "apply_loop_control_decision_to_queue",
+    "emit_loop_control_transition_receipt",
     "LoopControlQueueIntegrationError",
     "run_loop_continuation",
     "LoopContinuationError",
@@ -306,7 +313,9 @@ __all__ = [
     "validate_post_execution_decision_artifact",
     "evaluate_post_execution_policy",
     "default_post_execution_decision_path",
-    "apply_post_execution_decision_to_queue",
+    "build_queue_transition_decision",
+    "TransitionDecisionBuildError",
+    "emit_post_execution_transition_receipt",
     "PostExecutionQueueIntegrationError",
     "PostExecutionPolicyConfig",
     "default_next_step_action_path",
@@ -316,7 +325,7 @@ __all__ = [
     "NextStepOrchestrationError",
     "determine_next_step_action",
     "NextStepQueueIntegrationError",
-    "apply_next_step_action_to_queue",
+    "emit_next_step_transition_receipt",
     "spawn_repair_child_in_queue",
     "RepairChildQueueIntegrationError",
     "build_repair_child_work_item",
@@ -389,5 +398,9 @@ __all__ = [
     "build_step_decision",
     "validate_step_decision_artifact",
     "default_step_decision_path",
+    "build_queue_transition_decision",
+    "PromptQueueTransitionArtifactValidationError",
+    "write_prompt_queue_transition_decision_artifact",
+    "validate_prompt_queue_transition_decision_artifact",
     "StepDecisionError",
 ]

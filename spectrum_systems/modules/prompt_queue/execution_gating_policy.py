@@ -191,3 +191,14 @@ def _decision_artifact(
 def default_execution_gating_decision_path(work_item_id: str, queue_state_path: Path) -> Path:
     stem = queue_state_path.stem
     return queue_state_path.parent / "gating" / f"{stem}.{work_item_id}.execution_gating_decision.json"
+
+
+def validate_transition_for_execution_gating(transition_decision_artifact: dict) -> None:
+    """Fail closed when transition decision blocks execution-gating continuation."""
+    from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+        validate_prompt_queue_transition_decision_artifact,
+    )
+
+    validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    if transition_decision_artifact["transition_status"] == "blocked":
+        raise ValueError("transition decision is blocked; execution gating cannot proceed")

@@ -201,3 +201,18 @@ def _build_artifact(
     }
     validate_review_trigger_artifact(artifact)
     return artifact
+
+
+def derive_review_trigger_from_transition(transition_decision_artifact: dict) -> dict:
+    """Map unified transition decision to deterministic review trigger posture."""
+    from spectrum_systems.modules.prompt_queue.prompt_queue_transition_artifact_io import (
+        validate_prompt_queue_transition_decision_artifact,
+    )
+
+    validate_prompt_queue_transition_decision_artifact(transition_decision_artifact)
+    action = transition_decision_artifact["transition_action"]
+    if action == "request_review":
+        return {"trigger_status": "review_triggered", "trigger_reason_code": "review_triggered_post_execution_review_required"}
+    if action == "block":
+        return {"trigger_status": "blocked_no_trigger", "trigger_reason_code": "blocked_policy_ineligible"}
+    return {"trigger_status": "no_review_needed", "trigger_reason_code": "no_review_needed_post_execution_complete"}

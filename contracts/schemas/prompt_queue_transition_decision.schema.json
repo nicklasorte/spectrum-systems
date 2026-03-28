@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_transition_decision.schema.json",
+  "title": "Prompt Queue Transition Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transition_decision_id",
+    "step_id",
+    "source_decision_ref",
+    "transition_action",
+    "transition_status",
+    "reason_codes",
+    "blocking_reasons",
+    "derived_from_artifacts",
+    "timestamp"
+  ],
+  "properties": {
+    "transition_decision_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^step-[0-9]{3}$"},
+    "queue_id": {"type": ["string", "null"], "minLength": 1},
+    "trace_linkage": {"type": ["string", "null"], "minLength": 1},
+    "source_decision_ref": {"type": "string", "minLength": 1},
+    "transition_action": {
+      "type": "string",
+      "enum": ["continue", "request_review", "reenter_with_findings", "retry_allowed", "block"]
+    },
+    "transition_status": {
+      "type": "string",
+      "enum": ["allowed", "blocked"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "allow_clean_findings_continue",
+          "warn_findings_request_review",
+          "block_findings_reenter_with_handoff",
+          "block_errors_retry_allowed",
+          "block_ambiguity_fail_closed",
+          "block_invalid_report_fail_closed",
+          "blocked_conflicting_inputs",
+          "blocked_missing_lineage",
+          "blocked_unsupported_decision"
+        ]
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "missing_step_decision",
+          "missing_source_decision_ref",
+          "missing_step_id",
+          "missing_lineage",
+          "ambiguous_transition",
+          "conflicting_signals",
+          "invalid_handoff",
+          "unsupported_decision"
+        ]
+      }
+    },
+    "derived_from_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "timestamp": {"type": "string", "format": "date-time"}
+  },
+  "anyOf": [
+    {"required": ["queue_id"]},
+    {"required": ["trace_linkage"]}
+  ],
+  "allOf": [
+    {
+      "if": {"properties": {"transition_status": {"const": "blocked"}}, "required": ["transition_status"]},
+      "then": {"properties": {"transition_action": {"const": "block"}}}
+    },
+    {
+      "if": {"properties": {"transition_action": {"const": "block"}}, "required": ["transition_action"]},
+      "then": {"properties": {"blocking_reasons": {"minItems": 1}}, "required": ["blocking_reasons"]}
+    }
+  ]
+}
