@@ -10,7 +10,11 @@
     "work_items",
     "active_work_item_id",
     "created_at",
-    "updated_at"
+    "updated_at",
+    "current_step_index",
+    "total_steps",
+    "step_results",
+    "last_updated"
   ],
   "properties": {
     "queue_id": {
@@ -20,10 +24,10 @@
     "queue_status": {
       "type": "string",
       "enum": [
-        "active",
-        "paused",
+        "pending",
+        "running",
         "blocked",
-        "complete"
+        "completed"
       ]
     },
     "work_items": {
@@ -43,6 +47,24 @@
       "format": "date-time"
     },
     "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_step_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_steps": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "step_results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/step_result"
+      }
+    },
+    "last_updated": {
       "type": "string",
       "format": "date-time"
     }
@@ -385,6 +407,90 @@
           "minLength": 1
         }
       }
+    },
+    "step_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "step_index",
+        "status",
+        "result_ref",
+        "updated_at"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^step-[0-9]{3}$"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "running",
+            "blocked",
+            "completed"
+          ]
+        },
+        "result_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "queue_status": {
+            "const": "pending"
+          }
+        },
+        "required": [
+          "queue_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "current_step_index": {
+            "const": 0
+          },
+          "step_results": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "queue_status": {
+            "const": "completed"
+          }
+        },
+        "required": [
+          "queue_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "active_work_item_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
 }

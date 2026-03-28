@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.69",
+  "artifact_version": "1.0.70",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -866,6 +866,19 @@
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
     },
     {
+      "artifact_type": "policy_backtest_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.68",
+      "last_updated_in": "1.0.68",
+      "example_path": null,
+      "notes": "ADV-01 deterministic policy backtesting result artifact for replay-authoritative baseline-vs-candidate control decision simulation and pre-promotion governance readiness."
+    },
+    {
       "artifact_type": "pqx_block_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -931,19 +944,6 @@
       "notes": "Minimum governed PQX backbone deterministic row state contract for dependency-satisfied execution progression tracking."
     },
     {
-      "artifact_type": "policy_backtest_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.68",
-      "last_updated_in": "1.0.68",
-      "example_path": null,
-      "notes": "ADV-01 deterministic policy backtesting result artifact for replay-authoritative baseline-vs-candidate control decision simulation and pre-promotion governance readiness."
-    },
-    {
       "artifact_type": "program_brief",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -956,6 +956,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/program_brief.json",
       "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "promotion_gate_attack_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.69",
+      "last_updated_in": "1.0.69",
+      "example_path": "contracts/examples/promotion_gate_attack_result.json",
+      "notes": "VAL-01 governed attack-result artifact proving promotion boundary fail-closed behavior across malformed/missing/corrupt certification inputs."
     },
     {
       "artifact_type": "prompt_alias_map",
@@ -1060,6 +1073,19 @@
       "last_updated_in": "1.0.22",
       "example_path": "contracts/examples/prompt_queue_loop_control_decision.json",
       "notes": "Deterministic fail-closed repair loop budget decision artifact enforcing bounded generation depth, canonical enforcement tuple mapping, and lineage-aware queue re-entry control."
+    },
+    {
+      "artifact_type": "prompt_queue_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.70",
+      "last_updated_in": "1.0.70",
+      "example_path": "contracts/examples/prompt_queue_manifest.json",
+      "notes": "Canonical deterministic prompt queue run manifest contract defining ordered steps, expected outputs, and execution policy for replayable fail-closed queue orchestration."
     },
     {
       "artifact_type": "prompt_queue_next_step_action",
@@ -1195,15 +1221,15 @@
     {
       "artifact_type": "prompt_queue_state",
       "artifact_class": "coordination",
-      "schema_version": "1.9.0",
+      "schema_version": "2.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.15",
-      "last_updated_in": "1.9.0",
+      "last_updated_in": "1.0.70",
       "example_path": "contracts/examples/prompt_queue_state.json",
-      "notes": "Governed prompt queue aggregate state artifact including active work item and lifecycle metadata."
+      "notes": "Governed prompt queue aggregate state artifact with deterministic step-index progression, fail-closed queue_status vocabulary, and replayable step_results spine."
     },
     {
       "artifact_type": "prompt_queue_work_item",
@@ -1506,19 +1532,6 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/working_paper_input.json",
       "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
-    },
-    {
-      "artifact_type": "promotion_gate_attack_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.69",
-      "last_updated_in": "1.0.69",
-      "example_path": "contracts/examples/promotion_gate_attack_result.json",
-      "notes": "VAL-01 governed attack-result artifact proving promotion boundary fail-closed behavior across malformed/missing/corrupt certification inputs."
     }
   ]
 }

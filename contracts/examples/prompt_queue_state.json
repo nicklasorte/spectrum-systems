@@ -1,6 +1,6 @@
 {
   "queue_id": "queue-001",
-  "queue_status": "active",
+  "queue_status": "running",
   "work_items": [
     {
       "work_item_id": "wi-001",
@@ -51,5 +51,17 @@
   ],
   "active_work_item_id": "wi-001",
   "created_at": "2026-03-22T00:00:00Z",
-  "updated_at": "2026-03-22T00:00:00Z"
+  "updated_at": "2026-03-22T00:00:00Z",
+  "current_step_index": 1,
+  "total_steps": 3,
+  "step_results": [
+    {
+      "step_id": "step-001",
+      "step_index": 0,
+      "status": "completed",
+      "result_ref": "prompt_queue_review_invocation_result:review-invoke-001",
+      "updated_at": "2026-03-22T00:05:00Z"
+    }
+  ],
+  "last_updated": "2026-03-22T00:05:00Z"
 }
