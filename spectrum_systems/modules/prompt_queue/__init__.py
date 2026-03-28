@@ -75,6 +75,7 @@ from spectrum_systems.modules.prompt_queue.loop_control_policy import (
 )
 from spectrum_systems.modules.prompt_queue.loop_control_queue_integration import (
     LoopControlQueueIntegrationError,
+    apply_loop_control_decision_to_queue,
     emit_loop_control_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.loop_continuation import LoopContinuationError, run_loop_continuation
@@ -100,6 +101,7 @@ from spectrum_systems.modules.prompt_queue.post_execution_policy import (
 )
 from spectrum_systems.modules.prompt_queue.post_execution_queue_integration import (
     PostExecutionQueueIntegrationError,
+    apply_post_execution_decision_to_queue,
     emit_post_execution_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.review_trigger_artifact_io import (
@@ -127,6 +129,7 @@ from spectrum_systems.modules.prompt_queue.next_step_orchestrator import (
 )
 from spectrum_systems.modules.prompt_queue.next_step_queue_integration import (
     NextStepQueueIntegrationError,
+    apply_next_step_action_to_queue,
     emit_next_step_transition_receipt,
 )
 from spectrum_systems.modules.prompt_queue.findings_artifact_io import (
@@ -247,102 +250,6 @@ from spectrum_systems.modules.prompt_queue.review_invocation_guard import (
     has_duplicate_review_invocation_result,
 )
 
-
-def _compat_find_work_item(queue_state: dict, work_item_id: str) -> dict:
-    for item in queue_state.get("work_items", []):
-        if item.get("work_item_id") == work_item_id:
-            return dict(item)
-    raise ValueError(f"Work item '{work_item_id}' not found in queue state.")
-
-
-def apply_post_execution_decision_to_queue(*, queue_state: dict, work_item_id: str, post_execution_decision_artifact: dict, post_execution_decision_artifact_path: str, clock=None):
-    """Compatibility wrapper delegating to transition receipt integration (read-only)."""
-    transition = {
-        "transition_decision_id": f"compat-postexec-{work_item_id}",
-        "step_id": work_item_id if work_item_id.startswith("step-") else "step-001",
-        "queue_id": queue_state.get("queue_id"),
-        "trace_linkage": queue_state.get("queue_id") or work_item_id,
-        "source_decision_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
-        or post_execution_decision_artifact_path,
-        "transition_action": {
-            "complete": "continue",
-            "review_required": "request_review",
-            "reentry_eligible": "reenter_with_findings",
-            "reentry_blocked": "block",
-        }.get(post_execution_decision_artifact.get("decision_status"), "block"),
-        "transition_status": "blocked" if post_execution_decision_artifact.get("decision_status") == "reentry_blocked" else "allowed",
-        "reason_codes": ["block_invalid_report_fail_closed"] if post_execution_decision_artifact.get("decision_status") == "reentry_blocked" else ["warn_findings_request_review"],
-        "blocking_reasons": ["unsupported_decision"] if post_execution_decision_artifact.get("decision_status") == "reentry_blocked" else [],
-        "derived_from_artifacts": [post_execution_decision_artifact.get("execution_result_artifact_path") or post_execution_decision_artifact_path],
-        "timestamp": post_execution_decision_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
-    }
-    emit_post_execution_transition_receipt(
-        queue_state=queue_state,
-        transition_decision_artifact=transition,
-        transition_decision_artifact_path=post_execution_decision_artifact_path,
-    )
-    return queue_state, _compat_find_work_item(queue_state, work_item_id)
-
-
-def apply_next_step_action_to_queue(*, queue_state: dict, work_item_id: str, next_step_action_artifact: dict, next_step_action_artifact_path: str, clock=None):
-    """Compatibility wrapper delegating to transition receipt integration (read-only)."""
-    transition = {
-        "transition_decision_id": f"compat-nextstep-{work_item_id}",
-        "step_id": work_item_id if work_item_id.startswith("step-") else "step-001",
-        "queue_id": queue_state.get("queue_id"),
-        "trace_linkage": queue_state.get("queue_id") or work_item_id,
-        "source_decision_ref": next_step_action_artifact.get("execution_result_artifact_path") or next_step_action_artifact_path,
-        "transition_action": {
-            "marked_complete": "continue",
-            "spawn_review": "request_review",
-            "spawn_reentry_child": "reenter_with_findings",
-            "blocked_no_action": "block",
-        }.get(next_step_action_artifact.get("action_status"), "block"),
-        "transition_status": "blocked" if next_step_action_artifact.get("action_status") == "blocked_no_action" else "allowed",
-        "reason_codes": ["block_invalid_report_fail_closed"] if next_step_action_artifact.get("action_status") == "blocked_no_action" else ["warn_findings_request_review"],
-        "blocking_reasons": ["unsupported_decision"] if next_step_action_artifact.get("action_status") == "blocked_no_action" else [],
-        "derived_from_artifacts": [next_step_action_artifact.get("execution_result_artifact_path") or next_step_action_artifact_path],
-        "timestamp": next_step_action_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
-    }
-    receipt = emit_next_step_transition_receipt(
-        queue_state=queue_state,
-        transition_decision_artifact=transition,
-        transition_decision_artifact_path=next_step_action_artifact_path,
-    )
-    updated_action = dict(next_step_action_artifact)
-    updated_action.setdefault("spawned_work_item_id", None)
-    updated_action.setdefault("warnings", [])
-    updated_action.setdefault("blocking_conditions", [])
-    updated_action["compatibility_receipt"] = receipt
-    return queue_state, _compat_find_work_item(queue_state, work_item_id), None, updated_action
-
-
-def apply_loop_control_decision_to_queue(*, queue_state: dict, work_item_id: str, loop_control_decision_artifact: dict, loop_control_decision_artifact_path: str, clock=None):
-    """Compatibility wrapper delegating to transition receipt integration (read-only)."""
-    transition = {
-        "transition_decision_id": f"compat-loop-{work_item_id}",
-        "step_id": work_item_id if work_item_id.startswith("step-") else "step-001",
-        "queue_id": queue_state.get("queue_id"),
-        "trace_linkage": queue_state.get("queue_id") or work_item_id,
-        "source_decision_ref": loop_control_decision_artifact.get("loop_control_decision_artifact_id")
-        or loop_control_decision_artifact_path,
-        "transition_action": {
-            "allow_reentry": "retry_allowed",
-            "require_review": "reenter_with_findings",
-            "block_reentry": "block",
-        }.get(loop_control_decision_artifact.get("enforcement_action"), "block"),
-        "transition_status": "blocked" if loop_control_decision_artifact.get("enforcement_action") == "block_reentry" else "allowed",
-        "reason_codes": ["block_invalid_report_fail_closed"] if loop_control_decision_artifact.get("enforcement_action") == "block_reentry" else ["warn_findings_request_review"],
-        "blocking_reasons": ["unsupported_decision"] if loop_control_decision_artifact.get("enforcement_action") == "block_reentry" else [],
-        "derived_from_artifacts": [loop_control_decision_artifact.get("loop_control_decision_artifact_id") or loop_control_decision_artifact_path],
-        "timestamp": loop_control_decision_artifact.get("generated_at") or "2026-03-28T00:00:00Z",
-    }
-    emit_loop_control_transition_receipt(
-        queue_state=queue_state,
-        transition_decision_artifact=transition,
-        transition_decision_artifact_path=loop_control_decision_artifact_path,
-    )
-    return queue_state, _compat_find_work_item(queue_state, work_item_id)
 
 
 __all__ = [
