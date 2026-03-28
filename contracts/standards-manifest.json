@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.75",
+  "artifact_version": "1.0.76",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -657,6 +657,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/external_artifact_manifest.local.json",
       "notes": "Manifest for artifacts stored on local or network storage; GitHub is never a storage_kind."
+    },
+    {
+      "artifact_type": "fail_closed_exhaustive_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.76",
+      "last_updated_in": "1.0.76",
+      "example_path": "",
+      "notes": "VAL-02 deterministic seam-failure matrix artifact proving fail-closed behavior and explicit silent-success/ambiguous-outcome detection."
     },
     {
       "artifact_type": "failure_eval_case",
