@@ -487,3 +487,12 @@ def test_standards_manifest_registers_prompt_queue_review_invocation_result_cont
     assert standards["prompt_queue_review_invocation_result"]["example_path"] == (
         "contracts/examples/prompt_queue_review_invocation_result.json"
     )
+
+
+def test_standards_manifest_registers_prompt_queue_certification_record_contract() -> None:
+    standards = load_standards_contracts()
+    assert "prompt_queue_certification_record" in standards
+    assert standards["prompt_queue_certification_record"]["schema_version"] == "1.0.0"
+    assert standards["prompt_queue_certification_record"]["example_path"] == (
+        "contracts/examples/prompt_queue_certification_record.json"
+    )

@@ -191,6 +191,7 @@ from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     validate_observability_snapshot,
     validate_queue_state,
     validate_replay_record,
+    validate_queue_certification_record,
     validate_review_parsing_handoff,
     validate_review_invocation_result,
     validate_resume_checkpoint,
@@ -201,6 +202,10 @@ from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
 from spectrum_systems.modules.prompt_queue.queue_observability import (
     generate_queue_snapshot,
     validate_queue_invariants,
+)
+from spectrum_systems.modules.prompt_queue.queue_certification import (
+    QueueCertificationError,
+    run_queue_certification,
 )
 from spectrum_systems.modules.prompt_queue.queue_models import (
     Priority,
@@ -358,6 +363,8 @@ __all__ = [
     "RepairPromptGenerationError",
     "IllegalTransitionError",
     "QueueLoopError",
+    "QueueCertificationError",
+    "run_queue_certification",
     "run_queue_once",
     "build_queue_resume_checkpoint",
     "resume_queue_from_checkpoint",
@@ -395,6 +402,7 @@ __all__ = [
     "validate_queue_state",
     "validate_resume_checkpoint",
     "validate_replay_record",
+    "validate_queue_certification_record",
     "validate_queue_invariants",
     "validate_review_parsing_handoff",
     "validate_review_invocation_result",

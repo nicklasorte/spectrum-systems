@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.76",
+  "artifact_version": "1.0.77",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1126,6 +1126,19 @@
       "last_updated_in": "1.0.74",
       "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
       "notes": "QUEUE-07 deterministic bounded queue health classification metrics with fail-closed lineage/ambiguity handling."
+    },
+    {
+      "artifact_type": "prompt_queue_certification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.77",
+      "last_updated_in": "1.0.77",
+      "example_path": "contracts/examples/prompt_queue_certification_record.json",
+      "notes": "QUEUE-10 deterministic fail-closed certification trust gate artifact requiring complete queue, replay/resume, observability, and lineage integrity evidence."
     },
     {
       "artifact_type": "prompt_queue_post_execution_decision",
