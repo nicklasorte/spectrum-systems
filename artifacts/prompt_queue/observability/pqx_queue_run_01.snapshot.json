@@ -1,0 +1,40 @@
+{
+  "snapshot_id": "pqo-980e454a046c43c4",
+  "timestamp": "2026-03-28T16:46:38Z",
+  "total_items": 1,
+  "items_by_status": {
+    "queued": 1,
+    "running": 0,
+    "completed": 0,
+    "failed": 0,
+    "blocked": 0
+  },
+  "retry_counts_summary": {
+    "total_retry_count": 0,
+    "max_retry_count": 0,
+    "items_with_retries": 0
+  },
+  "blocked_items_count": 0,
+  "exhausted_retry_count": 0,
+  "active_run_ids": [],
+  "invariant_violations": [],
+  "trace_linkage": {
+    "linkage_type": "result_ref",
+    "linkage_id": "step-decision-step-002-20260328T164638Z"
+  },
+  "queue_health_state": "stable",
+  "health_reason_codes": [],
+  "health_metrics": {
+    "queue_id": "queue-pqx-run-01",
+    "current_step_index": 2,
+    "total_steps": 2,
+    "queue_status": "completed",
+    "last_transition_action": "continue",
+    "blocked_count": 0,
+    "retry_count": 0,
+    "remediation_count": 1,
+    "ambiguous_signal_count": 0,
+    "recovery_count": 0,
+    "completion_progress": 1.0
+  }
+}

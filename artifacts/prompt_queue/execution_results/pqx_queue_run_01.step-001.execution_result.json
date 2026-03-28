@@ -1,0 +1,26 @@
+{
+  "execution_result_artifact_id": "execres-wi-pqx-run-01-attempt-1",
+  "execution_attempt_id": "wi-pqx-run-01-attempt-1",
+  "step_id": "step-001",
+  "queue_id": "queue-pqx-run-01",
+  "trace_linkage": "queue-pqx-run-01",
+  "execution_type": "queue_step",
+  "work_item_id": "wi-pqx-run-01",
+  "parent_work_item_id": null,
+  "repair_prompt_artifact_path": "artifacts/prompt_queue/repair_prompts/wi-parent.repair_prompt.json",
+  "gating_decision_artifact_path": "artifacts/prompt_queue/gating/wi-pqx-run-01.execution_gating_decision.json",
+  "spawned_from_findings_artifact_path": "artifacts/prompt_queue/findings/wi-parent.findings.json",
+  "spawned_from_review_artifact_path": "docs/reviews/2026-03-28-queue-parent.md",
+  "execution_mode": "simulated",
+  "execution_status": "success",
+  "started_at": "2026-03-28T16:46:34Z",
+  "completed_at": "2026-03-28T16:46:34Z",
+  "output_reference": "artifacts/prompt_queue/simulated_outputs/wi-pqx-run-01.output.json",
+  "produced_artifact_refs": [
+    "artifacts/prompt_queue/simulated_outputs/wi-pqx-run-01.output.json"
+  ],
+  "error_summary": null,
+  "source_queue_state_path": "artifacts/prompt_queue/state/pqx_queue_run_01.state.json",
+  "generated_at": "2026-03-28T16:46:34Z",
+  "generator_version": "prompt-queue-execution-mvp-1"
+}

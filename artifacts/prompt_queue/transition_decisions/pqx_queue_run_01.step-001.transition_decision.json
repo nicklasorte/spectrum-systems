@@ -1,0 +1,17 @@
+{
+  "transition_decision_id": "transition-decision-step-001-20260328T164634Z",
+  "step_id": "step-001",
+  "queue_id": "queue-pqx-run-01",
+  "trace_linkage": "queue-pqx-run-01",
+  "source_decision_ref": "step-decision-step-001-20260328T164634Z",
+  "transition_action": "continue",
+  "transition_status": "allowed",
+  "reason_codes": [
+    "allow_clean_findings_continue"
+  ],
+  "blocking_reasons": [],
+  "derived_from_artifacts": [
+    "execres-wi-pqx-run-01-attempt-1"
+  ],
+  "timestamp": "2026-03-28T16:46:34Z"
+}
