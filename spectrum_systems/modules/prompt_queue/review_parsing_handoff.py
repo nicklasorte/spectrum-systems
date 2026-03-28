@@ -5,12 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
+from spectrum_systems.modules.prompt_queue.execution_artifact_io import read_execution_result_artifact
 from spectrum_systems.modules.prompt_queue.findings_normalizer import build_findings_artifact, default_findings_path
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import validate_review_invocation_result
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
-from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_review_markdown
+from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report, parse_review_markdown
+from spectrum_systems.modules.prompt_queue.step_decision import build_step_decision, default_step_decision_path
 
-GENERATOR_VERSION = "prompt_queue_review_parsing_handoff.v1"
+GENERATOR_VERSION = "prompt_queue_review_parsing_handoff.v2"
 
 
 class ReviewParsingHandoffError(ValueError):
@@ -47,7 +49,7 @@ def run_review_parsing_handoff(
     source_queue_state_path: str | None = None,
     clock: Callable = utc_now,
 ) -> dict:
-    """Validate lineage and parse review output into deterministic handoff + findings payloads."""
+    """Validate lineage and parse review output into deterministic handoff + findings + decision payloads."""
     validate_review_invocation_result(review_invocation_result)
     _validate_lineage(work_item=work_item, invocation_result=review_invocation_result)
 
@@ -86,6 +88,14 @@ def run_review_parsing_handoff(
         clock=clock,
     )
 
+    execution_result_path = review_invocation_result.get("execution_result_artifact_path")
+    if not execution_result_path:
+        raise ReviewParsingHandoffError("Invocation result is missing execution_result_artifact_path.")
+
+    queue_step_report = parse_queue_step_report(read_execution_result_artifact(repo_root / execution_result_path))
+    step_decision_artifact = build_step_decision(queue_step_report, clock=clock)
+    decision_rel_path = _relative_path(default_step_decision_path(step_id=queue_step_report["step_id"], root_dir=repo_root), repo_root)
+
     generated_at = iso_now(clock)
     handoff_artifact = {
         "review_parsing_handoff_artifact_id": _build_handoff_artifact_id(work_item["work_item_id"], generated_at),
@@ -95,6 +105,7 @@ def run_review_parsing_handoff(
         "review_trigger_artifact_path": review_invocation_result["review_trigger_artifact_path"],
         "output_reference": output_reference,
         "findings_artifact_path": findings_rel_path,
+        "step_decision_artifact_path": decision_rel_path,
         "handoff_status": "handoff_completed",
         "handoff_reason_code": "handoff_completed_findings_emitted",
         "source_queue_state_path": source_queue_state_path,
@@ -103,4 +114,10 @@ def run_review_parsing_handoff(
         "generated_at": generated_at,
         "generator_version": GENERATOR_VERSION,
     }
-    return {"handoff_artifact": handoff_artifact, "findings_artifact": findings_artifact, "findings_artifact_path": findings_rel_path}
+    return {
+        "handoff_artifact": handoff_artifact,
+        "findings_artifact": findings_artifact,
+        "findings_artifact_path": findings_rel_path,
+        "step_decision_artifact": step_decision_artifact,
+        "step_decision_artifact_path": decision_rel_path,
+    }

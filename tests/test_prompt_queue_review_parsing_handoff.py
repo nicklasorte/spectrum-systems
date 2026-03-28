@@ -11,6 +11,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+from spectrum_systems.contracts import load_example
 from spectrum_systems.modules.prompt_queue import (  # noqa: E402
     Priority,
     RiskLevel,
@@ -76,11 +77,27 @@ def _invocation(*, output_reference: str | None, status: str = "success") -> dic
     }
 
 
+
+
+def _write_execution_result_fixture(tmp_path: Path) -> None:
+    execution_rel = Path("artifacts/prompt_queue/execution_results/wi-handoff-1.execution_result.json")
+    payload = load_example("prompt_queue_execution_result")
+    payload["work_item_id"] = "wi-handoff-1"
+    payload["execution_result_artifact_id"] = "execres-wi-handoff-1-attempt-1"
+    payload["execution_attempt_id"] = "wi-handoff-1-attempt-1"
+    payload["output_reference"] = "artifacts/prompt_queue/simulated_outputs/wi-handoff-1.output.json"
+    payload["produced_artifact_refs"] = ["artifacts/prompt_queue/simulated_outputs/wi-handoff-1.output.json"]
+    path = tmp_path / execution_rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(__import__("json").dumps(payload), encoding="utf-8")
+
+
 def test_successful_handoff_emits_completed_payload_and_queue_linkage(tmp_path: Path):
     work_item = _base_work_item()
     output_rel = Path("artifacts/prompt_queue/reviews/wi-handoff-1.review.md")
     (tmp_path / output_rel).parent.mkdir(parents=True, exist_ok=True)
     (tmp_path / output_rel).write_text((FIXTURES / "codex_fail_review.md").read_text(encoding="utf-8"), encoding="utf-8")
+    _write_execution_result_fixture(tmp_path)
 
     handoff = run_review_parsing_handoff(
         work_item=work_item,
@@ -93,6 +110,8 @@ def test_successful_handoff_emits_completed_payload_and_queue_linkage(tmp_path: 
 
     assert handoff["handoff_artifact"]["handoff_status"] == "handoff_completed"
     assert handoff["handoff_artifact"]["findings_artifact_path"].endswith("wi-handoff-1.findings.json")
+    assert handoff["handoff_artifact"]["step_decision_artifact_path"].endswith("step-001.step_decision.json")
+    assert handoff["step_decision_artifact"]["decision"] == "allow"
     validate_review_parsing_handoff(handoff["handoff_artifact"])
 
     queue = make_queue_state(queue_id="queue-handoff", work_items=[work_item], clock=FixedClock(["2026-03-22T00:11:02Z"]))

@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.71",
+  "artifact_version": "1.0.72",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -1201,9 +1201,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.26",
-      "last_updated_in": "1.0.26",
+      "last_updated_in": "1.0.72",
       "example_path": "contracts/examples/prompt_queue_review_parsing_handoff.json",
-      "notes": "Deterministic fail-closed handoff artifact linking successful review invocation output_reference consumption to emitted findings artifacts and queue mutation lineage."
+      "notes": "Deterministic fail-closed handoff artifact linking successful review invocation output_reference consumption to emitted findings artifacts and queue mutation lineage. Includes step_decision_artifact_path lineage for QUEUE-03 decision-gate spine."
     },
     {
       "artifact_type": "prompt_queue_review_trigger",
@@ -1230,6 +1230,19 @@
       "last_updated_in": "1.0.70",
       "example_path": "contracts/examples/prompt_queue_state.json",
       "notes": "Governed prompt queue aggregate state artifact with deterministic step-index progression, fail-closed queue_status vocabulary, and replayable step_results spine."
+    },
+    {
+      "artifact_type": "prompt_queue_step_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.72",
+      "last_updated_in": "1.0.72",
+      "example_path": "contracts/examples/prompt_queue_step_decision.json",
+      "notes": "QUEUE-03 deterministic fail-closed step decision artifact derived from normalized queue execution findings."
     },
     {
       "artifact_type": "prompt_queue_work_item",

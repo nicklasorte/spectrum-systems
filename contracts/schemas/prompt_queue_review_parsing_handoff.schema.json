@@ -12,22 +12,51 @@
     "review_trigger_artifact_path",
     "output_reference",
     "findings_artifact_path",
+    "step_decision_artifact_path",
     "handoff_status",
     "handoff_reason_code",
     "generated_at",
     "generator_version"
   ],
   "properties": {
-    "review_parsing_handoff_artifact_id": {"type": "string", "minLength": 1},
-    "work_item_id": {"type": "string", "minLength": 1},
-    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
-    "review_invocation_result_artifact_path": {"type": "string", "minLength": 1},
-    "review_trigger_artifact_path": {"type": "string", "minLength": 1},
-    "output_reference": {"type": "string", "minLength": 1},
-    "findings_artifact_path": {"type": "string", "minLength": 1},
+    "review_parsing_handoff_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "review_invocation_result_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_trigger_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_reference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "findings_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
     "handoff_status": {
       "type": "string",
-      "enum": ["handoff_completed", "handoff_blocked", "handoff_failed"]
+      "enum": [
+        "handoff_completed",
+        "handoff_blocked",
+        "handoff_failed"
+      ]
     },
     "handoff_reason_code": {
       "type": "string",
@@ -43,16 +72,38 @@
         "handoff_blocked_duplicate_handoff"
       ]
     },
-    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
+    "source_queue_state_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
     "warnings": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "blocking_conditions": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
-    "generated_at": {"type": "string", "format": "date-time"},
-    "generator_version": {"type": "string", "minLength": 1}
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_decision_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    }
   }
 }

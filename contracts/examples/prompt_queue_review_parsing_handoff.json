@@ -12,5 +12,6 @@
   "warnings": [],
   "blocking_conditions": [],
   "generated_at": "2026-03-22T00:11:00Z",
-  "generator_version": "prompt_queue_review_parsing_handoff.v1"
+  "generator_version": "prompt_queue_review_parsing_handoff.v1",
+  "step_decision_artifact_path": "artifacts/prompt_queue/step_decisions/step-001.step_decision.json"
 }
