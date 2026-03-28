@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.78",
+  "artifact_version": "1.0.80",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.28",
   "record_id": "REC-STD-2026-03-28-XRUN-01",
@@ -183,6 +183,19 @@
       "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
     },
     {
+      "artifact_type": "certification_integrity_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.79",
+      "last_updated_in": "1.0.79",
+      "example_path": "contracts/examples/certification_integrity_result.json",
+      "notes": "VAL-11 governed DONE-01 integrity validation artifact proving fail-closed certification behavior under inconsistent, partial, and conflicting signal combinations."
+    },
+    {
       "artifact_type": "comment_resolution_matrix",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -318,15 +331,15 @@
     {
       "artifact_type": "done_certification_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.66",
-      "last_updated_in": "1.0.66",
+      "last_updated_in": "1.0.80",
       "example_path": "contracts/examples/done_certification_record.json",
-      "notes": "DONE-01 deterministic fail-closed promotion-readiness certification artifact spanning replay, regression, reliability, policy, and failure-injection evidence."
+      "notes": "DONE-01 deterministic fail-closed promotion-readiness certification artifact spanning replay, regression, reliability, policy, failure-injection evidence, and explicit cross-artifact trace-linkage enforcement."
     },
     {
       "artifact_type": "drift_detection_result",
@@ -682,7 +695,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "glossary_entry",

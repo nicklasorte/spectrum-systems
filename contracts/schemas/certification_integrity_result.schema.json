@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/certification_integrity_result.schema.json",
+  "title": "Certification Integrity Result",
+  "description": "VAL-11 governed validation artifact proving DONE-01 certification gate fail-closed integrity across inconsistent/partial/conflicting signal combinations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_run_id",
+    "timestamp",
+    "input_refs",
+    "validation_cases",
+    "summary",
+    "final_status",
+    "trace_ids"
+  ],
+  "properties": {
+    "validation_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_results",
+        "regression_results",
+        "error_budget_statuses",
+        "failure_injection_results",
+        "control_decisions",
+        "policy_ref"
+      ],
+      "properties": {
+        "replay_results": {"type": "integer", "minimum": 1},
+        "regression_results": {"type": "integer", "minimum": 1},
+        "error_budget_statuses": {"type": "integer", "minimum": 1},
+        "failure_injection_results": {"type": "integer", "minimum": 1},
+        "control_decisions": {"type": "integer", "minimum": 1},
+        "policy_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "validation_cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/validation_case"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cases",
+        "passed_cases",
+        "failed_cases",
+        "false_certification_detected",
+        "inconsistent_signal_detected"
+      ],
+      "properties": {
+        "total_cases": {"type": "integer", "minimum": 1},
+        "passed_cases": {"type": "integer", "minimum": 0},
+        "failed_cases": {"type": "integer", "minimum": 0},
+        "false_certification_detected": {"type": "boolean"},
+        "inconsistent_signal_detected": {"type": "boolean"}
+      }
+    },
+    "final_status": {
+      "type": "string",
+      "enum": ["PASSED", "FAILED"]
+    },
+    "trace_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "validation_case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id",
+        "case_type",
+        "input_configuration",
+        "expected_outcome",
+        "actual_outcome",
+        "passed",
+        "blocking_reason"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "case_type": {"type": "string", "minLength": 1},
+        "input_configuration": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "expected_outcome": {"type": "string", "enum": ["PASSED", "FAILED"]},
+        "actual_outcome": {"type": "string", "enum": ["PASSED", "FAILED"]},
+        "passed": {"type": "boolean"},
+        "blocking_reason": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"summary": {"properties": {"false_certification_detected": {"const": true}}}},
+        "required": ["summary"]
+      },
+      "then": {
+        "properties": {
+          "final_status": {"const": "FAILED"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"summary": {"properties": {"failed_cases": {"minimum": 1}}}},
+        "required": ["summary"]
+      },
+      "then": {
+        "properties": {
+          "final_status": {"const": "FAILED"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"final_status": {"const": "PASSED"}},
+        "required": ["final_status"]
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "failed_cases": {"const": 0},
+              "false_certification_detected": {"const": false}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

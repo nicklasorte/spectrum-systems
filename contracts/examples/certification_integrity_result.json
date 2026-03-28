@@ -1,0 +1,41 @@
+{
+  "validation_run_id": "VAL11-1A2B3C4D5E6F",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "input_refs": {
+    "replay_results": 1,
+    "regression_results": 1,
+    "error_budget_statuses": 1,
+    "failure_injection_results": 1,
+    "control_decisions": 1,
+    "policy_ref": "ECD-111111111111"
+  },
+  "validation_cases": [
+    {
+      "case_id": "VAL11-A",
+      "case_type": "replay_pass_regression_fail",
+      "input_configuration": {
+        "replay_consistency_status": "match",
+        "regression_status": "fail",
+        "error_budget_status": "healthy",
+        "failure_injection_fail_count": 0,
+        "control_decision_trace_id": "trace-001",
+        "omit_certification_pack_ref": false
+      },
+      "expected_outcome": "FAILED",
+      "actual_outcome": "FAILED",
+      "passed": true,
+      "blocking_reason": ""
+    }
+  ],
+  "summary": {
+    "total_cases": 1,
+    "passed_cases": 1,
+    "failed_cases": 0,
+    "false_certification_detected": false,
+    "inconsistent_signal_detected": false
+  },
+  "final_status": "PASSED",
+  "trace_ids": [
+    "trace-001"
+  ]
+}

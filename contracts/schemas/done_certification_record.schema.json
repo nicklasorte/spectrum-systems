@@ -40,14 +40,15 @@
     "check_results": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency"],
+      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage"],
       "properties": {
         "replay": {"$ref": "#/$defs/check_result"},
         "regression": {"$ref": "#/$defs/check_result"},
         "contracts": {"$ref": "#/$defs/check_result"},
         "reliability": {"$ref": "#/$defs/check_result"},
         "fail_closed": {"$ref": "#/$defs/check_result"},
-        "control_consistency": {"$ref": "#/$defs/check_result"}
+        "control_consistency": {"$ref": "#/$defs/check_result"},
+        "trace_linkage": {"$ref": "#/$defs/check_result"}
       }
     },
     "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},
