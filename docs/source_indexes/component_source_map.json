@@ -1,0 +1,60 @@
+{
+  "components": [
+    {
+      "component_id": "COMP-AGENT-EVAL",
+      "obligation_ids": [
+        "OBL-AGENT-EVAL-INGEST"
+      ],
+      "source_ids": [
+        "SRC-AGENT-EVAL-INTEGRATION"
+      ]
+    },
+    {
+      "component_id": "COMP-BUILD-GOVERNANCE",
+      "obligation_ids": [
+        "OBL-SBGE-INGEST"
+      ],
+      "source_ids": [
+        "SRC-SBGE-DESIGN"
+      ]
+    },
+    {
+      "component_id": "COMP-DONE-CERTIFICATION",
+      "obligation_ids": [
+        "OBL-GOV10-CERT-INGEST"
+      ],
+      "source_ids": [
+        "SRC-GOV10-CERTIFICATION"
+      ]
+    },
+    {
+      "component_id": "COMP-GOVERNED-API-ADAPTER",
+      "obligation_ids": [
+        "OBL-AI-ADAPTER-INGEST"
+      ],
+      "source_ids": [
+        "SRC-AI-ADAPTER-DESIGN"
+      ]
+    },
+    {
+      "component_id": "COMP-GOVERNED-EXTRACTION",
+      "obligation_ids": [
+        "OBL-AI-WORKFLOW-INGEST"
+      ],
+      "source_ids": [
+        "SRC-AI-WORKFLOW-PRACTICES"
+      ]
+    },
+    {
+      "component_id": "COMP-SOURCE-INGESTION",
+      "obligation_ids": [
+        "OBL-SRE-RELIABILITY-INGEST"
+      ],
+      "source_ids": [
+        "SRC-SRE-RELIABILITY"
+      ]
+    }
+  ],
+  "index_name": "component_source_map",
+  "schema_version": "1.0.0"
+}
