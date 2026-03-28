@@ -236,3 +236,59 @@ def generate_eval_case_from_failure(context: Dict[str, Any], integration_result:
         runtime_environment=str(context.get("runtime_environment") or "unknown"),
         execution_result=integration_result,
     )
+
+
+
+def generate_eval_cases_from_cross_run_intelligence(decision: Dict[str, Any]) -> list[Dict[str, Any]]:
+    """Generate deterministic eval_case artifacts from cross-run intelligence patterns."""
+    if not isinstance(decision, dict):
+        raise EvalCaseGenerationError("cross-run decision must be a dict")
+    if decision.get("artifact_type") != "cross_run_intelligence_decision":
+        raise EvalCaseGenerationError("decision artifact_type must be cross_run_intelligence_decision")
+    if "generate_eval_cases" not in list(decision.get("recommended_actions") or []):
+        return []
+
+    patterns = list(decision.get("detected_patterns") or [])
+    trace_ids = list(decision.get("trace_ids") or [])
+    if not trace_ids:
+        raise EvalCaseGenerationError("cross-run decision must include trace_ids")
+
+    schema = load_schema("eval_case")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+
+    out: list[Dict[str, Any]] = []
+    for pattern in sorted(set(patterns)):
+        identity_payload = {
+            "intelligence_id": decision.get("intelligence_id"),
+            "pattern": pattern,
+            "policy_version": decision.get("policy_version"),
+            "trace_id": trace_ids[0],
+        }
+        eval_case = {
+            "artifact_type": "eval_case",
+            "schema_version": "1.0.0",
+            "trace_id": trace_ids[0],
+            "eval_case_id": deterministic_id(
+                prefix="ec",
+                namespace="xrun_cross_run_eval_case",
+                payload=identity_payload,
+            ),
+            "input_artifact_refs": [
+                f"cross_run_intelligence_decision:{decision.get('intelligence_id')}",
+                f"pattern:{pattern}",
+            ],
+            "expected_output_spec": {
+                "must_detect_pattern": pattern,
+                "must_emit_signal_at_or_above": "warning",
+            },
+            "scoring_rubric": {
+                "detection_accuracy": "must_equal_1.0",
+                "action_alignment": "must_include_recommended_action",
+            },
+            "evaluation_type": "deterministic",
+            "created_from": "synthetic",
+            "slice_tags": ["xrun-01", pattern],
+        }
+        validator.validate(eval_case)
+        out.append(eval_case)
+    return out

@@ -211,12 +211,36 @@ def build_evaluation_control_decision(
         eval_summary = _to_eval_summary_from_replay_result(signal_artifact)
         source_artifact_id = signal_artifact["replay_id"]
         created_at = _canonical_timestamp(eval_summary.get("created_at"))
+        signal_type = "eval_summary"
+    elif artifact_type == "cross_run_intelligence_decision":
+        trace_ids = signal_artifact.get("trace_ids")
+        if not isinstance(trace_ids, list) or not trace_ids or not isinstance(trace_ids[0], str) or not trace_ids[0]:
+            raise EvaluationControlError("cross_run_intelligence_decision.trace_ids must include at least one trace_id")
+        signal_map = {"stable": "healthy", "warning": "warning", "unstable": "blocked"}
+        mapped_status = signal_map.get(str(signal_artifact.get("system_signal") or ""))
+        if mapped_status is None:
+            raise EvaluationControlError("cross_run_intelligence_decision.system_signal must be stable|warning|unstable")
+        eval_summary = {
+            "artifact_type": "eval_summary",
+            "schema_version": "1.0.0",
+            "trace_id": trace_ids[0],
+            "eval_run_id": str(signal_artifact.get("intelligence_id") or "xrun-unknown"),
+            "pass_rate": 1.0 if mapped_status == "healthy" else 0.8 if mapped_status == "warning" else 0.4,
+            "drift_rate": 0.0 if mapped_status == "healthy" else 0.3 if mapped_status == "warning" else 0.8,
+            "reproducibility_score": 1.0 if mapped_status == "healthy" else 0.7 if mapped_status == "warning" else 0.3,
+            "indeterminate_failure_count": 0,
+            "created_at": _canonical_timestamp(signal_artifact.get("timestamp")),
+            "budget_status": "healthy" if mapped_status == "healthy" else "warning" if mapped_status == "warning" else "exhausted",
+        }
+        source_artifact_id = str(signal_artifact.get("intelligence_id") or "unknown")
+        created_at = _canonical_timestamp(eval_summary.get("created_at"))
+        signal_type = "failure_eval_case"
     elif artifact_type == "eval_summary":
         raise EvaluationControlError(
             "RUNTIME_REPLAY_BOUNDARY_VIOLATION: eval_summary is not permitted in runtime seams; replay_result is required"
         )
     else:
-        raise EvaluationControlError("signal_artifact must be replay_result")
+        raise EvaluationControlError("signal_artifact must be replay_result or cross_run_intelligence_decision")
 
     pass_rate = float(eval_summary["pass_rate"])
     drift_rate = float(eval_summary["drift_rate"])
@@ -293,7 +317,7 @@ def build_evaluation_control_decision(
         "decision": decision_label,
         "rationale_code": rationale_code,
         "input_signal_reference": {
-            "signal_type": "eval_summary",
+            "signal_type": signal_type,
             "source_artifact_id": source_artifact_id,
         },
         "run_id": eval_summary["eval_run_id"],

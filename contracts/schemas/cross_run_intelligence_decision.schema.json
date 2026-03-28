@@ -1,82 +1,132 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum.systems/contracts/cross_run_intelligence_decision.schema.json",
-  "title": "Cross-Run Intelligence Decision",
-  "description": "Governed decision artifact produced by BF. Summarises overall comparison status, failure classification, and actionable findings for decision support.",
-  "type": "object",
-  "required": [
-    "artifact_type",
-    "schema_version",
-    "decision_id",
-    "comparison_id",
-    "overall_status",
-    "failure_type",
-    "findings",
-    "generated_at"
+  "$id": "https://spectrum-systems.org/contracts/cross_run_intelligence_decision.schema.json",
+  "title": "Cross Run Intelligence Decision",
+  "description": "Deterministic, fail-closed cross-run intelligence decision artifact for pattern detection and control/eval/monitor integration.",
+  "oneOf": [
+    { "$ref": "#/$defs/legacy" },
+    { "$ref": "#/$defs/xrun_v2" }
   ],
-  "additionalProperties": false,
-  "properties": {
-    "artifact_type": {
-      "type": "string",
-      "description": "Must equal cross_run_intelligence_decision.",
-      "const": "cross_run_intelligence_decision"
-    },
-    "schema_version": {
-      "type": "string",
-      "description": "Semantic version of this schema.",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
-    },
-    "decision_id": {
-      "type": "string",
-      "description": "Unique identifier for this decision artifact.",
-      "pattern": "^CRI-[A-Z0-9][A-Z0-9._-]*$"
-    },
-    "comparison_id": {
-      "type": "string",
-      "description": "The comparison_id of the cross_run_comparison this decision is based on.",
-      "pattern": "^CMP-[A-Z0-9][A-Z0-9._-]*$"
-    },
-    "overall_status": {
-      "type": "string",
-      "description": "Overall comparison status.",
-      "enum": ["pass", "warning", "fail"]
-    },
-    "failure_type": {
-      "type": "string",
-      "description": "Governing failure classification. none when overall_status is pass.",
-      "enum": [
-        "none",
-        "no_inputs",
-        "malformed_input",
-        "schema_invalid",
-        "mixed_study_types",
-        "no_comparable_metrics",
-        "comparison_error",
-        "anomaly_detection_error"
-      ]
-    },
-    "findings": {
-      "type": "array",
-      "description": "Ordered list of findings surfaced during comparison.",
-      "items": {
-        "type": "object",
-        "required": ["code", "severity", "message", "artifact_path"],
-        "additionalProperties": false,
-        "properties": {
-          "code": { "type": "string", "minLength": 1 },
-          "severity": {
-            "type": "string",
-            "enum": ["info", "warning", "error"]
-          },
-          "message": { "type": "string" },
-          "artifact_path": { "type": "string" }
-        }
+  "$defs": {
+    "legacy": {
+      "type": "object",
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "decision_id",
+        "comparison_id",
+        "overall_status",
+        "failure_type",
+        "findings",
+        "generated_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": { "type": "string", "const": "cross_run_intelligence_decision" },
+        "schema_version": { "type": "string", "const": "1.0.0" },
+        "decision_id": { "type": "string", "pattern": "^CRI-[A-Z0-9][A-Z0-9._-]*$" },
+        "comparison_id": { "type": "string", "pattern": "^CMP-[A-Z0-9][A-Z0-9._-]*$" },
+        "overall_status": { "type": "string", "enum": ["pass", "warning", "fail"] },
+        "failure_type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "no_inputs",
+            "malformed_input",
+            "schema_invalid",
+            "mixed_study_types",
+            "no_comparable_metrics",
+            "comparison_error",
+            "anomaly_detection_error"
+          ]
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "severity", "message", "artifact_path"],
+            "additionalProperties": false,
+            "properties": {
+              "code": { "type": "string", "minLength": 1 },
+              "severity": { "type": "string", "enum": ["info", "warning", "error"] },
+              "message": { "type": "string" },
+              "artifact_path": { "type": "string" }
+            }
+          }
+        },
+        "generated_at": { "type": "string", "format": "date-time" }
       }
     },
-    "generated_at": {
-      "type": "string",
-      "description": "ISO 8601 date-time when this artifact was generated.",
-      "format": "date-time"
+    "xrun_v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "intelligence_id",
+        "timestamp",
+        "input_refs",
+        "aggregated_metrics",
+        "detected_patterns",
+        "recommended_actions",
+        "system_signal",
+        "trace_ids",
+        "policy_version"
+      ],
+      "properties": {
+        "artifact_type": { "type": "string", "const": "cross_run_intelligence_decision" },
+        "schema_version": { "type": "string", "const": "2.0.0" },
+        "intelligence_id": { "type": "string", "pattern": "^XRI-[A-F0-9]{12}$" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "input_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["replay_results", "eval_summaries", "regression_results", "drift_results", "monitor_records", "policy_ref"],
+          "properties": {
+            "replay_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "eval_summaries": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "regression_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "drift_results": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "monitor_records": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "policy_ref": { "type": "string", "minLength": 1 }
+          }
+        },
+        "aggregated_metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["failure_rate_trend", "drift_trend", "regression_density", "reproducibility_variance"],
+          "properties": {
+            "failure_rate_trend": { "type": "number", "minimum": -1, "maximum": 1 },
+            "drift_trend": { "type": "number", "minimum": -1, "maximum": 1 },
+            "regression_density": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reproducibility_variance": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "detected_patterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["recurring_failure_type", "unstable_module", "drift_cluster"]
+          },
+          "uniqueItems": true
+        },
+        "recommended_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["generate_eval_cases", "tighten_policy_threshold", "trigger_drift_alert", "require_manual_review"]
+          },
+          "uniqueItems": true
+        },
+        "system_signal": { "type": "string", "enum": ["stable", "warning", "unstable"] },
+        "trace_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "policy_version": { "type": "string", "minLength": 1 }
+      }
     }
   }
 }
