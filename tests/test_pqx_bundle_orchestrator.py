@@ -9,8 +9,10 @@ import pytest
 from spectrum_systems.modules.pqx_backbone import parse_system_roadmap
 from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import (
     PQXBundleOrchestratorError,
+    BundleDefinition,
     execute_bundle_run,
     load_bundle_plan,
+    select_next_runnable_bundle,
     resolve_bundle_definition,
     validate_bundle_definition,
 )
@@ -341,4 +343,21 @@ def test_bundle_orchestrator_default_executor_routes_to_canonical_slice_runner(t
         clock=FixedClock([f"2026-03-29T23:00:{i:02d}Z" for i in range(1, 40)]),
     )
     assert result["status"] == "completed"
+    assert result["judgment_record_refs"]
 
+
+def test_scheduler_prefers_dependency_valid_bundle_and_blocks_unready_candidates() -> None:
+    decision = select_next_runnable_bundle(
+        bundle_plan=[
+            BundleDefinition(bundle_id="BUNDLE-A", ordered_step_ids=("AI-01",), depends_on=()),
+            BundleDefinition(bundle_id="BUNDLE-B", ordered_step_ids=("AI-02",), depends_on=("BUNDLE-A",)),
+        ],
+        bundle_states={
+            "BUNDLE-A": {"status": "pending", "readiness_approved": True, "unresolved_findings": [], "pending_fix_ids": []},
+            "BUNDLE-B": {"status": "pending", "readiness_approved": False, "unresolved_findings": [], "pending_fix_ids": []},
+        },
+        run_id="run-scheduler-bundle-test",
+        trace_id="trace-scheduler-bundle-test",
+        now="2026-03-29T00:00:00Z",
+    )
+    assert decision["selected_bundle_id"] == "BUNDLE-A"

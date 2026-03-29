@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/pqx_bundle_schedule_decision.schema.json",
+  "title": "PQX Bundle Schedule Decision",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "decision_id",
+    "outcome",
+    "selected_bundle_id",
+    "reasons",
+    "candidate_bundle_ids",
+    "blocked_candidates",
+    "run_id",
+    "trace_id",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "outcome": {"type": "string", "enum": ["selected", "blocked"]},
+    "selected_bundle_id": {"type": ["string", "null"]},
+    "block_type": {"type": ["string", "null"]},
+    "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "candidate_bundle_ids": {"type": "array", "items": {"type": "string"}},
+    "blocked_candidates": {"type": "array", "items": {"type": "object"}},
+    "ambiguous_bundle_ids": {"type": "array", "items": {"type": "string"}},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

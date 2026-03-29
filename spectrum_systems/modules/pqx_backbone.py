@@ -283,3 +283,25 @@ def run_pqx_backbone(
         clock=clock,
         pqx_output_text=pqx_output_text,
     )
+
+
+def schedule_next_bundle(
+    *,
+    bundle_states: dict[str, dict],
+    run_id: str,
+    trace_id: str,
+    bundle_plan_path: Path | None = None,
+    clock=utc_now,
+) -> dict:
+    """Single authoritative queue-aware scheduler entrypoint for governed bundle execution."""
+
+    from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import load_bundle_plan, select_next_runnable_bundle
+
+    plan = load_bundle_plan(bundle_plan_path) if bundle_plan_path is not None else load_bundle_plan()
+    return select_next_runnable_bundle(
+        bundle_plan=plan,
+        bundle_states=bundle_states,
+        run_id=run_id,
+        trace_id=trace_id,
+        now=iso_now(clock),
+    )

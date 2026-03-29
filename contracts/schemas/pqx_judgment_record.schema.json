@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/pqx_judgment_record.schema.json",
+  "title": "PQX Judgment Record",
+  "type": "object",
+  "required": ["schema_version", "record_id", "decision_type", "outcome", "decision_basis", "upstream_artifact_refs", "affected_bundle_id", "run_id", "trace_id", "policy_refs", "created_at"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "record_id": {"type": "string", "minLength": 1},
+    "decision_type": {"type": "string", "minLength": 1},
+    "outcome": {"type": "string", "enum": ["blocked", "resolved", "accepted", "resumed"]},
+    "decision_basis": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "upstream_artifact_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "affected_bundle_id": {"type": "string", "minLength": 1},
+    "affected_slice_id": {"type": ["string", "null"]},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "policy_refs": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

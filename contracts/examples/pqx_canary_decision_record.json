@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "canary_id": "canary-g5-001",
+  "change_type": "routing",
+  "decision": "admit",
+  "rollout_scope": "bundle_only",
+  "affected_bundle_ids": ["BUNDLE-PQX-CORE"],
+  "affected_slice_ids": ["AI-01", "AI-02"],
+  "canary_status": "active",
+  "success_criteria": ["no new blocking findings", "replay parity holds"],
+  "failure_criteria": ["new high severity regression", "trace lineage mismatch"],
+  "fallback_behavior": "freeze_and_revert_to_last_certified_routing",
+  "frozen_paths": [],
+  "reasons": ["canary rollout declaration is complete", "status=active"],
+  "run_id": "run-g5",
+  "trace_id": "trace-g5",
+  "created_at": "2026-03-29T00:00:00Z"
+}

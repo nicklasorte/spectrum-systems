@@ -58,7 +58,7 @@ def _validate_state_contract(state: dict) -> None:
 def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice_requests: list[dict], now: str) -> dict:
     requested = [entry["slice_id"] for entry in slice_requests]
     return {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "queue_run_id": queue_run_id,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -268,6 +268,7 @@ def execute_sequence_run(
     clock=utc_now,
     review_results_by_slice: dict[str, dict] | None = None,
     sequence_budget_thresholds: dict | None = None,
+    canary_control: dict | None = None,
 ) -> dict:
     """Run a narrow deterministic sequential PQX batch (2–3 slices) with persistent resumable state."""
 
@@ -358,6 +359,7 @@ def execute_sequence_run(
 
     requested_ids = state["requested_slice_ids"]
     budget_thresholds = sequence_budget_thresholds or {"max_failed_slices": 1, "max_cumulative_severity": 5}
+    canary = canary_control or {"status": "not_applicable", "frozen_slice_ids": []}
     executed_this_call = 0
     while True:
         _verify_continuity(state, slice_requests)
@@ -434,6 +436,16 @@ def execute_sequence_run(
             raise PQXSequenceRunnerError("invalid transition: completed slice selected for rerun without explicit override")
 
         request = next(entry for entry in slice_requests if entry["slice_id"] == next_slice_id)
+        if canary.get("status") == "frozen" and next_slice_id in set(canary.get("frozen_slice_ids", [])):
+            _apply_continuation_block(
+                state=state,
+                queue_run_id=queue_run_id,
+                next_slice_id=next_slice_id,
+                block_type="CANARY_FROZEN",
+                reason="canary rollout failure froze this slice path",
+                now=iso_now(clock),
+            )
+            return _persist_and_reload_exact(state, state_path)
         current_index = requested_ids.index(next_slice_id)
         state["bundle_readiness_decision"] = {
             "ready": len(state["unresolved_fix_ids"]) == 0,

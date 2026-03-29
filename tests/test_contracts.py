@@ -228,6 +228,17 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_pqx_g5_contract_examples_validate(self) -> None:
+        for name in (
+            "pqx_bundle_schedule_decision",
+            "pqx_canary_decision_record",
+            "pqx_canary_evaluation_record",
+            "pqx_judgment_record",
+            "pqx_n_slice_validation_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):

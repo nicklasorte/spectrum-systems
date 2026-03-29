@@ -10,6 +10,7 @@ from spectrum_systems.modules.pqx_backbone import (
     parse_system_roadmap,
     resolve_roadmap_authority,
     resolve_executable_row,
+    schedule_next_bundle,
     run_pqx_backbone,
 )
 
@@ -158,3 +159,32 @@ def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
     request = json.loads(Path(result["request"]).read_text(encoding="utf-8"))
     assert request["roadmap_version"] == "docs/roadmap/system_roadmap.md"
     assert request["row_snapshot"]["step_id"] == "AI-01"
+
+
+def test_schedule_next_bundle_blocks_ambiguous_candidates(tmp_path: Path) -> None:
+    plan_path = tmp_path / "execution_bundles.md"
+    plan_path.write_text(
+        "\n".join(
+            [
+                "# test",
+                "## EXECUTABLE BUNDLE TABLE",
+                "| Bundle ID | Ordered Step IDs | Depends On |",
+                "| --- | --- | --- |",
+                "| BUNDLE-A | AI-01 | - |",
+                "| BUNDLE-B | AI-02 | - |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    decision = schedule_next_bundle(
+        bundle_states={
+            "BUNDLE-A": {"status": "pending", "readiness_approved": True, "unresolved_findings": [], "pending_fix_ids": []},
+            "BUNDLE-B": {"status": "pending", "readiness_approved": True, "unresolved_findings": [], "pending_fix_ids": []},
+        },
+        run_id="run-sched-1",
+        trace_id="trace-sched-1",
+        bundle_plan_path=plan_path,
+        clock=_FixedClock(),
+    )
+    assert decision["block_type"] == "AMBIGUOUS_RUNNABLE_BUNDLE"

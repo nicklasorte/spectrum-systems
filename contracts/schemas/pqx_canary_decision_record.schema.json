@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/pqx_canary_decision_record.schema.json",
+  "title": "PQX Canary Decision Record",
+  "type": "object",
+  "required": ["schema_version", "canary_id", "change_type", "decision", "rollout_scope", "affected_bundle_ids", "affected_slice_ids", "canary_status", "success_criteria", "failure_criteria", "fallback_behavior", "frozen_paths", "reasons", "run_id", "trace_id", "created_at"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "canary_id": {"type": "string", "minLength": 1},
+    "change_type": {"type": "string", "enum": ["prompt", "model", "routing", "adapter", "review_routing"]},
+    "decision": {"type": "string", "enum": ["admit", "freeze"]},
+    "rollout_scope": {"type": "string", "minLength": 1},
+    "affected_bundle_ids": {"type": "array", "items": {"type": "string"}},
+    "affected_slice_ids": {"type": "array", "items": {"type": "string"}},
+    "canary_status": {"type": "string", "enum": ["proposed", "active", "frozen"]},
+    "success_criteria": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "failure_criteria": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "fallback_behavior": {"type": "string", "minLength": 1},
+    "frozen_paths": {"type": "array", "items": {"type": "string"}},
+    "reasons": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

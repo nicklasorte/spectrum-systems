@@ -45,6 +45,7 @@ from spectrum_systems.modules.runtime.pqx_triage_planner import (
 )
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
+from spectrum_systems.modules.runtime.pqx_judgment import build_pqx_judgment_record
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
 
@@ -237,6 +238,140 @@ def validate_bundle_definition(bundle_definition: BundleDefinition, roadmap_rows
 
 
 StepExecutor = Callable[[dict], dict]
+
+
+def select_next_runnable_bundle(
+    *,
+    bundle_plan: list[BundleDefinition],
+    bundle_states: dict[str, dict],
+    run_id: str,
+    trace_id: str,
+    now: str,
+) -> dict:
+    """Deterministically choose exactly one runnable bundle or fail closed with explicit block."""
+
+    plan_ids = [definition.bundle_id for definition in bundle_plan]
+    completed = {
+        bundle_id
+        for bundle_id, state in bundle_states.items()
+        if isinstance(state, dict) and state.get("status") == "completed"
+    }
+    runnable: list[BundleDefinition] = []
+    blocked_reasons: list[dict] = []
+
+    for definition in bundle_plan:
+        state = bundle_states.get(definition.bundle_id, {})
+        status = state.get("status", "pending")
+        unresolved_findings = bool(state.get("unresolved_findings", []))
+        pending_fixes = bool(state.get("pending_fix_ids", []))
+        readiness_approved = bool(state.get("readiness_approved", False))
+        failed_or_blocked = status in {"failed", "blocked"}
+        canary_status = state.get("canary_status", "not_applicable")
+
+        unmet_deps = [dep for dep in definition.depends_on if dep not in completed and dep in plan_ids]
+        if unmet_deps:
+            blocked_reasons.append(
+                {
+                    "bundle_id": definition.bundle_id,
+                    "block_type": "DEPENDENCY_UNSATISFIED",
+                    "reason": f"bundle dependencies incomplete: {unmet_deps}",
+                }
+            )
+            continue
+        if status == "completed":
+            continue
+        if not readiness_approved:
+            blocked_reasons.append(
+                {
+                    "bundle_id": definition.bundle_id,
+                    "block_type": "READINESS_UNAPPROVED",
+                    "reason": "bundle readiness gate is not approved",
+                }
+            )
+            continue
+        if unresolved_findings or pending_fixes:
+            blocked_reasons.append(
+                {
+                    "bundle_id": definition.bundle_id,
+                    "block_type": "GOVERNANCE_BLOCKED",
+                    "reason": "bundle has unresolved findings or pending fixes",
+                }
+            )
+            continue
+        if canary_status == "frozen":
+            blocked_reasons.append(
+                {
+                    "bundle_id": definition.bundle_id,
+                    "block_type": "CANARY_FROZEN",
+                    "reason": "canary evaluation froze this scheduling path",
+                }
+            )
+            continue
+        if failed_or_blocked and not state.get("resume_ready", False):
+            blocked_reasons.append(
+                {
+                    "bundle_id": definition.bundle_id,
+                    "block_type": "RESUME_NOT_ALLOWED",
+                    "reason": "prior blocked/failed bundle is not resume-approved",
+                }
+            )
+            continue
+        runnable.append(definition)
+
+    if not runnable:
+        decision = {
+            "schema_version": "1.0.0",
+            "decision_id": f"schedule:{run_id}:{trace_id}:none",
+            "outcome": "blocked",
+            "selected_bundle_id": None,
+            "block_type": "NO_RUNNABLE_BUNDLE",
+            "reasons": ["no bundle satisfied dependency + readiness + governance prerequisites"],
+            "candidate_bundle_ids": plan_ids,
+            "blocked_candidates": blocked_reasons,
+            "run_id": run_id,
+            "trace_id": trace_id,
+            "created_at": now,
+        }
+        validate_artifact(decision, "pqx_bundle_schedule_decision")
+        return decision
+
+    if len(runnable) > 1:
+        top = sorted(runnable, key=lambda b: b.bundle_id)
+        tied = [bundle.bundle_id for bundle in top]
+        decision = {
+            "schema_version": "1.0.0",
+            "decision_id": f"schedule:{run_id}:{trace_id}:ambiguous",
+            "outcome": "blocked",
+            "selected_bundle_id": None,
+            "block_type": "AMBIGUOUS_RUNNABLE_BUNDLE",
+            "reasons": ["multiple runnable bundles exist and deterministic tie-break is undefined"],
+            "candidate_bundle_ids": plan_ids,
+            "blocked_candidates": blocked_reasons,
+            "ambiguous_bundle_ids": tied,
+            "run_id": run_id,
+            "trace_id": trace_id,
+            "created_at": now,
+        }
+        validate_artifact(decision, "pqx_bundle_schedule_decision")
+        return decision
+
+    selected = runnable[0]
+    decision = {
+        "schema_version": "1.0.0",
+        "decision_id": f"schedule:{run_id}:{trace_id}:{selected.bundle_id}",
+        "outcome": "selected",
+        "selected_bundle_id": selected.bundle_id,
+        "block_type": None,
+        "reasons": ["dependency-valid", "readiness-approved", "governance-state-clear"],
+        "candidate_bundle_ids": plan_ids,
+        "blocked_candidates": blocked_reasons,
+        "ambiguous_bundle_ids": [],
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "created_at": now,
+    }
+    validate_artifact(decision, "pqx_bundle_schedule_decision")
+    return decision
 
 
 def _to_bundle_plan(definition: BundleDefinition) -> list[dict]:
@@ -570,6 +705,41 @@ def execute_bundle_run(
 
     record_path = output_root / f"{bundle_id}.bundle_execution_record.json"
     record_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    judgment_refs: list[str] = []
+    if status == "blocked":
+        judgment = build_pqx_judgment_record(
+            record_id=f"judgment:{sequence_run_id}:{bundle_id}:blocked",
+            decision_type="blocked_bundle_admission" if not executed_steps else "blocked_continuation",
+            outcome="blocked",
+            reasons=[record.get("failure_classification") or "bundle blocked", record.get("block_reason") or "governance gate blocked"],
+            artifact_refs=[_relative(record_path), _relative(state_path)],
+            bundle_id=bundle_id,
+            slice_id=blocked_step_id,
+            run_id=run_id,
+            trace_id=trace_id,
+            created_at=iso_now(clock),
+            policy_refs=["docs/roadmaps/system_roadmap.md"],
+        )
+        judgment_path = output_root / f"{bundle_id}.judgment.blocked.json"
+        judgment_path.write_text(json.dumps(judgment, indent=2) + "\n", encoding="utf-8")
+        judgment_refs.append(_relative(judgment_path))
+    elif status == "completed":
+        judgment = build_pqx_judgment_record(
+            record_id=f"judgment:{sequence_run_id}:{bundle_id}:resolved",
+            decision_type="resolved_bundle_execution",
+            outcome="resolved",
+            reasons=["bundle completed with certification/audit evidence"],
+            artifact_refs=[_relative(record_path), _relative(state_path)],
+            bundle_id=bundle_id,
+            slice_id=None,
+            run_id=run_id,
+            trace_id=trace_id,
+            created_at=iso_now(clock),
+            policy_refs=["docs/roadmaps/system_roadmap.md"],
+        )
+        judgment_path = output_root / f"{bundle_id}.judgment.resolved.json"
+        judgment_path.write_text(json.dumps(judgment, indent=2) + "\n", encoding="utf-8")
+        judgment_refs.append(_relative(judgment_path))
 
     triage_plan_record_ref: str | None = None
     if emit_triage_plan:
@@ -618,4 +788,5 @@ def execute_bundle_run(
         "bundle_execution_record": _relative(record_path),
         "bundle_state": _relative(state_path),
         "triage_plan_record": triage_plan_record_ref,
+        "judgment_record_refs": judgment_refs,
     }

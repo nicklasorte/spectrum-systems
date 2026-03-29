@@ -231,3 +231,15 @@ Determinism constraints:
 - `run_pqx_bundle.py run` stops with blocked status when this checkpoint is unresolved.
 - `run_pqx_bundle.py ingest-findings` attaches and validates `pqx_review_result`, then writes pending fixes into `pqx_bundle_state`.
 - Resume is deterministic: once checkpoint is satisfied and blocking findings are resolved, rerun resumes from persisted `resume_position`.
+
+## G5 B27–B30 governance extensions (queue + canary + judgment + n-slice proof)
+
+- Queue scheduling is deterministic and subordinate to readiness/review/certification/audit truth:
+  - only dependency-valid, readiness-approved, governance-clear bundles are runnable;
+  - ambiguous runnable candidates hard-block with `AMBIGUOUS_RUNNABLE_BUNDLE`;
+  - no runnable candidates hard-block with `NO_RUNNABLE_BUNDLE`.
+- Prompt/model/routing/adapter changes are controlled through governed canary artifacts:
+  - under-specified canary declarations block admission;
+  - failed canary evaluation freezes affected scheduling paths until resolved.
+- Major blocked/resolved/resumed decisions must emit durable `pqx_judgment_record` artifacts; logs alone are not sufficient.
+- First roadmap-scale proof is a governed 5–10 slice validation artifact (`pqx_n_slice_validation_record`) requiring deterministic advancement order, certification, audit synthesis, and explicit replay parity semantics.

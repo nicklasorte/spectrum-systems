@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "canary_id": "canary-g5-001",
+  "decision_ref": "canary-g5-001",
+  "evaluation_outcome": "pass",
+  "observed_metrics": {
+    "no_new_blocking_findings": true,
+    "replay_parity_holds": true
+  },
+  "failed_criteria": [],
+  "scheduling_freeze": false,
+  "frozen_paths": [],
+  "created_at": "2026-03-29T00:10:00Z"
+}

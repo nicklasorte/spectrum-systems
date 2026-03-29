@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/pqx_n_slice_validation_record.schema.json",
+  "title": "PQX N Slice Validation Record",
+  "type": "object",
+  "required": ["schema_version", "validation_id", "run_id", "trace_id", "slice_count", "validated_slice_ids", "deterministic_order", "review_checkpoints_skipped", "hidden_carry_forward_detected", "bundle_certification_status", "bundle_audit_status", "replay_parity_status", "status", "created_at"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "validation_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "slice_count": {"type": "integer", "minimum": 5, "maximum": 10},
+    "validated_slice_ids": {"type": "array", "minItems": 5, "maxItems": 10, "items": {"type": "string"}},
+    "deterministic_order": {"type": "boolean", "const": true},
+    "review_checkpoints_skipped": {"type": "boolean"},
+    "hidden_carry_forward_detected": {"type": "boolean"},
+    "bundle_certification_status": {"type": "string"},
+    "bundle_audit_status": {"type": "string"},
+    "replay_parity_status": {"type": "string"},
+    "status": {"type": "string", "enum": ["validated", "blocked"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}
