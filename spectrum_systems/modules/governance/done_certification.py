@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.provenance_verification import (
+    ProvenanceVerificationError,
+    assert_linked_identity_consistency,
+    validate_required_identity,
+)
 
 
 class DoneCertificationError(ValueError):
@@ -90,6 +95,16 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
             raise DoneCertificationError("failure_injection_ref must be a non-empty string when provided")
         refs["failure_injection_ref"] = optional_value
     return refs
+
+
+def _identity_policy(input_refs: Dict[str, Any]) -> Dict[str, bool]:
+    policy = input_refs.get("identity_policy")
+    if policy is None:
+        return {"allow_cross_run_reference": False}
+    if not isinstance(policy, dict):
+        raise DoneCertificationError("identity_policy must be an object when provided")
+    allow_cross_run = bool(policy.get("allow_cross_run_reference", False))
+    return {"allow_cross_run_reference": allow_cross_run}
 
 
 def _normalize_trace(value: Any) -> str:
@@ -198,6 +213,7 @@ def _validate_trace_linkage(
 def run_done_certification(input_refs: dict) -> dict:
     """Run deterministic fail-closed done certification and return governed artifact."""
     refs = _require_refs(input_refs)
+    identity_policy = _identity_policy(input_refs)
 
     replay = _load_json(refs["replay_result_ref"], label="replay_result")
     regression = _load_json(refs["regression_result_ref"], label="regression_result")
@@ -216,6 +232,43 @@ def run_done_certification(input_refs: dict) -> dict:
     _validate_schema(control_decision, "evaluation_control_decision", label="evaluation_control_decision")
     if failure_injection is not None:
         _validate_schema(failure_injection, "governed_failure_injection_summary", label="governed_failure_injection_summary")
+
+    replay_trace_id = replay.get("trace_id")
+    replay_run_id = replay.get("replay_run_id") or replay.get("original_run_id")
+    try:
+        validate_required_identity(
+            {"run_id": replay_run_id, "trace_id": replay_trace_id},
+            label="replay_result",
+        )
+        assert_linked_identity_consistency(
+            {"run_id": replay_run_id, "trace_id": replay_trace_id},
+            {"run_id": regression.get("run_id"), "trace_id": replay_trace_id},
+            upstream_label="replay_result",
+            linked_label="regression_result",
+            require_same_run=True,
+            allow_cross_run_reference=identity_policy["allow_cross_run_reference"],
+            allow_trace_override=False,
+        )
+        assert_linked_identity_consistency(
+            {"run_id": replay_run_id, "trace_id": replay_trace_id},
+            {"run_id": certification_pack.get("run_id"), "trace_id": replay_trace_id},
+            upstream_label="replay_result",
+            linked_label="control_loop_certification_pack",
+            require_same_run=True,
+            allow_cross_run_reference=identity_policy["allow_cross_run_reference"],
+            allow_trace_override=False,
+        )
+        assert_linked_identity_consistency(
+            {"run_id": replay_run_id, "trace_id": replay_trace_id},
+            {"run_id": control_decision.get("run_id"), "trace_id": control_decision.get("trace_id")},
+            upstream_label="replay_result",
+            linked_label="evaluation_control_decision",
+            require_same_run=True,
+            allow_cross_run_reference=identity_policy["allow_cross_run_reference"],
+            allow_trace_override=False,
+        )
+    except ProvenanceVerificationError as exc:
+        raise DoneCertificationError(str(exc)) from exc
 
     blocking_reasons: List[str] = []
 

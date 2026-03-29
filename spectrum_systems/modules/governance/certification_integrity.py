@@ -147,8 +147,15 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
     trace_id = str(payload["replay"].get("trace_id") or "")
     if not trace_id:
         raise CertificationIntegrityError("replay_results[0].trace_id is required")
+    run_id = str(payload["replay"].get("replay_run_id") or payload["replay"].get("original_run_id") or "")
+    if not run_id:
+        raise CertificationIntegrityError("replay_results[0].replay_run_id is required")
 
     payload["error_budget"]["trace_refs"]["trace_id"] = trace_id
+    payload["regression"]["run_id"] = run_id
+    payload["control_decision"]["run_id"] = run_id
+    payload["policy_ref"]["run_id"] = run_id
+    payload["certification_pack"]["run_id"] = run_id
     payload["control_decision"]["trace_id"] = trace_id
     payload["policy_ref"]["trace_id"] = trace_id
     payload["certification_pack"]["provenance_trace_refs"]["trace_refs"] = [trace_id]

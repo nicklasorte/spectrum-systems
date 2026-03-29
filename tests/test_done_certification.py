@@ -70,12 +70,15 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
     replay["drift_detected"] = False
     replay["failure_reason"] = None
     trace_id = replay["trace_id"]
+    run_id = replay["replay_run_id"]
 
     regression = _regression_result_pass()
+    regression["run_id"] = run_id
     regression["results"][0]["trace_id"] = trace_id
     regression["results"][0]["baseline_trace_id"] = trace_id
     regression["results"][0]["current_trace_id"] = trace_id
     certification_pack = _load_example("control_loop_certification_pack")
+    certification_pack["run_id"] = run_id
     certification_pack["decision"] = "pass"
     certification_pack["certification_status"] = "certified"
     certification_pack["provenance_trace_refs"]["trace_refs"] = [trace_id]
@@ -85,6 +88,7 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
     error_budget["trace_refs"]["trace_id"] = trace_id
 
     control_decision = _load_example("evaluation_control_decision")
+    control_decision["run_id"] = run_id
     control_decision["system_status"] = "healthy"
     control_decision["system_response"] = "allow"
     control_decision["decision"] = "allow"
@@ -198,11 +202,33 @@ def test_trace_mismatch_blocks(tmp_path: Path) -> None:
     control_decision["trace_id"] = "trace-mismatch-999"
     Path(refs["policy_ref"]).write_text(json.dumps(control_decision), encoding="utf-8")
 
-    result = run_done_certification(refs)
-    assert result["final_status"] == "FAILED"
-    assert result["system_response"] == "block"
-    assert any(reason.startswith("TRACE_LINKAGE_MISMATCH:") for reason in result["blocking_reasons"])
-    assert result["check_results"]["trace_linkage"]["passed"] is False
+    with pytest.raises(DoneCertificationError, match="PROVENANCE_TRACE_MISMATCH"):
+        run_done_certification(refs)
+
+
+def test_run_mismatch_fails_closed(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    control_decision = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control_decision["run_id"] = "run-mismatch-999"
+    Path(refs["policy_ref"]).write_text(json.dumps(control_decision), encoding="utf-8")
+
+    with pytest.raises(DoneCertificationError, match="PROVENANCE_RUN_MISMATCH"):
+        run_done_certification(refs)
+
+
+def test_explicit_cross_run_policy_allows_cross_run_reference(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    control_decision = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control_decision["run_id"] = "run-cross-run-allowed"
+    Path(refs["policy_ref"]).write_text(json.dumps(control_decision), encoding="utf-8")
+
+    result = run_done_certification(
+        {
+            **refs,
+            "identity_policy": {"allow_cross_run_reference": True},
+        }
+    )
+    assert result["final_status"] == "PASSED"
 
 
 def test_missing_trace_on_required_artifact_fails_closed(tmp_path: Path) -> None:

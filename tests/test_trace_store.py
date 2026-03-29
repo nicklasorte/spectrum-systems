@@ -62,7 +62,7 @@ def _make_trace(trace_id: str = "test-trace-id-001") -> Dict[str, Any]:
         "artifacts": [],
         "start_time": "2025-01-01T00:00:00+00:00",
         "end_time": None,
-        "context": {},
+        "context": {"run_id": "run-001"},
         "schema_version": "1.0.0",
     }
 
@@ -240,6 +240,12 @@ class TestPersistTraceValidation:
         with pytest.raises(TraceStoreError):
             persist_trace(trace, base_dir=tmp_store)
 
+    def test_persist_trace_rejects_missing_run_id(self, tmp_store):
+        trace = _make_trace()
+        trace["context"] = {}
+        with pytest.raises(TraceStoreError, match="run_id"):
+            persist_trace(trace, base_dir=tmp_store)
+
 
 # ---------------------------------------------------------------------------
 # Test 6: persist_trace rejects a non-dict trace
@@ -344,7 +350,7 @@ class TestPersistTraceImmutability:
     def test_persist_trace_fails_on_existing_file(self, tmp_store):
         trace = _make_trace("trace-overwrite")
         persist_trace(trace, base_dir=tmp_store)
-        trace["context"] = {"updated": True}
+        trace["context"] = {"run_id": "run-001", "updated": True}
         with pytest.raises(TraceStorePersistenceError, match="refused overwrite"):
             persist_trace(trace, base_dir=tmp_store)
         envelope = load_trace("trace-overwrite", base_dir=tmp_store)
