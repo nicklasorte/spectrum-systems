@@ -162,3 +162,15 @@ def test_bad_transition_state_fails_closed(tmp_path: Path) -> None:
             trace_id="trace-batch-001",
             resume=True,
         )
+
+
+def test_sequence_runner_does_not_require_roadmap_path_rebinding(tmp_path: Path) -> None:
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:1],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-bridge-001",
+        run_id="run-bridge-001",
+        trace_id="trace-bridge-001",
+        clock=FixedClock(["2026-03-29T14:00:01Z", "2026-03-29T14:00:02Z", "2026-03-29T14:00:03Z", "2026-03-29T14:00:04Z"]),
+    )
+    assert state["status"] == "completed"

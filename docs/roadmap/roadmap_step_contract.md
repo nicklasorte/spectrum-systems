@@ -59,3 +59,9 @@ If ANY field is missing or ambiguous:
 The roadmap is not a plan.
 
 The roadmap is a **machine-readable execution contract**.
+
+## Authority anchoring (B2 bridge)
+
+- Active authority declaration: `docs/roadmaps/system_roadmap.md`.
+- Machine execution surface during compatibility transition: `docs/roadmap/system_roadmap.md`.
+- PQX must resolve these via `docs/roadmaps/roadmap_authority.md` and fail closed on ambiguity/mismatch before evaluating step rows.

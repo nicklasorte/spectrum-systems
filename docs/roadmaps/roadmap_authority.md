@@ -8,6 +8,17 @@
 - The compatibility mirror must remain parseable for existing PQX/tests that still consume `docs/roadmap/system_roadmap.md`.
 - During transition, updates to roadmap rows that affect operational parsing must be mirrored in both surfaces.
 
+## PQX authority resolution bridge (B2)
+- PQX must resolve roadmap authority from this document first, not from ad-hoc hardcoded path selection.
+- Deterministic resolution contract:
+  1. Active authority must resolve to `docs/roadmaps/system_roadmap.md`.
+  2. Machine-executable roadmap must resolve to `docs/roadmap/system_roadmap.md` until cutover.
+  3. If either declaration is missing, ambiguous, or malformed, PQX must fail closed.
+- Compatibility integrity rule:
+  - `docs/roadmaps/system_roadmap.md` must explicitly declare the compatibility transition rule.
+  - `docs/roadmap/system_roadmap.md` must explicitly declare the active authority and remain aligned to `docs/roadmap/roadmap_step_contract.md`.
+  - Any mismatch blocks execution.
+
 ## Allowed supporting docs
 These support execution but are not top-level authority documents:
 - `docs/roadmaps/execution_state_inventory.md`

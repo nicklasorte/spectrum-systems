@@ -5,6 +5,7 @@
 - Active editorial roadmap authority: `docs/roadmaps/system_roadmap.md`
 - This file remains required for backward-compatible operational parsing and test/runtime compatibility until PQX consumers migrate off `docs/roadmap/system_roadmap.md`.
 - If content diverges, the editorial source of truth is `docs/roadmaps/system_roadmap.md`; this mirror must be updated in lockstep to remain parseable.
+- Bridge metadata (B2): PQX execution authority resolution is declared in `docs/roadmaps/roadmap_authority.md`; this file is the resolved machine-executable roadmap surface during migration.
 
 ## PQX Execution Contract Standard
 
