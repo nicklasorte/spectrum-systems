@@ -3,6 +3,8 @@
 
 This document is the single authoritative roadmap for Spectrum Systems. All roadmap references, execution planning, and PQX prompts must derive from this file.
 
+Subordinate roadmaps (`pqx_queue_roadmap.md`, `pqx_protocol_hardening.md`, and related execution maps) refine execution details for their layer and must not contradict this roadmap. If conflict exists, this system roadmap governs until it is explicitly updated.
+
 ## PQX EXECUTION CONTRACT STANDARD
 
 Roadmap steps are expected to evolve toward PQX-executable step contracts.
