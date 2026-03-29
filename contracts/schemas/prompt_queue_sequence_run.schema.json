@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_sequence_run.schema.json",
+  "title": "Prompt Queue Sequence Run",
+  "description": "Canonical deterministic persisted state for sequential PQX prompt-queue execution batches.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "queue_run_id",
+    "run_id",
+    "trace_id",
+    "status",
+    "created_at",
+    "updated_at",
+    "requested_slice_ids",
+    "completed_slice_ids",
+    "failed_slice_ids",
+    "current_slice_id",
+    "prior_slice_ref",
+    "next_slice_ref",
+    "execution_history",
+    "blocked_reason",
+    "resume_token"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "queue_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "blocked", "failed", "completed"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_slice_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/non_empty"},
+      "uniqueItems": true
+    },
+    "completed_slice_ids": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/non_empty"},
+      "uniqueItems": true
+    },
+    "failed_slice_ids": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/non_empty"},
+      "uniqueItems": true
+    },
+    "current_slice_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "prior_slice_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "next_slice_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "execution_history": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/execution_entry"}
+    },
+    "blocked_reason": {
+      "type": ["string", "null"]
+    },
+    "resume_token": {
+      "type": "string",
+      "pattern": "^resume:[A-Za-z0-9._:-]+:[0-9]+$"
+    }
+  },
+  "$defs": {
+    "non_empty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_ref",
+        "queue_run_id",
+        "run_id",
+        "trace_id",
+        "slice_id",
+        "status",
+        "parent_execution_ref",
+        "started_at",
+        "completed_at",
+        "error"
+      ],
+      "properties": {
+        "execution_ref": {"$ref": "#/$defs/non_empty"},
+        "queue_run_id": {"$ref": "#/$defs/non_empty"},
+        "run_id": {"$ref": "#/$defs/non_empty"},
+        "trace_id": {"$ref": "#/$defs/non_empty"},
+        "slice_id": {"$ref": "#/$defs/non_empty"},
+        "status": {"type": "string", "enum": ["success", "failed"]},
+        "parent_execution_ref": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "started_at": {"type": "string", "format": "date-time"},
+        "completed_at": {"type": "string", "format": "date-time"},
+        "error": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

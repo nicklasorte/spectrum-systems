@@ -185,6 +185,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("prompt_queue_certification_record")
         validate_artifact(instance, "prompt_queue_certification_record")
 
+    def test_prompt_queue_sequence_run_example_validates(self) -> None:
+        instance = load_example("prompt_queue_sequence_run")
+        validate_artifact(instance, "prompt_queue_sequence_run")
+
     def test_prompt_queue_audit_bundle_example_validates(self) -> None:
         instance = load_example("prompt_queue_audit_bundle")
         validate_artifact(instance, "prompt_queue_audit_bundle")
