@@ -1,85 +1,132 @@
-This file is subordinate to docs/roadmap/system_roadmap.md
-
 # Spectrum Systems — System Roadmap
 
+**Authority status:** ACTIVE ROADMAP AUTHORITY (Bundle B1, 2026-03-29)
+
+## Intent
+Consolidate roadmap execution authority into one repo-native document and provide an execution path that is explicitly grounded in (a) source design obligations and (b) current repository implementation evidence.
+
 ## System Goal
-
-Spectrum Systems is an artifact-first, fail-closed system where all outputs are governed by:
-
-- **Eval → Control → Enforcement** loops  
-- **Schema-validated artifacts at every boundary**  
-- **Deterministic replay for all critical paths**  
-- **Policy-driven decisions with no implicit execution**
-
-The system does not trust local correctness.  
-It enforces **system-level trust** through governed artifacts, reproducibility, and control-loop integrity.
-
----
+Operate Spectrum Systems as a governed, fail-closed, artifact-first execution surface that can run trusted PQX slices through eval → control → enforcement loops with replayable evidence and explicit certification boundaries.
 
 ## Architectural Invariants
+- Schema-validated artifacts are required at all control boundaries. **[SOURCE + REPO]**
+- Queue and runtime advancement must be driven by explicit decision artifacts, not prose interpretation. **[SOURCE + REPO]**
+- Execution must halt on ambiguity, missing evidence, invalid contracts, or missing policy context. **[SOURCE + REPO]**
+- Replayability and trace continuity are mandatory for trust claims. **[SOURCE + REPO]**
+- Certification is a gate, not an annotation. **[SOURCE + REPO]**
+- Missing raw source design PDFs are treated as a source-traceability constraint, not silently ignored. **[REPO + SOURCE GAP (FILLED)]**
 
-- No artifact without schema validation  
-- No execution without context validation  
-- No promotion without eval + control decision  
-- No decision without trace + evidence binding  
-- No control decision without enforcement  
-- No system state change without governed artifacts  
-- Replay must reproduce decisions deterministically  
-- Fail-closed behavior at every boundary  
-- Governance before capability expansion  
-- Certification required before “Done” or “Trusted”  
+## Execution Rules
+- This file is the only active roadmap authority for implementation execution.
+- `docs/roadmap/` and other roadmap-adjacent documents are subordinate or reference-only.
+- Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror for legacy PQX consumers until migration is complete.
+- Mirror contract rule: keep roadmap table header and operational rows parseable in the compatibility mirror; update both surfaces in lockstep during transition.
+- Status discipline is strict:
+  - Done = implementation + tests + contracts + docs materially align.
+  - Partial = real implementation exists but material gaps remain.
+  - Present but fragmented = multiple seams exist with no dominant unified path.
+  - Missing = materially absent.
+  - Unclear = evidence insufficient.
+- Do not infer multi-slice readiness from single-slice success.
+- For claims where source materials are incomplete in-repo, mark **SOURCE GAP (FILLED)** explicitly.
 
----
+## Source Inventory Used
+| Source | Basis | Status |
+| --- | --- | --- |
+| Mapping Google SRE Reliability Principles to Spectrum Systems | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Production-Ready Best Practices for Integrating AI Models into Automated Engineering Workflows | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Spectrum Systems Build & Governance Engine (SBGE) Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Agent + Eval Integration Design (Spectrum Systems) | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Spectrum Systems AI Integration – Governed API Adapter Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Spectrum Systems Done Certification Gate (GOV-10) Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
+| Repo implementation, tests, contracts, docs | REPO | Primary execution-state evidence surface |
 
-## Execution Rules (PQX)
+## Current Repo State Summary
+- Repo has broad contract and module coverage for runtime, prompt queue, control, replay, observability, and certification seams. **[REPO]**
+- PQX and queue capabilities exist across many modules and tests, but several behaviors remain distributed across parallel seams. **[REPO + INFERRED]**
+- Roadmap authority signals are duplicated across `docs/roadmap/` and `docs/roadmaps/` trees and prior governance docs. **[REPO]**
+- Source design extraction exists, but original raw source PDFs are missing; source-derived claims remain bounded by structured artifacts. **[REPO + SOURCE GAP (FILLED)]**
 
-- Each row = ONE implementation slice  
-- Prefer **MODIFY EXISTING** over ADD NEW  
-- Do not bypass existing modules or schemas  
-- Do not introduce parallel architecture  
-- All work must:
-  - produce governed artifacts  
-  - include tests  
-  - preserve replayability  
-  - enforce fail-closed behavior  
+## System Decomposition
+- Contract spine: `contracts/schemas/`, `contracts/standards-manifest.json`. **[REPO]**
+- Runtime governance: `spectrum_systems/modules/runtime/`. **[REPO]**
+- Prompt queue governance: `spectrum_systems/modules/prompt_queue/`. **[REPO]**
+- Review and readiness evidence: `docs/reviews/`, `docs/review-actions/`. **[REPO]**
+- Roadmap and execution control: `docs/roadmaps/`, subordinate `docs/roadmap/`. **[REPO + INFERRED]**
 
-- Dependency-first execution:
-  - do not implement a row before its dependencies  
+## Trust Boundaries
+1. Contract validity boundary (schema conformance).
+2. Context admission boundary (fail-closed).
+3. Execution boundary (step result normalization).
+4. Decision boundary (control/post-execution/transition policies).
+5. Enforcement boundary (policy action materialization).
+6. Replay boundary (resume + deterministic re-run).
+7. Certification boundary (done/trusted gating).
+8. Audit boundary (bundle completeness + lineage integrity).
 
-- No control-loop bypass:
-  - all outputs must flow through eval → control → enforcement  
+## Control Loop Mapping
+- Observe: admission, execution outputs, observability snapshots.
+- Interpret: eval and review parsing artifacts.
+- Decide: loop control, next-step, post-execution, policy decisions.
+- Enforce: gating, retry/recovery branching, enforcement actions.
+- Learn: replay, drift, policy backtesting, cross-run intelligence.
 
-- If a row is too large:
-  → split it before implementation  
+## Artifact Taxonomy
+- Inputs: request/context/manifest/state artifacts.
+- Execution: execution result, review invocation, parsing handoff/findings.
+- Decisions: transition, loop control, gating, retry/recovery, next-step.
+- Trust: replay records, certification records, integrity and consistency checks.
+- Evidence: observability snapshots, audit bundles, trace + lineage attachments.
 
----
+## Dependency Spine
+1. Contract + schema authority
+2. Context admission + adapter boundaries
+3. Step execution + parsing normalization
+4. Transition/control decision spine
+5. Enforcement + gating
+6. Replay/resume determinism
+7. Certification + audit packaging
+8. Multi-slice sequencing governance
 
 ## Roadmap Table
 
-| Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Existing Repo Seams | Implementation Mode | Contracts / Schemas | Artifact Outputs | Integration Points | Control Loop Coverage | Dependencies | Definition of Done | Prompt Class | Status |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| AI-01 | AI request/response boundary | Canonical model IO boundary + prompt registry enforcement | Prevents free-form model calls | SOURCE + REPO | model_adapter.py, prompt_registry.py | MODIFY EXISTING | ai_model_request, ai_model_response | ai_model_request, ai_model_response | runtime adapter | O / I | — | All model calls use governed schemas and registry | runtime | VALID |
-| AI-02 | Context bundle system | Deterministic, provenance-bound context input | Ensures grounded and replayable execution | SOURCE + REPO | context_bundle.py | MODIFY EXISTING | context_bundle.schema.json | context_bundle | runtime input layer | O / I | AI-01 | Context bundles validated, deterministic, fail-closed | schema | VALID |
-| TRUST-01 | Context admission gate | Fail-closed context validation before execution | Blocks invalid or unsafe inputs | SOURCE GAP (FILLED) | context_bundle.py, policy_registry.py | ADD NEW FILE | context_admission schemas | context_admission_decision | pre-execution gate | O / I / D / E | AI-02 | Invalid bundles always blocked | governance | VALID |
-| TRUST-02 | Evidence binding | Output-to-evidence linkage | Prevents unverifiable outputs | SOURCE + REPO | evidence_binding.py | MODIFY EXISTING | evidence_binding_record | evidence_binding_record | eval + audit | I / D | AI-02 | Outputs cannot proceed without evidence | runtime | VALID |
-| SRE-02 | Trace + lineage | End-to-end trace system | Enables audit and replay | SOURCE + REPO | trace_engine.py | MODIFY EXISTING | trace schemas | trace, lineage artifacts | all system seams | O / L | TRUST-02 | All artifacts linked to trace | runtime | VALID |
-| EVAL-01 | Eval artifact system | eval_case, eval_result, eval_summary | Removes self-judging behavior | SOURCE + REPO | eval schemas/tests | WIRE INTEGRATION | eval schemas | eval artifacts | evaluation control | I / D | SRE-02 | All outputs evaluated via governed evals | eval | VALID |
-| DATA-04 | Eval dataset registry | Versioned eval datasets | Prevents eval drift | SOURCE + REPO | dataset schemas/tests | MODIFY EXISTING | eval_dataset schema | dataset registry | eval runner | O / L | EVAL-01 | All evals reference versioned datasets | docs | VALID |
-| SRE-03 | Replay engine | Deterministic replay | Guarantees reproducibility | SOURCE + REPO | replay_engine.py | MODIFY EXISTING | replay schemas | replay_record | full pipeline | O / I / D / L | SRE-02 | Same input → same output | runtime | VALID |
-| SRE-04 | Regression suite | Regression + baseline tests | Prevents regressions | SOURCE + REPO | regression tests | MODIFY EXISTING | regression schemas | regression artifacts | CI + replay | I / L | DATA-04, SRE-03 | Known failures never reappear | eval | VALID |
-| SRE-07 | Failure classification | Structured failure taxonomy | Converts failures into signals | SOURCE + REPO | error taxonomy modules | MODIFY EXISTING | failure schemas | failure artifacts | control loop | I / D / E | SRE-03 | All failures classified + stored | governance | VALID |
-| DATA-03 | Failure feedback loop | Failures → new evals/tests | Enables system learning | SOURCE + REPO | eval auto-gen tests | WIRE INTEGRATION | failure_eval_case schema | generated eval cases | eval registry | L | SRE-07 | Failures become tests deterministically | integration | VALID |
-| GOV-07 | Policy registry | Versioned policy system | Prevents policy drift | SOURCE + REPO | policy_registry.py | MODIFY EXISTING | policy schemas | policy_registry_snapshot | control loop | D / L | DATA-01, EVAL-01 | All decisions reference policy version | governance | VALID |
-| GOV-09 | Runtime enforcement | Policy → enforcement bridge | Prevents advisory-only decisions | SOURCE + REPO | enforcement_bridge.py | WIRE INTEGRATION | enforcement schemas | enforcement_action | runtime execution | D / E | GOV-07 | All decisions enforceable | runtime | VALID |
-| SRE-08 | SLO + error budgets | Reliability thresholds | Governs change velocity | SOURCE + REPO | error_budget.py | MODIFY EXISTING | SLO schemas | error_budget_status | control loop | D / E / L | GOV-09 | Reliability thresholds enforced | governance | VALID |
-| SRE-10 | Observability | Metrics + alerts | Makes failures visible | SOURCE + REPO | observability_metrics.py | MODIFY EXISTING | observability schemas | observability records | monitoring | O / L / E | SRE-02, SRE-08 | All critical signals measurable | runtime | VALID |
-| SRE-05 | Drift detection | Detect + gate drift | Prevents silent degradation | SOURCE + REPO | drift_detection.py | MODIFY EXISTING | drift schemas | drift artifacts | control loop | I / D / E / L | SRE-04, SRE-08 | Drift always gated | runtime | VALID |
-| GOV-01 | Promotion gating | Controlled lifecycle | Prevents invalid promotion | SOURCE + REPO | lifecycle modules | WIRE INTEGRATION | release schemas | promotion decisions | control loop | D / E | GOV-09, SRE-05 | Promotion requires full validation | governance | VALID |
-| EVAL-02 | Explainability | Evidence-backed decisions | Enables auditability | SOURCE + REPO | eval decision modules | WIRE INTEGRATION | explanation schemas | explanation artifacts | audit layer | I / D / L | TRUST-02, EVAL-01 | All decisions explainable | eval | VALID |
-| GOV-06 | Human override system | Controlled HITL | Prevents unmanaged overrides | SOURCE + REPO | HITL schemas/tests | WIRE INTEGRATION | override schemas | override artifacts | control loop | D / E | GOV-01 | All overrides governed + auditable | governance | VALID |
-| SRE-12A | Cross-run aggregation | Multi-run comparison | Detects instability | REPO + INFERRED | cross_run_intelligence.py | MODIFY EXISTING | comparison schema | comparison artifacts | replay + eval | I / L | SRE-03 | Multiple runs compared deterministically | runtime | VALID |
-| SRE-12B | Signal fusion + scoring | Reliability scoring | Stabilizes decisions | SOURCE GAP (FILLED) | cross_run_intelligence.py | MODIFY EXISTING | scoring schema | decision_score | control loop | I / D / L | SRE-12A | Decisions based on multiple signals | governance | VALID |
-| GOV-05 | Audit bundles | Full audit package | Enables inspection | SOURCE + REPO | docs/artifact-flow.md | DOC / POLICY | audit schema | audit bundle | certification | L / E | GOV-01 | Every run auditable | docs | VALID |
-| GOV-10 | Certification gate | System-level Done | Prevents false trust | SOURCE | (new module) | ADD NEW FILE | certification schema | certification record | promotion gate | I / D / E | GOV-01, SRE-03 | Done only after full validation | governance | VALID |
-| SRE-13 | Chaos testing | Failure injection | Validates fail-closed behavior | SOURCE + REPO | control_loop_chaos.py | MODIFY EXISTING | chaos schema | chaos artifacts | full system | O / I / D / E / L | GOV-10 | All failures produce artifacts | runtime | VALID |
-| SRE-14 | Policy backtesting | Test policy changes | Prevents bad policy rollout | SOURCE + REPO | policy_registry.py, replay_engine.py | WIRE INTEGRATION | backtest schema | backtest report | replay system | I / D / E / L | GOV-07, SRE-03 | Policy changes validated before use | integration | VALID |
+| Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Repo Seams | Implementation Mode | Contracts | Artifacts | Integration | Control Loop | Dependencies | DoD | Prompt Class | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RM-01 | Roadmap authority consolidation | Single active roadmap authority with subordinate/reference designation | Removes competing execution signals | SOURCE + REPO | `docs/roadmaps/`, `docs/roadmap/`, `AGENTS.md`, `CODEX.md`, roadmap tests | MODIFY EXISTING | None | `roadmap_authority.md`, updated authority docs | Governance docs + tests | Decide/Enforce | None | One active authority file and no competing active claims | BUILD | Done |
+| RM-02 | Execution-state inventory | Repo-native maturity inventory across PQX/governed layers | Prevents fake completeness and wrong execution claims | SOURCE + REPO + INFERRED | runtime + prompt_queue modules, tests, contracts, reviews | ADD NEW | None | `execution_state_inventory.md` | Contracts + runtime + reviews + PQX docs | Observe/Interpret/Decide/Learn | RM-01 | Layer statuses and blocking gaps documented with evidence discipline | BUILD | Done |
+| PQX-BASE | Single trusted slice run path | Dominant one-slice governed path (admission→execution→decision→enforcement→certification) | Baseline for trusted execution | SOURCE + REPO | queue state machine, execution runner, transition policy, certification, audit | MODIFY EXISTING | Existing prompt queue/runtime schemas | sequence run + certification + audit artifacts | prompt queue + runtime + review seams | Full loop | RM-01, RM-02 | One path is executable with deterministic fail-closed handling and clear operator entrypoint | WIRE | Partial |
+| PQX-SEQ-2 | Two-slice sequential governance | Reliable carry-forward state and bounded continuation for second slice | First real sequential trust threshold | SOURCE + REPO + SOURCE GAP (FILLED) | queue loop continuation, retry/reentry, sequence runner, replay resume | MODIFY EXISTING | existing queue sequence/replay schemas | sequential run records | queue + replay + control integration | Decide/Enforce/Learn | PQX-BASE | Second slice advancement is policy-gated, replayable, and non-ambiguous | WIRE | Partial |
+| PQX-SEQ-3 | Three-slice sequential governance | Stable multi-hop sequencing with durable control visibility | Validates medium-chain reliability | SOURCE + INFERRED | queue observability, transition policies, certification integrity, review routing seams | MODIFY EXISTING | existing observability/certification/review schemas | sequence observability + certification evidence | PQX + review + cert | Full loop | PQX-SEQ-2 | Three ordered slices complete without manual override dependency | WIRE | Present but fragmented |
+| PQX-SEQ-5-10 | 5–10 trusted sequential slice governance | Repeatable batch/sequence-run governance with bounded risk | Required for production-scale governed execution | SOURCE + INFERRED + SOURCE GAP (FILLED) | pqx sequence runner, policy backtesting, batch/routing seams | MODIFY EXISTING + ADD NEW | possibly additional sequence/batch governance contracts | durable sequence control artifacts | PQX + control + replay + certification + review routing | Full loop | PQX-SEQ-3 | 5–10 slice runs have explicit readiness gates, budget controls, and review/cert closure semantics | PLAN→BUILD→VALIDATE | Missing |
+
+## Failure Modes Prevented
+- Competing roadmap docs driving contradictory execution.
+- Maturity inflation from isolated tests without integrated trust path evidence.
+- Queue advancement without explicit decision artifacts.
+- Certification claims without replay/cross-slice support.
+- Multi-slice optimism that bypasses sequence governance gaps.
+
+## Guarantees Provided
+- One active roadmap authority location.
+- Explicit classification discipline (SOURCE / REPO / INFERRED / SOURCE GAP (FILLED)).
+- Repo-grounded readiness accounting for PQX sequential execution.
+- Clear dependency ordering between authority consolidation, inventory, and sequential governance.
+
+## Known Limits
+- Source extraction artifacts are present, but raw source files are missing in-repo.
+- Queue/review/replay/certification seams are broad but still distributed across many modules.
+- Batch-level governance and long-horizon sequential readiness are not fully proven by current integrated evidence.
+
+## Next Risks
+- Authority drift reappears if status updates are written outside this file.
+- Sequential readiness claims outpace deterministic replay/certification coupling.
+- Review routing and repair reentry remain fragmented under scale.
+- Policy/adapter/batch seams converge unevenly without focused follow-on bundle.
+
+## Active Execution Order
+1. RM-01 — maintain and enforce single authority.
+2. RM-02 — keep execution-state inventory current after each bundle.
+3. PQX-BASE — harden one dominant trusted slice path.
+4. PQX-SEQ-2 — prove two-slice sequential reliability.
+5. PQX-SEQ-3 — stabilize three-slice governance.
+6. PQX-SEQ-5-10 — implement and validate batch-scale trusted sequencing.
