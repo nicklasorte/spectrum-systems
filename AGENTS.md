@@ -73,7 +73,7 @@ Do not refactor, rename, or restructure code or documents outside the declared s
 If a refactor is needed, open a separate `PLAN` → `BUILD` sequence.
 
 ### Checkpoint and Claude review expectations
-Major checkpoints are defined in `docs/roadmap/system_roadmap.md`.
+Major checkpoints are defined in `docs/roadmaps/system_roadmap.md`.
 At each checkpoint, run `.codex/skills/checkpoint-packager/run.sh` and prepare a Claude review pack using `.codex/skills/claude-review-prep/run.sh`.
 Claude review at a checkpoint blocks advancement to the next stage until findings are addressed or formally deferred.
 
@@ -96,7 +96,7 @@ Claude review at a checkpoint blocks advancement to the next stage until finding
 | `CONTRACTS.md` | Contract authority and consumption rules |
 | `SYSTEMS.md` | System catalog and module placement |
 | `PLANS.md` | When and how to write execution plans |
-| `docs/roadmap/system_roadmap.md` | H–AJ Codex-optimal prompt slice roadmap |
+| `docs/roadmaps/system_roadmap.md` | H–AJ Codex-optimal prompt slice roadmap |
 | `docs/architecture/module-pivot-roadmap.md` | Module-first architecture pivot and Level-16 plan |
 | `docs/vision.md` | Core product vision — read before structural changes |
 | `contracts/standards-manifest.json` | Canonical contract version pins |
@@ -108,6 +108,6 @@ Claude review at a checkpoint blocks advancement to the next stage until finding
 
 - Only the authoritative roadmap may be used for implementation
 - The authoritative roadmap is:
-  docs/roadmap/system_roadmap.md
+  docs/roadmaps/system_roadmap.md
 - Subordinate roadmap files provide context only and must not drive implementation execution.
 - DEPRECATED roadmap execution paths must not be used for implementation.

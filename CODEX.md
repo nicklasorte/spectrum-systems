@@ -131,7 +131,7 @@ These files help AI agents understand how to interact with the repository.
 
 - Only the authoritative roadmap may be used for implementation
 - The authoritative roadmap is:
-  docs/roadmap/system_roadmap.md
+  docs/roadmaps/system_roadmap.md
 - Subordinate roadmap documents provide context only and must not drive execution
 - DEPRECATED documents must not be used
 

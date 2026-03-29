@@ -1,26 +1,15 @@
-# Spectrum Systems Roadmap
+# Spectrum Systems Roadmap (Subordinate Index)
 
-The authoritative roadmap is docs/roadmap/system_roadmap.md
+Active roadmap authority is `docs/roadmaps/system_roadmap.md`.
 
-## Authority and subordination
+## Status
+This `docs/roadmap/` directory is subordinate execution/reference material.
+It does not define active top-level roadmap authority.
 
-- `docs/roadmap/system_roadmap.md` is the single top-level authoritative roadmap.
-- `docs/roadmap/pqx_queue_roadmap.md` and `docs/roadmap/pqx_protocol_hardening.md` are subordinate execution-track roadmaps.
-- Subordinate roadmaps may refine execution for their layer but must not contradict the system roadmap.
-- If a conflict exists, the system roadmap governs until explicitly updated.
+## Subordinate artifacts
+- `pqx_queue_roadmap.md` — queue-track subordinate roadmap
+- `pqx_protocol_hardening.md` — protocol-track subordinate roadmap
+- `pqx_execution_map.md` — execution map context
+- `roadmap_step_contract.md` — subordinate contract standard for row/slice formatting
 
-## Lifecycle
-
-Step 1 — Roadmap creation  
-Step 2 — Authority + repo integration (this step)  
-Future — Execution via PQX slices
-
-## Links
-
-- [System roadmap](system_roadmap.md)
-- [PQX execution map](pqx_execution_map.md)
-- [PQX protocol hardening](pqx_protocol_hardening.md)
-- [PQX queue roadmap](pqx_queue_roadmap.md)
-- [Roadmap step contract](roadmap_step_contract.md)
-- [Architecture docs](../architecture/)
-- [Vision](../vision.md)
+If a conflict exists between files in this directory and `docs/roadmaps/system_roadmap.md`, the active authority file governs.
