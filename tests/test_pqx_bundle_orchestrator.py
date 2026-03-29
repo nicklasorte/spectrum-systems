@@ -249,3 +249,80 @@ def test_execute_fixes_records_fix_gate_before_step_progression(tmp_path: Path) 
     state = json.loads(state_path.read_text(encoding="utf-8"))
     assert state["last_fix_gate_status"] == "passed"
     assert state["resolved_fixes"] == ["fix:REV-BLOCK:F-001"]
+
+
+def test_emit_triage_plan_on_blocked_review_findings(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path, review_table=_review_table())
+    state_path = tmp_path / "state.json"
+    out_dir = tmp_path / "out"
+    execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=state_path,
+        output_dir=out_dir,
+        run_id="run-b10-orch-001",
+        sequence_run_id="queue-run-b10-orch-001",
+        trace_id="trace-b10-orch-001",
+        bundle_plan_path=plan_path,
+        execute_step=lambda _: {"execution_status": "success"},
+    )
+    review_path = tmp_path / "review.json"
+    review_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "review_id": "REV-B10-001",
+                "checkpoint_id": "BUNDLE-T1:checkpoint:AI-01",
+                "review_type": "checkpoint_review",
+                "bundle_id": "BUNDLE-T1",
+                "bundle_run_id": "queue-run-b10-orch-001",
+                "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+                "execution_plan_ref": str(plan_path),
+                "scope": {"scope_type": "step", "step_id": "AI-01"},
+                "findings": [
+                    {
+                        "finding_id": "F-100",
+                        "severity": "high",
+                        "category": "runtime",
+                        "title": "gap",
+                        "description": "gap",
+                        "affected_step_ids": ["AI-01"],
+                        "recommended_action": "fix",
+                        "blocking": True,
+                        "source_refs": ["docs/review-actions/REV-B10-001.md#F-100"],
+                    }
+                ],
+                "overall_disposition": "approved_with_findings",
+                "created_at": "2026-03-29T12:00:00Z",
+                "provenance_refs": ["trace:b10:1"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    from spectrum_systems.modules.runtime.pqx_bundle_state import ingest_review_result, load_bundle_state, save_bundle_state
+
+    definition = resolve_bundle_definition(load_bundle_plan(plan_path), "BUNDLE-T1")
+    bundle_plan = [{"bundle_id": definition.bundle_id, "step_ids": list(definition.ordered_step_ids), "depends_on": []}]
+    state = load_bundle_state(state_path, bundle_plan=bundle_plan)
+    updated = ingest_review_result(
+        state,
+        bundle_plan,
+        review_artifact=json.loads(review_path.read_text(encoding="utf-8")),
+        artifact_ref=str(review_path),
+        now="2026-03-29T12:01:00Z",
+    )
+    save_bundle_state(updated, state_path, bundle_plan=bundle_plan)
+
+    result = execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=state_path,
+        output_dir=out_dir,
+        run_id="run-b10-orch-001",
+        sequence_run_id="queue-run-b10-orch-001",
+        trace_id="trace-b10-orch-001",
+        bundle_plan_path=plan_path,
+        execute_step=lambda _: {"execution_status": "success"},
+        emit_triage_plan=True,
+    )
+    assert result["triage_plan_record"] is not None
+    triage = json.loads((out_dir / "BUNDLE-T1.triage_plan_record.json").read_text(encoding="utf-8"))
+    assert triage["summary_counts"]["findings_total"] >= 1
