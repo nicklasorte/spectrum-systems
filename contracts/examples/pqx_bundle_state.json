@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+  "execution_plan_ref": "docs/roadmaps/execution_bundles.md",
+  "run_id": "run-b4-001",
+  "sequence_run_id": "queue-run-b4-001",
+  "active_bundle_id": "BUNDLE-01",
+  "completed_bundle_ids": [],
+  "completed_step_ids": [
+    "B3-01"
+  ],
+  "blocked_step_ids": [],
+  "pending_fix_ids": [
+    {
+      "fix_id": "B3-FIX-01",
+      "finding_id": "FINDING-001",
+      "target_bundle_id": "BUNDLE-01",
+      "target_step_id": "B3-04",
+      "status": "planned"
+    }
+  ],
+  "review_artifact_refs": [
+    {
+      "review_id": "REV-BUNDLE-01-ARCH",
+      "bundle_id": "BUNDLE-01",
+      "step_id": "B3-03",
+      "artifact_ref": "docs/reviews/REV-BUNDLE-01-ARCH-2026-03-29.md"
+    }
+  ],
+  "artifact_index": {
+    "B3-01": [
+      "data/pqx_runs/B3-01/pqx-run-20260329T120000Z.request.json",
+      "data/pqx_runs/B3-01/pqx-run-20260329T120000Z.result.json"
+    ]
+  },
+  "resume_position": {
+    "bundle_id": "BUNDLE-01",
+    "next_step_id": "B3-02",
+    "resume_token": "resume:queue-run-b4-001:BUNDLE-01:1"
+  },
+  "created_at": "2026-03-29T12:00:00Z",
+  "updated_at": "2026-03-29T12:05:00Z"
+}

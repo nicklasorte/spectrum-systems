@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.89",
+  "artifact_version": "1.0.90",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.29",
-  "record_id": "REC-STD-2026-03-29-PQX-QUEUE-RUN-02",
-  "run_id": "run-20260329T000000Z",
+  "record_id": "REC-STD-2026-03-29-B4-BUNDLE-STATE",
+  "run_id": "run-20260329T120000Z",
   "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -996,6 +996,19 @@
       "notes": "PQX backbone hardening: canonical block taxonomy plus blocking dependency capture for fail-closed diagnostics."
     },
     {
+      "artifact_type": "pqx_bundle_state",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.90",
+      "last_updated_in": "1.0.90",
+      "example_path": "contracts/examples/pqx_bundle_state.json",
+      "notes": "B4 machine-enforced governed bundle-state contract for deterministic bundle advancement, review/fix attachment representation, and replay resume continuity."
+    },
+    {
       "artifact_type": "pqx_execution_request",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -1312,19 +1325,6 @@
       "notes": "QUEUE-08 deterministic artifact-backed resume checkpoint contract with fail-closed reference validation."
     },
     {
-      "artifact_type": "prompt_queue_sequence_run",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.89",
-      "last_updated_in": "1.0.89",
-      "example_path": "contracts/examples/prompt_queue_sequence_run.json",
-      "notes": "PQX-QUEUE-RUN-02 deterministic sequential queue-run state artifact for ordered 2-3 slice execution, continuity enforcement, and resumable fail-closed persistence."
-    },
-    {
       "artifact_type": "prompt_queue_retry_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1401,6 +1401,19 @@
       "last_updated_in": "1.0.23",
       "example_path": "contracts/examples/prompt_queue_review_trigger.json",
       "notes": "Deterministic fail-closed review trigger artifact mapping post-execution and loop-control decisions into bounded governed review work-item spawning with full lineage preservation."
+    },
+    {
+      "artifact_type": "prompt_queue_sequence_run",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.89",
+      "last_updated_in": "1.0.89",
+      "example_path": "contracts/examples/prompt_queue_sequence_run.json",
+      "notes": "PQX-QUEUE-RUN-02 deterministic sequential queue-run state artifact for ordered 2-3 slice execution, continuity enforcement, and resumable fail-closed persistence."
     },
     {
       "artifact_type": "prompt_queue_state",
