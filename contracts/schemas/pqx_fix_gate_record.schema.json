@@ -7,74 +7,100 @@
   "additionalProperties": false,
   "required": [
     "schema_version",
-    "fix_id",
-    "bundle_id",
+    "fix_gate_id",
+    "created_at",
     "run_id",
     "trace_id",
-    "source_finding_id",
-    "source_review_id",
-    "execution_status",
-    "validation_result",
+    "bundle_id",
+    "fix_id",
+    "originating_pending_fix_id",
+    "originating_review_artifact_id",
+    "originating_finding_id",
+    "fix_execution_record_ref",
+    "adjudication_inputs",
     "gate_status",
-    "resolution_status",
-    "resume_allowed",
-    "replay_safe",
-    "matched_pending_fix_ids",
-    "accepted_target_step_ids",
-    "insertion_point",
-    "artifact_refs",
-    "reasons",
-    "created_at"
+    "allows_resume",
+    "blocking_reason",
+    "comparison_summary",
+    "producer"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "fix_id": {"type": "string", "minLength": 1},
-    "bundle_id": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "const": "1.1.0"},
+    "fix_gate_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
     "run_id": {"type": "string", "minLength": 1},
     "trace_id": {"type": "string", "minLength": 1},
-    "source_finding_id": {"type": "string", "minLength": 1},
-    "source_review_id": {"type": "string", "minLength": 1},
-    "execution_status": {"type": "string", "enum": ["complete", "blocked", "failed"]},
-    "validation_result": {"type": "string", "minLength": 1},
-    "gate_status": {"type": "string", "enum": ["passed", "blocked"]},
-    "resolution_status": {"type": "string", "enum": ["resolved", "unresolved", "mismatched", "duplicate"]},
-    "resume_allowed": {"type": "boolean"},
-    "replay_safe": {"type": "boolean"},
-    "matched_pending_fix_ids": {
-      "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "minItems": 1,
-      "uniqueItems": true
-    },
-    "accepted_target_step_ids": {
-      "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "minItems": 1,
-      "uniqueItems": true
-    },
-    "insertion_point": {
+    "bundle_id": {"type": "string", "minLength": 1},
+    "fix_id": {"type": "string", "minLength": 1},
+    "originating_pending_fix_id": {"type": "string", "minLength": 1},
+    "originating_review_artifact_id": {"type": ["string", "null"], "minLength": 1},
+    "originating_finding_id": {"type": ["string", "null"], "minLength": 1},
+    "fix_execution_record_ref": {"type": "string", "minLength": 1},
+    "adjudication_inputs": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mode", "anchor_step_id", "insert_before_step_id", "ordered_index"],
+      "required": [
+        "execution_status",
+        "validation_result",
+        "accepted_target_step_ids",
+        "insertion_point",
+        "artifact_refs"
+      ],
       "properties": {
-        "mode": {"type": "string", "enum": ["before_source", "patch_after_source"]},
-        "anchor_step_id": {"type": "string", "minLength": 1},
-        "insert_before_step_id": {"type": ["string", "null"], "minLength": 1},
-        "ordered_index": {"type": "integer", "minimum": 0}
+        "execution_status": {"type": "string", "enum": ["complete", "blocked", "failed"]},
+        "validation_result": {"type": "string", "minLength": 1},
+        "accepted_target_step_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "insertion_point": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "anchor_step_id", "insert_before_step_id", "ordered_index"],
+          "properties": {
+            "mode": {"type": "string", "enum": ["before_source", "patch_after_source"]},
+            "anchor_step_id": {"type": "string", "minLength": 1},
+            "insert_before_step_id": {"type": ["string", "null"], "minLength": 1},
+            "ordered_index": {"type": "integer", "minimum": 0}
+          }
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        }
       }
     },
-    "artifact_refs": {
-      "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "minItems": 1,
-      "uniqueItems": true
+    "gate_status": {"type": "string", "enum": ["passed", "blocked"]},
+    "allows_resume": {"type": "boolean"},
+    "blocking_reason": {"type": ["string", "null"], "minLength": 1},
+    "comparison_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mapping_status", "resolution_status", "reason_codes", "replay_safe"],
+      "properties": {
+        "mapping_status": {"type": "string", "enum": ["matched", "mismatched"]},
+        "resolution_status": {"type": "string", "enum": ["resolved", "unresolved"]},
+        "reason_codes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "replay_safe": {"type": "boolean", "const": true}
+      }
     },
-    "reasons": {
-      "type": "array",
-      "items": {"type": "string", "minLength": 1},
-      "minItems": 1,
-      "uniqueItems": true
-    },
-    "created_at": {"type": "string", "format": "date-time"}
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "function"],
+      "properties": {
+        "module": {"type": "string", "const": "spectrum_systems.modules.runtime.pqx_fix_gate"},
+        "function": {"type": "string", "const": "evaluate_fix_completion"}
+      }
+    }
   }
 }

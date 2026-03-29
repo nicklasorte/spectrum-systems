@@ -1,36 +1,44 @@
 {
-  "schema_version": "1.0.0",
-  "fix_id": "fix:REVIEW-B7-001:F-001",
-  "bundle_id": "BUNDLE-PQX-CORE",
+  "schema_version": "1.1.0",
+  "fix_gate_id": "fix-gate:run-b7-001:fix:REVIEW-B7-001:F-001",
+  "created_at": "2026-03-29T12:15:00Z",
   "run_id": "run-b7-001",
   "trace_id": "trace-b7-001:fix-step:fix:REVIEW-B7-001:F-001",
-  "source_finding_id": "F-001",
-  "source_review_id": "REVIEW-B7-001",
-  "execution_status": "complete",
-  "validation_result": "passed",
-  "gate_status": "passed",
-  "resolution_status": "resolved",
-  "resume_allowed": true,
-  "replay_safe": true,
-  "matched_pending_fix_ids": [
-    "fix:REVIEW-B7-001:F-001"
-  ],
-  "accepted_target_step_ids": [
-    "TRUST-01"
-  ],
-  "insertion_point": {
-    "mode": "patch_after_source",
-    "anchor_step_id": "TRUST-01",
-    "insert_before_step_id": null,
-    "ordered_index": 3
+  "bundle_id": "BUNDLE-PQX-CORE",
+  "fix_id": "fix:REVIEW-B7-001:F-001",
+  "originating_pending_fix_id": "fix:REVIEW-B7-001:F-001",
+  "originating_review_artifact_id": "REVIEW-B7-001",
+  "originating_finding_id": "F-001",
+  "fix_execution_record_ref": "data/pqx_runs/fixes/fix-step:fix:REVIEW-B7-001:F-001.fix_execution_record.json",
+  "adjudication_inputs": {
+    "execution_status": "complete",
+    "validation_result": "passed",
+    "accepted_target_step_ids": [
+      "TRUST-01"
+    ],
+    "insertion_point": {
+      "mode": "patch_after_source",
+      "anchor_step_id": "TRUST-01",
+      "insert_before_step_id": null,
+      "ordered_index": 3
+    },
+    "artifact_refs": [
+      "data/pqx_runs/fixes/fix-step:fix:REVIEW-B7-001:F-001.json"
+    ]
   },
-  "artifact_refs": [
-    "data/pqx_runs/fixes/fix-step:fix:REVIEW-B7-001:F-001.json"
-  ],
-  "reasons": [
-    "fix mapped to exactly one pending finding",
-    "fix execution artifact validated",
-    "reinsertion state consistent"
-  ],
-  "created_at": "2026-03-29T12:15:00Z"
+  "gate_status": "passed",
+  "allows_resume": true,
+  "blocking_reason": null,
+  "comparison_summary": {
+    "mapping_status": "matched",
+    "resolution_status": "resolved",
+    "reason_codes": [
+      "RESOLUTION_VERIFIED"
+    ],
+    "replay_safe": true
+  },
+  "producer": {
+    "module": "spectrum_systems.modules.runtime.pqx_fix_gate",
+    "function": "evaluate_fix_completion"
+  }
 }

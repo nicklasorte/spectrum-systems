@@ -1,39 +1,43 @@
 # PQX Fix Gate (Deterministic Completion Adjudication)
 
-## Purpose
-`pqx_fix_gate` inserts a governed completion decision between fix execution and bundle step resumption.
-Execution of a fix is no longer sufficient for continuation; each fix must emit a valid `pqx_fix_gate_record` with `gate_status=passed`.
+## Why execution is not resolution
+A fix step can execute successfully while still failing to resolve the originating finding.
+B9 enforces that *execution output* and *resolution proof* are separate layers:
 
-## Runtime flow
-1. `pqx_fix_execution` emits `pqx_fix_execution_record`.
-2. `pqx_fix_gate.evaluate_fix_completion` validates input artifacts and mapping consistency.
-3. Gate compares executed fix to exactly one pending finding (or approved grouped target set).
-4. Gate emits `pqx_fix_gate_record` and persists `fix_gate_results` in `pqx_bundle_state`.
-5. `pqx_bundle_orchestrator` calls `assert_fix_gate_allows_resume` before normal step progression.
+1. execution emits `pqx_fix_execution_record`
+2. adjudication emits `pqx_fix_gate_record`
+3. control gates resume using adjudication result only
 
-## Deterministic pass criteria
-- Fix execution artifact is schema-valid.
-- Fix maps to exactly one pending finding.
-- Fix reinsertion state matches recorded execution insertion point.
-- Fix artifact refs are immutable (no in-place mutation across adjudication).
-- Validation result indicates resolved outcome.
+This prevents the "executed but unresolved" failure mode.
 
-## Deterministic block criteria
-- Missing/invalid fix execution artifacts.
-- Mismatched fix-to-finding mapping.
-- Duplicate resolution attempt on an already resolved fix.
-- Reinsertion/artifact mutation drift.
-- Unresolved or failed fix execution outcomes.
+## How adjudication fits the PQX bundle loop
+1. `pqx_fix_execution` emits schema-valid execution records.
+2. `pqx_fix_gate.evaluate_fix_completion(...)` validates linkage to exactly one pending finding and checks replay-safe evidence consistency.
+3. `pqx_fix_gate_record` is emitted for every adjudicated fix.
+4. `pqx_bundle_state` persists `fix_gate_results`, `resolved_fixes`, `unresolved_fixes`, and `last_fix_gate_status`.
+5. `pqx_bundle_orchestrator` calls `assert_fix_gate_allows_resume(...)` before normal step progression.
+6. If any adjudication blocks, bundle advancement hard-stops and returns governed blocked status.
 
-## State additions (`pqx_bundle_state`)
-- `fix_gate_results` map for per-fix gate outcome + artifact reference.
-- `resolved_fixes` list.
-- `unresolved_fixes` list.
-- `last_fix_gate_status` fail-closed resume indicator.
+## Authoritative artifact
+`pqx_fix_gate_record` is authoritative for adjudication outcome.
+It captures:
+- originating linkage (`originating_pending_fix_id`, optional review/finding IDs)
+- execution evidence reference (`fix_execution_record_ref`)
+- adjudication inputs summary
+- deterministic gate decision (`gate_status`, `allows_resume`, `blocking_reason`)
+- comparison summary and replay-safe semantics
 
-## Resume semantics
-Bundle resume is blocked unless:
-- `last_fix_gate_status == "passed"`
-- `unresolved_fixes` is empty
+## Resume vs block conditions
+Resume is allowed only when all are true:
+- `gate_status == "passed"`
+- `allows_resume == true`
+- bundle state contains no `unresolved_fixes`
 
-This keeps fix adjudication on the existing PQX path and avoids introducing a second control path.
+Bundle is blocked when any are true:
+- missing/malformed fix execution artifact
+- missing or ambiguous fix-to-finding linkage
+- mismatch between execution record and persisted bundle fix state
+- unresolved validation outcome
+- duplicate/conflicting fix gate persistence state
+
+Fail-closed behavior is mandatory for all uncertain inputs.
