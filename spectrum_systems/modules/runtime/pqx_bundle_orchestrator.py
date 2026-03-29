@@ -44,6 +44,7 @@ from spectrum_systems.modules.runtime.pqx_triage_planner import (
     build_triage_plan_record,
 )
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
+from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
 
@@ -406,7 +407,31 @@ def execute_bundle_run(
     if completed != expected_prefix:
         raise PQXBundleOrchestratorError("resume blocked: completed_step_ids are inconsistent with bundle step order")
 
-    executor = execute_step or (lambda payload: {"execution_status": "success", **payload})
+    if execute_step is None:
+        def _default_executor(payload: dict) -> dict:
+            slice_id = str(payload.get("slice_id", ""))
+            if slice_id.startswith("AI-"):
+                canonical_step_id = slice_id
+            elif slice_id == "PQX-QUEUE-01":
+                canonical_step_id = "AI-01"
+            elif slice_id == "PQX-QUEUE-02":
+                canonical_step_id = "AI-02"
+            else:
+                canonical_step_id = "TRUST-01"
+            slice_result = run_pqx_slice(
+                step_id=canonical_step_id,
+                roadmap_path=Path(roadmap_path),
+                state_path=Path(bundle_state_path).parent / "pqx_state.json",
+                runs_root=Path(output_dir) / "slice_runs",
+                clock=clock,
+                pqx_output_text=f"bundle deterministic output for {payload['slice_id']}",
+            )
+            if slice_result.get("status") != "complete":
+                return {"execution_status": "failed", "error": slice_result.get("reason") or slice_result.get("block_type", "blocked")}
+            return {"execution_status": "success", **payload}
+        executor = _default_executor
+    else:
+        executor = execute_step
     executed_steps: list[dict] = []
     executed_fix_records: list[dict] = []
     fix_gate_records: list[dict] = []

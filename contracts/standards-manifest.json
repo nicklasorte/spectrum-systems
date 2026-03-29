@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.96",
+  "artifact_version": "1.0.83",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.29",
+  "standards_version": "1.0.83",
   "record_id": "REC-STD-2026-03-29-PQX-TRIAGE-B10",
   "run_id": "run-20260329T210000Z",
   "created_at": "2026-03-29T00:00:00Z",
@@ -1833,6 +1833,19 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "pqx_slice_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/pqx_slice_execution_record.json",
+      "notes": "G1 B11-B14 canonical deterministic single-slice execution artifact emitted by run_pqx_slice with mandatory certification and audit linkage."
     }
   ]
 }

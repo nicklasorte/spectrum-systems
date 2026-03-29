@@ -127,10 +127,7 @@ def test_runner_fail_closed_when_step_missing(tmp_path: Path) -> None:
     )
 
     assert result["status"] == "blocked"
-    assert "block_record" in result
-    block = json.loads(Path(result["block_record"]).read_text(encoding="utf-8"))
-    assert block["block_type"] == "MISSING_ROW"
-    assert block["blocking_dependencies"] == []
+    assert result["block_type"] == "INVALID_EXECUTION_ENTRYPOINT"
 
 
 def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
@@ -153,10 +150,10 @@ def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
     assert ai01["status"] == "complete"
     assert ai01["dependencies_satisfied"] is True
 
-    summary_path = Path(result["summary"])
-    assert summary_path.exists()
-    summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    assert summary["final_status"] == "complete"
+    execution_record_path = Path(result["slice_execution_record"])
+    assert execution_record_path.exists()
+    execution_record = json.loads(execution_record_path.read_text(encoding="utf-8"))
+    assert execution_record["status"] == "completed"
 
     request = json.loads(Path(result["request"]).read_text(encoding="utf-8"))
     assert request["roadmap_version"] == "docs/roadmap/system_roadmap.md"

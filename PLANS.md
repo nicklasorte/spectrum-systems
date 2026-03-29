@@ -196,6 +196,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-PQX-QUEUE-RUN-02-2026-03-29.md | PQX-QUEUE-RUN-02 — governed sequential PQX execution with continuity checks and resumable state | Active |
 
+| docs/review-actions/PLAN-G1-B11-B14-2026-03-29.md | G1 B11–B14 — Dominant Single-Slice Execution Path | Active |
+
 Update this table when plans are created or completed.
 
 ---

@@ -9,6 +9,7 @@ from typing import Callable
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
+from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
     PQXBundleStateError,
     block_step as bundle_block_step,
@@ -208,7 +209,31 @@ def execute_sequence_run(
     resolved_bundle_state_path = Path(bundle_state_path) if bundle_state_path is not None else None
     bundle_state = None
 
-    executor = execute_slice or (lambda payload: {"execution_status": "success"})
+    if execute_slice is None:
+        def _default_executor(payload: dict) -> dict:
+            slice_id = str(payload.get("slice_id", ""))
+            if slice_id.startswith("AI-"):
+                canonical_step_id = slice_id
+            elif slice_id == "PQX-QUEUE-01":
+                canonical_step_id = "AI-01"
+            elif slice_id == "PQX-QUEUE-02":
+                canonical_step_id = "AI-02"
+            else:
+                canonical_step_id = "TRUST-01"
+            step_result = run_pqx_slice(
+                step_id=canonical_step_id,
+                roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+                state_path=Path(state_path).parent / "pqx_state.json",
+                runs_root=Path(state_path).parent / "pqx_slice_runs",
+                clock=clock,
+                pqx_output_text=f"deterministic output for {payload['slice_id']}",
+            )
+            if step_result.get("status") != "complete":
+                return {"execution_status": "failed", "error": step_result.get("reason") or step_result.get("block_type", "blocked")}
+            return {"execution_status": "success"}
+        executor = _default_executor
+    else:
+        executor = execute_slice
 
     if resume:
         if not state_path.exists():

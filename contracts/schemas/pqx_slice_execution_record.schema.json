@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_slice_execution_record.schema.json",
+  "title": "PQX Slice Execution Record",
+  "description": "Canonical deterministic fail-closed single-slice execution record emitted by run_pqx_slice.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "step_id",
+    "run_id",
+    "trace_id",
+    "status",
+    "decision_summary",
+    "artifacts_emitted",
+    "certification_status",
+    "replay_result_ref",
+    "control_decision_ref"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_slice_execution_record"},
+    "step_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["completed", "blocked"]},
+    "decision_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_status", "control_decision", "enforcement_action"],
+      "properties": {
+        "execution_status": {"type": "string", "enum": ["success", "failed"]},
+        "control_decision": {"type": "string", "minLength": 1},
+        "enforcement_action": {"type": "string", "minLength": 1}
+      }
+    },
+    "artifacts_emitted": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "certification_status": {"type": "string", "enum": ["certified", "blocked"]},
+    "replay_result_ref": {"type": "string", "minLength": 1},
+    "control_decision_ref": {"type": "string", "minLength": 1}
+  }
+}
