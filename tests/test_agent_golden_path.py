@@ -44,11 +44,13 @@ def _normalized(artifacts: dict) -> dict:
             clone.pop("persisted_at", None)
             if isinstance(clone.get("storage_path"), str):
                 clone["storage_path"] = "<normalized>"
-            trace_payload = clone.get("trace")
-            if isinstance(trace_payload, dict):
-                trace_payload = dict(trace_payload)
+
+            raw_trace_payload = clone.get("trace")
+            if isinstance(raw_trace_payload, dict):
+                trace_payload = dict(raw_trace_payload)
                 trace_payload.pop("start_time", None)
                 trace_payload.pop("end_time", None)
+
                 if isinstance(trace_payload.get("artifacts"), list):
                     sanitized_artifacts = []
                     for artifact in trace_payload["artifacts"]:
@@ -57,6 +59,7 @@ def _normalized(artifacts: dict) -> dict:
                             artifact_copy.pop("attached_at", None)
                             sanitized_artifacts.append(artifact_copy)
                     trace_payload["artifacts"] = sanitized_artifacts
+
                 clone["trace"] = trace_payload
         normalized[key] = clone
     return normalized

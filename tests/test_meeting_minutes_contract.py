@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from spectrum_systems.contracts import load_example, load_schema, validate_artifact
+from tests.helpers.required_ids import add_required_ids
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -92,7 +93,7 @@ def test_all_intended_consumers_declare_meeting_minutes_record() -> None:
 
 def _base_mmr() -> dict:
     """Return a minimal valid meeting_minutes_record for pattern testing."""
-    return {
+    return add_required_ids({
         "artifact_type": "meeting_minutes_record",
         "artifact_class": "coordination",
         "artifact_id": "MMR-TEST-001",
@@ -101,7 +102,7 @@ def _base_mmr() -> dict:
         "standards_version": "2026.03.0",
         "record_id": "REC-TEST-001",
         "run_id": "run-20260318T000000Z",
-        "trace_id": "trace-20260318T000000Z",
+        "trace_id": "trace-test-001",
         "created_at": "2026-03-18T00:00:00Z",
         "created_by": {"name": "Test", "role": "tester", "agent_type": "script"},
         "source_repo": "test/repo",
@@ -120,7 +121,7 @@ def _base_mmr() -> dict:
             "generation_timestamp": "2026-03-18T00:00:00Z",
             "source_file": "transcripts/test.txt",
         },
-    }
+    })
 
 
 def test_decision_id_valid_pattern_accepted() -> None:
