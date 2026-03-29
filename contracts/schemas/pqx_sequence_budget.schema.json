@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_sequence_budget.schema.json",
+  "title": "PQX Sequence Budget",
+  "description": "Sequence-level failure budget artifact for deterministic multi-slice governance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "sequence_id",
+    "thresholds",
+    "slice_failures",
+    "cumulative_failure_severity",
+    "threshold_breached",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_sequence_budget"},
+    "sequence_id": {"type": "string", "minLength": 1},
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_failed_slices", "max_cumulative_severity"],
+      "properties": {
+        "max_failed_slices": {"type": "integer", "minimum": 0},
+        "max_cumulative_severity": {"type": "integer", "minimum": 0}
+      }
+    },
+    "slice_failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slice_id", "failure_count", "failure_severity"],
+        "properties": {
+          "slice_id": {"type": "string", "minLength": 1},
+          "failure_count": {"type": "integer", "minimum": 0},
+          "failure_severity": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "cumulative_failure_severity": {"type": "integer", "minimum": 0},
+    "threshold_breached": {"type": "boolean"},
+    "status": {"type": "string", "enum": ["within_budget", "exceeded_budget"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -27,12 +27,24 @@
     "certification_complete_by_slice",
     "audit_complete_by_slice",
     "blocked_continuation_context",
-    "replay_verification"
+    "replay_verification",
+    "review_checkpoint_status",
+    "review_artifact_refs",
+    "sequence_budget_status",
+    "sequence_budget_ref",
+    "chain_certification_status",
+    "chain_certification_refs",
+    "bundle_readiness_decision",
+    "bundle_certification_status",
+    "bundle_certification_ref",
+    "bundle_audit_status",
+    "bundle_audit_ref",
+    "unresolved_fix_ids"
   ],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "queue_run_id": {
       "type": "string",
@@ -156,6 +168,141 @@
     },
     "replay_verification": {
       "$ref": "#/$defs/replay_verification"
+    },
+    "review_checkpoint_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slice_1_optional_review",
+        "slice_2_required_review",
+        "slice_3_strict_review"
+      ],
+      "properties": {
+        "slice_1_optional_review": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "satisfied",
+            "missing",
+            "blocked"
+          ]
+        },
+        "slice_2_required_review": {
+          "type": "string",
+          "enum": [
+            "required_pending",
+            "satisfied",
+            "missing",
+            "blocked"
+          ]
+        },
+        "slice_3_strict_review": {
+          "type": "string",
+          "enum": [
+            "required_pending",
+            "satisfied",
+            "missing",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "review_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "sequence_budget_status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "within_budget",
+        "exceeded_budget"
+      ]
+    },
+    "sequence_budget_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "chain_certification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "certified",
+        "blocked"
+      ]
+    },
+    "chain_certification_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "bundle_readiness_decision": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "ready",
+        "reason"
+      ],
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "bundle_certification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "certified",
+        "failed"
+      ]
+    },
+    "bundle_certification_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "bundle_audit_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "synthesized",
+        "missing"
+      ]
+    },
+    "bundle_audit_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "unresolved_fix_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     }
   },
   "$defs": {

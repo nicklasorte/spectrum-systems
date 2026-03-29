@@ -219,6 +219,15 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("pqx_slice_continuation_record")
         validate_artifact(instance, "pqx_slice_continuation_record")
 
+    def test_pqx_sequence_budget_example_validates(self) -> None:
+        instance = load_example("pqx_sequence_budget")
+        validate_artifact(instance, "pqx_sequence_budget")
+
+    def test_pqx_chain_and_bundle_contract_examples_validate(self) -> None:
+        for name in ("pqx_chain_certification_record", "pqx_bundle_certification_record", "pqx_bundle_audit_record"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):

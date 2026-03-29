@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.84",
+  "artifact_version": "1.0.85",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.84",
+  "standards_version": "1.0.85",
   "record_id": "REC-STD-2026-03-29-PQX-TRIAGE-B10",
   "run_id": "run-20260329T210000Z",
   "created_at": "2026-03-29T00:00:00Z",
@@ -996,6 +996,32 @@
       "notes": "PQX backbone hardening: canonical block taxonomy plus blocking dependency capture for fail-closed diagnostics."
     },
     {
+      "artifact_type": "pqx_bundle_audit_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.85",
+      "last_updated_in": "1.0.85",
+      "example_path": "contracts/examples/pqx_bundle_audit_record.json",
+      "notes": "G4 B26 bundle-level synthesized audit artifact with decision/review/fix lineage and replay parity status."
+    },
+    {
+      "artifact_type": "pqx_bundle_certification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.85",
+      "last_updated_in": "1.0.85",
+      "example_path": "contracts/examples/pqx_bundle_certification_record.json",
+      "notes": "G4 B25 bundle-level certification aggregation across slice certifications, chain certifications, and review outcomes."
+    },
+    {
       "artifact_type": "pqx_bundle_execution_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -1020,6 +1046,19 @@
       "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/pqx_bundle_state.json",
       "notes": "PQX fix gate state hardening: persisted fix_gate_results, resolved/unresolved fix tracking, and deterministic last gate status for fail-closed resume control."
+    },
+    {
+      "artifact_type": "pqx_chain_certification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.85",
+      "last_updated_in": "1.0.85",
+      "example_path": "contracts/examples/pqx_chain_certification_record.json",
+      "notes": "G3 B22 three-slice chain certification aggregation for certification/review/fix closure invariants."
     },
     {
       "artifact_type": "pqx_execution_request",
@@ -1100,19 +1139,6 @@
       "notes": "B6 governed review artifact contract for deterministic checkpoint binding and findings ingestion into pending fixes."
     },
     {
-      "artifact_type": "pqx_triage_plan_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.96",
-      "example_path": "contracts/examples/pqx_triage_plan_record.json",
-      "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
-    },
-    {
       "artifact_type": "pqx_row_state",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1124,6 +1150,58 @@
       "last_updated_in": "1.0.59",
       "example_path": "data/pqx_state.json",
       "notes": "Minimum governed PQX backbone deterministic row state contract for dependency-satisfied execution progression tracking."
+    },
+    {
+      "artifact_type": "pqx_sequence_budget",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.85",
+      "last_updated_in": "1.0.85",
+      "example_path": "contracts/examples/pqx_sequence_budget.json",
+      "notes": "G3 B21 sequence-level failure budget artifact for per-slice/cumulative severity thresholds and fail-closed freeze decisions."
+    },
+    {
+      "artifact_type": "pqx_slice_continuation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.84",
+      "last_updated_in": "1.0.84",
+      "example_path": "contracts/examples/pqx_slice_continuation_record.json",
+      "notes": "G2 B15-B18 canonical continuation artifact binding governed prior-slice outputs to next-slice admission with explicit lineage and decision reasons."
+    },
+    {
+      "artifact_type": "pqx_slice_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.84",
+      "example_path": "contracts/examples/pqx_slice_execution_record.json",
+      "notes": "G1 B11-B14 canonical deterministic single-slice execution artifact emitted by run_pqx_slice with mandatory certification and audit linkage."
+    },
+    {
+      "artifact_type": "pqx_triage_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.96",
+      "last_updated_in": "1.0.96",
+      "example_path": "contracts/examples/pqx_triage_plan_record.json",
+      "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
     },
     {
       "artifact_type": "program_brief",
@@ -1470,15 +1548,15 @@
     {
       "artifact_type": "prompt_queue_sequence_run",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.89",
-      "last_updated_in": "1.0.84",
+      "last_updated_in": "1.0.85",
       "example_path": "contracts/examples/prompt_queue_sequence_run.json",
-      "notes": "G2 B15-B18 deterministic two-slice continuation persistence with governed certification/audit gating, continuation-state mismatch blocking, and replay verification status."
+      "notes": "G3/G4 B19-B26 multi-slice governance state including review checkpoints, sequence budget, chain/bundle certification, readiness gate, and bundle audit synthesis."
     },
     {
       "artifact_type": "prompt_queue_state",
@@ -1833,32 +1911,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "pqx_slice_execution_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.84",
-      "example_path": "contracts/examples/pqx_slice_execution_record.json",
-      "notes": "G1 B11-B14 canonical deterministic single-slice execution artifact emitted by run_pqx_slice with mandatory certification and audit linkage."
-    },
-    {
-      "artifact_type": "pqx_slice_continuation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.84",
-      "last_updated_in": "1.0.84",
-      "example_path": "contracts/examples/pqx_slice_continuation_record.json",
-      "notes": "G2 B15-B18 canonical continuation artifact binding governed prior-slice outputs to next-slice admission with explicit lineage and decision reasons."
     }
   ]
 }

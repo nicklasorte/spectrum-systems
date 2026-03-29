@@ -215,9 +215,9 @@ Determinism constraints:
 
 ## EXECUTABLE BUNDLE TABLE
 
-| Bundle ID | Ordered Step IDs | Depends On |
-| --- | --- | --- |
-| BUNDLE-PQX-CORE | AI-01, AI-02, TRUST-01, SRE-03, GOV-10 | - |
+| Bundle ID | Ordered Step IDs | Depends On | Entry Conditions | Exit Conditions |
+| --- | --- | --- | --- | --- |
+| BUNDLE-PQX-CORE | AI-01, AI-02, TRUST-01, SRE-03, GOV-10 | - | roadmap authority resolved; prior artifacts valid; no blocking findings | slice certifications complete; chain certification complete; bundle certification + audit synthesized |
 
 
 ## REVIEW CHECKPOINT TABLE

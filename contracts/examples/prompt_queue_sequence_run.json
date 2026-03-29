@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "queue_run_id": "queue-run-pqx-001",
   "run_id": "run-pqx-batch-001",
   "trace_id": "trace-pqx-batch-001",
@@ -76,5 +76,26 @@
   "replay_verification": {
     "status": "not_run",
     "replay_record_ref": null
-  }
+  },
+  "review_checkpoint_status": {
+    "slice_1_optional_review": "satisfied",
+    "slice_2_required_review": "required_pending",
+    "slice_3_strict_review": "required_pending"
+  },
+  "review_artifact_refs": [
+    "review-slice-1"
+  ],
+  "sequence_budget_status": "within_budget",
+  "sequence_budget_ref": "artifacts/pqx_sequence_budget.json",
+  "chain_certification_status": "pending",
+  "chain_certification_refs": [],
+  "bundle_readiness_decision": {
+    "ready": true,
+    "reason": "all dependencies satisfied"
+  },
+  "bundle_certification_status": "pending",
+  "bundle_certification_ref": null,
+  "bundle_audit_status": "pending",
+  "bundle_audit_ref": null,
+  "unresolved_fix_ids": []
 }
