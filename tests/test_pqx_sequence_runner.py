@@ -319,6 +319,8 @@ def test_slice_2_blocked_on_continuation_state_mismatch(tmp_path: Path) -> None:
         execute_slice=_executor,
         clock=FixedClock([f"2026-03-29T23:20:{i:02d}Z" for i in range(1, 20)]),
     )
+
+
     tampered = json.loads(state_path.read_text(encoding="utf-8"))
     tampered["requested_slice_ids"] = ["PQX-QUEUE-01", "PQX-QUEUE-02"]
     tampered["failed_slice_ids"] = []
@@ -354,6 +356,21 @@ def test_slice_2_blocked_on_continuation_state_mismatch(tmp_path: Path) -> None:
     )
     assert blocked["status"] == "blocked"
     assert blocked["blocked_continuation_context"]["block_type"] == "CONTINUATION_STATE_MISMATCH"
+
+
+def test_canary_freeze_blocks_affected_slice_path(tmp_path: Path) -> None:
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-canary-freeze",
+        run_id="run-canary-freeze",
+        trace_id="trace-canary-freeze",
+        execute_slice=lambda _: {"execution_status": "success", "done_certification_record": "cert", "pqx_slice_audit_bundle": "audit"},
+        canary_control={"status": "frozen", "frozen_slice_ids": ["PQX-QUEUE-01"]},
+        clock=FixedClock([f"2026-03-29T23:30:{i:02d}Z" for i in range(1, 20)]),
+    )
+    assert state["status"] == "blocked"
+    assert state["blocked_continuation_context"]["block_type"] == "CANARY_FROZEN"
 
 
 def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> None:

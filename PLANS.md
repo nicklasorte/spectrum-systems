@@ -201,6 +201,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-G2-B15-B18-2026-03-29.md | G2 B15–B18 — Two-slice continuation governance and replay parity | Active |
 
 | docs/review-actions/PLAN-G3-G4-B19-B26-2026-03-29.md | G3+G4 B19–B26 — Multi-slice governance + bundle execution system | Active |
+| docs/review-actions/PLAN-G5-B27-B30-2026-03-29.md | G5 B27–B30 — Queue-aware scheduling + canary + judgment + N-slice validation | Active |
 
 Update this table when plans are created or completed.
 

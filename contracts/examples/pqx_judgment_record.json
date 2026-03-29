@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "record_id": "judgment:queue-run-1:BUNDLE-PQX-CORE:blocked",
+  "decision_type": "blocked_bundle_admission",
+  "outcome": "blocked",
+  "decision_basis": ["bundle readiness gate is not approved"],
+  "upstream_artifact_refs": ["data/pqx_runs/run-1/state.json"],
+  "affected_bundle_id": "BUNDLE-PQX-CORE",
+  "affected_slice_id": null,
+  "run_id": "run-1",
+  "trace_id": "trace-1",
+  "policy_refs": ["docs/roadmaps/system_roadmap.md"],
+  "created_at": "2026-03-29T00:00:00Z"
+}

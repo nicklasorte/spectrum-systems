@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "schedule:run-g5:trace-g5:BUNDLE-PQX-CORE",
+  "outcome": "selected",
+  "selected_bundle_id": "BUNDLE-PQX-CORE",
+  "block_type": null,
+  "reasons": [
+    "dependency-valid",
+    "readiness-approved",
+    "governance-state-clear"
+  ],
+  "candidate_bundle_ids": ["BUNDLE-PQX-CORE"],
+  "blocked_candidates": [],
+  "ambiguous_bundle_ids": [],
+  "run_id": "run-g5",
+  "trace_id": "trace-g5",
+  "created_at": "2026-03-29T00:00:00Z"
+}
