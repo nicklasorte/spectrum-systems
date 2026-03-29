@@ -309,6 +309,7 @@ def run_pqx_slice(
         "request": str(request_path),
         "result": str(result_path),
         "slice_execution_record": str(execution_record_path),
+        "done_certification_record": str(certification_path),
         "certification_status": "certified",
         "pqx_slice_audit_bundle": str(audit_bundle_path),
     }

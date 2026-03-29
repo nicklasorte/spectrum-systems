@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "queue_run_id": "queue-run-pqx-001",
   "run_id": "run-pqx-batch-001",
   "trace_id": "trace-pqx-batch-001",
@@ -29,9 +29,52 @@
       "parent_execution_ref": null,
       "started_at": "2026-03-29T12:00:10Z",
       "completed_at": "2026-03-29T12:00:20Z",
-      "error": null
+      "error": null,
+      "slice_execution_record_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_execution_record.json",
+      "certification_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.done_certification_record.json",
+      "audit_bundle_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_audit_bundle.json",
+      "certification_complete": true,
+      "audit_complete": true,
+      "continuation_record_id": null
     }
   ],
   "blocked_reason": null,
-  "resume_token": "resume:queue-run-pqx-001:1"
+  "resume_token": "resume:queue-run-pqx-001:1",
+  "continuation_records": [
+    {
+      "artifact_id": "cont:queue-run-pqx-001:PQX-QUEUE-01:PQX-QUEUE-02",
+      "prior_step_id": "PQX-QUEUE-01",
+      "next_step_id": "PQX-QUEUE-02",
+      "prior_run_id": "run-pqx-batch-001",
+      "prior_trace_id": "trace-pqx-queue-01",
+      "prior_slice_execution_record_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_execution_record.json",
+      "prior_certification_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.done_certification_record.json",
+      "prior_audit_bundle_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_audit_bundle.json",
+      "continuation_status": "ready",
+      "continuation_decision": "allow",
+      "continuation_reasons": [
+        "prior governed slice complete"
+      ],
+      "created_at": "2026-03-29T12:00:30Z"
+    }
+  ],
+  "lineage": {
+    "prior_run_id": "run-pqx-batch-001",
+    "prior_trace_id": "trace-pqx-queue-01"
+  },
+  "certification_complete_by_slice": {
+    "PQX-QUEUE-01": true,
+    "PQX-QUEUE-02": false,
+    "PQX-QUEUE-03": false
+  },
+  "audit_complete_by_slice": {
+    "PQX-QUEUE-01": true,
+    "PQX-QUEUE-02": false,
+    "PQX-QUEUE-03": false
+  },
+  "blocked_continuation_context": null,
+  "replay_verification": {
+    "status": "not_run",
+    "replay_record_ref": null
+  }
 }

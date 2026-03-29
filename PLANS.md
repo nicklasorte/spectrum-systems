@@ -198,6 +198,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-G1-B11-B14-2026-03-29.md | G1 B11–B14 — Dominant Single-Slice Execution Path | Active |
 
+| docs/review-actions/PLAN-G2-B15-B18-2026-03-29.md | G2 B15–B18 — Two-slice continuation governance and replay parity | Active |
+
 Update this table when plans are created or completed.
 
 ---

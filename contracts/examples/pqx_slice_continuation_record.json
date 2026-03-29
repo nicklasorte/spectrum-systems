@@ -1,0 +1,19 @@
+{
+  "artifact_id": "cont:queue-run-pqx-001:PQX-QUEUE-01:PQX-QUEUE-02",
+  "artifact_type": "pqx_slice_continuation_record",
+  "schema_version": "1.0.0",
+  "prior_step_id": "PQX-QUEUE-01",
+  "next_step_id": "PQX-QUEUE-02",
+  "prior_run_id": "run-pqx-batch-001",
+  "prior_trace_id": "trace-pqx-queue-01",
+  "prior_slice_execution_record_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_execution_record.json",
+  "prior_certification_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.done_certification_record.json",
+  "prior_audit_bundle_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_audit_bundle.json",
+  "continuation_status": "ready",
+  "continuation_decision": "allow",
+  "continuation_reasons": [
+    "prior slice emitted canonical execution, certification, and audit artifacts",
+    "lineage continuity satisfied for run_id and trace_id"
+  ],
+  "created_at": "2026-03-29T12:00:30Z"
+}

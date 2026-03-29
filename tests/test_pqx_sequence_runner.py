@@ -10,6 +10,7 @@ from spectrum_systems.modules.runtime.pqx_sequence_runner import (
     PQXSequenceRunnerError,
     execute_bundle_sequence_run,
     execute_sequence_run,
+    verify_two_slice_replay,
 )
 
 
@@ -43,6 +44,11 @@ def test_happy_path_runs_three_slices_in_order_and_persists(tmp_path: Path) -> N
             "run_id": payload["run_id"],
             "trace_id": payload["trace_id"],
             "parent_execution_ref": payload["parent_execution_ref"],
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
         }
 
     state = execute_sequence_run(
@@ -69,7 +75,14 @@ def test_resume_after_interruption_continues_without_rerun(tmp_path: Path) -> No
 
     def _executor(payload: dict) -> dict:
         calls.append(payload["slice_id"])
-        return {"execution_status": "success"}
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
 
     execute_sequence_run(
         slice_requests=_slice_requests(),
@@ -257,3 +270,146 @@ def test_sequence_runner_default_executor_routes_to_canonical_slice_runner(tmp_p
     assert state["status"] == "completed"
     assert state["completed_slice_ids"] == ["PQX-QUEUE-01"]
 
+
+def test_slice_2_blocked_when_prior_certification_missing(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        if payload["slice_id"] == "PQX-QUEUE-01":
+            return {
+                "execution_status": "success",
+                "slice_execution_record": "record-1.json",
+                "done_certification_record": None,
+                "pqx_slice_audit_bundle": "audit-1.json",
+                "certification_complete": False,
+                "audit_complete": True,
+            }
+        return {"execution_status": "success"}
+
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-cert-block",
+        run_id="run-cert-block",
+        trace_id="trace-cert-block",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-29T23:10:{i:02d}Z" for i in range(1, 20)]),
+    )
+    assert state["status"] == "blocked"
+    assert state["blocked_continuation_context"]["block_type"] == "PRIOR_SLICE_NOT_GOVERNED"
+
+
+def test_slice_2_blocked_on_continuation_state_mismatch(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+
+    def _executor(_: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": "record-1.json",
+            "done_certification_record": "cert-1.json",
+            "pqx_slice_audit_bundle": "audit-1.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:1],
+        state_path=state_path,
+        queue_run_id="queue-run-mismatch",
+        run_id="run-mismatch",
+        trace_id="trace-mismatch",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-29T23:20:{i:02d}Z" for i in range(1, 20)]),
+    )
+    tampered = json.loads(state_path.read_text(encoding="utf-8"))
+    tampered["requested_slice_ids"] = ["PQX-QUEUE-01", "PQX-QUEUE-02"]
+    tampered["failed_slice_ids"] = []
+    tampered["next_slice_ref"] = "PQX-QUEUE-02"
+    tampered["status"] = "running"
+    tampered["continuation_records"] = [
+        {
+            "artifact_id": "cont:bad",
+            "prior_step_id": "PQX-QUEUE-01",
+            "next_step_id": "PQX-QUEUE-02",
+            "prior_run_id": "bad-run",
+            "prior_trace_id": "trace-01",
+            "prior_slice_execution_record_ref": "x",
+            "prior_certification_ref": "y",
+            "prior_audit_bundle_ref": "z",
+            "continuation_status": "ready",
+            "continuation_decision": "allow",
+            "continuation_reasons": ["tampered"],
+            "created_at": "2026-03-29T23:20:59Z",
+        }
+    ]
+    state_path.write_text(json.dumps(tampered, indent=2) + "\n", encoding="utf-8")
+
+    blocked = execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_path,
+        queue_run_id="queue-run-mismatch",
+        run_id="run-mismatch",
+        trace_id="trace-mismatch",
+        execute_slice=_executor,
+        resume=True,
+        clock=FixedClock([f"2026-03-29T23:21:{i:02d}Z" for i in range(1, 20)]),
+    )
+    assert blocked["status"] == "blocked"
+    assert blocked["blocked_continuation_context"]["block_type"] == "CONTINUATION_STATE_MISMATCH"
+
+
+def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> None:
+    state_1 = tmp_path / "baseline.json"
+    state_2 = tmp_path / "replay.json"
+
+    def _executor(_: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": "record.json",
+            "done_certification_record": "cert.json",
+            "pqx_slice_audit_bundle": "audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_1,
+        queue_run_id="queue-run-rp-1",
+        run_id="run-rp-1",
+        trace_id="trace-rp-1",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-29T23:30:{i:02d}Z" for i in range(1, 24)]),
+    )
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_2,
+        queue_run_id="queue-run-rp-1",
+        run_id="run-rp-1",
+        trace_id="trace-rp-1",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-29T23:31:{i:02d}Z" for i in range(1, 24)]),
+    )
+
+    record = verify_two_slice_replay(
+        baseline_state_path=state_1,
+        replay_state_path=state_2,
+        output_path=tmp_path / "replay_record.json",
+        queue_run_id="queue-run-rp-1",
+        run_id="run-rp-1",
+        trace_id="trace-rp-1",
+        clock=FixedClock(["2026-03-29T23:32:01Z"]),
+    )
+    assert record["parity_status"] == "match"
+
+    tampered = json.loads(state_2.read_text(encoding="utf-8"))
+    tampered["execution_history"][1]["audit_complete"] = False
+    state_2.write_text(json.dumps(tampered, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(PQXSequenceRunnerError, match="failed closed"):
+        verify_two_slice_replay(
+            baseline_state_path=state_1,
+            replay_state_path=state_2,
+            output_path=tmp_path / "replay_record_mismatch.json",
+            queue_run_id="queue-run-rp-1",
+            run_id="run-rp-1",
+            trace_id="trace-rp-1",
+            clock=FixedClock(["2026-03-29T23:32:02Z"]),
+        )
