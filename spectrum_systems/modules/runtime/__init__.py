@@ -367,9 +367,37 @@ __all__ = [
     # PQX-QUEUE-RUN-02 — narrow sequential queue-run orchestration
     "execute_sequence_run",
     "PQXSequenceRunnerError",
+    # B4 — governed bundle-state helpers
+    "PQXBundleStateError",
+    "load_bundle_state",
+    "validate_bundle_state",
+    "initialize_bundle_state",
+    "mark_step_complete",
+    "mark_bundle_complete",
+    "block_step",
+    "attach_review_artifact",
+    "add_pending_fix",
+    "derive_resume_position",
+    "assert_valid_advancement",
+    "save_bundle_state",
 ]
 
 from spectrum_systems.modules.runtime.pqx_sequence_runner import (
     PQXSequenceRunnerError,
     execute_sequence_run,
+)
+
+from spectrum_systems.modules.runtime.pqx_bundle_state import (
+    PQXBundleStateError,
+    add_pending_fix,
+    assert_valid_advancement,
+    attach_review_artifact,
+    block_step,
+    derive_resume_position,
+    initialize_bundle_state,
+    load_bundle_state,
+    mark_bundle_complete,
+    mark_step_complete,
+    save_bundle_state,
+    validate_bundle_state,
 )

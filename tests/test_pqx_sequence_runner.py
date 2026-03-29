@@ -174,3 +174,37 @@ def test_sequence_runner_does_not_require_roadmap_path_rebinding(tmp_path: Path)
         clock=FixedClock(["2026-03-29T14:00:01Z", "2026-03-29T14:00:02Z", "2026-03-29T14:00:03Z", "2026-03-29T14:00:04Z"]),
     )
     assert state["status"] == "completed"
+
+
+def test_sequence_runner_persists_bundle_state_when_configured(tmp_path: Path) -> None:
+    bundle_state_path = tmp_path / "bundle_state.json"
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-b4-001",
+        run_id="run-b4-001",
+        trace_id="trace-b4-001",
+        bundle_state_path=bundle_state_path,
+        bundle_id="BUNDLE-03",
+        clock=FixedClock([f"2026-03-29T15:00:0{i}Z" for i in range(1, 12)]),
+    )
+
+    bundle_state = json.loads(bundle_state_path.read_text(encoding="utf-8"))
+    assert bundle_state["completed_step_ids"] == ["PQX-QUEUE-01", "PQX-QUEUE-02"]
+    assert bundle_state["completed_bundle_ids"] == ["BUNDLE-03"]
+
+
+def test_sequence_runner_bundle_state_blocks_out_of_order_progression(tmp_path: Path) -> None:
+    with pytest.raises(PQXSequenceRunnerError, match="step_id not declared in bundle plan"):
+        execute_sequence_run(
+            slice_requests=_slice_requests()[:1],
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-run-b4-003",
+            run_id="run-b4-003",
+            trace_id="trace-b4-003",
+            bundle_state_path=tmp_path / "bundle_state.json",
+            bundle_plan=[{"bundle_id": "BUNDLE-01", "step_ids": ["B3-01"], "depends_on": []}],
+            clock=FixedClock(["2026-03-29T16:01:01Z", "2026-03-29T16:01:02Z", "2026-03-29T16:01:03Z", "2026-03-29T16:01:04Z"]),
+        )
+
+
