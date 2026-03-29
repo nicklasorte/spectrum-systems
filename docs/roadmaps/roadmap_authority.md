@@ -1,10 +1,15 @@
 # Roadmap Authority — Operational Note
 
 ## Active roadmap authority file
-- **Active authority:** `docs/roadmaps/system_roadmap.md`
+- **Active editorial authority:** `docs/roadmaps/system_roadmap.md`
+
+## Compatibility rule (B1 transition)
+- **Operational compatibility mirror (required until migration complete):** `docs/roadmap/system_roadmap.md`
+- The compatibility mirror must remain parseable for existing PQX/tests that still consume `docs/roadmap/system_roadmap.md`.
+- During transition, updates to roadmap rows that affect operational parsing must be mirrored in both surfaces.
 
 ## Allowed supporting docs
-These support execution but are not authority documents:
+These support execution but are not top-level authority documents:
 - `docs/roadmaps/execution_state_inventory.md`
 - `docs/roadmaps/codex-prompt-roadmap.md` (reference slicing context)
 - `docs/roadmaps/operational-ai-systems-roadmap.md` (historical/reference)
@@ -13,13 +18,14 @@ These support execution but are not authority documents:
 - `docs/roadmap/pqx_execution_map.md` (execution map reference)
 
 ## How old roadmaps are treated
-- `docs/roadmap/system_roadmap.md`: subordinate reference copy (non-authoritative).
+- `docs/roadmap/system_roadmap.md`: subordinate for editorial governance, but required as an operational compatibility mirror during migration.
 - `docs/roadmap.md`: deprecated historical artifact.
-- Any roadmap-like document outside `docs/roadmaps/system_roadmap.md` is either subordinate planning material or reference history.
+- Any roadmap-like document outside `docs/roadmaps/system_roadmap.md` is subordinate planning material or reference history.
 
 ## Where future status updates belong
-- Update status rows, dependencies, and execution ordering only in `docs/roadmaps/system_roadmap.md`.
-- Update implementation reality in `docs/roadmaps/execution_state_inventory.md` when bundle outcomes change maturity.
+- Editorial status/dependencies/execution-order updates belong in `docs/roadmaps/system_roadmap.md`.
+- Implementation-reality updates belong in `docs/roadmaps/execution_state_inventory.md`.
+- Compatibility updates needed for legacy consumers must also be mirrored into `docs/roadmap/system_roadmap.md` until migration closes.
 
 ## Where future bundle planning belongs
 - Create bundle plans in `docs/review-actions/PLAN-<BUNDLE>-<DATE>.md`.
@@ -28,4 +34,7 @@ These support execution but are not authority documents:
 ## How design reviews feed roadmap changes
 - Review outputs are authored in `docs/reviews/`.
 - Follow-up actions are tracked in `docs/review-actions/`.
-- Only after review findings are accepted should roadmap status/dependencies be changed in `docs/roadmaps/system_roadmap.md`.
+- After review findings are accepted, update the active roadmap and (if required) the compatibility mirror in one change set.
+
+## Migration closure trigger
+- A future migration slice should retire the compatibility mirror only after PQX/runtime/tests stop consuming `docs/roadmap/system_roadmap.md` and pass against the new authority surface alone.

@@ -19,6 +19,8 @@ Operate Spectrum Systems as a governed, fail-closed, artifact-first execution su
 ## Execution Rules
 - This file is the only active roadmap authority for implementation execution.
 - `docs/roadmap/` and other roadmap-adjacent documents are subordinate or reference-only.
+- Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror for legacy PQX consumers until migration is complete.
+- Mirror contract rule: keep roadmap table header and operational rows parseable in the compatibility mirror; update both surfaces in lockstep during transition.
 - Status discipline is strict:
   - Done = implementation + tests + contracts + docs materially align.
   - Partial = real implementation exists but material gaps remain.
