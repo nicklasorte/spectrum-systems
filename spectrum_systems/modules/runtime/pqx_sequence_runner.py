@@ -58,7 +58,7 @@ def _validate_state_contract(state: dict) -> None:
 def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice_requests: list[dict], now: str) -> dict:
     requested = [entry["slice_id"] for entry in slice_requests]
     return {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "queue_run_id": queue_run_id,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -78,6 +78,22 @@ def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice
         "audit_complete_by_slice": {slice_id: False for slice_id in requested},
         "blocked_continuation_context": None,
         "replay_verification": {"status": "not_run", "replay_record_ref": None},
+        "review_checkpoint_status": {
+            "slice_1_optional_review": "not_required",
+            "slice_2_required_review": "required_pending",
+            "slice_3_strict_review": "required_pending",
+        },
+        "review_artifact_refs": [],
+        "sequence_budget_status": "not_started",
+        "sequence_budget_ref": None,
+        "chain_certification_status": "pending",
+        "chain_certification_refs": [],
+        "bundle_readiness_decision": {"ready": True, "reason": "initial readiness satisfied"},
+        "bundle_certification_status": "pending",
+        "bundle_certification_ref": None,
+        "bundle_audit_status": "pending",
+        "bundle_audit_ref": None,
+        "unresolved_fix_ids": [],
         "blocked_reason": None,
         "resume_token": f"resume:{queue_run_id}:0",
     }
@@ -250,6 +266,8 @@ def execute_sequence_run(
     roadmap_authority_ref: str = "docs/roadmaps/system_roadmap.md",
     execution_plan_ref: str = "docs/roadmaps/execution_bundles.md",
     clock=utc_now,
+    review_results_by_slice: dict[str, dict] | None = None,
+    sequence_budget_thresholds: dict | None = None,
 ) -> dict:
     """Run a narrow deterministic sequential PQX batch (2–3 slices) with persistent resumable state."""
 
@@ -261,6 +279,8 @@ def execute_sequence_run(
         raise PQXSequenceRunnerError("trace_id is required")
 
     _validate_slice_requests(slice_requests)
+    review_results = review_results_by_slice or {}
+    enforce_review_policy = review_results_by_slice is not None
     state_path = Path(state_path)
     resolved_bundle_plan = bundle_plan or _default_bundle_plan(slice_requests, bundle_id)
     resolved_bundle_state_path = Path(bundle_state_path) if bundle_state_path is not None else None
@@ -337,11 +357,48 @@ def execute_sequence_run(
         )
 
     requested_ids = state["requested_slice_ids"]
+    budget_thresholds = sequence_budget_thresholds or {"max_failed_slices": 1, "max_cumulative_severity": 5}
     executed_this_call = 0
     while True:
         _verify_continuity(state, slice_requests)
         next_slice_id = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
         if next_slice_id is None:
+            if len(requested_ids) >= 3:
+                first_three = requested_ids[:3]
+                all_three_certified = all(state["certification_complete_by_slice"].get(sid, False) for sid in first_three)
+                reviews_satisfied = True
+                if enforce_review_policy:
+                    reviews_satisfied = (
+                        state["review_checkpoint_status"]["slice_2_required_review"] == "satisfied"
+                        and state["review_checkpoint_status"]["slice_3_strict_review"] == "satisfied"
+                    )
+                chain_status = "certified" if all_three_certified and reviews_satisfied and not state["unresolved_fix_ids"] else "blocked"
+                if chain_status != "certified":
+                    state["status"] = "blocked"
+                    state["chain_certification_status"] = "blocked"
+                    state["blocked_reason"] = "chain certification blocked: reviews/fixes/certification incomplete"
+                    return _persist_and_reload_exact(state, state_path)
+                chain_ref = f"{queue_run_id}:chain-3"
+                if chain_ref not in state["chain_certification_refs"]:
+                    state["chain_certification_refs"].append(chain_ref)
+                state["chain_certification_status"] = "certified"
+            else:
+                state["chain_certification_status"] = "pending"
+            if not state.get("bundle_readiness_decision", {}).get("ready", False):
+                state["status"] = "blocked"
+                state["bundle_certification_status"] = "failed"
+                state["blocked_reason"] = "bundle readiness unresolved"
+                return _persist_and_reload_exact(state, state_path)
+            state["bundle_certification_status"] = "certified"
+            state["bundle_certification_ref"] = f"{queue_run_id}:bundle-cert"
+            history_refs = [row.get("slice_execution_record_ref") for row in state["execution_history"] if row.get("slice_execution_record_ref")]
+            if not history_refs:
+                state["status"] = "blocked"
+                state["bundle_audit_status"] = "missing"
+                state["blocked_reason"] = "missing bundle audit artifacts"
+                return _persist_and_reload_exact(state, state_path)
+            state["bundle_audit_status"] = "synthesized"
+            state["bundle_audit_ref"] = f"{queue_run_id}:bundle-audit"
             state["status"] = "completed"
             state["current_slice_id"] = None
             state["next_slice_ref"] = None
@@ -378,6 +435,16 @@ def execute_sequence_run(
 
         request = next(entry for entry in slice_requests if entry["slice_id"] == next_slice_id)
         current_index = requested_ids.index(next_slice_id)
+        state["bundle_readiness_decision"] = {
+            "ready": len(state["unresolved_fix_ids"]) == 0,
+            "reason": "dependencies/artifacts valid and no blocking findings"
+            if len(state["unresolved_fix_ids"]) == 0
+            else "blocking findings unresolved",
+        }
+        if not state["bundle_readiness_decision"]["ready"]:
+            state["status"] = "blocked"
+            state["blocked_reason"] = "bundle readiness gate blocked"
+            return _persist_and_reload_exact(state, state_path)
         if current_index > 0:
             prior_slice_id = requested_ids[current_index - 1]
             prior_success = [
@@ -523,6 +590,54 @@ def execute_sequence_run(
                     save_bundle_state(bundle_state, resolved_bundle_state_path, bundle_plan=resolved_bundle_plan)
                 except PQXBundleStateError as exc:
                     raise PQXSequenceRunnerError(str(exc)) from exc
+            if current_index == 0 and enforce_review_policy:
+                review = review_results.get(next_slice_id)
+                if review is None:
+                    state["review_checkpoint_status"]["slice_1_optional_review"] = "not_required"
+                elif review.get("has_blocking_findings"):
+                    state["review_checkpoint_status"]["slice_1_optional_review"] = "blocked"
+                    state["status"] = "blocked"
+                    state["blocked_reason"] = "optional slice-1 review contains blocking findings"
+                    return _persist_and_reload_exact(state, state_path)
+                else:
+                    state["review_checkpoint_status"]["slice_1_optional_review"] = "satisfied"
+                    state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
+            elif current_index == 1 and enforce_review_policy:
+                review = review_results.get(next_slice_id)
+                if review is None:
+                    state["review_checkpoint_status"]["slice_2_required_review"] = "missing"
+                    state["status"] = "blocked"
+                    state["chain_certification_status"] = "blocked"
+                    state["blocked_reason"] = "missing required review after slice 2"
+                    return _persist_and_reload_exact(state, state_path)
+                if review.get("has_blocking_findings"):
+                    state["review_checkpoint_status"]["slice_2_required_review"] = "blocked"
+                    state["status"] = "blocked"
+                    state["chain_certification_status"] = "blocked"
+                    state["blocked_reason"] = "blocking findings after slice 2 review"
+                    state["unresolved_fix_ids"].extend(review.get("pending_fix_ids", []))
+                    state["bundle_readiness_decision"] = {"ready": False, "reason": "blocking findings unresolved"}
+                    return _persist_and_reload_exact(state, state_path)
+                state["review_checkpoint_status"]["slice_2_required_review"] = "satisfied"
+                state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
+            elif current_index == 2 and enforce_review_policy:
+                review = review_results.get(next_slice_id)
+                if review is None:
+                    state["review_checkpoint_status"]["slice_3_strict_review"] = "missing"
+                    state["status"] = "blocked"
+                    state["chain_certification_status"] = "blocked"
+                    state["blocked_reason"] = "missing strict review after slice 3"
+                    return _persist_and_reload_exact(state, state_path)
+                if review.get("overall_disposition") != "approved" or review.get("has_blocking_findings"):
+                    state["review_checkpoint_status"]["slice_3_strict_review"] = "blocked"
+                    state["status"] = "blocked"
+                    state["chain_certification_status"] = "blocked"
+                    state["blocked_reason"] = "strict slice-3 review did not pass"
+                    state["unresolved_fix_ids"].extend(review.get("pending_fix_ids", []))
+                    state["bundle_readiness_decision"] = {"ready": False, "reason": "blocking findings unresolved"}
+                    return _persist_and_reload_exact(state, state_path)
+                state["review_checkpoint_status"]["slice_3_strict_review"] = "satisfied"
+                state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
         else:
             state["failed_slice_ids"].append(next_slice_id)
             state["status"] = "failed"
@@ -538,6 +653,38 @@ def execute_sequence_run(
                     save_bundle_state(bundle_state, resolved_bundle_state_path, bundle_plan=resolved_bundle_plan)
                 except PQXBundleStateError as exc:
                     raise PQXSequenceRunnerError(str(exc)) from exc
+
+        failure_rows = [row for row in state["execution_history"] if row["status"] == "failed"]
+        severity_total = sum(1 if not row.get("error") else 2 for row in failure_rows)
+        budget = {
+            "schema_version": "1.0.0",
+            "artifact_type": "pqx_sequence_budget",
+            "sequence_id": queue_run_id,
+            "thresholds": {
+                "max_failed_slices": int(budget_thresholds.get("max_failed_slices", 1)),
+                "max_cumulative_severity": int(budget_thresholds.get("max_cumulative_severity", 5)),
+            },
+            "slice_failures": [
+                {
+                    "slice_id": row["slice_id"],
+                    "failure_count": 1 if row["status"] == "failed" else 0,
+                    "failure_severity": 0 if row["status"] != "failed" else (1 if not row.get("error") else 2),
+                }
+                for row in state["execution_history"]
+            ],
+            "cumulative_failure_severity": severity_total,
+            "threshold_breached": len(failure_rows) > int(budget_thresholds.get("max_failed_slices", 1))
+            or severity_total > int(budget_thresholds.get("max_cumulative_severity", 5)),
+            "created_at": iso_now(clock),
+        }
+        budget["status"] = "exceeded_budget" if budget["threshold_breached"] else "within_budget"
+        validate_artifact(budget, "pqx_sequence_budget")
+        state["sequence_budget_ref"] = f"{queue_run_id}:sequence-budget"
+        state["sequence_budget_status"] = budget["status"]
+        if budget["threshold_breached"]:
+            state["status"] = "blocked"
+            state["blocked_reason"] = "sequence failure budget exceeded"
+            return _persist_and_reload_exact(state, state_path)
 
         state["current_slice_id"] = None
         state["next_slice_ref"] = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
@@ -592,6 +739,8 @@ def verify_two_slice_replay(
         and _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"])
         and baseline["certification_complete_by_slice"] == replay["certification_complete_by_slice"]
         and baseline["audit_complete_by_slice"] == replay["audit_complete_by_slice"]
+        and baseline.get("chain_certification_status") == replay.get("chain_certification_status")
+        and baseline.get("bundle_certification_status") == replay.get("bundle_certification_status")
     )
     replay_id = "queue-replay-" + hashlib.sha256(
         f"{queue_run_id}:{run_id}:{trace_id}:{baseline['resume_token']}:{replay['resume_token']}".encode("utf-8")

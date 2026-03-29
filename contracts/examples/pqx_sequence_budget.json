@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_sequence_budget",
+  "sequence_id": "queue-run-pqx-001",
+  "thresholds": {
+    "max_failed_slices": 1,
+    "max_cumulative_severity": 5
+  },
+  "slice_failures": [
+    {
+      "slice_id": "PQX-QUEUE-01",
+      "failure_count": 0,
+      "failure_severity": 0
+    },
+    {
+      "slice_id": "PQX-QUEUE-02",
+      "failure_count": 0,
+      "failure_severity": 0
+    },
+    {
+      "slice_id": "PQX-QUEUE-03",
+      "failure_count": 0,
+      "failure_severity": 0
+    }
+  ],
+  "cumulative_failure_severity": 0,
+  "threshold_breached": false,
+  "status": "within_budget",
+  "created_at": "2026-03-29T12:00:00Z"
+}

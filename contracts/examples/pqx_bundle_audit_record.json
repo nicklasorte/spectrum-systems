@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_bundle_audit_record",
+  "bundle_id": "BUNDLE-PQX-CORE",
+  "slice_artifacts": [
+    "runs/PQX-QUEUE-01/run-001.pqx_slice_execution_record.json",
+    "runs/PQX-QUEUE-02/run-001.pqx_slice_execution_record.json",
+    "runs/PQX-QUEUE-03/run-001.pqx_slice_execution_record.json"
+  ],
+  "decision_refs": [
+    "queue-run-pqx-001:chain-3",
+    "BUNDLE-PQX-CORE:bundle-cert"
+  ],
+  "review_refs": [
+    "review-s2",
+    "review-s3"
+  ],
+  "fix_refs": [],
+  "replay_validation": {
+    "status": "pass",
+    "parity": true
+  },
+  "created_at": "2026-03-29T12:07:00Z"
+}

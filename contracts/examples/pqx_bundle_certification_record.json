@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_bundle_certification_record",
+  "bundle_id": "BUNDLE-PQX-CORE",
+  "slice_certifications": {
+    "PQX-QUEUE-01": true,
+    "PQX-QUEUE-02": true,
+    "PQX-QUEUE-03": true
+  },
+  "chain_certification_refs": [
+    "queue-run-pqx-001:chain-3"
+  ],
+  "review_outcomes": [
+    {
+      "checkpoint_id": "slice-2-required-review",
+      "status": "satisfied"
+    },
+    {
+      "checkpoint_id": "slice-3-strict-review",
+      "status": "satisfied"
+    }
+  ],
+  "final_status": "certified",
+  "created_at": "2026-03-29T12:06:00Z"
+}

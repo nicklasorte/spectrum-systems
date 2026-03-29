@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_bundle_certification_record.schema.json",
+  "title": "PQX Bundle Certification Record",
+  "description": "Bundle-level certification aggregation across slice, chain, and review outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "bundle_id",
+    "slice_certifications",
+    "chain_certification_refs",
+    "review_outcomes",
+    "final_status",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_bundle_certification_record"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "slice_certifications": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {"^[A-Za-z0-9._:-]+$": {"type": "boolean"}}
+    },
+    "chain_certification_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "review_outcomes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["checkpoint_id", "status"],
+        "properties": {
+          "checkpoint_id": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["satisfied", "missing", "blocked"]}
+        }
+      }
+    },
+    "final_status": {"type": "string", "enum": ["certified", "failed"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_bundle_audit_record.schema.json",
+  "title": "PQX Bundle Audit Record",
+  "description": "Bundle-level synthesized audit artifact with replay validation status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "bundle_id",
+    "slice_artifacts",
+    "decision_refs",
+    "review_refs",
+    "fix_refs",
+    "replay_validation",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_bundle_audit_record"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "slice_artifacts": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "decision_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "review_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "fix_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "replay_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "parity"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pass", "fail", "not_run"]},
+        "parity": {"type": "boolean"}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

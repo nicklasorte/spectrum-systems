@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_chain_certification_record.schema.json",
+  "title": "PQX Chain Certification Record",
+  "description": "Three-slice chain certification aggregation record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "chain_id",
+    "slice_ids",
+    "all_slices_certified",
+    "review_checkpoints_satisfied",
+    "unresolved_fix_count",
+    "final_status",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_chain_certification_record"},
+    "chain_id": {"type": "string", "minLength": 1},
+    "slice_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 3},
+    "all_slices_certified": {"type": "boolean"},
+    "review_checkpoints_satisfied": {"type": "boolean"},
+    "unresolved_fix_count": {"type": "integer", "minimum": 0},
+    "final_status": {"type": "string", "enum": ["certified", "blocked"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
