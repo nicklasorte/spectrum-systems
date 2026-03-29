@@ -20,6 +20,10 @@
     "failed_fixes",
     "fix_artifacts",
     "reinsertion_points",
+    "fix_gate_results",
+    "resolved_fixes",
+    "unresolved_fixes",
+    "last_fix_gate_status",
     "review_artifact_refs",
     "review_requirements",
     "satisfied_review_checkpoint_ids",
@@ -31,7 +35,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.2.0"
+      "const": "1.3.0"
     },
     "roadmap_authority_ref": {
       "type": "string",
@@ -155,6 +159,40 @@
           "$ref": "#/$defs/reinsertion_point"
         }
       }
+    },
+    "fix_gate_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "$ref": "#/$defs/fix_gate_record_ref"
+        }
+      }
+    },
+    "resolved_fixes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "unresolved_fixes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "last_fix_gate_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "passed",
+        "blocked",
+        null
+      ]
     }
   },
   "$defs": {
@@ -393,6 +431,30 @@
         "ordered_index": {
           "type": "integer",
           "minimum": 0
+        }
+      }
+    },
+    "fix_gate_record_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_status",
+        "record_ref",
+        "record_id"
+      ],
+      "properties": {
+        "gate_status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "blocked"
+          ]
+        },
+        "record_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "record_id": {
+          "$ref": "#/$defs/non_empty"
         }
       }
     }

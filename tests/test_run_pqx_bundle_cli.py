@@ -107,7 +107,7 @@ def test_cli_execute_fixes_non_zero_on_blocked_fix(tmp_path: Path) -> None:
     state.write_text(
         json.dumps(
             {
-                "schema_version": "1.2.0",
+                "schema_version": "1.3.0",
                 "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
                 "execution_plan_ref": str(plan),
                 "run_id": "run-b7-cli-001",
@@ -123,7 +123,7 @@ def test_cli_execute_fixes_non_zero_on_blocked_fix(tmp_path: Path) -> None:
                         "source_finding_id": "F-001",
                         "severity": "high",
                         "priority": "P1",
-                        "affected_step_ids": ["MISSING-STEP"],
+                        "affected_step_ids": ["AI-01"],
                         "status": "open",
                         "blocking": True,
                         "created_from_bundle_id": "BUNDLE-T1",
@@ -137,6 +137,10 @@ def test_cli_execute_fixes_non_zero_on_blocked_fix(tmp_path: Path) -> None:
                 "fix_artifacts": {},
                 "reinsertion_points": {},
                 "review_artifact_refs": [],
+                "fix_gate_results": {},
+                "resolved_fixes": ["fix:REV-B7:F-001"],
+                "unresolved_fixes": [],
+                "last_fix_gate_status": None,
                 "review_requirements": [],
                 "satisfied_review_checkpoint_ids": [],
                 "artifact_index": {},

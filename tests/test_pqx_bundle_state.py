@@ -178,6 +178,15 @@ def test_legacy_add_pending_fix_still_works() -> None:
         now="2026-03-29T12:00:02Z",
     )
     assert state["pending_fix_ids"][0]["status"] == "planned"
+    assert state["unresolved_fixes"] == ["B3-FIX-01"]
+
+
+def test_initialize_sets_fix_gate_defaults() -> None:
+    state = _init()
+    assert state["fix_gate_results"] == {}
+    assert state["resolved_fixes"] == []
+    assert state["unresolved_fixes"] == []
+    assert state["last_fix_gate_status"] is None
 
 
 def test_resume_position_still_deterministic() -> None:

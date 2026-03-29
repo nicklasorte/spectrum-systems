@@ -220,7 +220,7 @@ def initialize_bundle_state(
     requirements = review_requirements or []
     first_bundle = bundle_plan[0]["bundle_id"]
     initial = {
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "roadmap_authority_ref": roadmap_authority_ref,
         "execution_plan_ref": execution_plan_ref,
         "run_id": run_id,
@@ -234,6 +234,10 @@ def initialize_bundle_state(
         "failed_fixes": [],
         "fix_artifacts": {},
         "reinsertion_points": {},
+        "fix_gate_results": {},
+        "resolved_fixes": [],
+        "unresolved_fixes": [],
+        "last_fix_gate_status": None,
         "review_artifact_refs": [],
         "review_requirements": requirements,
         "satisfied_review_checkpoint_ids": [],
@@ -461,6 +465,8 @@ def ingest_review_result(
         if any(existing["fix_id"] == fix_id for existing in updated["pending_fix_ids"]):
             raise PQXBundleStateError(f"duplicate pending fix entry rejected: {fix_id}")
         updated["pending_fix_ids"].append(candidate)
+        if fix_id not in updated["unresolved_fixes"]:
+            updated["unresolved_fixes"].append(fix_id)
 
     updated["updated_at"] = now
     validate_bundle_state(updated)
@@ -506,6 +512,8 @@ def add_pending_fix(
         raise PQXBundleStateError(f"duplicate pending fix entry rejected: {fix_id}")
 
     updated["pending_fix_ids"].append(candidate)
+    if fix_id not in updated["unresolved_fixes"]:
+        updated["unresolved_fixes"].append(fix_id)
     updated["updated_at"] = now
     validate_bundle_state(updated)
     return updated

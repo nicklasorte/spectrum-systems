@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.93",
+  "artifact_version": "1.0.94",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.29",
-  "record_id": "REC-STD-2026-03-29-B7-FIX-EXECUTION",
+  "record_id": "REC-STD-2026-03-29-PQX-FIX-GATE",
   "run_id": "run-20260329T120000Z",
   "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
@@ -1011,15 +1011,15 @@
     {
       "artifact_type": "pqx_bundle_state",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.90",
-      "last_updated_in": "1.0.93",
+      "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/pqx_bundle_state.json",
-      "notes": "B7 deterministic bundle fix-loop state fields for executed/failed fixes, fix artifacts, and stable reinsertion-point tracking."
+      "notes": "PQX fix gate state hardening: persisted fix_gate_results, resolved/unresolved fix tracking, and deterministic last gate status for fail-closed resume control."
     },
     {
       "artifact_type": "pqx_execution_request",
@@ -1069,9 +1069,22 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.93",
-      "last_updated_in": "1.0.93",
+      "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/pqx_fix_execution_record.json",
       "notes": "B7 deterministic fail-closed fix execution artifact capturing execution status, lineage, validation result, and reinsertion metadata."
+    },
+    {
+      "artifact_type": "pqx_fix_gate_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.94",
+      "last_updated_in": "1.0.94",
+      "example_path": "contracts/examples/pqx_fix_gate_record.json",
+      "notes": "Governed fix adjudication artifact that enforces deterministic pass/block completion semantics before PQX bundle resume is permitted."
     },
     {
       "artifact_type": "pqx_review_result",

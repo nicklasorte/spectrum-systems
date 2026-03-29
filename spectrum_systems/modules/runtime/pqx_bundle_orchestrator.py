@@ -34,6 +34,11 @@ from spectrum_systems.modules.runtime.pqx_fix_execution import (
     update_bundle_state_with_fix,
     validate_fix_step,
 )
+from spectrum_systems.modules.runtime.pqx_fix_gate import (
+    PQXFixGateError,
+    assert_fix_gate_allows_resume,
+    evaluate_fix_completion,
+)
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
@@ -255,13 +260,14 @@ def _execute_pending_fix_loop(
     sequence_run_id: str,
     trace_id: str,
     clock,
-) -> tuple[dict, list[dict]]:
+) -> tuple[dict, list[dict], list[dict]]:
     pending_fixes = load_pending_fixes(bundle_state)
     if not pending_fixes:
-        return bundle_state, []
+        return bundle_state, [], []
 
     roadmap = list(definition.ordered_step_ids)
     fix_records: list[dict] = []
+    fix_gate_records: list[dict] = []
 
     for fix in pending_fixes:
         fix_step = normalize_fix_into_step(fix)
@@ -299,9 +305,19 @@ def _execute_pending_fix_loop(
         bundle_state = update_bundle_state_with_fix(bundle_state, record)
         fix_records.append(record)
 
-        if record["execution_status"] != "complete":
+        fix_gate_path = step_state_dir / f"{fix_step_id}.fix_gate_record.json"
+        bundle_state, gate_record = evaluate_fix_completion(
+            bundle_state=bundle_state,
+            fix_execution_record=record,
+            fix_gate_record_ref=_relative(fix_gate_path),
+            now=iso_now(clock),
+        )
+        fix_gate_path.write_text(json.dumps(gate_record, indent=2) + "\n", encoding="utf-8")
+        fix_gate_records.append(gate_record)
+
+        if gate_record["gate_status"] != "passed":
             break
-    return bundle_state, fix_records
+    return bundle_state, fix_records, fix_gate_records
 
 
 def execute_bundle_run(
@@ -372,13 +388,14 @@ def execute_bundle_run(
     executor = execute_step or (lambda payload: {"execution_status": "success", **payload})
     executed_steps: list[dict] = []
     executed_fix_records: list[dict] = []
+    fix_gate_records: list[dict] = []
     status = "completed"
     blocked_step_id: str | None = None
     failure_classification: str | None = None
 
     if execute_fixes and load_pending_fixes(bundle_state):
         try:
-            bundle_state, executed_fix_records = _execute_pending_fix_loop(
+            bundle_state, executed_fix_records, fix_gate_records = _execute_pending_fix_loop(
                 bundle_state=bundle_state,
                 definition=definition,
                 step_state_dir=step_state_dir,
@@ -387,14 +404,16 @@ def execute_bundle_run(
                 trace_id=trace_id,
                 clock=clock,
             )
+            if executed_fix_records:
+                assert_fix_gate_allows_resume(bundle_state)
             bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
-        except (PQXFixExecutionError, PQXBundleStateError) as exc:
+        except (PQXFixExecutionError, PQXFixGateError, PQXBundleStateError) as exc:
             raise PQXBundleOrchestratorError(str(exc)) from exc
 
-        unresolved = [r["fix_id"] for r in executed_fix_records if r["execution_status"] != "complete"]
+        unresolved = [r["fix_id"] for r in fix_gate_records if r["gate_status"] != "passed"]
         if unresolved:
             status = "blocked"
-            failure_classification = "FIX_EXECUTION_FAILED"
+            failure_classification = "FIX_GATE_BLOCKED"
         elif load_pending_fixes(bundle_state):
             status = "blocked"
             failure_classification = "BLOCKING_FIX_UNRESOLVED"
@@ -504,6 +523,7 @@ def execute_bundle_run(
 
     return {
         "status": status,
+        "failure_classification": failure_classification,
         "bundle_execution_record": _relative(record_path),
         "bundle_state": _relative(state_path),
     }
