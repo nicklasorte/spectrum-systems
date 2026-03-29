@@ -13,6 +13,9 @@ The governing standard is:
 Slice execution specs live under:
 `docs/roadmap/slices/`
 
+MVP-01 Slice Spec:
+`docs/roadmap/slices/MVP-01.md`
+
 # Spectrum Systems — System Roadmap
 
 ## System Goal
