@@ -186,6 +186,7 @@ from spectrum_systems.modules.prompt_queue.repair_child_queue_integration import
 )
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
     read_json_artifact,
+    validate_policy_backtest_report,
     validate_queue_audit_bundle,
     validate_queue_certification_record,
     validate_findings_reentry,
@@ -211,6 +212,10 @@ from spectrum_systems.modules.prompt_queue.queue_certification import (
 from spectrum_systems.modules.prompt_queue.queue_audit_bundle import (
     QueueAuditBundleError,
     build_queue_audit_bundle,
+)
+from spectrum_systems.modules.prompt_queue.policy_backtesting import (
+    QueuePolicyBacktestingError,
+    run_queue_policy_backtest,
 )
 from spectrum_systems.modules.prompt_queue.queue_models import (
     Priority,

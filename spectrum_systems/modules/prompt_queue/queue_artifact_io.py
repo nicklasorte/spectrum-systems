@@ -67,6 +67,10 @@ def validate_queue_audit_bundle(record: dict) -> None:
     _validate(record, "prompt_queue_audit_bundle")
 
 
+def validate_policy_backtest_report(report: dict) -> None:
+    _validate(report, "prompt_queue_policy_backtest_report")
+
+
 def _validate(instance: Any, schema_name: str) -> None:
     schema = load_schema(schema_name)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

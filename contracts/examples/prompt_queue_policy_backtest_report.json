@@ -1,0 +1,39 @@
+{
+  "backtest_id": "queue-policy-backtest-6da4f4df9f6b56af73e856eac57642ce6f3c8052d4f8df741fee6a96a8d33426",
+  "policy_under_test_ref": {
+    "policy_id": "decision_grade",
+    "policy_version": "1.0.0"
+  },
+  "baseline_policy_ref": {
+    "policy_id": "permissive",
+    "policy_version": "1.0.0"
+  },
+  "replay_run_refs": [
+    "artifacts/prompt_queue/audit/pqx_queue_run_01.audit_bundle.json"
+  ],
+  "comparison_results": [
+    {
+      "step_id": "step-001",
+      "baseline_decision": "warn",
+      "candidate_decision": "block",
+      "parity_status": "mismatch",
+      "difference_summary": "candidate policy converted warn to block because warnings are not permitted"
+    },
+    {
+      "step_id": "step-002",
+      "baseline_decision": "allow",
+      "candidate_decision": "allow",
+      "parity_status": "match",
+      "difference_summary": null
+    }
+  ],
+  "aggregate_summary": {
+    "total_steps": 2,
+    "matches": 1,
+    "mismatches": 1,
+    "mismatch_rate": 0.5
+  },
+  "recommendation": "hold",
+  "trace_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "timestamp": "2026-03-29T00:00:00Z"
+}
