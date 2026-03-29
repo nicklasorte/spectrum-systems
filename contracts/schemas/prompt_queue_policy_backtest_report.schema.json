@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prompt_queue_policy_backtest_report.schema.json",
+  "title": "Prompt Queue Policy Backtest Report",
+  "description": "QUEUE-12 deterministic fail-closed policy backtesting comparison artifact for queue replay/historical runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "backtest_id",
+    "policy_under_test_ref",
+    "baseline_policy_ref",
+    "replay_run_refs",
+    "comparison_results",
+    "aggregate_summary",
+    "recommendation",
+    "trace_id",
+    "timestamp"
+  ],
+  "properties": {
+    "backtest_id": {
+      "type": "string",
+      "pattern": "^queue-policy-backtest-[a-f0-9]{64}$"
+    },
+    "policy_under_test_ref": {
+      "$ref": "#/$defs/policy_ref"
+    },
+    "baseline_policy_ref": {
+      "$ref": "#/$defs/policy_ref"
+    },
+    "replay_run_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      }
+    },
+    "comparison_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "baseline_decision",
+          "candidate_decision",
+          "parity_status",
+          "difference_summary"
+        ],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "pattern": "^step-[0-9]{3}$"
+          },
+          "baseline_decision": {
+            "type": "string",
+            "enum": ["allow", "warn", "block"]
+          },
+          "candidate_decision": {
+            "type": "string",
+            "enum": ["allow", "warn", "block"]
+          },
+          "parity_status": {
+            "type": "string",
+            "enum": ["match", "mismatch"]
+          },
+          "difference_summary": {
+            "type": ["string", "null"]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "parity_status": { "const": "match" }
+              },
+              "required": ["parity_status"]
+            },
+            "then": {
+              "properties": {
+                "difference_summary": { "type": "null" }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "parity_status": { "const": "mismatch" }
+              },
+              "required": ["parity_status"]
+            },
+            "then": {
+              "properties": {
+                "difference_summary": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "aggregate_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_steps", "matches", "mismatches", "mismatch_rate"],
+      "properties": {
+        "total_steps": { "type": "integer", "minimum": 1 },
+        "matches": { "type": "integer", "minimum": 0 },
+        "mismatches": { "type": "integer", "minimum": 0 },
+        "mismatch_rate": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": ["promote", "hold", "reject"]
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "artifact_ref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[-A-Za-z0-9_./:]+$"
+    },
+    "policy_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_id", "policy_version"],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

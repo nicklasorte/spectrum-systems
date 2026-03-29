@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.86",
+  "artifact_version": "1.0.87",
   "schema_version": "1.0.0",
-  "standards_version": "2026.03.28",
-  "record_id": "REC-STD-2026-03-28-QUEUE11-01",
-  "run_id": "run-20260328T000000Z",
-  "created_at": "2026-03-28T00:00:00Z",
+  "standards_version": "2026.03.29",
+  "record_id": "REC-STD-2026-03-29-QUEUE12-01",
+  "run_id": "run-20260329T000000Z",
+  "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -1101,6 +1101,20 @@
       "notes": "HS-X3 deterministic prompt-injection detection/enforcement artifact emitted at context-bundle to agent-execution seam."
     },
     {
+      "artifact_type": "prompt_queue_audit_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "governance and audit workflows"
+      ],
+      "introduced_in": "1.0.86",
+      "last_updated_in": "1.0.86",
+      "example_path": "contracts/examples/prompt_queue_audit_bundle.json",
+      "notes": "QUEUE-11 deterministic fail-closed full queue-run evidence package linking manifest, final state, execution/decision/transition artifacts, replay evidence, observability snapshot, and certification artifact in one inspectable unit."
+    },
+    {
       "artifact_type": "prompt_queue_blocked_recovery_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1125,20 +1139,6 @@
       "last_updated_in": "1.0.77",
       "example_path": "contracts/examples/prompt_queue_certification_record.json",
       "notes": "QUEUE-10 deterministic fail-closed certification trust gate artifact requiring complete queue, replay/resume, observability, and lineage integrity evidence."
-    },
-    {
-      "artifact_type": "prompt_queue_audit_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems",
-        "governance and audit workflows"
-      ],
-      "introduced_in": "1.0.86",
-      "last_updated_in": "1.0.86",
-      "example_path": "contracts/examples/prompt_queue_audit_bundle.json",
-      "notes": "QUEUE-11 deterministic fail-closed full queue-run evidence package linking manifest, final state, execution/decision/transition artifacts, replay evidence, observability snapshot, and certification artifact in one inspectable unit."
     },
     {
       "artifact_type": "prompt_queue_execution_gating_decision",
@@ -1244,6 +1244,20 @@
       "last_updated_in": "1.0.74",
       "example_path": "contracts/examples/prompt_queue_observability_snapshot.json",
       "notes": "QUEUE-07 deterministic bounded queue health classification metrics with fail-closed lineage/ambiguity handling."
+    },
+    {
+      "artifact_type": "prompt_queue_policy_backtest_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "governance and audit workflows"
+      ],
+      "introduced_in": "1.0.87",
+      "last_updated_in": "1.0.87",
+      "example_path": "contracts/examples/prompt_queue_policy_backtest_report.json",
+      "notes": "QUEUE-12 deterministic fail-closed queue policy backtesting comparison artifact over historical replay/audit evidence with explicit step-level parity reporting and promotion recommendation."
     },
     {
       "artifact_type": "prompt_queue_post_execution_decision",
