@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_triage_plan_record.schema.json",
+  "title": "PQX Triage Plan Record",
+  "description": "Deterministic planning-only governed artifact that normalizes review findings and fix-gate outcomes into bounded rack-and-stack recommendations for subsequent human-controlled PQX execution slicing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "triage_plan_id",
+    "run_id",
+    "trace_id",
+    "bundle_run_id",
+    "roadmap_authority_ref",
+    "bundle_id",
+    "review_artifact_refs",
+    "fix_gate_artifact_refs",
+    "findings_analyzed",
+    "triaged_items",
+    "insertion_recommendations",
+    "blocked_items",
+    "deferred_items",
+    "execution_recommendations",
+    "summary_counts",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "triage_plan_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "bundle_run_id": {"type": "string", "minLength": 1},
+    "roadmap_authority_ref": {"type": "string", "const": "docs/roadmaps/system_roadmap.md"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "review_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "fix_gate_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "findings_analyzed": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "triaged_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/triaged_item"}
+    },
+    "insertion_recommendations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/insertion_recommendation"}
+    },
+    "blocked_items": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "deferred_items": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "execution_recommendations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["must_run_next", "must_block_advancement", "can_defer", "human_review_required"],
+      "properties": {
+        "must_run_next": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "must_block_advancement": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "can_defer": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "human_review_required": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findings_total",
+        "blocking_total",
+        "deferred_total",
+        "patch_current_bundle_total",
+        "insert_next_bundle_total",
+        "roadmap_update_required_total"
+      ],
+      "properties": {
+        "findings_total": {"type": "integer", "minimum": 0},
+        "blocking_total": {"type": "integer", "minimum": 0},
+        "deferred_total": {"type": "integer", "minimum": 0},
+        "patch_current_bundle_total": {"type": "integer", "minimum": 0},
+        "insert_next_bundle_total": {"type": "integer", "minimum": 0},
+        "roadmap_update_required_total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "source_type": {"type": "string", "enum": ["review_finding", "fix_gate"]},
+    "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+    "priority": {"type": "string", "enum": ["p0", "p1", "p2", "p3"]},
+    "execution_impact": {"type": "string", "enum": ["block_now", "run_before_resume", "run_next", "defer"]},
+    "required_action": {"type": "string", "enum": ["fix", "review", "roadmap_patch", "doc_only", "investigate"]},
+    "insertion_mode": {
+      "type": "string",
+      "enum": [
+        "patch_current_bundle",
+        "insert_next_bundle",
+        "defer_to_future_bundle",
+        "roadmap_update_required",
+        "human_decision_required"
+      ]
+    },
+    "blocking_status": {"type": "string", "enum": ["blocking", "non_blocking"]},
+    "triaged_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "source_type",
+        "source_artifact_ref",
+        "related_step_id",
+        "related_bundle_id",
+        "issue_type",
+        "severity",
+        "priority",
+        "execution_impact",
+        "required_action",
+        "insertion_mode",
+        "blocking_status",
+        "rationale",
+        "proposed_patch_step_id",
+        "proposed_future_step_id",
+        "dependency_refs"
+      ],
+      "properties": {
+        "finding_id": {"type": "string", "minLength": 1},
+        "source_type": {"$ref": "#/$defs/source_type"},
+        "source_artifact_ref": {"type": "string", "minLength": 1},
+        "related_step_id": {"type": "string", "minLength": 1},
+        "related_bundle_id": {"type": "string", "minLength": 1},
+        "issue_type": {"type": "string", "minLength": 1},
+        "severity": {"$ref": "#/$defs/severity"},
+        "priority": {"$ref": "#/$defs/priority"},
+        "execution_impact": {"$ref": "#/$defs/execution_impact"},
+        "required_action": {"$ref": "#/$defs/required_action"},
+        "insertion_mode": {"$ref": "#/$defs/insertion_mode"},
+        "blocking_status": {"$ref": "#/$defs/blocking_status"},
+        "rationale": {"type": "string", "minLength": 1},
+        "proposed_patch_step_id": {"type": ["string", "null"], "minLength": 1},
+        "proposed_future_step_id": {"type": ["string", "null"], "minLength": 1},
+        "dependency_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "insertion_recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_id", "insertion_mode", "proposed_patch_step_id", "proposed_future_step_id"],
+      "properties": {
+        "finding_id": {"type": "string", "minLength": 1},
+        "insertion_mode": {"$ref": "#/$defs/insertion_mode"},
+        "proposed_patch_step_id": {"type": ["string", "null"], "minLength": 1},
+        "proposed_future_step_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}

@@ -179,3 +179,68 @@ def test_cli_execute_fixes_non_zero_on_blocked_fix(tmp_path: Path) -> None:
     env = {**os.environ, "PYTHONPATH": str(Path.cwd())}
     blocked = subprocess.run(run_cmd, capture_output=True, text=True, check=False, env=env)
     assert blocked.returncode == 2
+
+
+def test_cli_emit_triage_plan_blocking_exit(tmp_path: Path) -> None:
+    plan = tmp_path / "execution_bundles.md"
+    out = tmp_path / "triage.json"
+    _plan(plan)
+    review = tmp_path / "review.json"
+    review.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0.0",
+                "review_id": "REV-CLI-B10",
+                "checkpoint_id": "BUNDLE-T1:checkpoint:AI-01",
+                "review_type": "checkpoint_review",
+                "bundle_id": "BUNDLE-T1",
+                "bundle_run_id": "queue-run-b10-cli-001",
+                "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+                "execution_plan_ref": str(plan),
+                "scope": {"scope_type": "step", "step_id": "AI-01"},
+                "findings": [
+                    {
+                        "finding_id": "F-001",
+                        "severity": "critical",
+                        "category": "runtime",
+                        "title": "critical issue",
+                        "description": "critical issue",
+                        "affected_step_ids": ["AI-01"],
+                        "recommended_action": "fix now",
+                        "blocking": True,
+                        "source_refs": ["docs/review-actions/REV-CLI-B10.md#f1"],
+                    }
+                ],
+                "overall_disposition": "approved_with_findings",
+                "created_at": "2026-03-29T12:00:00Z",
+                "provenance_refs": ["trace:cli:b10"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    env = {**os.environ, "PYTHONPATH": str(Path.cwd())}
+    cmd = [
+        sys.executable,
+        "scripts/run_pqx_bundle.py",
+        "emit-triage-plan",
+        "--bundle-id",
+        "BUNDLE-T1",
+        "--bundle-plan-path",
+        str(plan),
+        "--run-id",
+        "run-b10-cli-001",
+        "--sequence-run-id",
+        "queue-run-b10-cli-001",
+        "--trace-id",
+        "trace-b10-cli-001",
+        "--created-at",
+        "2026-03-29T12:02:00Z",
+        "--output-path",
+        str(out),
+        "--review-artifact-ref",
+        str(review),
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False, env=env)
+    assert proc.returncode == 1
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["summary_counts"]["blocking_total"] == 1

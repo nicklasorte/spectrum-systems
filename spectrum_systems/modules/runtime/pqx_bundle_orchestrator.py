@@ -39,6 +39,10 @@ from spectrum_systems.modules.runtime.pqx_fix_gate import (
     assert_fix_gate_allows_resume,
     evaluate_fix_completion,
 )
+from spectrum_systems.modules.runtime.pqx_triage_planner import (
+    PQXTriagePlannerError,
+    build_triage_plan_record,
+)
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
@@ -323,6 +327,18 @@ def _execute_pending_fix_loop(
     return bundle_state, fix_records, fix_gate_records
 
 
+def _load_json_artifact_refs(*, refs: list[str], repo_root: Path) -> list[dict]:
+    artifacts: list[dict] = []
+    for artifact_ref in refs:
+        if not isinstance(artifact_ref, str) or not artifact_ref:
+            raise PQXBundleOrchestratorError("triage planning requires non-empty artifact refs")
+        path = Path(artifact_ref) if Path(artifact_ref).is_absolute() else (repo_root / artifact_ref)
+        if not path.is_file():
+            raise PQXBundleOrchestratorError(f"triage planning input artifact not found: {artifact_ref}")
+        artifacts.append(json.loads(path.read_text(encoding="utf-8")))
+    return artifacts
+
+
 def execute_bundle_run(
     *,
     bundle_id: str,
@@ -336,6 +352,8 @@ def execute_bundle_run(
     roadmap_path: str | Path = LEGACY_EXECUTION_ROADMAP_PATH,
     execute_step: StepExecutor | None = None,
     execute_fixes: bool = False,
+    emit_triage_plan: bool = False,
+    triage_plan_on: tuple[str, ...] = ("review_findings", "fix_gate_blocked", "blocked_outstanding_findings"),
     clock=utc_now,
 ) -> dict:
     bundle_plan = load_bundle_plan(bundle_plan_path)
@@ -392,6 +410,7 @@ def execute_bundle_run(
     executed_steps: list[dict] = []
     executed_fix_records: list[dict] = []
     fix_gate_records: list[dict] = []
+    persisted_fix_gate_refs: list[str] = []
     status = "completed"
     blocked_step_id: str | None = None
     failure_classification: str | None = None
@@ -417,6 +436,9 @@ def execute_bundle_run(
         if unresolved:
             status = "blocked"
             failure_classification = "FIX_GATE_BLOCKED"
+            persisted_fix_gate_refs = [
+                _relative(step_state_dir / f"fix-step:{record['fix_id']}.fix_gate_record.json") for record in fix_gate_records
+            ]
         elif load_pending_fixes(bundle_state):
             status = "blocked"
             failure_classification = "BLOCKING_FIX_UNRESOLVED"
@@ -524,9 +546,51 @@ def execute_bundle_run(
     record_path = output_root / f"{bundle_id}.bundle_execution_record.json"
     record_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
+    triage_plan_record_ref: str | None = None
+    if emit_triage_plan:
+        should_emit = False
+        pending_fixes = load_pending_fixes(bundle_state)
+        has_review_findings = bool(bundle_state["review_artifact_refs"]) and bool(pending_fixes)
+        has_fix_gate_block = failure_classification == "FIX_GATE_BLOCKED"
+        has_blocked_outstanding = status == "blocked" and bool(bundle_state.get("unresolved_fixes"))
+
+        if "review_findings" in triage_plan_on and has_review_findings:
+            should_emit = True
+        if "fix_gate_blocked" in triage_plan_on and has_fix_gate_block:
+            should_emit = True
+        if "blocked_outstanding_findings" in triage_plan_on and has_blocked_outstanding:
+            should_emit = True
+
+        if should_emit:
+            try:
+                review_refs = sorted({entry["artifact_ref"] for entry in bundle_state["review_artifact_refs"]})
+                fix_refs = sorted(set(persisted_fix_gate_refs))
+                reviews = _load_json_artifact_refs(refs=review_refs, repo_root=REPO_ROOT) if review_refs else []
+                fixes = _load_json_artifact_refs(refs=fix_refs, repo_root=REPO_ROOT) if fix_refs else []
+                triage_plan = build_triage_plan_record(
+                    run_id=run_id,
+                    trace_id=trace_id,
+                    bundle_run_id=sequence_run_id,
+                    bundle_id=bundle_id,
+                    roadmap_authority_ref=roadmap_authority_ref,
+                    review_artifacts=reviews,
+                    review_artifact_refs=review_refs,
+                    fix_gate_records=fixes,
+                    fix_gate_record_refs=fix_refs,
+                    step_ids=list(definition.ordered_step_ids),
+                    created_at=iso_now(clock),
+                )
+            except (PQXTriagePlannerError, OSError, json.JSONDecodeError, KeyError) as exc:
+                raise PQXBundleOrchestratorError(f"triage planning failed closed: {exc}") from exc
+
+            triage_plan_path = output_root / f"{bundle_id}.triage_plan_record.json"
+            triage_plan_path.write_text(json.dumps(triage_plan, indent=2) + "\n", encoding="utf-8")
+            triage_plan_record_ref = _relative(triage_plan_path)
+
     return {
         "status": status,
         "failure_classification": failure_classification,
         "bundle_execution_record": _relative(record_path),
         "bundle_state": _relative(state_path),
+        "triage_plan_record": triage_plan_record_ref,
     }
