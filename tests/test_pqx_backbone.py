@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from spectrum_systems.modules.pqx_backbone import (
     RoadmapRow,
     parse_system_roadmap,
+    resolve_roadmap_authority,
     resolve_executable_row,
     run_pqx_backbone,
 )
@@ -13,6 +16,7 @@ from spectrum_systems.modules.pqx_backbone import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
+ACTIVE_PATH = REPO_ROOT / "docs" / "roadmaps" / "system_roadmap.md"
 
 
 class _FixedClock:
@@ -38,6 +42,39 @@ def test_roadmap_parser_extracts_rows_and_dependencies() -> None:
     ai02 = next(row for row in rows if row.step_id == "AI-02")
     assert ai02.dependencies == ("AI-01",)
     assert ai02.status == "VALID"
+
+
+def test_authority_resolution_selects_legacy_execution_mirror() -> None:
+    resolution = resolve_roadmap_authority()
+    assert resolution.execution_roadmap_path == ROADMAP_PATH
+    assert resolution.execution_roadmap_ref == "docs/roadmap/system_roadmap.md"
+    assert resolution.active_authority_path == ACTIVE_PATH
+    assert resolution.active_authority_ref == "docs/roadmaps/system_roadmap.md"
+
+
+def test_authority_resolution_fails_closed_on_missing_bridge_statement(tmp_path: Path) -> None:
+    authority_path = tmp_path / "roadmap_authority.md"
+    authority_path.write_text(
+        "# Roadmap Authority\n- **Active editorial authority:** `docs/roadmaps/system_roadmap.md`\n",
+        encoding="utf-8",
+    )
+    active_path = tmp_path / "active.md"
+    active_path.write_text(
+        "Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror",
+        encoding="utf-8",
+    )
+    legacy_path = tmp_path / "legacy.md"
+    legacy_path.write_text(
+        "Active editorial roadmap authority: `docs/roadmaps/system_roadmap.md`\ndocs/roadmap/roadmap_step_contract.md",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="legacy compatibility mirror declaration"):
+        resolve_roadmap_authority(
+            authority_path=authority_path,
+            active_path=active_path,
+            legacy_execution_path=legacy_path,
+        )
 
 
 def test_dependency_resolver_blocks_incomplete_dependency() -> None:

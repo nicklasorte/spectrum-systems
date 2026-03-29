@@ -10,6 +10,7 @@ TRACKER_JSON = REPO_ROOT / "ecosystem" / "roadmap-tracker.json"
 TRACKER_SCHEMA = REPO_ROOT / "ecosystem" / "roadmap-tracker.schema.json"
 README_PATH = REPO_ROOT / "README.md"
 CLAUDE_PROTOCOL = REPO_ROOT / "CLAUDE_REVIEW_PROTOCOL.md"
+ROADMAP_AUTHORITY = REPO_ROOT / "docs" / "roadmaps" / "roadmap_authority.md"
 
 
 def test_roadmap_and_tracker_files_exist() -> None:
@@ -41,3 +42,9 @@ def test_readme_references_roadmap() -> None:
 def test_claude_protocol_references_tracker() -> None:
     content = CLAUDE_PROTOCOL.read_text(encoding="utf-8")
     assert "roadmap-tracker.json" in content, "CLAUDE_REVIEW_PROTOCOL must reference roadmap-tracker.json"
+
+
+def test_tracker_surface_does_not_override_roadmap_authority_bridge() -> None:
+    content = ROADMAP_AUTHORITY.read_text(encoding="utf-8")
+    assert "docs/roadmaps/system_roadmap.md" in content
+    assert "docs/roadmap/system_roadmap.md" in content

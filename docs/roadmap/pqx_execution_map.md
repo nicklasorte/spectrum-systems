@@ -2,6 +2,11 @@
 
 ## Active execution tracks
 
+Authority bridge note:
+- Active roadmap authority is `docs/roadmaps/system_roadmap.md`.
+- Machine-executable roadmap for current PQX parsing remains `docs/roadmap/system_roadmap.md` via `docs/roadmaps/roadmap_authority.md`.
+- If these declarations are missing or inconsistent, PQX execution must fail closed.
+
 1. **PQX Queue roadmap (active now)** — execute queue capability slices from `docs/roadmap/pqx_queue_roadmap.md`.
 2. **PQX Protocol Hardening roadmap (follow-on)** — execute protocol hardening slices from `docs/roadmap/pqx_protocol_hardening.md` after queue track execution.
 

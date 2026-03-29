@@ -13,7 +13,9 @@ from spectrum_systems.contracts import load_schema
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
+ROADMAP_AUTHORITY_PATH = REPO_ROOT / "docs" / "roadmaps" / "roadmap_authority.md"
+ACTIVE_ROADMAP_PATH = REPO_ROOT / "docs" / "roadmaps" / "system_roadmap.md"
+LEGACY_EXECUTION_ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
 STATE_PATH = REPO_ROOT / "data" / "pqx_state.json"
 RUNS_ROOT = REPO_ROOT / "data" / "pqx_runs"
 
@@ -31,6 +33,14 @@ class RoadmapRow:
     status: str
 
 
+@dataclass(frozen=True)
+class RoadmapAuthorityResolution:
+    active_authority_path: Path
+    active_authority_ref: str
+    execution_roadmap_path: Path
+    execution_roadmap_ref: str
+
+
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -46,8 +56,51 @@ def _parse_dependencies(raw: str) -> tuple[str, ...]:
     return tuple(dep.strip() for dep in normalized.split(",") if dep.strip())
 
 
-def parse_system_roadmap(path: Path = ROADMAP_PATH) -> list[RoadmapRow]:
-    lines = path.read_text(encoding="utf-8").splitlines()
+def resolve_roadmap_authority(
+    *,
+    authority_path: Path = ROADMAP_AUTHORITY_PATH,
+    active_path: Path = ACTIVE_ROADMAP_PATH,
+    legacy_execution_path: Path = LEGACY_EXECUTION_ROADMAP_PATH,
+) -> RoadmapAuthorityResolution:
+    expected_active = "docs/roadmaps/system_roadmap.md"
+    expected_legacy = "docs/roadmap/system_roadmap.md"
+    expected_contract = "docs/roadmap/roadmap_step_contract.md"
+
+    for path in (authority_path, active_path, legacy_execution_path):
+        if not path.is_file():
+            raise PQXBackboneError(f"Roadmap authority bridge file is missing: {path}")
+
+    authority_text = authority_path.read_text(encoding="utf-8")
+    if f"**Active editorial authority:** `{expected_active}`" not in authority_text:
+        raise PQXBackboneError("Authority doc missing active roadmap declaration.")
+    if f"**Operational compatibility mirror (required until migration complete):** `{expected_legacy}`" not in authority_text:
+        raise PQXBackboneError("Authority doc missing required legacy compatibility mirror declaration.")
+
+    active_text = active_path.read_text(encoding="utf-8")
+    if f"Compatibility transition rule: `{expected_legacy}` is a required parseable operational mirror" not in active_text:
+        raise PQXBackboneError("Active roadmap missing compatibility transition rule for legacy execution mirror.")
+
+    legacy_text = legacy_execution_path.read_text(encoding="utf-8")
+    if f"Active editorial roadmap authority: `{expected_active}`" not in legacy_text:
+        raise PQXBackboneError("Legacy execution roadmap missing active authority reference.")
+    if expected_contract not in legacy_text:
+        raise PQXBackboneError("Legacy execution roadmap missing step contract reference.")
+
+    return RoadmapAuthorityResolution(
+        active_authority_path=active_path,
+        active_authority_ref=expected_active,
+        execution_roadmap_path=legacy_execution_path,
+        execution_roadmap_ref=expected_legacy,
+    )
+
+
+def parse_system_roadmap(path: Path | None = None) -> list[RoadmapRow]:
+    resolved_path = path or resolve_roadmap_authority().execution_roadmap_path
+    try:
+        roadmap_ref = str(resolved_path.relative_to(REPO_ROOT))
+    except ValueError:
+        roadmap_ref = str(resolved_path)
+    lines = resolved_path.read_text(encoding="utf-8").splitlines()
     header_idx = None
     for idx, line in enumerate(lines):
         if line.strip().startswith("| Step ID "):
@@ -55,7 +108,7 @@ def parse_system_roadmap(path: Path = ROADMAP_PATH) -> list[RoadmapRow]:
             break
 
     if header_idx is None:
-        raise PQXBackboneError("Roadmap table header not found in docs/roadmap/system_roadmap.md.")
+        raise PQXBackboneError(f"Roadmap table header not found in {roadmap_ref}.")
 
     rows: list[RoadmapRow] = []
     for line in lines[header_idx + 2 :]:
@@ -213,15 +266,17 @@ def run_pqx_backbone(
     *,
     selected_step_id: str | None,
     pqx_output_text: str | None,
-    roadmap_path: Path = ROADMAP_PATH,
+    roadmap_path: Path | None = None,
     state_path: Path = STATE_PATH,
     runs_root: Path = RUNS_ROOT,
     clock=utc_now,
 ) -> dict:
     run_id = f"pqx-run-{iso_now(clock).replace(':', '').replace('-', '')}"
     try:
+        authority = resolve_roadmap_authority()
+        selected_roadmap_path = roadmap_path or authority.execution_roadmap_path
         state = load_state(state_path)
-        rows = parse_system_roadmap(roadmap_path)
+        rows = parse_system_roadmap(selected_roadmap_path)
     except PQXBackboneError as exc:
         block_payload = {
             "schema_version": "1.1.0",
@@ -286,7 +341,7 @@ def run_pqx_backbone(
         "dependencies": list(row.dependencies),
         "requested_at": iso_now(clock),
         "prompt": f"Implement roadmap step {row.step_id}: {row.step_name}",
-        "roadmap_version": "docs/roadmap/system_roadmap.md",
+        "roadmap_version": authority.execution_roadmap_ref,
         "row_snapshot": {
             "row_index": row.row_index,
             "step_id": row.step_id,
