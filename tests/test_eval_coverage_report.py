@@ -14,6 +14,7 @@ def _eval_case(case_id: str, slice_tags: list[str], *, risk_class: str = "high")
     return {
         "artifact_type": "eval_case",
         "schema_version": "1.0.0",
+        "run_id": f"run-{case_id}",
         "trace_id": "11111111-1111-4111-8111-111111111111" if case_id == "case-1" else "11111111-1111-4111-8111-222222222222",
         "eval_case_id": case_id,
         "input_artifact_refs": [f"artifact://{case_id}/input"],
@@ -32,6 +33,7 @@ def _eval_result(case_id: str, status: str, trace_suffix: str) -> dict:
         "artifact_type": "eval_result",
         "schema_version": "1.0.0",
         "eval_case_id": case_id,
+        "run_id": f"run-{case_id}",
         "trace_id": f"22222222-2222-4222-8222-{int(trace_suffix):012d}",
         "result_status": status,
         "score": 1.0 if status == "pass" else 0.0,
