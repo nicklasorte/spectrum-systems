@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.90",
+  "artifact_version": "1.0.91",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.29",
-  "record_id": "REC-STD-2026-03-29-B4-BUNDLE-STATE",
+  "record_id": "REC-STD-2026-03-29-B5-BUNDLE-ORCHESTRATOR",
   "run_id": "run-20260329T120000Z",
   "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
@@ -994,6 +994,19 @@
       "last_updated_in": "1.0.60",
       "example_path": null,
       "notes": "PQX backbone hardening: canonical block taxonomy plus blocking dependency capture for fail-closed diagnostics."
+    },
+    {
+      "artifact_type": "pqx_bundle_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.91",
+      "last_updated_in": "1.0.91",
+      "example_path": "contracts/examples/pqx_bundle_execution_record.json",
+      "notes": "B5 deterministic fail-closed bundle execution artifact for ordered roadmap-step orchestration, blocking semantics, and resume continuity."
     },
     {
       "artifact_type": "pqx_bundle_state",

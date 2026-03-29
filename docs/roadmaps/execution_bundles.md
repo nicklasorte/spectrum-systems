@@ -212,3 +212,9 @@ Determinism constraints:
 - Structured source artifacts are placeholders due to missing raw PDFs; semantic design fidelity risk remains until source recovery.
 - Legacy compatibility mirror drift can still block execution if updates are not mirrored consistently.
 - High fix volume in BUNDLE-06 may reduce throughput; enforce strict prioritization and seam ownership to avoid churn.
+
+## EXECUTABLE BUNDLE TABLE
+
+| Bundle ID | Ordered Step IDs | Depends On |
+| --- | --- | --- |
+| BUNDLE-PQX-CORE | AI-01, AI-02, TRUST-01, SRE-03, GOV-10 | - |

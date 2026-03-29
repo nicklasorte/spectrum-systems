@@ -380,3 +380,32 @@ def execute_sequence_run(
 
         if execution_status != "success":
             return state
+
+
+def execute_bundle_sequence_run(
+    *,
+    bundle_id: str,
+    bundle_state_path: str | Path,
+    output_dir: str | Path,
+    run_id: str,
+    queue_run_id: str,
+    trace_id: str,
+    bundle_plan_path: str | Path = "docs/roadmaps/execution_bundles.md",
+    execute_step: SliceExecutor | None = None,
+    clock=utc_now,
+) -> dict:
+    """Additive bundle invocation path preserving existing step-oriented flows."""
+
+    from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import execute_bundle_run
+
+    return execute_bundle_run(
+        bundle_id=bundle_id,
+        bundle_state_path=bundle_state_path,
+        output_dir=output_dir,
+        run_id=run_id,
+        sequence_run_id=queue_run_id,
+        trace_id=trace_id,
+        bundle_plan_path=bundle_plan_path,
+        execute_step=execute_step,
+        clock=clock,
+    )

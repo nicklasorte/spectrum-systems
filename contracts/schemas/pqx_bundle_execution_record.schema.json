@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_bundle_execution_record.schema.json",
+  "title": "PQX Bundle Execution Record",
+  "description": "Deterministic artifact capturing fail-closed bundle run execution status and resume position.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_execution_id",
+    "bundle_id",
+    "roadmap_authority_ref",
+    "bundle_plan_ref",
+    "run_id",
+    "started_at",
+    "status",
+    "executed_steps",
+    "output_artifact_refs",
+    "review_artifact_refs",
+    "state_artifact_ref",
+    "resume_position"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "bundle_execution_id": {"type": "string", "minLength": 1},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "roadmap_authority_ref": {"type": "string", "minLength": 1},
+    "bundle_plan_ref": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": ["string", "null"], "minLength": 1},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": ["string", "null"], "format": "date-time"},
+    "blocked_at": {"type": ["string", "null"], "format": "date-time"},
+    "status": {"type": "string", "enum": ["completed", "blocked"]},
+    "executed_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "status", "artifact_refs", "error"],
+        "properties": {
+          "step_id": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["success", "failed"]},
+          "artifact_refs": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "error": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "blocked_step_id": {"type": ["string", "null"], "minLength": 1},
+    "output_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "review_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "state_artifact_ref": {"type": "string", "minLength": 1},
+    "failure_classification": {"type": ["string", "null"], "minLength": 1},
+    "resume_position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle_id", "next_step_id", "resume_token"],
+      "properties": {
+        "bundle_id": {"type": "string", "minLength": 1},
+        "next_step_id": {"type": ["string", "null"], "minLength": 1},
+        "resume_token": {"type": "string", "pattern": "^resume:[A-Za-z0-9._:-]+:[A-Za-z0-9._:-]+:[0-9]+$"}
+      }
+    }
+  }
+}
