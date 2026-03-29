@@ -215,6 +215,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("prompt_queue_policy_backtest_report")
         validate_artifact(instance, "prompt_queue_policy_backtest_report")
 
+    def test_pqx_slice_continuation_record_example_validates(self) -> None:
+        instance = load_example("pqx_slice_continuation_record")
+        validate_artifact(instance, "pqx_slice_continuation_record")
+
 
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):

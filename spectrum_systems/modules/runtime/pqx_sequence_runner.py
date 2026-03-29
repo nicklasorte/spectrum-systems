@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from copy import deepcopy
 from pathlib import Path
@@ -57,7 +58,7 @@ def _validate_state_contract(state: dict) -> None:
 def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice_requests: list[dict], now: str) -> dict:
     requested = [entry["slice_id"] for entry in slice_requests]
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "queue_run_id": queue_run_id,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -71,6 +72,12 @@ def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice
         "prior_slice_ref": None,
         "next_slice_ref": requested[0] if requested else None,
         "execution_history": [],
+        "continuation_records": [],
+        "lineage": {"prior_run_id": None, "prior_trace_id": None},
+        "certification_complete_by_slice": {slice_id: False for slice_id in requested},
+        "audit_complete_by_slice": {slice_id: False for slice_id in requested},
+        "blocked_continuation_context": None,
+        "replay_verification": {"status": "not_run", "replay_record_ref": None},
         "blocked_reason": None,
         "resume_token": f"resume:{queue_run_id}:0",
     }
@@ -106,6 +113,7 @@ def _verify_continuity(state: dict, slice_requests: list[dict]) -> None:
     prev_ref = None
     history_completed: list[str] = []
     history_failed: list[str] = []
+    continuation_by_next = {entry["next_step_id"]: entry for entry in state.get("continuation_records", [])}
     for index, record in enumerate(history):
         if record.get("queue_run_id") != queue_run_id:
             raise PQXSequenceRunnerError("all slices must inherit identical queue_run_id")
@@ -125,6 +133,17 @@ def _verify_continuity(state: dict, slice_requests: list[dict]) -> None:
         prev_ref = record.get("execution_ref")
         if record.get("status") == "success":
             history_completed.append(slice_id)
+            if index > 0:
+                continuation = continuation_by_next.get(slice_id)
+                if continuation is None:
+                    raise PQXSequenceRunnerError("missing continuation record for successful non-initial slice")
+                previous = history[index - 1]
+                if continuation.get("prior_step_id") != previous.get("slice_id"):
+                    raise PQXSequenceRunnerError("continuation record prior_step_id mismatch")
+                if continuation.get("prior_run_id") != previous.get("run_id"):
+                    raise PQXSequenceRunnerError("continuation record prior_run_id mismatch")
+                if continuation.get("prior_trace_id") != previous.get("trace_id"):
+                    raise PQXSequenceRunnerError("continuation record prior_trace_id mismatch")
         else:
             history_failed.append(slice_id)
 
@@ -176,6 +195,44 @@ def _load_or_initialize_bundle_state(
         raise PQXSequenceRunnerError(str(exc)) from exc
 
 
+def _build_continuation_record(*, prior_record: dict, next_slice_id: str, now: str) -> dict:
+    continuation = {
+        "artifact_id": f"cont:{prior_record['queue_run_id']}:{prior_record['slice_id']}:{next_slice_id}",
+        "artifact_type": "pqx_slice_continuation_record",
+        "schema_version": "1.0.0",
+        "prior_step_id": prior_record["slice_id"],
+        "next_step_id": next_slice_id,
+        "prior_run_id": prior_record["run_id"],
+        "prior_trace_id": prior_record["trace_id"],
+        "prior_slice_execution_record_ref": prior_record["slice_execution_record_ref"],
+        "prior_certification_ref": prior_record["certification_ref"],
+        "prior_audit_bundle_ref": prior_record["audit_bundle_ref"],
+        "continuation_status": "ready",
+        "continuation_decision": "allow",
+        "continuation_reasons": [
+            "prior slice emitted canonical execution, certification, and audit artifacts",
+            "lineage continuity satisfied for run_id and trace_id",
+        ],
+        "created_at": now,
+    }
+    validate_artifact(continuation, "pqx_slice_continuation_record")
+    return continuation
+
+
+def _apply_continuation_block(*, state: dict, queue_run_id: str, next_slice_id: str, block_type: str, reason: str, now: str) -> None:
+    state["status"] = "blocked"
+    state["blocked_reason"] = reason
+    state["blocked_continuation_context"] = {
+        "block_type": block_type,
+        "reason": reason,
+        "next_slice_id": next_slice_id,
+    }
+    state["current_slice_id"] = None
+    state["next_slice_ref"] = next_slice_id
+    state["updated_at"] = now
+    state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
+
+
 def execute_sequence_run(
     *,
     slice_requests: list[dict],
@@ -210,6 +267,7 @@ def execute_sequence_run(
     bundle_state = None
 
     if execute_slice is None:
+
         def _default_executor(payload: dict) -> dict:
             slice_id = str(payload.get("slice_id", ""))
             if slice_id.startswith("AI-"):
@@ -229,8 +287,19 @@ def execute_sequence_run(
                 pqx_output_text=f"deterministic output for {payload['slice_id']}",
             )
             if step_result.get("status") != "complete":
-                return {"execution_status": "failed", "error": step_result.get("reason") or step_result.get("block_type", "blocked")}
-            return {"execution_status": "success"}
+                return {
+                    "execution_status": "failed",
+                    "error": step_result.get("reason") or step_result.get("block_type", "blocked"),
+                }
+            return {
+                "execution_status": "success",
+                "slice_execution_record": step_result.get("slice_execution_record"),
+                "done_certification_record": step_result.get("done_certification_record"),
+                "pqx_slice_audit_bundle": step_result.get("pqx_slice_audit_bundle"),
+                "certification_complete": step_result.get("certification_status") == "certified",
+                "audit_complete": bool(step_result.get("pqx_slice_audit_bundle")),
+            }
+
         executor = _default_executor
     else:
         executor = execute_slice
@@ -277,6 +346,7 @@ def execute_sequence_run(
             state["current_slice_id"] = None
             state["next_slice_ref"] = None
             state["blocked_reason"] = None
+            state["blocked_continuation_context"] = None
             state["updated_at"] = iso_now(clock)
             state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
             persisted = _persist_and_reload_exact(state, state_path)
@@ -298,6 +368,7 @@ def execute_sequence_run(
             state["current_slice_id"] = next_slice_id
             state["next_slice_ref"] = next_slice_id
             state["blocked_reason"] = None
+            state["blocked_continuation_context"] = None
             state["updated_at"] = iso_now(clock)
             return _persist_and_reload_exact(state, state_path)
 
@@ -306,6 +377,63 @@ def execute_sequence_run(
             raise PQXSequenceRunnerError("invalid transition: completed slice selected for rerun without explicit override")
 
         request = next(entry for entry in slice_requests if entry["slice_id"] == next_slice_id)
+        current_index = requested_ids.index(next_slice_id)
+        if current_index > 0:
+            prior_slice_id = requested_ids[current_index - 1]
+            prior_success = [
+                row for row in state["execution_history"] if row["slice_id"] == prior_slice_id and row["status"] == "success"
+            ]
+            if not prior_success:
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="PRIOR_SLICE_NOT_GOVERNED",
+                    reason="prior slice not completed successfully through canonical path",
+                    now=iso_now(clock),
+                )
+                return _persist_and_reload_exact(state, state_path)
+            prior_record = prior_success[-1]
+            if not prior_record.get("certification_complete") or not prior_record.get("audit_complete"):
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="PRIOR_SLICE_NOT_GOVERNED",
+                    reason="prior slice missing required certification or audit completion",
+                    now=iso_now(clock),
+                )
+                return _persist_and_reload_exact(state, state_path)
+            try:
+                continuation = _build_continuation_record(prior_record=prior_record, next_slice_id=next_slice_id, now=iso_now(clock))
+            except Exception as exc:
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="INVALID_SLICE_CONTINUATION",
+                    reason=f"invalid continuation record: {exc}",
+                    now=iso_now(clock),
+                )
+                return _persist_and_reload_exact(state, state_path)
+            existing = [entry for entry in state["continuation_records"] if entry["next_step_id"] == next_slice_id]
+            if existing and existing[-1] != continuation:
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="CONTINUATION_STATE_MISMATCH",
+                    reason="persisted continuation record mismatches governed prior artifacts",
+                    now=iso_now(clock),
+                )
+                return _persist_and_reload_exact(state, state_path)
+            if not existing:
+                state["continuation_records"].append(continuation)
+                state["lineage"] = {
+                    "prior_run_id": continuation["prior_run_id"],
+                    "prior_trace_id": continuation["prior_trace_id"],
+                }
+
         parent_ref = state["execution_history"][-1]["execution_ref"] if state["execution_history"] else None
         attempt = 1 + sum(1 for row in state["execution_history"] if row["slice_id"] == next_slice_id)
         execution_ref = f"exec:{queue_run_id}:{next_slice_id}:{attempt}"
@@ -349,6 +477,12 @@ def execute_sequence_run(
             raise PQXSequenceRunnerError("slice executor must return execution_status of success or failed")
 
         completed_at = iso_now(clock)
+        continuation_record_id = None
+        if current_index > 0:
+            continuation_record_id = next(
+                (entry["artifact_id"] for entry in state["continuation_records"] if entry["next_step_id"] == next_slice_id),
+                None,
+            )
         record = {
             "execution_ref": execution_ref,
             "queue_run_id": queue_run_id,
@@ -360,6 +494,12 @@ def execute_sequence_run(
             "started_at": started_at,
             "completed_at": completed_at,
             "error": result.get("error"),
+            "slice_execution_record_ref": result.get("slice_execution_record"),
+            "certification_ref": result.get("done_certification_record"),
+            "audit_bundle_ref": result.get("pqx_slice_audit_bundle"),
+            "certification_complete": bool(result.get("certification_complete") or result.get("done_certification_record")),
+            "audit_complete": bool(result.get("audit_complete") or result.get("pqx_slice_audit_bundle")),
+            "continuation_record_id": continuation_record_id,
         }
         state["execution_history"].append(record)
         state["prior_slice_ref"] = execution_ref
@@ -368,6 +508,9 @@ def execute_sequence_run(
             state["completed_slice_ids"].append(next_slice_id)
             state["status"] = "running"
             state["blocked_reason"] = None
+            state["blocked_continuation_context"] = None
+            state["certification_complete_by_slice"][next_slice_id] = record["certification_complete"]
+            state["audit_complete_by_slice"][next_slice_id] = record["audit_complete"]
             if bundle_state is not None:
                 try:
                     bundle_state = mark_step_complete(
@@ -405,6 +548,88 @@ def execute_sequence_run(
 
         if execution_status != "success":
             return state
+
+
+def verify_two_slice_replay(
+    *,
+    baseline_state_path: str | Path,
+    replay_state_path: str | Path,
+    output_path: str | Path,
+    queue_run_id: str,
+    run_id: str,
+    trace_id: str,
+    clock=utc_now,
+) -> dict:
+    baseline = json.loads(Path(baseline_state_path).read_text(encoding="utf-8"))
+    replay = json.loads(Path(replay_state_path).read_text(encoding="utf-8"))
+    _validate_state_contract(baseline)
+    _validate_state_contract(replay)
+
+    def _normalize_continuations(rows: list[dict]) -> list[dict]:
+        normalized = []
+        for row in rows:
+            clone = {k: v for k, v in row.items() if k != "created_at"}
+            normalized.append(clone)
+        return normalized
+
+    def _normalize_history(rows: list[dict]) -> list[dict]:
+        keys = [
+            "slice_id",
+            "status",
+            "trace_id",
+            "slice_execution_record_ref",
+            "certification_ref",
+            "audit_bundle_ref",
+            "certification_complete",
+            "audit_complete",
+            "continuation_record_id",
+        ]
+        return [{k: row.get(k) for k in keys} for row in rows]
+
+    parity = (
+        baseline["completed_slice_ids"] == replay["completed_slice_ids"]
+        and _normalize_continuations(baseline["continuation_records"]) == _normalize_continuations(replay["continuation_records"])
+        and _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"])
+        and baseline["certification_complete_by_slice"] == replay["certification_complete_by_slice"]
+        and baseline["audit_complete_by_slice"] == replay["audit_complete_by_slice"]
+    )
+    replay_id = "queue-replay-" + hashlib.sha256(
+        f"{queue_run_id}:{run_id}:{trace_id}:{baseline['resume_token']}:{replay['resume_token']}".encode("utf-8")
+    ).hexdigest()
+    record = {
+        "replay_id": replay_id,
+        "queue_id": queue_run_id,
+        "checkpoint_ref": baseline_state_path if isinstance(baseline_state_path, str) else str(baseline_state_path),
+        "input_refs": [
+            baseline_state_path if isinstance(baseline_state_path, str) else str(baseline_state_path),
+            replay_state_path if isinstance(replay_state_path, str) else str(replay_state_path),
+        ],
+        "replay_result_summary": {
+            "replayed_step_id": "step-002",
+            "decision_match": baseline["continuation_records"] == replay["continuation_records"],
+            "state_match": baseline["completed_slice_ids"] == replay["completed_slice_ids"],
+            "transition_match": _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"]),
+        },
+        "parity_status": "match" if parity else "mismatch",
+        "mismatch_summary": None if parity else "two-slice replay parity mismatch",
+        "trace_id": trace_id,
+        "timestamp": iso_now(clock),
+    }
+    validate_artifact(record, "prompt_queue_replay_record")
+
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+
+    replay_status = "pass" if parity else "fail"
+    baseline["replay_verification"] = {"status": replay_status, "replay_record_ref": str(output)}
+    replay["replay_verification"] = {"status": replay_status, "replay_record_ref": str(output)}
+    Path(baseline_state_path).write_text(json.dumps(baseline, indent=2) + "\n", encoding="utf-8")
+    Path(replay_state_path).write_text(json.dumps(replay, indent=2) + "\n", encoding="utf-8")
+
+    if not parity:
+        raise PQXSequenceRunnerError("two-slice replay verification failed closed")
+    return record
 
 
 def execute_bundle_sequence_run(

@@ -21,12 +21,18 @@
     "next_slice_ref",
     "execution_history",
     "blocked_reason",
-    "resume_token"
+    "resume_token",
+    "continuation_records",
+    "lineage",
+    "certification_complete_by_slice",
+    "audit_complete_by_slice",
+    "blocked_continuation_context",
+    "replay_verification"
   ],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "queue_run_id": {
       "type": "string",
@@ -42,7 +48,13 @@
     },
     "status": {
       "type": "string",
-      "enum": ["pending", "running", "blocked", "failed", "completed"]
+      "enum": [
+        "pending",
+        "running",
+        "blocked",
+        "failed",
+        "completed"
+      ]
     },
     "created_at": {
       "type": "string",
@@ -55,41 +67,95 @@
     "requested_slice_ids": {
       "type": "array",
       "minItems": 1,
-      "items": {"$ref": "#/$defs/non_empty"},
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
       "uniqueItems": true
     },
     "completed_slice_ids": {
       "type": "array",
-      "items": {"$ref": "#/$defs/non_empty"},
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
       "uniqueItems": true
     },
     "failed_slice_ids": {
       "type": "array",
-      "items": {"$ref": "#/$defs/non_empty"},
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
       "uniqueItems": true
     },
     "current_slice_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 1
     },
     "prior_slice_ref": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 1
     },
     "next_slice_ref": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 1
     },
     "execution_history": {
       "type": "array",
-      "items": {"$ref": "#/$defs/execution_entry"}
+      "items": {
+        "$ref": "#/$defs/execution_entry"
+      }
     },
     "blocked_reason": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "resume_token": {
       "type": "string",
       "pattern": "^resume:[A-Za-z0-9._:-]+:[0-9]+$"
+    },
+    "continuation_records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/continuation_record"
+      },
+      "uniqueItems": true
+    },
+    "lineage": {
+      "$ref": "#/$defs/lineage"
+    },
+    "certification_complete_by_slice": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "type": "boolean"
+        }
+      }
+    },
+    "audit_complete_by_slice": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "type": "boolean"
+        }
+      }
+    },
+    "blocked_continuation_context": {
+      "$ref": "#/$defs/blocked_continuation_context"
+    },
+    "replay_verification": {
+      "$ref": "#/$defs/replay_verification"
     }
   },
   "$defs": {
@@ -110,22 +176,246 @@
         "parent_execution_ref",
         "started_at",
         "completed_at",
-        "error"
+        "error",
+        "slice_execution_record_ref",
+        "certification_ref",
+        "audit_bundle_ref",
+        "certification_complete",
+        "audit_complete",
+        "continuation_record_id"
       ],
       "properties": {
-        "execution_ref": {"$ref": "#/$defs/non_empty"},
-        "queue_run_id": {"$ref": "#/$defs/non_empty"},
-        "run_id": {"$ref": "#/$defs/non_empty"},
-        "trace_id": {"$ref": "#/$defs/non_empty"},
-        "slice_id": {"$ref": "#/$defs/non_empty"},
-        "status": {"type": "string", "enum": ["success", "failed"]},
+        "execution_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "queue_run_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "run_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "trace_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "slice_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failed"
+          ]
+        },
         "parent_execution_ref": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
-        "started_at": {"type": "string", "format": "date-time"},
-        "completed_at": {"type": "string", "format": "date-time"},
-        "error": {"type": ["string", "null"]}
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slice_execution_record_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "certification_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "audit_bundle_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "certification_complete": {
+          "type": "boolean"
+        },
+        "audit_complete": {
+          "type": "boolean"
+        },
+        "continuation_record_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "continuation_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "prior_step_id",
+        "next_step_id",
+        "prior_run_id",
+        "prior_trace_id",
+        "prior_slice_execution_record_ref",
+        "prior_certification_ref",
+        "prior_audit_bundle_ref",
+        "continuation_status",
+        "continuation_decision",
+        "continuation_reasons",
+        "created_at"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_step_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "next_step_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_run_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_trace_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_slice_execution_record_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_certification_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "prior_audit_bundle_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "continuation_status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "blocked"
+          ]
+        },
+        "continuation_decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block"
+          ]
+        },
+        "continuation_reasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "artifact_type": {
+          "type": "string",
+          "const": "pqx_slice_continuation_record"
+        },
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prior_run_id",
+        "prior_trace_id"
+      ],
+      "properties": {
+        "prior_run_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "prior_trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "blocked_continuation_context": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "block_type",
+        "reason",
+        "next_slice_id"
+      ],
+      "properties": {
+        "block_type": {
+          "type": "string",
+          "enum": [
+            "INVALID_SLICE_CONTINUATION",
+            "PRIOR_SLICE_NOT_GOVERNED",
+            "CONTINUATION_STATE_MISMATCH"
+          ]
+        },
+        "reason": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "next_slice_id": {
+          "$ref": "#/$defs/non_empty"
+        }
+      }
+    },
+    "replay_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "replay_record_ref"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_run",
+            "pass",
+            "fail"
+          ]
+        },
+        "replay_record_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
       }
     }
   }
