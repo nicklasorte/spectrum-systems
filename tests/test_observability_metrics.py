@@ -43,6 +43,8 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
+from tests.helpers.required_ids import add_required_ids
+
 from spectrum_systems.modules.observability.metrics import (
     MetricsStore,
     ObservabilityRecord,
@@ -79,22 +81,24 @@ _SCHEMA_PATH = _REPO_ROOT / "contracts" / "schemas" / "observability_record.sche
 
 
 def _make_record(**overrides) -> ObservabilityRecord:
-    defaults = dict(
-        artifact_id="artifact-001",
-        artifact_type="evaluation_result",
-        pipeline_stage="validate",
-        pass_id="pass-abc",
-        pass_type="extraction",
-        structural_score=0.9,
-        semantic_score=0.85,
-        grounding_score=1.0,
-        latency_ms=300,
-        schema_valid=True,
-        grounding_passed=True,
-        regression_passed=True,
-        human_disagrees=False,
-        error_types=[],
-        failure_count=0,
+    defaults = add_required_ids(
+        dict(
+            artifact_id="artifact-001",
+            artifact_type="evaluation_result",
+            pipeline_stage="validate",
+            pass_id="pass-abc",
+            pass_type="extraction",
+            structural_score=0.9,
+            semantic_score=0.85,
+            grounding_score=1.0,
+            latency_ms=300,
+            schema_valid=True,
+            grounding_passed=True,
+            regression_passed=True,
+            human_disagrees=False,
+            error_types=[],
+            failure_count=0,
+        )
     )
     defaults.update(overrides)
     return ObservabilityRecord(**defaults)
