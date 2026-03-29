@@ -16,6 +16,10 @@
     "completed_step_ids",
     "blocked_step_ids",
     "pending_fix_ids",
+    "executed_fixes",
+    "failed_fixes",
+    "fix_artifacts",
+    "reinsertion_points",
     "review_artifact_refs",
     "review_requirements",
     "satisfied_review_checkpoint_ids",
@@ -25,59 +29,223 @@
     "updated_at"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.1.0"},
-    "roadmap_authority_ref": {"type": "string", "enum": ["docs/roadmaps/system_roadmap.md"]},
-    "execution_plan_ref": {"type": "string", "minLength": 1},
-    "run_id": {"type": "string", "minLength": 1},
-    "sequence_run_id": {"type": "string", "minLength": 1},
-    "active_bundle_id": {"type": "string", "minLength": 1},
-    "completed_bundle_ids": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-    "completed_step_ids": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-    "blocked_step_ids": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-    "pending_fix_ids": {"type": "array", "items": {"$ref": "#/$defs/pending_fix"}, "uniqueItems": true},
-    "review_artifact_refs": {"type": "array", "items": {"$ref": "#/$defs/review_ref"}, "uniqueItems": true},
-    "review_requirements": {"type": "array", "items": {"$ref": "#/$defs/review_requirement"}, "uniqueItems": true},
-    "satisfied_review_checkpoint_ids": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+    "schema_version": {
+      "type": "string",
+      "const": "1.2.0"
+    },
+    "roadmap_authority_ref": {
+      "type": "string",
+      "enum": [
+        "docs/roadmaps/system_roadmap.md"
+      ]
+    },
+    "execution_plan_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "active_bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completed_bundle_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "completed_step_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "blocked_step_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "pending_fix_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pending_fix"
+      },
+      "uniqueItems": true
+    },
+    "review_artifact_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review_ref"
+      },
+      "uniqueItems": true
+    },
+    "review_requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review_requirement"
+      },
+      "uniqueItems": true
+    },
+    "satisfied_review_checkpoint_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
     "artifact_index": {
       "type": "object",
       "additionalProperties": false,
-      "patternProperties": {"^[A-Za-z0-9._:-]+$": {"$ref": "#/$defs/artifact_ref_list"}}
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "$ref": "#/$defs/artifact_ref_list"
+        }
+      }
     },
-    "resume_position": {"$ref": "#/$defs/resume_position"},
-    "created_at": {"type": "string", "format": "date-time"},
-    "updated_at": {"type": "string", "format": "date-time"}
+    "resume_position": {
+      "$ref": "#/$defs/resume_position"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "executed_fixes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "failed_fixes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/non_empty"
+      },
+      "uniqueItems": true
+    },
+    "fix_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "$ref": "#/$defs/artifact_ref_list"
+        }
+      }
+    },
+    "reinsertion_points": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9._:-]+$": {
+          "$ref": "#/$defs/reinsertion_point"
+        }
+      }
+    }
   },
   "$defs": {
-    "non_empty": {"type": "string", "minLength": 1},
+    "non_empty": {
+      "type": "string",
+      "minLength": 1
+    },
     "artifact_ref_list": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
     "review_requirement": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["checkpoint_id", "bundle_id", "review_type", "scope", "step_id", "required", "blocking_review_before_continue"],
+      "required": [
+        "checkpoint_id",
+        "bundle_id",
+        "review_type",
+        "scope",
+        "step_id",
+        "required",
+        "blocking_review_before_continue"
+      ],
       "properties": {
-        "checkpoint_id": {"$ref": "#/$defs/non_empty"},
-        "bundle_id": {"$ref": "#/$defs/non_empty"},
-        "review_type": {"type": "string", "enum": ["pre_bundle_review", "post_bundle_review", "checkpoint_review"]},
-        "scope": {"type": "string", "enum": ["bundle", "step", "run"]},
-        "step_id": {"type": ["string", "null"], "minLength": 1},
-        "required": {"type": "boolean"},
-        "blocking_review_before_continue": {"type": "boolean"}
+        "checkpoint_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "bundle_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "review_type": {
+          "type": "string",
+          "enum": [
+            "pre_bundle_review",
+            "post_bundle_review",
+            "checkpoint_review"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "bundle",
+            "step",
+            "run"
+          ]
+        },
+        "step_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "blocking_review_before_continue": {
+          "type": "boolean"
+        }
       }
     },
     "review_ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["review_id", "bundle_id", "step_id", "checkpoint_id", "artifact_ref"],
+      "required": [
+        "review_id",
+        "bundle_id",
+        "step_id",
+        "checkpoint_id",
+        "artifact_ref"
+      ],
       "properties": {
-        "review_id": {"$ref": "#/$defs/non_empty"},
-        "bundle_id": {"$ref": "#/$defs/non_empty"},
-        "step_id": {"$ref": "#/$defs/non_empty"},
-        "checkpoint_id": {"$ref": "#/$defs/non_empty"},
-        "artifact_ref": {"$ref": "#/$defs/non_empty"}
+        "review_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "bundle_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "step_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "checkpoint_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "artifact_ref": {
+          "$ref": "#/$defs/non_empty"
+        }
       }
     },
     "pending_fix": {
@@ -98,28 +266,134 @@
         "artifact_refs"
       ],
       "properties": {
-        "fix_id": {"$ref": "#/$defs/non_empty"},
-        "source_review_id": {"$ref": "#/$defs/non_empty"},
-        "source_finding_id": {"$ref": "#/$defs/non_empty"},
-        "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
-        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
-        "affected_step_ids": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "minItems": 1, "uniqueItems": true},
-        "status": {"type": "string", "enum": ["open", "resolved", "superseded", "rejected", "planned", "in_progress", "complete", "deferred"]},
-        "blocking": {"type": "boolean"},
-        "created_from_bundle_id": {"$ref": "#/$defs/non_empty"},
-        "created_from_run_id": {"$ref": "#/$defs/non_empty"},
-        "notes": {"type": ["string", "null"]},
-        "artifact_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+        "fix_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "source_review_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "source_finding_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "affected_step_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved",
+            "superseded",
+            "rejected",
+            "planned",
+            "in_progress",
+            "complete",
+            "deferred"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "created_from_bundle_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "created_from_run_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        }
       }
     },
     "resume_position": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["bundle_id", "next_step_id", "resume_token"],
+      "required": [
+        "bundle_id",
+        "next_step_id",
+        "resume_token"
+      ],
       "properties": {
-        "bundle_id": {"$ref": "#/$defs/non_empty"},
-        "next_step_id": {"type": ["string", "null"], "minLength": 1},
-        "resume_token": {"type": "string", "pattern": "^resume:[A-Za-z0-9._:-]+:[A-Za-z0-9._:-]+:[0-9]+$"}
+        "bundle_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "next_step_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "resume_token": {
+          "type": "string",
+          "pattern": "^resume:[A-Za-z0-9._:-]+:[A-Za-z0-9._:-]+:[0-9]+$"
+        }
+      }
+    },
+    "reinsertion_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "anchor_step_id",
+        "insert_before_step_id",
+        "ordered_index"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "before_source",
+            "patch_after_source"
+          ]
+        },
+        "anchor_step_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "insert_before_step_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "ordered_index": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     }
   }

@@ -220,7 +220,7 @@ def initialize_bundle_state(
     requirements = review_requirements or []
     first_bundle = bundle_plan[0]["bundle_id"]
     initial = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "roadmap_authority_ref": roadmap_authority_ref,
         "execution_plan_ref": execution_plan_ref,
         "run_id": run_id,
@@ -230,6 +230,10 @@ def initialize_bundle_state(
         "completed_step_ids": [],
         "blocked_step_ids": [],
         "pending_fix_ids": [],
+        "executed_fixes": [],
+        "failed_fixes": [],
+        "fix_artifacts": {},
+        "reinsertion_points": {},
         "review_artifact_refs": [],
         "review_requirements": requirements,
         "satisfied_review_checkpoint_ids": [],

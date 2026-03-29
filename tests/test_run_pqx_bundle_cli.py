@@ -96,3 +96,82 @@ def test_cli_blocked_exit_then_ingest_success(tmp_path: Path) -> None:
     ]
     ingested = subprocess.run(ingest_cmd, capture_output=True, text=True, check=False, env=env)
     assert ingested.returncode == 0
+
+
+def test_cli_execute_fixes_non_zero_on_blocked_fix(tmp_path: Path) -> None:
+    plan = tmp_path / "execution_bundles.md"
+    state = tmp_path / "state.json"
+    out = tmp_path / "out"
+    _plan(plan)
+
+    state.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2.0",
+                "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+                "execution_plan_ref": str(plan),
+                "run_id": "run-b7-cli-001",
+                "sequence_run_id": "queue-run-b7-cli-001",
+                "active_bundle_id": "BUNDLE-T1",
+                "completed_bundle_ids": [],
+                "completed_step_ids": [],
+                "blocked_step_ids": [],
+                "pending_fix_ids": [
+                    {
+                        "fix_id": "fix:REV-B7:F-001",
+                        "source_review_id": "REV-B7",
+                        "source_finding_id": "F-001",
+                        "severity": "high",
+                        "priority": "P1",
+                        "affected_step_ids": ["MISSING-STEP"],
+                        "status": "open",
+                        "blocking": True,
+                        "created_from_bundle_id": "BUNDLE-T1",
+                        "created_from_run_id": "run-b7-cli-001",
+                        "notes": "patch runtime",
+                        "artifact_refs": [],
+                    }
+                ],
+                "executed_fixes": [],
+                "failed_fixes": [],
+                "fix_artifacts": {},
+                "reinsertion_points": {},
+                "review_artifact_refs": [],
+                "review_requirements": [],
+                "satisfied_review_checkpoint_ids": [],
+                "artifact_index": {},
+                "resume_position": {
+                    "bundle_id": "BUNDLE-T1",
+                    "next_step_id": "AI-01",
+                    "resume_token": "resume:queue-run-b7-cli-001:BUNDLE-T1:0",
+                },
+                "created_at": "2026-03-29T12:00:00Z",
+                "updated_at": "2026-03-29T12:00:00Z",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    run_cmd = [
+        sys.executable,
+        "scripts/run_pqx_bundle.py",
+        "run",
+        "--bundle-id",
+        "BUNDLE-T1",
+        "--bundle-state-path",
+        str(state),
+        "--output-dir",
+        str(out),
+        "--run-id",
+        "run-b7-cli-001",
+        "--sequence-run-id",
+        "queue-run-b7-cli-001",
+        "--trace-id",
+        "trace-b7-cli-001",
+        "--bundle-plan-path",
+        str(plan),
+        "--execute-fixes",
+    ]
+    env = {**os.environ, "PYTHONPATH": str(Path.cwd())}
+    blocked = subprocess.run(run_cmd, capture_output=True, text=True, check=False, env=env)
+    assert blocked.returncode == 2

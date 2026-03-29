@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.92",
+  "artifact_version": "1.0.93",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.29",
-  "record_id": "REC-STD-2026-03-29-B6-REVIEW-LOOP",
+  "record_id": "REC-STD-2026-03-29-B7-FIX-EXECUTION",
   "run_id": "run-20260329T120000Z",
   "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
@@ -1011,15 +1011,15 @@
     {
       "artifact_type": "pqx_bundle_state",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.90",
-      "last_updated_in": "1.0.92",
+      "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/pqx_bundle_state.json",
-      "notes": "B6 deterministic review checkpoint requirements, finding ingestion, and first-class pending-fix state wiring."
+      "notes": "B7 deterministic bundle fix-loop state fields for executed/failed fixes, fix artifacts, and stable reinsertion-point tracking."
     },
     {
       "artifact_type": "pqx_execution_request",
@@ -1059,6 +1059,19 @@
       "last_updated_in": "1.0.59",
       "example_path": null,
       "notes": "Minimum governed PQX backbone run summary artifact linking request/result/block artifacts for replay and observability."
+    },
+    {
+      "artifact_type": "pqx_fix_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.93",
+      "last_updated_in": "1.0.93",
+      "example_path": "contracts/examples/pqx_fix_execution_record.json",
+      "notes": "B7 deterministic fail-closed fix execution artifact capturing execution status, lineage, validation result, and reinsertion metadata."
     },
     {
       "artifact_type": "pqx_review_result",
