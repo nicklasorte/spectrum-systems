@@ -1,42 +1,67 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
   "execution_plan_ref": "docs/roadmaps/execution_bundles.md",
-  "run_id": "run-b4-001",
-  "sequence_run_id": "queue-run-b4-001",
-  "active_bundle_id": "BUNDLE-01",
+  "run_id": "run-b6-001",
+  "sequence_run_id": "queue-run-b6-001",
+  "active_bundle_id": "BUNDLE-PQX-CORE",
   "completed_bundle_ids": [],
   "completed_step_ids": [
-    "B3-01"
+    "AI-01"
   ],
   "blocked_step_ids": [],
   "pending_fix_ids": [
     {
-      "fix_id": "B3-FIX-01",
-      "finding_id": "FINDING-001",
-      "target_bundle_id": "BUNDLE-01",
-      "target_step_id": "B3-04",
-      "status": "planned"
+      "fix_id": "fix:REVIEW-B6-001:FIND-B6-001",
+      "source_review_id": "REVIEW-B6-001",
+      "source_finding_id": "FIND-B6-001",
+      "severity": "high",
+      "priority": "P1",
+      "affected_step_ids": [
+        "TRUST-01"
+      ],
+      "status": "open",
+      "blocking": true,
+      "created_from_bundle_id": "BUNDLE-PQX-CORE",
+      "created_from_run_id": "queue-run-b6-001",
+      "notes": "Add deterministic contract conformance check.",
+      "artifact_refs": [
+        "docs/reviews/REVIEW-B6-001.md#finding-1"
+      ]
     }
   ],
   "review_artifact_refs": [
     {
-      "review_id": "REV-BUNDLE-01-ARCH",
-      "bundle_id": "BUNDLE-01",
-      "step_id": "B3-03",
-      "artifact_ref": "docs/reviews/REV-BUNDLE-01-ARCH-2026-03-29.md"
+      "review_id": "REVIEW-B6-001",
+      "bundle_id": "BUNDLE-PQX-CORE",
+      "step_id": "GOV-10",
+      "checkpoint_id": "BUNDLE-PQX-CORE:post_bundle_review",
+      "artifact_ref": "docs/reviews/REVIEW-B6-001.json"
     }
   ],
+  "review_requirements": [
+    {
+      "checkpoint_id": "BUNDLE-PQX-CORE:post_bundle_review",
+      "bundle_id": "BUNDLE-PQX-CORE",
+      "review_type": "post_bundle_review",
+      "scope": "bundle",
+      "step_id": null,
+      "required": true,
+      "blocking_review_before_continue": true
+    }
+  ],
+  "satisfied_review_checkpoint_ids": [
+    "BUNDLE-PQX-CORE:post_bundle_review"
+  ],
   "artifact_index": {
-    "B3-01": [
-      "data/pqx_runs/B3-01/pqx-run-20260329T120000Z.request.json",
-      "data/pqx_runs/B3-01/pqx-run-20260329T120000Z.result.json"
+    "AI-01": [
+      "data/pqx_runs/AI-01/pqx-run-20260329T120000Z.result.json"
     ]
   },
   "resume_position": {
-    "bundle_id": "BUNDLE-01",
-    "next_step_id": "B3-02",
-    "resume_token": "resume:queue-run-b4-001:BUNDLE-01:1"
+    "bundle_id": "BUNDLE-PQX-CORE",
+    "next_step_id": "AI-02",
+    "resume_token": "resume:queue-run-b6-001:BUNDLE-PQX-CORE:1"
   },
   "created_at": "2026-03-29T12:00:00Z",
   "updated_at": "2026-03-29T12:05:00Z"

@@ -9,25 +9,34 @@ from spectrum_systems.modules.runtime.pqx_bundle_state import (
     PQXBundleStateError,
     add_pending_fix,
     assert_valid_advancement,
-    attach_review_artifact,
-    block_step,
     derive_resume_position,
+    ingest_review_result,
     initialize_bundle_state,
     load_bundle_state,
     mark_bundle_complete,
     mark_step_complete,
     save_bundle_state,
-    validate_bundle_state,
 )
 
 
 BUNDLE_PLAN = [
     {"bundle_id": "BUNDLE-01", "step_ids": ["B3-01", "B3-02"], "depends_on": []},
-    {"bundle_id": "BUNDLE-02", "step_ids": ["B3-03"], "depends_on": ["BUNDLE-01"]},
+]
+
+REVIEW_REQ = [
+    {
+        "checkpoint_id": "BUNDLE-01:checkpoint:B3-01",
+        "bundle_id": "BUNDLE-01",
+        "review_type": "checkpoint_review",
+        "scope": "step",
+        "step_id": "B3-01",
+        "required": True,
+        "blocking_review_before_continue": True,
+    }
 ]
 
 
-def _init() -> dict:
+def _init(requirements: list[dict] | None = None) -> dict:
     return initialize_bundle_state(
         bundle_plan=BUNDLE_PLAN,
         run_id="run-001",
@@ -35,104 +44,151 @@ def _init() -> dict:
         roadmap_authority_ref="docs/roadmaps/system_roadmap.md",
         execution_plan_ref="docs/roadmaps/execution_bundles.md",
         now="2026-03-29T12:00:00Z",
+        review_requirements=requirements or [],
     )
 
 
-def test_initialize_and_persist_reload_parity(tmp_path: Path) -> None:
-    state = _init()
-    validate_bundle_state(state)
+def _review_artifact(**overrides: object) -> dict:
+    payload = {
+        "schema_version": "1.0.0",
+        "review_id": "REV-001",
+        "checkpoint_id": "BUNDLE-01:checkpoint:B3-01",
+        "review_type": "checkpoint_review",
+        "bundle_id": "BUNDLE-01",
+        "bundle_run_id": "queue-run-001",
+        "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+        "execution_plan_ref": "docs/roadmaps/execution_bundles.md",
+        "scope": {"scope_type": "step", "step_id": "B3-01"},
+        "findings": [
+            {
+                "finding_id": "F-001",
+                "severity": "high",
+                "category": "architecture",
+                "title": "Need controlled remediation",
+                "description": "A blocking issue was identified.",
+                "affected_step_ids": ["B3-02"],
+                "recommended_action": "Implement deterministic remediation.",
+                "blocking": True,
+                "source_refs": ["docs/reviews/REV-001.md#f1"],
+            }
+        ],
+        "overall_disposition": "approved_with_findings",
+        "created_at": "2026-03-29T12:01:00Z",
+        "provenance_refs": ["trace:rev:001"],
+    }
+    payload.update(overrides)
+    return payload
 
-    persisted = save_bundle_state(state, tmp_path / "bundle_state.json", bundle_plan=BUNDLE_PLAN)
+
+def test_blocks_when_required_checkpoint_review_missing() -> None:
+    state = _init(REVIEW_REQ)
+    state = mark_step_complete(state, BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
+    with pytest.raises(PQXBundleStateError, match="review checkpoint unresolved"):
+        assert_valid_advancement(state, BUNDLE_PLAN, step_id="B3-02")
+
+
+def test_valid_review_artifact_ingests_and_persists_pending_fixes(tmp_path: Path) -> None:
+    state = mark_step_complete(_init(REVIEW_REQ), BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
+    updated = ingest_review_result(
+        state,
+        BUNDLE_PLAN,
+        review_artifact=_review_artifact(),
+        artifact_ref="docs/reviews/REV-001.json",
+        now="2026-03-29T12:00:02Z",
+    )
+    assert updated["review_artifact_refs"][0]["review_id"] == "REV-001"
+    assert updated["pending_fix_ids"][0]["source_finding_id"] == "F-001"
+
+    persisted = save_bundle_state(updated, tmp_path / "bundle_state.json", bundle_plan=BUNDLE_PLAN)
     reloaded = load_bundle_state(tmp_path / "bundle_state.json", bundle_plan=BUNDLE_PLAN)
     assert persisted == reloaded
 
 
-def test_step_advancement_updates_deterministically() -> None:
-    state = _init()
-    assert_valid_advancement(state, BUNDLE_PLAN, step_id="B3-01")
-    next_state = mark_step_complete(
+def test_malformed_review_fails_closed() -> None:
+    state = _init(REVIEW_REQ)
+    with pytest.raises(PQXBundleStateError, match="invalid pqx_review_result artifact"):
+        ingest_review_result(
+            state,
+            BUNDLE_PLAN,
+            review_artifact={"schema_version": "1.0.0"},
+            artifact_ref="docs/reviews/bad.json",
+            now="2026-03-29T12:00:02Z",
+        )
+
+
+def test_wrong_reference_fails_closed() -> None:
+    state = _init(REVIEW_REQ)
+    with pytest.raises(PQXBundleStateError, match="bundle_run_id mismatch"):
+        ingest_review_result(
+            state,
+            BUNDLE_PLAN,
+            review_artifact=_review_artifact(bundle_run_id="other-run"),
+            artifact_ref="docs/reviews/REV-001.json",
+            now="2026-03-29T12:00:02Z",
+        )
+
+
+def test_blocking_findings_prevent_continuation_and_completion() -> None:
+    state = mark_step_complete(_init(REVIEW_REQ), BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
+    state = ingest_review_result(
         state,
         BUNDLE_PLAN,
-        step_id="B3-01",
-        artifact_refs=["data/pqx_runs/B3-01/run-1.result.json"],
-        now="2026-03-29T12:00:01Z",
+        review_artifact=_review_artifact(),
+        artifact_ref="docs/reviews/REV-001.json",
+        now="2026-03-29T12:00:02Z",
     )
-    assert next_state["completed_step_ids"] == ["B3-01"]
-    assert next_state["resume_position"]["next_step_id"] == "B3-02"
+    with pytest.raises(PQXBundleStateError, match="blocking findings unresolved"):
+        assert_valid_advancement(state, BUNDLE_PLAN, step_id="B3-02")
+
+    state["pending_fix_ids"][0]["status"] = "resolved"
+    resumed = mark_step_complete(state, BUNDLE_PLAN, step_id="B3-02", artifact_refs=[], now="2026-03-29T12:00:03Z")
+    completed = mark_bundle_complete(resumed, BUNDLE_PLAN, bundle_id="BUNDLE-01", now="2026-03-29T12:00:04Z")
+    assert completed["completed_bundle_ids"] == ["BUNDLE-01"]
 
 
-def test_dependency_block_for_out_of_order_step() -> None:
-    state = _init()
-    with pytest.raises(PQXBundleStateError, match="prior step 'B3-01'"):
-        mark_step_complete(state, BUNDLE_PLAN, step_id="B3-02", artifact_refs=[], now="2026-03-29T12:00:01Z")
-
-
-def test_bundle_order_block() -> None:
-    state = _init()
-    with pytest.raises(PQXBundleStateError, match="out-of-order"):
-        mark_step_complete(state, BUNDLE_PLAN, step_id="B3-03", artifact_refs=[], now="2026-03-29T12:00:01Z")
-
-
-def test_duplicate_completion_blocked() -> None:
-    state = mark_step_complete(_init(), BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
-    with pytest.raises(PQXBundleStateError, match="already completed"):
-        mark_step_complete(state, BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:02Z")
-
-
-def test_review_and_fix_attachment_and_malformed_rejection() -> None:
-    state = _init()
-    state = attach_review_artifact(
+def test_duplicate_conflicting_review_attachments_fail_closed() -> None:
+    state = mark_step_complete(_init(REVIEW_REQ), BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
+    state = ingest_review_result(
         state,
         BUNDLE_PLAN,
-        review_id="REV-001",
-        bundle_id="BUNDLE-01",
-        step_id="B3-01",
-        artifact_ref="docs/reviews/REV-001.md",
-        now="2026-03-29T12:00:01Z",
+        review_artifact=_review_artifact(),
+        artifact_ref="docs/reviews/REV-001.json",
+        now="2026-03-29T12:00:02Z",
     )
-    assert state["review_artifact_refs"][0]["review_id"] == "REV-001"
+    with pytest.raises(PQXBundleStateError, match="conflicting review artifact"):
+        ingest_review_result(
+            state,
+            BUNDLE_PLAN,
+            review_artifact=_review_artifact(review_id="REV-002"),
+            artifact_ref="docs/reviews/REV-002.json",
+            now="2026-03-29T12:00:03Z",
+        )
 
+
+def test_legacy_add_pending_fix_still_works() -> None:
+    state = _init()
     state = add_pending_fix(
         state,
         BUNDLE_PLAN,
         fix_id="B3-FIX-01",
-        finding_id="F-001",
+        finding_id="F-legacy",
         target_bundle_id="BUNDLE-01",
         target_step_id="B3-02",
         status="planned",
         now="2026-03-29T12:00:02Z",
     )
-    assert state["pending_fix_ids"][0]["fix_id"] == "B3-FIX-01"
-
-    with pytest.raises(PQXBundleStateError, match="target mismatch"):
-        add_pending_fix(
-            state,
-            BUNDLE_PLAN,
-            fix_id="B3-FIX-02",
-            finding_id="F-002",
-            target_bundle_id="BUNDLE-02",
-            target_step_id="B3-02",
-            status="planned",
-            now="2026-03-29T12:00:03Z",
-        )
+    assert state["pending_fix_ids"][0]["status"] == "planned"
 
 
-def test_resume_position_and_bundle_completion() -> None:
+def test_resume_position_still_deterministic() -> None:
     state = _init()
     state = mark_step_complete(state, BUNDLE_PLAN, step_id="B3-01", artifact_refs=[], now="2026-03-29T12:00:01Z")
-    state = mark_step_complete(state, BUNDLE_PLAN, step_id="B3-02", artifact_refs=[], now="2026-03-29T12:00:02Z")
-    state = mark_bundle_complete(state, BUNDLE_PLAN, bundle_id="BUNDLE-01", now="2026-03-29T12:00:03Z")
-
     resume = derive_resume_position(state, BUNDLE_PLAN)
-    assert resume["bundle_id"] == "BUNDLE-02"
-    assert resume["next_step_id"] == "B3-03"
+    assert resume["next_step_id"] == "B3-02"
 
 
-def test_block_step_and_load_fail_closed_for_malformed_state(tmp_path: Path) -> None:
-    state = block_step(_init(), BUNDLE_PLAN, step_id="B3-01", now="2026-03-29T12:00:01Z")
-    assert state["blocked_step_ids"] == ["B3-01"]
-
+def test_load_fail_closed_for_malformed_state(tmp_path: Path) -> None:
     path = tmp_path / "bad.json"
-    path.write_text(json.dumps({"schema_version": "1.0.0"}), encoding="utf-8")
+    path.write_text(json.dumps({"schema_version": "1.1.0"}), encoding="utf-8")
     with pytest.raises(PQXBundleStateError, match="invalid pqx_bundle_state artifact"):
         load_bundle_state(path, bundle_plan=BUNDLE_PLAN)

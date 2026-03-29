@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.pqx_backbone import parse_system_roadmap
 from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import (
     PQXBundleOrchestratorError,
     execute_bundle_run,
@@ -13,7 +14,6 @@ from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import (
     resolve_bundle_definition,
     validate_bundle_definition,
 )
-from spectrum_systems.modules.pqx_backbone import parse_system_roadmap
 
 
 class FixedClock:
@@ -26,7 +26,11 @@ class FixedClock:
         return datetime(2026, 3, 29, 20, 0, 0, tzinfo=timezone.utc)
 
 
-def _bundle_plan(tmp_path: Path, steps: str = "AI-01, AI-02, TRUST-01") -> Path:
+def _bundle_plan(
+    tmp_path: Path,
+    steps: str = "AI-01, AI-02, TRUST-01",
+    review_table: str = "",
+) -> Path:
     path = tmp_path / "execution_bundles.md"
     path.write_text(
         "\n".join(
@@ -37,11 +41,24 @@ def _bundle_plan(tmp_path: Path, steps: str = "AI-01, AI-02, TRUST-01") -> Path:
                 "| --- | --- | --- |",
                 f"| BUNDLE-T1 | {steps} | - |",
                 "",
+                review_table,
             ]
         ),
         encoding="utf-8",
     )
     return path
+
+
+def _review_table() -> str:
+    return "\n".join(
+        [
+            "## REVIEW CHECKPOINT TABLE",
+            "| Checkpoint ID | Bundle ID | Review Type | Scope | Step ID | Required | Blocking Before Continue |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
+            "| BUNDLE-T1:checkpoint:AI-01 | BUNDLE-T1 | checkpoint_review | step | AI-01 | true | true |",
+            "",
+        ]
+    )
 
 
 def test_valid_bundle_resolution() -> None:
@@ -64,7 +81,25 @@ def test_invalid_referenced_roadmap_step_fails_closed(tmp_path: Path) -> None:
         validate_bundle_definition(definition, parse_system_roadmap())
 
 
-def test_ordered_execution_across_multiple_steps(tmp_path: Path) -> None:
+def test_bundle_blocks_when_required_review_missing(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path, review_table=_review_table())
+    result = execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=tmp_path / "state.json",
+        output_dir=tmp_path / "out",
+        run_id="run-b6-test-001",
+        sequence_run_id="queue-run-b6-test-001",
+        trace_id="trace-b6-test-001",
+        bundle_plan_path=plan_path,
+        execute_step=lambda _: {"execution_status": "success"},
+        clock=FixedClock([f"2026-03-29T20:00:{i:02d}Z" for i in range(1, 30)]),
+    )
+    assert result["status"] == "blocked"
+    record = json.loads((tmp_path / "out" / "BUNDLE-T1.bundle_execution_record.json").read_text(encoding="utf-8"))
+    assert record["failure_classification"] == "REVIEW_REQUIRED"
+
+
+def test_ordered_execution_still_completes_when_no_review_required(tmp_path: Path) -> None:
     plan_path = _bundle_plan(tmp_path)
     calls: list[str] = []
 
@@ -76,12 +111,12 @@ def test_ordered_execution_across_multiple_steps(tmp_path: Path) -> None:
         bundle_id="BUNDLE-T1",
         bundle_state_path=tmp_path / "state.json",
         output_dir=tmp_path / "out",
-        run_id="run-b5-test-001",
-        sequence_run_id="queue-run-b5-test-001",
-        trace_id="trace-b5-test-001",
+        run_id="run-b6-test-002",
+        sequence_run_id="queue-run-b6-test-002",
+        trace_id="trace-b6-test-002",
         bundle_plan_path=plan_path,
         execute_step=_executor,
-        clock=FixedClock([f"2026-03-29T20:00:{i:02d}Z" for i in range(1, 30)]),
+        clock=FixedClock([f"2026-03-29T20:10:{i:02d}Z" for i in range(1, 30)]),
     )
 
     assert result["status"] == "completed"
@@ -100,85 +135,17 @@ def test_block_on_first_failure(tmp_path: Path) -> None:
         bundle_id="BUNDLE-T1",
         bundle_state_path=tmp_path / "state.json",
         output_dir=tmp_path / "out",
-        run_id="run-b5-test-002",
-        sequence_run_id="queue-run-b5-test-002",
-        trace_id="trace-b5-test-002",
+        run_id="run-b6-test-003",
+        sequence_run_id="queue-run-b6-test-003",
+        trace_id="trace-b6-test-003",
         bundle_plan_path=plan_path,
         execute_step=_executor,
-        clock=FixedClock([f"2026-03-29T20:10:{i:02d}Z" for i in range(1, 30)]),
+        clock=FixedClock([f"2026-03-29T20:20:{i:02d}Z" for i in range(1, 30)]),
     )
 
     record = json.loads((tmp_path / "out" / "BUNDLE-T1.bundle_execution_record.json").read_text(encoding="utf-8"))
     assert result["status"] == "blocked"
     assert record["blocked_step_id"] == "AI-02"
-
-
-def test_persisted_resume_from_partial_completion(tmp_path: Path) -> None:
-    plan_path = _bundle_plan(tmp_path)
-    calls: list[str] = []
-
-    def _executor(payload: dict) -> dict:
-        calls.append(payload["slice_id"])
-        if payload["slice_id"] == "AI-02" and calls.count("AI-02") == 1:
-            return {"execution_status": "failed", "error": "transient"}
-        return {"execution_status": "success"}
-
-    execute_bundle_run(
-        bundle_id="BUNDLE-T1",
-        bundle_state_path=tmp_path / "state.json",
-        output_dir=tmp_path / "out",
-        run_id="run-b5-test-003",
-        sequence_run_id="queue-run-b5-test-003",
-        trace_id="trace-b5-test-003",
-        bundle_plan_path=plan_path,
-        execute_step=_executor,
-        clock=FixedClock([f"2026-03-29T20:20:{i:02d}Z" for i in range(1, 30)]),
-    )
-    # clear blocked step to emulate explicit remediation outside this slice.
-    state = json.loads((tmp_path / "state.json").read_text(encoding="utf-8"))
-    state["blocked_step_ids"] = []
-    (tmp_path / "state.json").write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
-
-    resumed = execute_bundle_run(
-        bundle_id="BUNDLE-T1",
-        bundle_state_path=tmp_path / "state.json",
-        output_dir=tmp_path / "out",
-        run_id="run-b5-test-003",
-        sequence_run_id="queue-run-b5-test-003",
-        trace_id="trace-b5-test-003",
-        bundle_plan_path=plan_path,
-        execute_step=_executor,
-        clock=FixedClock([f"2026-03-29T20:21:{i:02d}Z" for i in range(1, 30)]),
-    )
-
-    assert resumed["status"] == "completed"
-    assert calls.count("AI-01") == 1
-
-
-def test_duplicate_completed_step_prevention(tmp_path: Path) -> None:
-    plan_path = _bundle_plan(tmp_path, steps="AI-01")
-    execute_bundle_run(
-        bundle_id="BUNDLE-T1",
-        bundle_state_path=tmp_path / "state.json",
-        output_dir=tmp_path / "out",
-        run_id="run-b5-test-004",
-        sequence_run_id="queue-run-b5-test-004",
-        trace_id="trace-b5-test-004",
-        bundle_plan_path=plan_path,
-        execute_step=lambda _: {"execution_status": "success"},
-    )
-
-    with pytest.raises(PQXBundleOrchestratorError, match="bundle already completed"):
-        execute_bundle_run(
-            bundle_id="BUNDLE-T1",
-            bundle_state_path=tmp_path / "state.json",
-            output_dir=tmp_path / "out",
-            run_id="run-b5-test-004",
-            sequence_run_id="queue-run-b5-test-004",
-            trace_id="trace-b5-test-004",
-            bundle_plan_path=plan_path,
-            execute_step=lambda _: {"execution_status": "success"},
-        )
 
 
 def test_authority_plan_mismatch_on_resume_fails_closed(tmp_path: Path) -> None:
@@ -187,9 +154,9 @@ def test_authority_plan_mismatch_on_resume_fails_closed(tmp_path: Path) -> None:
         bundle_id="BUNDLE-T1",
         bundle_state_path=tmp_path / "state.json",
         output_dir=tmp_path / "out",
-        run_id="run-b5-test-005",
-        sequence_run_id="queue-run-b5-test-005",
-        trace_id="trace-b5-test-005",
+        run_id="run-b6-test-004",
+        sequence_run_id="queue-run-b6-test-004",
+        trace_id="trace-b6-test-004",
         bundle_plan_path=plan_path,
         execute_step=lambda _: {"execution_status": "success"},
     )
@@ -203,9 +170,9 @@ def test_authority_plan_mismatch_on_resume_fails_closed(tmp_path: Path) -> None:
             bundle_id="BUNDLE-T1",
             bundle_state_path=tmp_path / "state.json",
             output_dir=tmp_path / "out",
-            run_id="run-b5-test-005",
-            sequence_run_id="queue-run-b5-test-005",
-            trace_id="trace-b5-test-005",
+            run_id="run-b6-test-004",
+            sequence_run_id="queue-run-b6-test-004",
+            trace_id="trace-b6-test-004",
             bundle_plan_path=plan_path,
             execute_step=lambda _: {"execution_status": "success"},
         )

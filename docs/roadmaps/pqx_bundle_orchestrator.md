@@ -48,3 +48,10 @@ Resume is driven by persisted `pqx_bundle_state`:
 - Replay mode for intentional re-execution is not implemented.
 - Review automation/branching is out-of-scope; only review reference fields are preserved in artifacts.
 - Current executable bundle table is intentionally narrow (single core bundle) until later bundle expansion slices.
+
+## B6 — Review triggering and findings ingestion (2026-03-29)
+
+- Added machine-readable review checkpoint consumption from `docs/roadmaps/execution_bundles.md` (`## REVIEW CHECKPOINT TABLE`).
+- Added fail-closed enforcement: bundle execution blocks when required review checkpoint is unresolved.
+- Added review artifact ingestion pathway via `pqx_review_result` contract with strict bundle/run/authority/plan linkage checks.
+- Added deterministic findings-to-pending-fix conversion in `pqx_bundle_state` for governed follow-up work.
