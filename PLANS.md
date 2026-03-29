@@ -190,6 +190,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-CONTRACT-DRIFT-LINEAGE-CERT-2026-03-29.md | Contract drift migration — lineage/certification builder alignment | Active |
 
+| docs/review-actions/PLAN-CONTRACT-DRIFT-MMR-OBSERVABILITY-2026-03-29.md | Contract drift follow-up — meeting minutes + observability metadata fixes | Active |
+
 Update this table when plans are created or completed.
 
 ---

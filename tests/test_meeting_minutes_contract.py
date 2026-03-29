@@ -101,6 +101,7 @@ def _base_mmr() -> dict:
         "standards_version": "2026.03.0",
         "record_id": "REC-TEST-001",
         "run_id": "run-20260318T000000Z",
+        "trace_id": "trace-20260318T000000Z",
         "created_at": "2026-03-18T00:00:00Z",
         "created_by": {"name": "Test", "role": "tester", "agent_type": "script"},
         "source_repo": "test/repo",

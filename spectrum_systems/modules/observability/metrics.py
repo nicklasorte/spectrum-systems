@@ -130,11 +130,15 @@ class ObservabilityRecord:
         failure_count: int = 0,
         case_id: Optional[str] = None,
         tokens_used: Optional[int] = None,
+        run_id: Optional[str] = None,
+        trace_id: Optional[str] = None,
         record_id: Optional[str] = None,
         timestamp: Optional[str] = None,
     ) -> None:
         self.record_id: str = record_id or str(uuid.uuid4())
         self.timestamp: str = timestamp or datetime.now(timezone.utc).isoformat()
+        self.run_id: str = run_id or f"run-{pass_id or self.record_id}"
+        self.trace_id: str = trace_id or f"trace-{pass_id or self.record_id}"
         self.artifact_id: str = artifact_id
         self.artifact_type: str = artifact_type
         self.pipeline_stage: str = pipeline_stage
@@ -375,6 +379,8 @@ class ObservabilityRecord:
 
         return {
             "record_id": self.record_id,
+            "run_id": self.run_id,
+            "trace_id": self.trace_id,
             "timestamp": self.timestamp,
             "context": context,
             "pass_info": {
@@ -415,6 +421,8 @@ class ObservabilityRecord:
         return cls(
             record_id=data.get("record_id"),
             timestamp=data.get("timestamp"),
+            run_id=data.get("run_id"),
+            trace_id=data.get("trace_id"),
             artifact_id=ctx.get("artifact_id", ""),
             artifact_type=ctx.get("artifact_type", ""),
             pipeline_stage=ctx.get("pipeline_stage", "observe"),
