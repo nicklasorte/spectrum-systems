@@ -271,126 +271,15 @@ def run_pqx_backbone(
     runs_root: Path = RUNS_ROOT,
     clock=utc_now,
 ) -> dict:
-    run_id = f"pqx-run-{iso_now(clock).replace(':', '').replace('-', '')}"
-    try:
-        authority = resolve_roadmap_authority()
-        selected_roadmap_path = roadmap_path or authority.execution_roadmap_path
-        state = load_state(state_path)
-        rows = parse_system_roadmap(selected_roadmap_path)
-    except PQXBackboneError as exc:
-        block_payload = {
-            "schema_version": "1.1.0",
-            "run_id": run_id,
-            "step_id": selected_step_id,
-            "blocked_at": iso_now(clock),
-            "block_type": "SCHEMA_INVALID",
-            "reason": str(exc),
-            "blocking_dependencies": [],
-        }
-        target_dir = runs_root / (selected_step_id or "_blocked")
-        block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
-        return {"status": "blocked", "block_record": str(block_path)}
+    """Deprecated legacy entrypoint; routes to canonical runtime.pqx_slice_runner.run_pqx_slice."""
 
-    row, block = resolve_executable_row(rows, state, step_id=selected_step_id)
-    if block:
-        block_payload = {
-            "schema_version": "1.1.0",
-            "run_id": run_id,
-            "step_id": block.get("step_id"),
-            "blocked_at": iso_now(clock),
-            "block_type": block["block_type"],
-            "reason": block["reason"],
-            "blocking_dependencies": block.get("blocking_dependencies", []),
-        }
-        target_dir = runs_root / (block.get("step_id") or "_blocked")
-        block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
-        save_state(state, state_path)
-        return {"status": "blocked", "block_record": str(block_path)}
+    from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 
-    assert row is not None
-    if pqx_output_text is None:
-        block_payload = {
-            "schema_version": "1.1.0",
-            "run_id": run_id,
-            "step_id": row.step_id,
-            "blocked_at": iso_now(clock),
-            "block_type": "MISSING_INPUT",
-            "reason": "PQX output payload is required; no fallback execution path is permitted.",
-            "blocking_dependencies": [],
-        }
-        target_dir = runs_root / row.step_id
-        block_path = _write_artifact(block_payload, "pqx_block_record", target_dir / f"{run_id}.block_record.json")
-
-        row_state = _ensure_row_state(state, row.step_id)
-        row_state["status"] = "blocked"
-        row_state["last_run"] = iso_now(clock)
-        row_state["retries"] += 1
-        save_state(state, state_path)
-        return {"status": "blocked", "block_record": str(block_path)}
-
-    row_state = _ensure_row_state(state, row.step_id)
-    row_state["status"] = "running"
-    row_state["last_run"] = iso_now(clock)
-
-    target_dir = runs_root / row.step_id
-    request_payload = {
-        "schema_version": "1.1.0",
-        "run_id": run_id,
-        "step_id": row.step_id,
-        "step_name": row.step_name,
-        "dependencies": list(row.dependencies),
-        "requested_at": iso_now(clock),
-        "prompt": f"Implement roadmap step {row.step_id}: {row.step_name}",
-        "roadmap_version": authority.execution_roadmap_ref,
-        "row_snapshot": {
-            "row_index": row.row_index,
-            "step_id": row.step_id,
-            "step_name": row.step_name,
-            "dependencies": list(row.dependencies),
-            "status": row.status,
-        },
-    }
-    request_path = _write_artifact(request_payload, "pqx_execution_request", target_dir / f"{run_id}.request.json")
-
-    result_payload = {
-        "schema_version": "1.0.0",
-        "run_id": run_id,
-        "step_id": row.step_id,
-        "execution_status": "success",
-        "started_at": row_state["last_run"],
-        "completed_at": iso_now(clock),
-        "output_text": pqx_output_text,
-        "error": None,
-    }
-    result_path = _write_artifact(result_payload, "pqx_execution_result", target_dir / f"{run_id}.result.json")
-
-    try:
-        request_ref = str(request_path.relative_to(REPO_ROOT))
-        result_ref = str(result_path.relative_to(REPO_ROOT))
-    except ValueError:
-        request_ref = str(request_path)
-        result_ref = str(result_path)
-
-    summary_payload = {
-        "schema_version": "1.0.0",
-        "run_id": run_id,
-        "step_id": row.step_id,
-        "final_status": "complete",
-        "request_artifact_path": request_ref,
-        "result_artifact_path": result_ref,
-        "block_artifact_path": None,
-        "generated_at": iso_now(clock),
-    }
-    summary_path = _write_artifact(summary_payload, "pqx_execution_summary", target_dir / f"{run_id}.summary.json")
-
-    row_state["status"] = "complete"
-    row_state["last_run"] = result_payload["completed_at"]
-    row_state["dependencies_satisfied"] = True
-    save_state(state, state_path)
-
-    return {
-        "status": "complete",
-        "request": str(request_path),
-        "result": str(result_path),
-        "summary": str(summary_path),
-    }
+    return run_pqx_slice(
+        step_id=selected_step_id or "",
+        roadmap_path=roadmap_path or LEGACY_EXECUTION_ROADMAP_PATH,
+        state_path=state_path,
+        runs_root=runs_root,
+        clock=clock,
+        pqx_output_text=pqx_output_text,
+    )

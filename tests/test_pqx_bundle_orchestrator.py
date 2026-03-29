@@ -326,3 +326,19 @@ def test_emit_triage_plan_on_blocked_review_findings(tmp_path: Path) -> None:
     assert result["triage_plan_record"] is not None
     triage = json.loads((out_dir / "BUNDLE-T1.triage_plan_record.json").read_text(encoding="utf-8"))
     assert triage["summary_counts"]["findings_total"] >= 1
+
+
+def test_bundle_orchestrator_default_executor_routes_to_canonical_slice_runner(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path, steps="AI-01")
+    result = execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=tmp_path / "state.json",
+        output_dir=tmp_path / "out",
+        run_id="run-default-bundle-001",
+        sequence_run_id="queue-run-default-bundle-001",
+        trace_id="trace-default-bundle-001",
+        bundle_plan_path=plan_path,
+        clock=FixedClock([f"2026-03-29T23:00:{i:02d}Z" for i in range(1, 40)]),
+    )
+    assert result["status"] == "completed"
+

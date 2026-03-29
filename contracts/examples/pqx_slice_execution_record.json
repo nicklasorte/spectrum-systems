@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_slice_execution_record",
+  "step_id": "AI-01",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "trace_id": "trace:pqx-slice-20260329T220000Z:AI-01",
+  "status": "completed",
+  "decision_summary": {
+    "execution_status": "success",
+    "control_decision": "allow",
+    "enforcement_action": "allow"
+  },
+  "artifacts_emitted": [
+    "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.request.json",
+    "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.result.json",
+    "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.replay_result.json",
+    "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.control_decision.json",
+    "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.done_certification_record.json"
+  ],
+  "certification_status": "certified",
+  "replay_result_ref": "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.replay_result.json",
+  "control_decision_ref": "data/pqx_runs/AI-01/pqx-slice-20260329T220000Z.control_decision.json"
+}

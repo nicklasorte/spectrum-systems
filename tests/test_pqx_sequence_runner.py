@@ -243,3 +243,17 @@ def test_sequence_runner_bundle_invocation_path_is_additive(tmp_path: Path) -> N
     )
 
     assert result["status"] == "completed"
+
+
+def test_sequence_runner_default_executor_routes_to_canonical_slice_runner(tmp_path: Path) -> None:
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:1],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-default-001",
+        run_id="run-default-001",
+        trace_id="trace-default-001",
+        clock=FixedClock(["2026-03-29T22:30:01Z", "2026-03-29T22:30:02Z", "2026-03-29T22:30:03Z", "2026-03-29T22:30:04Z", "2026-03-29T22:30:05Z", "2026-03-29T22:30:06Z"]),
+    )
+    assert state["status"] == "completed"
+    assert state["completed_slice_ids"] == ["PQX-QUEUE-01"]
+

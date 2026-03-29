@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectrum_systems.modules.pqx_backbone import run_pqx_backbone
+from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -44,8 +44,8 @@ def main() -> int:
     if args.pqx_output_file:
         pqx_output_text = args.pqx_output_file.read_text(encoding="utf-8")
 
-    result = run_pqx_backbone(
-        selected_step_id=args.step_id,
+    result = run_pqx_slice(
+        step_id=args.step_id or "",
         pqx_output_text=pqx_output_text,
         roadmap_path=args.roadmap_path,
         state_path=args.state_path,
