@@ -13,9 +13,6 @@ The governing standard is:
 Slice execution specs live under:
 `docs/roadmap/slices/`
 
-MVP-01 Slice Spec:
-`docs/roadmap/slices/MVP-01.md`
-
 # Spectrum Systems — System Roadmap
 
 ## System Goal
@@ -74,6 +71,7 @@ It enforces **system-level trust** through governed artifacts, reproducibility, 
 
 | Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Existing Repo Seams | Implementation Mode | Contracts / Schemas | Artifact Outputs | Integration Points | Control Loop Coverage | Dependencies | Definition of Done | Prompt Class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| MVP-01 | First full trusted Observe → Interpret → Recommend loop | Canonical end-to-end governed MVP path | Proves one complete trusted path to certified output | SOURCE + SLICE | scripts/run_agent_golden_path.py, spectrum_systems/modules/runtime/agent_golden_path.py | WIRE INTEGRATION | Existing runtime/control/eval schemas on golden path | governed run bundle, trace, eval, enforcement, certification artifacts | runtime + eval + control + enforcement + certification seams | O / I / D / E / L | AI-01, AI-02, TRUST-01, TRUST-02, EVAL-01, GOV-01, GOV-10, SRE-03 | Complete governed run on canonical golden path with certification gate pass. Slice Spec: `docs/roadmap/slices/MVP-01.md` | runtime | VALID |
 | AI-01 | AI request/response boundary | Canonical model IO boundary + prompt registry enforcement | Prevents free-form model calls | SOURCE + REPO | model_adapter.py, prompt_registry.py | MODIFY EXISTING | ai_model_request, ai_model_response | ai_model_request, ai_model_response | runtime adapter | O / I | — | All model calls use governed schemas and registry | runtime | VALID |
 | AI-02 | Context bundle system | Deterministic, provenance-bound context input | Ensures grounded and replayable execution | SOURCE + REPO | context_bundle.py | MODIFY EXISTING | context_bundle.schema.json | context_bundle | runtime input layer | O / I | AI-01 | Context bundles validated, deterministic, fail-closed | schema | VALID |
 | TRUST-01 | Context admission gate | Fail-closed context validation before execution | Blocks invalid or unsafe inputs | SOURCE GAP (FILLED) | context_bundle.py, policy_registry.py | ADD NEW FILE | context_admission schemas | context_admission_decision | pre-execution gate | O / I / D / E | AI-02 | Invalid bundles always blocked | governance | VALID |
