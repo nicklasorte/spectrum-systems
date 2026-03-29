@@ -39,6 +39,9 @@ def _run(args: argparse.Namespace) -> int:
         return 2
 
     print(json.dumps(result, indent=2))
+    if result.get("status") != "completed":
+        if result.get("failure_classification") == "FIX_GATE_BLOCKED":
+            print("fix gate adjudication blocked bundle resume", file=sys.stderr)
     return 0 if result["status"] == "completed" else 1
 
 

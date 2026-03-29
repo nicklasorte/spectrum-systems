@@ -217,7 +217,8 @@ def test_bundle_resumes_correctly_after_fixes(tmp_path: Path) -> None:
     assert result["status"] == "completed"
     persisted = json.loads((tmp_path / "bundle_state.json").read_text(encoding="utf-8"))
     assert "fix:REV-FIX-001:F-001" in persisted["executed_fixes"]
-    assert persisted["pending_fix_ids"][0]["status"] == "complete"
+    assert persisted["pending_fix_ids"][0]["status"] == "resolved"
+    assert persisted["last_fix_gate_status"] == "passed"
 
 
 def test_record_and_state_update_round_trip() -> None:

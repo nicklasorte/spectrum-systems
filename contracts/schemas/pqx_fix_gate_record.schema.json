@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_fix_gate_record.schema.json",
+  "title": "PQX Fix Gate Record",
+  "description": "Deterministic governed adjudication record that decides whether executed PQX fixes allow bundle progression to resume.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fix_id",
+    "bundle_id",
+    "run_id",
+    "trace_id",
+    "source_finding_id",
+    "source_review_id",
+    "execution_status",
+    "validation_result",
+    "gate_status",
+    "resolution_status",
+    "resume_allowed",
+    "replay_safe",
+    "matched_pending_fix_ids",
+    "accepted_target_step_ids",
+    "insertion_point",
+    "artifact_refs",
+    "reasons",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "fix_id": {"type": "string", "minLength": 1},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "source_finding_id": {"type": "string", "minLength": 1},
+    "source_review_id": {"type": "string", "minLength": 1},
+    "execution_status": {"type": "string", "enum": ["complete", "blocked", "failed"]},
+    "validation_result": {"type": "string", "minLength": 1},
+    "gate_status": {"type": "string", "enum": ["passed", "blocked"]},
+    "resolution_status": {"type": "string", "enum": ["resolved", "unresolved", "mismatched", "duplicate"]},
+    "resume_allowed": {"type": "boolean"},
+    "replay_safe": {"type": "boolean"},
+    "matched_pending_fix_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "accepted_target_step_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "insertion_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "anchor_step_id", "insert_before_step_id", "ordered_index"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["before_source", "patch_after_source"]},
+        "anchor_step_id": {"type": "string", "minLength": 1},
+        "insert_before_step_id": {"type": ["string", "null"], "minLength": 1},
+        "ordered_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

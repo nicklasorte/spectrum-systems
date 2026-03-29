@@ -176,3 +176,76 @@ def test_authority_plan_mismatch_on_resume_fails_closed(tmp_path: Path) -> None:
             bundle_plan_path=plan_path,
             execute_step=lambda _: {"execution_status": "success"},
         )
+
+
+def test_execute_fixes_records_fix_gate_before_step_progression(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path, steps="AI-01, AI-02")
+    state_path = tmp_path / "state.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.3.0",
+                "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+                "execution_plan_ref": str(plan_path),
+                "run_id": "run-gate-block-001",
+                "sequence_run_id": "queue-run-gate-block-001",
+                "active_bundle_id": "BUNDLE-T1",
+                "completed_bundle_ids": [],
+                "completed_step_ids": [],
+                "blocked_step_ids": [],
+                "pending_fix_ids": [
+                    {
+                        "fix_id": "fix:REV-BLOCK:F-001",
+                        "source_review_id": "REV-BLOCK",
+                        "source_finding_id": "F-001",
+                        "severity": "high",
+                        "priority": "P1",
+                        "affected_step_ids": ["AI-01"],
+                        "status": "open",
+                        "blocking": True,
+                        "created_from_bundle_id": "BUNDLE-T1",
+                        "created_from_run_id": "run-gate-block-001",
+                        "notes": "patch runtime",
+                        "artifact_refs": ["docs/reviews/REV-BLOCK.md#f1"],
+                    }
+                ],
+                "executed_fixes": [],
+                "failed_fixes": [],
+                "fix_artifacts": {},
+                "reinsertion_points": {},
+                "fix_gate_results": {},
+                "resolved_fixes": [],
+                "unresolved_fixes": [],
+                "last_fix_gate_status": None,
+                "review_artifact_refs": [],
+                "review_requirements": [],
+                "satisfied_review_checkpoint_ids": [],
+                "artifact_index": {},
+                "resume_position": {
+                    "bundle_id": "BUNDLE-T1",
+                    "next_step_id": "AI-01",
+                    "resume_token": "resume:queue-run-gate-block-001:BUNDLE-T1:0",
+                },
+                "created_at": "2026-03-29T12:00:00Z",
+                "updated_at": "2026-03-29T12:00:00Z",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=state_path,
+        output_dir=tmp_path / "out",
+        run_id="run-gate-block-001",
+        sequence_run_id="queue-run-gate-block-001",
+        trace_id="trace-gate-block-001",
+        bundle_plan_path=plan_path,
+        execute_step=lambda _: {"execution_status": "success"},
+        execute_fixes=True,
+    )
+    assert result["status"] == "completed"
+    assert result["failure_classification"] is None
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    assert state["last_fix_gate_status"] == "passed"
+    assert state["resolved_fixes"] == ["fix:REV-BLOCK:F-001"]
