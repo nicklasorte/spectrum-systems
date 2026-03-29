@@ -267,6 +267,11 @@ def generate_eval_cases_from_cross_run_intelligence(decision: Dict[str, Any]) ->
         eval_case = {
             "artifact_type": "eval_case",
             "schema_version": "1.0.0",
+            "run_id": deterministic_id(
+                prefix="run",
+                namespace="xrun_cross_run_eval_case",
+                payload={"intelligence_id": decision.get("intelligence_id"), "pattern": pattern},
+            ),
             "trace_id": trace_ids[0],
             "eval_case_id": deterministic_id(
                 prefix="ec",

@@ -388,8 +388,25 @@ def _build_certification_artifact(
 ) -> dict[str, Any]:
     certification_status, decision = _status_from_checks(checks)
 
+    run_id = deterministic_id(
+        prefix="run",
+        namespace="control_loop_certification_run",
+        payload={
+            "chaos_run_id": scenario_summary.get("chaos_run_id", "blocked"),
+            "related_review_refs": sorted(related_review_refs),
+            "related_plan_refs": sorted(related_plan_refs),
+        },
+    )
+    trace_id = deterministic_id(
+        prefix="trace",
+        namespace="control_loop_certification_trace",
+        payload={"run_id": run_id},
+    )
+
     id_payload = {
         "certification_scope": "trust-boundary/runtime",
+        "run_id": run_id,
+        "trace_id": trace_id,
         "certification_status": certification_status,
         "decision": decision,
         "executed_checks": [
@@ -414,6 +431,8 @@ def _build_certification_artifact(
             payload=id_payload,
         ),
         "certification_scope": "trust-boundary/runtime",
+        "run_id": run_id,
+        "trace_id": trace_id,
         "certification_status": certification_status,
         "decision": decision,
         "executed_checks": [
@@ -437,10 +456,7 @@ def _build_certification_artifact(
         "provenance_trace_refs": {
             "commit_sha": _git_value("rev-parse", "HEAD"),
             "branch": _git_value("rev-parse", "--abbrev-ref", "HEAD"),
-            "trace_refs": [
-                f"control_loop_chaos:{scenario_summary.get('chaos_run_id', 'blocked')}",
-                f"review_artifact:{related_review_refs[0] if related_review_refs else 'missing'}",
-            ],
+            "trace_refs": [trace_id],
         },
     }
 

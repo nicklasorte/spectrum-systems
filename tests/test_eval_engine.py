@@ -9,6 +9,7 @@ def _base_case() -> dict:
     return {
         "artifact_type": "eval_case",
         "schema_version": "1.0.0",
+        "run_id": "run-eval-engine-test-001",
         "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
         "eval_case_id": "eval-case-test-001",
         "input_artifact_refs": ["artifact://input/1"],
@@ -25,6 +26,7 @@ def test_run_eval_case_pass_case() -> None:
     assert result["result_status"] == "pass"
     assert result["score"] == 1.0
     assert result["eval_case_id"] == case["eval_case_id"]
+    assert result["run_id"] == case["run_id"]
     assert result["trace_id"] == case["trace_id"]
 
 

@@ -34,6 +34,7 @@ def _eval_result(case_id: str, *, status: str = "pass", indeterminate: bool = Fa
         "artifact_type": "eval_result",
         "schema_version": "1.0.0",
         "eval_case_id": case_id,
+        "run_id": f"run-{case_id}",
         "trace_id": "11111111-1111-4111-8111-111111111111",
         "result_status": status,
         "score": 1.0 if status == "pass" else 0.0,

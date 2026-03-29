@@ -8,6 +8,9 @@
   "required": [
     "artifact_type",
     "schema_version",
+    "certification_error_id",
+    "run_id",
+    "trace_id",
     "timestamp",
     "error_code",
     "message",
@@ -16,6 +19,9 @@
   "properties": {
     "artifact_type": {"type": "string", "const": "done_certification_error"},
     "schema_version": {"type": "string", "const": "1.0.0"},
+    "certification_error_id": {"type": "string", "pattern": "^dce-[a-f0-9]{16}$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
     "timestamp": {"type": "string", "format": "date-time"},
     "error_code": {"type": "string", "enum": ["DONE_CERTIFICATION_FAILED"]},
     "message": {"type": "string", "minLength": 1},
@@ -30,7 +36,6 @@
         "failure_injection_ref": {"type": "string", "minLength": 1},
         "policy_ref": {"type": "string", "minLength": 1}
       }
-    },
-    "trace_id": {"type": ["string", "null"]}
+    }
   }
 }

@@ -9,6 +9,7 @@
     "artifact_type",
     "schema_version",
     "eval_case_id",
+    "run_id",
     "trace_id",
     "result_status",
     "score",
@@ -19,6 +20,7 @@
     "artifact_type": { "type": "string", "const": "eval_result" },
     "schema_version": { "type": "string", "const": "1.0.0" },
     "eval_case_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "format": "uuid" },
     "result_status": {
       "type": "string",

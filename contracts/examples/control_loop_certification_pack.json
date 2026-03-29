@@ -72,5 +72,7 @@
       "control_loop_chaos:chaos-20260327T000000Z",
       "review_validator:docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"
     ]
-  }
+  },
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001"
 }

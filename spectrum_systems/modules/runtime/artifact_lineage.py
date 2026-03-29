@@ -80,6 +80,74 @@ def _load_lineage_schema() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+
+
+def _derive_identity(
+    artifact_id: str,
+    parent_artifact_ids: List[str],
+    registry: Dict[str, Dict[str, Any]],
+    *,
+    run_id: Optional[str],
+    trace_id: Optional[str],
+) -> tuple[str, str]:
+    resolved_run_id = (run_id or "").strip()
+    resolved_trace_id = (trace_id or "").strip()
+
+    for pid in parent_artifact_ids:
+        parent = registry.get(pid, {})
+        if not resolved_run_id:
+            candidate = str(parent.get("run_id") or "").strip()
+            if candidate:
+                resolved_run_id = candidate
+        if not resolved_trace_id:
+            candidate = str(parent.get("trace_id") or "").strip()
+            if candidate:
+                resolved_trace_id = candidate
+
+    if not resolved_run_id:
+        resolved_run_id = f"run:{artifact_id}"
+    if not resolved_trace_id:
+        resolved_trace_id = f"trace:{artifact_id}"
+
+    return resolved_run_id, resolved_trace_id
+
+
+def _build_lineage_graph(
+    artifact_id: str,
+    artifact_type: str,
+    parent_artifact_ids: List[str],
+    registry: Dict[str, Dict[str, Any]],
+    *,
+    run_id: str,
+    trace_id: str,
+) -> tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+    nodes: List[Dict[str, str]] = []
+    edges: List[Dict[str, str]] = []
+
+    for pid in parent_artifact_ids:
+        parent = registry.get(pid, {})
+        nodes.append(
+            {
+                "artifact_key": f"artifact:{pid}",
+                "artifact_id": pid,
+                "artifact_type": str(parent.get("artifact_type") or "unknown"),
+                "run_id": str(parent.get("run_id") or run_id),
+                "trace_id": str(parent.get("trace_id") or trace_id),
+            }
+        )
+        edges.append({"parent_artifact_id": pid, "child_artifact_id": artifact_id})
+
+    nodes.append(
+        {
+            "artifact_key": f"artifact:{artifact_id}",
+            "artifact_id": artifact_id,
+            "artifact_type": artifact_type,
+            "run_id": run_id,
+            "trace_id": trace_id,
+        }
+    )
+
+    return nodes, edges
 def create_artifact_metadata(
     artifact_id: str,
     artifact_type: str,
@@ -88,6 +156,8 @@ def create_artifact_metadata(
     version: str,
     registry: Optional[Dict[str, Dict[str, Any]]] = None,
     created_at: Optional[str] = None,
+    run_id: Optional[str] = None,
+    trace_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build artifact metadata with computed lineage fields.
 
@@ -142,8 +212,26 @@ def create_artifact_metadata(
         reg,
     )
 
+    resolved_run_id, resolved_trace_id = _derive_identity(
+        artifact_id,
+        parent_artifact_ids,
+        reg,
+        run_id=run_id,
+        trace_id=trace_id,
+    )
+    lineage_nodes, lineage_edges = _build_lineage_graph(
+        artifact_id,
+        artifact_type,
+        parent_artifact_ids,
+        reg,
+        run_id=resolved_run_id,
+        trace_id=resolved_trace_id,
+    )
+
     return {
         "artifact_id": artifact_id,
+        "run_id": resolved_run_id,
+        "trace_id": resolved_trace_id,
         "artifact_type": artifact_type,
         "parent_artifact_ids": list(parent_artifact_ids),
         "created_at": created_at or _now_iso(),
@@ -153,6 +241,8 @@ def create_artifact_metadata(
         "root_artifact_ids": sorted(root_ids),
         "lineage_valid": lineage_valid,
         "lineage_errors": lineage_errors,
+        "lineage_nodes": lineage_nodes,
+        "lineage_edges": lineage_edges,
     }
 
 

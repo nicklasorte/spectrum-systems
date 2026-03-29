@@ -1,6 +1,9 @@
 {
   "artifact_type": "done_certification_error",
   "schema_version": "1.0.0",
+  "certification_error_id": "dce-1111111111111111",
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001",
   "timestamp": "2026-03-28T00:00:00Z",
   "error_code": "DONE_CERTIFICATION_FAILED",
   "message": "missing required input ref: replay_result_ref",
@@ -9,6 +12,5 @@
     "certification_pack_ref": "outputs/control_loop_certification/control_loop_certification_pack.json",
     "error_budget_ref": "outputs/error_budget/error_budget_status.json",
     "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json"
-  },
-  "trace_id": null
+  }
 }

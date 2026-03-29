@@ -220,6 +220,18 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("grounding_factcheck_eval")
         validate_artifact(instance, "grounding_factcheck_eval")
 
+    def test_replay_execution_record_example_validates(self) -> None:
+        instance = load_example("replay_execution_record")
+        validate_artifact(instance, "replay_execution_record")
+
+    def test_observability_record_example_validates(self) -> None:
+        instance = load_example("observability_record")
+        validate_artifact(instance, "observability_record")
+
+    def test_artifact_lineage_example_validates(self) -> None:
+        instance = load_example("artifact_lineage")
+        validate_artifact(instance, "artifact_lineage")
+
     def test_grounding_control_decision_example_validates(self) -> None:
         instance = load_example("grounding_control_decision")
         validate_artifact(instance, "grounding_control_decision")

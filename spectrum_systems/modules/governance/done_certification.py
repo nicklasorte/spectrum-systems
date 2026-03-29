@@ -52,6 +52,18 @@ def _stable_hash(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+
+
+def _resolve_run_id(*, replay: Dict[str, Any], regression: Dict[str, Any], certification_pack: Dict[str, Any]) -> str:
+    for candidate in (
+        certification_pack.get("run_id"),
+        replay.get("run_id"),
+        regression.get("run_id"),
+    ):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    raise DoneCertificationError("run_id cannot be derived from certification/replay/regression inputs")
+
 def _deterministic_timestamp(*, replay: Dict[str, Any], regression: Dict[str, Any], certification: Dict[str, Any]) -> str:
     for candidate in (
         certification.get("generated_at"),
@@ -342,8 +354,15 @@ def run_done_certification(input_refs: dict) -> dict:
     if not trace_id:
         raise DoneCertificationError("trace_id cannot be derived from replay/error_budget/control_decision inputs")
 
+    run_id = _resolve_run_id(
+        replay=replay,
+        regression=regression,
+        certification_pack=certification_pack,
+    )
+
     artifact = {
         "certification_id": certification_id,
+        "run_id": run_id,
         "timestamp": _deterministic_timestamp(
             replay=replay,
             regression=regression,

@@ -1,0 +1,18 @@
+{
+  "replay_id": "rpr-1111111111111111",
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001",
+  "original_run_id": "run-example-001",
+  "replay_run_id": "run-example-001",
+  "original_trace_id": "trace-example-001",
+  "replay_trace_id": "trace-example-001",
+  "timestamp": "2026-03-29T00:00:00Z",
+  "replay_status": "success",
+  "consistency_check_passed": true,
+  "compared_artifacts": [
+    "evaluation_control_decision",
+    "enforcement_result",
+    "eval_summary"
+  ],
+  "reasons": []
+}

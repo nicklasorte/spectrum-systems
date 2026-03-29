@@ -1,0 +1,32 @@
+{
+  "record_id": "obr-1111111111111111",
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001",
+  "timestamp": "2026-03-29T00:00:00Z",
+  "context": {
+    "artifact_id": "MMR-EXAMPLE",
+    "artifact_type": "meeting_minutes_record",
+    "pipeline_stage": "interpret",
+    "case_id": "run-example-001"
+  },
+  "pass_info": {
+    "pass_id": "run-example-001",
+    "pass_type": "meeting_minutes"
+  },
+  "metrics": {
+    "structural_score": 1.0,
+    "semantic_score": 1.0,
+    "grounding_score": 1.0,
+    "latency_ms": 1
+  },
+  "flags": {
+    "schema_valid": true,
+    "grounding_passed": true,
+    "regression_passed": true,
+    "human_disagrees": false
+  },
+  "error_summary": {
+    "error_types": [],
+    "failure_count": 0
+  }
+}

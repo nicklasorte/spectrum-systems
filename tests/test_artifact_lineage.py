@@ -72,21 +72,50 @@ def _mk(
     created_by: str = "test-module",
     version: str = "1.0.0",
     created_at: str = _NOW,
+    run_id: str = "run-test-001",
+    trace_id: str = "trace-test-001",
 ) -> Dict[str, Any]:
     """Build a minimal valid artifact metadata dict."""
+    parent_ids = parent_artifact_ids or []
+    lineage_nodes = [
+        {
+            "artifact_key": f"artifact:{pid}",
+            "artifact_id": pid,
+            "artifact_type": "unknown",
+            "run_id": run_id,
+            "trace_id": trace_id,
+        }
+        for pid in parent_ids
+    ]
+    lineage_nodes.append(
+        {
+            "artifact_key": f"artifact:{artifact_id}",
+            "artifact_id": artifact_id,
+            "artifact_type": artifact_type,
+            "run_id": run_id,
+            "trace_id": trace_id,
+        }
+    )
     return {
         "artifact_id": artifact_id,
+        "run_id": run_id,
+        "trace_id": trace_id,
         "artifact_type": artifact_type,
-        "parent_artifact_ids": parent_artifact_ids or [],
+        "parent_artifact_ids": parent_ids,
         "created_at": created_at,
         "created_by": created_by,
         "version": version,
         "lineage_depth": lineage_depth,
         "root_artifact_ids": root_artifact_ids if root_artifact_ids is not None else (
-            [artifact_id] if not parent_artifact_ids else []
+            [artifact_id] if not parent_ids else []
         ),
         "lineage_valid": lineage_valid,
         "lineage_errors": lineage_errors or [],
+        "lineage_nodes": lineage_nodes,
+        "lineage_edges": [
+            {"parent_artifact_id": pid, "child_artifact_id": artifact_id}
+            for pid in parent_ids
+        ],
     }
 
 
