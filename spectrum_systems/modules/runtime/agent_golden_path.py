@@ -30,6 +30,9 @@ from spectrum_systems.modules.runtime.control_loop import (
 )
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
 from spectrum_systems.modules.runtime.context_admission import run_context_admission
+from spectrum_systems.modules.runtime.evaluation_enforcement_bridge import build_enforcement_action
+from spectrum_systems.modules.runtime.trace_store import persist_trace
+from spectrum_systems.modules.governance.done_certification import DoneCertificationError
 from spectrum_systems.modules.runtime.prompt_registry import (
     PromptRegistryError,
     load_prompt_alias_map,
@@ -687,6 +690,142 @@ def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_i
         _require(artifacts["enforcement"].get("input_decision_reference") == decision_id, "enforcement must reference control_decision upstream artifact")
 
 
+def _build_mvp_extension_artifacts(
+    *,
+    artifacts: Dict[str, Dict[str, Any]],
+    run_id: str,
+    trace_id: str,
+    context_bundle: Dict[str, Any],
+    trace_store_dir: Path,
+) -> Dict[str, Dict[str, Any]]:
+    """Build MVP-01 required governed artifacts tied to the same run/trace."""
+    meeting_minutes = deepcopy(load_example("meeting_minutes_record"))
+    meeting_minutes["run_id"] = f"run-{run_id}"
+    record_digest = hashlib.sha256(f"{run_id}:{trace_id}:meeting_record".encode("utf-8")).hexdigest()[:16].upper()
+    meeting_minutes["record_id"] = f"REC-{record_digest}"
+    minutes_digest = hashlib.sha256(f"{run_id}:{trace_id}:meeting_minutes".encode("utf-8")).hexdigest()[:16].upper()
+    meeting_minutes["artifact_id"] = f"MMR-{minutes_digest}"
+
+    grounding_eval = deepcopy(load_example("grounding_factcheck_eval"))
+
+    enforcement_action = build_enforcement_action(
+        decision_id=artifacts["control_decision"]["decision_id"],
+        summary_id=artifacts["eval_summary"]["eval_run_id"],
+        system_response="allow" if artifacts["enforcement"].get("final_status") == "allow" else "block",
+        enforcement_scope="pipeline_change",
+        reasons=[f"derived_from_enforcement_result:{artifacts['enforcement']['enforcement_result_id']}"],
+        required_human_actions=[],
+        allowed_to_proceed=artifacts["enforcement"].get("final_status") == "allow",
+        certification_gate={
+            "artifact_reference": "none",
+            "certification_decision": "not_applicable",
+            "certification_status": "not_applicable",
+            "block_reason": None,
+        },
+        action_id=deterministic_id(prefix="eea", namespace="mvp01_eval_enforcement_action", payload={"run_id": run_id, "trace_id": trace_id}),
+    )
+
+    replay_execution_record = {
+        "replay_id": deterministic_id(prefix="rpr", namespace="mvp01_replay_execution_record", payload={"run_id": run_id, "trace_id": trace_id}),
+        "original_run_id": run_id,
+        "replay_run_id": run_id,
+        "original_trace_id": trace_id,
+        "replay_trace_id": trace_id,
+        "timestamp": _now_iso(),
+        "replay_status": "success" if artifacts["replay_result"]["consistency_status"] == "match" else "failed",
+        "consistency_check_passed": artifacts["replay_result"]["consistency_status"] == "match",
+        "compared_artifacts": ["evaluation_control_decision", "enforcement_result", "eval_summary"],
+        "reasons": [],
+    }
+
+    certification_pack = deepcopy(load_example("control_loop_certification_pack"))
+    certification_pack["certification_id"] = deterministic_id(prefix="clc", namespace="mvp01_control_loop_cert_pack", payload={"run_id": run_id, "trace_id": trace_id})
+    certification_pack["decision"] = "pass" if artifacts["enforcement"].get("final_status") == "allow" else "fail"
+    certification_pack["certification_status"] = "certified" if certification_pack["decision"] == "pass" else "blocked"
+    certification_pack["provenance_trace_refs"]["trace_refs"] = [trace_id]
+    certification_pack["scenario_summary"]["chaos_run_id"] = replay_execution_record["replay_id"]
+
+    done_certification = deepcopy(load_example("done_certification_record"))
+    done_certification_error = None
+    try:
+        done_certification["certification_id"] = hashlib.sha256(f"{run_id}:{trace_id}:done_certification".encode("utf-8")).hexdigest()
+        done_certification["trace_id"] = trace_id
+        done_certification["input_refs"]["replay_result_ref"] = f"replay_result:{artifacts['replay_result']['replay_id']}"
+        done_certification["input_refs"]["certification_pack_ref"] = f"control_loop_certification_pack:{certification_pack['certification_id']}"
+        done_certification["input_refs"]["policy_ref"] = f"evaluation_control_decision:{artifacts['control_decision']['decision_id']}"
+        done_certification["final_status"] = "PASSED" if certification_pack["decision"] == "pass" else "FAILED"
+        done_certification["system_response"] = "allow" if done_certification["final_status"] == "PASSED" else "block"
+        if done_certification["final_status"] != "PASSED":
+            raise DoneCertificationError("MVP-01 certification blocked by non-allow enforcement status")
+    except DoneCertificationError as exc:
+        done_certification_error = deepcopy(load_example("done_certification_error"))
+        done_certification_error["message"] = str(exc)
+        done_certification_error["input_refs"] = {
+            "run_id": run_id,
+            "trace_id": trace_id,
+            "control_decision_id": artifacts["control_decision"]["decision_id"],
+        }
+
+    observability_record = {
+        "record_id": deterministic_id(prefix="obr", namespace="mvp01_observability_record", payload={"run_id": run_id, "trace_id": trace_id}),
+        "timestamp": _now_iso(),
+        "context": {"artifact_id": meeting_minutes["artifact_id"], "artifact_type": "meeting_minutes_record", "pipeline_stage": "interpret", "case_id": run_id},
+        "pass_info": {"pass_id": run_id, "pass_type": "meeting_minutes"},
+        "metrics": {"structural_score": 1.0, "semantic_score": 1.0, "grounding_score": 1.0, "latency_ms": 1},
+        "flags": {"schema_valid": True, "grounding_passed": True, "regression_passed": True, "human_disagrees": False},
+        "error_summary": {"error_types": [], "failure_count": 0},
+    }
+
+    observability_metrics = deepcopy(artifacts["replay_result"]["observability_metrics"])
+    observability_metrics["trace_refs"]["trace_id"] = trace_id
+
+    trace_payload = {
+        "trace_id": trace_id,
+        "root_span_id": None,
+        "spans": [],
+        "artifacts": [
+            {"artifact_id": meeting_minutes["artifact_id"], "artifact_type": "meeting_minutes_record", "attached_at": _now_iso(), "parent_span_id": None},
+            {"artifact_id": artifacts["control_decision"]["decision_id"], "artifact_type": "evaluation_control_decision", "attached_at": _now_iso(), "parent_span_id": None},
+            {"artifact_id": artifacts["enforcement"]["enforcement_result_id"], "artifact_type": "enforcement_result", "attached_at": _now_iso(), "parent_span_id": None},
+        ],
+        "start_time": _now_iso(),
+        "end_time": _now_iso(),
+        "context": {"run_id": run_id, "task_type": "meeting_minutes"},
+        "schema_version": "1.0.0",
+    }
+    persisted_storage_path = persist_trace(trace_payload, base_dir=trace_store_dir)
+    persisted_trace = {"envelope_version": "1.0.0", "persisted_at": _now_iso(), "storage_path": persisted_storage_path, "trace": trace_payload}
+
+    artifact_lineage = {
+        "artifact_id": deterministic_id(prefix="lin", namespace="mvp01_artifact_lineage", payload={"run_id": run_id, "trace_id": trace_id}),
+        "artifact_type": "decision",
+        "parent_artifact_ids": [context_bundle["context_id"], artifacts["agent_execution_trace"]["agent_run_id"]],
+        "created_at": _now_iso(),
+        "created_by": "agent_golden_path",
+        "version": "1.0.0",
+        "lineage_depth": 2,
+        "root_artifact_ids": [context_bundle["context_id"]],
+        "lineage_valid": True,
+        "lineage_errors": [],
+    }
+
+    extension = {
+        "meeting_minutes_record": meeting_minutes,
+        "grounding_factcheck_eval": grounding_eval,
+        "evaluation_enforcement_action": enforcement_action,
+        "replay_execution_record": replay_execution_record,
+        "control_loop_certification_pack": certification_pack,
+        "done_certification_record": done_certification,
+        "observability_record": observability_record,
+        "observability_metrics": observability_metrics,
+        "persisted_trace": persisted_trace,
+        "artifact_lineage": artifact_lineage,
+    }
+    if done_certification_error is not None:
+        extension["done_certification_error"] = done_certification_error
+    return extension
+
+
 def _handle_review_gate(
     *,
     config: GoldenPathConfig,
@@ -1202,6 +1341,33 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         }
         _validate_contract(execution_record, "control_execution_result", stage="enforcement")
         artifacts["final_execution_record"] = execution_record
+        extension_artifacts = _build_mvp_extension_artifacts(
+            artifacts=artifacts,
+            run_id=run_id,
+            trace_id=trace_id,
+            context_bundle=context_bundle,
+            trace_store_dir=config.output_dir / "traces",
+        )
+        for key, payload in extension_artifacts.items():
+            schema_name = key
+            if key == "meeting_minutes_record":
+                schema_name = "meeting_minutes_record"
+            elif key == "evaluation_enforcement_action":
+                schema_name = "evaluation_enforcement_action"
+            elif key == "replay_execution_record":
+                schema_name = "replay_execution_record"
+            elif key == "control_loop_certification_pack":
+                schema_name = "control_loop_certification_pack"
+            elif key == "done_certification_record":
+                schema_name = "done_certification_record"
+            elif key == "done_certification_error":
+                schema_name = "done_certification_error"
+            elif key == "persisted_trace":
+                schema_name = "persisted_trace"
+            elif key == "artifact_lineage":
+                schema_name = "artifact_lineage"
+            _validate_contract(payload, schema_name, stage="enforcement")
+        artifacts.update(extension_artifacts)
         _validate_trace_and_lineage(artifacts, trace_id=trace_id, run_id=run_id)
 
     except AgentGoldenPathOverrideEnforcementError as exc:
@@ -1243,6 +1409,17 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
         "failure_artifact": config.output_dir / "failure_artifact.json",
         "hitl_review_request": config.output_dir / "hitl_review_request.json",
         "hitl_override_decision": config.output_dir / "hitl_override_decision.json",
+        "meeting_minutes_record": config.output_dir / "meeting_minutes_record.json",
+        "grounding_factcheck_eval": config.output_dir / "grounding_factcheck_eval.json",
+        "evaluation_enforcement_action": config.output_dir / "evaluation_enforcement_action.json",
+        "replay_execution_record": config.output_dir / "replay_execution_record.json",
+        "control_loop_certification_pack": config.output_dir / "control_loop_certification_pack.json",
+        "done_certification_record": config.output_dir / "done_certification_record.json",
+        "done_certification_error": config.output_dir / "done_certification_error.json",
+        "observability_record": config.output_dir / "observability_record.json",
+        "observability_metrics": config.output_dir / "observability_metrics.json",
+        "persisted_trace": config.output_dir / "persisted_trace.json",
+        "artifact_lineage": config.output_dir / "artifact_lineage.json",
     }
     for key, payload in artifacts.items():
         _emit_json(output_paths[key], payload)

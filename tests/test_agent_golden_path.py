@@ -40,6 +40,8 @@ def _normalized(artifacts: dict) -> dict:
                     action_copy.pop("timestamp", None)
                     sanitized.append(action_copy)
             clone["actions_taken"] = sanitized
+        if key == "persisted_trace" and isinstance(clone.get("storage_path"), str):
+            clone["storage_path"] = "<normalized>"
         normalized[key] = clone
     return normalized
 
@@ -98,6 +100,16 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert artifacts["control_decision"]["system_response"] == "allow"
     assert artifacts["enforcement"]["final_status"] == "allow"
     assert artifacts["final_execution_record"]["execution_status"] == "success"
+    assert artifacts["meeting_minutes_record"]["artifact_type"] == "meeting_minutes_record"
+    assert artifacts["grounding_factcheck_eval"]["artifact_type"] == "grounding_factcheck_eval"
+    assert artifacts["evaluation_enforcement_action"]["decision_id"] == artifacts["control_decision"]["decision_id"]
+    assert artifacts["replay_execution_record"]["original_trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
+    assert artifacts["control_loop_certification_pack"]["decision"] == "pass"
+    assert artifacts["done_certification_record"]["final_status"] == "PASSED"
+    assert artifacts["observability_record"]["context"]["artifact_type"] == "meeting_minutes_record"
+    assert artifacts["observability_metrics"]["artifact_type"] == "observability_metrics"
+    assert artifacts["persisted_trace"]["trace"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
+    assert artifacts["artifact_lineage"]["lineage_valid"] is True
 
 
 def test_enforcement_final_status_non_allow_blocks_execution(tmp_path: Path) -> None:
@@ -199,6 +211,7 @@ def test_control_block_path(tmp_path: Path) -> None:
     assert artifacts["hitl_review_request"]["trigger_reason"] == "control_non_allow_response"
     assert artifacts["final_execution_record"]["execution_status"] == "escalated"
     assert "enforcement" not in artifacts
+    assert "done_certification_record" not in artifacts
 
 
 def test_force_review_required_stops_before_control(tmp_path: Path) -> None:
