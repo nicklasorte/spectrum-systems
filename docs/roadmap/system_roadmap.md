@@ -3,6 +3,16 @@
 
 This document is the single authoritative roadmap for Spectrum Systems. All roadmap references, execution planning, and PQX prompts must derive from this file.
 
+## PQX EXECUTION CONTRACT STANDARD
+
+Roadmap steps are expected to evolve toward PQX-executable step contracts.
+
+The governing standard is:
+`docs/roadmap/roadmap_step_contract.md`
+
+Slice execution specs live under:
+`docs/roadmap/slices/`
+
 # Spectrum Systems — System Roadmap
 
 ## System Goal
