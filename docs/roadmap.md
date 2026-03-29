@@ -3,11 +3,11 @@
 This document is no longer in use.
 
 Reason:
-- Replaced by docs/roadmaps/codex-prompt-roadmap.md
+- Replaced by docs/roadmap/system_roadmap.md
 - Does not reflect the module-first architecture or sliced execution model
 
 Do not execute tasks from this document.
-Refer to the ACTIVE roadmap instead.
+Refer to the authoritative roadmap instead.
 
 ---
 

@@ -1,3 +1,5 @@
+This file is subordinate to docs/roadmap/system_roadmap.md
+
 # 📘 REFERENCE
 
 This document is for context and design history only.

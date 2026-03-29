@@ -1,7 +1,9 @@
+This file is subordinate to docs/roadmap/system_roadmap.md
+
 # Roadmap Status
 
-## ACTIVE ROADMAP
-This document is the authoritative execution roadmap for the spectrum-systems repository.
+## Authority
+Execution authority is delegated to `docs/roadmap/system_roadmap.md`. This file is reference context only.
 
 ## REFERENCE ROADMAPS
 - docs/architecture/module-pivot-roadmap.md
@@ -16,7 +18,7 @@ This document is the authoritative execution roadmap for the spectrum-systems re
 
 # Codex Prompt Roadmap — H through AJ
 
-**Status:** Active
+**Status:** Reference
 **Date:** 2026-03-18
 **Scope:** spectrum-systems — module-first platform, governance/foundations through final hardening
 **Supersedes:** Level-16 Roadmap table in `docs/architecture/module-pivot-roadmap.md` (execution model only; strategic order is preserved)

@@ -13,7 +13,7 @@ from spectrum_systems.contracts import load_schema
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ROADMAP_PATH = REPO_ROOT / "docs" / "roadmaps" / "system_roadmap.md"
+ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
 STATE_PATH = REPO_ROOT / "data" / "pqx_state.json"
 RUNS_ROOT = REPO_ROOT / "data" / "pqx_runs"
 
@@ -55,7 +55,7 @@ def parse_system_roadmap(path: Path = ROADMAP_PATH) -> list[RoadmapRow]:
             break
 
     if header_idx is None:
-        raise PQXBackboneError("Roadmap table header not found in docs/roadmaps/system_roadmap.md.")
+        raise PQXBackboneError("Roadmap table header not found in docs/roadmap/system_roadmap.md.")
 
     rows: list[RoadmapRow] = []
     for line in lines[header_idx + 2 :]:
@@ -286,7 +286,7 @@ def run_pqx_backbone(
         "dependencies": list(row.dependencies),
         "requested_at": iso_now(clock),
         "prompt": f"Implement roadmap step {row.step_id}: {row.step_name}",
-        "roadmap_version": "docs/roadmaps/system_roadmap.md",
+        "roadmap_version": "docs/roadmap/system_roadmap.md",
         "row_snapshot": {
             "row_index": row.row_index,
             "step_id": row.step_id,

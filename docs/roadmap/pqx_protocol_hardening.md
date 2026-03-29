@@ -1,3 +1,5 @@
+This file is subordinate to docs/roadmap/system_roadmap.md
+
 # Spectrum Systems — PQX Protocol Hardening Roadmap
 
 ## System Goal

@@ -1,3 +1,5 @@
+This file is subordinate to docs/roadmap/system_roadmap.md
+
 # Roadmap Step Contract (PQX Execution Standard)
 
 A roadmap step is considered **PQX-executable** only if ALL required fields are present.
