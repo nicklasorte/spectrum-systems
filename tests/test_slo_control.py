@@ -1325,81 +1325,117 @@ def test_cli_malformed_lineage_json_exits_2():
 # ===========================================================================
 
 
+
+
+def _lineage_meta(
+    artifact_id: str,
+    artifact_type: str,
+    parent_artifact_ids: list[str],
+    lineage_depth: int,
+    root_artifact_ids: list[str],
+    *,
+    lineage_valid: bool,
+    lineage_errors: list[str],
+    run_id: str = "run-slo-lineage-001",
+    trace_id: str = "trace-slo-lineage-001",
+) -> Dict[str, Any]:
+    parent_nodes = [
+        {
+            "artifact_key": f"artifact:{pid}",
+            "artifact_id": pid,
+            "artifact_type": "unknown",
+            "run_id": run_id,
+            "trace_id": trace_id,
+        }
+        for pid in parent_artifact_ids
+    ]
+    return {
+        "artifact_id": artifact_id,
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "artifact_type": artifact_type,
+        "parent_artifact_ids": parent_artifact_ids,
+        "lineage_depth": lineage_depth,
+        "root_artifact_ids": root_artifact_ids,
+        "lineage_valid": lineage_valid,
+        "lineage_errors": lineage_errors,
+        "lineage_nodes": parent_nodes + [
+            {
+                "artifact_key": f"artifact:{artifact_id}",
+                "artifact_id": artifact_id,
+                "artifact_type": artifact_type,
+                "run_id": run_id,
+                "trace_id": trace_id,
+            }
+        ],
+        "lineage_edges": [
+            {"parent_artifact_id": pid, "child_artifact_id": artifact_id}
+            for pid in parent_artifact_ids
+        ],
+        "created_at": "2025-01-01T00:00:00+00:00",
+        "created_by": "test",
+        "version": "1.0.0",
+    }
 def _registry_with_missing_parent() -> Dict[str, Any]:
     """Return a lineage registry where a non-root artifact references a missing parent."""
     return {
-        "SIM-OUT-001": {
-            "artifact_id": "SIM-OUT-001",
-            "artifact_type": "simulation_output",
-            "parent_artifact_ids": ["SIM-IN-MISSING"],
-            "lineage_depth": 1,
-            "root_artifact_ids": ["SIM-IN-MISSING"],
-            "lineage_valid": False,
-            "lineage_errors": ["missing parent"],
-            "created_at": "2025-01-01T00:00:00+00:00",
-            "created_by": "test",
-            "version": "1.0.0",
-        }
+        "SIM-OUT-001": _lineage_meta(
+            "SIM-OUT-001",
+            "simulation_output",
+            ["SIM-IN-MISSING"],
+            1,
+            ["SIM-IN-MISSING"],
+            lineage_valid=False,
+            lineage_errors=["missing parent"],
+        )
     }
 
 
 def _registry_with_circular_dep() -> Dict[str, Any]:
     """Return a lineage registry with a circular dependency."""
     return {
-        "ART-A": {
-            "artifact_id": "ART-A",
-            "artifact_type": "simulation_output",
-            "parent_artifact_ids": ["ART-B"],
-            "lineage_depth": 1,
-            "root_artifact_ids": ["ART-B"],
-            "lineage_valid": False,
-            "lineage_errors": ["circular"],
-            "created_at": "2025-01-01T00:00:00+00:00",
-            "created_by": "test",
-            "version": "1.0.0",
-        },
-        "ART-B": {
-            "artifact_id": "ART-B",
-            "artifact_type": "simulation_output",
-            "parent_artifact_ids": ["ART-A"],
-            "lineage_depth": 1,
-            "root_artifact_ids": ["ART-A"],
-            "lineage_valid": False,
-            "lineage_errors": ["circular"],
-            "created_at": "2025-01-01T00:00:00+00:00",
-            "created_by": "test",
-            "version": "1.0.0",
-        },
+        "ART-A": _lineage_meta(
+            "ART-A",
+            "simulation_output",
+            ["ART-B"],
+            1,
+            ["ART-B"],
+            lineage_valid=False,
+            lineage_errors=["circular"],
+        ),
+        "ART-B": _lineage_meta(
+            "ART-B",
+            "simulation_output",
+            ["ART-A"],
+            1,
+            ["ART-A"],
+            lineage_valid=False,
+            lineage_errors=["circular"],
+        ),
     }
 
 
 def _valid_lineage_registry() -> Dict[str, Any]:
     """Return a fully valid lineage registry."""
     return {
-        "SIM-IN-001": {
-            "artifact_id": "SIM-IN-001",
-            "artifact_type": "simulation_input",
-            "parent_artifact_ids": [],
-            "lineage_depth": 0,
-            "root_artifact_ids": ["SIM-IN-001"],
-            "lineage_valid": True,
-            "lineage_errors": [],
-            "created_at": "2025-01-01T00:00:00+00:00",
-            "created_by": "test",
-            "version": "1.0.0",
-        },
-        "SIM-OUT-001": {
-            "artifact_id": "SIM-OUT-001",
-            "artifact_type": "simulation_output",
-            "parent_artifact_ids": ["SIM-IN-001"],
-            "lineage_depth": 1,
-            "root_artifact_ids": ["SIM-IN-001"],
-            "lineage_valid": True,
-            "lineage_errors": [],
-            "created_at": "2025-01-01T00:00:00+00:00",
-            "created_by": "test",
-            "version": "1.0.0",
-        },
+        "SIM-IN-001": _lineage_meta(
+            "SIM-IN-001",
+            "simulation_input",
+            [],
+            0,
+            ["SIM-IN-001"],
+            lineage_valid=True,
+            lineage_errors=[],
+        ),
+        "SIM-OUT-001": _lineage_meta(
+            "SIM-OUT-001",
+            "simulation_output",
+            ["SIM-IN-001"],
+            1,
+            ["SIM-IN-001"],
+            lineage_valid=True,
+            lineage_errors=[],
+        ),
     }
 
 
