@@ -364,4 +364,12 @@ __all__ = [
     "RequiredIdentityError",
     "ensure_required_ids",
     "validate_required_ids",
+    # PQX-QUEUE-RUN-02 — narrow sequential queue-run orchestration
+    "execute_sequence_run",
+    "PQXSequenceRunnerError",
 ]
+
+from spectrum_systems.modules.runtime.pqx_sequence_runner import (
+    PQXSequenceRunnerError,
+    execute_sequence_run,
+)

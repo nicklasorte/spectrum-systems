@@ -194,6 +194,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-REQUIRED-IDS-SANITIZATION-2026-03-29.md | REQUIRED-IDS-SANITIZATION — deterministic sanitization + required run/trace identity enforcement | Active |
 
+| docs/review-actions/PLAN-PQX-QUEUE-RUN-02-2026-03-29.md | PQX-QUEUE-RUN-02 — governed sequential PQX execution with continuity checks and resumable state | Active |
+
 Update this table when plans are created or completed.
 
 ---
