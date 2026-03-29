@@ -9,6 +9,8 @@
     "artifact_type",
     "schema_version",
     "eval_id",
+    "run_id",
+    "trace_id",
     "created_at",
     "source_artifact_id",
     "evidence_binding_record_id",
@@ -30,6 +32,14 @@
     "eval_id": {
       "type": "string",
       "pattern": "^gfe-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
     },
     "created_at": {
       "type": "string",

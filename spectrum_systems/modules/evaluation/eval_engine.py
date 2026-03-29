@@ -64,6 +64,7 @@ def run_eval_case(
         "artifact_type": "eval_result",
         "schema_version": "1.0.0",
         "eval_case_id": eval_case["eval_case_id"],
+        "run_id": str(raw.get("run_id") or eval_case.get("run_id") or ""),
         "trace_id": str(raw.get("trace_id") or eval_case["trace_id"]),
         "result_status": result_status,
         "score": float(raw.get("score", 0.0)),
@@ -71,8 +72,8 @@ def run_eval_case(
         "provenance_refs": list(raw.get("provenance_refs") or [f"trace://{eval_case['trace_id']}"]),
     }
 
-    if not result["eval_case_id"] or not result["trace_id"]:
-        raise ValueError("run_eval_case: eval_result requires eval_case_id and trace_id")
+    if not result["eval_case_id"] or not result["trace_id"] or not result["run_id"]:
+        raise ValueError("run_eval_case: eval_result requires eval_case_id, run_id, and trace_id")
 
     _validate_contract(result, "eval_result")
     return result

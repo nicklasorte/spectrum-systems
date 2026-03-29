@@ -9,16 +9,38 @@
     "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json"
   },
   "check_results": {
-    "replay": {"passed": true, "details": []},
-    "regression": {"passed": true, "details": []},
-    "contracts": {"passed": true, "details": []},
-    "reliability": {"passed": true, "details": []},
-    "fail_closed": {"passed": true, "details": []},
-    "control_consistency": {"passed": true, "details": []},
-    "trace_linkage": {"passed": true, "details": []}
+    "replay": {
+      "passed": true,
+      "details": []
+    },
+    "regression": {
+      "passed": true,
+      "details": []
+    },
+    "contracts": {
+      "passed": true,
+      "details": []
+    },
+    "reliability": {
+      "passed": true,
+      "details": []
+    },
+    "fail_closed": {
+      "passed": true,
+      "details": []
+    },
+    "control_consistency": {
+      "passed": true,
+      "details": []
+    },
+    "trace_linkage": {
+      "passed": true,
+      "details": []
+    }
   },
   "final_status": "PASSED",
   "system_response": "allow",
   "blocking_reasons": [],
-  "trace_id": "trace-example-001"
+  "trace_id": "trace-example-001",
+  "run_id": "run-example-001"
 }

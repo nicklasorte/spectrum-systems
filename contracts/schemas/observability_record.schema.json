@@ -6,6 +6,8 @@
   "type": "object",
   "required": [
     "record_id",
+    "run_id",
+    "trace_id",
     "timestamp",
     "context",
     "pass_info",
@@ -18,6 +20,14 @@
     "record_id": {
       "type": "string",
       "description": "Unique identifier for this observability record."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Canonical execution run identifier."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Canonical execution trace identifier."
     },
     "timestamp": {
       "type": "string",

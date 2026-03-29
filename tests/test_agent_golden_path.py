@@ -42,6 +42,15 @@ def _normalized(artifacts: dict) -> dict:
             clone["actions_taken"] = sanitized
         if key == "persisted_trace" and isinstance(clone.get("storage_path"), str):
             clone["storage_path"] = "<normalized>"
+            clone.pop("persisted_at", None)
+            if isinstance(clone.get("trace"), dict):
+                trace_payload = dict(clone["trace"])
+                trace_payload.pop("start_time", None)
+                trace_payload.pop("end_time", None)
+                for item in trace_payload.get("artifacts", []) if isinstance(trace_payload.get("artifacts"), list) else []:
+                    if isinstance(item, dict):
+                        item.pop("attached_at", None)
+                clone["trace"] = trace_payload
         normalized[key] = clone
     return normalized
 
@@ -102,11 +111,20 @@ def test_happy_path_end_to_end(tmp_path: Path) -> None:
     assert artifacts["final_execution_record"]["execution_status"] == "success"
     assert artifacts["meeting_minutes_record"]["artifact_type"] == "meeting_minutes_record"
     assert artifacts["grounding_factcheck_eval"]["artifact_type"] == "grounding_factcheck_eval"
+    assert artifacts["grounding_factcheck_eval"]["run_id"] == artifacts["agent_execution_trace"]["agent_run_id"]
+    assert artifacts["grounding_factcheck_eval"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
     assert artifacts["evaluation_enforcement_action"]["decision_id"] == artifacts["control_decision"]["decision_id"]
     assert artifacts["replay_execution_record"]["original_trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
+    assert artifacts["replay_execution_record"]["run_id"] == artifacts["agent_execution_trace"]["agent_run_id"]
+    assert artifacts["replay_execution_record"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
     assert artifacts["control_loop_certification_pack"]["decision"] == "pass"
+    assert artifacts["control_loop_certification_pack"]["run_id"] == artifacts["agent_execution_trace"]["agent_run_id"]
+    assert artifacts["control_loop_certification_pack"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
     assert artifacts["done_certification_record"]["final_status"] == "PASSED"
+    assert artifacts["done_certification_record"]["run_id"] == artifacts["agent_execution_trace"]["agent_run_id"]
     assert artifacts["observability_record"]["context"]["artifact_type"] == "meeting_minutes_record"
+    assert artifacts["observability_record"]["run_id"] == artifacts["agent_execution_trace"]["agent_run_id"]
+    assert artifacts["observability_record"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
     assert artifacts["observability_metrics"]["artifact_type"] == "observability_metrics"
     assert artifacts["persisted_trace"]["trace"]["trace_id"] == artifacts["agent_execution_trace"]["trace_id"]
     assert artifacts["artifact_lineage"]["lineage_valid"] is True
@@ -288,6 +306,56 @@ def test_pipeline_trace_and_run_are_consistent_across_artifacts(tmp_path: Path) 
     assert artifacts["enforcement"]["run_id"] == run_id
     assert artifacts["final_execution_record"]["trace_id"] == trace_id
     assert artifacts["final_execution_record"]["run_id"] == run_id
+    assert artifacts["grounding_factcheck_eval"]["run_id"] == run_id
+    assert artifacts["grounding_factcheck_eval"]["trace_id"] == trace_id
+    assert artifacts["replay_execution_record"]["run_id"] == run_id
+    assert artifacts["replay_execution_record"]["trace_id"] == trace_id
+    assert artifacts["control_loop_certification_pack"]["run_id"] == run_id
+    assert artifacts["control_loop_certification_pack"]["trace_id"] == trace_id
+    assert artifacts["done_certification_record"]["run_id"] == run_id
+    assert artifacts["done_certification_record"]["trace_id"] == trace_id
+    assert artifacts["observability_record"]["run_id"] == run_id
+    assert artifacts["observability_record"]["trace_id"] == trace_id
+    assert artifacts["artifact_lineage"]["run_id"] == run_id
+    assert artifacts["artifact_lineage"]["trace_id"] == trace_id
+
+
+def test_artifact_lineage_graph_covers_all_artifacts(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path))
+    lineage = artifacts["artifact_lineage"]
+    node_ids = {node["artifact_id"] for node in lineage["lineage_nodes"]}
+
+    for key, payload in artifacts.items():
+        if not isinstance(payload, dict):
+            continue
+        artifact_id = None
+        for id_key in (
+            "context_id",
+            "validation_id",
+            "admission_decision_id",
+            "routing_decision_id",
+            "agent_run_id",
+            "eval_case_id",
+            "eval_run_id",
+            "replay_id",
+            "decision_id",
+            "enforcement_result_id",
+            "artifact_id",
+            "id",
+            "action_id",
+            "certification_id",
+            "record_id",
+            "trace_id",
+        ):
+            if isinstance(payload.get(id_key), str) and payload.get(id_key):
+                artifact_id = payload[id_key]
+                break
+        if artifact_id is None and key == "persisted_trace":
+            trace_payload = payload.get("trace")
+            if isinstance(trace_payload, dict) and isinstance(trace_payload.get("trace_id"), str):
+                artifact_id = trace_payload["trace_id"]
+        assert artifact_id is not None, f"missing artifact id in {key}"
+        assert artifact_id in node_ids, f"artifact_lineage missing {key}"
 
 
 def test_pipeline_lineage_references_are_present_and_non_orphaned(tmp_path: Path) -> None:
@@ -317,6 +385,7 @@ def test_missing_lineage_linkage_fails_closed(tmp_path: Path) -> None:
         payload = {
             "artifact_type": "eval_case",
             "schema_version": "1.0.0",
+            "run_id": run_id,
             "trace_id": trace_id,
             "eval_case_id": "ec-bad-lineage",
             "input_artifact_refs": [f"context_bundle:{context_bundle['context_id']}"],

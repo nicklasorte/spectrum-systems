@@ -1,0 +1,40 @@
+{
+  "artifact_id": "lin-1111111111111111",
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001",
+  "artifact_type": "decision",
+  "parent_artifact_ids": [
+    "ctx-example-001"
+  ],
+  "created_at": "2026-03-29T00:00:00Z",
+  "created_by": "agent_golden_path",
+  "version": "1.0.0",
+  "lineage_depth": 2,
+  "root_artifact_ids": [
+    "ctx-example-001"
+  ],
+  "lineage_valid": true,
+  "lineage_errors": [],
+  "lineage_nodes": [
+    {
+      "artifact_key": "context_bundle",
+      "artifact_id": "ctx-example-001",
+      "artifact_type": "context_bundle",
+      "run_id": "run-example-001",
+      "trace_id": "trace-example-001"
+    },
+    {
+      "artifact_key": "control_decision",
+      "artifact_id": "ecd-example-001",
+      "artifact_type": "evaluation_control_decision",
+      "run_id": "run-example-001",
+      "trace_id": "trace-example-001"
+    }
+  ],
+  "lineage_edges": [
+    {
+      "parent_artifact_id": "ctx-example-001",
+      "child_artifact_id": "ecd-example-001"
+    }
+  ]
+}

@@ -6,6 +6,8 @@
   "type": "object",
   "required": [
     "replay_id",
+    "run_id",
+    "trace_id",
     "original_run_id",
     "replay_run_id",
     "original_trace_id",
@@ -19,6 +21,14 @@
   "additionalProperties": false,
   "properties": {
     "replay_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
       "type": "string",
       "minLength": 1
     },

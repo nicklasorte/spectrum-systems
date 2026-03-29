@@ -295,6 +295,8 @@ def build_grounding_factcheck_eval(
         "artifact_type": "grounding_factcheck_eval",
         "schema_version": "1.0.0",
         "eval_id": deterministic_id(prefix="gfe", namespace="grounding_factcheck_eval", payload=eval_payload),
+        "run_id": run_id,
+        "trace_id": trace_id,
         "created_at": _deterministic_timestamp(eval_payload, stage="grounding_factcheck_eval"),
         "source_artifact_id": source_artifact_id,
         "evidence_binding_record_id": str(evidence_binding_record.get("record_id") or ""),

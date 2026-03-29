@@ -9,6 +9,8 @@
     "artifact_type",
     "schema_version",
     "certification_id",
+    "run_id",
+    "trace_id",
     "certification_scope",
     "certification_status",
     "decision",
@@ -31,6 +33,14 @@
       "const": "1.0.0"
     },
     "certification_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
       "type": "string",
       "minLength": 1
     },

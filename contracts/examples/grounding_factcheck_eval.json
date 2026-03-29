@@ -44,5 +44,7 @@
     "allow_inferred_claims": false,
     "allow_unsupported_claims": false,
     "fail_on_fact_check_fail": true
-  }
+  },
+  "run_id": "run-example-001",
+  "trace_id": "trace-example-001"
 }

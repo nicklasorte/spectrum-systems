@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": [
     "certification_id",
+    "run_id",
     "timestamp",
     "input_refs",
     "check_results",
@@ -17,6 +18,7 @@
   ],
   "properties": {
     "certification_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "run_id": {"type": "string", "minLength": 1},
     "timestamp": {"type": "string", "format": "date-time"},
     "input_refs": {
       "type": "object",

@@ -108,6 +108,17 @@ _ARTIFACT_ID_KEYS: Dict[str, str] = {
     "failure_artifact": "id",
     "hitl_review_request": "id",
     "hitl_override_decision": "override_decision_id",
+    "meeting_minutes_record": "artifact_id",
+    "grounding_factcheck_eval": "eval_id",
+    "evaluation_enforcement_action": "action_id",
+    "replay_execution_record": "replay_id",
+    "control_loop_certification_pack": "certification_id",
+    "done_certification_record": "certification_id",
+    "done_certification_error": "certification_error_id",
+    "observability_record": "record_id",
+    "observability_metrics": "artifact_id",
+    "persisted_trace": "trace_id",
+    "artifact_lineage": "artifact_id",
 }
 
 
@@ -563,6 +574,7 @@ def _build_structured_output(
     structured_output = {
         "artifact_type": "eval_case",
         "schema_version": "1.0.0",
+        "run_id": run_id,
         "trace_id": trace_id,
         "eval_case_id": eval_case_id,
         "input_artifact_refs": sorted(set(upstream_refs)),
@@ -592,6 +604,13 @@ def _artifact_id(artifacts: Dict[str, Dict[str, Any]], key: str) -> Optional[str
     payload = artifacts.get(key)
     if not isinstance(payload, dict):
         return None
+    if key == "persisted_trace":
+        trace_payload = payload.get("trace")
+        if isinstance(trace_payload, dict):
+            value = trace_payload.get("trace_id")
+            if isinstance(value, str) and value:
+                return value
+        return None
     id_key = _ARTIFACT_ID_KEYS.get(key)
     if not id_key:
         return None
@@ -606,33 +625,98 @@ def _require(condition: bool, message: str) -> None:
         raise AgentGoldenPathStageError(stage="enforcement", failure_type="validation_error", error_message=message)
 
 
+def _extract_artifact_identity(name: str, payload: Dict[str, Any]) -> tuple[Optional[str], Optional[str]]:
+    if name in {"context_bundle", "context_validation_result", "context_admission_decision"}:
+        trace = payload.get("trace")
+        if isinstance(trace, dict):
+            return trace.get("run_id"), trace.get("trace_id")
+        return None, None
+    if name == "routing_decision":
+        trace = payload.get("trace")
+        if isinstance(trace, dict):
+            return trace.get("agent_run_id"), trace.get("trace_id")
+        return None, None
+    if name == "hitl_review_request":
+        return payload.get("source_run_id"), payload.get("trace_id")
+    if name in {"grounding_factcheck_eval"}:
+        return payload.get("run_id"), payload.get("trace_id")
+    if name in {"replay_execution_record"}:
+        return payload.get("run_id"), payload.get("trace_id")
+    if name in {"meeting_minutes_record"}:
+        return payload.get("run_id"), payload.get("trace_id")
+    if name == "agent_execution_trace":
+        return payload.get("agent_run_id"), payload.get("trace_id")
+    if name == "eval_summary":
+        return payload.get("eval_run_id"), payload.get("trace_id")
+    if name == "replay_result":
+        return payload.get("replay_run_id"), payload.get("trace_id")
+    if name == "done_certification_record":
+        return payload.get("run_id"), payload.get("trace_id")
+    return payload.get("run_id"), payload.get("trace_id")
+
+
 def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_id: str, run_id: str) -> None:
     """Fail-closed trace/linkage checks for emitted governed artifacts."""
+    strict_run_identity_artifacts = {
+        "context_bundle",
+        "context_validation_result",
+        "context_admission_decision",
+        "routing_decision",
+        "agent_execution_trace",
+        "eval_summary",
+        "replay_result",
+        "control_decision",
+        "enforcement",
+        "final_execution_record",
+        "failure_artifact",
+        "hitl_review_request",
+        "meeting_minutes_record",
+        "grounding_factcheck_eval",
+        "replay_execution_record",
+        "control_loop_certification_pack",
+        "done_certification_record",
+        "done_certification_error",
+        "observability_record",
+        "artifact_lineage",
+    }
     for name, payload in artifacts.items():
         if not isinstance(payload, dict):
             continue
-        if name == "context_bundle":
-            trace = payload.get("trace", {})
-            _require(trace.get("trace_id") == trace_id, "context_bundle missing canonical trace_id linkage")
-            _require(trace.get("run_id") == run_id, "context_bundle missing canonical run_id linkage")
-        elif name in {"context_validation_result", "context_admission_decision"}:
-            trace = payload.get("trace", {})
-            _require(trace.get("trace_id") == trace_id, f"{name} missing canonical trace_id linkage")
-            _require(trace.get("run_id") == run_id, f"{name} missing canonical run_id linkage")
-        elif name == "routing_decision":
-            trace = payload.get("trace", {})
-            _require(trace.get("trace_id") == trace_id, "routing_decision missing canonical trace_id linkage")
-            _require(trace.get("agent_run_id") == run_id, "routing_decision missing canonical agent_run_id linkage")
-        elif name == "agent_execution_trace":
-            _require(payload.get("trace_id") == trace_id, "agent_execution_trace missing canonical trace_id linkage")
+        if name == "observability_metrics":
+            trace_refs = payload.get("trace_refs")
+            _require(
+                isinstance(trace_refs, dict) and trace_refs.get("trace_id") == trace_id,
+                "observability_metrics missing canonical trace_id linkage",
+            )
+            continue
+        if name == "persisted_trace":
+            trace_payload = payload.get("trace")
+            _require(isinstance(trace_payload, dict), "persisted_trace missing trace payload")
+            _require(trace_payload.get("trace_id") == trace_id, "persisted_trace missing canonical trace_id linkage")
+            context = trace_payload.get("context")
+            _require(isinstance(context, dict) and context.get("run_id") == run_id, "persisted_trace missing canonical run_id linkage")
+            continue
+        if name == "evaluation_enforcement_action":
+            _require(
+                payload.get("decision_id") == artifacts.get("control_decision", {}).get("decision_id"),
+                "evaluation_enforcement_action missing canonical decision linkage",
+            )
+            continue
+        artifact_run_id, artifact_trace_id = _extract_artifact_identity(name, payload)
+        _require(
+            isinstance(artifact_trace_id, str) and artifact_trace_id,
+            f"{name} missing canonical trace_id linkage",
+        )
+        if name in strict_run_identity_artifacts:
+            _require(
+                isinstance(artifact_run_id, str) and artifact_run_id,
+                f"{name} missing canonical run_id linkage",
+            )
+            _require(artifact_run_id == run_id, f"{name} run_id mismatch from canonical execution context")
+        _require(artifact_trace_id == trace_id, f"{name} trace_id mismatch from canonical execution context")
+
+        if name == "agent_execution_trace":
             _require(payload.get("agent_run_id") == run_id, "agent_execution_trace missing canonical agent_run_id linkage")
-        elif name in {"structured_output", "eval_result", "eval_summary", "replay_result", "control_decision", "enforcement", "final_execution_record", "failure_artifact"}:
-            _require(payload.get("trace_id") == trace_id, f"{name} missing canonical trace_id linkage")
-        elif name == "hitl_review_request":
-            _require(payload.get("trace_id") == trace_id, "hitl_review_request missing canonical trace_id linkage")
-            _require(payload.get("source_run_id") == run_id, "hitl_review_request missing canonical source_run_id linkage")
-        elif name == "hitl_override_decision":
-            _require(payload.get("trace_id") == trace_id, "hitl_override_decision missing canonical trace_id linkage")
 
     eval_summary = artifacts.get("eval_summary")
     if isinstance(eval_summary, dict):
@@ -688,6 +772,24 @@ def _validate_trace_and_lineage(artifacts: Dict[str, Dict[str, Any]], *, trace_i
         _require(in_ref.get("source_artifact_id") == expected_source, "control_decision must reference replay_result upstream artifact")
     if isinstance(artifacts.get("enforcement"), dict):
         _require(artifacts["enforcement"].get("input_decision_reference") == decision_id, "enforcement must reference control_decision upstream artifact")
+    artifact_lineage = artifacts.get("artifact_lineage")
+    if isinstance(artifact_lineage, dict):
+        nodes = artifact_lineage.get("lineage_nodes")
+        edges = artifact_lineage.get("lineage_edges")
+        _require(isinstance(nodes, list) and nodes, "artifact_lineage missing lineage_nodes graph")
+        _require(isinstance(edges, list), "artifact_lineage missing lineage_edges graph")
+        node_ids = {
+            str(node.get("artifact_id"))
+            for node in nodes
+            if isinstance(node, dict) and isinstance(node.get("artifact_id"), str)
+        }
+        for artifact_name in artifacts:
+            payload = artifacts[artifact_name]
+            if not isinstance(payload, dict):
+                continue
+            aid = _artifact_id(artifacts, artifact_name)
+            _require(isinstance(aid, str) and aid, f"{artifact_name} missing artifact id for lineage graph")
+            _require(aid in node_ids, f"artifact_lineage missing node for {artifact_name}")
 
 
 def _build_mvp_extension_artifacts(
@@ -700,13 +802,24 @@ def _build_mvp_extension_artifacts(
 ) -> Dict[str, Dict[str, Any]]:
     """Build MVP-01 required governed artifacts tied to the same run/trace."""
     meeting_minutes = deepcopy(load_example("meeting_minutes_record"))
-    meeting_minutes["run_id"] = f"run-{run_id}"
+    meeting_minutes["run_id"] = run_id
+    meeting_minutes["trace_id"] = trace_id
     record_digest = hashlib.sha256(f"{run_id}:{trace_id}:meeting_record".encode("utf-8")).hexdigest()[:16].upper()
     meeting_minutes["record_id"] = f"REC-{record_digest}"
     minutes_digest = hashlib.sha256(f"{run_id}:{trace_id}:meeting_minutes".encode("utf-8")).hexdigest()[:16].upper()
     meeting_minutes["artifact_id"] = f"MMR-{minutes_digest}"
 
     grounding_eval = deepcopy(load_example("grounding_factcheck_eval"))
+    grounding_eval["run_id"] = run_id
+    grounding_eval["trace_id"] = trace_id
+    grounding_eval["eval_id"] = deterministic_id(
+        prefix="gfe",
+        namespace="mvp01_grounding_factcheck_eval",
+        payload={"run_id": run_id, "trace_id": trace_id, "source_artifact_id": meeting_minutes["artifact_id"]},
+    )
+    grounding_eval["source_artifact_id"] = meeting_minutes["artifact_id"]
+    grounding_eval["trace_linkage"]["run_id"] = run_id
+    grounding_eval["trace_linkage"]["trace_id"] = trace_id
 
     enforcement_action = build_enforcement_action(
         decision_id=artifacts["control_decision"]["decision_id"],
@@ -727,6 +840,8 @@ def _build_mvp_extension_artifacts(
 
     replay_execution_record = {
         "replay_id": deterministic_id(prefix="rpr", namespace="mvp01_replay_execution_record", payload={"run_id": run_id, "trace_id": trace_id}),
+        "run_id": run_id,
+        "trace_id": trace_id,
         "original_run_id": run_id,
         "replay_run_id": run_id,
         "original_trace_id": trace_id,
@@ -739,6 +854,8 @@ def _build_mvp_extension_artifacts(
     }
 
     certification_pack = deepcopy(load_example("control_loop_certification_pack"))
+    certification_pack["run_id"] = run_id
+    certification_pack["trace_id"] = trace_id
     certification_pack["certification_id"] = deterministic_id(prefix="clc", namespace="mvp01_control_loop_cert_pack", payload={"run_id": run_id, "trace_id": trace_id})
     certification_pack["decision"] = "pass" if artifacts["enforcement"].get("final_status") == "allow" else "fail"
     certification_pack["certification_status"] = "certified" if certification_pack["decision"] == "pass" else "blocked"
@@ -749,6 +866,7 @@ def _build_mvp_extension_artifacts(
     done_certification_error = None
     try:
         done_certification["certification_id"] = hashlib.sha256(f"{run_id}:{trace_id}:done_certification".encode("utf-8")).hexdigest()
+        done_certification["run_id"] = run_id
         done_certification["trace_id"] = trace_id
         done_certification["input_refs"]["replay_result_ref"] = f"replay_result:{artifacts['replay_result']['replay_id']}"
         done_certification["input_refs"]["certification_pack_ref"] = f"control_loop_certification_pack:{certification_pack['certification_id']}"
@@ -759,6 +877,13 @@ def _build_mvp_extension_artifacts(
             raise DoneCertificationError("MVP-01 certification blocked by non-allow enforcement status")
     except DoneCertificationError as exc:
         done_certification_error = deepcopy(load_example("done_certification_error"))
+        done_certification_error["certification_error_id"] = deterministic_id(
+            prefix="dce",
+            namespace="mvp01_done_certification_error",
+            payload={"run_id": run_id, "trace_id": trace_id, "message": str(exc)},
+        )
+        done_certification_error["run_id"] = run_id
+        done_certification_error["trace_id"] = trace_id
         done_certification_error["message"] = str(exc)
         done_certification_error["input_refs"] = {
             "run_id": run_id,
@@ -768,6 +893,8 @@ def _build_mvp_extension_artifacts(
 
     observability_record = {
         "record_id": deterministic_id(prefix="obr", namespace="mvp01_observability_record", payload={"run_id": run_id, "trace_id": trace_id}),
+        "run_id": run_id,
+        "trace_id": trace_id,
         "timestamp": _now_iso(),
         "context": {"artifact_id": meeting_minutes["artifact_id"], "artifact_type": "meeting_minutes_record", "pipeline_stage": "interpret", "case_id": run_id},
         "pass_info": {"pass_id": run_id, "pass_type": "meeting_minutes"},
@@ -796,18 +923,98 @@ def _build_mvp_extension_artifacts(
     persisted_storage_path = persist_trace(trace_payload, base_dir=trace_store_dir)
     persisted_trace = {"envelope_version": "1.0.0", "persisted_at": _now_iso(), "storage_path": persisted_storage_path, "trace": trace_payload}
 
+    lineage_nodes: List[Dict[str, Any]] = []
+    for artifact_name, payload in artifacts.items():
+        if not isinstance(payload, dict):
+            continue
+        artifact_id = _artifact_id(artifacts, artifact_name)
+        if not isinstance(artifact_id, str) or not artifact_id:
+            continue
+        lineage_nodes.append(
+            {
+                "artifact_key": artifact_name,
+                "artifact_id": artifact_id,
+                "artifact_type": str(payload.get("artifact_type") or artifact_name),
+                "run_id": run_id,
+                "trace_id": trace_id,
+            }
+        )
+    extension_ids = {
+        "meeting_minutes_record": meeting_minutes["artifact_id"],
+        "grounding_factcheck_eval": grounding_eval["eval_id"],
+        "evaluation_enforcement_action": enforcement_action["action_id"],
+        "replay_execution_record": replay_execution_record["replay_id"],
+        "control_loop_certification_pack": certification_pack["certification_id"],
+        "done_certification_record": done_certification["certification_id"],
+        "observability_record": observability_record["record_id"],
+        "observability_metrics": observability_metrics["artifact_id"],
+        "persisted_trace": trace_payload["trace_id"],
+    }
+    if done_certification_error is not None:
+        extension_ids["done_certification_error"] = done_certification_error["certification_error_id"]
+    for artifact_name, artifact_id in extension_ids.items():
+        lineage_nodes.append(
+            {
+                "artifact_key": artifact_name,
+                "artifact_id": artifact_id,
+                "artifact_type": artifact_name,
+                "run_id": run_id,
+                "trace_id": trace_id,
+            }
+        )
+
+    lineage_edges = [
+        {"parent_artifact_id": context_bundle["context_id"], "child_artifact_id": artifacts["context_validation_result"]["validation_id"]},
+        {"parent_artifact_id": context_bundle["context_id"], "child_artifact_id": artifacts["context_admission_decision"]["admission_decision_id"]},
+        {"parent_artifact_id": context_bundle["context_id"], "child_artifact_id": artifacts["routing_decision"]["routing_decision_id"]},
+        {"parent_artifact_id": context_bundle["context_id"], "child_artifact_id": artifacts["agent_execution_trace"]["agent_run_id"]},
+        {"parent_artifact_id": artifacts["agent_execution_trace"]["agent_run_id"], "child_artifact_id": artifacts["structured_output"]["eval_case_id"]},
+        {"parent_artifact_id": artifacts["structured_output"]["eval_case_id"], "child_artifact_id": artifacts["eval_result"]["eval_case_id"]},
+        {"parent_artifact_id": artifacts["eval_result"]["eval_case_id"], "child_artifact_id": artifacts["eval_summary"]["eval_run_id"]},
+        {"parent_artifact_id": artifacts["eval_summary"]["eval_run_id"], "child_artifact_id": artifacts["replay_result"]["replay_id"]},
+        {"parent_artifact_id": artifacts["replay_result"]["replay_id"], "child_artifact_id": artifacts["control_decision"]["decision_id"]},
+        {"parent_artifact_id": artifacts["control_decision"]["decision_id"], "child_artifact_id": artifacts["enforcement"]["enforcement_result_id"]},
+        {"parent_artifact_id": artifacts["enforcement"]["enforcement_result_id"], "child_artifact_id": artifacts["final_execution_record"]["artifact_id"]},
+        {"parent_artifact_id": artifacts["enforcement"]["enforcement_result_id"], "child_artifact_id": meeting_minutes["artifact_id"]},
+        {"parent_artifact_id": meeting_minutes["artifact_id"], "child_artifact_id": grounding_eval["eval_id"]},
+        {"parent_artifact_id": artifacts["control_decision"]["decision_id"], "child_artifact_id": enforcement_action["action_id"]},
+        {"parent_artifact_id": artifacts["replay_result"]["replay_id"], "child_artifact_id": replay_execution_record["replay_id"]},
+        {"parent_artifact_id": replay_execution_record["replay_id"], "child_artifact_id": certification_pack["certification_id"]},
+        {"parent_artifact_id": certification_pack["certification_id"], "child_artifact_id": done_certification["certification_id"]},
+        {"parent_artifact_id": meeting_minutes["artifact_id"], "child_artifact_id": observability_record["record_id"]},
+        {"parent_artifact_id": artifacts["replay_result"]["observability_metrics"]["artifact_id"], "child_artifact_id": observability_metrics["artifact_id"]},
+        {"parent_artifact_id": meeting_minutes["artifact_id"], "child_artifact_id": trace_payload["trace_id"]},
+    ]
+    if done_certification_error is not None:
+        lineage_edges.append(
+            {"parent_artifact_id": certification_pack["certification_id"], "child_artifact_id": done_certification_error["certification_error_id"]}
+        )
+    lineage_depth = max((node.get("lineage_depth", 0) for node in lineage_nodes if isinstance(node, dict)), default=0) + 1
     artifact_lineage = {
         "artifact_id": deterministic_id(prefix="lin", namespace="mvp01_artifact_lineage", payload={"run_id": run_id, "trace_id": trace_id}),
+        "run_id": run_id,
+        "trace_id": trace_id,
         "artifact_type": "decision",
         "parent_artifact_ids": [context_bundle["context_id"], artifacts["agent_execution_trace"]["agent_run_id"]],
         "created_at": _now_iso(),
         "created_by": "agent_golden_path",
         "version": "1.0.0",
-        "lineage_depth": 2,
+        "lineage_depth": lineage_depth,
         "root_artifact_ids": [context_bundle["context_id"]],
         "lineage_valid": True,
         "lineage_errors": [],
+        "lineage_nodes": lineage_nodes,
+        "lineage_edges": lineage_edges,
     }
+    artifact_lineage["lineage_nodes"].append(
+        {
+            "artifact_key": "artifact_lineage",
+            "artifact_id": artifact_lineage["artifact_id"],
+            "artifact_type": "artifact_lineage",
+            "run_id": run_id,
+            "trace_id": trace_id,
+        }
+    )
 
     extension = {
         "meeting_minutes_record": meeting_minutes,
@@ -942,7 +1149,7 @@ def run_agent_golden_path(config: GoldenPathConfig) -> Dict[str, Dict[str, Any]]
     """Execute the AG-01 canonical runtime pipeline and emit governed artifacts."""
     trace_id = _stable_trace_id(config.task_type, config.input_payload)
     run_id = deterministic_id(
-        prefix="agrun",
+        prefix="run",
         namespace="agent_golden_path",
         payload={"task_type": config.task_type, "input_payload": config.input_payload, "source_artifacts": config.source_artifacts},
     )
