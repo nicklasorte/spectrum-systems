@@ -26,6 +26,15 @@ Spectrum Systems should operate as an artifact-first, repo-native control plane 
 - Dependency-first execution
 - No control-loop bypass
 
+## PQX Execution Contract Standard
+
+Roadmap rows are expected to evolve into PQX-executable step contracts rather than remain loose planning entries.
+
+- Governing standard: `docs/roadmap/roadmap_step_contract.md`
+- Slice execution specs: `docs/roadmap/slices/`
+
+Each implementation row should be upgraded to satisfy all required contract fields before execution.
+
 ## Roadmap Table
 
 | Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Existing Repo Seams | Implementation Mode | Contracts / Schemas | Artifact Outputs | Integration Points | Control Loop Coverage | Dependencies | Definition of Done | Prompt Class | Status |
