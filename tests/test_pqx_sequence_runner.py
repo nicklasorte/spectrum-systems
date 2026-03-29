@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.pqx_sequence_runner import PQXSequenceRunnerError, execute_sequence_run
+from spectrum_systems.modules.runtime.pqx_sequence_runner import (
+    PQXSequenceRunnerError,
+    execute_bundle_sequence_run,
+    execute_sequence_run,
+)
 
 
 class FixedClock:
@@ -208,3 +212,34 @@ def test_sequence_runner_bundle_state_blocks_out_of_order_progression(tmp_path: 
         )
 
 
+
+
+def test_sequence_runner_bundle_invocation_path_is_additive(tmp_path: Path) -> None:
+    plan_path = tmp_path / "execution_bundles.md"
+    plan_path.write_text(
+        "\n".join(
+            [
+                "# Test",
+                "## EXECUTABLE BUNDLE TABLE",
+                "| Bundle ID | Ordered Step IDs | Depends On |",
+                "| --- | --- | --- |",
+                "| BUNDLE-TSEQ | AI-01 | - |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = execute_bundle_sequence_run(
+        bundle_id="BUNDLE-TSEQ",
+        bundle_state_path=tmp_path / "bundle_state.json",
+        output_dir=tmp_path / "out",
+        run_id="run-tseq-001",
+        queue_run_id="queue-tseq-001",
+        trace_id="trace-tseq-001",
+        bundle_plan_path=plan_path,
+        execute_step=lambda _: {"execution_status": "success"},
+        clock=FixedClock([f"2026-03-29T21:00:0{i}Z" for i in range(1, 12)]),
+    )
+
+    assert result["status"] == "completed"
