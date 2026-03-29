@@ -24,6 +24,16 @@ from spectrum_systems.modules.runtime.pqx_bundle_state import (
     mark_step_complete,
     save_bundle_state,
 )
+from spectrum_systems.modules.runtime.pqx_fix_execution import (
+    PQXFixExecutionError,
+    determine_fix_insertion_point,
+    execute_fix_step,
+    load_pending_fixes,
+    normalize_fix_into_step,
+    record_fix_result,
+    update_bundle_state_with_fix,
+    validate_fix_step,
+)
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
@@ -236,6 +246,64 @@ def _relative(path: Path) -> str:
         return str(path)
 
 
+def _execute_pending_fix_loop(
+    *,
+    bundle_state: dict,
+    definition: BundleDefinition,
+    step_state_dir: Path,
+    run_id: str,
+    sequence_run_id: str,
+    trace_id: str,
+    clock,
+) -> tuple[dict, list[dict]]:
+    pending_fixes = load_pending_fixes(bundle_state)
+    if not pending_fixes:
+        return bundle_state, []
+
+    roadmap = list(definition.ordered_step_ids)
+    fix_records: list[dict] = []
+
+    for fix in pending_fixes:
+        fix_step = normalize_fix_into_step(fix)
+        validate_fix_step(fix_step, roadmap)
+        insertion_point = determine_fix_insertion_point(fix_step, roadmap)
+
+        fix_step_id = fix_step["fix_step_id"]
+        step_state_path = step_state_dir / f"{fix_step_id}.json"
+
+        def _run_fix(payload: dict) -> dict:
+            result_state = execute_sequence_run(
+                slice_requests=[{"slice_id": payload["fix_step_id"], "trace_id": f"{trace_id}:{payload['fix_step_id']}"}],
+                state_path=step_state_path,
+                queue_run_id=f"{sequence_run_id}:fix",
+                run_id=run_id,
+                trace_id=f"{trace_id}:{payload['fix_step_id']}",
+                execute_slice=lambda _: {"execution_status": "success"},
+                resume=step_state_path.exists(),
+                max_slices=1,
+                clock=clock,
+            )
+            history = result_state["execution_history"][-1]
+            return {
+                "execution_status": "complete" if history.get("status") == "success" else "failed",
+                "artifacts": [_relative(step_state_path)],
+                "validation_result": "passed" if history.get("status") == "success" else "failed",
+                "error": history.get("error"),
+            }
+
+        execution_result = execute_fix_step(fix_step, _run_fix)
+        execution_result["fix_step"]["trace_id"] = f"{trace_id}:{fix_step_id}"
+        execution_result["fix_step"]["run_id"] = run_id
+        record = record_fix_result(bundle_state, execution_result["fix_step"], execution_result)
+        record["insertion_point"] = insertion_point
+        bundle_state = update_bundle_state_with_fix(bundle_state, record)
+        fix_records.append(record)
+
+        if record["execution_status"] != "complete":
+            break
+    return bundle_state, fix_records
+
+
 def execute_bundle_run(
     *,
     bundle_id: str,
@@ -248,6 +316,7 @@ def execute_bundle_run(
     roadmap_authority_ref: str = "docs/roadmaps/system_roadmap.md",
     roadmap_path: str | Path = LEGACY_EXECUTION_ROADMAP_PATH,
     execute_step: StepExecutor | None = None,
+    execute_fixes: bool = False,
     clock=utc_now,
 ) -> dict:
     bundle_plan = load_bundle_plan(bundle_plan_path)
@@ -302,69 +371,94 @@ def execute_bundle_run(
 
     executor = execute_step or (lambda payload: {"execution_status": "success", **payload})
     executed_steps: list[dict] = []
+    executed_fix_records: list[dict] = []
     status = "completed"
     blocked_step_id: str | None = None
     failure_classification: str | None = None
 
-    for step_id in definition.ordered_step_ids:
-        if step_id in bundle_state["completed_step_ids"]:
-            continue
-
+    if execute_fixes and load_pending_fixes(bundle_state):
         try:
-            assert_valid_advancement(bundle_state, normalized_bundle_plan, step_id=step_id)
-        except PQXBundleStateError as exc:
-            status = "blocked"
-            blocked_step_id = step_id
-            failure_classification = "REVIEW_REQUIRED" if "review checkpoint" in str(exc) else "BLOCKED"
-            break
+            bundle_state, executed_fix_records = _execute_pending_fix_loop(
+                bundle_state=bundle_state,
+                definition=definition,
+                step_state_dir=step_state_dir,
+                run_id=run_id,
+                sequence_run_id=sequence_run_id,
+                trace_id=trace_id,
+                clock=clock,
+            )
+            bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
+        except (PQXFixExecutionError, PQXBundleStateError) as exc:
+            raise PQXBundleOrchestratorError(str(exc)) from exc
 
-        step_state_path = step_state_dir / f"{step_id}.json"
-        result_state = execute_sequence_run(
-            slice_requests=[{"slice_id": step_id, "trace_id": f"{trace_id}:{step_id}"}],
-            state_path=step_state_path,
-            queue_run_id=sequence_run_id,
-            run_id=run_id,
-            trace_id=f"{trace_id}:{step_id}",
-            execute_slice=executor,
-            resume=step_state_path.exists(),
-            max_slices=1,
-            clock=clock,
-        )
-
-        history_record = result_state["execution_history"][-1]
-        artifact_ref = _relative(step_state_path)
-        if result_state["status"] == "failed":
+        unresolved = [r["fix_id"] for r in executed_fix_records if r["execution_status"] != "complete"]
+        if unresolved:
             status = "blocked"
-            blocked_step_id = step_id
-            failure_classification = "STEP_EXECUTION_FAILED"
+            failure_classification = "FIX_EXECUTION_FAILED"
+        elif load_pending_fixes(bundle_state):
+            status = "blocked"
+            failure_classification = "BLOCKING_FIX_UNRESOLVED"
+
+    if status != "blocked":
+        for step_id in definition.ordered_step_ids:
+            if step_id in bundle_state["completed_step_ids"]:
+                continue
+
             try:
-                bundle_state = block_step(bundle_state, normalized_bundle_plan, step_id=step_id, now=iso_now(clock))
+                assert_valid_advancement(bundle_state, normalized_bundle_plan, step_id=step_id)
+            except PQXBundleStateError as exc:
+                status = "blocked"
+                blocked_step_id = step_id
+                failure_classification = "REVIEW_REQUIRED" if "review checkpoint" in str(exc) else "BLOCKED"
+                break
+
+            step_state_path = step_state_dir / f"{step_id}.json"
+            result_state = execute_sequence_run(
+                slice_requests=[{"slice_id": step_id, "trace_id": f"{trace_id}:{step_id}"}],
+                state_path=step_state_path,
+                queue_run_id=sequence_run_id,
+                run_id=run_id,
+                trace_id=f"{trace_id}:{step_id}",
+                execute_slice=executor,
+                resume=step_state_path.exists(),
+                max_slices=1,
+                clock=clock,
+            )
+
+            history_record = result_state["execution_history"][-1]
+            artifact_ref = _relative(step_state_path)
+            if result_state["status"] == "failed":
+                status = "blocked"
+                blocked_step_id = step_id
+                failure_classification = "STEP_EXECUTION_FAILED"
+                try:
+                    bundle_state = block_step(bundle_state, normalized_bundle_plan, step_id=step_id, now=iso_now(clock))
+                    bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
+                except PQXBundleStateError as exc:
+                    raise PQXBundleOrchestratorError(str(exc)) from exc
+                executed_steps.append(
+                    {
+                        "step_id": step_id,
+                        "status": "failed",
+                        "artifact_refs": [artifact_ref],
+                        "error": history_record.get("error"),
+                    }
+                )
+                break
+
+            try:
+                bundle_state = mark_step_complete(
+                    bundle_state,
+                    normalized_bundle_plan,
+                    step_id=step_id,
+                    artifact_refs=[artifact_ref],
+                    now=iso_now(clock),
+                )
                 bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
             except PQXBundleStateError as exc:
                 raise PQXBundleOrchestratorError(str(exc)) from exc
-            executed_steps.append(
-                {
-                    "step_id": step_id,
-                    "status": "failed",
-                    "artifact_refs": [artifact_ref],
-                    "error": history_record.get("error"),
-                }
-            )
-            break
 
-        try:
-            bundle_state = mark_step_complete(
-                bundle_state,
-                normalized_bundle_plan,
-                step_id=step_id,
-                artifact_refs=[artifact_ref],
-                now=iso_now(clock),
-            )
-            bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
-        except PQXBundleStateError as exc:
-            raise PQXBundleOrchestratorError(str(exc)) from exc
-
-        executed_steps.append({"step_id": step_id, "status": "success", "artifact_refs": [artifact_ref], "error": None})
+            executed_steps.append({"step_id": step_id, "status": "success", "artifact_refs": [artifact_ref], "error": None})
 
     if status == "completed":
         try:

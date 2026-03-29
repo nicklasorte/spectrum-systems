@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "fix_id": "fix:REVIEW-B7-001:FIND-B7-001",
+  "source_step_id": "TRUST-01",
+  "execution_status": "complete",
+  "artifacts": [
+    "data/pqx_runs/fixes/fix-step-fix-REVIEW-B7-001-FIND-B7-001.json"
+  ],
+  "validation_result": "passed",
+  "insertion_point": {
+    "mode": "patch_after_source",
+    "anchor_step_id": "TRUST-01",
+    "insert_before_step_id": "VAL-11",
+    "ordered_index": 3
+  },
+  "trace_id": "trace-b7-001:fix-step:fix:REVIEW-B7-001:FIND-B7-001",
+  "run_id": "run-b7-001"
+}

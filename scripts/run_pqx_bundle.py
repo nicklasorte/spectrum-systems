@@ -32,6 +32,7 @@ def _run(args: argparse.Namespace) -> int:
             sequence_run_id=args.sequence_run_id,
             trace_id=args.trace_id,
             bundle_plan_path=Path(args.bundle_plan_path),
+            execute_fixes=args.execute_fixes,
         )
     except PQXBundleOrchestratorError as exc:
         print(str(exc), file=sys.stderr)
@@ -74,6 +75,11 @@ def main() -> int:
     run_parser.add_argument("--sequence-run-id", required=True)
     run_parser.add_argument("--trace-id", required=True)
     run_parser.add_argument("--bundle-plan-path", default="docs/roadmaps/execution_bundles.md")
+    run_parser.add_argument(
+        "--execute-fixes",
+        action="store_true",
+        help="execute all pending fixes before advancing bundle steps; exits non-zero if a fix blocks/fails",
+    )
 
     ingest_parser = subparsers.add_parser("ingest-findings", help="attach + ingest a review artifact into bundle state")
     ingest_parser.add_argument("--bundle-id", required=True)

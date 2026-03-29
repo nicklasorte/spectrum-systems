@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_fix_execution_record.schema.json",
+  "title": "PQX Fix Execution Record",
+  "description": "Deterministic artifact for fix-step execution outcome and reinsertion metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fix_id",
+    "source_step_id",
+    "execution_status",
+    "artifacts",
+    "validation_result",
+    "insertion_point",
+    "trace_id",
+    "run_id"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "fix_id": {"type": "string", "minLength": 1},
+    "source_step_id": {"type": "string", "minLength": 1},
+    "execution_status": {"type": "string", "enum": ["complete", "blocked", "failed"]},
+    "artifacts": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "validation_result": {"type": "string", "minLength": 1},
+    "insertion_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "anchor_step_id", "insert_before_step_id", "ordered_index"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["before_source", "patch_after_source"]},
+        "anchor_step_id": {"type": "string", "minLength": 1},
+        "insert_before_step_id": {"type": ["string", "null"], "minLength": 1},
+        "ordered_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "trace_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1}
+  }
+}
