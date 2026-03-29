@@ -12,7 +12,7 @@ from spectrum_systems.modules.pqx_backbone import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ROADMAP_PATH = REPO_ROOT / "docs" / "roadmaps" / "system_roadmap.md"
+ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
 
 
 class _FixedClock:
@@ -122,5 +122,5 @@ def test_runner_persists_artifacts_and_state_on_success(tmp_path: Path) -> None:
     assert summary["final_status"] == "complete"
 
     request = json.loads(Path(result["request"]).read_text(encoding="utf-8"))
-    assert request["roadmap_version"] == "docs/roadmaps/system_roadmap.md"
+    assert request["roadmap_version"] == "docs/roadmap/system_roadmap.md"
     assert request["row_snapshot"]["step_id"] == "AI-01"

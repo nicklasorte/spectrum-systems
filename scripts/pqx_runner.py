@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--roadmap-path",
         type=Path,
-        default=REPO_ROOT / "docs" / "roadmaps" / "system_roadmap.md",
+        default=REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md",
     )
     parser.add_argument(
         "--state-path",

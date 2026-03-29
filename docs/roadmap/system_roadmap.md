@@ -1,61 +1,88 @@
 # Spectrum Systems — System Roadmap
+## STEP 2 — Authority & Repo Integration
+
+This document is the single authoritative roadmap for Spectrum Systems. All roadmap references, execution planning, and PQX prompts must derive from this file.
+
+# Spectrum Systems — System Roadmap
 
 ## System Goal
-Spectrum Systems should operate as an artifact-first, repo-native control plane in which bounded AI and deterministic runtime modules produce schema-validated artifacts, evals convert artifact quality into governed signals, and control plus enforcement determine whether outputs may proceed. The system goal is not “helpful AI” in the abstract; it is a complete eval → control → enforcement loop with replayability, provenance, fail-closed behavior, and certification before promotion or Done.
+
+Spectrum Systems is an artifact-first, fail-closed system where all outputs are governed by:
+
+- **Eval → Control → Enforcement** loops  
+- **Schema-validated artifacts at every boundary**  
+- **Deterministic replay for all critical paths**  
+- **Policy-driven decisions with no implicit execution**
+
+The system does not trust local correctness.  
+It enforces **system-level trust** through governed artifacts, reproducibility, and control-loop integrity.
+
+---
 
 ## Architectural Invariants
-- Artifacts are the service boundary; schemas are public APIs.
-- Every write path is schema-validated before persistence or promotion.
-- Agents are bounded executors; they do not self-judge, self-release, or bypass policy.
-- Evals judge artifacts; control decides; enforcement acts.
-- Indeterminate is failure unless an explicitly governed override artifact says otherwise.
-- Replayability is mandatory for every promoted trust boundary.
-- Provenance, trace linkage, and artifact lineage are required.
-- Policy, prompt, routing, schema, and release decisions are versioned and auditable.
-- No promotion without eval pass, control decision, and certification.
-- No Done without certification.
+
+- No artifact without schema validation  
+- No execution without context validation  
+- No promotion without eval + control decision  
+- No decision without trace + evidence binding  
+- No control decision without enforcement  
+- No system state change without governed artifacts  
+- Replay must reproduce decisions deterministically  
+- Fail-closed behavior at every boundary  
+- Governance before capability expansion  
+- Certification required before “Done” or “Trusted”  
+
+---
 
 ## Execution Rules (PQX)
-- Each row = one implementation slice
-- Prefer MODIFY EXISTING
-- All slices must:
-  → produce artifacts  
-  → include tests  
-  → preserve replayability  
-  → enforce fail-closed behavior  
-- Dependency-first execution
-- No control-loop bypass
 
-## PQX Execution Contract Standard
+- Each row = ONE implementation slice  
+- Prefer **MODIFY EXISTING** over ADD NEW  
+- Do not bypass existing modules or schemas  
+- Do not introduce parallel architecture  
+- All work must:
+  - produce governed artifacts  
+  - include tests  
+  - preserve replayability  
+  - enforce fail-closed behavior  
 
-Roadmap rows are expected to evolve into PQX-executable step contracts rather than remain loose planning entries.
+- Dependency-first execution:
+  - do not implement a row before its dependencies  
 
-- Governing standard: `docs/roadmap/roadmap_step_contract.md`
-- Slice execution specs: `docs/roadmap/slices/`
+- No control-loop bypass:
+  - all outputs must flow through eval → control → enforcement  
 
-Each implementation row should be upgraded to satisfy all required contract fields before execution.
+- If a row is too large:
+  → split it before implementation  
+
+---
 
 ## Roadmap Table
 
 | Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Existing Repo Seams | Implementation Mode | Contracts / Schemas | Artifact Outputs | Integration Points | Control Loop Coverage | Dependencies | Definition of Done | Prompt Class | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| [ROW: TRUST-01] | Context admission | Fail-closed context validation | Prevent bad inputs entering system | SOURCE + REPO | context modules | MODIFY EXISTING | context schemas | validation artifact | entry boundary | O/E | None | invalid context blocked | PQX-HARDEN | Completed |
-| [ROW: TRUST-02] | Evidence binding | Provenance + artifact envelope | Trust + traceability | SOURCE + REPO | evidence modules | MODIFY EXISTING | envelope schemas | lineage artifact | trace system | O/I | TRUST-01 | provenance enforced | PQX-HARDEN | Completed |
-| [ROW: AI-01] | Model boundary | Adapter + registry + routing | Prevent uncontrolled AI use | SOURCE + REPO | adapter modules | MODIFY EXISTING | model contracts | model response | agent system | O/I | TRUST-01 | all calls governed | PQX-HARDEN | Completed |
-| [ROW: CTX-01] | Context system | Context bundles | Deterministic inputs | SOURCE + REPO | context bundle | MODIFY EXISTING | context schema | bundle artifact | agent boundary | O/I | TRUST-01 | deterministic bundle | PQX-HARDEN | Completed |
-| [ROW: AGENT-01] | Agent execution | Golden path execution | Controlled AI behavior | SOURCE + REPO | agent modules | MODIFY EXISTING | trace schema | execution trace | eval system | O/I | AI-01 | trace emitted | PQX-HARDEN | Completed |
-| [ROW: EVAL-01] | Eval system | Eval artifacts + datasets | Quality measurement | SOURCE + REPO | eval modules | MODIFY EXISTING | eval schemas | eval results | control loop | I | TRUST-02 | eval reproducible | PQX-HARDEN | Completed |
-| [ROW: EVAL-02] | Grounding eval | Semantic validation | Prevent hallucination | SOURCE + REPO | eval modules | MODIFY EXISTING | grounding schemas | eval artifact | control loop | I | EVAL-01 | wrong outputs blocked | PQX-HARDEN | Completed |
-| [ROW: CTRL-01] | Control decision | Eval → decision | System authority | SOURCE + REPO | control modules | MODIFY EXISTING | decision schema | decision artifact | enforcement | D | EVAL-02 | deterministic decisions | PQX-HARDEN | Completed |
-| [ROW: ENF-01] | Enforcement | Decision → action | Enforce governance | SOURCE + REPO | enforcement modules | MODIFY EXISTING | enforcement schema | action artifact | promotion | E | CTRL-01 | fail-closed enforced | PQX-WIRE | Completed |
-| [ROW: TRACE-01] | Trace system | Observability + lineage | Debug + audit | SOURCE + REPO | trace modules | MODIFY EXISTING | trace schemas | trace artifact | replay | O/L | TRUST-02 | full trace linkage | PQX-HARDEN | Completed |
-| [ROW: REPLAY-01] | Replay engine | Deterministic replay | Reproducibility | SOURCE + REPO | replay modules | MODIFY EXISTING | replay schema | replay artifact | regression | O/I/L | TRACE-01 | identical replay | PQX-HARDEN | Completed |
-| [ROW: REG-01] | Regression | Eval CI gate | Prevent regressions | SOURCE + REPO | regression modules | MODIFY EXISTING | CI schemas | regression artifact | CI | I/L | REPLAY-01 | failures block | PQX-HARDEN | Completed |
-| [ROW: REL-01] | Drift + baseline | Detect system drift | Prevent degradation | SOURCE + REPO | drift modules | MODIFY EXISTING | drift schema | drift artifact | control | I/D/L | REG-01 | drift triggers action | PQX-HARDEN | Completed |
-| [ROW: REL-02] | Error budgets | SLO enforcement | Reliability control | SOURCE + REPO | monitor modules | MODIFY EXISTING | budget schema | budget artifact | alerts | I/D/E | REL-01 | budget enforced | PQX-HARDEN | Completed |
-| [ROW: GOV-01] | Policy registry | Versioned policies | Governance consistency | SOURCE + REPO | policy modules | MODIFY EXISTING | policy schema | policy artifact | control loop | D/E | TRUST-02 | policy resolved | PQX-HARDEN | Completed |
-| [ROW: GOV-02] | Release canary | Safe rollout | Prevent bad releases | SOURCE + REPO | release modules | MODIFY EXISTING | release schema | release artifact | monitor | D/E/L | REL-02 | failed canary blocks | PQX-HARDEN | Completed |
-| [ROW: GOV-03] | Certification pack | Promotion input | Pre-certification | SOURCE + REPO | certification modules | MODIFY EXISTING | certification schema | cert artifact | enforcement | D/E | ENF-01 | required for promotion | PQX-WIRE | Completed |
-| [ROW: DONE-01] | Done certification gate | System-level Done gate | Final trust boundary | SOURCE + REPO | reuse governance seams | ADD NEW + MODIFY EXISTING | done_certification_record | certification artifact | CI + promotion | D/E | GOV-03, REG-01, REL-02, FAIL-01 | blocks invalid Done | PQX-BUILD | Completed |
-| [ROW: XRUN-01] | Cross-run intelligence | Pattern learning | System improvement | SOURCE + REPO | intelligence modules | MODIFY EXISTING | intelligence schema | insight artifact | eval loop | I/L | REG-01 | insights generated | PQX-HARDEN | Completed |
-| [ROW: ADV-01] | Policy backtesting | Scenario simulation | Predict failures | SOURCE + REPO | reuse replay + control | ADD NEW | backtest schema | backtest artifact | policy loop | I/D/L | XRUN-01 | policies validated | PQX-BUILD | Completed |
+| AI-01 | AI request/response boundary | Canonical model IO boundary + prompt registry enforcement | Prevents free-form model calls | SOURCE + REPO | model_adapter.py, prompt_registry.py | MODIFY EXISTING | ai_model_request, ai_model_response | ai_model_request, ai_model_response | runtime adapter | O / I | — | All model calls use governed schemas and registry | runtime | VALID |
+| AI-02 | Context bundle system | Deterministic, provenance-bound context input | Ensures grounded and replayable execution | SOURCE + REPO | context_bundle.py | MODIFY EXISTING | context_bundle.schema.json | context_bundle | runtime input layer | O / I | AI-01 | Context bundles validated, deterministic, fail-closed | schema | VALID |
+| TRUST-01 | Context admission gate | Fail-closed context validation before execution | Blocks invalid or unsafe inputs | SOURCE GAP (FILLED) | context_bundle.py, policy_registry.py | ADD NEW FILE | context_admission schemas | context_admission_decision | pre-execution gate | O / I / D / E | AI-02 | Invalid bundles always blocked | governance | VALID |
+| TRUST-02 | Evidence binding | Output-to-evidence linkage | Prevents unverifiable outputs | SOURCE + REPO | evidence_binding.py | MODIFY EXISTING | evidence_binding_record | evidence_binding_record | eval + audit | I / D | AI-02 | Outputs cannot proceed without evidence | runtime | VALID |
+| SRE-02 | Trace + lineage | End-to-end trace system | Enables audit and replay | SOURCE + REPO | trace_engine.py | MODIFY EXISTING | trace schemas | trace, lineage artifacts | all system seams | O / L | TRUST-02 | All artifacts linked to trace | runtime | VALID |
+| EVAL-01 | Eval artifact system | eval_case, eval_result, eval_summary | Removes self-judging behavior | SOURCE + REPO | eval schemas/tests | WIRE INTEGRATION | eval schemas | eval artifacts | evaluation control | I / D | SRE-02 | All outputs evaluated via governed evals | eval | VALID |
+| DATA-04 | Eval dataset registry | Versioned eval datasets | Prevents eval drift | SOURCE + REPO | dataset schemas/tests | MODIFY EXISTING | eval_dataset schema | dataset registry | eval runner | O / L | EVAL-01 | All evals reference versioned datasets | docs | VALID |
+| SRE-03 | Replay engine | Deterministic replay | Guarantees reproducibility | SOURCE + REPO | replay_engine.py | MODIFY EXISTING | replay schemas | replay_record | full pipeline | O / I / D / L | SRE-02 | Same input → same output | runtime | VALID |
+| SRE-04 | Regression suite | Regression + baseline tests | Prevents regressions | SOURCE + REPO | regression tests | MODIFY EXISTING | regression schemas | regression artifacts | CI + replay | I / L | DATA-04, SRE-03 | Known failures never reappear | eval | VALID |
+| SRE-07 | Failure classification | Structured failure taxonomy | Converts failures into signals | SOURCE + REPO | error taxonomy modules | MODIFY EXISTING | failure schemas | failure artifacts | control loop | I / D / E | SRE-03 | All failures classified + stored | governance | VALID |
+| DATA-03 | Failure feedback loop | Failures → new evals/tests | Enables system learning | SOURCE + REPO | eval auto-gen tests | WIRE INTEGRATION | failure_eval_case schema | generated eval cases | eval registry | L | SRE-07 | Failures become tests deterministically | integration | VALID |
+| GOV-07 | Policy registry | Versioned policy system | Prevents policy drift | SOURCE + REPO | policy_registry.py | MODIFY EXISTING | policy schemas | policy_registry_snapshot | control loop | D / L | DATA-01, EVAL-01 | All decisions reference policy version | governance | VALID |
+| GOV-09 | Runtime enforcement | Policy → enforcement bridge | Prevents advisory-only decisions | SOURCE + REPO | enforcement_bridge.py | WIRE INTEGRATION | enforcement schemas | enforcement_action | runtime execution | D / E | GOV-07 | All decisions enforceable | runtime | VALID |
+| SRE-08 | SLO + error budgets | Reliability thresholds | Governs change velocity | SOURCE + REPO | error_budget.py | MODIFY EXISTING | SLO schemas | error_budget_status | control loop | D / E / L | GOV-09 | Reliability thresholds enforced | governance | VALID |
+| SRE-10 | Observability | Metrics + alerts | Makes failures visible | SOURCE + REPO | observability_metrics.py | MODIFY EXISTING | observability schemas | observability records | monitoring | O / L / E | SRE-02, SRE-08 | All critical signals measurable | runtime | VALID |
+| SRE-05 | Drift detection | Detect + gate drift | Prevents silent degradation | SOURCE + REPO | drift_detection.py | MODIFY EXISTING | drift schemas | drift artifacts | control loop | I / D / E / L | SRE-04, SRE-08 | Drift always gated | runtime | VALID |
+| GOV-01 | Promotion gating | Controlled lifecycle | Prevents invalid promotion | SOURCE + REPO | lifecycle modules | WIRE INTEGRATION | release schemas | promotion decisions | control loop | D / E | GOV-09, SRE-05 | Promotion requires full validation | governance | VALID |
+| EVAL-02 | Explainability | Evidence-backed decisions | Enables auditability | SOURCE + REPO | eval decision modules | WIRE INTEGRATION | explanation schemas | explanation artifacts | audit layer | I / D / L | TRUST-02, EVAL-01 | All decisions explainable | eval | VALID |
+| GOV-06 | Human override system | Controlled HITL | Prevents unmanaged overrides | SOURCE + REPO | HITL schemas/tests | WIRE INTEGRATION | override schemas | override artifacts | control loop | D / E | GOV-01 | All overrides governed + auditable | governance | VALID |
+| SRE-12A | Cross-run aggregation | Multi-run comparison | Detects instability | REPO + INFERRED | cross_run_intelligence.py | MODIFY EXISTING | comparison schema | comparison artifacts | replay + eval | I / L | SRE-03 | Multiple runs compared deterministically | runtime | VALID |
+| SRE-12B | Signal fusion + scoring | Reliability scoring | Stabilizes decisions | SOURCE GAP (FILLED) | cross_run_intelligence.py | MODIFY EXISTING | scoring schema | decision_score | control loop | I / D / L | SRE-12A | Decisions based on multiple signals | governance | VALID |
+| GOV-05 | Audit bundles | Full audit package | Enables inspection | SOURCE + REPO | docs/artifact-flow.md | DOC / POLICY | audit schema | audit bundle | certification | L / E | GOV-01 | Every run auditable | docs | VALID |
+| GOV-10 | Certification gate | System-level Done | Prevents false trust | SOURCE | (new module) | ADD NEW FILE | certification schema | certification record | promotion gate | I / D / E | GOV-01, SRE-03 | Done only after full validation | governance | VALID |
+| SRE-13 | Chaos testing | Failure injection | Validates fail-closed behavior | SOURCE + REPO | control_loop_chaos.py | MODIFY EXISTING | chaos schema | chaos artifacts | full system | O / I / D / E / L | GOV-10 | All failures produce artifacts | runtime | VALID |
+| SRE-14 | Policy backtesting | Test policy changes | Prevents bad policy rollout | SOURCE + REPO | policy_registry.py, replay_engine.py | WIRE INTEGRATION | backtest schema | backtest report | replay system | I / D / E / L | GOV-07, SRE-03 | Policy changes validated before use | integration | VALID |

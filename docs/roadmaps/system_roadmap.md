@@ -1,3 +1,5 @@
+This file is subordinate to docs/roadmap/system_roadmap.md
+
 # Spectrum Systems — System Roadmap
 
 ## System Goal
