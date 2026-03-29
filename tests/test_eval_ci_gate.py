@@ -31,6 +31,7 @@ def _eval_case(*, forced_status: str = "pass", forced_score: float = 1.0) -> dic
     return {
         "artifact_type": "eval_case",
         "schema_version": "1.0.0",
+        "run_id": "run-test-001",
         "trace_id": "11111111-1111-4111-8111-111111111111",
         "eval_case_id": "eval-case-001",
         "input_artifact_refs": ["artifact://golden/case-001/input"],
@@ -219,12 +220,13 @@ def test_blocking_control_decision_fails_closed(tmp_path: Path, monkeypatch) -> 
             "executed_at": "2026-03-23T00:00:00Z",
             "eval_run": _eval_run,
             "eval_results": [
-                {
-                    "artifact_type": "eval_result",
-                    "schema_version": "1.0.0",
-                    "eval_case_id": "eval-case-001",
-                    "trace_id": "11111111-1111-4111-8111-111111111111",
-                    "result_status": "pass",
+                    {
+                        "artifact_type": "eval_result",
+                        "schema_version": "1.0.0",
+                        "eval_case_id": "eval-case-001",
+                        "run_id": "run-test-001",
+                        "trace_id": "11111111-1111-4111-8111-111111111111",
+                        "result_status": "pass",
                     "score": 1.0,
                     "failure_modes": ["non_reproducible"],
                     "provenance_refs": ["trace://11111111-1111-4111-8111-111111111111"],
@@ -265,12 +267,13 @@ def test_budget_exhausted_control_decision_blocks_gate(tmp_path: Path, monkeypat
             "executed_at": "2026-03-23T00:00:00Z",
             "eval_run": _eval_run,
             "eval_results": [
-                {
-                    "artifact_type": "eval_result",
-                    "schema_version": "1.0.0",
-                    "eval_case_id": "eval-case-001",
-                    "trace_id": "11111111-1111-4111-8111-111111111111",
-                    "result_status": "pass",
+                    {
+                        "artifact_type": "eval_result",
+                        "schema_version": "1.0.0",
+                        "eval_case_id": "eval-case-001",
+                        "run_id": "run-test-001",
+                        "trace_id": "11111111-1111-4111-8111-111111111111",
+                        "result_status": "pass",
                     "score": 1.0,
                     "failure_modes": [],
                     "provenance_refs": ["trace://11111111-1111-4111-8111-111111111111"],
@@ -305,12 +308,13 @@ def test_budget_invalid_control_decision_blocks_gate(tmp_path: Path, monkeypatch
             "executed_at": "2026-03-23T00:00:00Z",
             "eval_run": _eval_run,
             "eval_results": [
-                {
-                    "artifact_type": "eval_result",
-                    "schema_version": "1.0.0",
-                    "eval_case_id": "eval-case-001",
-                    "trace_id": "11111111-1111-4111-8111-111111111111",
-                    "result_status": "pass",
+                    {
+                        "artifact_type": "eval_result",
+                        "schema_version": "1.0.0",
+                        "eval_case_id": "eval-case-001",
+                        "run_id": "run-test-001",
+                        "trace_id": "11111111-1111-4111-8111-111111111111",
+                        "result_status": "pass",
                     "score": 1.0,
                     "failure_modes": [],
                     "provenance_refs": ["trace://11111111-1111-4111-8111-111111111111"],
