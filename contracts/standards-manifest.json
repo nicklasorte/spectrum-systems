@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.94",
+  "artifact_version": "1.0.95",
   "schema_version": "1.0.0",
   "standards_version": "2026.03.29",
-  "record_id": "REC-STD-2026-03-29-PQX-FIX-GATE",
-  "run_id": "run-20260329T120000Z",
+  "record_id": "REC-STD-2026-03-29-PQX-FIX-GATE-B9",
+  "run_id": "run-20260329T163000Z",
   "created_at": "2026-03-29T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -1076,13 +1076,13 @@
     {
       "artifact_type": "pqx_fix_gate_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.94",
-      "last_updated_in": "1.0.94",
+      "last_updated_in": "1.0.95",
       "example_path": "contracts/examples/pqx_fix_gate_record.json",
       "notes": "Governed fix adjudication artifact that enforces deterministic pass/block completion semantics before PQX bundle resume is permitted."
     },

@@ -302,6 +302,8 @@ def _execute_pending_fix_loop(
         execution_result["fix_step"]["run_id"] = run_id
         record = record_fix_result(bundle_state, execution_result["fix_step"], execution_result)
         record["insertion_point"] = insertion_point
+        fix_execution_record_path = step_state_dir / f"{fix_step_id}.fix_execution_record.json"
+        fix_execution_record_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
         bundle_state = update_bundle_state_with_fix(bundle_state, record)
         fix_records.append(record)
 
@@ -309,6 +311,7 @@ def _execute_pending_fix_loop(
         bundle_state, gate_record = evaluate_fix_completion(
             bundle_state=bundle_state,
             fix_execution_record=record,
+            fix_execution_record_ref=_relative(fix_execution_record_path),
             fix_gate_record_ref=_relative(fix_gate_path),
             now=iso_now(clock),
         )

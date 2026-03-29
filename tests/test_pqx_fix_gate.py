@@ -90,6 +90,7 @@ def test_successful_fix_resolution() -> None:
     state, record = evaluate_fix_completion(
         bundle_state=_bundle_state(),
         fix_execution_record=_fix_record(),
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )
@@ -104,6 +105,7 @@ def test_unresolved_fix_remains_blocked() -> None:
     state, record = evaluate_fix_completion(
         bundle_state=_bundle_state(),
         fix_execution_record=fix,
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )
@@ -118,11 +120,12 @@ def test_mismatched_fix_to_finding_mapping() -> None:
     state, record = evaluate_fix_completion(
         bundle_state=_bundle_state(),
         fix_execution_record=fix,
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )
     assert record["gate_status"] == "blocked"
-    assert "does not map" in record["reasons"][0]
+    assert "does not map" in record["blocking_reason"]
     assert "fix:REV-1:F-1" in state["unresolved_fixes"]
 
 
@@ -133,6 +136,7 @@ def test_duplicate_resolution_attempt_is_rejected() -> None:
         evaluate_fix_completion(
             bundle_state=state,
             fix_execution_record=_fix_record(),
+            fix_execution_record_ref="out/fix-1.fix_execution_record.json",
             fix_gate_record_ref="out/fix-1.fix_gate.json",
             now="2026-03-29T12:02:00Z",
         )
@@ -146,12 +150,13 @@ def test_grouped_fix_target_can_pass_when_approved() -> None:
     state, record = evaluate_fix_completion(
         bundle_state=state,
         fix_execution_record=fix,
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         approved_grouped_fix_targets={"fix:REV-1:F-1": ["AI-03"]},
         now="2026-03-29T12:02:00Z",
     )
     assert record["gate_status"] == "passed"
-    assert "AI-03" in record["accepted_target_step_ids"]
+    assert "AI-03" in record["adjudication_inputs"]["accepted_target_step_ids"]
     assert_fix_gate_allows_resume(state)
 
 
@@ -161,12 +166,14 @@ def test_replay_parity_is_deterministic() -> None:
     one_state, one_record = evaluate_fix_completion(
         bundle_state=state,
         fix_execution_record=fix,
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )
     two_state, two_record = evaluate_fix_completion(
         bundle_state=deepcopy(state),
         fix_execution_record=deepcopy(fix),
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )
@@ -178,6 +185,7 @@ def test_resume_safe_behavior_after_gate_pass() -> None:
     state, _ = evaluate_fix_completion(
         bundle_state=_bundle_state(),
         fix_execution_record=_fix_record(),
+        fix_execution_record_ref="out/fix-1.fix_execution_record.json",
         fix_gate_record_ref="out/fix-1.fix_gate.json",
         now="2026-03-29T12:02:00Z",
     )

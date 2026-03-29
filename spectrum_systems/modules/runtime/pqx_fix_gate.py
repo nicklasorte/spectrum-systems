@@ -12,6 +12,7 @@ class PQXFixGateError(ValueError):
 
 
 _ALLOWED_PENDING_STATUSES = {"open", "planned", "in_progress", "complete", "deferred", "resolved"}
+_ALLOWED_GATE_STATUS = {"passed", "blocked"}
 
 
 def validate_fix_resolution_inputs(
@@ -19,7 +20,7 @@ def validate_fix_resolution_inputs(
     fix_execution_record: dict,
     *,
     approved_grouped_fix_targets: dict[str, list[str]] | None = None,
-) -> dict:
+) -> dict[str, list[str]]:
     if not isinstance(bundle_state, dict):
         raise PQXFixGateError("bundle_state must be an object")
     if not isinstance(fix_execution_record, dict):
@@ -91,9 +92,7 @@ def compare_fix_result_to_pending_finding(
         raise PQXFixGateError(f"duplicate resolution attempt for fix_id: {fix_id}")
 
     if fix_id in bundle_state["fix_gate_results"]:
-        previous = bundle_state["fix_gate_results"][fix_id]
-        if previous.get("gate_status") == "passed":
-            raise PQXFixGateError(f"fix gate already passed for fix_id: {fix_id}")
+        raise PQXFixGateError(f"duplicate fix gate persistence attempt for fix_id: {fix_id}")
 
     pending_targets = pending_fix.get("affected_step_ids", [])
     if not isinstance(pending_targets, list) or not pending_targets:
@@ -110,9 +109,11 @@ def compare_fix_result_to_pending_finding(
         return {
             "mapping_status": "mismatched",
             "resolution_status": "unresolved",
-            "reasons": ["fix insertion anchor does not map to pending finding target"],
+            "blocking_reason": "fix insertion anchor does not map to pending finding target",
+            "reason_codes": ["LINKAGE_MISMATCH"],
             "pending_fix": pending_fix,
             "allowed_targets": allowed_targets,
+            "replay_safe": True,
         }
 
     expected_artifacts = bundle_state["fix_artifacts"].get(fix_id)
@@ -120,9 +121,11 @@ def compare_fix_result_to_pending_finding(
         return {
             "mapping_status": "mismatched",
             "resolution_status": "unresolved",
-            "reasons": ["fix artifact refs were mutated in place"],
+            "blocking_reason": "fix artifact refs were mutated in place",
+            "reason_codes": ["ARTIFACT_DRIFT"],
             "pending_fix": pending_fix,
             "allowed_targets": allowed_targets,
+            "replay_safe": True,
         }
 
     expected_insertion = bundle_state["reinsertion_points"].get(fix_id)
@@ -130,53 +133,63 @@ def compare_fix_result_to_pending_finding(
         return {
             "mapping_status": "mismatched",
             "resolution_status": "unresolved",
-            "reasons": ["reinsertion point differs from recorded fix execution state"],
+            "blocking_reason": "reinsertion point differs from recorded fix execution state",
+            "reason_codes": ["INSERTION_DRIFT"],
             "pending_fix": pending_fix,
             "allowed_targets": allowed_targets,
+            "replay_safe": True,
         }
 
     if fix_execution_record["execution_status"] != "complete":
         return {
             "mapping_status": "matched",
             "resolution_status": "unresolved",
-            "reasons": ["fix execution did not complete"],
+            "blocking_reason": "fix execution did not complete",
+            "reason_codes": ["EXECUTION_NOT_COMPLETE"],
             "pending_fix": pending_fix,
             "allowed_targets": allowed_targets,
+            "replay_safe": True,
         }
 
     if fix_execution_record["validation_result"].lower() not in {"passed", "success", "resolved"}:
         return {
             "mapping_status": "matched",
             "resolution_status": "unresolved",
-            "reasons": ["fix execution validation_result indicates unresolved outcome"],
+            "blocking_reason": "fix execution validation_result indicates unresolved outcome",
+            "reason_codes": ["VALIDATION_UNRESOLVED"],
             "pending_fix": pending_fix,
             "allowed_targets": allowed_targets,
+            "replay_safe": True,
         }
 
     return {
         "mapping_status": "matched",
         "resolution_status": "resolved",
-        "reasons": [
-            "fix mapped to exactly one pending finding",
-            "fix execution artifact validated",
-            "reinsertion state consistent",
-        ],
+        "blocking_reason": None,
+        "reason_codes": ["RESOLUTION_VERIFIED"],
         "pending_fix": pending_fix,
         "allowed_targets": allowed_targets,
+        "replay_safe": True,
     }
 
 
 def determine_fix_gate_status(comparison: dict) -> dict:
     mapping_status = comparison["mapping_status"]
     resolution_status = comparison["resolution_status"]
+    if mapping_status not in {"matched", "mismatched"}:
+        raise PQXFixGateError("comparison mapping_status is malformed")
+    if resolution_status not in {"resolved", "unresolved"}:
+        raise PQXFixGateError("comparison resolution_status is malformed")
 
     gate_status = "passed" if mapping_status == "matched" and resolution_status == "resolved" else "blocked"
+    if gate_status not in _ALLOWED_GATE_STATUS:
+        raise PQXFixGateError("computed gate_status is malformed")
     return {
         "gate_status": gate_status,
-        "resume_allowed": gate_status == "passed",
-        "resolution_status": resolution_status if mapping_status == "matched" else "mismatched",
-        "replay_safe": True,
-        "reasons": list(dict.fromkeys(comparison["reasons"])),
+        "allows_resume": gate_status == "passed",
+        "blocking_reason": comparison["blocking_reason"],
+        "replay_safe": comparison["replay_safe"] is True,
+        "reason_codes": list(dict.fromkeys(comparison["reason_codes"])),
     }
 
 
@@ -186,29 +199,44 @@ def emit_fix_gate_record(
     fix_execution_record: dict,
     gate_decision: dict,
     comparison: dict,
+    fix_execution_record_ref: str,
     now: str,
 ) -> dict:
     pending_fix = comparison["pending_fix"]
+    review_id = pending_fix.get("source_review_id")
+    finding_id = pending_fix.get("source_finding_id")
     record = {
-        "schema_version": "1.0.0",
-        "fix_id": fix_execution_record["fix_id"],
-        "bundle_id": bundle_state["active_bundle_id"],
+        "schema_version": "1.1.0",
+        "fix_gate_id": f"fix-gate:{bundle_state['run_id']}:{fix_execution_record['fix_id']}",
+        "created_at": now,
         "run_id": bundle_state["run_id"],
         "trace_id": fix_execution_record["trace_id"],
-        "source_finding_id": pending_fix["source_finding_id"],
-        "source_review_id": pending_fix["source_review_id"],
-        "execution_status": fix_execution_record["execution_status"],
-        "validation_result": fix_execution_record["validation_result"],
+        "bundle_id": bundle_state["active_bundle_id"],
+        "fix_id": fix_execution_record["fix_id"],
+        "originating_pending_fix_id": pending_fix["fix_id"],
+        "originating_review_artifact_id": review_id,
+        "originating_finding_id": finding_id,
+        "fix_execution_record_ref": fix_execution_record_ref,
+        "adjudication_inputs": {
+            "execution_status": fix_execution_record["execution_status"],
+            "validation_result": fix_execution_record["validation_result"],
+            "accepted_target_step_ids": comparison["allowed_targets"],
+            "insertion_point": deepcopy(fix_execution_record["insertion_point"]),
+            "artifact_refs": deepcopy(fix_execution_record["artifacts"]),
+        },
         "gate_status": gate_decision["gate_status"],
-        "resolution_status": gate_decision["resolution_status"],
-        "resume_allowed": gate_decision["resume_allowed"],
-        "replay_safe": gate_decision["replay_safe"],
-        "matched_pending_fix_ids": [pending_fix["fix_id"]],
-        "accepted_target_step_ids": comparison["allowed_targets"],
-        "insertion_point": deepcopy(fix_execution_record["insertion_point"]),
-        "artifact_refs": deepcopy(fix_execution_record["artifacts"]),
-        "reasons": gate_decision["reasons"],
-        "created_at": now,
+        "allows_resume": gate_decision["allows_resume"],
+        "blocking_reason": gate_decision["blocking_reason"],
+        "comparison_summary": {
+            "mapping_status": comparison["mapping_status"],
+            "resolution_status": comparison["resolution_status"],
+            "reason_codes": gate_decision["reason_codes"],
+            "replay_safe": gate_decision["replay_safe"],
+        },
+        "producer": {
+            "module": "spectrum_systems.modules.runtime.pqx_fix_gate",
+            "function": "evaluate_fix_completion",
+        },
     }
     try:
         validate_artifact(record, "pqx_fix_gate_record")
@@ -221,6 +249,7 @@ def evaluate_fix_completion(
     *,
     bundle_state: dict,
     fix_execution_record: dict,
+    fix_execution_record_ref: str,
     fix_gate_record_ref: str,
     now: str,
     approved_grouped_fix_targets: dict[str, list[str]] | None = None,
@@ -237,16 +266,16 @@ def evaluate_fix_completion(
         fix_execution_record=fix_execution_record,
         gate_decision=gate_decision,
         comparison=comparison,
+        fix_execution_record_ref=fix_execution_record_ref,
         now=now,
     )
 
     updated = deepcopy(bundle_state)
     fix_id = fix_execution_record["fix_id"]
-    record_id = f"fix-gate:{updated['run_id']}:{fix_id}"
     updated["fix_gate_results"][fix_id] = {
         "gate_status": gate_record["gate_status"],
         "record_ref": fix_gate_record_ref,
-        "record_id": record_id,
+        "record_id": gate_record["fix_gate_id"],
     }
     updated["last_fix_gate_status"] = gate_record["gate_status"]
 
