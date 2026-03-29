@@ -34,6 +34,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from jsonschema import Draft202012Validator, FormatChecker
+from spectrum_systems.modules.runtime.provenance_verification import (
+    ProvenanceVerificationError,
+    assert_persisted_reload_identity,
+    validate_required_identity,
+)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -124,6 +129,14 @@ def persist_trace(
     trace_id = trace.get("trace_id")
     if not trace_id:
         raise TraceStoreError("persist_trace: trace is missing 'trace_id'")
+    run_id = ((trace.get("context") or {}).get("run_id"))
+    try:
+        validate_required_identity(
+            {"run_id": run_id, "trace_id": trace_id},
+            label="persist_trace.trace.context",
+        )
+    except ProvenanceVerificationError as exc:
+        raise TraceStoreError(str(exc)) from exc
 
     dest_path = _trace_path(trace_id, base_dir)
     storage_path = _relative_storage_path(dest_path)
@@ -193,7 +206,8 @@ def load_trace(
             + "; ".join(errors)
         )
 
-    stored_trace_id = ((envelope.get("trace") or {}).get("trace_id"))
+    stored_trace = envelope.get("trace") or {}
+    stored_trace_id = stored_trace.get("trace_id")
     if stored_trace_id != trace_id:
         raise TraceStoreError(
             "load_trace: trace identity mismatch between request and payload "
@@ -208,6 +222,17 @@ def load_trace(
             f"'{trace_id}' (expected={expected_storage_path!r}, "
             f"stored={stored_storage_path!r})"
         )
+
+    stored_run_id = (stored_trace.get("context") or {}).get("run_id")
+    try:
+        assert_persisted_reload_identity(
+            {"run_id": stored_run_id, "trace_id": trace_id},
+            {"run_id": stored_run_id, "trace_id": stored_trace_id},
+            persisted_label="trace_store.requested_identity",
+            reloaded_label="trace_store.reloaded_trace",
+        )
+    except ProvenanceVerificationError as exc:
+        raise TraceStoreError(str(exc)) from exc
 
     return envelope
 

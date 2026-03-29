@@ -131,6 +131,9 @@ def _base_artifacts() -> Dict[str, Any]:
     replay["consistency_status"] = "match"
     replay["drift_detected"] = False
     replay["failure_reason"] = None
+    run_id = str(replay.get("replay_run_id") or replay.get("original_run_id") or "eval-run-001")
+    replay["replay_run_id"] = run_id
+    replay["original_run_id"] = run_id
 
     trace_id = replay["trace_id"]
     replay["provenance"]["trace_id"] = trace_id
@@ -139,6 +142,7 @@ def _base_artifacts() -> Dict[str, Any]:
 
     control = _clone(load_example("evaluation_control_decision"))
     control["trace_id"] = trace_id
+    control["run_id"] = run_id
     control["system_status"] = "healthy"
     control["system_response"] = "allow"
     control["decision"] = "allow"
@@ -148,6 +152,7 @@ def _base_artifacts() -> Dict[str, Any]:
     error_budget["budget_status"] = "healthy"
 
     cert_pack = _clone(load_example("control_loop_certification_pack"))
+    cert_pack["run_id"] = run_id
     cert_pack["decision"] = "pass"
     cert_pack["certification_status"] = "certified"
     cert_pack["provenance_trace_refs"]["trace_refs"] = [trace_id]
@@ -166,6 +171,7 @@ def _base_artifacts() -> Dict[str, Any]:
         result["invariant_violations"] = []
 
     regression = _regression_result(trace_id, pass_result=True)
+    regression["run_id"] = run_id
 
     return {
         "replay": replay,
@@ -307,6 +313,7 @@ def _execute_case(case_id: str, case_type: str, injected_faults: List[str], expe
             replay["drift_detected"] = True
             replay["failure_reason"] = None
             regression = _regression_result(base["trace_id"], pass_result=False)
+            regression["run_id"] = str(replay.get("replay_run_id") or replay.get("original_run_id") or "")
 
         if "eval_control_inconsistency" in injected_faults:
             control["system_status"] = "blocked"

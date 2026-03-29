@@ -221,3 +221,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-SRE-03-REPLAY-ENFORCEMENT-TEST-MIGRATION-2026-03-26.md | SRE-03 — Replay enforcement test migration for replay-only boundaries | Active |
 
 | docs/review-actions/PLAN-PQX-QUEUE-10-2026-03-28.md | [ROW: QUEUE-10] Queue Certification Gate | Active |
+
+| docs/review-actions/PLAN-RUNTIME-PROVENANCE-ANCHORS-2026-03-29.md | Post-runtime-identity hardening — provenance anchors across persistence and downstream seams | Active |

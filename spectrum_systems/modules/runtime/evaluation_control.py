@@ -22,6 +22,10 @@ from typing import Any, Dict, List, Optional
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.provenance_verification import (
+    ProvenanceVerificationError,
+    validate_required_identity,
+)
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "schemas"
@@ -138,6 +142,14 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
         raise EvaluationControlError(
             "REPLAY_INVALID_LINEAGE: error_budget_status.observability_metrics_id must reference embedded observability_metrics.artifact_id"
         )
+    replay_run_id = replay_result.get("replay_run_id")
+    try:
+        validate_required_identity(
+            {"run_id": replay_run_id, "trace_id": trace_id},
+            label="replay_result",
+        )
+    except ProvenanceVerificationError as exc:
+        raise EvaluationControlError(str(exc)) from exc
 
     metrics = observability.get("metrics")
     if not isinstance(metrics, dict):

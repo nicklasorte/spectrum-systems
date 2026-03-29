@@ -278,6 +278,22 @@ def test_run_replay_fails_closed_on_trace_id_mismatch() -> None:
         _run_replay(artifact, original_decision, original_enforcement, mismatched_context)
 
 
+def test_replay_to_eval_rejects_mismatched_trace_id() -> None:
+    replay = _artifact_as_replay_result()
+    replay["observability_metrics"]["trace_refs"]["trace_id"] = "trace-other"
+
+    with pytest.raises(Exception, match="REPLAY_INVALID_TRACE_LINKAGE"):
+        build_evaluation_control_decision(replay)
+
+
+def test_replay_to_eval_rejects_missing_replay_run_id() -> None:
+    replay = _artifact_as_replay_result()
+    replay["replay_run_id"] = " "
+
+    with pytest.raises(Exception, match="failed validation|run_id"):
+        build_evaluation_control_decision(replay)
+
+
 def test_run_replay_fails_closed_when_trace_context_trace_id_missing() -> None:
     artifact = _artifact()
     original_decision, original_enforcement = _originals(artifact)
@@ -565,7 +581,7 @@ def test_replay_persistence_matches_runtime_rules(
         "artifacts": [],
         "start_time": "2026-03-23T00:00:00+00:00",
         "end_time": "2026-03-23T00:00:01+00:00",
-        "context": {},
+        "context": {"run_id": "run-replay-persist-001"},
         "schema_version": "1.0.0",
     }
     traces_dir = tmp_path / "traces"
@@ -593,7 +609,7 @@ def test_replay_schema_canonical_only() -> None:
         "steps_executed": [],
         "output_comparison": {},
         "determinism_notes": [],
-        "context": {},
+        "context": {"run_id": "run-replay-persist-002"},
     }
     errors = validate_replay_result(legacy_payload)
     assert errors
@@ -668,7 +684,7 @@ def test_replay_persistence_enforced(tmp_path: Path, monkeypatch: pytest.MonkeyP
         "artifacts": [],
         "start_time": "2026-03-23T00:00:00+00:00",
         "end_time": "2026-03-23T00:00:01+00:00",
-        "context": {},
+        "context": {"run_id": "run-replay-persist-002"},
         "schema_version": "1.0.0",
     }
     traces_dir = tmp_path / "traces"
@@ -700,7 +716,7 @@ def test_execute_replay_analysis_mutation_disabled(tmp_path: Path) -> None:
             "artifacts": [],
             "start_time": "2026-03-23T00:00:00+00:00",
             "end_time": "2026-03-23T00:00:01+00:00",
-            "context": {},
+            "context": {"run_id": "run-exec-analysis-disabled-001"},
             "schema_version": "1.0.0",
         },
         base_dir=tmp_path / "traces",
@@ -740,7 +756,7 @@ def test_runtime_replay_observability_parity(tmp_path: Path) -> None:
             "artifacts": [],
             "start_time": "2026-03-23T00:00:00+00:00",
             "end_time": "2026-03-23T00:00:01+00:00",
-            "context": {},
+            "context": {"run_id": "run-replay-parity-001"},
             "schema_version": "1.0.0",
         },
         base_dir=tmp_path / "traces",
