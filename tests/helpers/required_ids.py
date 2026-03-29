@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from spectrum_systems.modules.runtime.identity_enforcement import ensure_required_ids
+
 
 def add_required_ids(obj: dict) -> dict:
     """Ensure fail-closed required identity fields are present in test payloads."""
-    obj.setdefault("run_id", "run-test-001")
-    obj.setdefault("trace_id", "trace-test-001")
-    return obj
+    return ensure_required_ids(obj, run_id="run-test-001", trace_id="trace-test-001")

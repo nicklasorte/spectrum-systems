@@ -195,6 +195,11 @@ from spectrum_systems.modules.runtime.context_admission import (
     ContextAdmissionError,
     run_context_admission,
 )
+from spectrum_systems.modules.runtime.identity_enforcement import (
+    RequiredIdentityError,
+    ensure_required_ids,
+    validate_required_ids,
+)
 from spectrum_systems.modules.runtime.evaluation_monitor import (
     EvaluationMonitorError,
     InvalidRegressionResultError,
@@ -355,4 +360,8 @@ __all__ = [
     # TRUST-01 — Context Admission Gate
     "run_context_admission",
     "ContextAdmissionError",
+    # Runtime identity enforcement
+    "RequiredIdentityError",
+    "ensure_required_ids",
+    "validate_required_ids",
 ]
