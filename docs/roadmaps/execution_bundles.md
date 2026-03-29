@@ -218,3 +218,16 @@ Determinism constraints:
 | Bundle ID | Ordered Step IDs | Depends On |
 | --- | --- | --- |
 | BUNDLE-PQX-CORE | AI-01, AI-02, TRUST-01, SRE-03, GOV-10 | - |
+
+
+## REVIEW CHECKPOINT TABLE
+
+| Checkpoint ID | Bundle ID | Review Type | Scope | Step ID | Required | Blocking Before Continue |
+| --- | --- | --- | --- | --- | --- | --- |
+| BUNDLE-PQX-CORE:post_bundle_review | BUNDLE-PQX-CORE | post_bundle_review | bundle | - | true | true |
+
+### B6 operator notes
+
+- `run_pqx_bundle.py run` stops with blocked status when this checkpoint is unresolved.
+- `run_pqx_bundle.py ingest-findings` attaches and validates `pqx_review_result`, then writes pending fixes into `pqx_bundle_state`.
+- Resume is deterministic: once checkpoint is satisfied and blocking findings are resolved, rerun resumes from persisted `resume_position`.

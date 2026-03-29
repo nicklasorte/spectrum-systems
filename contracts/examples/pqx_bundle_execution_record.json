@@ -1,15 +1,15 @@
 {
-  "schema_version": "1.0.0",
-  "bundle_execution_id": "bundle-exec:queue-run-b5-001:BUNDLE-PQX-CORE:5",
+  "schema_version": "1.1.0",
+  "bundle_execution_id": "bundle-exec:queue-run-b6-001:BUNDLE-PQX-CORE:5",
   "bundle_id": "BUNDLE-PQX-CORE",
   "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
   "bundle_plan_ref": "docs/roadmaps/execution_bundles.md",
-  "run_id": "run-b5-001",
-  "trace_id": "trace-b5-001",
+  "run_id": "run-b6-001",
+  "trace_id": "trace-b6-001",
   "started_at": "2026-03-29T18:00:00Z",
-  "completed_at": "2026-03-29T18:10:00Z",
-  "blocked_at": null,
-  "status": "completed",
+  "completed_at": null,
+  "blocked_at": "2026-03-29T18:10:00Z",
+  "status": "blocked",
   "executed_steps": [
     {
       "step_id": "AI-01",
@@ -20,16 +20,17 @@
       "error": null
     }
   ],
-  "blocked_step_id": null,
+  "blocked_step_id": "AI-02",
   "output_artifact_refs": [
     "data/pqx_bundle_runs/sequence_step_states/AI-01.json"
   ],
   "review_artifact_refs": [],
   "state_artifact_ref": "data/pqx_bundle_runs/pqx_bundle_state.json",
-  "failure_classification": null,
+  "failure_classification": "REVIEW_REQUIRED",
+  "block_reason": "required review unresolved",
   "resume_position": {
     "bundle_id": "BUNDLE-PQX-CORE",
-    "next_step_id": null,
-    "resume_token": "resume:queue-run-b5-001:BUNDLE-PQX-CORE:5"
+    "next_step_id": "AI-02",
+    "resume_token": "resume:queue-run-b6-001:BUNDLE-PQX-CORE:1"
   }
 }

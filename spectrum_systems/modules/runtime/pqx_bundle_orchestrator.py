@@ -16,6 +16,7 @@ from spectrum_systems.modules.pqx_backbone import (
 )
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
     PQXBundleStateError,
+    assert_valid_advancement,
     block_step,
     initialize_bundle_state,
     load_bundle_state,
@@ -41,6 +42,17 @@ class BundleDefinition:
     depends_on: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class ReviewRequirement:
+    checkpoint_id: str
+    bundle_id: str
+    review_type: str
+    scope: str
+    step_id: str | None
+    required: bool
+    blocking_review_before_continue: bool
+
+
 def _parse_table(lines: list[str], start_index: int) -> tuple[list[str], list[list[str]]]:
     header_line = lines[start_index].strip()
     divider_line = lines[start_index + 1].strip() if start_index + 1 < len(lines) else ""
@@ -59,6 +71,50 @@ def _parse_table(lines: list[str], start_index: int) -> tuple[list[str], list[li
     if not rows:
         raise PQXBundleOrchestratorError("executable bundle table contains no rows")
     return headers, rows
+
+
+def _parse_optional_review_requirements(lines: list[str]) -> list[ReviewRequirement]:
+    section_indexes = [i for i, line in enumerate(lines) if line.strip() == "## REVIEW CHECKPOINT TABLE"]
+    if not section_indexes:
+        return []
+    if len(section_indexes) != 1:
+        raise PQXBundleOrchestratorError("bundle plan must contain at most one '## REVIEW CHECKPOINT TABLE' section")
+
+    table_start = section_indexes[0] + 1
+    while table_start < len(lines) and not lines[table_start].strip():
+        table_start += 1
+    headers, rows = _parse_table(lines, table_start)
+    expected = [
+        "Checkpoint ID",
+        "Bundle ID",
+        "Review Type",
+        "Scope",
+        "Step ID",
+        "Required",
+        "Blocking Before Continue",
+    ]
+    if headers[:7] != expected:
+        raise PQXBundleOrchestratorError("review checkpoint table headers are malformed or ambiguous")
+
+    parsed: list[ReviewRequirement] = []
+    seen: set[str] = set()
+    for row in rows:
+        checkpoint_id, bundle_id, review_type, scope, step_id, required, blocking = row[:7]
+        if checkpoint_id in seen:
+            raise PQXBundleOrchestratorError(f"duplicate checkpoint_id in review checkpoint table: {checkpoint_id}")
+        seen.add(checkpoint_id)
+        parsed.append(
+            ReviewRequirement(
+                checkpoint_id=checkpoint_id,
+                bundle_id=bundle_id,
+                review_type=review_type,
+                scope=scope,
+                step_id=None if step_id in {"-", "—", ""} else step_id,
+                required=required.lower() == "true",
+                blocking_review_before_continue=blocking.lower() == "true",
+            )
+        )
+    return parsed
 
 
 def load_bundle_plan(bundle_plan_path: str | Path = BUNDLE_PLAN_PATH) -> list[BundleDefinition]:
@@ -95,6 +151,36 @@ def load_bundle_plan(bundle_plan_path: str | Path = BUNDLE_PLAN_PATH) -> list[Bu
         bundles.append(BundleDefinition(bundle_id=bundle_id, ordered_step_ids=ordered_step_ids, depends_on=depends_on))
 
     return bundles
+
+
+def load_review_requirements(
+    bundle_plan_path: str | Path,
+    *,
+    bundle_id: str,
+    ordered_step_ids: tuple[str, ...],
+) -> list[dict]:
+    lines = Path(bundle_plan_path).read_text(encoding="utf-8").splitlines()
+    all_requirements = _parse_optional_review_requirements(lines)
+    requirements = [r for r in all_requirements if r.bundle_id == bundle_id and r.required]
+    step_ids = set(ordered_step_ids)
+    normalized: list[dict] = []
+    for req in requirements:
+        if req.scope == "step" and req.step_id not in step_ids:
+            raise PQXBundleOrchestratorError(
+                f"review checkpoint '{req.checkpoint_id}' references step not in bundle: {req.step_id}"
+            )
+        normalized.append(
+            {
+                "checkpoint_id": req.checkpoint_id,
+                "bundle_id": req.bundle_id,
+                "review_type": req.review_type,
+                "scope": req.scope,
+                "step_id": req.step_id,
+                "required": req.required,
+                "blocking_review_before_continue": req.blocking_review_before_continue,
+            }
+        )
+    return normalized
 
 
 def resolve_bundle_definition(bundle_plan: list[BundleDefinition], bundle_id: str) -> BundleDefinition:
@@ -176,6 +262,11 @@ def execute_bundle_run(
     step_state_dir.mkdir(parents=True, exist_ok=True)
 
     normalized_bundle_plan = _to_bundle_plan(definition)
+    review_requirements = load_review_requirements(
+        bundle_plan_path,
+        bundle_id=bundle_id,
+        ordered_step_ids=definition.ordered_step_ids,
+    )
     plan_ref = _relative(Path(bundle_plan_path))
     now = iso_now(clock)
     if state_path.exists():
@@ -195,6 +286,7 @@ def execute_bundle_run(
                 roadmap_authority_ref=roadmap_authority_ref,
                 execution_plan_ref=plan_ref,
                 now=now,
+                review_requirements=review_requirements,
             )
             bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
         except PQXBundleStateError as exc:
@@ -217,6 +309,14 @@ def execute_bundle_run(
     for step_id in definition.ordered_step_ids:
         if step_id in bundle_state["completed_step_ids"]:
             continue
+
+        try:
+            assert_valid_advancement(bundle_state, normalized_bundle_plan, step_id=step_id)
+        except PQXBundleStateError as exc:
+            status = "blocked"
+            blocked_step_id = step_id
+            failure_classification = "REVIEW_REQUIRED" if "review checkpoint" in str(exc) else "BLOCKED"
+            break
 
         step_state_path = step_state_dir / f"{step_id}.json"
         result_state = execute_sequence_run(
@@ -276,10 +376,11 @@ def execute_bundle_run(
             )
             bundle_state = save_bundle_state(bundle_state, state_path, bundle_plan=normalized_bundle_plan)
         except PQXBundleStateError as exc:
-            raise PQXBundleOrchestratorError(str(exc)) from exc
+            status = "blocked"
+            failure_classification = "REVIEW_REQUIRED" if "review" in str(exc) else "BLOCKED"
 
     record = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "bundle_execution_id": f"bundle-exec:{sequence_run_id}:{bundle_id}:{len(bundle_state['completed_step_ids'])}",
         "bundle_id": bundle_id,
         "roadmap_authority_ref": roadmap_authority_ref,
@@ -293,9 +394,10 @@ def execute_bundle_run(
         "executed_steps": executed_steps,
         "blocked_step_id": blocked_step_id,
         "output_artifact_refs": [ref for step in executed_steps for ref in step["artifact_refs"]],
-        "review_artifact_refs": [],
+        "review_artifact_refs": [entry["artifact_ref"] for entry in bundle_state["review_artifact_refs"]],
         "state_artifact_ref": _relative(state_path),
         "failure_classification": failure_classification,
+        "block_reason": "required review unresolved" if failure_classification == "REVIEW_REQUIRED" else None,
         "resume_position": bundle_state["resume_position"],
     }
     try:

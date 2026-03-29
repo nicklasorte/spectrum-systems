@@ -88,6 +88,42 @@ def _find_next_incomplete_bundle(bundle_plan: list[dict], completed_bundle_ids: 
     return None
 
 
+def _requirements_for_bundle(state: dict, bundle_id: str) -> list[dict]:
+    return [r for r in state["review_requirements"] if r["bundle_id"] == bundle_id and r["required"]]
+
+
+def _is_checkpoint_satisfied(state: dict, checkpoint_id: str) -> bool:
+    return checkpoint_id in state["satisfied_review_checkpoint_ids"]
+
+
+def _open_blocking_finding_exists(state: dict) -> bool:
+    return any(fix["blocking"] and fix["status"] == "open" for fix in state["pending_fix_ids"])
+
+
+def _enforce_review_checkpoint_gates(state: dict, bundle_plan: list[dict], *, step_id: str) -> None:
+    step_map = _step_to_bundle(bundle_plan)
+    bundle_id = step_map[step_id]
+    bundle_steps = _bundle_lookup(bundle_plan)[bundle_id]["step_ids"]
+    step_index = bundle_steps.index(step_id)
+
+    for requirement in _requirements_for_bundle(state, bundle_id):
+        if not requirement["blocking_review_before_continue"]:
+            continue
+        checkpoint_id = requirement["checkpoint_id"]
+        if _is_checkpoint_satisfied(state, checkpoint_id):
+            continue
+        review_type = requirement["review_type"]
+        if review_type == "pre_bundle_review":
+            raise PQXBundleStateError(f"review checkpoint unresolved before continue: {checkpoint_id}")
+        if review_type == "checkpoint_review":
+            trigger_step = requirement["step_id"]
+            if trigger_step in state["completed_step_ids"] and step_index > bundle_steps.index(trigger_step):
+                raise PQXBundleStateError(f"review checkpoint unresolved before continue: {checkpoint_id}")
+
+    if _open_blocking_finding_exists(state):
+        raise PQXBundleStateError("blocking findings unresolved; continuation blocked")
+
+
 def derive_resume_position(state: dict, bundle_plan: list[dict]) -> dict:
     _validate_bundle_plan(bundle_plan)
     validate_bundle_state(state)
@@ -155,6 +191,8 @@ def assert_valid_advancement(state: dict, bundle_plan: list[dict], *, step_id: s
                 f"step order violation: prior step '{declared_step}' must complete before '{step_id}'"
             )
 
+    _enforce_review_checkpoint_gates(state, bundle_plan, step_id=step_id)
+
 
 def initialize_bundle_state(
     *,
@@ -164,6 +202,7 @@ def initialize_bundle_state(
     roadmap_authority_ref: str,
     execution_plan_ref: str,
     now: str,
+    review_requirements: list[dict] | None = None,
 ) -> dict:
     _validate_bundle_plan(bundle_plan)
 
@@ -178,9 +217,10 @@ def initialize_bundle_state(
     if not isinstance(sequence_run_id, str) or not sequence_run_id:
         raise PQXBundleStateError("sequence_run_id is required")
 
+    requirements = review_requirements or []
     first_bundle = bundle_plan[0]["bundle_id"]
     initial = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "roadmap_authority_ref": roadmap_authority_ref,
         "execution_plan_ref": execution_plan_ref,
         "run_id": run_id,
@@ -191,6 +231,8 @@ def initialize_bundle_state(
         "blocked_step_ids": [],
         "pending_fix_ids": [],
         "review_artifact_refs": [],
+        "review_requirements": requirements,
+        "satisfied_review_checkpoint_ids": [],
         "artifact_index": {},
         "resume_position": {
             "bundle_id": first_bundle,
@@ -255,6 +297,18 @@ def mark_bundle_complete(state: dict, bundle_plan: list[dict], *, bundle_id: str
                 f"bundle '{bundle_id}' cannot complete; dependent bundle '{dep}' incomplete"
             )
 
+    unresolved_post = [
+        req["checkpoint_id"]
+        for req in _requirements_for_bundle(updated, bundle_id)
+        if req["review_type"] == "post_bundle_review"
+        and req["blocking_review_before_continue"]
+        and not _is_checkpoint_satisfied(updated, req["checkpoint_id"])
+    ]
+    if unresolved_post:
+        raise PQXBundleStateError(f"required post-bundle review missing: {unresolved_post}")
+    if _open_blocking_finding_exists(updated):
+        raise PQXBundleStateError("bundle completion blocked by unresolved blocking findings")
+
     updated["completed_bundle_ids"].append(bundle_id)
     next_bundle = _find_next_incomplete_bundle(bundle_plan, updated["completed_bundle_ids"])
     if next_bundle is not None:
@@ -292,6 +346,7 @@ def attach_review_artifact(
     step_id: str,
     artifact_ref: str,
     now: str,
+    checkpoint_id: str | None = None,
 ) -> dict:
     _validate_bundle_plan(bundle_plan)
     validate_bundle_state(state)
@@ -308,12 +363,101 @@ def attach_review_artifact(
         "review_id": review_id,
         "bundle_id": bundle_id,
         "step_id": step_id,
+        "checkpoint_id": checkpoint_id or f"{bundle_id}:{step_id}:checkpoint_review",
         "artifact_ref": artifact_ref,
     }
-    if review_entry in updated["review_artifact_refs"]:
-        raise PQXBundleStateError(f"duplicate review artifact entry rejected: {review_id}")
+    existing = [e for e in updated["review_artifact_refs"] if e["checkpoint_id"] == review_entry["checkpoint_id"]]
+    if existing:
+        if existing[0] == review_entry:
+            raise PQXBundleStateError(f"duplicate review artifact entry rejected: {review_id}")
+        raise PQXBundleStateError(
+            f"conflicting review artifact attachment for checkpoint: {review_entry['checkpoint_id']}"
+        )
 
     updated["review_artifact_refs"].append(review_entry)
+    if review_entry["checkpoint_id"] not in updated["satisfied_review_checkpoint_ids"]:
+        updated["satisfied_review_checkpoint_ids"].append(review_entry["checkpoint_id"])
+    updated["updated_at"] = now
+    validate_bundle_state(updated)
+    return updated
+
+
+def _priority_for_severity(severity: str) -> str:
+    return {
+        "critical": "P0",
+        "high": "P1",
+        "medium": "P2",
+        "low": "P3",
+    }[severity]
+
+
+def ingest_review_result(
+    state: dict,
+    bundle_plan: list[dict],
+    *,
+    review_artifact: dict,
+    artifact_ref: str,
+    now: str,
+) -> dict:
+    _validate_bundle_plan(bundle_plan)
+    validate_bundle_state(state)
+    try:
+        validate_artifact(review_artifact, "pqx_review_result")
+    except Exception as exc:  # pragma: no cover - bounded wrapper
+        raise PQXBundleStateError(f"invalid pqx_review_result artifact: {exc}") from exc
+
+    if review_artifact["roadmap_authority_ref"] != state["roadmap_authority_ref"]:
+        raise PQXBundleStateError("review artifact roadmap_authority_ref mismatch")
+    if review_artifact["execution_plan_ref"] != state["execution_plan_ref"]:
+        raise PQXBundleStateError("review artifact execution_plan_ref mismatch")
+    if review_artifact["bundle_run_id"] != state["sequence_run_id"]:
+        raise PQXBundleStateError("review artifact bundle_run_id mismatch")
+
+    req = [
+        r
+        for r in _requirements_for_bundle(state, review_artifact["bundle_id"])
+        if r["checkpoint_id"] == review_artifact["checkpoint_id"] and r["review_type"] == review_artifact["review_type"]
+    ]
+    if len(req) != 1:
+        raise PQXBundleStateError("review artifact does not map to exactly one required checkpoint")
+
+    scope = review_artifact["scope"]
+    if scope["scope_type"] == "step":
+        step_id = scope["step_id"]
+    else:
+        step_id = req[0]["step_id"] or _bundle_lookup(bundle_plan)[review_artifact["bundle_id"]]["step_ids"][-1]
+
+    updated = attach_review_artifact(
+        state,
+        bundle_plan,
+        review_id=review_artifact["review_id"],
+        bundle_id=review_artifact["bundle_id"],
+        step_id=step_id,
+        checkpoint_id=review_artifact["checkpoint_id"],
+        artifact_ref=artifact_ref,
+        now=now,
+    )
+
+    for finding in review_artifact["findings"]:
+        fix_id = f"fix:{review_artifact['review_id']}:{finding['finding_id']}"
+        candidate = {
+            "fix_id": fix_id,
+            "source_review_id": review_artifact["review_id"],
+            "source_finding_id": finding["finding_id"],
+            "severity": finding["severity"],
+            "priority": _priority_for_severity(finding["severity"]),
+            "affected_step_ids": finding["affected_step_ids"],
+            "status": "open",
+            "blocking": finding["blocking"],
+            "created_from_bundle_id": review_artifact["bundle_id"],
+            "created_from_run_id": review_artifact["bundle_run_id"],
+            "notes": finding["recommended_action"],
+            "artifact_refs": finding["source_refs"],
+        }
+        if any(existing["fix_id"] == fix_id for existing in updated["pending_fix_ids"]):
+            raise PQXBundleStateError(f"duplicate pending fix entry rejected: {fix_id}")
+        updated["pending_fix_ids"].append(candidate)
+
     updated["updated_at"] = now
     validate_bundle_state(updated)
     return updated
@@ -342,12 +486,19 @@ def add_pending_fix(
     updated = deepcopy(state)
     candidate = {
         "fix_id": fix_id,
-        "finding_id": finding_id,
-        "target_bundle_id": target_bundle_id,
-        "target_step_id": target_step_id,
+        "source_review_id": "legacy-manual",
+        "source_finding_id": finding_id,
+        "severity": "medium",
+        "priority": "P2",
+        "affected_step_ids": [target_step_id],
         "status": status,
+        "blocking": False,
+        "created_from_bundle_id": target_bundle_id,
+        "created_from_run_id": state["sequence_run_id"],
+        "notes": None,
+        "artifact_refs": [],
     }
-    if candidate in updated["pending_fix_ids"]:
+    if any(existing["fix_id"] == fix_id for existing in updated["pending_fix_ids"]):
         raise PQXBundleStateError(f"duplicate pending fix entry rejected: {fix_id}")
 
     updated["pending_fix_ids"].append(candidate)

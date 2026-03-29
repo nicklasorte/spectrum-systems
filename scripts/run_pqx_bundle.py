@@ -11,20 +11,18 @@ from pathlib import Path
 from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import (
     PQXBundleOrchestratorError,
     execute_bundle_run,
+    load_bundle_plan,
+    resolve_bundle_definition,
+)
+from spectrum_systems.modules.runtime.pqx_bundle_state import (
+    PQXBundleStateError,
+    ingest_review_result,
+    load_bundle_state,
+    save_bundle_state,
 )
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Execute a PQX bundle deterministically.")
-    parser.add_argument("--bundle-id", required=True)
-    parser.add_argument("--bundle-state-path", required=True)
-    parser.add_argument("--output-dir", required=True)
-    parser.add_argument("--run-id", required=True)
-    parser.add_argument("--sequence-run-id", required=True)
-    parser.add_argument("--trace-id", required=True)
-    parser.add_argument("--bundle-plan-path", default="docs/roadmaps/execution_bundles.md")
-    args = parser.parse_args()
-
+def _run(args: argparse.Namespace) -> int:
     try:
         result = execute_bundle_run(
             bundle_id=args.bundle_id,
@@ -41,6 +39,53 @@ def main() -> int:
 
     print(json.dumps(result, indent=2))
     return 0 if result["status"] == "completed" else 1
+
+
+def _ingest(args: argparse.Namespace) -> int:
+    try:
+        definition = resolve_bundle_definition(load_bundle_plan(args.bundle_plan_path), args.bundle_id)
+        bundle_plan = [{"bundle_id": definition.bundle_id, "step_ids": list(definition.ordered_step_ids), "depends_on": list(definition.depends_on)}]
+        state = load_bundle_state(args.bundle_state_path, bundle_plan=bundle_plan)
+        review = json.loads(Path(args.review_artifact_path).read_text(encoding="utf-8"))
+        updated = ingest_review_result(
+            state,
+            bundle_plan,
+            review_artifact=review,
+            artifact_ref=args.review_artifact_path,
+            now=args.now,
+        )
+        save_bundle_state(updated, args.bundle_state_path, bundle_plan=bundle_plan)
+    except (PQXBundleStateError, PQXBundleOrchestratorError, OSError, json.JSONDecodeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    print(json.dumps({"status": "ingested", "bundle_state": args.bundle_state_path}, indent=2))
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Execute and govern a PQX bundle deterministically.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    run_parser = subparsers.add_parser("run", help="run/resume bundle execution")
+    run_parser.add_argument("--bundle-id", required=True)
+    run_parser.add_argument("--bundle-state-path", required=True)
+    run_parser.add_argument("--output-dir", required=True)
+    run_parser.add_argument("--run-id", required=True)
+    run_parser.add_argument("--sequence-run-id", required=True)
+    run_parser.add_argument("--trace-id", required=True)
+    run_parser.add_argument("--bundle-plan-path", default="docs/roadmaps/execution_bundles.md")
+
+    ingest_parser = subparsers.add_parser("ingest-findings", help="attach + ingest a review artifact into bundle state")
+    ingest_parser.add_argument("--bundle-id", required=True)
+    ingest_parser.add_argument("--bundle-state-path", required=True)
+    ingest_parser.add_argument("--bundle-plan-path", default="docs/roadmaps/execution_bundles.md")
+    ingest_parser.add_argument("--review-artifact-path", required=True)
+    ingest_parser.add_argument("--now", required=True)
+
+    args = parser.parse_args()
+    if args.command == "run":
+        return _run(args)
+    return _ingest(args)
 
 
 if __name__ == "__main__":

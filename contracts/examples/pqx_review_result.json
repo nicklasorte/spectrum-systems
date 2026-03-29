@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "review_id": "REVIEW-B6-001",
+  "checkpoint_id": "BUNDLE-PQX-CORE:post_bundle_review",
+  "review_type": "post_bundle_review",
+  "bundle_id": "BUNDLE-PQX-CORE",
+  "bundle_run_id": "queue-run-b6-001",
+  "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+  "execution_plan_ref": "docs/roadmaps/execution_bundles.md",
+  "scope": {
+    "scope_type": "bundle",
+    "step_id": null
+  },
+  "findings": [
+    {
+      "finding_id": "FIND-B6-001",
+      "severity": "high",
+      "category": "contract_validation",
+      "title": "Contract mismatch risk",
+      "description": "A bundle output contract linkage needs remediation before promotion.",
+      "affected_step_ids": [
+        "TRUST-01"
+      ],
+      "recommended_action": "Add a deterministic contract conformance check in TRUST-01 closure.",
+      "blocking": true,
+      "source_refs": [
+        "docs/reviews/REVIEW-B6-001.md#finding-1"
+      ]
+    }
+  ],
+  "overall_disposition": "approved_with_findings",
+  "created_at": "2026-03-29T21:00:00Z",
+  "provenance_refs": [
+    "trace:review:REVIEW-B6-001"
+  ]
+}
