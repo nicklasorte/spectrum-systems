@@ -1,0 +1,45 @@
+{
+  "artifact_type": "judgment_calibration_result",
+  "artifact_id": "judgment-calibration-cycle-0001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.94",
+  "grouping_keys": [
+    "judgment_type",
+    "policy_version",
+    "environment"
+  ],
+  "group_metrics": [
+    {
+      "judgment_type": "artifact_release_readiness",
+      "policy_version": "1.1.0",
+      "environment": "prod",
+      "sample_size": 4,
+      "accuracy": 0.75,
+      "mean_confidence": 0.8,
+      "expected_calibration_error": 0.05,
+      "calibration_delta": 0.05,
+      "confidence_signal": "well_calibrated",
+      "ece_bins": [
+        {
+          "bin": "0.8-0.9",
+          "count": 4,
+          "mean_confidence": 0.8,
+          "mean_accuracy": 0.75,
+          "absolute_gap": 0.05
+        }
+      ],
+      "outcome_distribution": {
+        "approve": 3,
+        "block": 1
+      },
+      "error_rate": 0.25
+    }
+  ],
+  "formulas": {
+    "accuracy": "correct_count / sample_size",
+    "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
+    "calibration_delta": "mean_confidence - accuracy"
+  },
+  "created_at": "2026-03-30T00:00:00Z"
+}

@@ -192,6 +192,16 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
     created_at = manifest.get("updated_at")
     if not isinstance(created_at, str) or not created_at:
         raise CycleRunnerError("missing required field: updated_at")
+
+    replay_reference_path = manifest.get("judgment_replay_reference_path")
+    replay_reference = None
+    replay_reference_source = None
+    if isinstance(replay_reference_path, str) and replay_reference_path:
+        if not _path_exists(replay_reference_path):
+            raise CycleRunnerError("missing required artifact: judgment_replay_reference_path")
+        replay_reference = _load_json(replay_reference_path)
+        replay_reference_source = replay_reference_path
+
     try:
         outputs = run_judgment(
             cycle_id=manifest["cycle_id"],
@@ -203,6 +213,8 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
             evidence_refs=evidence_refs,
             precedent_paths=precedent_paths,
             created_at=created_at,
+            replay_reference=replay_reference,
+            replay_reference_source=replay_reference_source,
         )
     except (JudgmentEngineError, ValueError) as exc:
         raise CycleRunnerError(f"required judgment failed: {exc}") from exc

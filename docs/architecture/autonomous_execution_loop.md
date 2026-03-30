@@ -96,3 +96,43 @@ This grouped slice adds a deterministic judgment seam for `artifact_release_read
 - Population-level calibration metric computation and threshold governance.
 - Longitudinal calibration runners consuming human-labeled outcomes.
 - Drift alerting and control integration using aggregated judgment outcome distributions.
+
+## Judgment learning extension (grouped PQX slice)
+
+This extension hardens judgment-eval scaffolding into deterministic governed learning artifacts without introducing a parallel control plane.
+
+### Replay reference sourcing
+- Replay consistency now supports external replay reference artifacts in addition to the existing self-consistency path.
+- Deterministic comparison checks expected outcome vs actual `judgment_record.selected_outcome` and (when present) reference fingerprint hash vs current fingerprint hash.
+- Replay eval details and `judgment_eval_result.replay_reference` now explicitly record:
+  - `source`
+  - `comparison_result`
+  - `mismatch_reason`
+  - `expected_outcome`
+  - `actual_outcome`
+- If policy sets `judgment_eval_requirements.replay_consistency.require_reference_artifact=true` and no replay reference is provided, replay consistency fails closed.
+
+### Outcome label ingestion
+- Added governed `judgment_outcome_label` artifact for post-judgment ground truth ingestion.
+- Required fields: `judgment_id`, `observed_outcome`, `expected_outcome`, `correctness`, `source`, `timestamp`.
+- Ingestion is schema-validated and fail-closed; invalid or partial labels are rejected.
+
+### Longitudinal calibration
+- Added deterministic `judgment_calibration_result` artifact generation.
+- Grouping dimensions: `judgment_type`, `policy_version`, `environment`.
+- Metrics:
+  - `accuracy = correct_count / sample_size`
+  - ECE-style calibration error across fixed 0.1 confidence bins
+  - `calibration_delta = mean_confidence - accuracy`
+  - confidence classification (`overconfident` / `underconfident` / `well_calibrated`)
+- Formulas are written directly into the artifact for inspectability.
+
+### Drift signal computation
+- Added deterministic `judgment_drift_signal` artifact generation from baseline/current calibration artifacts.
+- Computes deltas for:
+  - approval rate
+  - block rate
+  - error rate
+  - calibration ECE
+- Threshold-based boolean drift triggers are explicit in artifact payload.
+- Signals are prepared for later control-layer freeze/block escalation, but this slice does not alter control decisions.

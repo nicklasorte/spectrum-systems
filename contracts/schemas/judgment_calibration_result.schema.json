@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_calibration_result.schema.json",
+  "title": "Judgment Calibration Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "grouping_keys",
+    "group_metrics",
+    "formulas",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_calibration_result"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "grouping_keys": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "group_metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "judgment_type",
+          "policy_version",
+          "environment",
+          "sample_size",
+          "accuracy",
+          "mean_confidence",
+          "expected_calibration_error",
+          "calibration_delta",
+          "confidence_signal",
+          "ece_bins",
+          "outcome_distribution",
+          "error_rate"
+        ],
+        "properties": {
+          "judgment_type": {"type": "string", "minLength": 1},
+          "policy_version": {"type": "string", "minLength": 1},
+          "environment": {"type": "string", "minLength": 1},
+          "sample_size": {"type": "integer", "minimum": 1},
+          "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+          "mean_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "expected_calibration_error": {"type": "number", "minimum": 0, "maximum": 1},
+          "calibration_delta": {"type": "number", "minimum": -1, "maximum": 1},
+          "confidence_signal": {"type": "string", "enum": ["overconfident", "underconfident", "well_calibrated"]},
+          "ece_bins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["bin", "count", "mean_confidence", "mean_accuracy", "absolute_gap"],
+              "properties": {
+                "bin": {"type": "string", "minLength": 1},
+                "count": {"type": "integer", "minimum": 1},
+                "mean_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+                "mean_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+                "absolute_gap": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          },
+          "outcome_distribution": {
+            "type": "object",
+            "additionalProperties": {"type": "integer", "minimum": 0}
+          },
+          "error_rate": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "formulas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accuracy", "expected_calibration_error", "calibration_delta"],
+      "properties": {
+        "accuracy": {"type": "string", "minLength": 1},
+        "expected_calibration_error": {"type": "string", "minLength": 1},
+        "calibration_delta": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

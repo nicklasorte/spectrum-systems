@@ -3,7 +3,7 @@
   "artifact_id": "judgment-policy-artifact-release-readiness-v1",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.93",
+  "standards_version": "1.0.94",
   "judgment_type": "artifact_release_readiness",
   "status": "active",
   "scope": "autonomous_cycle",
@@ -78,7 +78,8 @@
       "require_explicit_deviation_note_prefix": "policy_deviation:"
     },
     "replay_consistency": {
-      "required": true
+      "required": true,
+      "require_reference_artifact": false
     }
   }
 }

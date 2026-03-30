@@ -124,6 +124,8 @@ def run_judgment(
     evidence_refs: list[str],
     precedent_paths: list[str],
     created_at: str,
+    replay_reference: dict[str, Any] | None = None,
+    replay_reference_source: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     selected_policy, matched_paths = select_policy(
         policy_paths=policy_paths,
@@ -219,6 +221,8 @@ def run_judgment(
         judgment_record=judgment_record,
         application_record=application_record,
         policy=selected_policy,
+        replay_reference=replay_reference,
+        replay_reference_source=replay_reference_source,
     )
 
     return {
