@@ -1,0 +1,38 @@
+{
+  "artifact_type": "judgment_remediation_readiness_status",
+  "schema_version": "1.0.0",
+  "remediation_id": "JOR-bbb70ebf32f9da31",
+  "current_lifecycle_state": "approved_for_closure",
+  "required_evidence_refs": [
+    "judgment_enforcement_outcome_record",
+    "judgment_calibration_result",
+    "judgment_error_budget_status",
+    "operator_release_approval_record"
+  ],
+  "evidence_present_refs": [
+    "judgment_calibration_result",
+    "judgment_enforcement_outcome_record",
+    "judgment_error_budget_status",
+    "operator_release_approval_record"
+  ],
+  "evidence_missing_refs": [],
+  "required_thresholds": [
+    "policy_version_bound",
+    "source_condition_addressed",
+    "thresholds_satisfied"
+  ],
+  "thresholds_satisfied": [
+    "policy_version_bound",
+    "source_condition_addressed",
+    "thresholds_satisfied"
+  ],
+  "thresholds_not_satisfied": [],
+  "closure_eligible": true,
+  "blocking_reasons": [],
+  "trace": {
+    "trace_id": "trace-0002",
+    "remediation_record_id": "JOR-bbb70ebf32f9da31",
+    "closure_record_id": "JRC-a8c2f2e8dbecf9b0",
+    "reinstatement_record_id": ""
+  }
+}

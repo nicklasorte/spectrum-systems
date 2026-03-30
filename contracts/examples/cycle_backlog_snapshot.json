@@ -1,6 +1,6 @@
 {
   "artifact_type": "cycle_backlog_snapshot",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "generated_at": "2026-03-30T01:00:00Z",
   "cycle_count": 3,
   "queues": {
@@ -15,7 +15,19 @@
     "awaiting_review_cycles": [
       "cycle-0001"
     ],
-    "awaiting_pqx_execution_cycles": []
+    "awaiting_pqx_execution_cycles": [],
+    "open_remediations": [
+      "JOR-bbb70ebf32f9da31"
+    ],
+    "remediations_ready_for_closure": [],
+    "remediations_blocked_on_missing_evidence": [
+      "JOR-bbb70ebf32f9da31"
+    ],
+    "remediations_pending_review": [],
+    "reinstatement_ready_items": [],
+    "frozen_or_blocked_with_unresolved_remediation": [
+      "JOR-bbb70ebf32f9da31"
+    ]
   },
   "metrics": {
     "count_by_state": {
@@ -31,12 +43,18 @@
     "open_critical_findings": 1,
     "open_blocker_findings": 0,
     "certification_pass_count": 1,
-    "certification_fail_count": 1
+    "certification_fail_count": 1,
+    "open_remediation_count": 1,
+    "remediation_ready_for_closure_count": 0,
+    "remediation_blocked_missing_evidence_count": 1,
+    "remediation_pending_review_count": 0,
+    "reinstatement_ready_count": 0,
+    "frozen_or_blocked_unresolved_remediation_count": 1
   },
   "cycle_status_refs": [
     "runs/cycle-0001/cycle_manifest.json",
     "runs/cycle-0002/cycle_manifest.json",
     "runs/cycle-0003/cycle_manifest.json"
   ],
-  "summary_markdown": "# Cycle Backlog Snapshot\n- generated_at: `2026-03-30T01:00:00Z`\n- cycle_count: 3\n- active_cycles: 2\n- blocked_cycles: 1\n- certification_pending_cycles: 0\n- awaiting_review_cycles: 1\n- awaiting_pqx_execution_cycles: 0\n\n## Metrics\n- count_by_state: `{\"blocked\": 1, \"certified_done\": 1, \"execution_complete_unreviewed\": 1}`\n- blocked_by_reason: `{\"missing_required_artifact\": 1}`\n- average_execution_seconds: `90.0` (n=2)\n- open_critical_findings: 1\n- open_blocker_findings: 0\n- certification_pass_count: 1\n- certification_fail_count: 1\n"
+  "summary_markdown": "# Cycle Backlog Snapshot\n- generated_at: `2026-03-30T01:00:00Z`\n- cycle_count: 3\n- active_cycles: 2\n- blocked_cycles: 1\n- certification_pending_cycles: 0\n- awaiting_review_cycles: 1\n- awaiting_pqx_execution_cycles: 0\n- open_remediations: 1\n- remediations_ready_for_closure: 0\n- remediations_blocked_on_missing_evidence: 1\n- remediations_pending_review: 0\n- reinstatement_ready_items: 0\n- frozen_or_blocked_with_unresolved_remediation: 1\n\n## Metrics\n- count_by_state: `{\"blocked\": 1, \"certified_done\": 1, \"execution_complete_unreviewed\": 1}`\n- blocked_by_reason: `{\"missing_required_artifact\": 1}`\n- average_execution_seconds: `90.0` (n=2)\n- open_critical_findings: 1\n- open_blocker_findings: 0\n- certification_pass_count: 1\n- certification_fail_count: 1\n- open_remediation_count: 1\n- remediation_ready_for_closure_count: 0\n- remediation_blocked_missing_evidence_count: 1\n- remediation_pending_review_count: 0\n- reinstatement_ready_count: 0\n- frozen_or_blocked_unresolved_remediation_count: 1\n"
 }
