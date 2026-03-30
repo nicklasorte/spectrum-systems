@@ -56,5 +56,7 @@
   "judgment_precedent_record_paths": [],
   "judgment_record_path": null,
   "judgment_application_record_path": null,
-  "judgment_eval_result_path": null
+  "judgment_eval_result_path": null,
+  "drift_remediation_artifact_path": null,
+  "fix_plan_artifact_path": null
 }
