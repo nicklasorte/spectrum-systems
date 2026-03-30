@@ -69,6 +69,7 @@ def test_happy_path_progression(tmp_path: Path) -> None:
     decision = build_next_step_decision(str(path))
     assert decision["next_action"] == "submit_for_review"
     assert decision["blocking"] is False
+    assert decision["remediation_required"] is False
     assert decision["policy_id"] == "NEXT_STEP_DECISION_POLICY"
     assert decision["policy_version"] == "1.0.0"
 
@@ -102,6 +103,11 @@ def test_drift_detected_forces_remediation(tmp_path: Path) -> None:
     assert decision["next_action"] == "generate_fix_roadmap"
     assert decision["blocking"] is True
     assert decision["drift_detected"] is True
+    assert decision["remediation_required"] is True
+    assert decision["remediation_class"] == "roadmap_repair"
+    assert decision["blocking_reason_category"] == "blocking_drift_finding"
+    assert isinstance(decision["drift_remediation_artifact"], dict)
+    assert isinstance(decision["fix_plan_artifact"], dict)
 
 
 def test_invalid_state_fails_closed(tmp_path: Path) -> None:

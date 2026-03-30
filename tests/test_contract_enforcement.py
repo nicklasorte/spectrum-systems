@@ -496,3 +496,10 @@ def test_standards_manifest_registers_prompt_queue_certification_record_contract
     assert standards["prompt_queue_certification_record"]["example_path"] == (
         "contracts/examples/prompt_queue_certification_record.json"
     )
+
+
+def test_standards_manifest_registers_recovery_bridge_contracts() -> None:
+    standards = load_standards_contracts()
+    assert standards["drift_remediation_policy"]["schema_version"] == "1.0.0"
+    assert standards["drift_remediation_artifact"]["schema_version"] == "1.0.0"
+    assert standards["fix_plan_artifact"]["schema_version"] == "1.0.0"

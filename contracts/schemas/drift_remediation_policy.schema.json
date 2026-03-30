@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/drift_remediation_policy.schema.json",
+  "title": "Drift Remediation Policy",
+  "description": "Deterministic policy mapping normalized blocking categories to governed remediation classes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "policy_version",
+    "compatibility_version",
+    "default_blocking",
+    "category_mappings"
+  ],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "const": "DRIFT_REMEDIATION_POLICY"
+    },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "compatibility_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "default_blocking": {
+      "type": "boolean"
+    },
+    "category_mappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "remediation_class",
+          "blocking",
+          "severity"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "missing_strategy_authority",
+              "missing_source_authorities",
+              "invalid_governance_provenance",
+              "blocking_invariant_violation",
+              "blocking_drift_finding",
+              "missing_required_review_artifact",
+              "missing_required_execution_artifact",
+              "lifecycle_state_input_mismatch",
+              "certification_readiness_gap",
+              "judgment_gap",
+              "schema_compliance_gap"
+            ]
+          },
+          "remediation_class": {
+            "type": "string",
+            "enum": [
+              "manifest_repair",
+              "provenance_repair",
+              "contract_repair",
+              "roadmap_repair",
+              "review_repair",
+              "execution_artifact_repair",
+              "governance_alignment_repair",
+              "judgment_evidence_repair",
+              "certification_input_repair"
+            ]
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "blocker",
+              "high"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

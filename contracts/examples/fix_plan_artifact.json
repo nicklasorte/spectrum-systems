@@ -1,0 +1,49 @@
+{
+  "fix_plan_id": "613c4b6fdb9f5ad4f7f5e97294db1052f37f2ed8ca3eeef44fb0f747de8c54a8",
+  "cycle_id": "cycle-0003",
+  "remediation_id": "1a99b95bd76da5f17b6a2c8f4dc5cc7ecf3042e4cb89f76f6dcac95df369eb10",
+  "decision_id": "f383dd614f1a9f6f1303bc50b95be6f4fd8d95496ba532e31f66a0d779ea4ab8",
+  "current_state": "execution_complete_unreviewed",
+  "blocking": true,
+  "remediation_class": "roadmap_repair",
+  "objective": "produce governed artifacts required to clear blocking_drift_finding",
+  "required_actions": [
+    {
+      "action_type": "repair_artifact",
+      "target": "drift_detection_result",
+      "required": true
+    },
+    {
+      "action_type": "rerun_validation",
+      "target": "next_step_decision",
+      "required": true
+    }
+  ],
+  "required_artifacts": [
+    "drift_detection_result",
+    "next_step_decision_artifact"
+  ],
+  "validation_requirements": [
+    "schema:drift_detection_result",
+    "schema:next_step_decision_artifact",
+    "policy:DRIFT_REMEDIATION_POLICY@1.0.0"
+  ],
+  "completion_criteria": [
+    "blocking_drift_finding resolved",
+    "next_step_decision.blocking == false"
+  ],
+  "blocking_conditions": [
+    "required_actions_incomplete",
+    "required_artifacts_missing",
+    "validation_requirements_failed"
+  ],
+  "allowed_next_state_when_satisfied": "execution_complete_unreviewed",
+  "prohibited_progression_until_complete": true,
+  "evidence_refs": [
+    "artifacts/drift/cycle-0003/drift_detection_result.json"
+  ],
+  "policy_id": "DRIFT_REMEDIATION_POLICY",
+  "policy_version": "1.0.0",
+  "policy_hash": "f933bc58ec4f4d1f63767606f8b1027a056f5a2a0d6d1b0a87f6b6b6a84f5f86",
+  "generated_at": "2026-03-30T00:00:00Z"
+}

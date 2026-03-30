@@ -86,6 +86,8 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "judgment_record_path": None,
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
+        "drift_remediation_artifact_path": None,
+        "fix_plan_artifact_path": None,
     }
 
 

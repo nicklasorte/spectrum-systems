@@ -216,6 +216,19 @@ This grouped slice wires learning artifacts directly into deterministic control 
 
 This preserves end-to-end traceability: learning signal -> control escalation decision -> enforcement action -> enforcement outcome -> operator remediation (when required).
 
+## Decision → remediation routing → fix-plan bridge (control + recovery)
+
+- `next_step_decision` now emits explicit remediation requirement metadata on blocking outcomes:
+  - `remediation_required`
+  - `remediation_class`
+  - `blocking_reason_category`
+- Blocking decisions are routed through governed `drift_remediation_policy` (not ad hoc branching).
+- The orchestration seam now materializes two deterministic child artifacts before progression halts:
+  - `drift_remediation_artifact`
+  - `fix_plan_artifact`
+- `cycle_manifest` persists references to both artifacts, and progression remains blocked until a later slice completes governed remediation execution.
+- This slice stops at fix-plan generation; it does **not** execute fixes, approve fixes, or perform replay-after-repair.
+
 ## Remediation closure/reinstatement readiness observability extension (grouped PQX slice)
 
 This slice adds deterministic, read-only readiness artifacts to explain closure and reinstatement eligibility without changing enforcement authority.

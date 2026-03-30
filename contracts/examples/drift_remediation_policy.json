@@ -1,0 +1,74 @@
+{
+  "policy_id": "DRIFT_REMEDIATION_POLICY",
+  "policy_version": "1.0.0",
+  "compatibility_version": "1.0",
+  "default_blocking": true,
+  "category_mappings": [
+    {
+      "category": "missing_strategy_authority",
+      "remediation_class": "governance_alignment_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "missing_source_authorities",
+      "remediation_class": "governance_alignment_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "invalid_governance_provenance",
+      "remediation_class": "provenance_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "blocking_invariant_violation",
+      "remediation_class": "manifest_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "blocking_drift_finding",
+      "remediation_class": "roadmap_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "missing_required_review_artifact",
+      "remediation_class": "review_repair",
+      "blocking": true,
+      "severity": "high"
+    },
+    {
+      "category": "missing_required_execution_artifact",
+      "remediation_class": "execution_artifact_repair",
+      "blocking": true,
+      "severity": "high"
+    },
+    {
+      "category": "lifecycle_state_input_mismatch",
+      "remediation_class": "manifest_repair",
+      "blocking": true,
+      "severity": "blocker"
+    },
+    {
+      "category": "certification_readiness_gap",
+      "remediation_class": "certification_input_repair",
+      "blocking": true,
+      "severity": "high"
+    },
+    {
+      "category": "judgment_gap",
+      "remediation_class": "judgment_evidence_repair",
+      "blocking": true,
+      "severity": "high"
+    },
+    {
+      "category": "schema_compliance_gap",
+      "remediation_class": "contract_repair",
+      "blocking": true,
+      "severity": "blocker"
+    }
+  ]
+}

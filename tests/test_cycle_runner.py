@@ -124,6 +124,9 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "judgment_record_path": None,
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
+        "next_step_decision_artifact_path": None,
+        "drift_remediation_artifact_path": None,
+        "fix_plan_artifact_path": None,
         "updated_at": "2026-03-30T00:00:00Z",
     }
     path = tmp_path / "cycle_manifest.json"
@@ -248,6 +251,26 @@ def test_cycle_runner_blocks_when_required_review_missing(tmp_path: Path) -> Non
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "dual implementation reviews required" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_persists_remediation_and_fix_plan_when_decision_blocks(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
+    manifest["done_certification_input_refs"] = {}
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+
+    updated = _load(manifest_path)
+    assert updated["drift_remediation_artifact_path"] is not None
+    assert updated["fix_plan_artifact_path"] is not None
+    assert Path(updated["drift_remediation_artifact_path"]).is_file()
+    assert Path(updated["fix_plan_artifact_path"]).is_file()
+
+    decision_payload = _load(Path(updated["next_step_decision_artifact_path"]))
+    assert decision_payload["remediation_required"] is True
+    assert decision_payload["drift_remediation_artifact_path"] == updated["drift_remediation_artifact_path"]
+    assert decision_payload["fix_plan_artifact_path"] == updated["fix_plan_artifact_path"]
 
 
 def test_cycle_runner_blocks_on_invalid_review_artifact(tmp_path: Path) -> None:
