@@ -11,66 +11,8 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 
-_CANONICAL_STRATEGY_PATH = "docs/architecture/system_strategy.md"
-_CANONICAL_SOURCE_INDEX_PATH = "docs/architecture/system_source_index.md"
-
-_STATES = [
-    "draft_roadmap",
-    "roadmap_under_review",
-    "roadmap_approved",
-    "execution_ready",
-    "execution_in_progress",
-    "execution_complete_unreviewed",
-    "implementation_reviews_complete",
-    "fix_roadmap_ready",
-    "fixes_in_progress",
-    "fixes_complete_unreviewed",
-    "certification_pending",
-    "certified_done",
-    "blocked",
-]
-
-_ACTION_BY_STATE = {
-    "draft_roadmap": "submit_for_review",
-    "roadmap_under_review": "await_roadmap_review",
-    "roadmap_approved": "prepare_execution",
-    "execution_ready": "start_execution",
-    "execution_in_progress": "await_execution_completion",
-    "execution_complete_unreviewed": "request_implementation_reviews",
-    "implementation_reviews_complete": "generate_fix_roadmap",
-    "fix_roadmap_ready": "start_fixes",
-    "fixes_in_progress": "await_fix_completion",
-    "fixes_complete_unreviewed": "request_fix_review",
-    "certification_pending": "run_certification",
-    "certified_done": "none",
-    "blocked": "resolve_blocking_issues",
-}
-
-_ALLOWED_ACTIONS_BY_STATE = {
-    "draft_roadmap": ["submit_for_review"],
-    "roadmap_under_review": ["await_roadmap_review", "block"],
-    "roadmap_approved": ["prepare_execution", "block"],
-    "execution_ready": ["start_execution", "block"],
-    "execution_in_progress": ["await_execution_completion", "block"],
-    "execution_complete_unreviewed": ["request_implementation_reviews", "generate_fix_roadmap", "block"],
-    "implementation_reviews_complete": ["generate_fix_roadmap", "block"],
-    "fix_roadmap_ready": ["start_fixes", "block"],
-    "fixes_in_progress": ["await_fix_completion", "block"],
-    "fixes_complete_unreviewed": ["request_fix_review", "block"],
-    "certification_pending": ["run_certification", "block"],
-    "certified_done": ["none"],
-    "blocked": ["resolve_blocking_issues"],
-}
-
-_REQUIRED_PATHS_BY_STATE = {
-    "roadmap_under_review": ["roadmap_review_artifact_paths"],
-    "execution_complete_unreviewed": ["execution_report_paths"],
-    "implementation_reviews_complete": ["implementation_review_paths"],
-    "fix_roadmap_ready": ["fix_roadmap_path"],
-    "fixes_in_progress": ["fix_execution_report_paths"],
-    "fixes_complete_unreviewed": ["fix_execution_report_paths"],
-    "certification_pending": ["done_certification_input_refs"],
-}
+_POLICY_PATH = Path(__file__).resolve().parents[2] / "data" / "policy" / "next_step_decision_policy.json"
+_REQUIRED_POLICY_ID = "NEXT_STEP_DECISION_POLICY"
 
 
 class NextStepDecisionError(ValueError):
@@ -84,6 +26,54 @@ def _load_json(path: str | Path) -> Dict[str, Any]:
     return payload
 
 
+def _canonical_json_hash(payload: Dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _validate_policy_compatibility(policy: Dict[str, Any]) -> None:
+    if policy.get("policy_id") != _REQUIRED_POLICY_ID:
+        raise NextStepDecisionError("next-step decision policy_id is incompatible")
+
+    states = policy.get("allowed_states")
+    if not isinstance(states, list) or not states:
+        raise NextStepDecisionError("next-step decision policy missing allowed_states")
+
+    mapping = policy.get("decision_mapping_rules")
+    if not isinstance(mapping, dict):
+        raise NextStepDecisionError("next-step decision policy missing decision_mapping_rules")
+
+    state_set = set(states)
+    mapping_set = set(mapping.keys())
+    if state_set != mapping_set:
+        raise NextStepDecisionError("next-step decision policy state mapping mismatch")
+
+    required_evidence = policy.get("required_evidence_by_state")
+    if not isinstance(required_evidence, dict):
+        raise NextStepDecisionError("next-step decision policy missing required_evidence_by_state")
+    if not set(required_evidence.keys()).issubset(state_set):
+        raise NextStepDecisionError("next-step decision policy evidence state mismatch")
+
+
+def _load_next_step_policy() -> tuple[Dict[str, Any], str]:
+    if not _POLICY_PATH.is_file():
+        raise NextStepDecisionError(f"next-step decision policy missing: {_POLICY_PATH}")
+    try:
+        policy = _load_json(_POLICY_PATH)
+    except json.JSONDecodeError as exc:
+        raise NextStepDecisionError("next-step decision policy is not valid JSON") from exc
+
+    schema = load_schema("next_step_decision_policy")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(policy), key=lambda err: str(list(err.absolute_path)))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise NextStepDecisionError(f"next-step decision policy failed schema validation: {details}")
+
+    _validate_policy_compatibility(policy)
+    return policy, _canonical_json_hash(policy)
+
+
 def _path_exists(path_value: Any) -> bool:
     return isinstance(path_value, str) and path_value != "" and Path(path_value).is_file()
 
@@ -92,8 +82,11 @@ def _all_paths_exist(paths: Any) -> bool:
     return isinstance(paths, list) and all(_path_exists(path) for path in paths)
 
 
-def _validate_governance_authority(manifest: Dict[str, Any]) -> tuple[list[str], bool, bool]:
+def _validate_governance_authority(manifest: Dict[str, Any], policy: Dict[str, Any]) -> tuple[list[str], bool, bool]:
     missing: list[str] = []
+    governance = policy["governance_requirements"]
+    canonical_paths = governance["canonical_paths"]
+    strategy_path_expected = canonical_paths["strategy_authority.path"]
 
     strategy = manifest.get("strategy_authority")
     strategy_ok = True
@@ -101,7 +94,7 @@ def _validate_governance_authority(manifest: Dict[str, Any]) -> tuple[list[str],
         missing.append("strategy_authority")
         strategy_ok = False
     else:
-        if strategy.get("path") != _CANONICAL_STRATEGY_PATH:
+        if strategy.get("path") != strategy_path_expected:
             missing.append("strategy_authority.path")
             strategy_ok = False
         elif not _path_exists(strategy.get("path")):
@@ -114,11 +107,14 @@ def _validate_governance_authority(manifest: Dict[str, Any]) -> tuple[list[str],
         missing.append("source_authorities")
         source_ok = False
     else:
-        source_index_path = Path(_CANONICAL_SOURCE_INDEX_PATH)
+        source_index_path = Path(canonical_paths["source_index_path"])
         source_index_text = source_index_path.read_text(encoding="utf-8") if source_index_path.is_file() else ""
         if not source_index_path.is_file():
-            missing.append("docs/architecture/system_source_index.md")
+            missing.append(canonical_paths["source_index_path"])
             source_ok = False
+
+        required_keys = governance["source_authority_required_keys"]
+        require_declared = governance["source_authorities_must_be_declared_in_index"]
 
         seen: set[tuple[str, str]] = set()
         for idx, item in enumerate(source_authorities):
@@ -128,17 +124,18 @@ def _validate_governance_authority(manifest: Dict[str, Any]) -> tuple[list[str],
                 continue
             source_id = item.get("source_id")
             source_path = item.get("path")
-            if not isinstance(source_id, str) or not source_id:
-                missing.append(f"source_authorities[{idx}].source_id")
-                source_ok = False
+            for key in required_keys:
+                if not isinstance(item.get(key), str) or not item.get(key):
+                    missing.append(f"source_authorities[{idx}].{key}")
+                    source_ok = False
             if not isinstance(source_path, str) or not source_path:
-                missing.append(f"source_authorities[{idx}].path")
-                source_ok = False
                 continue
             if not _path_exists(source_path):
                 missing.append(f"source_authorities[{idx}].path")
                 source_ok = False
-            elif source_index_text and (source_id not in source_index_text or source_path not in source_index_text):
+            elif require_declared and source_index_text and (
+                source_id not in source_index_text or source_path not in source_index_text
+            ):
                 missing.append(f"source_authorities[{idx}].declared_in_source_index")
                 source_ok = False
             key = (str(source_id), source_path)
@@ -150,16 +147,26 @@ def _validate_governance_authority(manifest: Dict[str, Any]) -> tuple[list[str],
     return sorted(set(missing)), strategy_ok, source_ok
 
 
-def _detect_drift(manifest: Dict[str, Any]) -> tuple[bool, list[str]]:
+def _drift_triggered(status: str | None, block_on: set[str]) -> bool:
+    if status is None:
+        return False
+    return status in block_on
+
+
+def _detect_drift(manifest: Dict[str, Any], policy: Dict[str, Any]) -> tuple[bool, list[str]]:
     reasons: list[str] = []
+    block_on = set(policy["drift_blocking_rules"]["block_on"])
+
     for key in ("drift_detection_result_path", "drift_result_path"):
         path = manifest.get(key)
         if _path_exists(path):
             payload = _load_json(path)
             status = payload.get("drift_status")
             detected = payload.get("drift_detected")
-            if detected is True or status in {"exceeds_threshold", "drift_detected", "blocking"}:
-                reasons.append(f"{key}:{status or 'drift_detected'}")
+            if detected is True and "drift_detected" in block_on:
+                reasons.append(f"{key}:drift_detected")
+            if isinstance(status, str) and _drift_triggered(status, block_on):
+                reasons.append(f"{key}:{status}")
 
     list_key = manifest.get("drift_detection_artifact_paths")
     if isinstance(list_key, list):
@@ -168,15 +175,20 @@ def _detect_drift(manifest: Dict[str, Any]) -> tuple[bool, list[str]]:
                 continue
             payload = _load_json(path)
             status = payload.get("drift_status")
-            if payload.get("drift_detected") is True or status in {"exceeds_threshold", "drift_detected", "blocking"}:
-                reasons.append(f"drift_detection_artifact_paths:{status or 'drift_detected'}")
+            if payload.get("drift_detected") is True and "drift_detected" in block_on:
+                reasons.append("drift_detection_artifact_paths:drift_detected")
+            if isinstance(status, str) and _drift_triggered(status, block_on):
+                reasons.append(f"drift_detection_artifact_paths:{status}")
 
     return bool(reasons), sorted(set(reasons))
 
 
-def _required_input_missing_for_state(manifest: Dict[str, Any], state: str) -> list[str]:
+def _required_input_missing_for_state(manifest: Dict[str, Any], state: str, policy: Dict[str, Any]) -> list[str]:
     missing: list[str] = []
-    for key in _REQUIRED_PATHS_BY_STATE.get(state, []):
+    requirements = policy["required_evidence_by_state"].get(state, {})
+    required_fields = requirements.get("required_fields", []) if isinstance(requirements, dict) else []
+
+    for key in required_fields:
         value = manifest.get(key)
         if key.endswith("_paths"):
             if not _all_paths_exist(value):
@@ -210,36 +222,38 @@ def _decision_id(payload: Dict[str, Any]) -> str:
 
 
 def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
+    policy, policy_hash = _load_next_step_policy()
     manifest = _load_json(cycle_manifest_path)
 
     cycle_id = str(manifest.get("cycle_id", "cycle-invalid"))
     state = str(manifest.get("current_state", "invalid"))
     decided_at = manifest.get("updated_at") if isinstance(manifest.get("updated_at"), str) else "1970-01-01T00:00:00Z"
 
-    missing_inputs, strategy_ok, source_ok = _validate_governance_authority(manifest)
-    blocking_reasons: list[str] = []
-    drift_detected, drift_reasons = _detect_drift(manifest)
+    states = set(policy["allowed_states"])
+    governance = policy["governance_requirements"]
+    mapping = policy["decision_mapping_rules"]
 
-    if state not in _STATES:
+    missing_inputs, strategy_ok, source_ok = _validate_governance_authority(manifest, policy)
+    blocking_reasons: list[str] = []
+    drift_detected, drift_reasons = _detect_drift(manifest, policy)
+
+    if state not in states:
         missing_inputs.append("current_state")
-        next_action = "block"
-        allowed_actions = ["block"]
+        next_action = governance["invalid_state_action"]
+        allowed_actions = [governance["invalid_state_action"]]
         blocking_reasons.append("invalid lifecycle state")
     else:
-        next_action = _ACTION_BY_STATE[state]
-        allowed_actions = _ALLOWED_ACTIONS_BY_STATE[state]
-        missing_inputs.extend(_required_input_missing_for_state(manifest, state))
+        next_action = mapping[state]["next_action"]
+        allowed_actions = mapping[state]["allowed_actions"]
+        missing_inputs.extend(_required_input_missing_for_state(manifest, state, policy))
 
     if missing_inputs:
-        next_action = "block"
+        next_action = governance["missing_input_action"]
         blocking_reasons.append("missing required governance signals")
 
     if drift_detected:
-        next_action = "generate_fix_roadmap"
-        blocking_reasons.append("drift detected requires remediation")
-
-    if state == "blocked":
-        next_action = "resolve_blocking_issues"
+        next_action = policy["drift_blocking_rules"]["remediation_action"]
+        blocking_reasons.append(policy["drift_blocking_rules"]["blocking_reason"])
 
     blocking = bool(missing_inputs or blocking_reasons or state == "blocked")
     if state == "certified_done" and not (missing_inputs or drift_detected):
@@ -255,7 +269,7 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
         trust_score -= 25
     trust_score = max(0, min(100, trust_score))
 
-    strategy_compliant = strategy_ok and state in _STATES and not drift_detected
+    strategy_compliant = strategy_ok and state in states and not drift_detected
     source_grounded = source_ok
 
     core_id_fields = {
@@ -270,6 +284,9 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
         "strategy_compliant": strategy_compliant,
         "source_grounded": source_grounded,
         "trust_score": trust_score,
+        "policy_id": policy["policy_id"],
+        "policy_version": policy["version"],
+        "policy_hash": policy_hash,
         "decided_at": decided_at,
     }
 
@@ -287,6 +304,9 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
         "strategy_compliant": strategy_compliant,
         "source_grounded": source_grounded,
         "trust_score": trust_score,
+        "policy_id": policy["policy_id"],
+        "policy_version": policy["version"],
+        "policy_hash": policy_hash,
         "decision_rationale": (
             f"state={state};action={next_action};blocking={'true' if blocking else 'false'};"
             f"reasons={len(set(blocking_reasons))};drift={'true' if drift_detected else 'false'};trust={trust_score}"

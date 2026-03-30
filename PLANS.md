@@ -216,6 +216,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-STRATEGY-SOURCE-GOVERNANCE-HARDENING-2026-03-30.md | Grouped PQX slice — strategy/source authority enforcement for roadmap/review/progression seams | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-03-STRATEGY-SOURCE-AUTHORITY-2026-03-30.md | CTRL-LOOP-03 grouped PQX slice — strategy/source authority loop hard-gate wiring | Active |
 
+| docs/review-actions/PLAN-PQX-NEXT-STEP-DECISION-POLICY-2026-03-30.md | PQX Next-Step Decision Policy Externalization | Active |
+
 Update this table when plans are created or completed.
 
 ---
