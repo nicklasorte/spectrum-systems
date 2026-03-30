@@ -1,0 +1,87 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 496 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(Spectrum Systems Architecture Source) Tj
+0 -20 Td
+(1. Governance Control Plane) Tj
+0 -20 Td
+(The platform enforces deterministic contracts across modules.) Tj
+0 -20 Td
+(Key capabilities:) Tj
+0 -20 Td
+(- Contract authority) Tj
+0 -20 Td
+(- Replay validation) Tj
+0 -20 Td
+(- Evaluation gating) Tj
+0 -20 Td
+(Table: Layer  Owner  Purpose) Tj
+0 -20 Td
+(Control  Runtime  Deterministic execution) Tj
+0 -20 Td
+(Policy  Governance  Fail-closed decisions) Tj
+0 -20 Td
+(Page 1) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 447 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(Spectrum Systems Architecture Source) Tj
+0 -20 Td
+(2. Source Authority Layer) Tj
+0 -20 Td
+(All source artifacts are promoted into governed markdown.) Tj
+0 -20 Td
+(This pipeline preserves exact extracted text.) Tj
+0 -20 Td
+(Normalization removes repeated headers and footers.) Tj
+0 -20 Td
+(1\) Scan docs/raw) Tj
+0 -20 Td
+(2\) Convert to docs/source) Tj
+0 -20 Td
+(3\) Validate deterministic output) Tj
+0 -20 Td
+(Page 2) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000794 00000 n 
+0000000920 00000 n 
+0000001418 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+1488
+%%EOF
