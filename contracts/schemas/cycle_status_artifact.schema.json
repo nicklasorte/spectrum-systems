@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cycle_status_artifact.schema.json",
+  "title": "Cycle Status Artifact",
+  "description": "Deterministic per-cycle status projection derived from cycle_manifest and linked artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "cycle_id",
+    "current_state",
+    "next_action",
+    "blocking_issues",
+    "blocked_reason_summary",
+    "artifact_refs",
+    "phase_metrics",
+    "last_updated",
+    "status_markdown"
+  ],
+  "properties": {
+    "artifact_type": {"const": "cycle_status_artifact"},
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "cycle_id": {"type": "string", "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"},
+    "current_state": {"type": "string", "minLength": 1},
+    "next_action": {"type": "string", "minLength": 1},
+    "blocking_issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "blocked_reason_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["counts_by_category", "reasons"],
+      "properties": {
+        "counts_by_category": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 1}
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason_code", "reason_category", "detail"],
+            "properties": {
+              "reason_code": {"type": "string", "minLength": 1},
+              "reason_category": {
+                "type": "string",
+                "enum": [
+                  "missing_required_artifact",
+                  "invalid_artifact_contract",
+                  "pqx_execution_failure",
+                  "review_missing",
+                  "review_invalid",
+                  "fix_generation_failure",
+                  "certification_missing",
+                  "certification_failed",
+                  "other"
+                ]
+              },
+              "detail": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "artifact_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_artifact_ref",
+        "roadmap_review_refs",
+        "execution_report_refs",
+        "implementation_review_refs",
+        "fix_roadmap_ref",
+        "fix_roadmap_markdown_ref",
+        "fix_execution_report_refs",
+        "certification_ref"
+      ],
+      "properties": {
+        "roadmap_artifact_ref": {"type": ["string", "null"]},
+        "roadmap_review_refs": {"type": "array", "items": {"type": "string"}},
+        "execution_report_refs": {"type": "array", "items": {"type": "string"}},
+        "implementation_review_refs": {"type": "array", "items": {"type": "string"}},
+        "fix_roadmap_ref": {"type": ["string", "null"]},
+        "fix_roadmap_markdown_ref": {"type": ["string", "null"]},
+        "fix_execution_report_refs": {"type": "array", "items": {"type": "string"}},
+        "certification_ref": {"type": ["string", "null"]}
+      }
+    },
+    "phase_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_seconds", "has_complete_timing", "execution_report_count", "fix_execution_report_count"],
+      "properties": {
+        "execution_seconds": {"type": ["number", "null"], "minimum": 0},
+        "has_complete_timing": {"type": "boolean"},
+        "execution_report_count": {"type": "integer", "minimum": 0},
+        "fix_execution_report_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "last_updated": {"type": "string", "format": "date-time"},
+    "status_markdown": {"type": "string", "minLength": 1}
+  }
+}

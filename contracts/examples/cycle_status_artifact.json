@@ -1,0 +1,39 @@
+{
+  "artifact_type": "cycle_status_artifact",
+  "schema_version": "1.0.0",
+  "cycle_id": "cycle-0001",
+  "current_state": "fixes_in_progress",
+  "next_action": "collect_fix_execution_reports",
+  "blocking_issues": [],
+  "blocked_reason_summary": {
+    "counts_by_category": {},
+    "reasons": []
+  },
+  "artifact_refs": {
+    "roadmap_artifact_ref": "docs/roadmap/system_roadmap.md",
+    "roadmap_review_refs": [
+      "artifacts/reviews/cycle-0001/roadmap_review_claude.json"
+    ],
+    "execution_report_refs": [
+      "runs/cycle-0001/reports/cycle-0001.execution_report_artifact.json"
+    ],
+    "implementation_review_refs": [
+      "artifacts/reviews/cycle-0001/implementation_review_claude.json",
+      "artifacts/reviews/cycle-0001/implementation_review_codex.json"
+    ],
+    "fix_roadmap_ref": "runs/cycle-0001/fix_roadmap_artifact.json",
+    "fix_roadmap_markdown_ref": "runs/cycle-0001/fix_roadmap.md",
+    "fix_execution_report_refs": [
+      "runs/cycle-0001/fix_reports/cycle-0001.fix.execution_report_artifact.json"
+    ],
+    "certification_ref": null
+  },
+  "phase_metrics": {
+    "execution_seconds": 85.0,
+    "has_complete_timing": true,
+    "execution_report_count": 1,
+    "fix_execution_report_count": 1
+  },
+  "last_updated": "2026-03-30T00:30:00Z",
+  "status_markdown": "# Cycle Status — cycle-0001\n- current_state: `fixes_in_progress`\n- next_action: `collect_fix_execution_reports`\n- blocked_reasons: none\n- blocking_issues_count: 0\n- last_updated: `2026-03-30T00:30:00Z`\n\n## Artifact refs\n- roadmap: `docs/roadmap/system_roadmap.md`\n- roadmap_reviews: 1\n- execution_reports: 1\n- implementation_reviews: 2\n- fix_roadmap: `runs/cycle-0001/fix_roadmap_artifact.json`\n- fix_execution_reports: 1\n- certification: `None`\n"
+}

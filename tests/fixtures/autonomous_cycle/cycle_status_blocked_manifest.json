@@ -1,0 +1,37 @@
+{
+  "cycle_id": "cycle-blocked",
+  "current_state": "blocked",
+  "roadmap_artifact_path": "docs/roadmap/system_roadmap.md",
+  "roadmap_review_artifact_paths": [],
+  "execution_report_paths": [],
+  "implementation_review_paths": [],
+  "fix_roadmap_path": null,
+  "fix_roadmap_markdown_path": null,
+  "fix_group_refs": [],
+  "fix_execution_report_paths": [],
+  "certification_record_path": null,
+  "blocking_issues": [
+    "missing required artifact: implementation_review_paths"
+  ],
+  "next_action": "resolve_blocking_issues",
+  "roadmap_approval_state": "pending",
+  "hard_gates": {
+    "roadmap_approved": false,
+    "execution_contracts_pinned": true,
+    "review_templates_present": true
+  },
+  "pqx_execution_request_path": null,
+  "done_certification_input_refs": {
+    "replay_result_ref": "artifacts/runtime/replay_result.json",
+    "regression_result_ref": "artifacts/runtime/regression_result.json",
+    "certification_pack_ref": "artifacts/runtime/control_loop_certification_pack.json",
+    "error_budget_ref": "artifacts/runtime/error_budget_status.json",
+    "policy_ref": "artifacts/runtime/evaluation_control_decision.json"
+  },
+  "updated_at": "2026-03-30T01:00:00Z",
+  "pqx_request_ref": null,
+  "execution_started_at": null,
+  "execution_completed_at": null,
+  "certification_status": "failed",
+  "certification_summary": null
+}

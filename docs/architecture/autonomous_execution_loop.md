@@ -36,3 +36,15 @@ Blocked terminal behavior:
 - missing/invalid/failing done certification result
 
 `blocked` is terminal until an operator repairs inputs and reruns the cycle.
+
+
+## Cycle observability/status extension (grouped PQX slice)
+- Added deterministic read-only status builder: `spectrum_systems/orchestration/cycle_observability.py`.
+- Added contract-backed observability artifacts:
+  - `cycle_status_artifact` (single-cycle machine-readable status + markdown summary)
+  - `cycle_backlog_snapshot` (multi-cycle queue/backlog rollup + deterministic metrics)
+- Status surfaces include: `cycle_id`, `current_state`, `next_action`, blocked reason summary, artifact refs, and `last_updated`.
+- Blocked reasons are normalized into stable deterministic categories: `missing_required_artifact`, `invalid_artifact_contract`, `pqx_execution_failure`, `review_missing`, `review_invalid`, `fix_generation_failure`, `certification_missing`, `certification_failed`, `other`.
+- Queue/backlog views are derived from manifests only and include active/blocked/certification-pending/awaiting-review/awaiting-PQX cohorts.
+- Metrics are artifact-derived only (no hidden state/cache): count by state, blocked-by-reason, average execution seconds when timestamps are complete, critical/blocker finding counts from review artifacts, and certification pass/fail counts.
+- Fail-closed behavior is preserved: blocked manifests without details and incomplete phase timing metadata raise deterministic errors instead of producing healthy-looking status.
