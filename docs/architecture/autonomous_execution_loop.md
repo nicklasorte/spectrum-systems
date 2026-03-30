@@ -197,3 +197,38 @@ This grouped slice wires learning artifacts directly into deterministic control 
 - Freeze/block states remain blocked until governed remediation status transitions through explicit artifact updates.
 
 This preserves end-to-end traceability: learning signal -> control escalation decision -> enforcement action -> enforcement outcome -> operator remediation (when required).
+
+
+## Remediation closure + progression reinstatement extension (grouped PQX slice)
+
+This extension keeps the existing control/enforcement seam and hardens remediation handling without introducing a parallel remediation plane.
+
+### Deterministic remediation lifecycle
+- `judgment_operator_remediation_record` now uses explicit lifecycle states:
+  - `open`
+  - `in_progress`
+  - `evidence_submitted`
+  - `pending_review`
+  - `approved_for_closure`
+  - `closed`
+  - `rejected`
+- Transitions are explicit and validated in `transition_judgment_remediation_status`; invalid jumps fail closed (for example `open -> closed`).
+- Transition events are stored in deterministic `status_history`; no silent status mutation is allowed.
+
+### Closure artifact and replay-safe checks
+- Added `judgment_remediation_closure_record` as the only governed closure mechanism for freeze/block/policy-required warn remediation paths.
+- Closure records bind to source remediation/escalation/action/outcome ids, evidence refs reviewed, policy version, and deterministic replay-safe checks.
+- Replay-safe checks verify required evidence refs, enforcement-outcome linkage, threshold satisfaction, source-condition resolution, and explicit policy-version binding.
+- If closure checks cannot be reproduced from artifacts, progression remains blocked/frozen.
+
+### Reinstatement artifact and resumed progression governance
+- Added `judgment_progression_reinstatement_record` as a separate authorization artifact from closure.
+- Closure means remediation is sufficient; reinstatement means progression is allowed to resume.
+- Freeze/block (and policy-required warn) paths require valid reinstatement artifacts before progression can resume.
+- Reinstatement types are explicit (`unblock`, `unfreeze`, `warning_acknowledged_continue`) and are decision-bound.
+
+### Fail-closed integration behavior
+- Freeze/block states remain active until remediation is `closed`, closure is approved, and required reinstatement is present and valid.
+- Rejected/insufficient closure evidence keeps progression blocked/frozen.
+- Warn paths with required remediation cannot silently continue until closure + warning reinstatement are valid.
+- Traceability remains artifact-first: escalation -> action -> outcome -> remediation -> closure -> reinstatement.

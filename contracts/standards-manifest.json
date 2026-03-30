@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.96",
+  "artifact_version": "1.0.97",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.96",
+  "standards_version": "1.0.97",
   "record_id": "REC-STD-2026-03-30-CTRL-LOOP-02-ENFORCEMENT",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
@@ -966,7 +966,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.96",
+      "last_updated_in": "1.0.97",
       "example_path": "contracts/examples/judgment_enforcement_action_record.json",
       "notes": "Deterministic enforcement action artifact emitted from judgment_control_escalation_record decisions."
     },
@@ -979,7 +979,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.96",
+      "last_updated_in": "1.0.97",
       "example_path": "contracts/examples/judgment_enforcement_outcome_record.json",
       "notes": "Deterministic enforcement outcome artifact recording whether progression was allowed/frozen/prevented."
     },
@@ -1012,15 +1012,15 @@
     {
       "artifact_type": "judgment_operator_remediation_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.96",
+      "last_updated_in": "1.0.97",
       "example_path": "contracts/examples/judgment_operator_remediation_record.json",
-      "notes": "Governed human-remediation hook artifact for freeze/block and policy-required warning paths."
+      "notes": "Governed human-remediation hook artifact with deterministic lifecycle statuses and explicit transition history for freeze/block and policy-required warning paths."
     },
     {
       "artifact_type": "judgment_outcome_label",
@@ -1049,6 +1049,19 @@
       "notes": "Versioned deterministic judgment policy now includes learning_control_policy thresholds for drift, calibration, and error-budget enforcement seams."
     },
     {
+      "artifact_type": "judgment_progression_reinstatement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.97",
+      "last_updated_in": "1.0.97",
+      "example_path": "contracts/examples/judgment_progression_reinstatement_record.json",
+      "notes": "Governed reinstatement approval artifact required to resume progression after freeze/block and policy-mandated warning remediation closures."
+    },
+    {
       "artifact_type": "judgment_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -1060,6 +1073,19 @@
       "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/judgment_record.json",
       "notes": "CTRL-LOOP-01 structured claims_considered with material-claim evidence linkage for deterministic evidence coverage scoring."
+    },
+    {
+      "artifact_type": "judgment_remediation_closure_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.97",
+      "last_updated_in": "1.0.97",
+      "example_path": "contracts/examples/judgment_remediation_closure_record.json",
+      "notes": "Governed remediation-closure artifact with replay-safe evidence checks and deterministic resulting system effects."
     },
     {
       "artifact_type": "meeting_agenda_contract",
