@@ -1,0 +1,17 @@
+{
+  "artifact_id": "roadmap-review-cycle-0001-claude",
+  "artifact_type": "roadmap_review_artifact",
+  "schema_version": "1.0.0",
+  "cycle_id": "cycle-0001",
+  "roadmap_path": "docs/roadmap/system_roadmap.md",
+  "reviewer": "claude",
+  "approval_state": "approved",
+  "findings": [
+    {
+      "finding_id": "rr-001",
+      "severity": "required_fix",
+      "summary": "Clarify certification handoff seam wording."
+    }
+  ],
+  "reviewed_at": "2026-03-30T00:10:00Z"
+}

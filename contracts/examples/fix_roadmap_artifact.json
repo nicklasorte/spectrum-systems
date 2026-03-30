@@ -1,0 +1,41 @@
+{
+  "artifact_id": "fix-roadmap-cycle-0001",
+  "artifact_type": "fix_roadmap_artifact",
+  "schema_version": "1.0.0",
+  "cycle_id": "cycle-0001",
+  "generated_at": "2026-03-30T01:00:00Z",
+  "source_review_paths": [
+    "artifacts/reviews/cycle-0001/implementation_review_claude.json",
+    "artifacts/reviews/cycle-0001/implementation_review_codex.json"
+  ],
+  "summary": {
+    "blocker": 1,
+    "required_fix": 2,
+    "optional_improvement": 0,
+    "total_unique_findings": 3
+  },
+  "bundles": [
+    {
+      "bundle_id": "bundle-blocker-001",
+      "classification": "blocker",
+      "rationale": "Shared seam: cycle runner state transition boundary.",
+      "target_seams": [
+        "spectrum_systems/orchestration"
+      ],
+      "findings": [
+        {
+          "finding_id": "ir-001",
+          "title": "Runner must block when roadmap approval missing",
+          "severity": "high",
+          "category": "logic",
+          "affected_paths": [
+            "spectrum_systems/orchestration/cycle_runner.py"
+          ],
+          "source_reviewers": [
+            "claude"
+          ]
+        }
+      ]
+    }
+  ]
+}

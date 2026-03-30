@@ -1,0 +1,26 @@
+{
+  "artifact_id": "impl-review-cycle-0001-claude",
+  "artifact_type": "implementation_review_artifact",
+  "schema_version": "1.0.0",
+  "cycle_id": "cycle-0001",
+  "reviewer": "claude",
+  "scope": [
+    "spectrum_systems/orchestration",
+    "contracts/schemas"
+  ],
+  "findings": [
+    {
+      "finding_id": "ir-001",
+      "title": "Runner must block when roadmap approval missing",
+      "severity": "high",
+      "category": "logic",
+      "summary": "execution_ready cannot advance when roadmap approval is pending.",
+      "affected_paths": [
+        "spectrum_systems/orchestration/cycle_runner.py"
+      ],
+      "depends_on": [],
+      "fingerprint": "logic|runner|approval"
+    }
+  ],
+  "reviewed_at": "2026-03-30T00:30:00Z"
+}

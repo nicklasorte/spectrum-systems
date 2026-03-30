@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_review_artifact.schema.json",
+  "title": "Roadmap Review Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "cycle_id",
+    "roadmap_path",
+    "reviewer",
+    "approval_state",
+    "findings",
+    "reviewed_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string"},
+    "artifact_type": {"const": "roadmap_review_artifact"},
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "cycle_id": {"type": "string"},
+    "roadmap_path": {"type": "string"},
+    "reviewer": {"type": "string", "enum": ["claude", "codex", "human"]},
+    "approval_state": {"type": "string", "enum": ["approved", "changes_requested", "rejected"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "severity", "summary"],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "severity": {"type": "string", "enum": ["blocker", "required_fix", "optional_improvement"]},
+          "summary": {"type": "string"}
+        }
+      }
+    },
+    "reviewed_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "cycle_id": "cycle-0001",
+  "current_state": "roadmap_under_review",
+  "roadmap_artifact_path": "docs/roadmap/system_roadmap.md",
+  "roadmap_review_artifact_paths": [
+    "artifacts/reviews/cycle-0001/roadmap_review_claude.json"
+  ],
+  "execution_report_paths": [],
+  "implementation_review_paths": [],
+  "fix_roadmap_path": null,
+  "certification_record_path": null,
+  "blocking_issues": [],
+  "next_action": "await_roadmap_approval",
+  "roadmap_approval_state": "pending",
+  "hard_gates": {
+    "roadmap_approved": false,
+    "execution_contracts_pinned": true,
+    "review_templates_present": true
+  },
+  "pqx_execution_request_path": "artifacts/execution/cycle-0001/pqx_request.json",
+  "done_certification_input_refs": {
+    "replay_result_ref": "artifacts/runtime/replay_result.json",
+    "regression_result_ref": "artifacts/runtime/regression_result.json",
+    "certification_pack_ref": "artifacts/runtime/control_loop_certification_pack.json",
+    "error_budget_ref": "artifacts/runtime/error_budget_status.json",
+    "policy_ref": "artifacts/runtime/evaluation_control_decision.json"
+  },
+  "updated_at": "2026-03-30T00:00:00Z"
+}
