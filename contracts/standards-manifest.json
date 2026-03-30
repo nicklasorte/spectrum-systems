@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.1.0",
+  "artifact_version": "1.2.0",
   "schema_version": "1.0.0",
-  "standards_version": "1.1.0",
-  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT",
+  "standards_version": "1.2.0",
+  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-03-STRATEGY-SOURCE-AUTHORITY",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@ctrlloop05-lifecycle-enforcement",
+  "source_repo_version": "main@ctrlloop03-strategy-source-authority",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -330,15 +330,15 @@
     {
       "artifact_type": "cycle_manifest",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.1.0",
+      "last_updated_in": "1.2.0",
       "example_path": "contracts/examples/cycle_manifest.json",
-      "notes": "CTRL-LOOP-01 judgment eval gating config adds required_judgment_eval_types and optional replay-reference seam."
+      "notes": "Cycle manifest now requires explicit strategy_authority and bounded source_authorities for governed cycle entry fail-closed progression."
     },
     {
       "artifact_type": "cycle_status_artifact",
@@ -2087,15 +2087,15 @@
     {
       "artifact_type": "roadmap_review_artifact",
       "artifact_class": "review",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.88",
+      "last_updated_in": "1.2.0",
       "example_path": "contracts/examples/roadmap_review_artifact.json",
-      "notes": "AUTONOMOUS-LOOP-01 roadmap review evidence artifact with explicit approval state."
+      "notes": "Roadmap review artifact now requires machine-readable governance_provenance (strategy/source authorities, invariant checks, drift findings) for progression gating."
     },
     {
       "artifact_type": "routing_decision",

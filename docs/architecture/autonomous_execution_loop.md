@@ -23,6 +23,24 @@ This slice extends the deterministic fail-closed control-plane from foundation s
   - GOV-10 done certification handoff (`spectrum_systems.modules.governance.done_certification.run_done_certification`)
 - Integration tests covering happy path, blocked paths, and deterministic replay behavior.
 
+## Strategy/source authority enforcement in-loop (grouped PQX slice)
+- `cycle_manifest` governed path now requires explicit authority fields at cycle entry:
+  - `strategy_authority` (must resolve to canonical strategy path `docs/architecture/system_strategy.md`)
+  - non-empty `source_authorities` (bounded source references declared in `docs/architecture/system_source_index.md`)
+- `roadmap_review_artifact` now carries machine-readable `governance_provenance` with:
+  - strategy authority used
+  - source authorities used
+  - invariant checks applied
+  - drift findings
+- `cycle_runner` hard gates progression (fail closed) when governed inputs are missing or invalid:
+  - missing/invalid strategy authority, missing source authorities, missing authority files, duplicate source refs, or undeclared source refs
+  - missing/mismatched roadmap review provenance linkage
+  - failed invariant checks or blocking drift findings in roadmap provenance
+- Downstream traceability is preserved across the deterministic artifact chain:
+  - `cycle_manifest` authority declarations
+  - `roadmap_review_artifact` provenance linkage
+  - progression decision outputs/blocked reasons produced by `cycle_runner`.
+
 ## Closed-loop transition behavior
 Happy path progression for this slice:
 `execution_ready -> execution_complete_unreviewed -> implementation_reviews_complete -> fix_roadmap_ready -> fixes_in_progress -> fixes_complete_unreviewed -> certification_pending -> certified_done`

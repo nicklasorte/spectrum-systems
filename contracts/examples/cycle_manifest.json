@@ -68,5 +68,16 @@
   ],
   "judgment_policy_rollout_paths": [
     "contracts/examples/judgment_policy_rollout_record.json"
+  ],
+  "strategy_authority": {
+    "path": "docs/architecture/system_strategy.md",
+    "version": "2026-03-30"
+  },
+  "source_authorities": [
+    {
+      "source_id": "SRE-MAPPING",
+      "path": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json",
+      "title": "Mapping Google SRE Reliability Principles to Spectrum Systems"
+    }
   ]
 }

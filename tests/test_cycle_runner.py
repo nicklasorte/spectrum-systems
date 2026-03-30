@@ -30,7 +30,26 @@ def _fixture(name: str) -> dict:
 def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[dict, Path]:
     roadmap_path = _REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
     review_path = tmp_path / "roadmap_review.json"
-    _write(review_path, _fixture("roadmap_review_approved.json"))
+    review_payload = _fixture("roadmap_review_approved.json")
+    review_payload["schema_version"] = "1.1.0"
+    review_payload["governance_provenance"] = {
+        "strategy_authority": {
+            "path": "docs/architecture/system_strategy.md",
+            "version": "2026-03-30",
+        },
+        "source_authorities": [
+            {
+                "source_id": "SRE-MAPPING",
+                "path": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json",
+            }
+        ],
+        "invariant_checks": [
+            {"invariant_id": "strategy_alignment", "status": "pass", "detail": "aligned"},
+            {"invariant_id": "source_grounding", "status": "pass", "detail": "bounded refs"},
+        ],
+        "drift_findings": [],
+    }
+    _write(review_path, review_payload)
 
     pqx_request = {
         "step_id": "AI-01",
@@ -46,6 +65,17 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "cycle_id": "cycle-test",
         "current_state": state,
         "roadmap_artifact_path": str(roadmap_path),
+        "strategy_authority": {
+            "path": "docs/architecture/system_strategy.md",
+            "version": "2026-03-30",
+        },
+        "source_authorities": [
+            {
+                "source_id": "SRE-MAPPING",
+                "path": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json",
+                "title": "Mapping Google SRE Reliability Principles to Spectrum Systems",
+            }
+        ],
         "roadmap_review_artifact_paths": [str(review_path)],
         "execution_report_paths": [],
         "implementation_review_paths": [],
@@ -608,3 +638,66 @@ def test_cycle_runner_blocks_when_replay_reference_required_but_missing(tmp_path
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "failing required judgment eval: replay_consistency" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_strategy_authority_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    manifest.pop("strategy_authority", None)
+    _write(manifest_path, manifest)
+
+    with pytest.raises(Exception, match="strategy_authority"):
+        cycle_runner.run_cycle(manifest_path)
+
+
+def test_cycle_runner_blocks_when_source_authorities_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    manifest["source_authorities"] = []
+    _write(manifest_path, manifest)
+
+    with pytest.raises(Exception, match="non-empty"):
+        cycle_runner.run_cycle(manifest_path)
+
+
+def test_cycle_runner_blocks_when_strategy_authority_path_invalid(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    manifest["strategy_authority"]["path"] = "docs/architecture/not_strategy.md"
+    _write(manifest_path, manifest)
+
+    with pytest.raises(Exception, match="was expected"):
+        cycle_runner.run_cycle(manifest_path)
+
+
+def test_cycle_runner_blocks_when_source_authority_path_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    manifest["source_authorities"][0]["path"] = str(tmp_path / "missing_source.md")
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "missing required artifact: source_authority.path" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_roadmap_review_provenance_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    review_path = Path(manifest["roadmap_review_artifact_paths"][0])
+    review_payload = _load(review_path)
+    review_payload.pop("governance_provenance", None)
+    _write(review_path, review_payload)
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "governance_provenance" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_deterministic_governance_blocking(tmp_path: Path) -> None:
+    first_dir = tmp_path / "first-governance-block"
+    second_dir = tmp_path / "second-governance-block"
+    for run_dir in (first_dir, second_dir):
+        manifest, manifest_path = _manifest(run_dir, state="roadmap_under_review")
+        manifest["source_authorities"][0]["source_id"] = "NOT-IN-SOURCE-INDEX"
+        _write(manifest_path, manifest)
+
+    first = cycle_runner.run_cycle(first_dir / "cycle_manifest.json")
+    second = cycle_runner.run_cycle(second_dir / "cycle_manifest.json")
+    assert first == second

@@ -1,7 +1,7 @@
 {
   "artifact_id": "roadmap-review-cycle-0001-claude",
   "artifact_type": "roadmap_review_artifact",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "cycle_id": "cycle-0001",
   "roadmap_path": "docs/roadmap/system_roadmap.md",
   "reviewer": "claude",
@@ -13,5 +13,30 @@
       "summary": "Clarify certification handoff seam wording."
     }
   ],
-  "reviewed_at": "2026-03-30T00:10:00Z"
+  "reviewed_at": "2026-03-30T00:10:00Z",
+  "governance_provenance": {
+    "strategy_authority": {
+      "path": "docs/architecture/system_strategy.md",
+      "version": "2026-03-30"
+    },
+    "source_authorities": [
+      {
+        "source_id": "SRE-MAPPING",
+        "path": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json"
+      }
+    ],
+    "invariant_checks": [
+      {
+        "invariant_id": "strategy_alignment",
+        "status": "pass",
+        "detail": "Roadmap scope remains inside declared strategy invariants."
+      },
+      {
+        "invariant_id": "source_grounding",
+        "status": "pass",
+        "detail": "Roadmap claims map to bounded source authority references."
+      }
+    ],
+    "drift_findings": []
+  }
 }
