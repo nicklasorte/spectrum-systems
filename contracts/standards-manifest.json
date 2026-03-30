@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.95",
+  "artifact_version": "1.0.96",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.95",
-  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-CONTROL-LEARNING",
+  "standards_version": "1.0.96",
+  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-02-ENFORCEMENT",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@autonomousloop02-judgment-control-learning",
+  "source_repo_version": "main@ctrlloop02-judgment-enforcement",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -958,6 +958,32 @@
       "notes": "Deterministic judgment drift artifact consumed by threshold policy evaluation for warning/critical control decisions."
     },
     {
+      "artifact_type": "judgment_enforcement_action_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.96",
+      "last_updated_in": "1.0.96",
+      "example_path": "contracts/examples/judgment_enforcement_action_record.json",
+      "notes": "Deterministic enforcement action artifact emitted from judgment_control_escalation_record decisions."
+    },
+    {
+      "artifact_type": "judgment_enforcement_outcome_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.96",
+      "last_updated_in": "1.0.96",
+      "example_path": "contracts/examples/judgment_enforcement_outcome_record.json",
+      "notes": "Deterministic enforcement outcome artifact recording whether progression was allowed/frozen/prevented."
+    },
+    {
       "artifact_type": "judgment_error_budget_status",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -982,6 +1008,19 @@
       "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/judgment_eval_result.json",
       "notes": "CTRL-LOOP-01 judgment eval runner extends replay reference comparison with expected-vs-actual deterministic fail-closed mismatch signaling."
+    },
+    {
+      "artifact_type": "judgment_operator_remediation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.96",
+      "last_updated_in": "1.0.96",
+      "example_path": "contracts/examples/judgment_operator_remediation_record.json",
+      "notes": "Governed human-remediation hook artifact for freeze/block and policy-required warning paths."
     },
     {
       "artifact_type": "judgment_outcome_label",

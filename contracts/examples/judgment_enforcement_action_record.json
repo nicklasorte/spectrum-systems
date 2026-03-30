@@ -1,0 +1,45 @@
+{
+  "artifact_type": "judgment_enforcement_action_record",
+  "artifact_id": "JEA-0c66be06a26ed311",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.96",
+  "action_id": "JEA-0c66be06a26ed311",
+  "source_escalation_record_id": "judgment-control-escalation-eval-run-0001",
+  "decision": "allow",
+  "action_type": "promote_or_continue",
+  "target_scope": "judgment_run",
+  "target_identifiers": {
+    "run_id": "eval-run-0001",
+    "trace_id": "trace-0001",
+    "judgment_eval_result_id": "judgment-eval-cycle-0001",
+    "judgment_drift_signal_id": "judgment-drift-cycle-0001"
+  },
+  "execution_status": "completed",
+  "requested_at": "2026-03-30T00:12:00Z",
+  "started_at": "2026-03-30T00:12:00Z",
+  "completed_at": "2026-03-30T00:12:00Z",
+  "trace": {
+    "trace_id": "trace-0001",
+    "run_id": "eval-run-0001",
+    "source_escalation_record_id": "judgment-control-escalation-eval-run-0001"
+  },
+  "policy_refs": {
+    "judgment_policy_id": "judgment-policy-artifact-release-readiness-v1",
+    "judgment_policy_version": "1.0.0",
+    "threshold_snapshot": {
+      "drift": {
+        "drift_warning_approval_rate_delta": 0.1
+      },
+      "calibration": {
+        "warn_if_expected_calibration_error_greater_than": 0.05,
+        "freeze_if_expected_calibration_error_greater_than": 0.1
+      },
+      "error_budget": {
+        "max_wrong_allow_rate": 0.2,
+        "max_wrong_block_rate": 0.15,
+        "max_override_rate": 0.25
+      }
+    }
+  }
+}

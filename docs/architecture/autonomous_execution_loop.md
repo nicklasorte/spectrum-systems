@@ -173,3 +173,27 @@ This grouped slice wires learning artifacts directly into deterministic control 
   - calibration error is in warn band
   - non-critical budget warning is present
 - `allow` only when evals pass, drift is clear, calibration is healthy, and budget is healthy.
+
+## Judgment escalation enforcement wiring (grouped PQX slice)
+
+`judgment_control_escalation_record` is now the authoritative enforcement input for the judgment learning-control seam.
+
+### Deterministic decision -> action mapping
+- `allow` -> `promote_or_continue` action (never silent pass-through).
+- `warn` -> `continue_with_warning` action; warning-remediation hook is emitted when warning state is policy-relevant (for example non-healthy calibration warning bands).
+- `freeze` -> `freeze_pipeline_or_freeze_scope` action; progression remains frozen and requires operator remediation artifacts.
+- `block` -> `block_artifact_or_block_progression` action; progression is prevented and requires governed override/remediation artifacts.
+
+### New downstream governed artifacts
+- `judgment_enforcement_action_record`: records deterministic execution intent and policy refs used for enforcement.
+- `judgment_enforcement_outcome_record`: records enforcement outcome and progression status (`allowed`, `allowed_with_warning`, `frozen`, `prevented`).
+- `judgment_operator_remediation_record`: explicit human-required remediation hook for freeze/block and policy-required warning paths.
+
+### Fail-closed integration rules
+- Missing escalation artifact -> block.
+- Missing enforcement action artifact -> block.
+- Missing enforcement outcome artifact on required paths -> block.
+- Missing required remediation artifact -> block.
+- Freeze/block states remain blocked until governed remediation status transitions through explicit artifact updates.
+
+This preserves end-to-end traceability: learning signal -> control escalation decision -> enforcement action -> enforcement outcome -> operator remediation (when required).

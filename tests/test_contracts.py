@@ -250,6 +250,9 @@ class ContractSchemaTests(unittest.TestCase):
             "judgment_drift_signal",
             "judgment_error_budget_status",
             "judgment_control_escalation_record",
+            "judgment_enforcement_action_record",
+            "judgment_enforcement_outcome_record",
+            "judgment_operator_remediation_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
