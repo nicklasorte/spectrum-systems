@@ -1,0 +1,52 @@
+{
+  "artifact_type": "judgment_error_budget_status",
+  "artifact_id": "judgment-error-budget-cycle-0001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.95",
+  "grouping_keys": [
+    "judgment_type",
+    "policy_version",
+    "environment"
+  ],
+  "status": "healthy",
+  "policy_ref": "judgment-policy-artifact-release-readiness-v1",
+  "warning_consumption_ratio": 0.8,
+  "group_statuses": [
+    {
+      "judgment_type": "artifact_release_readiness",
+      "policy_version": "1.1.0",
+      "environment": "prod",
+      "window_size": 10,
+      "counts": {
+        "wrong_allow_count": 1,
+        "wrong_block_count": 0,
+        "override_count": 1,
+        "label_count": 10,
+        "eval_count": 10
+      },
+      "rates": {
+        "wrong_allow_rate": 0.1,
+        "wrong_block_rate": 0.0,
+        "override_rate": 0.1
+      },
+      "budget_caps": {
+        "wrong_allow_rate": 0.2,
+        "wrong_block_rate": 0.15,
+        "override_rate": 0.25
+      },
+      "budget_remaining": {
+        "wrong_allow_rate": 0.1,
+        "wrong_block_rate": 0.15,
+        "override_rate": 0.15
+      },
+      "burn_rate": {
+        "wrong_allow_rate": 0.5,
+        "wrong_block_rate": 0.0,
+        "override_rate": 0.4
+      },
+      "budget_status": "healthy"
+    }
+  ],
+  "created_at": "2026-03-30T00:06:00Z"
+}

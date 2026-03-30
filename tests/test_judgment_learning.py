@@ -8,7 +8,9 @@ from spectrum_systems.modules.runtime.judgment_eval_runner import run_judgment_e
 from spectrum_systems.modules.runtime.judgment_learning import (
     JudgmentLearningError,
     build_judgment_outcome_label,
+    evaluate_judgment_drift_threshold_policy,
     run_judgment_calibration,
+    run_judgment_error_budget_status,
     run_judgment_drift_signal,
 )
 
@@ -72,10 +74,34 @@ def _application_record() -> dict:
 
 def _policy(*, require_reference: bool) -> dict:
     return {
+        "artifact_id": "judgment-policy-artifact-release-readiness-v1",
         "judgment_eval_requirements": {
             "evidence_coverage": {"minimum_score": 1.0, "fail_closed_on_missing_material": True},
             "replay_consistency": {"required": True, "require_reference_artifact": require_reference},
-        }
+        },
+        "learning_control_policy": {
+            "thresholds": {
+                "error_budget_warning_consumption_ratio": 0.8,
+                "drift_warning_approval_rate_delta": 0.1,
+                "drift_warning_block_rate_delta": 0.1,
+                "drift_warning_error_rate_delta": 0.05,
+                "drift_warning_calibration_ece_delta": 0.05,
+                "drift_critical_approval_rate_delta": 0.2,
+                "drift_critical_block_rate_delta": 0.2,
+                "drift_critical_error_rate_delta": 0.1,
+                "drift_critical_calibration_ece_delta": 0.1,
+            },
+            "error_budget_limits": {
+                "max_wrong_allow_rate": 0.2,
+                "max_wrong_block_rate": 0.15,
+                "max_override_rate": 0.25,
+            },
+            "calibration": {
+                "warn_if_expected_calibration_error_greater_than": 0.05,
+                "freeze_if_expected_calibration_error_greater_than": 0.1,
+            },
+            "override_rate_warn_if_greater_than": 0.15,
+        },
     }
 
 
@@ -216,3 +242,156 @@ def test_missing_replay_reference_when_required_is_blocked() -> None:
     replay_eval = next(item for item in result["eval_results"] if item["eval_type"] == "replay_consistency")
     assert replay_eval["passed"] is False
     assert replay_eval["details"]["mismatch_reason"] == "required_replay_reference_missing"
+
+
+def test_error_budget_status_is_deterministic() -> None:
+    labels = [
+        build_judgment_outcome_label(
+            artifact_id="label-1",
+            judgment_id="judgment-record-cycle-0001",
+            observed_outcome="approve",
+            expected_outcome="approve",
+            correctness=True,
+            source="human_review",
+            timestamp="2026-03-30T00:00:00Z",
+        ),
+        build_judgment_outcome_label(
+            artifact_id="label-2",
+            judgment_id="judgment-record-cycle-0002",
+            observed_outcome="approve",
+            expected_outcome="block",
+            correctness=False,
+            source="human_review",
+            timestamp="2026-03-30T00:01:00Z",
+        ),
+    ]
+    records = {
+        "judgment-record-cycle-0001": _judgment_record(),
+        "judgment-record-cycle-0002": _judgment_record() | {"artifact_id": "judgment-record-cycle-0002"},
+    }
+    eval_result = run_judgment_evals(
+        cycle_id="cycle-0001",
+        created_at="2026-03-30T00:00:00Z",
+        judgment_record=_judgment_record(),
+        application_record=_application_record(),
+        policy=_policy(require_reference=False),
+    )
+    a = run_judgment_error_budget_status(
+        artifact_id="error-budget-1",
+        labels=labels,
+        judgment_records_by_id=records,
+        judgment_eval_results=[eval_result],
+        policy=_policy(require_reference=False),
+        created_at="2026-03-30T00:05:00Z",
+    )
+    b = run_judgment_error_budget_status(
+        artifact_id="error-budget-1",
+        labels=labels,
+        judgment_records_by_id=records,
+        judgment_eval_results=[eval_result],
+        policy=_policy(require_reference=False),
+        created_at="2026-03-30T00:05:00Z",
+    )
+    assert a == b
+
+
+def test_error_budget_fails_closed_without_evals() -> None:
+    with pytest.raises(JudgmentLearningError, match="at least one judgment_eval_result"):
+        run_judgment_error_budget_status(
+            artifact_id="error-budget-empty",
+            labels=[
+                build_judgment_outcome_label(
+                    artifact_id="label-1",
+                    judgment_id="judgment-record-cycle-0001",
+                    observed_outcome="approve",
+                    expected_outcome="approve",
+                    correctness=True,
+                    source="human_review",
+                    timestamp="2026-03-30T00:00:00Z",
+                )
+            ],
+            judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+            judgment_eval_results=[],
+            policy=_policy(require_reference=False),
+            created_at="2026-03-30T00:05:00Z",
+        )
+
+
+def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
+    drift_signal = run_judgment_drift_signal(
+        artifact_id="drift-1",
+        baseline={
+            "artifact_type": "judgment_calibration_result",
+            "artifact_id": "baseline",
+            "artifact_version": "1.0.0",
+            "schema_version": "1.0.0",
+            "standards_version": "1.0.94",
+            "grouping_keys": ["judgment_type", "policy_version", "environment"],
+            "group_metrics": [
+                {
+                    "judgment_type": "artifact_release_readiness",
+                    "policy_version": "1.1.0",
+                    "environment": "prod",
+                    "sample_size": 10,
+                    "accuracy": 0.9,
+                    "mean_confidence": 0.9,
+                    "expected_calibration_error": 0.02,
+                    "calibration_delta": 0.0,
+                    "confidence_signal": "well_calibrated",
+                    "ece_bins": [{"bin": "0.9-1.0", "count": 10, "mean_confidence": 0.9, "mean_accuracy": 0.9, "absolute_gap": 0.0}],
+                    "outcome_distribution": {"approve": 9, "block": 1},
+                    "error_rate": 0.1,
+                }
+            ],
+            "formulas": {
+                "accuracy": "correct_count / sample_size",
+                "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
+                "calibration_delta": "mean_confidence - accuracy",
+            },
+            "created_at": "2026-03-30T00:02:00Z",
+        },
+        current={
+            "artifact_type": "judgment_calibration_result",
+            "artifact_id": "current",
+            "artifact_version": "1.0.0",
+            "schema_version": "1.0.0",
+            "standards_version": "1.0.94",
+            "grouping_keys": ["judgment_type", "policy_version", "environment"],
+            "group_metrics": [
+                {
+                    "judgment_type": "artifact_release_readiness",
+                    "policy_version": "1.1.0",
+                    "environment": "prod",
+                    "sample_size": 10,
+                    "accuracy": 0.7,
+                    "mean_confidence": 0.9,
+                    "expected_calibration_error": 0.12,
+                    "calibration_delta": 0.2,
+                    "confidence_signal": "overconfident",
+                    "ece_bins": [{"bin": "0.9-1.0", "count": 10, "mean_confidence": 0.9, "mean_accuracy": 0.7, "absolute_gap": 0.2}],
+                    "outcome_distribution": {"approve": 6, "block": 4},
+                    "error_rate": 0.3,
+                }
+            ],
+            "formulas": {
+                "accuracy": "correct_count / sample_size",
+                "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
+                "calibration_delta": "mean_confidence - accuracy",
+            },
+            "created_at": "2026-03-30T00:03:00Z",
+        },
+        created_at="2026-03-30T00:04:00Z",
+    )
+    first = evaluate_judgment_drift_threshold_policy(
+        artifact_id="drift-threshold-1",
+        drift_signal=drift_signal,
+        policy=_policy(require_reference=False),
+        created_at="2026-03-30T00:05:00Z",
+    )
+    second = evaluate_judgment_drift_threshold_policy(
+        artifact_id="drift-threshold-1",
+        drift_signal=drift_signal,
+        policy=_policy(require_reference=False),
+        created_at="2026-03-30T00:05:00Z",
+    )
+    assert first == second

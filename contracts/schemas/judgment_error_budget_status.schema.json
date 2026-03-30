@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_error_budget_status.schema.json",
+  "title": "Judgment Error Budget Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "grouping_keys",
+    "status",
+    "policy_ref",
+    "warning_consumption_ratio",
+    "group_statuses",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_error_budget_status"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "grouping_keys": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "status": {"type": "string", "enum": ["healthy", "warning", "exhausted"]},
+    "policy_ref": {"type": "string", "minLength": 1},
+    "warning_consumption_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+    "group_statuses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "judgment_type",
+          "policy_version",
+          "environment",
+          "window_size",
+          "counts",
+          "rates",
+          "budget_caps",
+          "budget_remaining",
+          "burn_rate",
+          "budget_status"
+        ],
+        "properties": {
+          "judgment_type": {"type": "string", "minLength": 1},
+          "policy_version": {"type": "string", "minLength": 1},
+          "environment": {"type": "string", "minLength": 1},
+          "window_size": {"type": "integer", "minimum": 1},
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong_allow_count", "wrong_block_count", "override_count", "label_count", "eval_count"],
+            "properties": {
+              "wrong_allow_count": {"type": "integer", "minimum": 0},
+              "wrong_block_count": {"type": "integer", "minimum": 0},
+              "override_count": {"type": "integer", "minimum": 0},
+              "label_count": {"type": "integer", "minimum": 1},
+              "eval_count": {"type": "integer", "minimum": 1}
+            }
+          },
+          "rates": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong_allow_rate", "wrong_block_rate", "override_rate"],
+            "properties": {
+              "wrong_allow_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "wrong_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "override_rate": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "budget_caps": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong_allow_rate", "wrong_block_rate", "override_rate"],
+            "properties": {
+              "wrong_allow_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "wrong_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "override_rate": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "budget_remaining": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong_allow_rate", "wrong_block_rate", "override_rate"],
+            "properties": {
+              "wrong_allow_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "wrong_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+              "override_rate": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "burn_rate": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wrong_allow_rate", "wrong_block_rate", "override_rate"],
+            "properties": {
+              "wrong_allow_rate": {"type": "number", "minimum": 0},
+              "wrong_block_rate": {"type": "number", "minimum": 0},
+              "override_rate": {"type": "number", "minimum": 0}
+            }
+          },
+          "budget_status": {"type": "string", "enum": ["healthy", "warning", "exhausted"]}
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

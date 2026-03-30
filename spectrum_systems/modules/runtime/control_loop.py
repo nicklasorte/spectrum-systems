@@ -8,9 +8,8 @@ from typing import Any, Dict, List
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
-from spectrum_systems.modules.runtime.evaluation_control import (
-    build_evaluation_control_decision,
-)
+from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
+from spectrum_systems.modules.runtime.judgment_learning import evaluate_judgment_drift_threshold_policy
 
 
 class ControlLoopError(Exception):
@@ -311,4 +310,153 @@ def run_control_loop(
     return {
         "evaluation_control_decision": decision,
         "control_trace": control_trace,
+    }
+
+
+def run_judgment_learning_control_loop(
+    *,
+    judgment_eval_result: Dict[str, Any] | None,
+    judgment_calibration_result: Dict[str, Any] | None,
+    judgment_drift_signal: Dict[str, Any] | None,
+    judgment_error_budget_status: Dict[str, Any] | None,
+    judgment_policy: Dict[str, Any] | None,
+    trace_context: Dict[str, Any],
+    created_at: str,
+) -> Dict[str, Any]:
+    """Deterministic learning-signal control decision with governed escalation record output."""
+    required = {
+        "judgment_eval_result": (judgment_eval_result, "judgment_eval_result"),
+        "judgment_calibration_result": (judgment_calibration_result, "judgment_calibration_result"),
+        "judgment_drift_signal": (judgment_drift_signal, "judgment_drift_signal"),
+        "judgment_error_budget_status": (judgment_error_budget_status, "judgment_error_budget_status"),
+        "judgment_policy": (judgment_policy, "judgment_policy"),
+    }
+    fail_closed_reasons: list[str] = []
+    for name, (payload, schema_name) in required.items():
+        if not isinstance(payload, dict):
+            fail_closed_reasons.append(f"missing required artifact: {name}")
+            continue
+        errors = _validate(payload, load_schema(schema_name))
+        if errors:
+            fail_closed_reasons.append(f"invalid {name}: {'; '.join(errors)}")
+
+    run_id = str(trace_context.get("replay_run_id") or trace_context.get("run_id") or "")
+    trace_id = str(trace_context.get("trace_id") or "")
+    if not run_id or not trace_id:
+        fail_closed_reasons.append("missing required trace linkage")
+
+    drift_eval = {
+        "status": "critical_drift",
+        "group_results": [],
+        "thresholds": {},
+    }
+    if not fail_closed_reasons:
+        drift_eval = evaluate_judgment_drift_threshold_policy(
+            artifact_id=f"{judgment_drift_signal['artifact_id']}-threshold-eval",
+            drift_signal=judgment_drift_signal,
+            policy=judgment_policy,
+            created_at=created_at,
+        )
+
+    decision = "allow"
+    rationale: list[str] = []
+    triggering_signals: dict[str, Any] = {
+        "drift": drift_eval["status"],
+        "calibration": "healthy",
+        "error_budget": str((judgment_error_budget_status or {}).get("status") or "invalid"),
+    }
+    thresholds_used = {
+        "drift": drift_eval.get("thresholds", {}),
+        "calibration": (((judgment_policy or {}).get("learning_control_policy") or {}).get("calibration") or {}),
+        "error_budget": (((judgment_policy or {}).get("learning_control_policy") or {}).get("error_budget_limits") or {}),
+    }
+
+    if fail_closed_reasons:
+        decision = "block"
+        rationale.extend(fail_closed_reasons)
+    else:
+        eval_failures = [
+            item.get("eval_type")
+            for item in judgment_eval_result.get("eval_results", [])
+            if isinstance(item, dict) and item.get("passed") is not True
+        ]
+        if eval_failures:
+            decision = "block"
+            rationale.append(f"required eval failures: {', '.join(sorted(str(item) for item in eval_failures))}")
+
+        budget_status = str(judgment_error_budget_status.get("status") or "invalid")
+        if budget_status == "exhausted":
+            decision = "block"
+            rationale.append("judgment error budget exhausted")
+        elif budget_status == "warning" and decision == "allow":
+            decision = "warn"
+            rationale.append("judgment error budget warning")
+        elif budget_status not in {"healthy", "warning", "exhausted"}:
+            decision = "block"
+            rationale.append("invalid judgment error budget status")
+
+        if drift_eval["status"] == "critical_drift":
+            decision = "block"
+            rationale.append("critical drift detected")
+        elif drift_eval["status"] == "warning_drift" and decision in {"allow", "warn"}:
+            decision = "freeze"
+            rationale.append("warning drift threshold exceeded")
+
+        calibration_policy = ((judgment_policy.get("learning_control_policy") or {}).get("calibration")) or {}
+        warn_ece = float(calibration_policy.get("warn_if_expected_calibration_error_greater_than", 0.05))
+        freeze_ece = float(calibration_policy.get("freeze_if_expected_calibration_error_greater_than", 0.1))
+        max_ece = 0.0
+        for row in judgment_calibration_result.get("group_metrics", []):
+            if isinstance(row, dict):
+                max_ece = max(max_ece, float(row.get("expected_calibration_error", 0.0)))
+        if max_ece >= freeze_ece and decision != "block":
+            decision = "freeze"
+            triggering_signals["calibration"] = "degraded_freeze_band"
+            rationale.append("calibration degradation exceeded freeze band")
+        elif max_ece >= warn_ece and decision == "allow":
+            decision = "warn"
+            triggering_signals["calibration"] = "degraded_warn_band"
+            rationale.append("calibration degradation within warning tolerance")
+
+        override_warn = float((judgment_policy.get("learning_control_policy") or {}).get("override_rate_warn_if_greater_than", 0.15))
+        has_rising_override = any(
+            float(((row.get("rates") or {}).get("override_rate") or 0.0)) >= override_warn
+            for row in judgment_error_budget_status.get("group_statuses", [])
+            if isinstance(row, dict)
+        )
+        if has_rising_override and decision == "allow":
+            decision = "warn"
+            rationale.append("override rate rising")
+
+    escalation = {
+        "artifact_type": "judgment_control_escalation_record",
+        "artifact_id": f"judgment-control-escalation-{run_id}",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.95",
+        "decision": decision,
+        "triggering_signals": triggering_signals,
+        "thresholds_used": thresholds_used,
+        "rationale": sorted(set(rationale)) or ["all checks passed"],
+        "trace": {
+            "trace_id": trace_id,
+            "run_id": run_id,
+            "judgment_eval_result_id": str((judgment_eval_result or {}).get("artifact_id") or "missing"),
+            "judgment_calibration_result_id": str((judgment_calibration_result or {}).get("artifact_id") or "missing"),
+            "judgment_drift_signal_id": str((judgment_drift_signal or {}).get("artifact_id") or "missing"),
+            "judgment_error_budget_status_id": str((judgment_error_budget_status or {}).get("artifact_id") or "missing"),
+            "judgment_policy_id": str((judgment_policy or {}).get("artifact_id") or "missing"),
+        },
+        "created_at": created_at,
+    }
+    escalation_errors = _validate(escalation, load_schema("judgment_control_escalation_record"))
+    if escalation_errors:
+        raise ControlLoopError(
+            "judgment_control_escalation_record failed validation: " + "; ".join(escalation_errors)
+        )
+
+    return {
+        "decision": decision,
+        "judgment_control_escalation_record": escalation,
+        "drift_threshold_evaluation": drift_eval,
     }
