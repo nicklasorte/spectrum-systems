@@ -1,0 +1,181 @@
+{
+  "policy_id": "NEXT_STEP_DECISION_POLICY",
+  "version": "1.0.0",
+  "allowed_states": [
+    "draft_roadmap",
+    "roadmap_under_review",
+    "roadmap_approved",
+    "execution_ready",
+    "execution_in_progress",
+    "execution_complete_unreviewed",
+    "implementation_reviews_complete",
+    "fix_roadmap_ready",
+    "fixes_in_progress",
+    "fixes_complete_unreviewed",
+    "certification_pending",
+    "certified_done",
+    "blocked"
+  ],
+  "required_evidence_by_state": {
+    "roadmap_under_review": {
+      "required_fields": [
+        "roadmap_review_artifact_paths"
+      ],
+      "block_if_missing": true
+    },
+    "execution_complete_unreviewed": {
+      "required_fields": [
+        "execution_report_paths"
+      ],
+      "block_if_missing": true
+    },
+    "implementation_reviews_complete": {
+      "required_fields": [
+        "implementation_review_paths"
+      ],
+      "block_if_missing": true
+    },
+    "fix_roadmap_ready": {
+      "required_fields": [
+        "fix_roadmap_path"
+      ],
+      "block_if_missing": true
+    },
+    "fixes_in_progress": {
+      "required_fields": [
+        "fix_execution_report_paths"
+      ],
+      "block_if_missing": true
+    },
+    "fixes_complete_unreviewed": {
+      "required_fields": [
+        "fix_execution_report_paths"
+      ],
+      "block_if_missing": true
+    },
+    "certification_pending": {
+      "required_fields": [
+        "done_certification_input_refs"
+      ],
+      "block_if_missing": true
+    }
+  },
+  "drift_blocking_rules": {
+    "block_on": [
+      "drift_detected",
+      "exceeds_threshold",
+      "drift_detected_status",
+      "blocking"
+    ],
+    "remediation_action": "generate_fix_roadmap",
+    "blocking_reason": "drift detected requires remediation"
+  },
+  "governance_requirements": {
+    "required_authority_fields": [
+      "strategy_authority",
+      "source_authorities"
+    ],
+    "canonical_paths": {
+      "strategy_authority.path": "docs/architecture/system_strategy.md",
+      "source_index_path": "docs/architecture/system_source_index.md"
+    },
+    "source_authority_required_keys": [
+      "source_id",
+      "path"
+    ],
+    "source_authorities_must_be_declared_in_index": true,
+    "missing_input_action": "block",
+    "invalid_state_action": "block"
+  },
+  "decision_mapping_rules": {
+    "draft_roadmap": {
+      "next_action": "submit_for_review",
+      "allowed_actions": [
+        "submit_for_review"
+      ]
+    },
+    "roadmap_under_review": {
+      "next_action": "await_roadmap_review",
+      "allowed_actions": [
+        "await_roadmap_review",
+        "block"
+      ]
+    },
+    "roadmap_approved": {
+      "next_action": "prepare_execution",
+      "allowed_actions": [
+        "prepare_execution",
+        "block"
+      ]
+    },
+    "execution_ready": {
+      "next_action": "start_execution",
+      "allowed_actions": [
+        "start_execution",
+        "block"
+      ]
+    },
+    "execution_in_progress": {
+      "next_action": "await_execution_completion",
+      "allowed_actions": [
+        "await_execution_completion",
+        "block"
+      ]
+    },
+    "execution_complete_unreviewed": {
+      "next_action": "request_implementation_reviews",
+      "allowed_actions": [
+        "request_implementation_reviews",
+        "generate_fix_roadmap",
+        "block"
+      ]
+    },
+    "implementation_reviews_complete": {
+      "next_action": "generate_fix_roadmap",
+      "allowed_actions": [
+        "generate_fix_roadmap",
+        "block"
+      ]
+    },
+    "fix_roadmap_ready": {
+      "next_action": "start_fixes",
+      "allowed_actions": [
+        "start_fixes",
+        "block"
+      ]
+    },
+    "fixes_in_progress": {
+      "next_action": "await_fix_completion",
+      "allowed_actions": [
+        "await_fix_completion",
+        "block"
+      ]
+    },
+    "fixes_complete_unreviewed": {
+      "next_action": "request_fix_review",
+      "allowed_actions": [
+        "request_fix_review",
+        "block"
+      ]
+    },
+    "certification_pending": {
+      "next_action": "run_certification",
+      "allowed_actions": [
+        "run_certification",
+        "block"
+      ]
+    },
+    "certified_done": {
+      "next_action": "none",
+      "allowed_actions": [
+        "none"
+      ]
+    },
+    "blocked": {
+      "next_action": "resolve_blocking_issues",
+      "allowed_actions": [
+        "resolve_blocking_issues"
+      ]
+    }
+  }
+}

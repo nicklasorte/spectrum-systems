@@ -69,6 +69,8 @@ def test_happy_path_progression(tmp_path: Path) -> None:
     decision = build_next_step_decision(str(path))
     assert decision["next_action"] == "submit_for_review"
     assert decision["blocking"] is False
+    assert decision["policy_id"] == "NEXT_STEP_DECISION_POLICY"
+    assert decision["policy_version"] == "1.0.0"
 
 
 def test_missing_strategy_fails_closed(tmp_path: Path) -> None:

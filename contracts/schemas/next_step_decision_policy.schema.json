@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_step_decision_policy.schema.json",
+  "title": "Next Step Decision Policy",
+  "description": "Versioned deterministic policy controlling next-step decision criteria and mappings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "version",
+    "allowed_states",
+    "required_evidence_by_state",
+    "drift_blocking_rules",
+    "governance_requirements",
+    "decision_mapping_rules"
+  ],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "const": "NEXT_STEP_DECISION_POLICY"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "allowed_states": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z_]+$"
+      }
+    },
+    "required_evidence_by_state": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "required_fields",
+          "block_if_missing"
+        ],
+        "properties": {
+          "required_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "block_if_missing": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "drift_blocking_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "block_on",
+        "remediation_action",
+        "blocking_reason"
+      ],
+      "properties": {
+        "block_on": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "remediation_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocking_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "governance_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_authority_fields",
+        "canonical_paths",
+        "source_authority_required_keys",
+        "source_authorities_must_be_declared_in_index",
+        "missing_input_action",
+        "invalid_state_action"
+      ],
+      "properties": {
+        "required_authority_fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "canonical_paths": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "strategy_authority.path",
+            "source_index_path"
+          ],
+          "properties": {
+            "strategy_authority.path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_index_path": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "source_authority_required_keys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "source_authorities_must_be_declared_in_index": {
+          "type": "boolean"
+        },
+        "missing_input_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "invalid_state_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "decision_mapping_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "next_action",
+          "allowed_actions"
+        ],
+        "properties": {
+          "next_action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "allowed_actions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

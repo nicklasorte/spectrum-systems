@@ -16,7 +16,10 @@
     "source_grounded": true,
     "trust_score": 100,
     "decision_rationale": "state=draft_roadmap;action=submit_for_review;blocking=false;reasons=0;drift=false;trust=100",
-    "decided_at": "2026-03-30T00:00:00Z"
+    "decided_at": "2026-03-30T00:00:00Z",
+    "policy_id": "NEXT_STEP_DECISION_POLICY",
+    "policy_version": "1.0.0",
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
   },
   "blocked_case": {
     "decision_id": "dd7862ad8994a20f2c58e0d3a2df9953b2f729f98ea78a6b16008b5e6fcf7bde",
@@ -40,7 +43,10 @@
     "source_grounded": false,
     "trust_score": 20,
     "decision_rationale": "state=roadmap_under_review;action=block;blocking=true;reasons=1;drift=false;trust=20",
-    "decided_at": "2026-03-30T00:00:00Z"
+    "decided_at": "2026-03-30T00:00:00Z",
+    "policy_id": "NEXT_STEP_DECISION_POLICY",
+    "policy_version": "1.0.0",
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
   },
   "drift_case": {
     "decision_id": "f383dd614f1a9f6f1303bc50b95be6f4fd8d95496ba532e31f66a0d779ea4ab8",
@@ -64,6 +70,9 @@
     "source_grounded": true,
     "trust_score": 55,
     "decision_rationale": "state=execution_complete_unreviewed;action=generate_fix_roadmap;blocking=true;reasons=1;drift=true;trust=55",
-    "decided_at": "2026-03-30T00:00:00Z"
+    "decided_at": "2026-03-30T00:00:00Z",
+    "policy_id": "NEXT_STEP_DECISION_POLICY",
+    "policy_version": "1.0.0",
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
   }
 }
