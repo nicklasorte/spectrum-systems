@@ -5,7 +5,9 @@ This slice extends the deterministic fail-closed control-plane from foundation s
 ## Core boundaries
 - Planning artifacts are separate from execution artifacts.
 - Review artifacts are evidence, not control decisions.
-- PQX is execution-only; control decides next actions.
+- Roadmap planning may include many future steps, but roadmap eligibility only reports which steps are ready now; it does not authorize execution.
+- Control remains the only layer that can select a single next step for execution.
+- PQX remains execution-only and one-step-at-a-time; no multi-step autonomy is authorized by roadmap or eligibility artifacts.
 - GOV-10 done certification is the required final gate.
 - Missing required artifact, invalid artifact, or failed handoff blocks progression.
 

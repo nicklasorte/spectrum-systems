@@ -1,0 +1,51 @@
+{
+  "artifact_type": "roadmap_eligibility_artifact",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "roadmap_ref": "docs/roadmaps/system_roadmap.md",
+  "evaluated_at": "2026-03-30T00:00:00Z",
+  "identity_basis": {
+    "roadmap_artifact_id": "roadmap-cycle-0001",
+    "roadmap_digest": "a542be4e4e3d2a77e6a508d46267f37754378291a075e59977fe80c0baab1128"
+  },
+  "eligible_step_ids": [
+    "CTRL-02"
+  ],
+  "recommended_next_step_ids": [
+    "CTRL-02"
+  ],
+  "blocked_steps": [
+    {
+      "step_id": "CTRL-03",
+      "blocked_reasons": [
+        "unmet_dependency_steps",
+        "unmet_dependency_artifacts",
+        "unmet_trust_requirements",
+        "unmet_review_requirements",
+        "unmet_eval_requirements"
+      ],
+      "missing_dependency_step_ids": [
+        "CTRL-02"
+      ],
+      "missing_dependency_artifact_refs": [
+        "contracts/examples/next_step_decision_artifact.json"
+      ],
+      "missing_trust_requirements": [
+        "control_decision_present"
+      ],
+      "unmet_review_requirements": [
+        "implementation_review_complete"
+      ],
+      "unmet_eval_requirements": [
+        "execution_eval_passed"
+      ]
+    }
+  ],
+  "summary": {
+    "total_steps": 3,
+    "completed_steps": 1,
+    "eligible_steps": 1,
+    "blocked_steps": 1
+  },
+  "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1"
+}
