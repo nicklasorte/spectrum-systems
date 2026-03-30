@@ -46,6 +46,7 @@ Operate Spectrum Systems as a governed, fail-closed, artifact-first execution su
 - Autonomous cycle loop now includes contract-first judgment policy/record/application/eval artifacts with deterministic precedent retrieval and fail-closed promotion gating. **[REPO]**
 - Judgment learning control escalation now materializes deterministic downstream enforcement action/outcome/remediation artifacts with fail-closed progression blocking when required downstream artifacts are missing. **[REPO]**
 - Cycle observability now includes deterministic remediation-closure readiness and progression-reinstatement readiness status artifacts, plus remediation-state backlog visibility derived from governed artifacts only. **[REPO]**
+- Autonomous cycle progression now fail-closes on missing/invalid strategy authority, missing/invalid bounded source authorities, and missing roadmap governance provenance linkage (`strategy/source -> roadmap -> progression`). **[REPO]**
 - Repo has broad contract and module coverage for runtime, prompt queue, control, replay, observability, and certification seams. **[REPO]**
 - PQX and queue capabilities exist across many modules and tests, but several behaviors remain distributed across parallel seams. **[REPO + INFERRED]**
 - Roadmap authority signals are duplicated across `docs/roadmap/` and `docs/roadmaps/` trees and prior governance docs. **[REPO]**

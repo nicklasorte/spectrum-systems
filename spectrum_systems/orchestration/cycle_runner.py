@@ -34,6 +34,9 @@ _STATES = {
     "blocked",
 }
 
+_CANONICAL_STRATEGY_PATH = "docs/architecture/system_strategy.md"
+_CANONICAL_SOURCE_INDEX_PATH = "docs/architecture/system_source_index.md"
+
 
 def _load_json(path: str | Path) -> Dict[str, Any]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -84,6 +87,80 @@ def _validate_roadmap_reviews(paths: list[str], *, cycle_id: str) -> None:
         payload = _load_json(path)
         if payload.get("cycle_id") != cycle_id:
             raise CycleRunnerError(f"roadmap_review_artifact cycle_id mismatch in {path}")
+
+
+def _validate_governance_authority(manifest: Dict[str, Any]) -> str | None:
+    strategy = manifest.get("strategy_authority")
+    if not isinstance(strategy, dict):
+        return "missing required governance field: strategy_authority"
+    if strategy.get("path") != _CANONICAL_STRATEGY_PATH:
+        return "invalid strategy_authority path"
+    if not _path_exists(strategy.get("path")):
+        return "missing required artifact: strategy_authority.path"
+
+    source_authorities = manifest.get("source_authorities")
+    if not isinstance(source_authorities, list) or not source_authorities:
+        return "missing required governance field: source_authorities"
+    seen: set[tuple[str, str]] = set()
+    for item in source_authorities:
+        if not isinstance(item, dict):
+            return "invalid source_authorities entry"
+        source_id = item.get("source_id")
+        source_path = item.get("path")
+        if not isinstance(source_id, str) or not source_id:
+            return "source_authorities entry missing source_id"
+        if not isinstance(source_path, str) or not source_path:
+            return "source_authorities entry missing path"
+        if not _path_exists(source_path):
+            return f"missing required artifact: source_authority.path ({source_path})"
+        key = (source_id, source_path)
+        if key in seen:
+            return "duplicate source_authorities entry"
+        seen.add(key)
+
+    index_path = Path(_CANONICAL_SOURCE_INDEX_PATH)
+    if not index_path.is_file():
+        return "missing required artifact: docs/architecture/system_source_index.md"
+    source_index = index_path.read_text(encoding="utf-8")
+    for source_id, source_path in sorted(seen):
+        if source_id not in source_index or source_path not in source_index:
+            return f"source_authority not declared in system_source_index: {source_id}"
+    return None
+
+
+def _validate_roadmap_review_provenance(manifest: Dict[str, Any], review_payload: Dict[str, Any]) -> str | None:
+    provenance = review_payload.get("governance_provenance")
+    if not isinstance(provenance, dict):
+        return "roadmap_review_artifact missing governance_provenance"
+    strategy = provenance.get("strategy_authority")
+    if not isinstance(strategy, dict) or strategy.get("path") != manifest.get("strategy_authority", {}).get("path"):
+        return "roadmap_review_artifact strategy authority does not match cycle manifest"
+    source_items = provenance.get("source_authorities")
+    if not isinstance(source_items, list) or not source_items:
+        return "roadmap_review_artifact missing source authorities provenance"
+    manifest_sources = {
+        (item.get("source_id"), item.get("path"))
+        for item in manifest.get("source_authorities", [])
+        if isinstance(item, dict)
+    }
+    review_sources = {
+        (item.get("source_id"), item.get("path"))
+        for item in source_items
+        if isinstance(item, dict)
+    }
+    if not review_sources or not review_sources.issubset(manifest_sources):
+        return "roadmap_review_artifact source authorities do not match cycle manifest"
+    invariant_checks = provenance.get("invariant_checks")
+    if not isinstance(invariant_checks, list) or not invariant_checks:
+        return "roadmap_review_artifact missing invariant checks provenance"
+    if any(item.get("status") == "fail" for item in invariant_checks if isinstance(item, dict)):
+        return "roadmap_review_artifact invariant check failed"
+    drift_findings = provenance.get("drift_findings")
+    if not isinstance(drift_findings, list):
+        return "roadmap_review_artifact missing drift findings provenance"
+    if any(item.get("severity") == "block" for item in drift_findings if isinstance(item, dict)):
+        return "roadmap_review_artifact includes blocking drift findings"
+    return None
 
 
 def _build_fix_request(
@@ -333,6 +410,10 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
             "blocking_issues": issues,
         }
 
+    governance_error = _validate_governance_authority(manifest)
+    if governance_error is not None:
+        return blocked(governance_error)
+
     roadmap_path = manifest.get("roadmap_artifact_path")
     if state != "certified_done" and not _path_exists(roadmap_path):
         return blocked("missing required artifact: roadmap_artifact_path")
@@ -355,6 +436,10 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
             _validate_roadmap_reviews(review_paths, cycle_id=manifest["cycle_id"])
         except CycleRunnerError as exc:
             return blocked(str(exc))
+        for path in sorted(review_paths):
+            provenance_error = _validate_roadmap_review_provenance(manifest, _load_json(path))
+            if provenance_error is not None:
+                return blocked(provenance_error)
         approval_state = manifest.get("roadmap_approval_state", "pending")
         review_approved = _roadmap_approved_from_reviews(review_paths)
         if approval_state != "approved" and not review_approved:
@@ -369,6 +454,13 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state == "roadmap_approved":
+        review_paths = manifest.get("roadmap_review_artifact_paths", [])
+        if not _all_paths_exist(review_paths):
+            return blocked("missing required artifact: roadmap_review_artifact_paths")
+        for path in sorted(review_paths):
+            provenance_error = _validate_roadmap_review_provenance(manifest, _load_json(path))
+            if provenance_error is not None:
+                return blocked(provenance_error)
         try:
             manifest = _run_required_judgment_if_needed(manifest, manifest_path)
         except CycleRunnerError as exc:

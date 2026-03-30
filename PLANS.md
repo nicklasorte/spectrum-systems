@@ -214,6 +214,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT-HARDENING-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — mandatory lifecycle/rollout enforcement in governed runtime/control paths | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-05-CYCLE-MANIFEST-PROPAGATION-FIX-2026-03-30.md | CTRL-LOOP-05 surgical hardening — cycle_manifest lifecycle/rollout producer propagation fix | Active |
 | docs/review-actions/PLAN-STRATEGY-SOURCE-GOVERNANCE-HARDENING-2026-03-30.md | Grouped PQX slice — strategy/source authority enforcement for roadmap/review/progression seams | Active |
+| docs/review-actions/PLAN-CTRL-LOOP-03-STRATEGY-SOURCE-AUTHORITY-2026-03-30.md | CTRL-LOOP-03 grouped PQX slice — strategy/source authority loop hard-gate wiring | Active |
 
 Update this table when plans are created or completed.
 
