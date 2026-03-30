@@ -1,9 +1,9 @@
 {
   "artifact_type": "judgment_operator_remediation_record",
   "artifact_id": "JOR-bbb70ebf32f9da31",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.96",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.0.97",
   "remediation_id": "JOR-bbb70ebf32f9da31",
   "source_escalation_record_id": "judgment-control-escalation-eval-run-0002",
   "source_action_id": "JEA-6380d18c9f4cd3ad",
@@ -17,6 +17,15 @@
     "operator_release_approval_record"
   ],
   "status": "open",
+  "status_history": [
+    {
+      "from_status": "open",
+      "to_status": "open",
+      "changed_at": "2026-03-30T00:13:00Z",
+      "changed_by_role": "control_plane",
+      "rationale": "remediation opened from deterministic enforcement outcome"
+    }
+  ],
   "trace": {
     "trace_id": "trace-0002",
     "run_id": "eval-run-0002",
