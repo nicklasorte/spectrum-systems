@@ -1,9 +1,9 @@
 {
   "artifact_type": "judgment_eval_result",
   "artifact_id": "judgment-eval-cycle-0001",
-  "artifact_version": "1.1.0",
-  "schema_version": "1.1.0",
-  "standards_version": "1.0.93",
+  "artifact_version": "1.2.0",
+  "schema_version": "1.2.0",
+  "standards_version": "1.0.94",
   "judgment_type": "artifact_release_readiness",
   "determinism_check": "passed",
   "required_eval_types": [
@@ -43,7 +43,13 @@
       "score": 1.0,
       "threshold": 1.0,
       "details": {
-        "comparison_mode": "self_consistency",
+        "comparison_mode": "artifact_reference",
+        "reference_source": "contracts/examples/replay_result.json",
+        "comparison_result": "match",
+        "mismatch_reason": null,
+        "expected_outcome": "approve",
+        "actual_outcome": "approve",
+        "reference_fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "current_fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
     },
@@ -95,10 +101,16 @@
     ]
   },
   "replay_reference": {
-    "fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source": "contracts/examples/replay_result.json",
+    "comparison_result": "match",
+    "mismatch_reason": null,
+    "expected_outcome": "approve",
+    "actual_outcome": "approve"
   },
   "notes": [
     "deterministic policy and evidence scoring across reruns",
+    "replay references can be compared by expected outcome and fingerprint hash",
     "calibration and drift sections are scaffold-only in this slice"
   ],
   "created_at": "2026-03-30T00:00:00Z"

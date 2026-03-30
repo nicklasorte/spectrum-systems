@@ -132,25 +132,48 @@ def _evaluate_replay_consistency(
     judgment_record: dict[str, Any],
     application_record: dict[str, Any],
     replay_reference: dict[str, Any] | None,
+    require_reference_artifact: bool,
+    replay_reference_source: str | None,
 ) -> dict[str, Any]:
     current_fingerprint = _build_replay_fingerprint(judgment_record=judgment_record, application_record=application_record)
     current_hash = _canonical_hash(current_fingerprint)
 
+    actual_outcome = judgment_record.get("selected_outcome")
+
     if replay_reference is None:
+        comparison_result = "missing_reference" if require_reference_artifact else "self_consistency"
         return {
             "eval_type": "replay_consistency",
-            "passed": True,
-            "score": 1.0,
+            "passed": not require_reference_artifact,
+            "score": 0.0 if require_reference_artifact else 1.0,
             "threshold": 1.0,
             "details": {
                 "comparison_mode": "self_consistency",
+                "reference_source": replay_reference_source or "none",
+                "comparison_result": comparison_result,
+                "mismatch_reason": "required_replay_reference_missing" if require_reference_artifact else None,
+                "expected_outcome": None,
+                "actual_outcome": actual_outcome,
                 "current_fingerprint_hash": current_hash,
+                "reference_fingerprint_hash": None,
             },
         }
 
     ref = replay_reference.get("replay_reference") if isinstance(replay_reference, dict) else None
     reference_hash = ref.get("fingerprint_hash") if isinstance(ref, dict) else None
-    passed = isinstance(reference_hash, str) and reference_hash == current_hash
+
+    expected_outcome = replay_reference.get("expected_outcome") if isinstance(replay_reference, dict) else None
+    if expected_outcome is None and isinstance(replay_reference, dict):
+        expected_outcome = replay_reference.get("replay_final_status")
+
+    mismatch_reason = None
+    if isinstance(expected_outcome, str) and expected_outcome != actual_outcome:
+        mismatch_reason = "outcome_mismatch"
+
+    if isinstance(reference_hash, str) and reference_hash != current_hash:
+        mismatch_reason = "fingerprint_mismatch" if mismatch_reason is None else "outcome_and_fingerprint_mismatch"
+
+    passed = mismatch_reason is None
     return {
         "eval_type": "replay_consistency",
         "passed": passed,
@@ -158,6 +181,11 @@ def _evaluate_replay_consistency(
         "threshold": 1.0,
         "details": {
             "comparison_mode": "artifact_reference",
+            "reference_source": replay_reference_source or str(replay_reference.get("artifact_type") or "external_reference"),
+            "comparison_result": "match" if passed else "mismatch",
+            "mismatch_reason": mismatch_reason,
+            "expected_outcome": expected_outcome,
+            "actual_outcome": actual_outcome,
             "reference_fingerprint_hash": reference_hash,
             "current_fingerprint_hash": current_hash,
         },
@@ -215,7 +243,11 @@ def run_judgment_evals(
     application_record: dict[str, Any],
     policy: dict[str, Any],
     replay_reference: dict[str, Any] | None = None,
+    replay_reference_source: str | None = None,
 ) -> dict[str, Any]:
+    replay_cfg = (policy.get("judgment_eval_requirements") or {}).get("replay_consistency") or {}
+    require_reference_artifact = bool(replay_cfg.get("require_reference_artifact", False))
+
     evals = [
         _evaluate_evidence_coverage(judgment_record=judgment_record, policy=policy),
         _evaluate_policy_alignment(judgment_record=judgment_record, application_record=application_record),
@@ -223,6 +255,8 @@ def run_judgment_evals(
             judgment_record=judgment_record,
             application_record=application_record,
             replay_reference=replay_reference,
+            require_reference_artifact=require_reference_artifact,
+            replay_reference_source=replay_reference_source,
         ),
         _evaluate_uncertainty_calibration(judgment_record=judgment_record),
         _evaluate_longitudinal_calibration(),
@@ -235,9 +269,9 @@ def run_judgment_evals(
     payload = {
         "artifact_type": "judgment_eval_result",
         "artifact_id": f"judgment-eval-{cycle_id}",
-        "artifact_version": "1.1.0",
-        "schema_version": "1.1.0",
-        "standards_version": "1.0.93",
+        "artifact_version": "1.2.0",
+        "schema_version": "1.2.0",
+        "standards_version": "1.0.94",
         "judgment_type": judgment_record.get("judgment_type"),
         "determinism_check": "passed" if determinism_passed else "failed",
         "required_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],
@@ -251,11 +285,16 @@ def run_judgment_evals(
             "metric_inputs": ["judgment_type", "selected_outcome", "policy_ref", "created_at"],
         },
         "replay_reference": {
-            "fingerprint_hash": _canonical_hash(_build_replay_fingerprint(judgment_record=judgment_record, application_record=application_record))
+            "fingerprint_hash": _canonical_hash(_build_replay_fingerprint(judgment_record=judgment_record, application_record=application_record)),
+            "source": replay_reference_source or "none",
+            "comparison_result": next((item["details"]["comparison_result"] for item in evals if item["eval_type"] == "replay_consistency"), "self_consistency"),
+            "mismatch_reason": next((item["details"].get("mismatch_reason") for item in evals if item["eval_type"] == "replay_consistency"), None),
+            "expected_outcome": next((item["details"].get("expected_outcome") for item in evals if item["eval_type"] == "replay_consistency"), None),
+            "actual_outcome": judgment_record.get("selected_outcome"),
         },
         "notes": [
             "deterministic evidence/policy/replay eval ordering is fixed",
-            "calibration and drift sections are intentionally scaffold-level",
+            "calibration and drift sections are intentionally scaffold-level until label/calibration runners execute",
         ],
         "created_at": created_at,
     }

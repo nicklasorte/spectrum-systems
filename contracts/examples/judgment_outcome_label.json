@@ -1,0 +1,16 @@
+{
+  "artifact_type": "judgment_outcome_label",
+  "artifact_id": "judgment-label-cycle-0001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.94",
+  "judgment_id": "judgment-record-cycle-0001",
+  "observed_outcome": "approve",
+  "expected_outcome": "approve",
+  "correctness": true,
+  "source": "human_review",
+  "timestamp": "2026-03-30T00:00:00Z",
+  "notes": [
+    "reviewer confirmed release decision"
+  ]
+}

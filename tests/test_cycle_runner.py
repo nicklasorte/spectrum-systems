@@ -543,3 +543,20 @@ def test_cycle_runner_deterministic_replay_for_same_review_driven_inputs(tmp_pat
         second_reentry["next_state"],
         second_reentry["next_action"],
     )
+
+
+def test_cycle_runner_blocks_when_replay_reference_required_but_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+
+    policy = _load(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")
+    policy["judgment_eval_requirements"]["replay_consistency"]["require_reference_artifact"] = True
+    policy_path = tmp_path / "judgment_policy_require_ref.json"
+    _write(policy_path, policy)
+    manifest["judgment_policy_paths"] = [str(policy_path)]
+    manifest["judgment_replay_reference_path"] = None
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "failing required judgment eval: replay_consistency" in " ".join(result["blocking_issues"])

@@ -21,18 +21,47 @@
     "created_at"
   ],
   "properties": {
-    "artifact_type": {"const": "judgment_eval_result"},
-    "artifact_id": {"type": "string", "minLength": 1},
-    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "schema_version": {"type": "string", "const": "1.1.0"},
-    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "judgment_type": {"type": "string", "enum": ["artifact_release_readiness"]},
-    "determinism_check": {"type": "string", "enum": ["passed", "failed"]},
+    "artifact_type": {
+      "const": "judgment_eval_result"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.2.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "judgment_type": {
+      "type": "string",
+      "enum": [
+        "artifact_release_readiness"
+      ]
+    },
+    "determinism_check": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
     "required_eval_types": {
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["evidence_coverage", "policy_alignment", "replay_consistency"]
+        "enum": [
+          "evidence_coverage",
+          "policy_alignment",
+          "replay_consistency"
+        ]
       },
       "minItems": 1,
       "uniqueItems": true
@@ -43,7 +72,13 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["eval_type", "passed", "score", "threshold", "details"],
+        "required": [
+          "eval_type",
+          "passed",
+          "score",
+          "threshold",
+          "details"
+        ],
         "properties": {
           "eval_type": {
             "type": "string",
@@ -56,40 +91,123 @@
               "judgment_outcome_drift_signal"
             ]
           },
-          "passed": {"type": "boolean"},
-          "score": {"type": "number", "minimum": 0, "maximum": 1},
-          "threshold": {"type": "number", "minimum": 0, "maximum": 1},
-          "details": {"type": "object", "additionalProperties": true}
+          "passed": {
+            "type": "boolean"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
         }
       }
     },
     "calibration_scaffolding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["outcome_label_input_path", "longitudinal_artifact_path"],
+      "required": [
+        "outcome_label_input_path",
+        "longitudinal_artifact_path"
+      ],
       "properties": {
-        "outcome_label_input_path": {"type": "string", "minLength": 1},
-        "longitudinal_artifact_path": {"type": "string", "minLength": 1}
+        "outcome_label_input_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "longitudinal_artifact_path": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "drift_signal_scaffolding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["signal_type", "metric_inputs"],
+      "required": [
+        "signal_type",
+        "metric_inputs"
+      ],
       "properties": {
-        "signal_type": {"type": "string", "minLength": 1},
-        "metric_inputs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        "signal_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       }
     },
     "replay_reference": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["fingerprint_hash"],
+      "required": [
+        "fingerprint_hash",
+        "source",
+        "comparison_result",
+        "mismatch_reason",
+        "expected_outcome",
+        "actual_outcome"
+      ],
       "properties": {
-        "fingerprint_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        "fingerprint_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparison_result": {
+          "type": "string",
+          "enum": [
+            "self_consistency",
+            "match",
+            "mismatch",
+            "missing_reference"
+          ]
+        },
+        "mismatch_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_outcome": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_outcome": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
-    "notes": {"type": "array", "items": {"type": "string"}},
-    "created_at": {"type": "string", "format": "date-time"}
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
   }
 }

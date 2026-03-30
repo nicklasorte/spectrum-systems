@@ -228,10 +228,14 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "required"
+            "required",
+            "require_reference_artifact"
           ],
           "properties": {
             "required": {
+              "type": "boolean"
+            },
+            "require_reference_artifact": {
               "type": "boolean"
             }
           }

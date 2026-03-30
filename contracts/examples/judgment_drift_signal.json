@@ -1,0 +1,36 @@
+{
+  "artifact_type": "judgment_drift_signal",
+  "artifact_id": "judgment-drift-cycle-0001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.94",
+  "group_signals": [
+    {
+      "judgment_type": "artifact_release_readiness",
+      "policy_version": "1.1.0",
+      "environment": "prod",
+      "baseline_ref": "judgment-calibration-baseline",
+      "current_ref": "judgment-calibration-current",
+      "deltas": {
+        "approval_rate_delta": -0.2,
+        "block_rate_delta": 0.2,
+        "error_rate_delta": 0.1,
+        "calibration_ece_delta": 0.08
+      },
+      "thresholds": {
+        "approval_rate_delta": 0.1,
+        "block_rate_delta": 0.1,
+        "error_rate_delta": 0.05,
+        "calibration_ece_delta": 0.05
+      },
+      "triggered_signals": {
+        "approval_rate_shift": true,
+        "block_rate_shift": true,
+        "error_rate_increase": true,
+        "calibration_degradation": true
+      },
+      "drift_detected": true
+    }
+  ],
+  "created_at": "2026-03-30T00:00:00Z"
+}

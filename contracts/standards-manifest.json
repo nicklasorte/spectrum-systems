@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.93",
+  "artifact_version": "1.0.94",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.93",
-  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-EVAL",
+  "standards_version": "1.0.94",
+  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-LEARNING",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@autonomousloop01-judgment-eval",
+  "source_repo_version": "main@autonomousloop01-judgment-learning",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -919,17 +919,56 @@
       "notes": "CTRL-LOOP-01 judgment layer: deterministic policy matching/conflict/deviation trace for control-gating decisions."
     },
     {
+      "artifact_type": "judgment_calibration_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.94",
+      "last_updated_in": "1.0.94",
+      "example_path": "contracts/examples/judgment_calibration_result.json",
+      "notes": "CTRL-LOOP-01 longitudinal confidence-vs-correctness calibration artifact grouped by judgment_type, policy_version, and environment."
+    },
+    {
+      "artifact_type": "judgment_drift_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.94",
+      "last_updated_in": "1.0.94",
+      "example_path": "contracts/examples/judgment_drift_signal.json",
+      "notes": "CTRL-LOOP-01 deterministic drift deltas over approval/block/error/calibration metrics for future control escalation seams."
+    },
+    {
       "artifact_type": "judgment_eval_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.93",
+      "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/judgment_eval_result.json",
-      "notes": "CTRL-LOOP-01 judgment eval runner: deterministic evidence_coverage, policy_alignment, replay_consistency plus calibration/drift scaffolding."
+      "notes": "CTRL-LOOP-01 judgment eval runner extends replay reference comparison with expected-vs-actual deterministic fail-closed mismatch signaling."
+    },
+    {
+      "artifact_type": "judgment_outcome_label",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.94",
+      "last_updated_in": "1.0.94",
+      "example_path": "contracts/examples/judgment_outcome_label.json",
+      "notes": "CTRL-LOOP-01 deterministic ingestion contract for human/downstream/external outcome labels bound to prior judgment ids."
     },
     {
       "artifact_type": "judgment_policy",
@@ -940,9 +979,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.93",
+      "last_updated_in": "1.0.94",
       "example_path": "contracts/examples/judgment_policy.json",
-      "notes": "CTRL-LOOP-01 optional judgment_eval_requirements block for explicit fail-closed evaluation thresholds/toggles."
+      "notes": "CTRL-LOOP-01 replay_consistency requirements now support require_reference_artifact for strict external replay-reference enforcement."
     },
     {
       "artifact_type": "judgment_record",
