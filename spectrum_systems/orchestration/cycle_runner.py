@@ -11,6 +11,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
+from spectrum_systems.orchestration.next_step_decision import build_next_step_decision
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 
 
@@ -413,6 +414,17 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     governance_error = _validate_governance_authority(manifest)
     if governance_error is not None:
         return blocked(governance_error)
+
+
+    decision = build_next_step_decision(str(manifest_path))
+    decision_path = Path(manifest_path).resolve().parent / "next_step_decision_artifact.json"
+    decision_path.write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
+    manifest["next_step_decision_artifact_path"] = str(decision_path)
+    _write_manifest(manifest_path, manifest)
+
+    if decision.get("blocking") is True:
+        reason = "; ".join(decision.get("blocking_reasons", [])) or "next-step decision blocked progression"
+        return blocked(f"next-step decision blocked progression: {reason}")
 
     roadmap_path = manifest.get("roadmap_artifact_path")
     if state != "certified_done" and not _path_exists(roadmap_path):

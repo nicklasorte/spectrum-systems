@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_step_decision_artifact.schema.json",
+  "title": "Next Step Decision Artifact",
+  "description": "Deterministic fail-closed control-layer next-step decision artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_id",
+    "cycle_id",
+    "current_state",
+    "next_action",
+    "allowed_actions",
+    "blocking",
+    "blocking_reasons",
+    "required_inputs_missing",
+    "drift_detected",
+    "drift_reasons",
+    "strategy_compliant",
+    "source_grounded",
+    "trust_score",
+    "decision_rationale",
+    "decided_at"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "cycle_id": {
+      "type": "string",
+      "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"
+    },
+    "current_state": {
+      "type": "string"
+    },
+    "next_action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blocking": {
+      "type": "boolean"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_inputs_missing": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "drift_detected": {
+      "type": "boolean"
+    },
+    "drift_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "strategy_compliant": {
+      "type": "boolean"
+    },
+    "source_grounded": {
+      "type": "boolean"
+    },
+    "trust_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "decision_rationale": {
+      "type": "string",
+      "pattern": "^state=[a-z_]+;action=[a-z_]+;blocking=(true|false);reasons=[0-9]+;drift=(true|false);trust=[0-9]{1,3}$"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
