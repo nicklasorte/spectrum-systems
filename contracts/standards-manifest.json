@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.91",
+  "artifact_version": "1.0.92",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.91",
-  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-OBSERVABILITY",
+  "standards_version": "1.0.92",
+  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-LAYER",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@autonomousloop01-observability",
+  "source_repo_version": "main@autonomousloop01-judgment-layer",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -313,6 +313,45 @@
       "last_updated_in": "1.0.67",
       "example_path": null,
       "notes": "XRUN-01 deterministic decision-driving cross-run artifact with trend metrics, detected patterns, recommended actions, and stable|warning|unstable system signal."
+    },
+    {
+      "artifact_type": "cycle_backlog_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.91",
+      "last_updated_in": "1.0.91",
+      "example_path": "contracts/examples/cycle_backlog_snapshot.json",
+      "notes": "CTRL-LOOP-01 grouped observability extension: deterministic multi-cycle queue/backlog visibility and artifact-derived phase rollup metrics."
+    },
+    {
+      "artifact_type": "cycle_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.2.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.88",
+      "last_updated_in": "1.0.90",
+      "example_path": "contracts/examples/cycle_manifest.json",
+      "notes": "AUTONOMOUS-LOOP-01 review-driven re-entry extension with implementation review ingestion, fix-roadmap write-back, approved fix-group references, and fix execution report tracking."
+    },
+    {
+      "artifact_type": "cycle_status_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.91",
+      "last_updated_in": "1.0.91",
+      "example_path": "contracts/examples/cycle_status_artifact.json",
+      "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
     },
     {
       "artifact_type": "decision_log",
@@ -709,6 +748,19 @@
       "notes": "Evidence map linking strategic claims to anchored source evidence."
     },
     {
+      "artifact_type": "execution_report_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.88",
+      "last_updated_in": "1.0.88",
+      "example_path": "contracts/examples/execution_report_artifact.json",
+      "notes": "AUTONOMOUS-LOOP-01 execution report contract for PQX integration seam outputs."
+    },
+    {
       "artifact_type": "external_artifact_manifest",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -748,6 +800,19 @@
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
       "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+    },
+    {
+      "artifact_type": "fix_roadmap_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.88",
+      "last_updated_in": "1.0.88",
+      "example_path": "contracts/examples/fix_roadmap_artifact.json",
+      "notes": "AUTONOMOUS-LOOP-01 machine-readable grouped remediation roadmap generated from review findings."
     },
     {
       "artifact_type": "glossary_entry",
@@ -826,6 +891,71 @@
       "last_updated_in": "1.0.39",
       "example_path": "contracts/examples/hitl_review_request.json",
       "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
+    },
+    {
+      "artifact_type": "implementation_review_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.88",
+      "last_updated_in": "1.0.88",
+      "example_path": "contracts/examples/implementation_review_artifact.json",
+      "notes": "AUTONOMOUS-LOOP-01 dual implementation review artifact for Claude/Codex findings ingestion."
+    },
+    {
+      "artifact_type": "judgment_application_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.92",
+      "last_updated_in": "1.0.92",
+      "example_path": "contracts/examples/judgment_application_record.json",
+      "notes": "CTRL-LOOP-01 judgment layer: deterministic policy matching/conflict/deviation trace for control-gating decisions."
+    },
+    {
+      "artifact_type": "judgment_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.92",
+      "last_updated_in": "1.0.92",
+      "example_path": "contracts/examples/judgment_eval_result.json",
+      "notes": "CTRL-LOOP-01 judgment layer: minimum viable deterministic evaluation consistency artifact for judgment runs."
+    },
+    {
+      "artifact_type": "judgment_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.92",
+      "last_updated_in": "1.0.92",
+      "example_path": "contracts/examples/judgment_policy.json",
+      "notes": "CTRL-LOOP-01 judgment layer: versioned policy artifact for deterministic judgment_type + scope + environment selection."
+    },
+    {
+      "artifact_type": "judgment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.92",
+      "last_updated_in": "1.0.92",
+      "example_path": "contracts/examples/judgment_record.json",
+      "notes": "CTRL-LOOP-01 judgment layer: release-readiness judgment rationale with claims, evidence, policy rule, and precedent retrieval trace."
     },
     {
       "artifact_type": "meeting_agenda_contract",
@@ -1773,6 +1903,19 @@
       "notes": "Risk tracking across required categories with decision-readiness effects."
     },
     {
+      "artifact_type": "roadmap_review_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.88",
+      "last_updated_in": "1.0.88",
+      "example_path": "contracts/examples/roadmap_review_artifact.json",
+      "notes": "AUTONOMOUS-LOOP-01 roadmap review evidence artifact with explicit approval state."
+    },
+    {
       "artifact_type": "routing_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1976,97 +2119,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "cycle_manifest",
-      "artifact_class": "coordination",
-      "schema_version": "1.2.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.90",
-      "example_path": "contracts/examples/cycle_manifest.json",
-      "notes": "AUTONOMOUS-LOOP-01 review-driven re-entry extension with implementation review ingestion, fix-roadmap write-back, approved fix-group references, and fix execution report tracking."
-    },
-    {
-      "artifact_type": "roadmap_review_artifact",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.88",
-      "example_path": "contracts/examples/roadmap_review_artifact.json",
-      "notes": "AUTONOMOUS-LOOP-01 roadmap review evidence artifact with explicit approval state."
-    },
-    {
-      "artifact_type": "execution_report_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.88",
-      "example_path": "contracts/examples/execution_report_artifact.json",
-      "notes": "AUTONOMOUS-LOOP-01 execution report contract for PQX integration seam outputs."
-    },
-    {
-      "artifact_type": "implementation_review_artifact",
-      "artifact_class": "review",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.88",
-      "example_path": "contracts/examples/implementation_review_artifact.json",
-      "notes": "AUTONOMOUS-LOOP-01 dual implementation review artifact for Claude/Codex findings ingestion."
-    },
-    {
-      "artifact_type": "fix_roadmap_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.88",
-      "example_path": "contracts/examples/fix_roadmap_artifact.json",
-      "notes": "AUTONOMOUS-LOOP-01 machine-readable grouped remediation roadmap generated from review findings."
-    },
-    {
-      "artifact_type": "cycle_status_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.91",
-      "last_updated_in": "1.0.91",
-      "example_path": "contracts/examples/cycle_status_artifact.json",
-      "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
-    },
-    {
-      "artifact_type": "cycle_backlog_snapshot",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.91",
-      "last_updated_in": "1.0.91",
-      "example_path": "contracts/examples/cycle_backlog_snapshot.json",
-      "notes": "CTRL-LOOP-01 grouped observability extension: deterministic multi-cycle queue/backlog visibility and artifact-derived phase rollup metrics."
     }
   ]
 }

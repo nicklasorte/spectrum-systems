@@ -61,6 +61,16 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "execution_completed_at": None,
         "certification_status": "pending",
         "certification_summary": None,
+        "required_judgments": [],
+        "judgment_scope": None,
+        "judgment_environment": None,
+        "judgment_policy_paths": [],
+        "judgment_input_context": {},
+        "judgment_evidence_refs": [],
+        "judgment_precedent_record_paths": [],
+        "judgment_record_path": None,
+        "judgment_application_record_path": None,
+        "judgment_eval_result_path": None,
     }
 
 

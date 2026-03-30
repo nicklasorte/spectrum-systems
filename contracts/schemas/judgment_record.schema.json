@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_record.schema.json",
+  "title": "Judgment Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "judgment_type",
+    "selected_outcome",
+    "cycle_id",
+    "policy_ref",
+    "claims_considered",
+    "evidence_refs",
+    "rules_applied",
+    "alternatives_considered",
+    "uncertainties",
+    "conditions_under_which_decision_changes",
+    "precedent_retrieval",
+    "rationale_summary",
+    "created_at",
+    "context_fingerprint"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "judgment_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "judgment_type": {
+      "type": "string",
+      "enum": [
+        "artifact_release_readiness"
+      ]
+    },
+    "selected_outcome": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "revise",
+        "block",
+        "escalate",
+        "needs_more_evidence"
+      ]
+    },
+    "cycle_id": {
+      "type": "string",
+      "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"
+    },
+    "policy_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claims_considered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "rules_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "alternatives_considered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conditions_under_which_decision_changes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "precedent_retrieval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method_id",
+        "method_version",
+        "threshold",
+        "top_k",
+        "similarity_basis",
+        "scored_precedents"
+      ],
+      "properties": {
+        "method_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "top_k": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "similarity_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scored_precedents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "record_ref",
+              "score",
+              "basis"
+            ],
+            "properties": {
+              "record_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "basis": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rationale_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "context_fingerprint": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_eval_result.schema.json",
+  "title": "Judgment Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "judgment_type",
+    "determinism_check",
+    "policy_selection_consistent",
+    "retrieval_consistent",
+    "notes",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_eval_result"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "judgment_type": {"type": "string", "enum": ["artifact_release_readiness"]},
+    "determinism_check": {"type": "string", "enum": ["passed", "failed"]},
+    "policy_selection_consistent": {"type": "boolean"},
+    "retrieval_consistent": {"type": "boolean"},
+    "notes": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "artifact_type": "judgment_policy",
+  "artifact_id": "judgment-policy-artifact-release-readiness-v1",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.92",
+  "judgment_type": "artifact_release_readiness",
+  "status": "active",
+  "scope": "autonomous_cycle",
+  "environments": ["prod", "staging"],
+  "required_inputs": [
+    "quality_score",
+    "evidence_complete",
+    "risk_level",
+    "scope_tag"
+  ],
+  "precedent_retrieval": {
+    "required": true,
+    "method_id": "exact-field-overlap",
+    "method_version": "1.0.0",
+    "query_fields": ["scope_tag", "risk_level"],
+    "threshold": 0.5,
+    "top_k": 3,
+    "similarity_basis": "matching scope_tag and risk_level fields"
+  },
+  "decision_rules": [
+    {
+      "rule_id": "approve-high-quality",
+      "outcome": "approve",
+      "priority": 1,
+      "all_conditions": [
+        {"field": "quality_score", "operator": "gte", "value": 0.9},
+        {"field": "evidence_complete", "operator": "eq", "value": true}
+      ],
+      "rationale_template": "quality and evidence satisfied release readiness"
+    },
+    {
+      "rule_id": "block-high-risk",
+      "outcome": "block",
+      "priority": 2,
+      "all_conditions": [
+        {"field": "risk_level", "operator": "eq", "value": "high"}
+      ],
+      "rationale_template": "high risk requires block"
+    },
+    {
+      "rule_id": "revise-default",
+      "outcome": "revise",
+      "priority": 3,
+      "all_conditions": [],
+      "rationale_template": "insufficient confidence for approval"
+    }
+  ]
+}

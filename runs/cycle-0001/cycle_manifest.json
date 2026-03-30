@@ -25,5 +25,15 @@
     "error_budget_ref": "artifacts/runtime/error_budget_status.json",
     "policy_ref": "artifacts/runtime/evaluation_control_decision.json"
   },
-  "updated_at": "2026-03-30T00:00:00Z"
+  "updated_at": "2026-03-30T00:00:00Z",
+  "required_judgments": [],
+  "judgment_scope": null,
+  "judgment_environment": null,
+  "judgment_policy_paths": [],
+  "judgment_input_context": {},
+  "judgment_evidence_refs": [],
+  "judgment_precedent_record_paths": [],
+  "judgment_record_path": null,
+  "judgment_application_record_path": null,
+  "judgment_eval_result_path": null
 }

@@ -33,5 +33,15 @@
   "execution_started_at": null,
   "execution_completed_at": null,
   "certification_status": "failed",
-  "certification_summary": null
+  "certification_summary": null,
+  "required_judgments": [],
+  "judgment_scope": null,
+  "judgment_environment": null,
+  "judgment_policy_paths": [],
+  "judgment_input_context": {},
+  "judgment_evidence_refs": [],
+  "judgment_precedent_record_paths": [],
+  "judgment_record_path": null,
+  "judgment_application_record_path": null,
+  "judgment_eval_result_path": null
 }
