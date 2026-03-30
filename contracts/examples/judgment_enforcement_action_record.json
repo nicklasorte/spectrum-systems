@@ -1,9 +1,9 @@
 {
   "artifact_type": "judgment_enforcement_action_record",
   "artifact_id": "JEA-0c66be06a26ed311",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.96",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.1.0",
   "action_id": "JEA-0c66be06a26ed311",
   "source_escalation_record_id": "judgment-control-escalation-eval-run-0001",
   "decision": "allow",
@@ -40,6 +40,8 @@
         "max_wrong_block_rate": 0.15,
         "max_override_rate": 0.25
       }
-    }
+    },
+    "policy_lifecycle_status": "active",
+    "policy_rollout_id": "none"
   }
 }

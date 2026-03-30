@@ -41,12 +41,13 @@ def select_policy(
     trace_id: str | None = None,
     lifecycle_records: list[dict[str, Any]] | None = None,
     rollout_records: list[dict[str, Any]] | None = None,
+    governed_runtime: bool = False,
 ) -> tuple[dict[str, Any], list[str]]:
     if not policy_paths:
         raise JudgmentEngineError("no judgment policies configured")
 
-    strict_lifecycle = lifecycle_records is not None
-    strict_rollout = rollout_records is not None
+    strict_lifecycle = governed_runtime or lifecycle_records is not None
+    strict_rollout = governed_runtime or rollout_records is not None
     lifecycle_records = [dict(item) for item in (lifecycle_records or []) if isinstance(item, dict)]
     rollout_records = [dict(item) for item in (rollout_records or []) if isinstance(item, dict)]
 
@@ -79,27 +80,30 @@ def select_policy(
             for rec in lifecycle_records
         )
 
-    def _canary_rollout_allows(policy: dict[str, Any]) -> bool:
-        if policy["status"] != "canary":
-            return True
-        matching_rollouts = [
+    def _matching_canary_rollouts(policy: dict[str, Any]) -> list[dict[str, Any]]:
+        return [
             rec for rec in rollout_records
             if rec.get("policy_id") == policy["artifact_id"]
             and rec.get("policy_version") == policy["artifact_version"]
             and rec.get("rollout_type") == "canary"
             and rec.get("rollout_status") == "active"
         ]
+
+    def _canary_rollout_allows(policy: dict[str, Any]) -> tuple[bool, str | None]:
+        if policy["status"] != "canary":
+            return True, None
+        matching_rollouts = _matching_canary_rollouts(policy)
         if not matching_rollouts:
-            return False
+            return False, None
         if trace_id is None:
-            return False
+            return False, None
         for rollout in sorted(matching_rollouts, key=lambda rec: str(rec.get("artifact_id") or "")):
             try:
                 if is_trace_in_canary_cohort(trace_id=trace_id, cohort=rollout.get("cohort", {}), environment=environment):
-                    return True
+                    return True, str(rollout.get("rollout_id") or rollout.get("artifact_id") or "")
             except JudgmentPolicyLifecycleError:
                 continue
-        return False
+        return False, None
 
     matched = []
     for path, policy in loaded:
@@ -111,9 +115,10 @@ def select_policy(
             continue
         if strict_lifecycle and not _has_lifecycle_record(policy):
             continue
-        if not _canary_rollout_allows(policy):
+        rollout_allowed, selected_rollout_id = _canary_rollout_allows(policy)
+        if not rollout_allowed:
             continue
-        matched.append((path, policy))
+        matched.append((path, policy | {"_selected_rollout_id": selected_rollout_id}))
 
     if not matched:
         if strict_lifecycle or strict_rollout:
@@ -201,6 +206,7 @@ def run_judgment(
     trace_id: str | None = None,
     lifecycle_records: list[dict[str, Any]] | None = None,
     rollout_records: list[dict[str, Any]] | None = None,
+    governed_runtime: bool = False,
 ) -> dict[str, dict[str, Any]]:
     selected_policy, matched_paths = select_policy(
         policy_paths=policy_paths,
@@ -210,6 +216,7 @@ def run_judgment(
         trace_id=trace_id,
         lifecycle_records=lifecycle_records,
         rollout_records=rollout_records,
+        governed_runtime=governed_runtime,
     )
 
     for key in selected_policy["required_inputs"]:
@@ -280,11 +287,19 @@ def run_judgment(
     application_record = {
         "artifact_type": "judgment_application_record",
         "artifact_id": f"judgment-application-{cycle_id}",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
         "standards_version": "1.0.93",
         "judgment_record_ref": f"judgment_record::{cycle_id}",
         "selected_policy_ref": selected_policy["_path"],
+        "selected_policy_id": selected_policy["artifact_id"],
+        "selected_policy_version": selected_policy["artifact_version"],
+        "policy_lifecycle_status": selected_policy["status"],
+        "policy_rollout_id": selected_policy.get("_selected_rollout_id"),
+        "policy_trace": {
+            "trace_id": trace_id or cycle_id,
+            "cycle_id": cycle_id,
+        },
         "matched_policy_refs": matched_paths,
         "conflicts": conflicts,
         "deviations": deviations,

@@ -152,6 +152,28 @@ def test_missing_lifecycle_artifact_fails_closed_selection() -> None:
             trace_id="trace-1",
             lifecycle_records=[],
             rollout_records=[],
+            governed_runtime=True,
+        )
+
+
+def test_canary_policy_without_rollout_fails_closed_selection() -> None:
+    with pytest.raises(JudgmentEngineError, match="no applicable governed judgment policy"):
+        select_policy(
+            policy_paths=["contracts/examples/judgment_policy.json"],
+            judgment_type="artifact_release_readiness",
+            scope="autonomous_cycle",
+            environment="prod",
+            trace_id="trace-1",
+            lifecycle_records=[
+                {
+                    "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                    "to_version": "1.0.0",
+                    "lifecycle_action": "enter_canary",
+                    "resulting_status": "canary",
+                }
+            ],
+            rollout_records=[],
+            governed_runtime=True,
         )
 
 

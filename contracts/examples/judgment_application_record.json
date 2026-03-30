@@ -1,14 +1,24 @@
 {
   "artifact_type": "judgment_application_record",
   "artifact_id": "judgment-application-cycle-0001",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.92",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.1.0",
   "judgment_record_ref": "contracts/examples/judgment_record.json",
   "selected_policy_ref": "contracts/examples/judgment_policy.json",
-  "matched_policy_refs": ["contracts/examples/judgment_policy.json"],
+  "matched_policy_refs": [
+    "contracts/examples/judgment_policy.json"
+  ],
   "conflicts": [],
   "deviations": [],
   "final_outcome": "approve",
-  "created_at": "2026-03-30T00:00:00Z"
+  "created_at": "2026-03-30T00:00:00Z",
+  "selected_policy_id": "judgment-policy-artifact-release-readiness-v1",
+  "selected_policy_version": "1.0.0",
+  "policy_lifecycle_status": "active",
+  "policy_rollout_id": null,
+  "policy_trace": {
+    "trace_id": "trace-0001",
+    "cycle_id": "cycle-0001"
+  }
 }

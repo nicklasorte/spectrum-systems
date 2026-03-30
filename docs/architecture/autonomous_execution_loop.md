@@ -319,3 +319,11 @@ If any required signal is missing, promotion fails closed.
   2. status and lifecycle-governance filter (`active` global, `canary` cohort-bound, `deprecated/revoked` excluded)
   3. deterministic tie-break (`status rank`, semantic version desc, `artifact_id` asc)
 - When lifecycle/rollout artifacts are supplied to the governed selection path, missing lifecycle evidence for candidate versions fails closed.
+
+
+### Mandatory governed lifecycle enforcement (hardening)
+- Governed cycle/runtime judgment selection now **requires** `judgment_policy_lifecycle_record` evidence for selectable policy versions.
+- Canary selection on governed paths now **requires** both lifecycle evidence and active `judgment_policy_rollout_record` cohort evidence.
+- Missing lifecycle evidence or missing canary rollout evidence fails closed and blocks cycle progression (no optional bypass on governed runtime/control paths).
+- Governed cycle manifests must provide `judgment_policy_lifecycle_paths` and `judgment_policy_rollout_paths`; lifecycle/rollout artifacts are validated before policy selection.
+- Downstream linkage is preserved from policy selection through escalation/enforcement artifacts: `selected_policy_id`, `selected_policy_version`, `policy_lifecycle_status`, and `policy_rollout_id` (or `none` when non-canary).

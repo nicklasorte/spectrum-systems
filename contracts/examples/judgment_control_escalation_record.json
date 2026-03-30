@@ -1,9 +1,9 @@
 {
   "artifact_type": "judgment_control_escalation_record",
   "artifact_id": "judgment-control-escalation-eval-run-0001",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.95",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.1.0",
   "decision": "allow",
   "triggering_signals": {
     "drift": "no_drift",
@@ -41,7 +41,10 @@
     "judgment_calibration_result_id": "judgment-calibration-cycle-0001",
     "judgment_drift_signal_id": "judgment-drift-cycle-0001",
     "judgment_error_budget_status_id": "judgment-error-budget-cycle-0001",
-    "judgment_policy_id": "judgment-policy-artifact-release-readiness-v1"
+    "judgment_policy_id": "judgment-policy-artifact-release-readiness-v1",
+    "judgment_policy_version": "1.0.0",
+    "policy_lifecycle_status": "active",
+    "policy_rollout_id": "none"
   },
   "created_at": "2026-03-30T00:07:00Z"
 }

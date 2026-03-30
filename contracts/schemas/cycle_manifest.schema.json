@@ -24,6 +24,8 @@
     "judgment_scope",
     "judgment_environment",
     "judgment_policy_paths",
+    "judgment_policy_lifecycle_paths",
+    "judgment_policy_rollout_paths",
     "judgment_input_context",
     "judgment_evidence_refs",
     "judgment_precedent_record_paths",
@@ -215,6 +217,18 @@
       ]
     },
     "judgment_policy_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "judgment_policy_lifecycle_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "judgment_policy_rollout_paths": {
       "type": "array",
       "items": {
         "type": "string"

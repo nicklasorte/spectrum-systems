@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.99",
+  "artifact_version": "1.1.0",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.99",
-  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-05-POLICY-LIFECYCLE",
+  "standards_version": "1.1.0",
+  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@ctrlloop05-policy-lifecycle",
+  "source_repo_version": "main@ctrlloop05-lifecycle-enforcement",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -330,13 +330,13 @@
     {
       "artifact_type": "cycle_manifest",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.93",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/cycle_manifest.json",
       "notes": "CTRL-LOOP-01 judgment eval gating config adds required_judgment_eval_types and optional replay-reference seam."
     },
@@ -908,13 +908,13 @@
     {
       "artifact_type": "judgment_application_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.92",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_application_record.json",
       "notes": "CTRL-LOOP-01 judgment layer: deterministic policy matching/conflict/deviation trace for control-gating decisions."
     },
@@ -934,13 +934,13 @@
     {
       "artifact_type": "judgment_control_escalation_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.95",
-      "last_updated_in": "1.0.95",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_control_escalation_record.json",
       "notes": "Deterministic escalation artifact for learning-signal control decisions (allow/warn/freeze/block) with thresholds, rationale, and trace linkage."
     },
@@ -960,26 +960,26 @@
     {
       "artifact_type": "judgment_enforcement_action_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.97",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_enforcement_action_record.json",
       "notes": "Deterministic enforcement action artifact emitted from judgment_control_escalation_record decisions."
     },
     {
       "artifact_type": "judgment_enforcement_outcome_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.96",
-      "last_updated_in": "1.0.97",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_enforcement_outcome_record.json",
       "notes": "Deterministic enforcement outcome artifact recording whether progression was allowed/frozen/prevented."
     },

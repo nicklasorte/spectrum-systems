@@ -62,5 +62,11 @@
     "policy_alignment",
     "replay_consistency"
   ],
-  "judgment_replay_reference_path": null
+  "judgment_replay_reference_path": null,
+  "judgment_policy_lifecycle_paths": [
+    "contracts/examples/judgment_policy_lifecycle_record.json"
+  ],
+  "judgment_policy_rollout_paths": [
+    "contracts/examples/judgment_policy_rollout_record.json"
+  ]
 }
