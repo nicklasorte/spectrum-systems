@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import json
 import tempfile
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules import review_orchestrator
 from spectrum_systems.modules.review_orchestrator import (
     build_review_pack,
     load_review_manifest,
@@ -52,6 +54,8 @@ _MANIFEST_REQUIRED_FIELDS = [
     "invariants",
     "known_edge_cases",
     "known_failure_modes",
+    "strategy_authority",
+    "source_authorities",
 ]
 
 
@@ -85,6 +89,12 @@ class TestLoadReviewManifest:
         manifest = load_review_manifest(scope_id)
         assert isinstance(manifest["known_failure_modes"], list)
         assert len(manifest["known_failure_modes"]) > 0
+
+    @pytest.mark.parametrize("scope_id", _KNOWN_SCOPES)
+    def test_strategy_and_sources_are_grounded(self, scope_id: str) -> None:
+        manifest = load_review_manifest(scope_id)
+        assert manifest["strategy_authority"]["path"] == "docs/architecture/system_strategy.md"
+        assert len(manifest["source_authorities"]) > 0
 
 
 # ─── build_review_pack ────────────────────────────────────────────────────────
@@ -170,6 +180,44 @@ class TestRenderClaudeReviewPrompt:
         # After rendering, no Jinja-style for-loop blocks should remain.
         assert "{% for" not in prompt
         assert "{% endfor" not in prompt
+
+    @pytest.mark.parametrize("scope_id", _KNOWN_SCOPES)
+    def test_prompt_contains_strategy_and_source_authority(self, scope_id: str) -> None:
+        manifest = load_review_manifest(scope_id)
+        prompt = render_claude_review_prompt(scope_id)
+        assert manifest["strategy_authority"]["path"] in prompt
+        assert manifest["source_authorities"][0]["source_id"] in prompt
+
+
+def test_manifest_missing_strategy_authority_fails_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    scope_id = "missing_strategy"
+    manifest = deepcopy(load_review_manifest("p_gap_detection"))
+    manifest["scope_id"] = scope_id
+    manifest.pop("strategy_authority", None)
+    manifest_path = tmp_path / f"{scope_id}.review.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(review_orchestrator, "_MANIFESTS_DIR", tmp_path)
+
+    with pytest.raises(ValueError, match="missing required fields"):
+        load_review_manifest(scope_id)
+
+
+def test_manifest_duplicate_source_authorities_fail_closed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    scope_id = "duplicate_source"
+    manifest = deepcopy(load_review_manifest("p_gap_detection"))
+    manifest["scope_id"] = scope_id
+    manifest["source_authorities"] = [
+        manifest["source_authorities"][0],
+        manifest["source_authorities"][0],
+    ]
+    manifest_path = tmp_path / f"{scope_id}.review.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(review_orchestrator, "_MANIFESTS_DIR", tmp_path)
+
+    with pytest.raises(ValueError, match="duplicate source authority path"):
+        load_review_manifest(scope_id)
 
 
 # ─── validate_review_output ──────────────────────────────────────────────────

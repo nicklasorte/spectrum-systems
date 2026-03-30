@@ -11,6 +11,7 @@ You are performing an **infrastructure-aware, scoped architecture review** of th
 **Title:** {{ title }}
 **Purpose:** {{ purpose }}
 **Golden Path Role:** {{ golden_path_role }}
+**Strategy Authority:** `{{ strategy_authority_path }}` (version `{{ strategy_authority_version }}`)
 
 ---
 
@@ -51,6 +52,16 @@ The following design documents describe the intended behaviour of this subsystem
 
 {% for d in related_design_docs %}
 - `{{ d }}`
+{% endfor %}
+
+---
+
+## Source Authorities (Grounding Required)
+
+Use these bounded source authorities while applying strategy constraints:
+
+{% for sa in source_authorities %}
+- `{{ sa }}`
 {% endfor %}
 
 ---

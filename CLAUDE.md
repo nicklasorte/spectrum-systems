@@ -258,3 +258,8 @@ When updating this repository:
 If a change would significantly alter the architecture, propose the change first rather than applying it automatically.
 
 ---------------------------------------------------------------------
+
+## Strategy and source governance duties
+- Claude reviews must fail closed when strategy linkage or source grounding is missing in governed artifacts.
+- Claude must verify execution/eval/control role separation and flag control bypass as a blocking governance finding.
+- Claude must require explicit drift checks (strategy drift, source drift, schema bypass, control bypass, certification bypass) before recommending progression.
