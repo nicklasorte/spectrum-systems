@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_eligibility_artifact.schema.json",
+  "title": "Roadmap Eligibility Artifact",
+  "description": "Deterministic fail-closed roadmap eligibility projection. Eligibility does not authorize execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "artifact_version",
+    "roadmap_ref",
+    "evaluated_at",
+    "identity_basis",
+    "eligible_step_ids",
+    "recommended_next_step_ids",
+    "blocked_steps",
+    "summary"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifact_type": {
+      "const": "roadmap_eligibility_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "roadmap_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identity_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_artifact_id",
+        "roadmap_digest"
+      ],
+      "properties": {
+        "roadmap_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roadmap_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "eligible_step_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_next_step_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "blocked_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "blocked_reasons",
+          "missing_dependency_step_ids",
+          "missing_dependency_artifact_refs",
+          "missing_trust_requirements",
+          "unmet_review_requirements",
+          "unmet_eval_requirements"
+        ],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocked_reasons": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "unmet_dependency_steps",
+                "unmet_dependency_artifacts",
+                "unmet_trust_requirements",
+                "unmet_review_requirements",
+                "unmet_eval_requirements",
+                "ambiguous_dependency_reference",
+                "step_not_planned"
+              ]
+            }
+          },
+          "missing_dependency_step_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "missing_dependency_artifact_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "missing_trust_requirements": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "unmet_review_requirements": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "unmet_eval_requirements": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_steps",
+        "completed_steps",
+        "eligible_steps",
+        "blocked_steps"
+      ],
+      "properties": {
+        "total_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eligible_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked_steps": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

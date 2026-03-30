@@ -1,0 +1,74 @@
+{
+  "artifact_id": "roadmap-cycle-0001",
+  "artifact_type": "governed_roadmap_artifact",
+  "schema_version": "1.0.0",
+  "roadmap_ref": "docs/roadmaps/system_roadmap.md",
+  "generated_at": "2026-03-30T00:00:00Z",
+  "available_artifact_refs": [
+    "contracts/examples/roadmap_review_artifact.json"
+  ],
+  "satisfied_trust_requirements": [
+    "strategy_alignment"
+  ],
+  "satisfied_review_requirements": [
+    "roadmap_review_approved"
+  ],
+  "satisfied_eval_requirements": [
+    "roadmap_eval_passed"
+  ],
+  "steps": [
+    {
+      "step_id": "CTRL-01",
+      "order_index": 1,
+      "title": "Publish governed roadmap",
+      "status": "completed",
+      "dependency_step_ids": [],
+      "dependency_artifact_refs": [],
+      "trust_requirements": [],
+      "review_requirements": [],
+      "eval_requirements": []
+    },
+    {
+      "step_id": "CTRL-02",
+      "order_index": 2,
+      "title": "Evaluate roadmap eligibility",
+      "status": "planned",
+      "dependency_step_ids": [
+        "CTRL-01"
+      ],
+      "dependency_artifact_refs": [
+        "contracts/examples/roadmap_review_artifact.json"
+      ],
+      "trust_requirements": [
+        "strategy_alignment"
+      ],
+      "review_requirements": [
+        "roadmap_review_approved"
+      ],
+      "eval_requirements": [
+        "roadmap_eval_passed"
+      ]
+    },
+    {
+      "step_id": "CTRL-03",
+      "order_index": 3,
+      "title": "Authorize single next step",
+      "status": "planned",
+      "dependency_step_ids": [
+        "CTRL-02"
+      ],
+      "dependency_artifact_refs": [
+        "contracts/examples/next_step_decision_artifact.json"
+      ],
+      "trust_requirements": [
+        "control_decision_present"
+      ],
+      "review_requirements": [
+        "implementation_review_complete"
+      ],
+      "eval_requirements": [
+        "execution_eval_passed"
+      ]
+    }
+  ]
+}

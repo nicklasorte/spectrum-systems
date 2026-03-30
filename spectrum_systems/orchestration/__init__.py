@@ -9,6 +9,11 @@ from .cycle_observability import (
 )
 from .cycle_runner import CycleRunnerError, run_cycle
 from .next_step_decision import build_next_step_decision
+from .roadmap_eligibility import (
+    RoadmapEligibilityError,
+    build_roadmap_eligibility,
+    evaluate_roadmap_eligibility_to_path,
+)
 
 __all__ = [
     "CycleRunnerError",
@@ -19,4 +24,7 @@ __all__ = [
     "build_cycle_backlog_snapshot",
     "build_remediation_readiness_status",
     "build_reinstatement_readiness_status",
+    "RoadmapEligibilityError",
+    "build_roadmap_eligibility",
+    "evaluate_roadmap_eligibility_to_path",
 ]
