@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.89",
+  "artifact_version": "1.0.90",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.89",
-  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-CLOSED",
+  "standards_version": "1.0.90",
+  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-REVIEW-FIX-REENTRY",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@autonomousloop01-closed",
+  "source_repo_version": "main@autonomousloop01-review-fix-reentry",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -56,7 +56,7 @@
     {
       "artifact_type": "ai_model_request",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
@@ -69,7 +69,7 @@
     {
       "artifact_type": "ai_model_response",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
@@ -1980,15 +1980,15 @@
     {
       "artifact_type": "cycle_manifest",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.89",
+      "last_updated_in": "1.0.90",
       "example_path": "contracts/examples/cycle_manifest.json",
-      "notes": "AUTONOMOUS-LOOP-01 closed-loop manifest with live PQX and certification write-back tracking fields."
+      "notes": "AUTONOMOUS-LOOP-01 review-driven re-entry extension with implementation review ingestion, fix-roadmap write-back, approved fix-group references, and fix execution report tracking."
     },
     {
       "artifact_type": "roadmap_review_artifact",

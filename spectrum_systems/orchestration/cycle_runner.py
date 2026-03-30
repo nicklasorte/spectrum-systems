@@ -9,6 +9,7 @@ from typing import Any, Dict
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 
 
@@ -53,14 +54,17 @@ def _all_paths_exist(paths: Any) -> bool:
     return isinstance(paths, list) and all(_path_exists(path) for path in paths)
 
 
-def _reviews_complete(paths: list[str]) -> bool:
-    reviewers = set()
-    for path in paths:
+def _validate_review_set(paths: list[str], *, cycle_id: str) -> Dict[str, Dict[str, Any]]:
+    reviews: Dict[str, Dict[str, Any]] = {}
+    for path in sorted(paths):
+        _validate_artifact_file(path, "implementation_review_artifact", label="implementation_review_artifact")
         payload = _load_json(path)
+        if payload.get("cycle_id") != cycle_id:
+            raise CycleRunnerError(f"implementation_review_artifact cycle_id mismatch in {path}")
         reviewer = payload.get("reviewer")
         if isinstance(reviewer, str):
-            reviewers.add(reviewer)
-    return {"claude", "codex"}.issubset(reviewers)
+            reviews[reviewer] = payload
+    return reviews
 
 
 def _roadmap_approved_from_reviews(paths: list[str]) -> bool:
@@ -71,6 +75,52 @@ def _roadmap_approved_from_reviews(paths: list[str]) -> bool:
         if payload.get("approval_state") == "approved":
             return True
     return False
+
+
+def _validate_roadmap_reviews(paths: list[str], *, cycle_id: str) -> None:
+    for path in sorted(paths):
+        _validate_artifact_file(path, "roadmap_review_artifact", label="roadmap_review_artifact")
+        payload = _load_json(path)
+        if payload.get("cycle_id") != cycle_id:
+            raise CycleRunnerError(f"roadmap_review_artifact cycle_id mismatch in {path}")
+
+
+def _build_fix_request(
+    *,
+    base_request: Dict[str, Any],
+    bundle: Dict[str, Any],
+    cycle_id: str,
+    bundle_index: int,
+    root_dir: Path,
+) -> str:
+    required = ("roadmap_path", "state_path", "runs_root", "pqx_output_text")
+    missing = [key for key in required if not isinstance(base_request.get(key), str) or not base_request.get(key).strip()]
+    if missing:
+        raise CycleRunnerError(f"pqx_execution_request_path missing required fields for fix re-entry: {', '.join(missing)}")
+
+    bundle_id = bundle.get("bundle_id")
+    if not isinstance(bundle_id, str) or not bundle_id:
+        raise CycleRunnerError("fix_roadmap bundle missing bundle_id")
+    fix_state_dir = root_dir / "fix_state"
+    fix_state_dir.mkdir(parents=True, exist_ok=True)
+    state_path = str(fix_state_dir / f"{bundle_id}.json")
+
+    request_payload: Dict[str, Any] = {
+        "step_id": str(base_request.get("step_id", "AI-01")),
+        "roadmap_path": base_request["roadmap_path"],
+        "state_path": state_path,
+        "runs_root": base_request["runs_root"],
+        "pqx_output_text": f"[fix-reentry cycle={cycle_id} bundle={bundle_id}] {base_request['pqx_output_text']}",
+        "fix_bundle": bundle,
+        "fix_bundle_index": bundle_index,
+        "fix_reentry": True,
+        "cycle_id": cycle_id,
+    }
+    requests_dir = root_dir / "fix_requests"
+    requests_dir.mkdir(parents=True, exist_ok=True)
+    request_path = requests_dir / f"{bundle_id}.json"
+    request_path.write_text(json.dumps(request_payload, indent=2) + "\n", encoding="utf-8")
+    return str(request_path)
 
 
 def _validate_artifact_file(path: str, schema_name: str, *, label: str) -> None:
@@ -164,6 +214,10 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         review_paths = manifest.get("roadmap_review_artifact_paths", [])
         if not _all_paths_exist(review_paths):
             return blocked("missing required artifact: roadmap_review_artifact_paths")
+        try:
+            _validate_roadmap_reviews(review_paths, cycle_id=manifest["cycle_id"])
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
         approval_state = manifest.get("roadmap_approval_state", "pending")
         review_approved = _roadmap_approved_from_reviews(review_paths)
         if approval_state != "approved" and not review_approved:
@@ -257,7 +311,11 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         review_paths = manifest.get("implementation_review_paths", [])
         if not _all_paths_exist(review_paths):
             return blocked("missing required artifact: implementation_review_paths")
-        if not _reviews_complete(review_paths):
+        try:
+            reviews = _validate_review_set(review_paths, cycle_id=manifest["cycle_id"])
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
+        if not {"claude", "codex"}.issubset(set(reviews)):
             return blocked("dual implementation reviews required: claude + codex")
         return {
             "cycle_id": manifest["cycle_id"],
@@ -269,8 +327,35 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state == "implementation_reviews_complete":
-        if not _path_exists(manifest.get("fix_roadmap_path")):
-            return blocked("missing required artifact: fix_roadmap_path")
+        review_paths = manifest.get("implementation_review_paths", [])
+        if not _all_paths_exist(review_paths):
+            return blocked("missing required artifact: implementation_review_paths")
+        try:
+            _validate_review_set(review_paths, cycle_id=manifest["cycle_id"])
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
+        cycle_root = Path(manifest_path).resolve().parent
+        output_json_path = cycle_root / "fix_roadmap_artifact.json"
+        output_markdown_path = cycle_root / "fix_roadmap.md"
+        generated_at = manifest.get("updated_at")
+        if not isinstance(generated_at, str) or not generated_at:
+            return blocked("missing required field: updated_at")
+        try:
+            artifact = generate_fix_roadmap(
+                cycle_id=manifest["cycle_id"],
+                review_artifact_paths=sorted(review_paths),
+                output_json_path=str(output_json_path),
+                output_markdown_path=str(output_markdown_path),
+                generated_at=generated_at,
+            )
+        except (ValueError, CycleRunnerError) as exc:
+            return blocked(f"fix roadmap generation failed: {exc}")
+        manifest["fix_roadmap_path"] = str(output_json_path)
+        manifest["fix_roadmap_markdown_path"] = str(output_markdown_path)
+        manifest["fix_group_refs"] = [bundle["bundle_id"] for bundle in artifact.get("bundles", [])]
+        manifest["current_state"] = "fix_roadmap_ready"
+        manifest["next_action"] = "dispatch_fix_bundles"
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
@@ -281,34 +366,106 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state == "fix_roadmap_ready":
+        fix_roadmap_path = manifest.get("fix_roadmap_path")
+        if not _path_exists(fix_roadmap_path):
+            return blocked("missing required artifact: fix_roadmap_path")
+        try:
+            _validate_artifact_file(fix_roadmap_path, "fix_roadmap_artifact", label="fix_roadmap_artifact")
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
+        fix_roadmap = _load_json(fix_roadmap_path)
+        bundles = fix_roadmap.get("bundles", [])
+        if not isinstance(bundles, list) or not bundles:
+            return blocked("fix_roadmap_ready requires at least one fix bundle")
+        approved_refs = manifest.get("fix_group_refs", [])
+        if not isinstance(approved_refs, list) or not all(isinstance(item, str) for item in approved_refs):
+            return blocked("fix_group_refs must be a list of approved bundle ids")
+        selected = [bundle for bundle in bundles if bundle.get("bundle_id") in set(approved_refs)] if approved_refs else bundles
+        if not selected:
+            return blocked("no approved fix groups available for PQX re-entry")
+        request_path = manifest.get("pqx_execution_request_path")
+        if not _path_exists(request_path):
+            return blocked("missing required artifact: pqx_execution_request_path")
+        base_request = _load_json(request_path)
+        fix_reports: list[str] = []
+        cycle_root = Path(manifest_path).resolve().parent
+        try:
+            for idx, bundle in enumerate(selected):
+                fix_request_path = _build_fix_request(
+                    base_request=base_request,
+                    bundle=bundle,
+                    cycle_id=manifest["cycle_id"],
+                    bundle_index=idx,
+                    root_dir=cycle_root,
+                )
+                handoff = handoff_to_pqx(
+                    cycle_id=manifest["cycle_id"],
+                    request_path=fix_request_path,
+                    reports_root=cycle_root / "fix_reports",
+                )
+                report_path = handoff["report_path"]
+                if not _path_exists(report_path):
+                    raise CycleRunnerError("pqx handoff failed: missing fix execution report artifact write-back")
+                _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
+                fix_reports.append(report_path)
+        except (CycleRunnerError, PQXHandoffError, ValueError) as exc:
+            return blocked(f"pqx fix re-entry failed: {exc}")
+        manifest["fix_execution_report_paths"] = fix_reports
+        manifest["current_state"] = "fixes_in_progress"
+        manifest["next_action"] = "collect_fix_execution_reports"
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
             "current_state": state,
             "next_state": "fixes_in_progress",
-            "next_action": "execute_fix_bundles_via_pqx",
+            "next_action": "collect_fix_execution_reports",
             "blocking_issues": manifest.get("blocking_issues", []),
         }
 
     if state == "fixes_in_progress":
-        reports = manifest.get("execution_report_paths", [])
-        if not _all_paths_exist(reports):
-            return blocked("missing required artifact: execution_report_paths_for_fixes")
+        reports = manifest.get("fix_execution_report_paths", [])
+        if not reports or not _all_paths_exist(reports):
+            return blocked("missing required artifact: fix_execution_report_paths")
         for report_path in reports:
             try:
                 _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
             except CycleRunnerError as exc:
                 return blocked(str(exc))
+        manifest["current_state"] = "fixes_complete_unreviewed"
+        manifest["next_action"] = "promote_fixes_to_certification_pending"
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
             "current_state": state,
             "next_state": "fixes_complete_unreviewed",
-            "next_action": "request_post_fix_review",
+            "next_action": "promote_fixes_to_certification_pending",
             "blocking_issues": manifest.get("blocking_issues", []),
         }
 
-    if state in {"fixes_complete_unreviewed", "certification_pending"}:
+    if state == "fixes_complete_unreviewed":
+        reports = manifest.get("fix_execution_report_paths", [])
+        if not reports or not _all_paths_exist(reports):
+            return blocked("missing required artifact: fix_execution_report_paths")
+        for report_path in reports:
+            try:
+                _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
+            except CycleRunnerError as exc:
+                return blocked(str(exc))
+        manifest["current_state"] = "certification_pending"
+        manifest["next_action"] = "run_done_certification"
+        _write_manifest(manifest_path, manifest)
+        return {
+            "cycle_id": manifest["cycle_id"],
+            "status": "ok",
+            "current_state": state,
+            "next_state": "certification_pending",
+            "next_action": "run_done_certification",
+            "blocking_issues": manifest.get("blocking_issues", []),
+        }
+
+    if state == "certification_pending":
         record_path = manifest.get("certification_record_path")
         if _path_exists(record_path):
             try:
