@@ -33,6 +33,17 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "cycle_id": cycle_id,
         "current_state": state,
         "roadmap_artifact_path": str(_REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"),
+        "strategy_authority": {
+            "path": "docs/architecture/system_strategy.md",
+            "version": "2026-03-30",
+        },
+        "source_authorities": [
+            {
+                "source_id": "SRE-MAPPING",
+                "path": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json",
+                "title": "Mapping Google SRE Reliability Principles to Spectrum Systems",
+            }
+        ],
         "roadmap_review_artifact_paths": [],
         "execution_report_paths": [],
         "implementation_review_paths": [],
