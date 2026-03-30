@@ -1,16 +1,30 @@
 {
   "artifact_type": "judgment_record",
   "artifact_id": "judgment-record-cycle-0001",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.92",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.0.93",
   "judgment_type": "artifact_release_readiness",
   "selected_outcome": "approve",
   "cycle_id": "cycle-0001",
   "policy_ref": "contracts/examples/judgment_policy.json",
   "claims_considered": [
-    "release readiness should only pass with complete evidence",
-    "high quality should satisfy approval threshold"
+    {
+      "claim_id": "claim-001",
+      "claim_text": "release readiness should only pass with complete evidence",
+      "is_material": true,
+      "supported_by_evidence_ids": [
+        "contracts/examples/execution_report_artifact.json"
+      ]
+    },
+    {
+      "claim_id": "claim-002",
+      "claim_text": "high quality should satisfy approval threshold",
+      "is_material": true,
+      "supported_by_evidence_ids": [
+        "contracts/examples/execution_report_artifact.json"
+      ]
+    }
   ],
   "evidence_refs": [
     "contracts/examples/execution_report_artifact.json"

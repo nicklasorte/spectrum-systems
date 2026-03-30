@@ -76,6 +76,7 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
             "policy_ref": "e",
         },
         "required_judgments": [],
+        "required_judgment_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],
         "judgment_scope": "autonomous_cycle",
         "judgment_environment": "prod",
         "judgment_policy_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")],
@@ -87,6 +88,7 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         },
         "judgment_evidence_refs": [str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")],
         "judgment_precedent_record_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json")],
+        "judgment_replay_reference_path": None,
         "judgment_record_path": None,
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
@@ -287,6 +289,97 @@ def test_cycle_runner_judgment_happy_path_allows_progression(tmp_path: Path) -> 
     assert Path(updated["judgment_record_path"]).is_file()
     assert Path(updated["judgment_application_record_path"]).is_file()
     assert Path(updated["judgment_eval_result_path"]).is_file()
+    eval_payload = _load(Path(updated["judgment_eval_result_path"]))
+    required = {item["eval_type"] for item in eval_payload["eval_results"] if item.get("passed") is True}
+    assert {"evidence_coverage", "policy_alignment", "replay_consistency"}.issubset(required)
+
+
+def test_cycle_runner_blocks_when_required_eval_missing_from_result(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    _write(manifest_path, manifest)
+    cycle_runner.run_cycle(manifest_path)
+
+    updated = _load(manifest_path)
+    eval_path = Path(updated["judgment_eval_result_path"])
+    eval_payload = _load(eval_path)
+    eval_payload["eval_results"] = [entry for entry in eval_payload["eval_results"] if entry["eval_type"] != "evidence_coverage"]
+    _write(eval_path, eval_payload)
+    updated["current_state"] = "roadmap_approved"
+    _write(manifest_path, updated)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "missing required judgment eval: evidence_coverage" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_evidence_coverage_fails(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    _write(manifest_path, manifest)
+    cycle_runner.run_cycle(manifest_path)
+
+    updated = _load(manifest_path)
+    eval_path = Path(updated["judgment_eval_result_path"])
+    eval_payload = _load(eval_path)
+    for entry in eval_payload["eval_results"]:
+        if entry["eval_type"] == "evidence_coverage":
+            entry["passed"] = False
+            entry["score"] = 0.0
+            break
+    _write(eval_path, eval_payload)
+    updated["current_state"] = "roadmap_approved"
+    _write(manifest_path, updated)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "failing required judgment eval: evidence_coverage" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_policy_alignment_fails_without_deviation(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    _write(manifest_path, manifest)
+    cycle_runner.run_cycle(manifest_path)
+
+    updated = _load(manifest_path)
+    eval_path = Path(updated["judgment_eval_result_path"])
+    eval_payload = _load(eval_path)
+    for entry in eval_payload["eval_results"]:
+        if entry["eval_type"] == "policy_alignment":
+            entry["passed"] = False
+            entry["score"] = 0.0
+            break
+    _write(eval_path, eval_payload)
+    updated["current_state"] = "roadmap_approved"
+    _write(manifest_path, updated)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "failing required judgment eval: policy_alignment" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_replay_consistency_fails(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    _write(manifest_path, manifest)
+    cycle_runner.run_cycle(manifest_path)
+
+    updated = _load(manifest_path)
+    eval_path = Path(updated["judgment_eval_result_path"])
+    eval_payload = _load(eval_path)
+    for entry in eval_payload["eval_results"]:
+        if entry["eval_type"] == "replay_consistency":
+            entry["passed"] = False
+            entry["score"] = 0.0
+            break
+    _write(eval_path, eval_payload)
+    updated["current_state"] = "roadmap_approved"
+    _write(manifest_path, updated)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "failing required judgment eval: replay_consistency" in " ".join(result["blocking_issues"])
 
 
 def test_cycle_runner_blocks_when_required_judgment_inputs_missing(tmp_path: Path) -> None:
@@ -378,6 +471,9 @@ def test_policy_selection_and_application_deterministic() -> None:
     out_a = run_judgment(**args)
     out_b = run_judgment(**args)
     assert out_a == out_b
+    eval_a = next(item for item in out_a["judgment_eval_result"]["eval_results"] if item["eval_type"] == "evidence_coverage")
+    eval_b = next(item for item in out_b["judgment_eval_result"]["eval_results"] if item["eval_type"] == "evidence_coverage")
+    assert eval_a["score"] == eval_b["score"]
 
 
 def test_judgment_application_records_conflicts_and_deviations(tmp_path: Path) -> None:

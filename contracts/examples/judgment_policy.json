@@ -3,11 +3,14 @@
   "artifact_id": "judgment-policy-artifact-release-readiness-v1",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.92",
+  "standards_version": "1.0.93",
   "judgment_type": "artifact_release_readiness",
   "status": "active",
   "scope": "autonomous_cycle",
-  "environments": ["prod", "staging"],
+  "environments": [
+    "prod",
+    "staging"
+  ],
   "required_inputs": [
     "quality_score",
     "evidence_complete",
@@ -18,7 +21,10 @@
     "required": true,
     "method_id": "exact-field-overlap",
     "method_version": "1.0.0",
-    "query_fields": ["scope_tag", "risk_level"],
+    "query_fields": [
+      "scope_tag",
+      "risk_level"
+    ],
     "threshold": 0.5,
     "top_k": 3,
     "similarity_basis": "matching scope_tag and risk_level fields"
@@ -29,8 +35,16 @@
       "outcome": "approve",
       "priority": 1,
       "all_conditions": [
-        {"field": "quality_score", "operator": "gte", "value": 0.9},
-        {"field": "evidence_complete", "operator": "eq", "value": true}
+        {
+          "field": "quality_score",
+          "operator": "gte",
+          "value": 0.9
+        },
+        {
+          "field": "evidence_complete",
+          "operator": "eq",
+          "value": true
+        }
       ],
       "rationale_template": "quality and evidence satisfied release readiness"
     },
@@ -39,7 +53,11 @@
       "outcome": "block",
       "priority": 2,
       "all_conditions": [
-        {"field": "risk_level", "operator": "eq", "value": "high"}
+        {
+          "field": "risk_level",
+          "operator": "eq",
+          "value": "high"
+        }
       ],
       "rationale_template": "high risk requires block"
     },
@@ -50,5 +68,17 @@
       "all_conditions": [],
       "rationale_template": "insufficient confidence for approval"
     }
-  ]
+  ],
+  "judgment_eval_requirements": {
+    "evidence_coverage": {
+      "minimum_score": 1.0,
+      "fail_closed_on_missing_material": true
+    },
+    "policy_alignment": {
+      "require_explicit_deviation_note_prefix": "policy_deviation:"
+    },
+    "replay_consistency": {
+      "required": true
+    }
+  }
 }

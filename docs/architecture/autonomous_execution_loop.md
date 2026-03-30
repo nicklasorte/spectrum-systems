@@ -57,7 +57,7 @@ This grouped slice adds a deterministic judgment seam for `artifact_release_read
 - `judgment_policy`: versioned policy artifact with deterministic selection keys (`judgment_type`, `scope`, `environment`) and status (`draft/canary/active/deprecated`).
 - `judgment_record`: rationale-bearing judgment result with claims, evidence refs, rule application, alternatives, uncertainties, conditions for decision change, and precedent trace.
 - `judgment_application_record`: captures policy matching set, selected policy, conflict signals, deviation notes, and final outcome.
-- `judgment_eval_result`: minimum viable deterministic consistency report for policy selection and precedent retrieval behavior.
+- `judgment_eval_result`: deterministic multi-eval artifact containing evidence coverage, policy alignment, replay consistency, and thin calibration/drift scaffolding.
 
 ### Policy registry behavior
 - Registry input is explicit `judgment_policy_paths` in `cycle_manifest`.
@@ -76,11 +76,23 @@ This grouped slice adds a deterministic judgment seam for `artifact_release_read
 ### Control gating behavior
 - `roadmap_approved -> execution_ready` can require `artifact_release_readiness` judgment.
 - If required judgment artifacts are missing or invalid: cycle blocks.
+- If required judgment eval types (`evidence_coverage`, `policy_alignment`, `replay_consistency`) are missing from `judgment_eval_result`: cycle blocks.
+- If any required judgment eval fails: cycle blocks.
 - If judgment outcome is `block`: cycle blocks.
 - If outcome is `revise`: cycle blocks pending explicit remediation (no silent promotion).
 - Only `approve` allows normal progression when other hard gates are satisfied.
 
+### Judgment evaluation behavior (grouped PQX slice)
+- Evidence coverage: deterministic scoring over `claims_considered` material claims and explicit `supported_by_evidence_ids` linkage.
+- Policy alignment: compares `judgment_record.selected_outcome` with `judgment_application_record.final_outcome`; silent divergence fails closed unless explicit `policy_deviation:` note is present.
+- Replay consistency: records a deterministic fingerprint hash of control-relevant judgment fields and compares against replay reference when provided.
+
+### Calibration/drift scaffolding now present
+- Outcome labeling seam via `calibration_scaffolding.outcome_label_input_path`.
+- Longitudinal calibration placeholder path via `calibration_scaffolding.longitudinal_artifact_path`.
+- Drift signal scaffold via `drift_signal_scaffolding` metadata and `judgment_outcome_drift_signal` eval result.
+
 ### Deferred for later calibration/drift phases
-- Policy canary rollout analytics and runtime drift calibration.
-- Multi-judgment composition across additional judgment types.
-- Richer precedent scoring features beyond deterministic overlap.
+- Population-level calibration metric computation and threshold governance.
+- Longitudinal calibration runners consuming human-labeled outcomes.
+- Drift alerting and control integration using aggregated judgment outcome distributions.

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.judgment_eval_runner import run_judgment_evals
 
 
 class JudgmentEngineError(ValueError):
@@ -147,20 +148,32 @@ def run_judgment(
     if not precedents:
         deviations.append("no precedent returned above configured threshold")
 
+    claims_considered = [
+        {
+            "claim_id": "claim-001",
+            "claim_text": "artifact release requires explicit evidence and policy evaluation",
+            "is_material": True,
+            "supported_by_evidence_ids": list(evidence_refs),
+        },
+        {
+            "claim_id": "claim-002",
+            "claim_text": "precedent consistency should be recorded for traceability",
+            "is_material": True,
+            "supported_by_evidence_ids": list(evidence_refs),
+        },
+    ]
+
     judgment_record = {
         "artifact_type": "judgment_record",
         "artifact_id": f"judgment-record-{cycle_id}",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.92",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
+        "standards_version": "1.0.93",
         "judgment_type": judgment_type,
         "selected_outcome": winning_rule["outcome"],
         "cycle_id": cycle_id,
         "policy_ref": selected_policy["_path"],
-        "claims_considered": [
-            "artifact release requires explicit evidence and policy evaluation",
-            "precedent consistency should be recorded for traceability",
-        ],
+        "claims_considered": claims_considered,
         "evidence_refs": evidence_refs,
         "rules_applied": [winning_rule["rule_id"]],
         "alternatives_considered": [rule["rule_id"] for rule in matched_rules[1:]],
@@ -189,7 +202,7 @@ def run_judgment(
         "artifact_id": f"judgment-application-{cycle_id}",
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
-        "standards_version": "1.0.92",
+        "standards_version": "1.0.93",
         "judgment_record_ref": f"judgment_record::{cycle_id}",
         "selected_policy_ref": selected_policy["_path"],
         "matched_policy_refs": matched_paths,
@@ -200,23 +213,13 @@ def run_judgment(
     }
     validate_artifact(application_record, "judgment_application_record")
 
-    eval_result = {
-        "artifact_type": "judgment_eval_result",
-        "artifact_id": f"judgment-eval-{cycle_id}",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.92",
-        "judgment_type": judgment_type,
-        "determinism_check": "passed",
-        "policy_selection_consistent": True,
-        "retrieval_consistent": True,
-        "notes": [
-            "selection sorted by status, semantic version, and policy id",
-            "precedent retrieval sorted by score desc then record_ref asc",
-        ],
-        "created_at": created_at,
-    }
-    validate_artifact(eval_result, "judgment_eval_result")
+    eval_result = run_judgment_evals(
+        cycle_id=cycle_id,
+        created_at=created_at,
+        judgment_record=judgment_record,
+        application_record=application_record,
+        policy=selected_policy,
+    )
 
     return {
         "judgment_record": judgment_record,

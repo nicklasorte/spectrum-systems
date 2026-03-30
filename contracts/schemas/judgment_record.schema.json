@@ -39,7 +39,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
       "type": "string",
@@ -72,7 +72,41 @@
     "claims_considered": {
       "type": "array",
       "items": {
-        "type": "string"
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim_id",
+              "claim_text",
+              "is_material",
+              "supported_by_evidence_ids"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "claim_text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "is_material": {
+                "type": "boolean"
+              },
+              "supported_by_evidence_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        ]
       },
       "minItems": 1
     },
