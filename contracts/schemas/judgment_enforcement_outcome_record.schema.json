@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_enforcement_outcome_record.schema.json",
+  "title": "Judgment Enforcement Outcome Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "outcome_id",
+    "action_id",
+    "final_outcome_status",
+    "progression_status",
+    "resulting_artifact_refs",
+    "failure_reason",
+    "operator_action_required",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_enforcement_outcome_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "outcome_id": {"type": "string", "minLength": 1},
+    "action_id": {"type": "string", "minLength": 1},
+    "final_outcome_status": {"type": "string", "enum": ["enforced", "failed", "pending"]},
+    "progression_status": {"type": "string", "enum": ["allowed", "allowed_with_warning", "frozen", "prevented"]},
+    "resulting_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "failure_reason": {"type": "string"},
+    "operator_action_required": {"type": "boolean"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id", "source_escalation_record_id", "action_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "source_escalation_record_id": {"type": "string", "minLength": 1},
+        "action_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

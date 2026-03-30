@@ -10,6 +10,9 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
 from spectrum_systems.modules.runtime.judgment_learning import evaluate_judgment_drift_threshold_policy
+from spectrum_systems.modules.runtime.judgment_enforcement import (
+    build_judgment_enforcement_artifacts,
+)
 
 
 class ControlLoopError(Exception):
@@ -455,8 +458,18 @@ def run_judgment_learning_control_loop(
             "judgment_control_escalation_record failed validation: " + "; ".join(escalation_errors)
         )
 
+    enforcement = build_judgment_enforcement_artifacts(
+        escalation,
+        created_at=created_at,
+    )
+
     return {
         "decision": decision,
         "judgment_control_escalation_record": escalation,
+        "judgment_enforcement_action_record": enforcement["judgment_enforcement_action_record"],
+        "judgment_enforcement_outcome_record": enforcement["judgment_enforcement_outcome_record"],
+        "judgment_operator_remediation_record": enforcement["judgment_operator_remediation_record"],
+        "progression_allowed": enforcement["progression_allowed"],
+        "enforcement_blocking_reasons": enforcement["blocking_reasons"],
         "drift_threshold_evaluation": drift_eval,
     }

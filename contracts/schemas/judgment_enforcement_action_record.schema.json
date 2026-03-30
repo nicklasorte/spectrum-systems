@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_enforcement_action_record.schema.json",
+  "title": "Judgment Enforcement Action Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "action_id",
+    "source_escalation_record_id",
+    "decision",
+    "action_type",
+    "target_scope",
+    "target_identifiers",
+    "execution_status",
+    "requested_at",
+    "started_at",
+    "completed_at",
+    "trace",
+    "policy_refs"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_enforcement_action_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "action_id": {"type": "string", "minLength": 1},
+    "source_escalation_record_id": {"type": "string", "minLength": 1},
+    "decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "promote_or_continue",
+        "continue_with_warning",
+        "freeze_pipeline_or_freeze_scope",
+        "block_artifact_or_block_progression"
+      ]
+    },
+    "target_scope": {"type": "string", "minLength": 1},
+    "target_identifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "trace_id", "judgment_eval_result_id", "judgment_drift_signal_id"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1},
+        "judgment_eval_result_id": {"type": "string", "minLength": 1},
+        "judgment_drift_signal_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "execution_status": {"type": "string", "enum": ["requested", "in_progress", "completed", "failed"]},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id", "source_escalation_record_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "source_escalation_record_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "policy_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["judgment_policy_id", "judgment_policy_version", "threshold_snapshot"],
+      "properties": {
+        "judgment_policy_id": {"type": "string", "minLength": 1},
+        "judgment_policy_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "threshold_snapshot": {"type": "object"}
+      }
+    }
+  }
+}
