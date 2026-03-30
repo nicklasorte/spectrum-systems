@@ -49,6 +49,9 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "execution_report_paths": [],
         "implementation_review_paths": [],
         "fix_roadmap_path": None,
+        "fix_roadmap_markdown_path": None,
+        "fix_group_refs": [],
+        "fix_execution_report_paths": [],
         "certification_record_path": None,
         "blocking_issues": [],
         "next_action": "await_roadmap_approval",
@@ -76,6 +79,14 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
     path = tmp_path / "cycle_manifest.json"
     _write(path, base)
     return base, path
+
+
+def _seed_implementation_reviews(manifest: dict, tmp_path: Path) -> None:
+    claude_path = tmp_path / "implementation_review_claude.json"
+    codex_path = tmp_path / "implementation_review_codex.json"
+    _write(claude_path, _fixture("implementation_review_claude.json"))
+    _write(codex_path, _fixture("implementation_review_codex.json"))
+    manifest["implementation_review_paths"] = [str(claude_path), str(codex_path)]
 
 
 def test_cycle_runner_happy_path_execution_ready_through_certified_done(tmp_path: Path) -> None:
@@ -121,6 +132,41 @@ def test_cycle_runner_happy_path_execution_ready_through_certified_done(tmp_path
     assert final_manifest["certification_status"] == "passed"
 
 
+def test_cycle_runner_review_to_fix_reentry_happy_path(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="implementation_reviews_complete")
+    _seed_implementation_reviews(manifest, tmp_path)
+    _write(manifest_path, manifest)
+
+    fix_roadmap_result = cycle_runner.run_cycle(manifest_path)
+    assert fix_roadmap_result["next_state"] == "fix_roadmap_ready"
+
+    after_fix_roadmap = _load(manifest_path)
+    assert after_fix_roadmap["current_state"] == "fix_roadmap_ready"
+    assert Path(after_fix_roadmap["fix_roadmap_path"]).is_file()
+    assert Path(after_fix_roadmap["fix_roadmap_markdown_path"]).is_file()
+    assert after_fix_roadmap["fix_group_refs"]
+
+    reentry_result = cycle_runner.run_cycle(manifest_path)
+    assert reentry_result["next_state"] == "fixes_in_progress"
+
+    after_reentry = _load(manifest_path)
+    assert after_reentry["current_state"] == "fixes_in_progress"
+    assert len(after_reentry["fix_execution_report_paths"]) == len(after_reentry["fix_group_refs"])
+
+    in_progress_result = cycle_runner.run_cycle(manifest_path)
+    assert in_progress_result["next_state"] == "fixes_complete_unreviewed"
+
+    complete_result = cycle_runner.run_cycle(manifest_path)
+    assert complete_result["next_state"] == "certification_pending"
+
+    final_manifest = _load(manifest_path)
+    final_manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    _write(manifest_path, final_manifest)
+
+    cert_result = cycle_runner.run_cycle(manifest_path)
+    assert cert_result["next_state"] == "certified_done"
+
+
 def test_cycle_runner_blocks_when_pqx_output_artifact_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _, manifest_path = _manifest(tmp_path, state="execution_ready")
 
@@ -140,6 +186,54 @@ def test_cycle_runner_blocks_when_pqx_output_artifact_missing(tmp_path: Path, mo
 
     assert result["status"] == "blocked"
     assert "pqx handoff failed" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_required_review_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="execution_complete_unreviewed")
+    codex_path = tmp_path / "implementation_review_codex.json"
+    _write(codex_path, _fixture("implementation_review_codex.json"))
+    manifest["implementation_review_paths"] = [str(codex_path)]
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "dual implementation reviews required" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_on_invalid_review_artifact(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="execution_complete_unreviewed")
+    bad_review = tmp_path / "bad_review.json"
+    _write(bad_review, {"artifact_type": "implementation_review_artifact"})
+    manifest["implementation_review_paths"] = [str(bad_review)]
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "implementation_review_artifact failed schema validation" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_fix_roadmap_generation_fails(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="implementation_reviews_complete")
+    _seed_implementation_reviews(manifest, tmp_path)
+    _write(manifest_path, manifest)
+
+    def _fail_generate(**_: object) -> dict:
+        raise ValueError("generator exploded")
+
+    monkeypatch.setattr(cycle_runner, "generate_fix_roadmap", _fail_generate)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "fix roadmap generation failed" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_fix_execution_reports_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="fixes_in_progress")
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "missing required artifact: fix_execution_report_paths" in " ".join(result["blocking_issues"])
 
 
 def test_cycle_runner_blocks_on_invalid_execution_report(tmp_path: Path) -> None:
@@ -165,23 +259,28 @@ def test_cycle_runner_blocks_on_failed_or_missing_certification(tmp_path: Path) 
     assert "done certification handoff failed" in " ".join(result["blocking_issues"])
 
 
-def test_cycle_runner_deterministic_replay_for_same_inputs(tmp_path: Path) -> None:
-    report = _load(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")
+def test_cycle_runner_deterministic_replay_for_same_review_driven_inputs(tmp_path: Path) -> None:
     first_dir = tmp_path / "first"
     second_dir = tmp_path / "second"
 
     for run_dir in (first_dir, second_dir):
-        manifest, manifest_path = _manifest(run_dir, state="execution_in_progress")
-        report_path = run_dir / "execution_report.json"
-        _write(report_path, report)
-        manifest["execution_report_paths"] = [str(report_path)]
+        manifest, manifest_path = _manifest(run_dir, state="implementation_reviews_complete")
+        _seed_implementation_reviews(manifest, run_dir)
         _write(manifest_path, manifest)
 
-    first_result = cycle_runner.run_cycle(first_dir / "cycle_manifest.json")
-    second_result = cycle_runner.run_cycle(second_dir / "cycle_manifest.json")
+    first_fix_roadmap = cycle_runner.run_cycle(first_dir / "cycle_manifest.json")
+    second_fix_roadmap = cycle_runner.run_cycle(second_dir / "cycle_manifest.json")
 
-    assert (first_result["status"], first_result["next_state"], first_result["next_action"]) == (
-        second_result["status"],
-        second_result["next_state"],
-        second_result["next_action"],
+    assert (first_fix_roadmap["status"], first_fix_roadmap["next_state"], first_fix_roadmap["next_action"]) == (
+        second_fix_roadmap["status"],
+        second_fix_roadmap["next_state"],
+        second_fix_roadmap["next_action"],
+    )
+
+    first_reentry = cycle_runner.run_cycle(first_dir / "cycle_manifest.json")
+    second_reentry = cycle_runner.run_cycle(second_dir / "cycle_manifest.json")
+    assert (first_reentry["status"], first_reentry["next_state"], first_reentry["next_action"]) == (
+        second_reentry["status"],
+        second_reentry["next_state"],
+        second_reentry["next_action"],
     )

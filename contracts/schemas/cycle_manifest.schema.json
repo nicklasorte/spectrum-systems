@@ -13,6 +13,9 @@
     "execution_report_paths",
     "implementation_review_paths",
     "fix_roadmap_path",
+    "fix_roadmap_markdown_path",
+    "fix_group_refs",
+    "fix_execution_report_paths",
     "certification_record_path",
     "blocking_issues",
     "next_action",
@@ -70,6 +73,24 @@
         "string",
         "null"
       ]
+    },
+    "fix_roadmap_markdown_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fix_group_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fix_execution_report_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "certification_record_path": {
       "type": [
