@@ -10,6 +10,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.fix_engine import generate_fix_roadmap
+from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 
 
@@ -158,6 +159,67 @@ def _write_manifest(manifest_path: str | Path, manifest: Dict[str, Any]) -> None
     Path(manifest_path).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
+def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: str | Path) -> Dict[str, Any]:
+    required = manifest.get("required_judgments", [])
+    if "artifact_release_readiness" not in required:
+        return manifest
+
+    if _path_exists(manifest.get("judgment_record_path")):
+        return manifest
+
+    scope = manifest.get("judgment_scope")
+    environment = manifest.get("judgment_environment")
+    if not isinstance(scope, str) or not scope:
+        raise CycleRunnerError("missing required judgment configuration: judgment_scope")
+    if not isinstance(environment, str) or not environment:
+        raise CycleRunnerError("missing required judgment configuration: judgment_environment")
+
+    policy_paths = manifest.get("judgment_policy_paths", [])
+    context = manifest.get("judgment_input_context", {})
+    evidence_refs = manifest.get("judgment_evidence_refs", [])
+    precedent_paths = manifest.get("judgment_precedent_record_paths", [])
+    if not isinstance(policy_paths, list) or not all(isinstance(path, str) for path in policy_paths):
+        raise CycleRunnerError("missing required judgment configuration: judgment_policy_paths")
+    if not isinstance(context, dict):
+        raise CycleRunnerError("missing required judgment configuration: judgment_input_context")
+    if not isinstance(evidence_refs, list) or not all(isinstance(ref, str) for ref in evidence_refs):
+        raise CycleRunnerError("missing required judgment configuration: judgment_evidence_refs")
+    if not evidence_refs:
+        raise CycleRunnerError("missing required judgment evidence refs")
+    if not isinstance(precedent_paths, list) or not all(isinstance(path, str) for path in precedent_paths):
+        raise CycleRunnerError("missing required judgment configuration: judgment_precedent_record_paths")
+
+    created_at = manifest.get("updated_at")
+    if not isinstance(created_at, str) or not created_at:
+        raise CycleRunnerError("missing required field: updated_at")
+    try:
+        outputs = run_judgment(
+            cycle_id=manifest["cycle_id"],
+            judgment_type="artifact_release_readiness",
+            scope=scope,
+            environment=environment,
+            policy_paths=policy_paths,
+            context=context,
+            evidence_refs=evidence_refs,
+            precedent_paths=precedent_paths,
+            created_at=created_at,
+        )
+    except (JudgmentEngineError, ValueError) as exc:
+        raise CycleRunnerError(f"required judgment failed: {exc}") from exc
+
+    root = Path(manifest_path).resolve().parent
+    jr = root / "judgment_record.json"
+    ja = root / "judgment_application_record.json"
+    je = root / "judgment_eval_result.json"
+    jr.write_text(json.dumps(outputs["judgment_record"], indent=2) + "\n", encoding="utf-8")
+    ja.write_text(json.dumps(outputs["judgment_application_record"], indent=2) + "\n", encoding="utf-8")
+    je.write_text(json.dumps(outputs["judgment_eval_result"], indent=2) + "\n", encoding="utf-8")
+    manifest["judgment_record_path"] = str(jr)
+    manifest["judgment_application_record_path"] = str(ja)
+    manifest["judgment_eval_result_path"] = str(je)
+    return manifest
+
+
 def _certification_summary(certification: Dict[str, Any]) -> str:
     checks = certification.get("check_results", {})
     if isinstance(checks, dict):
@@ -232,6 +294,31 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state == "roadmap_approved":
+        try:
+            manifest = _run_required_judgment_if_needed(manifest, manifest_path)
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
+        if "artifact_release_readiness" in manifest.get("required_judgments", []):
+            _write_manifest(manifest_path, manifest)
+        if "artifact_release_readiness" in manifest.get("required_judgments", []):
+            judgment_record_path = manifest.get("judgment_record_path")
+            judgment_application_path = manifest.get("judgment_application_record_path")
+            judgment_eval_path = manifest.get("judgment_eval_result_path")
+            if not (_path_exists(judgment_record_path) and _path_exists(judgment_application_path) and _path_exists(judgment_eval_path)):
+                return blocked("missing required artifact: judgment artifacts for artifact_release_readiness")
+            try:
+                _validate_artifact_file(judgment_record_path, "judgment_record", label="judgment_record")
+                _validate_artifact_file(judgment_application_path, "judgment_application_record", label="judgment_application_record")
+                _validate_artifact_file(judgment_eval_path, "judgment_eval_result", label="judgment_eval_result")
+            except CycleRunnerError as exc:
+                return blocked(str(exc))
+            outcome = _load_json(judgment_record_path).get("selected_outcome")
+            if outcome == "block":
+                return blocked("judgment outcome block prevents progression")
+            if outcome == "revise":
+                return blocked("judgment outcome revise requires explicit remediation before promotion")
+            if outcome != "approve":
+                return blocked(f"judgment outcome {outcome} does not satisfy release progression requirements")
         hard_gates = manifest.get("hard_gates", {})
         if not all(bool(hard_gates.get(k)) for k in ("roadmap_approved", "execution_contracts_pinned", "review_templates_present")):
             return blocked("hard gates not satisfied for execution readiness")

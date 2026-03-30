@@ -19,7 +19,17 @@
     "certification_record_path",
     "blocking_issues",
     "next_action",
-    "updated_at"
+    "updated_at",
+    "required_judgments",
+    "judgment_scope",
+    "judgment_environment",
+    "judgment_policy_paths",
+    "judgment_input_context",
+    "judgment_evidence_refs",
+    "judgment_precedent_record_paths",
+    "judgment_record_path",
+    "judgment_application_record_path",
+    "judgment_eval_result_path"
   ],
   "properties": {
     "cycle_id": {
@@ -178,6 +188,66 @@
       "default": "pending"
     },
     "certification_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "required_judgments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "artifact_release_readiness"
+        ]
+      }
+    },
+    "judgment_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "judgment_environment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "judgment_policy_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "judgment_input_context": {
+      "type": "object"
+    },
+    "judgment_evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "judgment_precedent_record_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "judgment_record_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "judgment_application_record_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "judgment_eval_result_path": {
       "type": [
         "string",
         "null"

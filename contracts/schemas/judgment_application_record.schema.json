@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_application_record.schema.json",
+  "title": "Judgment Application Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "judgment_record_ref",
+    "selected_policy_ref",
+    "matched_policy_refs",
+    "conflicts",
+    "deviations",
+    "final_outcome",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_application_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "judgment_record_ref": {"type": "string", "minLength": 1},
+    "selected_policy_ref": {"type": "string", "minLength": 1},
+    "matched_policy_refs": {"type": "array", "items": {"type": "string"}},
+    "conflicts": {"type": "array", "items": {"type": "string"}},
+    "deviations": {"type": "array", "items": {"type": "string"}},
+    "final_outcome": {"type": "string", "enum": ["approve", "revise", "block", "escalate", "needs_more_evidence"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

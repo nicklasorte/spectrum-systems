@@ -1,0 +1,52 @@
+{
+  "artifact_type": "judgment_record",
+  "artifact_id": "judgment-record-cycle-0001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.92",
+  "judgment_type": "artifact_release_readiness",
+  "selected_outcome": "approve",
+  "cycle_id": "cycle-0001",
+  "policy_ref": "contracts/examples/judgment_policy.json",
+  "claims_considered": [
+    "release readiness should only pass with complete evidence",
+    "high quality should satisfy approval threshold"
+  ],
+  "evidence_refs": [
+    "contracts/examples/execution_report_artifact.json"
+  ],
+  "rules_applied": [
+    "approve-high-quality"
+  ],
+  "alternatives_considered": [
+    "revise-default"
+  ],
+  "uncertainties": [],
+  "conditions_under_which_decision_changes": [
+    "quality_score falls below 0.9",
+    "evidence_complete becomes false"
+  ],
+  "precedent_retrieval": {
+    "method_id": "exact-field-overlap",
+    "method_version": "1.0.0",
+    "threshold": 0.5,
+    "top_k": 3,
+    "similarity_basis": "matching scope_tag and risk_level fields",
+    "scored_precedents": [
+      {
+        "record_ref": "contracts/examples/judgment_record.json",
+        "score": 1.0,
+        "basis": [
+          "scope_tag",
+          "risk_level"
+        ]
+      }
+    ]
+  },
+  "rationale_summary": "Policy conditions for approval were satisfied and aligned with precedent.",
+  "created_at": "2026-03-30T00:00:00Z",
+  "context_fingerprint": {
+    "scope_tag": "autonomous_cycle",
+    "risk_level": "low"
+  }
+}

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.orchestration import cycle_runner
+from spectrum_systems.modules.runtime.judgment_engine import retrieve_precedents, run_judgment, select_policy
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -74,6 +75,21 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
             "error_budget_ref": "d",
             "policy_ref": "e",
         },
+        "required_judgments": [],
+        "judgment_scope": "autonomous_cycle",
+        "judgment_environment": "prod",
+        "judgment_policy_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")],
+        "judgment_input_context": {
+            "quality_score": 0.95,
+            "evidence_complete": True,
+            "risk_level": "low",
+            "scope_tag": "autonomous_cycle",
+        },
+        "judgment_evidence_refs": [str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")],
+        "judgment_precedent_record_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json")],
+        "judgment_record_path": None,
+        "judgment_application_record_path": None,
+        "judgment_eval_result_path": None,
         "updated_at": "2026-03-30T00:00:00Z",
     }
     path = tmp_path / "cycle_manifest.json"
@@ -257,6 +273,153 @@ def test_cycle_runner_blocks_on_failed_or_missing_certification(tmp_path: Path) 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "done certification handoff failed" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_judgment_happy_path_allows_progression(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "ok"
+    assert result["next_state"] == "execution_ready"
+    updated = _load(manifest_path)
+    assert Path(updated["judgment_record_path"]).is_file()
+    assert Path(updated["judgment_application_record_path"]).is_file()
+    assert Path(updated["judgment_eval_result_path"]).is_file()
+
+
+def test_cycle_runner_blocks_when_required_judgment_inputs_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    manifest["judgment_input_context"] = {"quality_score": 0.95}
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "required judgment failed" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_required_judgment_artifacts_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    fake = tmp_path / "judgment_record.json"
+    _write(fake, _load(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"))
+    manifest["judgment_record_path"] = str(fake)
+    manifest["judgment_application_record_path"] = None
+    manifest["judgment_eval_result_path"] = None
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "missing required artifact: judgment artifacts" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_when_judgment_outcome_block(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    manifest["judgment_input_context"]["risk_level"] = "high"
+    manifest["judgment_input_context"]["quality_score"] = 0.4
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "judgment outcome block prevents progression" in " ".join(result["blocking_issues"])
+
+
+def test_precedent_retrieval_deterministic_order_and_scores() -> None:
+    retrieval = {
+        "required": True,
+        "method_id": "exact-field-overlap",
+        "method_version": "1.0.0",
+        "query_fields": ["scope_tag", "risk_level"],
+        "threshold": 0.5,
+        "top_k": 3,
+        "similarity_basis": "matching scope_tag and risk_level fields",
+    }
+    context = {"scope_tag": "autonomous_cycle", "risk_level": "low"}
+    paths = [
+        str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"),
+        str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"),
+    ]
+    first = retrieve_precedents(precedent_paths=paths, retrieval=retrieval, query_context=context)
+    second = retrieve_precedents(precedent_paths=paths, retrieval=retrieval, query_context=context)
+    assert first == second
+
+
+def test_policy_selection_and_application_deterministic() -> None:
+    policy_paths = [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")]
+    selected_a, matched_a = select_policy(
+        policy_paths=policy_paths,
+        judgment_type="artifact_release_readiness",
+        scope="autonomous_cycle",
+        environment="prod",
+    )
+    selected_b, matched_b = select_policy(
+        policy_paths=policy_paths,
+        judgment_type="artifact_release_readiness",
+        scope="autonomous_cycle",
+        environment="prod",
+    )
+    assert selected_a["artifact_id"] == selected_b["artifact_id"]
+    assert matched_a == matched_b
+
+    args = dict(
+        cycle_id="cycle-deterministic",
+        judgment_type="artifact_release_readiness",
+        scope="autonomous_cycle",
+        environment="prod",
+        policy_paths=policy_paths,
+        context={"quality_score": 0.95, "evidence_complete": True, "risk_level": "low", "scope_tag": "autonomous_cycle"},
+        evidence_refs=[str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")],
+        precedent_paths=[str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json")],
+        created_at="2026-03-30T00:00:00Z",
+    )
+    out_a = run_judgment(**args)
+    out_b = run_judgment(**args)
+    assert out_a == out_b
+
+
+def test_judgment_application_records_conflicts_and_deviations(tmp_path: Path) -> None:
+    policy = _load(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")
+    policy["precedent_retrieval"]["required"] = False
+    policy["precedent_retrieval"]["threshold"] = 1.0
+    policy["decision_rules"].insert(
+        1,
+        {
+            "rule_id": "also-approve",
+            "outcome": "approve",
+            "priority": 1,
+            "all_conditions": [],
+            "rationale_template": "secondary always-on approval path",
+        },
+    )
+    policy["decision_rules"].insert(
+        2,
+        {
+            "rule_id": "conflicting-block",
+            "outcome": "block",
+            "priority": 1,
+            "all_conditions": [],
+            "rationale_template": "conflict generation rule",
+        },
+    )
+    policy_path = tmp_path / "policy.json"
+    _write(policy_path, policy)
+    out = run_judgment(
+        cycle_id="cycle-conflict",
+        judgment_type="artifact_release_readiness",
+        scope="autonomous_cycle",
+        environment="prod",
+        policy_paths=[str(policy_path)],
+        context={"quality_score": 0.95, "evidence_complete": True, "risk_level": "low", "scope_tag": "autonomous_cycle"},
+        evidence_refs=[str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")],
+        precedent_paths=[],
+        created_at="2026-03-30T00:00:00Z",
+    )
+    app = out["judgment_application_record"]
+    assert app["conflicts"]
+    assert app["deviations"]
 
 
 def test_cycle_runner_deterministic_replay_for_same_review_driven_inputs(tmp_path: Path) -> None:

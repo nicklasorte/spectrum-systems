@@ -239,6 +239,16 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_judgment_layer_contract_examples_validate(self) -> None:
+        for name in (
+            "judgment_policy",
+            "judgment_record",
+            "judgment_application_record",
+            "judgment_eval_result",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):

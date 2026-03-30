@@ -33,5 +33,28 @@
   "execution_started_at": null,
   "execution_completed_at": null,
   "certification_status": "pending",
-  "certification_summary": null
+  "certification_summary": null,
+  "required_judgments": [
+    "artifact_release_readiness"
+  ],
+  "judgment_scope": "autonomous_cycle",
+  "judgment_environment": "prod",
+  "judgment_policy_paths": [
+    "contracts/examples/judgment_policy.json"
+  ],
+  "judgment_input_context": {
+    "quality_score": 0.95,
+    "evidence_complete": true,
+    "risk_level": "low",
+    "scope_tag": "autonomous_cycle"
+  },
+  "judgment_evidence_refs": [
+    "contracts/examples/execution_report_artifact.json"
+  ],
+  "judgment_precedent_record_paths": [
+    "contracts/examples/judgment_record.json"
+  ],
+  "judgment_record_path": "contracts/examples/judgment_record.json",
+  "judgment_application_record_path": "contracts/examples/judgment_application_record.json",
+  "judgment_eval_result_path": "contracts/examples/judgment_eval_result.json"
 }
