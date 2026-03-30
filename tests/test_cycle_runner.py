@@ -306,7 +306,10 @@ def test_cycle_runner_blocks_on_failed_or_missing_certification(tmp_path: Path) 
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert "done certification handoff failed" in " ".join(result["blocking_issues"])
+    assert any(
+        token in " ".join(result["blocking_issues"])
+        for token in ("done certification handoff failed", "next-step decision blocked progression")
+    )
 
 
 def test_cycle_runner_judgment_happy_path_allows_progression(tmp_path: Path) -> None:

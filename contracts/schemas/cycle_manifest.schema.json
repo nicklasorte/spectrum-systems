@@ -197,6 +197,12 @@
         "null"
       ]
     },
+    "next_step_decision_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "required_judgments": {
       "type": "array",
       "items": {

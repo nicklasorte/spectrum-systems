@@ -1,0 +1,69 @@
+{
+  "valid_progression_case": {
+    "decision_id": "e66f75e1f6a4b2f5ad59db4d7f696fcb2e16cf78f4ab0d1b8f1282c7f7e8083a",
+    "cycle_id": "cycle-0001",
+    "current_state": "draft_roadmap",
+    "next_action": "submit_for_review",
+    "allowed_actions": [
+      "submit_for_review"
+    ],
+    "blocking": false,
+    "blocking_reasons": [],
+    "required_inputs_missing": [],
+    "drift_detected": false,
+    "drift_reasons": [],
+    "strategy_compliant": true,
+    "source_grounded": true,
+    "trust_score": 100,
+    "decision_rationale": "state=draft_roadmap;action=submit_for_review;blocking=false;reasons=0;drift=false;trust=100",
+    "decided_at": "2026-03-30T00:00:00Z"
+  },
+  "blocked_case": {
+    "decision_id": "dd7862ad8994a20f2c58e0d3a2df9953b2f729f98ea78a6b16008b5e6fcf7bde",
+    "cycle_id": "cycle-0002",
+    "current_state": "roadmap_under_review",
+    "next_action": "block",
+    "allowed_actions": [
+      "await_required_inputs",
+      "block"
+    ],
+    "blocking": true,
+    "blocking_reasons": [
+      "missing required governance field: strategy_authority"
+    ],
+    "required_inputs_missing": [
+      "strategy_authority"
+    ],
+    "drift_detected": false,
+    "drift_reasons": [],
+    "strategy_compliant": false,
+    "source_grounded": false,
+    "trust_score": 20,
+    "decision_rationale": "state=roadmap_under_review;action=block;blocking=true;reasons=1;drift=false;trust=20",
+    "decided_at": "2026-03-30T00:00:00Z"
+  },
+  "drift_case": {
+    "decision_id": "f383dd614f1a9f6f1303bc50b95be6f4fd8d95496ba532e31f66a0d779ea4ab8",
+    "cycle_id": "cycle-0003",
+    "current_state": "execution_complete_unreviewed",
+    "next_action": "generate_fix_roadmap",
+    "allowed_actions": [
+      "request_implementation_reviews",
+      "generate_fix_roadmap"
+    ],
+    "blocking": true,
+    "blocking_reasons": [
+      "drift detected requires remediation"
+    ],
+    "required_inputs_missing": [],
+    "drift_detected": true,
+    "drift_reasons": [
+      "drift_status=exceeds_threshold"
+    ],
+    "strategy_compliant": false,
+    "source_grounded": true,
+    "trust_score": 55,
+    "decision_rationale": "state=execution_complete_unreviewed;action=generate_fix_roadmap;blocking=true;reasons=1;drift=true;trust=55",
+    "decided_at": "2026-03-30T00:00:00Z"
+  }
+}
