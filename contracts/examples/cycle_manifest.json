@@ -25,5 +25,10 @@
     "error_budget_ref": "artifacts/runtime/error_budget_status.json",
     "policy_ref": "artifacts/runtime/evaluation_control_decision.json"
   },
-  "updated_at": "2026-03-30T00:00:00Z"
+  "updated_at": "2026-03-30T00:00:00Z",
+  "pqx_request_ref": null,
+  "execution_started_at": null,
+  "execution_completed_at": null,
+  "certification_status": "pending",
+  "certification_summary": null
 }

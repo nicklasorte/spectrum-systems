@@ -203,6 +203,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-G3-G4-B19-B26-2026-03-29.md | G3+G4 B19–B26 — Multi-slice governance + bundle execution system | Active |
 | docs/review-actions/PLAN-G5-B27-B30-2026-03-29.md | G5 B27–B30 — Queue-aware scheduling + canary + judgment + N-slice validation | Active |
 | docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-2026-03-30.md | AUTONOMOUS-LOOP-FDN-01 — Autonomous execution loop control-plane foundation | Active |
+| docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-CLOSED-2026-03-30.md | CTRL-LOOP-01 — Closed-loop PQX + certification write-back bundle | Active |
 
 Update this table when plans are created or completed.
 

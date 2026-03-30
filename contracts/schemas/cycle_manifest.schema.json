@@ -19,7 +19,10 @@
     "updated_at"
   ],
   "properties": {
-    "cycle_id": {"type": "string", "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"},
+    "cycle_id": {
+      "type": "string",
+      "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"
+    },
     "current_state": {
       "type": "string",
       "enum": [
@@ -38,33 +41,126 @@
         "blocked"
       ]
     },
-    "roadmap_artifact_path": {"type": ["string", "null"]},
-    "roadmap_review_artifact_paths": {"type": "array", "items": {"type": "string"}},
-    "execution_report_paths": {"type": "array", "items": {"type": "string"}},
-    "implementation_review_paths": {"type": "array", "items": {"type": "string"}},
-    "fix_roadmap_path": {"type": ["string", "null"]},
-    "certification_record_path": {"type": ["string", "null"]},
-    "blocking_issues": {"type": "array", "items": {"type": "string"}},
-    "next_action": {"type": "string", "minLength": 1},
+    "roadmap_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "roadmap_review_artifact_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution_report_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementation_review_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fix_roadmap_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "certification_record_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocking_issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_action": {
+      "type": "string",
+      "minLength": 1
+    },
     "roadmap_approval_state": {
       "type": "string",
-      "enum": ["pending", "approved", "rejected"],
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
       "default": "pending"
     },
     "hard_gates": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "roadmap_approved": {"type": "boolean"},
-        "execution_contracts_pinned": {"type": "boolean"},
-        "review_templates_present": {"type": "boolean"}
+        "roadmap_approved": {
+          "type": "boolean"
+        },
+        "execution_contracts_pinned": {
+          "type": "boolean"
+        },
+        "review_templates_present": {
+          "type": "boolean"
+        }
       }
     },
-    "pqx_execution_request_path": {"type": ["string", "null"]},
+    "pqx_execution_request_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "done_certification_input_refs": {
       "type": "object",
-      "additionalProperties": {"type": "string"}
+      "additionalProperties": {
+        "type": "string"
+      }
     },
-    "updated_at": {"type": "string", "format": "date-time"}
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pqx_request_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_started_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "execution_completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "certification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "passed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "certification_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   }
 }
