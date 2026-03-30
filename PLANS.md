@@ -205,6 +205,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-2026-03-30.md | AUTONOMOUS-LOOP-FDN-01 — Autonomous execution loop control-plane foundation | Active |
 | docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-CLOSED-2026-03-30.md | CTRL-LOOP-01 — Closed-loop PQX + certification write-back bundle | Active |
 | docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-REVIEW-FIX-REENTRY-2026-03-30.md | CTRL-LOOP-01 — Grouped review ingestion + fix-roadmap + PQX re-entry slice | Active |
+| docs/review-actions/PLAN-AUTONOMOUS-EXEC-LOOP-OBSERVABILITY-2026-03-30.md | CTRL-LOOP-01 — cycle status/observability grouped PQX slice | Active |
 
 Update this table when plans are created or completed.
 

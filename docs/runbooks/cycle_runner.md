@@ -43,3 +43,33 @@ Review-driven closed-loop sequence:
 `execution_complete_unreviewed -> implementation_reviews_complete -> fix_roadmap_ready -> fixes_in_progress -> fixes_complete_unreviewed -> certification_pending`
 
 `blocked` means the cycle cannot advance until required artifacts are repaired and the same manifest is rerun.
+
+
+## Observability/status reporting
+Use `scripts/run_cycle_observability.py` to build deterministic status artifacts without mutating cycle state.
+
+Single-cycle status artifact:
+```bash
+python scripts/run_cycle_observability.py   --manifest runs/cycle-0001/cycle_manifest.json   --status-output runs/cycle-0001/cycle_status_artifact.json
+```
+
+Backlog/queue snapshot over multiple cycles:
+```bash
+python scripts/run_cycle_observability.py   --manifest runs/cycle-0001/cycle_manifest.json   --manifest runs/cycle-0002/cycle_manifest.json   --backlog-output runs/cycle_backlog_snapshot.json
+```
+
+### Deterministic blocked reason categories
+- `missing_required_artifact`
+- `invalid_artifact_contract`
+- `pqx_execution_failure`
+- `review_missing`
+- `review_invalid`
+- `fix_generation_failure`
+- `certification_missing`
+- `certification_failed`
+- `other`
+
+### Fail-closed reporting conditions
+- `current_state=blocked` with empty `blocking_issues` is rejected.
+- Partial timing fields (`execution_started_at` without `execution_completed_at` or vice versa) are rejected.
+- All rollups derive from recorded artifacts only; missing derivation inputs are reported, not guessed.

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cycle_backlog_snapshot.schema.json",
+  "title": "Cycle Backlog Snapshot",
+  "description": "Deterministic multi-cycle queue/backlog and metrics rollup derived from cycle manifests.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "generated_at",
+    "cycle_count",
+    "queues",
+    "metrics",
+    "cycle_status_refs",
+    "summary_markdown"
+  ],
+  "properties": {
+    "artifact_type": {"const": "cycle_backlog_snapshot"},
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "cycle_count": {"type": "integer", "minimum": 1},
+    "queues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_cycles",
+        "blocked_cycles",
+        "certification_pending_cycles",
+        "awaiting_review_cycles",
+        "awaiting_pqx_execution_cycles"
+      ],
+      "properties": {
+        "active_cycles": {"type": "array", "items": {"type": "string"}},
+        "blocked_cycles": {"type": "array", "items": {"type": "string"}},
+        "certification_pending_cycles": {"type": "array", "items": {"type": "string"}},
+        "awaiting_review_cycles": {"type": "array", "items": {"type": "string"}},
+        "awaiting_pqx_execution_cycles": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count_by_state",
+        "blocked_by_reason",
+        "average_execution_seconds",
+        "average_execution_seconds_sample_size",
+        "open_critical_findings",
+        "open_blocker_findings",
+        "certification_pass_count",
+        "certification_fail_count"
+      ],
+      "properties": {
+        "count_by_state": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "blocked_by_reason": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "average_execution_seconds": {"type": ["number", "null"], "minimum": 0},
+        "average_execution_seconds_sample_size": {"type": "integer", "minimum": 0},
+        "open_critical_findings": {"type": "integer", "minimum": 0},
+        "open_blocker_findings": {"type": "integer", "minimum": 0},
+        "certification_pass_count": {"type": "integer", "minimum": 0},
+        "certification_fail_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "cycle_status_refs": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "summary_markdown": {"type": "string", "minLength": 1}
+  }
+}
