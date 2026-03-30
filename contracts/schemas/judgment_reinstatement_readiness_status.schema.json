@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_reinstatement_readiness_status.schema.json",
+  "title": "Judgment Reinstatement Readiness Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "remediation_id",
+    "closure_artifact_present",
+    "closure_artifact_valid",
+    "reinstatement_artifact_present",
+    "reinstatement_artifact_valid",
+    "required_gates_satisfied",
+    "required_gates_not_satisfied",
+    "reinstatement_eligible",
+    "blocking_reasons",
+    "resulting_eligible_state",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_reinstatement_readiness_status"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "remediation_id": {"type": "string", "minLength": 1},
+    "closure_artifact_present": {"type": "boolean"},
+    "closure_artifact_valid": {"type": "boolean"},
+    "reinstatement_artifact_present": {"type": "boolean"},
+    "reinstatement_artifact_valid": {"type": "boolean"},
+    "required_gates_satisfied": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "required_gates_not_satisfied": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "reinstatement_eligible": {"type": "boolean"},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "missing_required_evidence",
+          "missing_eval_result",
+          "threshold_not_met",
+          "missing_closure_artifact",
+          "missing_reinstatement_artifact",
+          "invalid_artifact_contract",
+          "remediation_not_in_closure_state",
+          "remediation_not_closed"
+        ]
+      }
+    },
+    "resulting_eligible_state": {
+      "type": "string",
+      "enum": ["unblock", "unfreeze", "continue", "warning_acknowledged_continue"]
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "remediation_record_id",
+        "closure_record_id",
+        "reinstatement_record_id"
+      ],
+      "properties": {
+        "trace_id": {"type": "string"},
+        "remediation_record_id": {"type": "string"},
+        "closure_record_id": {"type": "string"},
+        "reinstatement_record_id": {"type": "string"}
+      }
+    }
+  }
+}

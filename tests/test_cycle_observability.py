@@ -7,6 +7,8 @@ import pytest
 
 from spectrum_systems.orchestration.cycle_observability import (
     CycleObservabilityError,
+    build_reinstatement_readiness_status,
+    build_remediation_readiness_status,
     build_cycle_backlog_snapshot,
     build_cycle_status,
 )
@@ -72,6 +74,10 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
     }
+
+
+def _example(name: str) -> dict:
+    return json.loads((Path("contracts/examples") / f"{name}.json").read_text(encoding="utf-8"))
 
 
 def test_cycle_status_artifact_generation_deterministic_for_healthy_cycle(tmp_path: Path) -> None:
@@ -188,3 +194,93 @@ def test_fail_closed_on_incomplete_timing_data(tmp_path: Path) -> None:
 
     with pytest.raises(CycleObservabilityError, match="incomplete timing data"):
         build_cycle_status(path)
+
+
+def test_remediation_readiness_true_when_evidence_and_thresholds_are_satisfied() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    status = build_remediation_readiness_status(
+        remediation,
+        evidence_artifact_refs=remediation["required_evidence_artifacts"],
+        threshold_checks={
+            "thresholds_satisfied": True,
+            "source_condition_addressed": True,
+            "policy_version_bound": True,
+        },
+    )
+    assert status["closure_eligible"] is True
+    assert status["blocking_reasons"] == []
+
+
+def test_remediation_readiness_fail_closed_with_missing_evidence_reason() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    status = build_remediation_readiness_status(
+        remediation,
+        evidence_artifact_refs=["judgment_enforcement_outcome_record"],
+        threshold_checks={"thresholds_satisfied": True},
+    )
+    assert status["closure_eligible"] is False
+    assert "missing_required_evidence" in status["blocking_reasons"]
+
+
+def test_reinstatement_readiness_not_ready_when_closure_valid_but_reinstatement_missing() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "closed"
+    closure = _example("judgment_remediation_closure_record")
+    status = build_reinstatement_readiness_status(remediation, closure_record=closure, reinstatement_record=None)
+    assert status["reinstatement_eligible"] is False
+    assert "missing_reinstatement_artifact" in status["blocking_reasons"]
+
+
+def test_reinstatement_readiness_true_when_closure_and_reinstatement_present() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "closed"
+    closure = _example("judgment_remediation_closure_record")
+    reinstatement = _example("judgment_progression_reinstatement_record")
+    status = build_reinstatement_readiness_status(
+        remediation,
+        closure_record=closure,
+        reinstatement_record=reinstatement,
+    )
+    assert status["reinstatement_eligible"] is True
+    assert status["blocking_reasons"] == []
+
+
+def test_readiness_builders_are_deterministic() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    kwargs = {
+        "evidence_artifact_refs": remediation["required_evidence_artifacts"],
+        "threshold_checks": {
+            "thresholds_satisfied": True,
+            "source_condition_addressed": True,
+            "policy_version_bound": True,
+        },
+    }
+    first = build_remediation_readiness_status(remediation, **kwargs)
+    second = build_remediation_readiness_status(remediation, **kwargs)
+    assert first == second
+
+
+def test_backlog_includes_readiness_queues_and_missing_artifacts_fail_closed(tmp_path: Path) -> None:
+    manifest = _base_manifest(cycle_id="cycle-ready", state="execution_ready", updated_at="2026-03-30T05:00:00Z")
+    manifest["next_action"] = "prepare_execution_request"
+    path = tmp_path / "manifest.json"
+    _write(path, manifest)
+
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    snapshot = build_cycle_backlog_snapshot(
+        [path],
+        generated_at="2026-03-30T05:10:00Z",
+        remediation_records=[remediation],
+        remediation_evidence_refs_by_id={remediation["remediation_id"]: ["judgment_enforcement_outcome_record"]},
+        remediation_threshold_checks_by_id={remediation["remediation_id"]: {"thresholds_satisfied": True}},
+        closure_records=[],
+        reinstatement_records=[],
+    )
+    assert remediation["remediation_id"] in snapshot["queues"]["open_remediations"]
+    assert remediation["remediation_id"] in snapshot["queues"]["remediations_blocked_on_missing_evidence"]
+    assert remediation["remediation_id"] in snapshot["queues"]["frozen_or_blocked_with_unresolved_remediation"]
+    assert snapshot["metrics"]["reinstatement_ready_count"] == 0

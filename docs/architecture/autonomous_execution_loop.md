@@ -198,6 +198,43 @@ This grouped slice wires learning artifacts directly into deterministic control 
 
 This preserves end-to-end traceability: learning signal -> control escalation decision -> enforcement action -> enforcement outcome -> operator remediation (when required).
 
+## Remediation closure/reinstatement readiness observability extension (grouped PQX slice)
+
+This slice adds deterministic, read-only readiness artifacts to explain closure and reinstatement eligibility without changing enforcement authority.
+
+### New governed observability artifacts
+- `judgment_remediation_readiness_status`
+  - Answers: “Is this remediation ready to close? If not, why?”
+  - Includes lifecycle state, required evidence refs, evidence present/missing, required thresholds, thresholds satisfied/not satisfied, closure eligibility, normalized blockers, and trace linkage.
+- `judgment_reinstatement_readiness_status`
+  - Answers: “Can this frozen/blocked path resume? If not, why?”
+  - Includes closure/reinstatement artifact present+valid signals, required gate satisfaction, reinstatement eligibility, resulting eligible state (`unblock`/`unfreeze`/`continue`), normalized blockers, and trace linkage.
+
+### Deterministic readiness evaluation
+- `build_remediation_readiness_status(...)` and `build_reinstatement_readiness_status(...)` compute readiness strictly from supplied artifacts and explicit inputs.
+- No hidden state or mutable cache is used.
+- Missing required evidence, missing closure artifact, or missing reinstatement artifact fails closed (`eligible=false`).
+- Normalized blockers include:
+  - `missing_required_evidence`
+  - `missing_eval_result`
+  - `threshold_not_met`
+  - `missing_closure_artifact`
+  - `missing_reinstatement_artifact`
+
+### Backlog/queue visibility extension
+- `cycle_backlog_snapshot` now includes remediation/reinstatement cohorts:
+  - open remediations
+  - remediations ready for closure
+  - remediations blocked on missing evidence
+  - remediations pending review
+  - reinstatement-ready items
+  - frozen/blocked items with unresolved remediation
+- Cohorts are derived from governed artifacts only and never mutate control state.
+
+### Operator/control support
+- Operators can identify precise blockers before attempting closure/reinstatement.
+- Automation can inspect explicit readiness/blocked reasons instead of inferring from lifecycle transitions.
+- Authority boundaries remain unchanged: these artifacts report readiness only and do not trigger enforcement or state transitions.
 
 ## Remediation closure + progression reinstatement extension (grouped PQX slice)
 

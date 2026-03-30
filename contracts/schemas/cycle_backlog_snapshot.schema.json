@@ -28,14 +28,26 @@
         "blocked_cycles",
         "certification_pending_cycles",
         "awaiting_review_cycles",
-        "awaiting_pqx_execution_cycles"
+        "awaiting_pqx_execution_cycles",
+        "open_remediations",
+        "remediations_ready_for_closure",
+        "remediations_blocked_on_missing_evidence",
+        "remediations_pending_review",
+        "reinstatement_ready_items",
+        "frozen_or_blocked_with_unresolved_remediation"
       ],
       "properties": {
         "active_cycles": {"type": "array", "items": {"type": "string"}},
         "blocked_cycles": {"type": "array", "items": {"type": "string"}},
         "certification_pending_cycles": {"type": "array", "items": {"type": "string"}},
         "awaiting_review_cycles": {"type": "array", "items": {"type": "string"}},
-        "awaiting_pqx_execution_cycles": {"type": "array", "items": {"type": "string"}}
+        "awaiting_pqx_execution_cycles": {"type": "array", "items": {"type": "string"}},
+        "open_remediations": {"type": "array", "items": {"type": "string"}},
+        "remediations_ready_for_closure": {"type": "array", "items": {"type": "string"}},
+        "remediations_blocked_on_missing_evidence": {"type": "array", "items": {"type": "string"}},
+        "remediations_pending_review": {"type": "array", "items": {"type": "string"}},
+        "reinstatement_ready_items": {"type": "array", "items": {"type": "string"}},
+        "frozen_or_blocked_with_unresolved_remediation": {"type": "array", "items": {"type": "string"}}
       }
     },
     "metrics": {
@@ -49,7 +61,13 @@
         "open_critical_findings",
         "open_blocker_findings",
         "certification_pass_count",
-        "certification_fail_count"
+        "certification_fail_count",
+        "open_remediation_count",
+        "remediation_ready_for_closure_count",
+        "remediation_blocked_missing_evidence_count",
+        "remediation_pending_review_count",
+        "reinstatement_ready_count",
+        "frozen_or_blocked_unresolved_remediation_count"
       ],
       "properties": {
         "count_by_state": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
@@ -59,7 +77,13 @@
         "open_critical_findings": {"type": "integer", "minimum": 0},
         "open_blocker_findings": {"type": "integer", "minimum": 0},
         "certification_pass_count": {"type": "integer", "minimum": 0},
-        "certification_fail_count": {"type": "integer", "minimum": 0}
+        "certification_fail_count": {"type": "integer", "minimum": 0},
+        "open_remediation_count": {"type": "integer", "minimum": 0},
+        "remediation_ready_for_closure_count": {"type": "integer", "minimum": 0},
+        "remediation_blocked_missing_evidence_count": {"type": "integer", "minimum": 0},
+        "remediation_pending_review_count": {"type": "integer", "minimum": 0},
+        "reinstatement_ready_count": {"type": "integer", "minimum": 0},
+        "frozen_or_blocked_unresolved_remediation_count": {"type": "integer", "minimum": 0}
       }
     },
     "cycle_status_refs": {
