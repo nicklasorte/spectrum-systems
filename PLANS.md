@@ -212,6 +212,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CTRL-LOOP-04-READINESS-OBSERVABILITY-2026-03-30.md | CTRL-LOOP-04 grouped PQX slice — remediation/reinstatement readiness observability | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-05-POLICY-LIFECYCLE-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — judgment policy lifecycle governance (canary/promotion/rollback/revoke) | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT-HARDENING-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — mandatory lifecycle/rollout enforcement in governed runtime/control paths | Active |
+| docs/review-actions/PLAN-CTRL-LOOP-05-CYCLE-MANIFEST-PROPAGATION-FIX-2026-03-30.md | CTRL-LOOP-05 surgical hardening — cycle_manifest lifecycle/rollout producer propagation fix | Active |
 
 Update this table when plans are created or completed.
 
