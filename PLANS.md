@@ -210,6 +210,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CTRL-LOOP-JUDGMENT-MANIFEST-COMPAT-2026-03-30.md | CTRL-LOOP-01 surgical hardening — cycle_manifest judgment field propagation | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-02-ENFORCEMENT-2026-03-30.md | CTRL-LOOP-02 grouped PQX slice — escalation enforcement action/outcome/remediation wiring | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-04-READINESS-OBSERVABILITY-2026-03-30.md | CTRL-LOOP-04 grouped PQX slice — remediation/reinstatement readiness observability | Active |
+| docs/review-actions/PLAN-CTRL-LOOP-05-POLICY-LIFECYCLE-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — judgment policy lifecycle governance (canary/promotion/rollback/revoke) | Active |
 
 Update this table when plans are created or completed.
 

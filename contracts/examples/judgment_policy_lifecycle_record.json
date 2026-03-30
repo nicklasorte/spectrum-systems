@@ -1,0 +1,41 @@
+{
+  "artifact_type": "judgment_policy_lifecycle_record",
+  "artifact_id": "judgment-policy-lifecycle-artifact-release-readiness-v1-1-0-promote-active",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.99",
+  "lifecycle_id": "judgment-policy-lifecycle-artifact-release-readiness-v1-1-0-promote-active",
+  "policy_id": "judgment-policy-artifact-release-readiness-v1",
+  "from_version": "1.1.0",
+  "to_version": "1.1.0",
+  "lifecycle_action": "promote_active",
+  "source_reason": {
+    "reasons": [
+      "canary gates satisfied"
+    ],
+    "triggering_signals": [
+      "judgment_eval_result::eval-cycle-001",
+      "judgment_drift_signal::drift-cycle-001",
+      "judgment_error_budget_status::budget-cycle-001"
+    ]
+  },
+  "required_gates": {
+    "judgment_eval_healthy": true,
+    "drift_within_bounds": true,
+    "error_budget_healthy": true,
+    "critical_remediation_clear": true,
+    "readiness_control_checks": true
+  },
+  "resulting_status": "active",
+  "trace": {
+    "trace_id": "trace-policy-rollout-0001",
+    "run_id": "run-policy-rollout-0001",
+    "rollout_id": "judgment-policy-rollout-artifact-release-readiness-v1-1-0-canary"
+  },
+  "actor": {
+    "actor_id": "autonomous-cycle-controller",
+    "actor_type": "system",
+    "module": "spectrum_systems.modules.runtime.judgment_policy_lifecycle"
+  },
+  "created_at": "2026-03-30T00:20:00Z"
+}

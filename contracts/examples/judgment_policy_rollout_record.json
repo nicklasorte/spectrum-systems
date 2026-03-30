@@ -1,0 +1,30 @@
+{
+  "artifact_type": "judgment_policy_rollout_record",
+  "artifact_id": "judgment-policy-rollout-artifact-release-readiness-v1-1-0-canary",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.99",
+  "rollout_id": "judgment-policy-rollout-artifact-release-readiness-v1-1-0-canary",
+  "policy_id": "judgment-policy-artifact-release-readiness-v1",
+  "policy_version": "1.1.0",
+  "rollout_type": "canary",
+  "cohort": {
+    "kind": "trace_bucket",
+    "modulo": 100,
+    "buckets": [0, 1, 2, 3, 4]
+  },
+  "expected_gates": {
+    "judgment_eval_healthy": true,
+    "drift_within_bounds": true,
+    "error_budget_healthy": true,
+    "critical_remediation_clear": true,
+    "readiness_control_checks": true
+  },
+  "rollout_status": "active",
+  "trace": {
+    "trace_id": "trace-policy-rollout-0001",
+    "run_id": "run-policy-rollout-0001",
+    "source_lifecycle_id": "judgment-policy-lifecycle-artifact-release-readiness-v1-1-0-enter-canary"
+  },
+  "created_at": "2026-03-30T00:10:00Z"
+}

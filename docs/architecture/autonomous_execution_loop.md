@@ -269,3 +269,53 @@ This extension keeps the existing control/enforcement seam and hardens remediati
 - Rejected/insufficient closure evidence keeps progression blocked/frozen.
 - Warn paths with required remediation cannot silently continue until closure + warning reinstatement are valid.
 - Traceability remains artifact-first: escalation -> action -> outcome -> remediation -> closure -> reinstatement.
+
+
+## Judgment policy lifecycle governance extension (grouped PQX slice)
+
+This slice extends the existing judgment policy seam with explicit lifecycle + rollout artifacts, governed canary cohorting, promotion gates, and explicit rollback/revoke behavior.
+
+### New governed lifecycle artifacts
+- `judgment_policy_rollout_record`
+  - Required for canary activation.
+  - Defines deterministic cohort (`environment`, `trace_bucket`, or `explicit_trace_ids`) and expected promotion gates.
+  - Tracks rollout mode (`canary`, `staged`, `full`) and current rollout status.
+- `judgment_policy_lifecycle_record`
+  - Required for every policy status transition.
+  - Captures `from_version -> to_version`, lifecycle action (`create_draft`, `enter_canary`, `promote_active`, `deprecate`, `rollback`, `revoke`), source reasons/triggering signals, gate evaluations, resulting status, actor, and trace linkage.
+
+### Lifecycle states and status semantics
+- `draft`: not selectable for execution.
+- `canary`: selectable only for traffic inside the rollout cohort declared in an active `judgment_policy_rollout_record`.
+- `active`: globally selectable when matching type/scope/environment.
+- `deprecated`: retained for audit history but not newly selected.
+- `revoked`: unusable; selection is blocked immediately and deterministically.
+
+### Canary cohorting rules
+- Cohorts are artifact-declared and deterministic (no runtime randomness):
+  - environment set membership
+  - trace-id hash bucket membership (`sha256(trace_id) % modulo in buckets`)
+  - explicit trace-id allowlist
+- Missing rollout artifact or unsupported cohort definition fails closed (canary policy is not selected).
+
+### Promotion gate requirements (canary -> active)
+Promotion requires all governed inputs and healthy gate outcomes:
+- `judgment_eval_result` present and all required eval checks passing
+- `judgment_drift_signal` present and no detected drift across governed groups
+- `judgment_error_budget_status` present with `status=healthy`
+- remediation readiness shows no unresolved critical closure blockers for affected policy version
+- required readiness/control checks explicitly true
+
+If any required signal is missing, promotion fails closed.
+
+### Rollback and revoke semantics
+- Rollback is explicit: current version transitions to a provided prior active target version; target must be supplied and valid.
+- Revoke is explicit: target version transitions to `revoked`, and selection logic blocks the version from future use.
+- Both rollback and revoke emit `judgment_policy_lifecycle_record`; no silent fallback is allowed.
+
+### Policy registry integration behavior
+- Global selection remains deterministic:
+  1. type/scope/environment filter
+  2. status and lifecycle-governance filter (`active` global, `canary` cohort-bound, `deprecated/revoked` excluded)
+  3. deterministic tie-break (`status rank`, semantic version desc, `artifact_id` asc)
+- When lifecycle/rollout artifacts are supplied to the governed selection path, missing lifecycle evidence for candidate versions fails closed.

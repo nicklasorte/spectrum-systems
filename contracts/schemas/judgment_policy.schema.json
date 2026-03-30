@@ -51,7 +51,8 @@
         "draft",
         "canary",
         "active",
-        "deprecated"
+        "deprecated",
+        "revoked"
       ]
     },
     "scope": {
@@ -267,25 +268,77 @@
             "drift_critical_calibration_ece_delta"
           ],
           "properties": {
-            "error_budget_warning_consumption_ratio": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_warning_approval_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_warning_block_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_warning_error_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_warning_calibration_ece_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_critical_approval_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_critical_block_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_critical_error_rate_delta": {"type": "number", "minimum": 0, "maximum": 1},
-            "drift_critical_calibration_ece_delta": {"type": "number", "minimum": 0, "maximum": 1}
+            "error_budget_warning_consumption_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_warning_approval_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_warning_block_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_warning_error_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_warning_calibration_ece_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_critical_approval_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_critical_block_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_critical_error_rate_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "drift_critical_calibration_ece_delta": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
         "error_budget_limits": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["max_wrong_allow_rate", "max_wrong_block_rate", "max_override_rate"],
+          "required": [
+            "max_wrong_allow_rate",
+            "max_wrong_block_rate",
+            "max_override_rate"
+          ],
           "properties": {
-            "max_wrong_allow_rate": {"type": "number", "minimum": 0, "maximum": 1},
-            "max_wrong_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
-            "max_override_rate": {"type": "number", "minimum": 0, "maximum": 1}
+            "max_wrong_allow_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_wrong_block_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "max_override_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
         "calibration": {
@@ -296,11 +349,23 @@
             "freeze_if_expected_calibration_error_greater_than"
           ],
           "properties": {
-            "warn_if_expected_calibration_error_greater_than": {"type": "number", "minimum": 0, "maximum": 1},
-            "freeze_if_expected_calibration_error_greater_than": {"type": "number", "minimum": 0, "maximum": 1}
+            "warn_if_expected_calibration_error_greater_than": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "freeze_if_expected_calibration_error_greater_than": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
-        "override_rate_warn_if_greater_than": {"type": "number", "minimum": 0, "maximum": 1}
+        "override_rate_warn_if_greater_than": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     }
   }
