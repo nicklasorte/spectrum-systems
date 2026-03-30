@@ -252,6 +252,24 @@
         "string",
         "null"
       ]
+    },
+    "required_judgment_eval_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "evidence_coverage",
+          "policy_alignment",
+          "replay_consistency"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "judgment_replay_reference_path": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

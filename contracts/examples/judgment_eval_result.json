@@ -1,16 +1,105 @@
 {
   "artifact_type": "judgment_eval_result",
   "artifact_id": "judgment-eval-cycle-0001",
-  "artifact_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "standards_version": "1.0.92",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.0.93",
   "judgment_type": "artifact_release_readiness",
   "determinism_check": "passed",
-  "policy_selection_consistent": true,
-  "retrieval_consistent": true,
+  "required_eval_types": [
+    "evidence_coverage",
+    "policy_alignment",
+    "replay_consistency"
+  ],
+  "eval_results": [
+    {
+      "eval_type": "evidence_coverage",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 1.0,
+      "details": {
+        "material_claims_total": 2,
+        "material_claims_supported": 2,
+        "unsupported_material_claim_ids": [],
+        "fail_closed_on_missing_material": true
+      }
+    },
+    {
+      "eval_type": "policy_alignment",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 1.0,
+      "details": {
+        "judgment_selected_outcome": "approve",
+        "policy_final_outcome": "approve",
+        "aligned": true,
+        "explicit_deviation_recorded": false,
+        "deviation_entries": []
+      }
+    },
+    {
+      "eval_type": "replay_consistency",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 1.0,
+      "details": {
+        "comparison_mode": "self_consistency",
+        "current_fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "eval_type": "uncertainty_calibration",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 0.0,
+      "details": {
+        "status": "scaffold_only",
+        "uncertainty_count": 0,
+        "labeling_required_next_phase": true
+      }
+    },
+    {
+      "eval_type": "longitudinal_calibration",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 0.0,
+      "details": {
+        "status": "scaffold_only",
+        "calibration_window_defined": false,
+        "requires_labeled_outcomes": true
+      }
+    },
+    {
+      "eval_type": "judgment_outcome_drift_signal",
+      "passed": true,
+      "score": 1.0,
+      "threshold": 0.0,
+      "details": {
+        "status": "scaffold_only",
+        "judgment_outcome": "approve",
+        "drift_metric_placeholder": "outcome_frequency_delta"
+      }
+    }
+  ],
+  "calibration_scaffolding": {
+    "outcome_label_input_path": "judgment_outcome_labels",
+    "longitudinal_artifact_path": "judgment_calibration_runs"
+  },
+  "drift_signal_scaffolding": {
+    "signal_type": "judgment_outcome_distribution_shift",
+    "metric_inputs": [
+      "judgment_type",
+      "selected_outcome",
+      "policy_ref",
+      "created_at"
+    ]
+  },
+  "replay_reference": {
+    "fingerprint_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
   "notes": [
-    "deterministic policy selection stable across reruns",
-    "precedent retrieval stable for identical query"
+    "deterministic policy and evidence scoring across reruns",
+    "calibration and drift sections are scaffold-only in this slice"
   ],
   "created_at": "2026-03-30T00:00:00Z"
 }

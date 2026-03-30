@@ -220,6 +220,35 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
     return manifest
 
 
+def _required_judgment_eval_types(manifest: Dict[str, Any]) -> list[str]:
+    configured = manifest.get("required_judgment_eval_types")
+    if isinstance(configured, list) and all(isinstance(item, str) for item in configured):
+        return configured
+    return ["evidence_coverage", "policy_alignment", "replay_consistency"]
+
+
+def _validate_required_judgment_evals(eval_payload: Dict[str, Any], required_types: list[str]) -> str | None:
+    eval_results = eval_payload.get("eval_results")
+    if not isinstance(eval_results, list):
+        return "judgment_eval_result missing eval_results"
+
+    indexed: Dict[str, Dict[str, Any]] = {}
+    for entry in eval_results:
+        if not isinstance(entry, dict):
+            continue
+        eval_type = entry.get("eval_type")
+        if isinstance(eval_type, str):
+            indexed[eval_type] = entry
+
+    for eval_type in required_types:
+        entry = indexed.get(eval_type)
+        if entry is None:
+            return f"missing required judgment eval: {eval_type}"
+        if entry.get("passed") is not True:
+            return f"failing required judgment eval: {eval_type}"
+    return None
+
+
 def _certification_summary(certification: Dict[str, Any]) -> str:
     checks = certification.get("check_results", {})
     if isinstance(checks, dict):
@@ -312,6 +341,10 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
                 _validate_artifact_file(judgment_eval_path, "judgment_eval_result", label="judgment_eval_result")
             except CycleRunnerError as exc:
                 return blocked(str(exc))
+            eval_payload = _load_json(judgment_eval_path)
+            eval_error = _validate_required_judgment_evals(eval_payload, _required_judgment_eval_types(manifest))
+            if eval_error is not None:
+                return blocked(eval_error)
             outcome = _load_json(judgment_record_path).get("selected_outcome")
             if outcome == "block":
                 return blocked("judgment outcome block prevents progression")

@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.92",
+  "artifact_version": "1.0.93",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.92",
-  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-LAYER",
+  "standards_version": "1.0.93",
+  "record_id": "REC-STD-2026-03-30-AUTONOMOUS-LOOP-JUDGMENT-EVAL",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@autonomousloop01-judgment-layer",
+  "source_repo_version": "main@autonomousloop01-judgment-eval",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -336,9 +336,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.0.90",
+      "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/cycle_manifest.json",
-      "notes": "AUTONOMOUS-LOOP-01 review-driven re-entry extension with implementation review ingestion, fix-roadmap write-back, approved fix-group references, and fix execution report tracking."
+      "notes": "CTRL-LOOP-01 judgment eval gating config adds required_judgment_eval_types and optional replay-reference seam."
     },
     {
       "artifact_type": "cycle_status_artifact",
@@ -921,15 +921,15 @@
     {
       "artifact_type": "judgment_eval_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.92",
+      "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/judgment_eval_result.json",
-      "notes": "CTRL-LOOP-01 judgment layer: minimum viable deterministic evaluation consistency artifact for judgment runs."
+      "notes": "CTRL-LOOP-01 judgment eval runner: deterministic evidence_coverage, policy_alignment, replay_consistency plus calibration/drift scaffolding."
     },
     {
       "artifact_type": "judgment_policy",
@@ -940,22 +940,22 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.92",
+      "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/judgment_policy.json",
-      "notes": "CTRL-LOOP-01 judgment layer: versioned policy artifact for deterministic judgment_type + scope + environment selection."
+      "notes": "CTRL-LOOP-01 optional judgment_eval_requirements block for explicit fail-closed evaluation thresholds/toggles."
     },
     {
       "artifact_type": "judgment_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.92",
+      "last_updated_in": "1.0.93",
       "example_path": "contracts/examples/judgment_record.json",
-      "notes": "CTRL-LOOP-01 judgment layer: release-readiness judgment rationale with claims, evidence, policy rule, and precedent retrieval trace."
+      "notes": "CTRL-LOOP-01 structured claims_considered with material-claim evidence linkage for deterministic evidence coverage scoring."
     },
     {
       "artifact_type": "meeting_agenda_contract",

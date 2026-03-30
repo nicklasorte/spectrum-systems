@@ -56,5 +56,11 @@
   ],
   "judgment_record_path": "contracts/examples/judgment_record.json",
   "judgment_application_record_path": "contracts/examples/judgment_application_record.json",
-  "judgment_eval_result_path": "contracts/examples/judgment_eval_result.json"
+  "judgment_eval_result_path": "contracts/examples/judgment_eval_result.json",
+  "required_judgment_eval_types": [
+    "evidence_coverage",
+    "policy_alignment",
+    "replay_consistency"
+  ],
+  "judgment_replay_reference_path": null
 }
