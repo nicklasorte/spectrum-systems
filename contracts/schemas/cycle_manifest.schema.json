@@ -33,7 +33,9 @@
     "judgment_precedent_record_paths",
     "judgment_record_path",
     "judgment_application_record_path",
-    "judgment_eval_result_path"
+    "judgment_eval_result_path",
+    "drift_remediation_artifact_path",
+    "fix_plan_artifact_path"
   ],
   "properties": {
     "cycle_id": {
@@ -337,6 +339,18 @@
           }
         }
       }
+    },
+    "drift_remediation_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fix_plan_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

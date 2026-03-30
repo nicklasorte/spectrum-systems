@@ -23,7 +23,12 @@
     "policy_version",
     "policy_hash",
     "decision_rationale",
-    "decided_at"
+    "decided_at",
+    "remediation_required",
+    "remediation_class",
+    "blocking_reason_category",
+    "drift_remediation_artifact_path",
+    "fix_plan_artifact_path"
   ],
   "properties": {
     "decision_id": {
@@ -106,6 +111,45 @@
     "policy_hash": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "remediation_required": {
+      "type": "boolean"
+    },
+    "remediation_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocking_reason_category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "drift_remediation_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fix_plan_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "drift_remediation_artifact": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "fix_plan_artifact": {
+      "type": [
+        "object",
+        "null"
+      ]
     }
   }
 }

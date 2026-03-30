@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/drift_remediation_artifact.schema.json",
+  "title": "Drift Remediation Artifact",
+  "description": "Deterministic remediation-routing artifact emitted from a blocking next-step decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "remediation_id",
+    "cycle_id",
+    "decision_id",
+    "current_state",
+    "triggering_issue",
+    "normalized_category",
+    "remediation_class",
+    "blocking",
+    "rationale",
+    "evidence_refs",
+    "policy_id",
+    "policy_version",
+    "policy_hash",
+    "strategy_authority_ref",
+    "source_authorities_refs",
+    "created_at"
+  ],
+  "properties": {
+    "remediation_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "cycle_id": {"type": "string", "pattern": "^cycle-[a-z0-9][a-z0-9-]*$"},
+    "decision_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "current_state": {"type": "string", "minLength": 1},
+    "triggering_issue": {"type": "string", "minLength": 1},
+    "normalized_category": {"type": "string", "minLength": 1},
+    "remediation_class": {"type": "string", "minLength": 1},
+    "blocking": {"type": "boolean"},
+    "rationale": {"type": "string", "minLength": 1},
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "policy_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "strategy_authority_ref": {"type": ["string", "null"]},
+    "source_authorities_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "trace_ref": {"type": ["string", "null"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

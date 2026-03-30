@@ -415,15 +415,38 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     if governance_error is not None:
         return blocked(governance_error)
 
-
-    decision = build_next_step_decision(str(manifest_path))
+    try:
+        decision = build_next_step_decision(str(manifest_path))
+    except ValueError as exc:
+        return blocked(f"next-step decision generation failed: {exc}")
     decision_path = Path(manifest_path).resolve().parent / "next_step_decision_artifact.json"
+    remediation_artifact = decision.pop("drift_remediation_artifact", None)
+    fix_plan_artifact = decision.pop("fix_plan_artifact", None)
+
+    remediation_path: str | None = None
+    fix_plan_path: str | None = None
+    if isinstance(remediation_artifact, dict):
+        path = Path(manifest_path).resolve().parent / "drift_remediation_artifact.json"
+        path.write_text(json.dumps(remediation_artifact, indent=2) + "\n", encoding="utf-8")
+        remediation_path = str(path)
+    if isinstance(fix_plan_artifact, dict):
+        path = Path(manifest_path).resolve().parent / "fix_plan_artifact.json"
+        path.write_text(json.dumps(fix_plan_artifact, indent=2) + "\n", encoding="utf-8")
+        fix_plan_path = str(path)
+
+    decision["drift_remediation_artifact_path"] = remediation_path
+    decision["fix_plan_artifact_path"] = fix_plan_path
     decision_path.write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
+
     manifest["next_step_decision_artifact_path"] = str(decision_path)
+    manifest["drift_remediation_artifact_path"] = remediation_path
+    manifest["fix_plan_artifact_path"] = fix_plan_path
     _write_manifest(manifest_path, manifest)
 
     if decision.get("blocking") is True:
         reason = "; ".join(decision.get("blocking_reasons", [])) or "next-step decision blocked progression"
+        if decision.get("remediation_required") is True:
+            reason = f"{reason}; remediation_required=true"
         return blocked(f"next-step decision blocked progression: {reason}")
 
     roadmap_path = manifest.get("roadmap_artifact_path")

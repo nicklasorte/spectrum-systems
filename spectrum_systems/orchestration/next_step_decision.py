@@ -10,6 +10,11 @@ from typing import Any, Dict
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.orchestration.drift_remediation import (
+    build_drift_remediation_artifact,
+    load_drift_remediation_policy,
+)
+from spectrum_systems.orchestration.fix_plan import build_fix_plan_artifact
 
 _POLICY_PATH = Path(__file__).resolve().parents[2] / "data" / "policy" / "next_step_decision_policy.json"
 _REQUIRED_POLICY_ID = "NEXT_STEP_DECISION_POLICY"
@@ -312,7 +317,31 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
             f"reasons={len(set(blocking_reasons))};drift={'true' if drift_detected else 'false'};trust={trust_score}"
         ),
         "decided_at": decided_at,
+        "remediation_required": False,
+        "remediation_class": None,
+        "blocking_reason_category": None,
+        "drift_remediation_artifact_path": None,
+        "fix_plan_artifact_path": None,
     }
+
+    if blocking:
+        remediation_policy, remediation_policy_hash = load_drift_remediation_policy()
+        remediation_artifact = build_drift_remediation_artifact(
+            manifest=manifest,
+            decision=decision,
+            policy=remediation_policy,
+            policy_hash=remediation_policy_hash,
+        )
+        fix_plan_artifact = build_fix_plan_artifact(
+            manifest=manifest,
+            decision=decision,
+            remediation=remediation_artifact,
+        )
+        decision["remediation_required"] = True
+        decision["remediation_class"] = remediation_artifact["remediation_class"]
+        decision["blocking_reason_category"] = remediation_artifact["normalized_category"]
+        decision["drift_remediation_artifact"] = remediation_artifact
+        decision["fix_plan_artifact"] = fix_plan_artifact
 
     schema = load_schema("next_step_decision_artifact")
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(decision)

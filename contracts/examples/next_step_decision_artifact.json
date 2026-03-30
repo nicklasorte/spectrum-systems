@@ -19,7 +19,12 @@
     "decided_at": "2026-03-30T00:00:00Z",
     "policy_id": "NEXT_STEP_DECISION_POLICY",
     "policy_version": "1.0.0",
-    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083",
+    "remediation_required": false,
+    "remediation_class": null,
+    "blocking_reason_category": null,
+    "drift_remediation_artifact_path": null,
+    "fix_plan_artifact_path": null
   },
   "blocked_case": {
     "decision_id": "dd7862ad8994a20f2c58e0d3a2df9953b2f729f98ea78a6b16008b5e6fcf7bde",
@@ -46,7 +51,12 @@
     "decided_at": "2026-03-30T00:00:00Z",
     "policy_id": "NEXT_STEP_DECISION_POLICY",
     "policy_version": "1.0.0",
-    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083",
+    "remediation_required": true,
+    "remediation_class": null,
+    "blocking_reason_category": null,
+    "drift_remediation_artifact_path": null,
+    "fix_plan_artifact_path": null
   },
   "drift_case": {
     "decision_id": "f383dd614f1a9f6f1303bc50b95be6f4fd8d95496ba532e31f66a0d779ea4ab8",
@@ -73,6 +83,11 @@
     "decided_at": "2026-03-30T00:00:00Z",
     "policy_id": "NEXT_STEP_DECISION_POLICY",
     "policy_version": "1.0.0",
-    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083"
+    "policy_hash": "9fa7ccc7b4125b3fd37ad39dd6a3c233ac2eb2dbe03452e206fb3b6fe7c5c083",
+    "remediation_required": true,
+    "remediation_class": "roadmap_repair",
+    "blocking_reason_category": "blocking_drift_finding",
+    "drift_remediation_artifact_path": "artifacts/remediation/cycle-0003/drift_remediation_artifact.json",
+    "fix_plan_artifact_path": "artifacts/remediation/cycle-0003/fix_plan_artifact.json"
   }
 }
