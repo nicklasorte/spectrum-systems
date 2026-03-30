@@ -80,6 +80,8 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "judgment_scope": "autonomous_cycle",
         "judgment_environment": "prod",
         "judgment_policy_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")],
+        "judgment_policy_lifecycle_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy_lifecycle_record.json")],
+        "judgment_policy_rollout_paths": [str(_REPO_ROOT / "contracts" / "examples" / "judgment_policy_rollout_record.json")],
         "judgment_input_context": {
             "quality_score": 0.95,
             "evidence_complete": True,
@@ -393,6 +395,41 @@ def test_cycle_runner_blocks_when_required_judgment_inputs_missing(tmp_path: Pat
     assert "required judgment failed" in " ".join(result["blocking_issues"])
 
 
+def test_cycle_runner_blocks_when_required_lifecycle_artifacts_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    manifest["judgment_policy_lifecycle_paths"] = []
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "missing required judgment lifecycle artifacts" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_blocks_canary_selection_without_rollout_artifact(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
+    manifest["required_judgments"] = ["artifact_release_readiness"]
+    canary_policy = _load(_REPO_ROOT / "contracts" / "examples" / "judgment_policy.json")
+    canary_policy["artifact_version"] = "1.1.0"
+    canary_policy["status"] = "canary"
+    policy_path = tmp_path / "canary_policy.json"
+    _write(policy_path, canary_policy)
+    lifecycle = _load(_REPO_ROOT / "contracts" / "examples" / "judgment_policy_lifecycle_record.json")
+    lifecycle["to_version"] = "1.1.0"
+    lifecycle["lifecycle_action"] = "enter_canary"
+    lifecycle["resulting_status"] = "canary"
+    lifecycle_path = tmp_path / "lifecycle.json"
+    _write(lifecycle_path, lifecycle)
+    manifest["judgment_policy_paths"] = [str(policy_path)]
+    manifest["judgment_policy_lifecycle_paths"] = [str(lifecycle_path)]
+    manifest["judgment_policy_rollout_paths"] = []
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "no applicable governed judgment policy found" in " ".join(result["blocking_issues"])
+
+
 def test_cycle_runner_blocks_when_required_judgment_artifacts_missing(tmp_path: Path) -> None:
     manifest, manifest_path = _manifest(tmp_path, state="roadmap_approved")
     manifest["required_judgments"] = ["artifact_release_readiness"]
@@ -467,6 +504,17 @@ def test_policy_selection_and_application_deterministic() -> None:
         evidence_refs=[str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json")],
         precedent_paths=[str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json")],
         created_at="2026-03-30T00:00:00Z",
+        trace_id="trace-0001",
+        lifecycle_records=[
+            {
+                "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                "to_version": "1.0.0",
+                "lifecycle_action": "promote_active",
+                "resulting_status": "active",
+            }
+        ],
+        rollout_records=[],
+        governed_runtime=True,
     )
     out_a = run_judgment(**args)
     out_b = run_judgment(**args)

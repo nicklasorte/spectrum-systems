@@ -434,8 +434,8 @@ def run_judgment_learning_control_loop(
     escalation = {
         "artifact_type": "judgment_control_escalation_record",
         "artifact_id": f"judgment-control-escalation-{run_id}",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
         "standards_version": "1.0.95",
         "decision": decision,
         "triggering_signals": triggering_signals,
@@ -449,6 +449,9 @@ def run_judgment_learning_control_loop(
             "judgment_drift_signal_id": str((judgment_drift_signal or {}).get("artifact_id") or "missing"),
             "judgment_error_budget_status_id": str((judgment_error_budget_status or {}).get("artifact_id") or "missing"),
             "judgment_policy_id": str((judgment_policy or {}).get("artifact_id") or "missing"),
+            "judgment_policy_version": str((judgment_policy or {}).get("artifact_version") or "missing"),
+            "policy_lifecycle_status": str((judgment_policy or {}).get("status") or "unknown"),
+            "policy_rollout_id": str(((judgment_policy or {}).get("_selected_rollout_id")) or "none"),
         },
         "created_at": created_at,
     }

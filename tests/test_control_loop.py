@@ -225,3 +225,21 @@ def test_judgment_learning_control_deterministic_for_identical_inputs() -> None:
     first = run_judgment_learning_control_loop(**inputs)
     second = run_judgment_learning_control_loop(**copy.deepcopy(inputs))
     assert first == second
+
+
+def test_judgment_learning_control_propagates_policy_lifecycle_linkage_to_enforcement() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_policy"]["status"] = "active"
+    inputs["judgment_policy"]["artifact_version"] = "1.2.0"
+    inputs["judgment_policy"]["_selected_rollout_id"] = "none"
+    result = run_judgment_learning_control_loop(**inputs)
+
+    escalation = result["judgment_control_escalation_record"]
+    action = result["judgment_enforcement_action_record"]
+    outcome = result["judgment_enforcement_outcome_record"]
+
+    assert escalation["trace"]["judgment_policy_version"] == "1.2.0"
+    assert escalation["trace"]["policy_lifecycle_status"] == "active"
+    assert action["policy_refs"]["judgment_policy_version"] == "1.2.0"
+    assert action["policy_refs"]["policy_lifecycle_status"] == "active"
+    assert outcome["trace"]["judgment_policy_version"] == "1.2.0"

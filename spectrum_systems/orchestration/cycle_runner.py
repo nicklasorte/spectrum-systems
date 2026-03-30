@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
@@ -175,6 +175,8 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
         raise CycleRunnerError("missing required judgment configuration: judgment_environment")
 
     policy_paths = manifest.get("judgment_policy_paths", [])
+    lifecycle_paths = manifest.get("judgment_policy_lifecycle_paths", [])
+    rollout_paths = manifest.get("judgment_policy_rollout_paths", [])
     context = manifest.get("judgment_input_context", {})
     evidence_refs = manifest.get("judgment_evidence_refs", [])
     precedent_paths = manifest.get("judgment_precedent_record_paths", [])
@@ -182,6 +184,12 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
         raise CycleRunnerError("missing required judgment configuration: judgment_policy_paths")
     if not isinstance(context, dict):
         raise CycleRunnerError("missing required judgment configuration: judgment_input_context")
+    if not isinstance(lifecycle_paths, list) or not all(isinstance(path, str) for path in lifecycle_paths):
+        raise CycleRunnerError("missing required judgment configuration: judgment_policy_lifecycle_paths")
+    if not lifecycle_paths:
+        raise CycleRunnerError("missing required judgment lifecycle artifacts")
+    if not isinstance(rollout_paths, list) or not all(isinstance(path, str) for path in rollout_paths):
+        raise CycleRunnerError("missing required judgment configuration: judgment_policy_rollout_paths")
     if not isinstance(evidence_refs, list) or not all(isinstance(ref, str) for ref in evidence_refs):
         raise CycleRunnerError("missing required judgment configuration: judgment_evidence_refs")
     if not evidence_refs:
@@ -202,6 +210,28 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
         replay_reference = _load_json(replay_reference_path)
         replay_reference_source = replay_reference_path
 
+    lifecycle_records: list[dict[str, Any]] = []
+    for path in sorted(lifecycle_paths):
+        if not _path_exists(path):
+            raise CycleRunnerError(f"missing required artifact: judgment_policy_lifecycle_record ({path})")
+        payload = _load_json(path)
+        try:
+            validate_artifact(payload, "judgment_policy_lifecycle_record")
+        except Exception as exc:
+            raise CycleRunnerError(f"invalid judgment_policy_lifecycle_record artifact: {exc}") from exc
+        lifecycle_records.append(payload)
+
+    rollout_records: list[dict[str, Any]] = []
+    for path in sorted(rollout_paths):
+        if not _path_exists(path):
+            raise CycleRunnerError(f"missing required artifact: judgment_policy_rollout_record ({path})")
+        payload = _load_json(path)
+        try:
+            validate_artifact(payload, "judgment_policy_rollout_record")
+        except Exception as exc:
+            raise CycleRunnerError(f"invalid judgment_policy_rollout_record artifact: {exc}") from exc
+        rollout_records.append(payload)
+
     try:
         outputs = run_judgment(
             cycle_id=manifest["cycle_id"],
@@ -215,6 +245,10 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
             created_at=created_at,
             replay_reference=replay_reference,
             replay_reference_source=replay_reference_source,
+            trace_id=manifest["cycle_id"],
+            lifecycle_records=lifecycle_records,
+            rollout_records=rollout_records,
+            governed_runtime=True,
         )
     except (JudgmentEngineError, ValueError) as exc:
         raise CycleRunnerError(f"required judgment failed: {exc}") from exc

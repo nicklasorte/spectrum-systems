@@ -6,8 +6,8 @@
   "standards_version": "1.0.99",
   "lifecycle_id": "judgment-policy-lifecycle-artifact-release-readiness-v1-1-0-promote-active",
   "policy_id": "judgment-policy-artifact-release-readiness-v1",
-  "from_version": "1.1.0",
-  "to_version": "1.1.0",
+  "from_version": "1.0.0",
+  "to_version": "1.0.0",
   "lifecycle_action": "promote_active",
   "source_reason": {
     "reasons": [
@@ -30,7 +30,7 @@
   "trace": {
     "trace_id": "trace-policy-rollout-0001",
     "run_id": "run-policy-rollout-0001",
-    "rollout_id": "judgment-policy-rollout-artifact-release-readiness-v1-1-0-canary"
+    "rollout_id": "none"
   },
   "actor": {
     "actor_id": "autonomous-cycle-controller",

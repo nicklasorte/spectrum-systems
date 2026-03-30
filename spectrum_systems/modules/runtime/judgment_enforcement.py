@@ -448,8 +448,8 @@ def build_judgment_enforcement_artifacts(
     action_record = {
         "artifact_type": "judgment_enforcement_action_record",
         "artifact_id": action_id,
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
         "standards_version": "1.0.97",
         "action_id": action_id,
         "source_escalation_record_id": escalation_record["artifact_id"],
@@ -473,7 +473,9 @@ def build_judgment_enforcement_artifacts(
         },
         "policy_refs": {
             "judgment_policy_id": trace["judgment_policy_id"],
-            "judgment_policy_version": escalation_record["artifact_version"],
+            "judgment_policy_version": trace["judgment_policy_version"],
+            "policy_lifecycle_status": trace["policy_lifecycle_status"],
+            "policy_rollout_id": trace["policy_rollout_id"],
             "threshold_snapshot": escalation_record["thresholds_used"],
         },
     }
@@ -503,8 +505,8 @@ def build_judgment_enforcement_artifacts(
     outcome_record = {
         "artifact_type": "judgment_enforcement_outcome_record",
         "artifact_id": outcome_id,
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
         "standards_version": "1.0.97",
         "outcome_id": outcome_id,
         "action_id": action_id,
@@ -518,6 +520,10 @@ def build_judgment_enforcement_artifacts(
             "run_id": run_id,
             "source_escalation_record_id": escalation_record["artifact_id"],
             "action_id": action_id,
+            "judgment_policy_id": trace["judgment_policy_id"],
+            "judgment_policy_version": trace["judgment_policy_version"],
+            "policy_lifecycle_status": trace["policy_lifecycle_status"],
+            "policy_rollout_id": trace["policy_rollout_id"],
         },
     }
     try:

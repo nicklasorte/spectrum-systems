@@ -27,7 +27,7 @@
     "artifact_type": {"const": "judgment_enforcement_action_record"},
     "artifact_id": {"type": "string", "minLength": 1},
     "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "action_id": {"type": "string", "minLength": 1},
     "source_escalation_record_id": {"type": "string", "minLength": 1},
@@ -70,10 +70,12 @@
     "policy_refs": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["judgment_policy_id", "judgment_policy_version", "threshold_snapshot"],
+      "required": ["judgment_policy_id", "judgment_policy_version", "policy_lifecycle_status", "policy_rollout_id", "threshold_snapshot"],
       "properties": {
         "judgment_policy_id": {"type": "string", "minLength": 1},
         "judgment_policy_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "policy_lifecycle_status": {"type": "string", "enum": ["draft", "canary", "active", "deprecated", "revoked"]},
+        "policy_rollout_id": {"type": "string", "minLength": 1},
         "threshold_snapshot": {"type": "object"}
       }
     }

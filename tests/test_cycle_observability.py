@@ -67,6 +67,8 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "judgment_scope": None,
         "judgment_environment": None,
         "judgment_policy_paths": [],
+        "judgment_policy_lifecycle_paths": [],
+        "judgment_policy_rollout_paths": [],
         "judgment_input_context": {},
         "judgment_evidence_refs": [],
         "judgment_precedent_record_paths": [],
