@@ -42,3 +42,17 @@ Reviews **must** follow this order and include each section:
 - Action extraction and follow-through are governed by `docs/review-to-action-standard.md`.
 - Registrations are captured in `docs/review-registry.md`.
 - Implementation repos consuming these outputs must respect the governance separation defined in this repo.
+
+## Strategy and source compliance requirements
+- Reviews must include a **Strategy Compliance Check** subsection under **Risk Areas** with explicit pass/fail for invariant adherence and control-loop role separation.
+- Reviews must include a **Source Grounding Check** subsection under **Structural Gaps** listing source authorities used and any missing grounding evidence.
+- Reviews must include a **Governance Drift Check** subsection under **Blocking Items** covering schema bypass, control bypass, missing eval/trace/certification, and duplicate governance surface creation.
+
+## Mandatory operational checks
+Each review must record yes/no outcomes for:
+- strategy alignment
+- source grounding
+- eval evidence present
+- traceability evidence present
+- certification evidence present when required
+- control decision/enforcement separation preserved

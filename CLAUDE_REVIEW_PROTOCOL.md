@@ -72,3 +72,12 @@ Every Claude review produces two artifacts:
 3. Classify findings with severity and map them to required evidence; flag unverifiable claims as weak.
 4. Populate the human-readable report (Section order from `docs/design-review-standard.md`) and extract actions into the tracker with acceptance criteria and evidence placeholders (`docs/review-evidence-standard.md`).
 5. Record follow-up triggers and promotion gates in the tracker and registry; ensure reproducibility (pipelines/runbooks are executable from provided manifests).
+
+## Strategy + Source Enforcement Checks (mandatory)
+- Verify reviewed artifacts include `strategy_ref` pointing to `docs/architecture/system_strategy.md`; missing reference is a **high-severity governance finding**.
+- Verify at least one bounded source authority from `docs/architecture/system_source_index.md` is cited with enforcement purpose; otherwise mark **NO_GO** for governance readiness.
+- Explicitly test for: invariant violation, control bypass risk, missing eval, missing trace, missing certification, governance drift, and duplicate governance surface creation.
+- Reviews must emit reusable yes/no checks (not prose-only advice) for each governance control above.
+
+## Progression Blocking Rule
+- If strategy/source linkage is missing or unverifiable, progression recommendation must be `NO_GO` until corrected.

@@ -44,5 +44,26 @@
     "false_alignment",
     "schema_valid_but_semantically_empty",
     "silent_optional_input_fallback"
+  ],
+  "strategy_authority": {
+    "path": "docs/architecture/system_strategy.md",
+    "version": "2026-03-30"
+  },
+  "source_authorities": [
+    {
+      "source_id": "SBGE-DESIGN",
+      "path": "docs/source_structured/spectrum_systems_build_governance_engine_sbge_design.json",
+      "enforcement_purpose": "governance architecture boundary"
+    },
+    {
+      "source_id": "AGENT-EVAL-INTEGRATION",
+      "path": "docs/source_structured/agent_eval_integration_design_spectrum_systems.json",
+      "enforcement_purpose": "execution/eval separation"
+    },
+    {
+      "source_id": "GOV-10-DONE-CERT",
+      "path": "docs/source_structured/spectrum_systems_done_certification_gate_gov10_design.json",
+      "enforcement_purpose": "promotion certification gate"
+    }
   ]
 }

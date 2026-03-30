@@ -136,3 +136,9 @@ These files help AI agents understand how to interact with the repository.
 - DEPRECATED documents must not be used
 
 ---------------------------------------------------------------------
+
+## Strategy and source authority enforcement
+- Treat `docs/architecture/system_strategy.md` as governing law for roadmap/review/progression artifacts.
+- Treat `docs/architecture/system_source_index.md` as mandatory bounded grounding input (not optional reference).
+- When generating roadmap/review/progression artifacts, include explicit provenance fields for strategy and sources.
+- Reject changes that introduce duplicate governance surfaces for roadmap generation, review standards, control gating, certification, policy lifecycle, or observability.

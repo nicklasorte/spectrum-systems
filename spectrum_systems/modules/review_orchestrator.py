@@ -45,7 +45,55 @@ _MANIFEST_REQUIRED_FIELDS = [
     "invariants",
     "known_edge_cases",
     "known_failure_modes",
+    "strategy_authority",
+    "source_authorities",
 ]
+
+_STRATEGY_AUTHORITY_PATH = "docs/architecture/system_strategy.md"
+_SOURCE_INDEX_PATH = "docs/architecture/system_source_index.md"
+
+
+def _validate_strategy_source_authority(scope_id: str, manifest: Dict[str, Any]) -> None:
+    strategy = manifest.get("strategy_authority")
+    if not isinstance(strategy, dict):
+        raise ValueError(f"Review manifest for '{scope_id}' must include object field 'strategy_authority'.")
+
+    strategy_path = strategy.get("path")
+    if not isinstance(strategy_path, str) or not strategy_path.strip():
+        raise ValueError(f"Review manifest for '{scope_id}' must include strategy_authority.path.")
+    if strategy_path != _STRATEGY_AUTHORITY_PATH:
+        raise ValueError(
+            f"Review manifest for '{scope_id}' must reference strategy path '{_STRATEGY_AUTHORITY_PATH}', "
+            f"found '{strategy_path}'."
+        )
+    if not (_REPO_ROOT / strategy_path).is_file():
+        raise ValueError(f"Review manifest for '{scope_id}' references missing strategy file: {strategy_path}")
+
+    source_authorities = manifest.get("source_authorities")
+    if not isinstance(source_authorities, list) or len(source_authorities) == 0:
+        raise ValueError(f"Review manifest for '{scope_id}' must include non-empty list 'source_authorities'.")
+
+    seen_paths: set[str] = set()
+    for idx, source in enumerate(source_authorities):
+        if not isinstance(source, dict):
+            raise ValueError(f"Review manifest for '{scope_id}' source_authorities[{idx}] must be an object.")
+        for field in ("source_id", "path", "enforcement_purpose"):
+            value = source.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(
+                    f"Review manifest for '{scope_id}' source_authorities[{idx}] missing required '{field}'."
+                )
+        source_path = source["path"]
+        if source_path in seen_paths:
+            raise ValueError(
+                f"Review manifest for '{scope_id}' has duplicate source authority path: {source_path}"
+            )
+        seen_paths.add(source_path)
+        if not (_REPO_ROOT / source_path).is_file():
+            raise ValueError(f"Review manifest for '{scope_id}' references missing source file: {source_path}")
+
+    if not (_REPO_ROOT / _SOURCE_INDEX_PATH).is_file():
+        raise ValueError(f"Required source authority index file missing: {_SOURCE_INDEX_PATH}")
 
 
 # ─── Manifest loading ─────────────────────────────────────────────────────────
@@ -84,6 +132,7 @@ def load_review_manifest(scope_id: str) -> Dict[str, Any]:
         raise ValueError(
             f"Review manifest for '{scope_id}' is missing required fields: {missing}"
         )
+    _validate_strategy_source_authority(scope_id, manifest)
 
     return manifest
 
@@ -161,6 +210,18 @@ def _format_plain_list_section(items: List[str], indent: str = "- ") -> str:
     return "\n".join(f"{indent}{item}" for item in items)
 
 
+def _format_source_authorities(items: List[Dict[str, str]], indent: str = "- ") -> str:
+    if not items:
+        return "(none)"
+    lines: List[str] = []
+    for item in items:
+        source_id = item.get("source_id", "unknown")
+        source_path = item.get("path", "unknown")
+        purpose = item.get("enforcement_purpose", "unspecified")
+        lines.append(f"{indent}{source_id} — `{source_path}` ({purpose})")
+    return "\n".join(lines)
+
+
 def render_claude_review_prompt(scope_id: str) -> str:
     """Render a Claude review prompt for the given scope.
 
@@ -189,6 +250,8 @@ def render_claude_review_prompt(scope_id: str) -> str:
         "{{ title }}": manifest.get("title", scope_id),
         "{{ purpose }}": manifest.get("purpose", ""),
         "{{ golden_path_role }}": manifest.get("golden_path_role", ""),
+        "{{ strategy_authority_path }}": manifest.get("strategy_authority", {}).get("path", ""),
+        "{{ strategy_authority_version }}": manifest.get("strategy_authority", {}).get("version", ""),
     }
 
     # Render the for-loop blocks.
@@ -213,6 +276,9 @@ def render_claude_review_prompt(scope_id: str) -> str:
         ),
         r"\{%\s*for ec in known_edge_cases\s*%\}.*?\{%\s*endfor\s*%\}": (
             _format_plain_list_section(manifest.get("known_edge_cases", []))
+        ),
+        r"\{%\s*for sa in source_authorities\s*%\}.*?\{%\s*endfor\s*%\}": (
+            _format_source_authorities(manifest.get("source_authorities", []))
         ),
     }
 
