@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 
 
 class CycleRunnerError(ValueError):
@@ -41,7 +42,7 @@ def _load_json(path: str | Path) -> Dict[str, Any]:
 
 def _validate_manifest(manifest: Dict[str, Any]) -> None:
     schema = load_schema("cycle_manifest")
-    Draft202012Validator(schema).validate(manifest)
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest)
 
 
 def _path_exists(path_value: Any) -> bool:
@@ -72,6 +73,16 @@ def _roadmap_approved_from_reviews(paths: list[str]) -> bool:
     return False
 
 
+def _validate_artifact_file(path: str, schema_name: str, *, label: str) -> None:
+    payload = _load_json(path)
+    schema = load_schema(schema_name)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(payload), key=lambda err: str(list(err.absolute_path)))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise CycleRunnerError(f"{label} failed schema validation ({schema_name}): {details}")
+
+
 def _certification_handoff(manifest: Dict[str, Any]) -> Dict[str, Any]:
     refs = manifest.get("done_certification_input_refs")
     if not isinstance(refs, dict) or not refs:
@@ -92,6 +103,25 @@ def _certification_handoff(manifest: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _write_manifest(manifest_path: str | Path, manifest: Dict[str, Any]) -> None:
+    _validate_manifest(manifest)
+    Path(manifest_path).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
+def _certification_summary(certification: Dict[str, Any]) -> str:
+    checks = certification.get("check_results", {})
+    if isinstance(checks, dict):
+        values = [value for value in checks.values() if isinstance(value, dict)]
+    elif isinstance(checks, list):
+        values = [value for value in checks if isinstance(value, dict)]
+    else:
+        values = []
+
+    passed = sum(1 for check in values if check.get("passed") is True)
+    total = len(values)
+    return f"final_status={certification.get('final_status', 'UNKNOWN')} checks_passed={passed}/{total}"
+
+
 def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     """Load cycle manifest and return deterministic next-action decision."""
     manifest = _load_json(manifest_path)
@@ -103,6 +133,10 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
 
     def blocked(reason: str) -> Dict[str, Any]:
         issues = [*manifest.get("blocking_issues", []), reason]
+        manifest["current_state"] = "blocked"
+        manifest["next_action"] = "resolve_blocking_issues"
+        manifest["blocking_issues"] = issues
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "blocked",
@@ -157,17 +191,46 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state == "execution_ready":
-        if not _path_exists(manifest.get("pqx_execution_request_path")):
+        request_path = manifest.get("pqx_execution_request_path")
+        if not _path_exists(request_path):
             return blocked("missing required artifact: pqx_execution_request_path")
+        try:
+            handoff = handoff_to_pqx(
+                cycle_id=manifest["cycle_id"],
+                request_path=request_path,
+                reports_root=Path(manifest_path).resolve().parent,
+            )
+        except (PQXHandoffError, ValueError) as exc:
+            return blocked(f"pqx handoff failed: {exc}")
+
+        report_path = handoff["report_path"]
+        if not _path_exists(report_path):
+            return blocked("pqx handoff failed: missing execution_report_artifact write-back")
+        try:
+            _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
+        except CycleRunnerError as exc:
+            return blocked(str(exc))
+
+        reports = [*manifest.get("execution_report_paths", []), report_path]
+        manifest["execution_report_paths"] = reports
+        manifest["pqx_request_ref"] = str(request_path)
+        manifest["execution_started_at"] = handoff["report_payload"]["started_at"]
+        manifest["execution_completed_at"] = handoff["report_payload"]["completed_at"]
+        manifest["current_state"] = "execution_complete_unreviewed"
+        manifest["next_action"] = "request_implementation_reviews"
+        manifest["updated_at"] = handoff["report_payload"]["completed_at"]
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
             "current_state": state,
-            "next_state": "execution_in_progress",
-            "next_action": "invoke_pqx_execution_stub",
+            "next_state": "execution_complete_unreviewed",
+            "next_action": "request_implementation_reviews",
             "integration_handoff": {
-                "handoff_module": "spectrum_systems.modules.runtime.pqx_slice_runner",
-                "mode": "stub_only"
+                "handoff_module": "spectrum_systems.modules.runtime.pqx_slice_runner.run_pqx_slice",
+                "mode": "live",
+                "request_ref": str(request_path),
+                "result_ref": handoff["pqx_result"].get("result"),
             },
             "blocking_issues": manifest.get("blocking_issues", []),
         }
@@ -176,6 +239,11 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         reports = manifest.get("execution_report_paths", [])
         if not _all_paths_exist(reports):
             return blocked("missing required artifact: execution_report_paths")
+        for report_path in reports:
+            try:
+                _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
+            except CycleRunnerError as exc:
+                return blocked(str(exc))
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
@@ -226,6 +294,11 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         reports = manifest.get("execution_report_paths", [])
         if not _all_paths_exist(reports):
             return blocked("missing required artifact: execution_report_paths_for_fixes")
+        for report_path in reports:
+            try:
+                _validate_artifact_file(report_path, "execution_report_artifact", label="execution_report_artifact")
+            except CycleRunnerError as exc:
+                return blocked(str(exc))
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
@@ -236,7 +309,20 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         }
 
     if state in {"fixes_complete_unreviewed", "certification_pending"}:
-        if _path_exists(manifest.get("certification_record_path")):
+        record_path = manifest.get("certification_record_path")
+        if _path_exists(record_path):
+            try:
+                _validate_artifact_file(record_path, "done_certification_record", label="done_certification_record")
+                cert_payload = _load_json(record_path)
+            except CycleRunnerError as exc:
+                return blocked(str(exc))
+            if cert_payload.get("final_status") != "PASSED":
+                return blocked("done certification final_status must be PASSED")
+            manifest["certification_status"] = "passed"
+            manifest["certification_summary"] = _certification_summary(cert_payload)
+            manifest["current_state"] = "certified_done"
+            manifest["next_action"] = "archive_cycle"
+            _write_manifest(manifest_path, manifest)
             return {
                 "cycle_id": manifest["cycle_id"],
                 "status": "ok",
@@ -245,13 +331,38 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
                 "next_action": "archive_cycle",
                 "blocking_issues": manifest.get("blocking_issues", []),
             }
+
+        try:
+            from spectrum_systems.modules.governance.done_certification import run_done_certification
+
+            handoff = _certification_handoff(manifest)
+            certification = run_done_certification(handoff["input_refs"])
+            schema = load_schema("done_certification_record")
+            Draft202012Validator(schema, format_checker=FormatChecker()).validate(certification)
+        except (CycleRunnerError, ValueError) as exc:
+            manifest["certification_status"] = "failed"
+            return blocked(f"done certification handoff failed: {exc}")
+
+        cert_path = Path(manifest_path).resolve().parent / "done_certification_record.json"
+        cert_path.write_text(json.dumps(certification, indent=2) + "\n", encoding="utf-8")
+        manifest["certification_record_path"] = str(cert_path)
+        manifest["certification_status"] = "passed" if certification.get("final_status") == "PASSED" else "failed"
+        manifest["certification_summary"] = _certification_summary(certification)
+        if certification.get("final_status") != "PASSED":
+            return blocked("done certification returned non-passing final_status")
+        manifest["current_state"] = "certified_done"
+        manifest["next_action"] = "archive_cycle"
+        _write_manifest(manifest_path, manifest)
         return {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
             "current_state": state,
-            "next_state": "certification_pending",
-            "next_action": "invoke_done_certification",
-            "integration_handoff": _certification_handoff(manifest),
+            "next_state": "certified_done",
+            "next_action": "archive_cycle",
+            "integration_handoff": {
+                "handoff_module": "spectrum_systems.modules.governance.done_certification.run_done_certification",
+                "record_path": str(cert_path),
+            },
             "blocking_issues": manifest.get("blocking_issues", []),
         }
 

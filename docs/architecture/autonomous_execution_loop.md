@@ -1,27 +1,30 @@
-# Autonomous Execution Loop (Foundation Slice)
+# Autonomous Execution Loop (Closed-Loop Slice)
 
-This slice adds a deterministic, fail-closed control-plane loop that is artifact-first.
+This slice extends the deterministic fail-closed control-plane from foundation seams to live write-back behavior.
 
 ## Core boundaries
 - Planning artifacts are separate from execution artifacts.
 - Review artifacts are evidence, not control decisions.
 - PQX is execution-only; control decides next actions.
-- Done certification is the required final gate.
-- Missing required artifact blocks progression.
+- GOV-10 done certification is the required final gate.
+- Missing required artifact, invalid artifact, or failed handoff blocks progression.
 
 ## Implemented components
-- `cycle_manifest` contract and example.
-- `spectrum_systems/orchestration/cycle_runner.py` deterministic state progression.
-- Review artifact contracts/templates for roadmap and implementation reviews.
-- `spectrum_systems/fix_engine/generate_fix_roadmap.py` for dedupe/classify/group output.
-- Integration seams:
-  - PQX execution handoff (`pqx_slice_runner` seam, stub-only)
-  - GOV-10 done certification handoff (`run_done_certification` seam)
+- `cycle_manifest` contract and example with live handoff/write-back tracking fields.
+- `spectrum_systems/orchestration/cycle_runner.py` deterministic state progression with execution + certification write-back.
+- `spectrum_systems/orchestration/pqx_handoff_adapter.py` live PQX adapter around `run_pqx_slice`.
+- Live seam integrations:
+  - PQX execution handoff (`spectrum_systems.modules.runtime.pqx_slice_runner.run_pqx_slice`)
+  - GOV-10 done certification handoff (`spectrum_systems.modules.governance.done_certification.run_done_certification`)
+- Integration tests covering happy path, blocked paths, and deterministic replay behavior.
 
-## Fail-closed meaning in this loop
-If a state requires an artifact and that artifact is missing or invalid, the runner emits `status=blocked` and `next_state=blocked` with explicit blocking reasons.
+## Closed-loop transition behavior
+Happy path progression for this slice:
+`execution_ready -> execution_complete_unreviewed -> certification_pending -> certified_done`
 
-## Remaining for next phase
-- Replace PQX stub handoff with live execution adapter invocation and receipt persistence.
-- Add post-fix dual review loop artifacts distinct from pre-fix implementation reviews.
-- Add certification artifact write-back and manifest mutation workflow wrappers.
+Blocked terminal behavior:
+- missing/invalid PQX request or output artifacts
+- invalid execution report contract
+- missing/invalid/failing done certification result
+
+`blocked` is terminal until an operator repairs inputs and reruns the cycle.
