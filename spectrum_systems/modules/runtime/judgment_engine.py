@@ -8,6 +8,10 @@ from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.judgment_eval_runner import run_judgment_evals
+from spectrum_systems.modules.runtime.judgment_policy_lifecycle import (
+    JudgmentPolicyLifecycleError,
+    is_trace_in_canary_cohort,
+)
 
 
 class JudgmentEngineError(ValueError):
@@ -28,24 +32,92 @@ def _semver_key(version: str) -> tuple[int, int, int]:
     return int(parts[0]), int(parts[1]), int(parts[2])
 
 
-def select_policy(*, policy_paths: list[str], judgment_type: str, scope: str, environment: str) -> tuple[dict[str, Any], list[str]]:
+def select_policy(
+    *,
+    policy_paths: list[str],
+    judgment_type: str,
+    scope: str,
+    environment: str,
+    trace_id: str | None = None,
+    lifecycle_records: list[dict[str, Any]] | None = None,
+    rollout_records: list[dict[str, Any]] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
     if not policy_paths:
         raise JudgmentEngineError("no judgment policies configured")
+
+    strict_lifecycle = lifecycle_records is not None
+    strict_rollout = rollout_records is not None
+    lifecycle_records = [dict(item) for item in (lifecycle_records or []) if isinstance(item, dict)]
+    rollout_records = [dict(item) for item in (rollout_records or []) if isinstance(item, dict)]
+
     loaded: list[tuple[str, dict[str, Any]]] = []
     for path in sorted(policy_paths):
         policy = _load_json(path)
         validate_artifact(policy, "judgment_policy")
         loaded.append((path, policy))
 
-    matched = [
-        (path, policy)
-        for path, policy in loaded
-        if policy["judgment_type"] == judgment_type
-        and policy["scope"] == scope
-        and environment in policy["environments"]
-        and policy["status"] in {"active", "canary"}
-    ]
+    def _has_lifecycle_record(policy: dict[str, Any]) -> bool:
+        if not strict_lifecycle:
+            return True
+        pid = policy["artifact_id"]
+        version = policy["artifact_version"]
+        status = policy["status"]
+        expected_action = {
+            "draft": "create_draft",
+            "canary": "enter_canary",
+            "active": "promote_active",
+            "deprecated": "deprecate",
+            "revoked": "revoke",
+        }.get(status)
+        if expected_action is None:
+            return False
+        return any(
+            rec.get("policy_id") == pid
+            and rec.get("to_version") == version
+            and rec.get("lifecycle_action") == expected_action
+            and rec.get("resulting_status") == status
+            for rec in lifecycle_records
+        )
+
+    def _canary_rollout_allows(policy: dict[str, Any]) -> bool:
+        if policy["status"] != "canary":
+            return True
+        matching_rollouts = [
+            rec for rec in rollout_records
+            if rec.get("policy_id") == policy["artifact_id"]
+            and rec.get("policy_version") == policy["artifact_version"]
+            and rec.get("rollout_type") == "canary"
+            and rec.get("rollout_status") == "active"
+        ]
+        if not matching_rollouts:
+            return False
+        if trace_id is None:
+            return False
+        for rollout in sorted(matching_rollouts, key=lambda rec: str(rec.get("artifact_id") or "")):
+            try:
+                if is_trace_in_canary_cohort(trace_id=trace_id, cohort=rollout.get("cohort", {}), environment=environment):
+                    return True
+            except JudgmentPolicyLifecycleError:
+                continue
+        return False
+
+    matched = []
+    for path, policy in loaded:
+        if policy["judgment_type"] != judgment_type or policy["scope"] != scope or environment not in policy["environments"]:
+            continue
+        if policy["status"] in {"deprecated", "revoked"}:
+            continue
+        if policy["status"] not in {"active", "canary"}:
+            continue
+        if strict_lifecycle and not _has_lifecycle_record(policy):
+            continue
+        if not _canary_rollout_allows(policy):
+            continue
+        matched.append((path, policy))
+
     if not matched:
+        if strict_lifecycle or strict_rollout:
+            raise JudgmentEngineError("no applicable governed judgment policy found for type/scope/environment")
         raise JudgmentEngineError("no applicable judgment policy found for type/scope/environment")
 
     status_rank = {"active": 0, "canary": 1}
@@ -126,12 +198,18 @@ def run_judgment(
     created_at: str,
     replay_reference: dict[str, Any] | None = None,
     replay_reference_source: str | None = None,
+    trace_id: str | None = None,
+    lifecycle_records: list[dict[str, Any]] | None = None,
+    rollout_records: list[dict[str, Any]] | None = None,
 ) -> dict[str, dict[str, Any]]:
     selected_policy, matched_paths = select_policy(
         policy_paths=policy_paths,
         judgment_type=judgment_type,
         scope=scope,
         environment=environment,
+        trace_id=trace_id,
+        lifecycle_records=lifecycle_records,
+        rollout_records=rollout_records,
     )
 
     for key in selected_policy["required_inputs"]:

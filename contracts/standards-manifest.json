@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.0.98",
+  "artifact_version": "1.0.99",
   "schema_version": "1.0.0",
-  "standards_version": "1.0.98",
-  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-04-READINESS-OBSERVABILITY",
+  "standards_version": "1.0.99",
+  "record_id": "REC-STD-2026-03-30-CTRL-LOOP-05-POLICY-LIFECYCLE",
   "run_id": "run-20260330T000000Z",
   "created_at": "2026-03-30T00:00:00Z",
   "created_by": {
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "main@ctrlloop04-readiness-observability",
+  "source_repo_version": "main@ctrlloop05-policy-lifecycle",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -1044,9 +1044,35 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.92",
-      "last_updated_in": "1.0.95",
+      "last_updated_in": "1.0.99",
       "example_path": "contracts/examples/judgment_policy.json",
-      "notes": "Versioned deterministic judgment policy now includes learning_control_policy thresholds for drift, calibration, and error-budget enforcement seams."
+      "notes": "Versioned deterministic judgment policy now includes learning_control_policy thresholds for drift, calibration, and error-budget enforcement seams. Extended status enum with revoked for explicit lifecycle revocation governance."
+    },
+    {
+      "artifact_type": "judgment_policy_lifecycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.99",
+      "last_updated_in": "1.0.99",
+      "example_path": "contracts/examples/judgment_policy_lifecycle_record.json",
+      "notes": "CTRL-LOOP-05 deterministic lifecycle transition artifact for create/canary/promote/deprecate/rollback/revoke actions with required gate evidence."
+    },
+    {
+      "artifact_type": "judgment_policy_rollout_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.99",
+      "last_updated_in": "1.0.99",
+      "example_path": "contracts/examples/judgment_policy_rollout_record.json",
+      "notes": "CTRL-LOOP-05 deterministic rollout artifact binding canary/staged/full scope, cohort definition, and expected promotion gates."
     },
     {
       "artifact_type": "judgment_progression_reinstatement_record",

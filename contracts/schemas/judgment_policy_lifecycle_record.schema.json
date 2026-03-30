@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_policy_lifecycle_record.schema.json",
+  "title": "Judgment Policy Lifecycle Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "lifecycle_id",
+    "policy_id",
+    "from_version",
+    "to_version",
+    "lifecycle_action",
+    "source_reason",
+    "required_gates",
+    "resulting_status",
+    "trace",
+    "actor",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "judgment_policy_lifecycle_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "lifecycle_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "from_version": {"type": "string", "minLength": 1},
+    "to_version": {"type": "string", "minLength": 1},
+    "lifecycle_action": {
+      "type": "string",
+      "enum": ["create_draft", "enter_canary", "promote_active", "deprecate", "rollback", "revoke"]
+    },
+    "source_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reasons", "triggering_signals"],
+      "properties": {
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "triggering_signals": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "required_gates": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "boolean"}
+    },
+    "resulting_status": {"type": "string", "enum": ["draft", "canary", "active", "deprecated", "revoked"]},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id", "rollout_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "rollout_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "actor_type", "module"],
+      "properties": {
+        "actor_id": {"type": "string", "minLength": 1},
+        "actor_type": {"type": "string", "enum": ["system", "operator"]},
+        "module": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
