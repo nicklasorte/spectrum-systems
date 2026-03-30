@@ -15,6 +15,7 @@ from spectrum_systems.modules.runtime.control_loop import (  # noqa: E402
     ControlLoopError,
     aggregate_error_budget_window,
     run_control_loop,
+    run_judgment_learning_control_loop,
 )
 
 
@@ -154,3 +155,73 @@ def test_error_budget_schema_delegation_rejects_invalid_objective_status() -> No
     replay["error_budget_status"]["objectives"][0]["status"] = "not-a-valid-status"
     with pytest.raises(ControlLoopError, match="error_budget_status failed validation"):
         run_control_loop(replay, _trace_context(replay))
+
+
+def _judgment_learning_inputs() -> dict[str, Any]:
+    drift = load_example("judgment_drift_signal")
+    drift["group_signals"][0]["deltas"] = {
+        "approval_rate_delta": 0.01,
+        "block_rate_delta": 0.01,
+        "error_rate_delta": 0.01,
+        "calibration_ece_delta": 0.01,
+    }
+    drift["group_signals"][0]["drift_detected"] = False
+    calibration = load_example("judgment_calibration_result")
+    calibration["group_metrics"][0]["expected_calibration_error"] = 0.02
+    return {
+        "judgment_eval_result": load_example("judgment_eval_result"),
+        "judgment_calibration_result": calibration,
+        "judgment_drift_signal": drift,
+        "judgment_error_budget_status": load_example("judgment_error_budget_status"),
+        "judgment_policy": load_example("judgment_policy"),
+        "trace_context": {"trace_id": "trace-001", "replay_run_id": "run-001"},
+        "created_at": "2026-03-30T00:10:00Z",
+    }
+
+
+def test_judgment_learning_control_happy_path_allow() -> None:
+    inputs = _judgment_learning_inputs()
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "allow"
+
+
+def test_judgment_learning_control_blocks_when_error_budget_exhausted() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_error_budget_status"]["status"] = "exhausted"
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "block"
+
+
+def test_judgment_learning_control_blocks_on_critical_drift() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_drift_signal"]["group_signals"][0]["deltas"]["error_rate_delta"] = 0.2
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "block"
+
+
+def test_judgment_learning_control_freezes_on_warning_drift() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_drift_signal"]["group_signals"][0]["deltas"]["error_rate_delta"] = 0.06
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "freeze"
+
+
+def test_judgment_learning_control_warns_on_rising_override_rate() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_error_budget_status"]["group_statuses"][0]["rates"]["override_rate"] = 0.2
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "warn"
+
+
+def test_judgment_learning_control_fail_closed_missing_calibration_blocks() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_calibration_result"] = None
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "block"
+
+
+def test_judgment_learning_control_deterministic_for_identical_inputs() -> None:
+    inputs = _judgment_learning_inputs()
+    first = run_judgment_learning_control_loop(**inputs)
+    second = run_judgment_learning_control_loop(**copy.deepcopy(inputs))
+    assert first == second

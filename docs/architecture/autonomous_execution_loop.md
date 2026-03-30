@@ -135,4 +135,41 @@ This extension hardens judgment-eval scaffolding into deterministic governed lea
   - error rate
   - calibration ECE
 - Threshold-based boolean drift triggers are explicit in artifact payload.
-- Signals are prepared for later control-layer freeze/block escalation, but this slice does not alter control decisions.
+
+## Judgment learning → control enforcement integration (grouped PQX slice)
+
+This grouped slice wires learning artifacts directly into deterministic control decisions without adding a parallel control plane.
+
+### New governed artifacts
+- `judgment_error_budget_status`: deterministic budget status grouped by `judgment_type`, `policy_version`, and `environment`.
+  - Tracks `wrong_allow_rate`, `wrong_block_rate`, and `override_rate`.
+  - Computes `budget_remaining` and `burn_rate` per metric.
+  - Fails closed when labels or eval coverage are missing.
+- `judgment_control_escalation_record`: emitted for every learning-signal control decision.
+  - Includes `decision` (`allow|warn|freeze|block`), triggering signal summary, threshold snapshot, rationale, and trace linkage.
+
+### Policy-governed thresholding
+- `judgment_policy.learning_control_policy` now carries explicit versioned thresholds:
+  - drift warning + critical deltas
+  - error-budget limit caps
+  - calibration warn/freeze bands
+  - override-rate warn threshold
+- Drift threshold evaluation maps each group deterministically to:
+  - `no_drift`
+  - `warning_drift`
+  - `critical_drift`
+
+### Control decision mapping (deterministic + fail-closed)
+- `block` if:
+  - any required eval fails
+  - error budget is exhausted or invalid
+  - critical drift is detected
+  - required learning artifacts are missing/invalid
+- `freeze` if:
+  - warning drift threshold is exceeded
+  - calibration error exceeds freeze band
+- `warn` if:
+  - override rate is rising
+  - calibration error is in warn band
+  - non-critical budget warning is present
+- `allow` only when evals pass, drift is clear, calibration is healthy, and budget is healthy.
