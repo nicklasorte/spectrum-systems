@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/execution_report_artifact.schema.json",
+  "title": "Execution Report Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "cycle_id",
+    "execution_mode",
+    "execution_status",
+    "produced_artifacts",
+    "started_at",
+    "completed_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string"},
+    "artifact_type": {"const": "execution_report_artifact"},
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "cycle_id": {"type": "string"},
+    "execution_mode": {"type": "string", "enum": ["pqx_stub", "pqx_live"]},
+    "execution_status": {"type": "string", "enum": ["succeeded", "failed", "blocked"]},
+    "produced_artifacts": {"type": "array", "items": {"type": "string"}},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "notes": {"type": "string"}
+  }
+}
