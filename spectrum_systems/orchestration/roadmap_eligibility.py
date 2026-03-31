@@ -104,6 +104,68 @@ def _evaluate_step(
     }
 
 
+def _strategy_status(step: Dict[str, Any], *, steps: list[Dict[str, Any]]) -> Dict[str, Any]:
+    step_id = str(step["step_id"])
+    order_index = int(step["order_index"])
+    mode = str(step.get("hardening_vs_expansion") or "").strip().lower()
+    behavior_affecting = bool(step.get("behavior_affecting"))
+    replay_trace_implications = str(step.get("replay_trace_implications") or "").strip()
+    eval_control_path = str(step.get("eval_control_path") or "").strip()
+    strategy_alignment = str(step.get("strategy_alignment") or "").strip()
+    primary_trust_gain = str(step.get("primary_trust_gain") or "").strip()
+    bounded_strategy_risk = bool(step.get("bounded_strategy_risk"))
+
+    violated_invariants: list[str] = []
+    drift_signals: list[str] = []
+
+    if not strategy_alignment:
+        violated_invariants.append("missing_strategy_alignment")
+    if not primary_trust_gain:
+        violated_invariants.append("missing_primary_trust_gain")
+    if behavior_affecting and not replay_trace_implications:
+        violated_invariants.append("missing_replay_trace_implications")
+
+    is_expansion = mode == "expansion"
+    if is_expansion and not eval_control_path:
+        violated_invariants.append("missing_eval_control_path")
+
+    incomplete_hardening_dependencies = sorted(
+        str(candidate["step_id"])
+        for candidate in steps
+        if int(candidate["order_index"]) < order_index
+        and str(candidate.get("hardening_vs_expansion") or "").strip().lower() == "hardening"
+        and str(candidate["status"]) != "completed"
+    )
+    if is_expansion and incomplete_hardening_dependencies:
+        drift_signals.append("expansion_precedes_hardening_completion")
+
+    if violated_invariants:
+        decision = "block"
+        rationale = "strategy gate blocked due to missing required strategy/trust/control declarations"
+    elif drift_signals:
+        decision = "freeze"
+        rationale = "strategy gate froze expansion until earlier hardening slices are complete"
+    elif bounded_strategy_risk:
+        decision = "warn"
+        rationale = "strategy gate warns due to bounded declared strategy risk"
+    else:
+        decision = "allow"
+        rationale = "strategy gate allows execution; required strategy and trust declarations are complete"
+
+    return {
+        "artifact_type": "pqx_strategy_status_artifact",
+        "schema_version": "1.0.0",
+        "roadmap_row_id": step_id,
+        "strategy_gate_decision": decision,
+        "violated_invariants": violated_invariants,
+        "drift_signals": drift_signals,
+        "hardening_vs_expansion": mode,
+        "replay_trace_declared": bool(replay_trace_implications),
+        "eval_control_declared": bool(eval_control_path),
+        "rationale": rationale,
+    }
+
+
 def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, Any]:
     roadmap = _load_json(governed_roadmap_path)
     _validate_schema(roadmap, "governed_roadmap_artifact")
@@ -123,6 +185,7 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
 
     eligible_step_ids: list[str] = []
     blocked_steps: list[Dict[str, Any]] = []
+    strategy_status_artifacts: list[Dict[str, Any]] = []
 
     for step in steps:
         step_id = str(step["step_id"])
@@ -152,6 +215,14 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
             satisfied_review=satisfied_review,
             satisfied_eval=satisfied_eval,
         )
+        strategy_status = _strategy_status(step, steps=steps)
+        strategy_status_artifacts.append(strategy_status)
+
+        if strategy_status["strategy_gate_decision"] == "block":
+            result["blocked_reasons"] = sorted(set(result["blocked_reasons"] + ["strategy_gate_block"]))
+        elif strategy_status["strategy_gate_decision"] == "freeze":
+            result["blocked_reasons"] = sorted(set(result["blocked_reasons"] + ["strategy_gate_freeze"]))
+
         if result["blocked_reasons"]:
             blocked_steps.append(result)
         else:
@@ -181,11 +252,18 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
         "eligible_step_ids": sorted(eligible_step_ids),
         "recommended_next_step_ids": recommended_next_step_ids,
         "blocked_steps": sorted(blocked_steps, key=lambda item: item["step_id"]),
+        "strategy_status_artifacts": sorted(strategy_status_artifacts, key=lambda item: item["roadmap_row_id"]),
         "summary": {
             "total_steps": len(steps),
             "completed_steps": len(completed_steps),
             "eligible_steps": len(eligible_step_ids),
             "blocked_steps": len(blocked_steps),
+            "strategy_gate": {
+                "allow": sum(1 for item in strategy_status_artifacts if item["strategy_gate_decision"] == "allow"),
+                "warn": sum(1 for item in strategy_status_artifacts if item["strategy_gate_decision"] == "warn"),
+                "freeze": sum(1 for item in strategy_status_artifacts if item["strategy_gate_decision"] == "freeze"),
+                "block": sum(1 for item in strategy_status_artifacts if item["strategy_gate_decision"] == "block"),
+            },
         },
     }
     candidate["artifact_id"] = _canonical_hash(candidate)

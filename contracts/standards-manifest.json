@@ -904,15 +904,15 @@
     {
       "artifact_type": "governed_roadmap_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.3",
-      "last_updated_in": "1.3.3",
+      "last_updated_in": "1.3.9",
       "example_path": "contracts/examples/governed_roadmap_artifact.json",
-      "notes": "Deterministic governed roadmap planning artifact with explicit dependency/trust/review/eval metadata for fail-closed eligibility evaluation."
+      "notes": "Deterministic governed roadmap planning artifact with required strategy alignment, trust-gain, replay-trace, and expansion eval/control declarations for fail-closed PQX strategy gating."
     },
     {
       "artifact_type": "grounding_control_decision",
@@ -1618,15 +1618,15 @@
     {
       "artifact_type": "pqx_row_state",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.59",
-      "last_updated_in": "1.0.59",
+      "last_updated_in": "1.3.9",
       "example_path": "data/pqx_state.json",
-      "notes": "Minimum governed PQX backbone deterministic row state contract for dependency-satisfied execution progression tracking."
+      "notes": "PQX row-level runtime state with deterministic dependency status and strategy gate decision visibility for execution governance."
     },
     {
       "artifact_type": "pqx_sequence_budget",
@@ -1666,6 +1666,19 @@
       "last_updated_in": "1.0.84",
       "example_path": "contracts/examples/pqx_slice_execution_record.json",
       "notes": "G1 B11-B14 canonical deterministic single-slice execution artifact emitted by run_pqx_slice with mandatory certification and audit linkage."
+    },
+    {
+      "artifact_type": "pqx_strategy_status_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.9",
+      "last_updated_in": "1.3.9",
+      "example_path": "contracts/examples/pqx_strategy_status_artifact.json",
+      "notes": "Per-roadmap-row strategy/trust gate status artifact emitted by PQX eligibility evaluation with deterministic allow/warn/freeze/block decisions and rationale."
     },
     {
       "artifact_type": "pqx_triage_plan_record",
@@ -2187,15 +2200,15 @@
     {
       "artifact_type": "roadmap_eligibility_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.3",
-      "last_updated_in": "1.3.3",
+      "last_updated_in": "1.3.9",
       "example_path": "contracts/examples/roadmap_eligibility_artifact.json",
-      "notes": "Deterministic fail-closed eligibility projection artifact separating roadmap planning from execution permission while preserving control-layer supremacy."
+      "notes": "Deterministic fail-closed eligibility projection artifact with per-row strategy gate outcomes (allow/warn/freeze/block) and strategy-status observability."
     },
     {
       "artifact_type": "roadmap_output",
