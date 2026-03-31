@@ -38,8 +38,8 @@ Operate Spectrum Systems as a governed, fail-closed, artifact-first execution su
 - Review trigger/routing/rack-and-stack are fragmented.
 - Long-sequence certification and audit closure remain below confidence-grade.
 
-### Critical current gap
-The roadmap foundation is strong, but authoritative learning-loop closure is still insufficient: failures are not yet bound strongly enough to automatically alter future policy and progression behavior.
+### Critical current gap (dominant bottleneck)
+The roadmap foundation is strong, but **enforced learning authority / recurrence-prevention authority** is still insufficient: severity-qualified failures are not yet bound strongly enough to automatically alter future policy and progression behavior in one non-bypassable progression spine.
 
 ## RE-05 Reconciliation Guardrails (March 31, 2026)
 - The roadmap remains valid in broad direction; this update narrows execution sequencing without replacing structure.
@@ -95,7 +95,7 @@ The roadmap foundation is strong, but authoritative learning-loop closure is sti
 ## Control Loop Closure Certification Gate (Proof-Before-Scale Blocker)
 **Gate position:** Required transition-policy blocker between `NX-01..NX-03` and any `NX-04+` execution.
 
-**Required artifact:** `control_loop_closure_certification_gate` (or equivalent governed evidence bundle artifact consumed by transition policy).
+**Required artifact:** `control_loop_closure_certification_gate` (or equivalent governed evidence bundle artifact consumed by transition policy and promotion admission logic).
 
 **Pass conditions (all required):**
 1. Governed 3-slice sequential run evidence proves every severity-qualified failure generated a bound eval/policy update.
@@ -104,6 +104,11 @@ The roadmap foundation is strong, but authoritative learning-loop closure is sti
 4. Replay + recurrence-prevention evidence is linked to the same failure classes.
 
 **Fail-closed rule:** if any condition is missing, malformed, or non-deterministic, progression remains restricted to CL closure and trust-spine work.
+
+**Transition and promotion blocking behavior (mandatory):**
+- `NX-04+` roadmap rows are not admissible for execution while the gate is failing or absent.
+- Grouped execution admission, certification/promotion expansion, and lifecycle advancement claims must fail closed when the gate artifact is missing or not passed.
+- Any attempted transition that bypasses certified trust-spine evidence is invalid and must be blocked until corrective evidence is produced.
 
 
 ## March 31, 2026 Governance Refresh Snapshot (Roadmap Generation Run)

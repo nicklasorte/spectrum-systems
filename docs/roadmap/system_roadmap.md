@@ -10,6 +10,7 @@
 - March 31, 2026 reconciliation note (roadmap-generation run): active authority gap-scan confirms source obligations remain ingestion-heavy; compatibility mirror continues preserving executable IDs while strategic control-loop closure remains the next hard gate.
 - RE-05 correction note (March 31, 2026): after CL gate pass, active authority permits only trust-spine execution (`NX-01..NX-03`) until a Control Loop Closure Certification Gate artifact passes; grouped/certification/promotion expansion (`NX-04+`) remains blocked before proof.
 - AI expansion ordering note: active authority keeps `NX-22..NX-24` last and blocked until bounded-window longitudinal calibration + recurrence-prevention efficacy evidence is present.
+- Transition/promotion blocker note: compatibility execution must preserve fail-closed behavior when Control Loop Closure Certification Gate evidence is missing or not passed; no parser-safe legacy row should be interpreted as bypass authority for `NX-04+`.
 
 ## PQX Execution Contract Standard
 

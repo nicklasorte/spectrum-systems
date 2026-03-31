@@ -17,6 +17,7 @@ Apply the approved RE-05 corrections to the active roadmap authority and compati
 | PLANS.md | MODIFY | Register this active plan in the plan inventory. |
 | docs/roadmaps/system_roadmap.md | MODIFY | Reconcile active authority sequencing and hard-gate language to approved RE-05 corrections. |
 | docs/roadmap/system_roadmap.md | MODIFY | Mirror strategic sequencing notes in a runtime-safe, compatibility-preserving way. |
+| docs/roadmaps/roadmap_authority.md | MODIFY | Reaffirm active-authority vs mirror split and hard blocker semantics in the authority bridge note. |
 | docs/roadmaps/execution_state_inventory.md | MODIFY | Align execution/gap state narrative with revised phase-gated trust spine. |
 | docs/roadmaps/2026-03-31-roadmap-transition-note.md | MODIFY | Record transition semantics for proof-before-scale and certification gating. |
 | docs/review-actions/2026-03-31-roadmap-generation-delivery-actions.md | MODIFY | Add concise next-checkpoint action aligned with RE-05 sequencing. |

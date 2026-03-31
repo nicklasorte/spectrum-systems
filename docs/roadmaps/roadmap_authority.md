@@ -13,6 +13,8 @@
 ## March 31, 2026 gate note
 - The March 31, 2026 roadmap revision adds a mandatory **Control Loop Closure Gate** before broader expansion.
 - Future roadmap updates must not skip or bypass this pre-expansion gate.
+- RE-05 correction semantics are binding: Phase A (`CL-01..CL-05`) then Phase B (`NX-01..NX-03`) only, with a hard Control Loop Closure Certification Gate pass required before any `NX-04+`.
+- Dominant unresolved bottleneck remains enforced learning/recurrence-prevention authority; authority updates must preserve proof-before-scale behavior and must not overstate true closed-loop MVP status.
 
 ## PQX authority resolution bridge (B2)
 - PQX must resolve roadmap authority from this document first, not from ad-hoc hardcoded path selection.

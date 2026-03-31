@@ -13,3 +13,9 @@ The prior roadmap established strong governance and execution foundations, but d
 Broader grouped expansion and later AI execution expansion remain subordinate to Control Loop Closure Gate completion. Until that gate is passed with artifact evidence, roadmap progression should prioritize convergence and learning-loop hardening over breadth.
 Transition policy now treats proof-before-scale as a hard blocker: no grouped execution expansion, no certification/promotion expansion, and no AI execution expansion before trust-spine closure evidence is certified.
 AI expansion (`NX-22..NX-24`) remains explicitly last and requires bounded-window longitudinal calibration + recurrence-prevention efficacy evidence.
+
+## Certification gate evidence minimums (RE-06 adoption)
+- Required artifact: `control_loop_closure_certification_gate` (or governed equivalent) consumed by transition policy.
+- Required evidence: 3-slice trust-spine run proof, deterministic transition-policy consumption proof, at least one enforced freeze/block/corrective outcome, and recurrence-prevention linkage evidence for the same failure class.
+- Pass semantics: all required evidence present, valid, and non-bypassable.
+- Fail semantics: any missing/invalid/non-deterministic evidence keeps `NX-04+` blocked and disallows certification/promotion expansion claims.

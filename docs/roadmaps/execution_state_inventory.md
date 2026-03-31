@@ -136,7 +136,7 @@ Status claims are tagged with basis markers:
 - Primary risk is **distributed partial enforcement**, not a direct contradiction of source intent.
 
 ### Single Dominant Bottleneck
-Learning-loop outputs are not yet hard-bound as mandatory recurrence-prevention authority in the promotion/progression path.
+Learning-loop outputs are not yet hard-bound as **mandatory enforced learning authority / recurrence-prevention authority** in the promotion/progression path.
 
 ### Why This Bottleneck Matters
 Without enforced learning-to-prevention closure, the system can record and evaluate failures yet still permit repeated failure classes to re-enter progression under distributed gate semantics.
@@ -144,3 +144,11 @@ Without enforced learning-to-prevention closure, the system can record and evalu
 ### Immediate Implications for Roadmap Generation
 - **RE-03 focus:** bind learning/calibration/drift artifacts to deterministic recurrence-prevention and promotion eligibility gates in one dominant enforcement path.
 - **Do not prioritize yet:** broader adapter/runtime expansion or additional route surfaces that do not improve enforced learning-authority closure.
+
+### RE-06 Reconciliation Phase Ordering (Adoption Support)
+- **Phase A:** `CL-01..CL-05` mandatory control-loop closure.
+- **Phase B:** `NX-01..NX-03` only (dominant trust spine).
+- **Hard blocker:** Control Loop Closure Certification Gate must pass before `NX-04+`.
+- **Phase C:** `NX-04..NX-12` conditional grouped expansion only after blocker pass.
+- **Phase D:** `NX-13..NX-21` certification + source hardening.
+- **Phase E:** `NX-22..NX-24` last, only after bounded-window longitudinal calibration and recurrence-prevention efficacy evidence.
