@@ -116,4 +116,4 @@ def test_failure_generates_eval_case_and_registers_policy_binding(tmp_path: Path
     assert failure_eval_case["failure_class"]
     assert failure_eval_case["trace_id"] == failure["trace_id"]
     assert registry[failure_eval_case["eval_case_id"]]["failure_id"] == failure["id"]
-    assert binding["policy_id"] == "failure-binding-policy-v1"
+    assert binding["policy_id"].startswith("failure-binding-policy-v1::")

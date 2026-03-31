@@ -206,3 +206,33 @@ def test_failure_eval_case_with_policy_binding_routes_to_non_allow() -> None:
     decision = build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
     assert decision["decision"] in {"deny", "require_review"}
     assert decision["input_signal_reference"]["signal_type"] == "failure_eval_case"
+
+
+def test_control_loop_consumes_recurrence_prevention() -> None:
+    failure_eval, binding = _failure_eval_case()
+    decision = build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
+    assert decision["decision"] in {"deny", "require_review"}
+    assert decision["system_response"] in {"warn", "block"}
+
+
+def test_repeat_failure_escalates_decision() -> None:
+    failure_eval, binding = _failure_eval_case()
+    binding["recurrence_count"] = 3
+    decision = build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+    assert decision["rationale_code"] in {"deny_repeat_failure_escalation", "deny_trust_breach"}
+
+
+def test_prevention_without_control_consumption_fails() -> None:
+    failure_eval, binding = _failure_eval_case()
+    binding.pop("recurrence_prevention_artifact")
+    with pytest.raises(EvaluationControlError, match="recurrence_prevention_artifact"):
+        build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
+
+
+def test_ambiguous_recurrence_scope_blocks() -> None:
+    failure_eval, binding = _failure_eval_case()
+    binding["recurrence_scope"]["runtime_environment"] = "*"
+    with pytest.raises(EvaluationControlError, match="ambiguous recurrence scope"):
+        build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)

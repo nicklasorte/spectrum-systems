@@ -218,6 +218,21 @@ def test_missing_binding_blocks_execution() -> None:
         run_control_loop(failure_eval, trace_context)
 
 
+def test_prevention_without_control_consumption_fails() -> None:
+    failure_eval, registry, trace_context = _failure_eval_case()
+    registry[failure_eval["eval_case_id"]].pop("recurrence_prevention_artifact")
+    with pytest.raises(ControlLoopError, match="recurrence_prevention_artifact"):
+        run_control_loop(failure_eval, trace_context)
+
+
+def test_repeat_failure_changes_control_decision() -> None:
+    failure_eval, registry, trace_context = _failure_eval_case()
+    registry[failure_eval["eval_case_id"]]["recurrence_count"] = 3
+    decision = run_control_loop(failure_eval, trace_context)["evaluation_control_decision"]
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+
+
 def _judgment_learning_inputs() -> dict[str, Any]:
     drift = load_example("judgment_drift_signal")
     drift["group_signals"][0]["deltas"] = {

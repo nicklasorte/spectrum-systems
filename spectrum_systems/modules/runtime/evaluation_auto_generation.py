@@ -25,6 +25,27 @@ _IN_SCOPE_SOURCE_TYPES = frozenset(
     }
 )
 
+_FAILURE_CLASS_PREVENTION_MAP: Dict[str, Dict[str, Any]] = {
+    "runtime_failure": {
+        "prevention_action": "block_repeat_execution",
+        "policy_suffix": "runtime_failure_repeat_block",
+        "control_decision_surface": "evaluation_control_decision",
+        "recurrence_scope_fields": ("failure_class_id", "failure_stage", "runtime_environment"),
+    },
+    "review_boundary_halt": {
+        "prevention_action": "require_manual_review",
+        "policy_suffix": "review_boundary_manual_gate",
+        "control_decision_surface": "evaluation_control_decision",
+        "recurrence_scope_fields": ("failure_class_id", "failure_stage", "runtime_environment"),
+    },
+    "control_indeterminate": {
+        "prevention_action": "require_fix_before_progression",
+        "policy_suffix": "control_indeterminate_fix_gate",
+        "control_decision_surface": "evaluation_control_decision",
+        "recurrence_scope_fields": ("failure_class_id", "failure_stage", "runtime_environment"),
+    },
+}
+
 
 def _validate_failure_eval_case(artifact: Dict[str, Any]) -> None:
     schema = load_schema("failure_eval_case")
@@ -239,28 +260,114 @@ def register_failure_eval_case(
     resolved_policy_id = _string(policy_id, field="policy_id")
     resolved_trigger = _string(trigger_condition, field="trigger_condition")
     decision_surface = _string(control_decision_surface, field="control_decision_surface")
+    failure_class_id = _string(failure_eval_case.get("failure_class"), field="failure_eval_case.failure_class")
+    mapping = _FAILURE_CLASS_PREVENTION_MAP.get(failure_class_id)
+    if mapping is None:
+        raise EvalCaseGenerationError(
+            f"missing recurrence prevention mapping for governed failure_class_id '{failure_class_id}'"
+        )
+
+    stage = _string(failure_eval_case.get("failure_stage"), field="failure_eval_case.failure_stage")
+    normalized_inputs = failure_eval_case.get("normalized_inputs")
+    if not isinstance(normalized_inputs, dict):
+        raise EvalCaseGenerationError("failure_eval_case.normalized_inputs must be an object")
+    runtime_environment = _string(
+        normalized_inputs.get("runtime_environment"),
+        field="failure_eval_case.normalized_inputs.runtime_environment",
+    )
+    recurrence_scope = {
+        "failure_class_id": failure_class_id,
+        "failure_stage": stage,
+        "runtime_environment": runtime_environment,
+    }
+    scope_fields = tuple(mapping.get("recurrence_scope_fields") or ())
+    if not scope_fields:
+        raise EvalCaseGenerationError("recurrence prevention mapping missing scope fields")
+
+    resolved_rule_policy_id = f"{resolved_policy_id}::{mapping['policy_suffix']}"
+    prevention_action = str(mapping["prevention_action"])
+    prevention_rule_id = deterministic_id(
+        prefix="rpr",
+        namespace="cl03_recurrence_prevention_rule",
+        payload={
+            "failure_class_id": failure_class_id,
+            "policy_id": resolved_rule_policy_id,
+            "control_decision_surface": decision_surface,
+            "scope": {field: recurrence_scope[field] for field in scope_fields},
+            "prevention_action": prevention_action,
+        },
+    )
+    recurrence_prevention_artifact = {
+        "artifact_type": "recurrence_prevention_authority",
+        "artifact_id": deterministic_id(
+            prefix="rpa",
+            namespace="cl03_recurrence_prevention_artifact",
+            payload={
+                "failure_class_id": failure_class_id,
+                "eval_case_id": eval_case_id,
+                "failure_id": failure_id,
+                "trace_id": trace_id,
+                "prevention_rule_id": prevention_rule_id,
+            },
+        ),
+        "source_failure_class_id": failure_class_id,
+        "source_failure_id": failure_id,
+        "linked_eval_case_ids": [eval_case_id],
+        "policy_id": resolved_rule_policy_id,
+        "prevention_rule_id": prevention_rule_id,
+        "prevention_action": prevention_action,
+        "control_decision_surface": decision_surface,
+        "recurrence_scope": {field: recurrence_scope[field] for field in scope_fields},
+        "trace": {
+            "trace_id": trace_id,
+            "source_artifact_ref": f"{failure_eval_case.get('source_artifact_type')}:{failure_id}",
+            "eval_case_ref": f"failure_eval_case:{eval_case_id}",
+        },
+    }
 
     binding_payload = {
         "eval_case_id": eval_case_id,
         "failure_id": failure_id,
         "trace_id": trace_id,
-        "policy_id": resolved_policy_id,
+        "policy_id": resolved_rule_policy_id,
         "trigger_condition": resolved_trigger,
         "control_decision_surface": decision_surface,
+        "failure_class_id": failure_class_id,
+        "prevention_action": prevention_action,
+        "prevention_rule_id": prevention_rule_id,
+        "recurrence_scope": recurrence_prevention_artifact["recurrence_scope"],
+        "recurrence_prevention_artifact": recurrence_prevention_artifact,
         "binding_id": deterministic_id(
             prefix="fcb",
             namespace="cl01_failure_eval_policy_binding",
             payload={
                 "eval_case_id": eval_case_id,
                 "trace_id": trace_id,
-                "policy_id": resolved_policy_id,
+                "policy_id": resolved_rule_policy_id,
                 "trigger_condition": resolved_trigger,
                 "control_decision_surface": decision_surface,
+                "prevention_rule_id": prevention_rule_id,
             },
         ),
     }
     eval_registry[eval_case_id] = binding_payload
     return dict(binding_payload)
+
+
+def map_failure_class_to_prevention_rule(failure_class_id: str) -> Dict[str, str]:
+    """Return deterministic recurrence-prevention mapping for a governed failure class."""
+    key = _string(failure_class_id, field="failure_class_id")
+    mapping = _FAILURE_CLASS_PREVENTION_MAP.get(key)
+    if mapping is None:
+        raise EvalCaseGenerationError(
+            f"missing recurrence prevention mapping for governed failure_class_id '{key}'"
+        )
+    return {
+        "failure_class_id": key,
+        "prevention_action": str(mapping["prevention_action"]),
+        "control_decision_surface": str(mapping["control_decision_surface"]),
+        "recurrence_scope_fields": ",".join(mapping["recurrence_scope_fields"]),
+    }
 
 
 # Backwards-compatible alias for existing callers/tests.

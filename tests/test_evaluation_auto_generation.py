@@ -12,8 +12,11 @@ from jsonschema import Draft202012Validator, FormatChecker  # noqa: E402
 
 from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
+    _FAILURE_CLASS_PREVENTION_MAP,
     EvalCaseGenerationError,
     generate_failure_eval_case,
+    map_failure_class_to_prevention_rule,
+    register_failure_eval_case,
 )
 
 
@@ -133,3 +136,58 @@ def test_replay_linkage_fields_are_present() -> None:
     assert artifact["source_run_id"] == "agrun-009"
     assert artifact["source_artifact_id"] == "afr-009"
     assert artifact["provenance"]["source_artifact_ref"] == "agent_failure_record:afr-009"
+
+
+def test_failure_class_maps_to_prevention_rule() -> None:
+    mapping = map_failure_class_to_prevention_rule("runtime_failure")
+    assert mapping["failure_class_id"] == "runtime_failure"
+    assert mapping["prevention_action"] == "block_repeat_execution"
+    assert mapping["control_decision_surface"] == "evaluation_control_decision"
+
+
+def test_prevention_artifact_emitted() -> None:
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-map-001",
+            "trace_id": "99999999-9999-4999-8999-999999999999",
+        },
+        source_run_id="agrun-map-001",
+        stage="eval",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
+    registry: dict[str, dict] = {}
+    binding = register_failure_eval_case(
+        failure_eval_case=artifact,
+        eval_registry=registry,
+        policy_id="failure-binding-policy-v1",
+        trigger_condition="on_agent_failure_record",
+    )
+    prevention_artifact = binding["recurrence_prevention_artifact"]
+    assert prevention_artifact["artifact_type"] == "recurrence_prevention_authority"
+    assert prevention_artifact["source_failure_class_id"] == artifact["failure_class"]
+    assert prevention_artifact["linked_eval_case_ids"] == [artifact["eval_case_id"]]
+    assert prevention_artifact["prevention_rule_id"] == binding["prevention_rule_id"]
+
+
+def test_missing_prevention_mapping_blocks(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delitem(_FAILURE_CLASS_PREVENTION_MAP, "runtime_failure", raising=False)
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-map-002",
+            "trace_id": "12121212-1212-4121-8121-121212121212",
+        },
+        source_run_id="agrun-map-002",
+        stage="eval",
+        runtime_environment="agent_golden_path",
+        execution_result=_execution_result(),
+    )
+    with pytest.raises(EvalCaseGenerationError, match="missing recurrence prevention mapping"):
+        register_failure_eval_case(
+            failure_eval_case=artifact,
+            eval_registry={},
+            policy_id="failure-binding-policy-v1",
+            trigger_condition="on_agent_failure_record",
+        )
