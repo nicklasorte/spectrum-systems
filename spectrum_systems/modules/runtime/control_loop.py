@@ -8,7 +8,10 @@ from typing import Any, Dict, List
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
-from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
+from spectrum_systems.modules.runtime.evaluation_control import (
+    EvaluationControlError,
+    build_evaluation_control_decision,
+)
 from spectrum_systems.modules.runtime.judgment_learning import evaluate_judgment_drift_threshold_policy
 from spectrum_systems.modules.runtime.judgment_enforcement import (
     build_judgment_enforcement_artifacts,
@@ -281,7 +284,10 @@ def _evaluate_signal(
     signal_type = signal["signal_type"]
 
     if signal_type == "replay_result":
-        return build_evaluation_control_decision(artifact)
+        try:
+            return build_evaluation_control_decision(artifact)
+        except EvaluationControlError as exc:
+            raise ControlLoopError(str(exc)) from exc
     if signal_type == "failure_eval_case":
         registry = trace_context.get("failure_eval_registry")
         if not isinstance(registry, dict):
@@ -290,10 +296,13 @@ def _evaluate_signal(
         binding = registry.get(eval_case_id)
         if not isinstance(binding, dict):
             raise ControlLoopError("failure_eval_case is not registered in failure_eval_registry")
-        return build_evaluation_control_decision(
-            artifact,
-            failure_policy_binding=binding,
-        )
+        try:
+            return build_evaluation_control_decision(
+                artifact,
+                failure_policy_binding=binding,
+            )
+        except EvaluationControlError as exc:
+            raise ControlLoopError(str(exc)) from exc
 
     raise ControlLoopError(f"unsupported signal_type for evaluation stage: {signal_type}")
 
@@ -354,6 +363,13 @@ def run_control_loop(
         budget_status = str((artifact.get("error_budget_status") or {}).get("budget_status") or "invalid")
         if budget_status == "exhausted" and decision.get("system_response") not in {"freeze", "block"}:
             raise ControlLoopError("budget exceeded without deterministic enforcement action")
+    if signal["signal_type"] == "failure_eval_case":
+        binding = (trace_context.get("failure_eval_registry") or {}).get(str(artifact.get("eval_case_id") or ""))
+        if isinstance(binding, dict) and binding.get("recurrence_prevention_artifact"):
+            if decision.get("decision") == "allow":
+                raise ControlLoopError("recurrence prevention authority not consumed by control decision")
+        else:
+            raise ControlLoopError("failure_eval_case recurrence prevention artifact missing from registry binding")
 
     control_trace = {
         "trace_id": decision["trace_id"],

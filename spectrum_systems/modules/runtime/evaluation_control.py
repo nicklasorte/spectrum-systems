@@ -234,6 +234,77 @@ def _enforce_budget_authority(*, budget_status: str, system_response: str, decis
         )
 
 
+def _resolve_recurrence_prevention_binding(
+    signal_artifact: Dict[str, Any],
+    failure_policy_binding: Dict[str, Any],
+) -> tuple[Dict[str, Any], Dict[str, Any], int]:
+    required_binding = (
+        "eval_case_id",
+        "failure_id",
+        "trace_id",
+        "policy_id",
+        "trigger_condition",
+        "control_decision_surface",
+        "failure_class_id",
+        "prevention_action",
+        "prevention_rule_id",
+        "recurrence_scope",
+        "recurrence_prevention_artifact",
+    )
+    for field in required_binding:
+        value = failure_policy_binding.get(field)
+        if value in (None, ""):
+            raise EvaluationControlError(f"failure_policy_binding missing required field: {field}")
+
+    if failure_policy_binding["eval_case_id"] != signal_artifact.get("eval_case_id"):
+        raise EvaluationControlError("failure_policy_binding.eval_case_id must match failure_eval_case.eval_case_id")
+    if failure_policy_binding["trace_id"] != signal_artifact.get("trace_id"):
+        raise EvaluationControlError("failure_policy_binding.trace_id must match failure_eval_case.trace_id")
+    if failure_policy_binding["failure_id"] != signal_artifact.get("source_artifact_id"):
+        raise EvaluationControlError("failure_policy_binding.failure_id must match failure_eval_case.source_artifact_id")
+    if failure_policy_binding["control_decision_surface"] != "evaluation_control_decision":
+        raise EvaluationControlError("failure_policy_binding.control_decision_surface must target evaluation_control_decision")
+    if failure_policy_binding["failure_class_id"] != signal_artifact.get("failure_class"):
+        raise EvaluationControlError("failure_policy_binding.failure_class_id must match failure_eval_case.failure_class")
+
+    recurrence_scope = failure_policy_binding.get("recurrence_scope")
+    if not isinstance(recurrence_scope, dict):
+        raise EvaluationControlError("failure_policy_binding.recurrence_scope must be an object")
+    required_scope_fields = ("failure_class_id", "failure_stage", "runtime_environment")
+    for field in required_scope_fields:
+        value = recurrence_scope.get(field)
+        if not isinstance(value, str) or not value.strip() or value.strip() in {"*", "any", "unknown"}:
+            raise EvaluationControlError(f"ambiguous recurrence scope for field '{field}'")
+
+    normalized_inputs = signal_artifact.get("normalized_inputs")
+    if not isinstance(normalized_inputs, dict):
+        raise EvaluationControlError("failure_eval_case.normalized_inputs must be an object")
+    if recurrence_scope["failure_class_id"] != str(signal_artifact.get("failure_class") or ""):
+        raise EvaluationControlError("ambiguous recurrence scope for field 'failure_class_id'")
+    if recurrence_scope["failure_stage"] != str(signal_artifact.get("failure_stage") or ""):
+        raise EvaluationControlError("ambiguous recurrence scope for field 'failure_stage'")
+    runtime_environment = str(normalized_inputs.get("runtime_environment") or "")
+    if recurrence_scope["runtime_environment"] != runtime_environment:
+        raise EvaluationControlError("ambiguous recurrence scope for field 'runtime_environment'")
+
+    prevention_artifact = failure_policy_binding.get("recurrence_prevention_artifact")
+    if not isinstance(prevention_artifact, dict):
+        raise EvaluationControlError("failure_policy_binding.recurrence_prevention_artifact must be an object")
+    for field in ("artifact_id", "source_failure_class_id", "linked_eval_case_ids", "prevention_rule_id", "prevention_action"):
+        value = prevention_artifact.get(field)
+        if value in (None, ""):
+            raise EvaluationControlError(f"recurrence prevention artifact missing required field: {field}")
+    if prevention_artifact["prevention_rule_id"] != failure_policy_binding["prevention_rule_id"]:
+        raise EvaluationControlError("recurrence prevention artifact rule linkage mismatch")
+    if prevention_artifact["prevention_action"] != failure_policy_binding["prevention_action"]:
+        raise EvaluationControlError("recurrence prevention artifact action linkage mismatch")
+
+    recurrence_count = failure_policy_binding.get("recurrence_count", 1)
+    if not isinstance(recurrence_count, int) or recurrence_count < 1:
+        raise EvaluationControlError("failure_policy_binding.recurrence_count must be an integer >= 1")
+    return recurrence_scope, prevention_artifact, recurrence_count
+
+
 def build_evaluation_control_decision(
     signal_artifact: Dict[str, Any],
     *,
@@ -285,28 +356,10 @@ def build_evaluation_control_decision(
             raise EvaluationControlError("failure_eval_case failed validation: " + "; ".join(failure_errors))
         if not isinstance(failure_policy_binding, dict):
             raise EvaluationControlError("failure_eval_case requires deterministic failure_policy_binding")
-        required_binding = (
-            "eval_case_id",
-            "failure_id",
-            "trace_id",
-            "policy_id",
-            "trigger_condition",
-            "control_decision_surface",
+        _, _, recurrence_count = _resolve_recurrence_prevention_binding(
+            signal_artifact,
+            failure_policy_binding,
         )
-        for field in required_binding:
-            value = failure_policy_binding.get(field)
-            if not isinstance(value, str) or not value.strip():
-                raise EvaluationControlError(f"failure_policy_binding missing required field: {field}")
-        if failure_policy_binding["eval_case_id"] != signal_artifact.get("eval_case_id"):
-            raise EvaluationControlError("failure_policy_binding.eval_case_id must match failure_eval_case.eval_case_id")
-        if failure_policy_binding["trace_id"] != signal_artifact.get("trace_id"):
-            raise EvaluationControlError("failure_policy_binding.trace_id must match failure_eval_case.trace_id")
-        if failure_policy_binding["failure_id"] != signal_artifact.get("source_artifact_id"):
-            raise EvaluationControlError(
-                "failure_policy_binding.failure_id must match failure_eval_case.source_artifact_id"
-            )
-        if failure_policy_binding["control_decision_surface"] != "evaluation_control_decision":
-            raise EvaluationControlError("failure_policy_binding.control_decision_surface must target evaluation_control_decision")
 
         classification_map = {
             "runtime_failure": ("blocked", "block", ["trust_breach", "stability_breach"], "deny_failure_eval_case"),
@@ -317,6 +370,13 @@ def build_evaluation_control_decision(
         if failure_class not in classification_map:
             raise EvaluationControlError("failure_eval_case.failure_class must be runtime_failure|review_boundary_halt|control_indeterminate")
         system_status, system_response, seeded_signals, rationale_code = classification_map[failure_class]
+        seeded_signals = list(seeded_signals)
+        if recurrence_count >= 2 and system_response == "warn":
+            system_status, system_response, rationale_code = "blocked", "block", "deny_repeat_failure_escalation"
+        if recurrence_count >= 2 and system_response != "warn":
+            rationale_code = "deny_repeat_failure_escalation"
+        if recurrence_count >= 3:
+            system_status, system_response, rationale_code = "blocked", "block", "deny_repeat_failure_escalation"
         eval_case_id = str(signal_artifact.get("eval_case_id") or "")
         created_at = _canonical_timestamp(signal_artifact.get("created_at"))
         eval_summary = {
