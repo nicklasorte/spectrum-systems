@@ -18,4 +18,7 @@ __all__ = [
     "ExecutionChangeImpactAnalysisError",
     "analyze_execution_change_impact",
     "write_execution_change_impact_artifact",
+    "validate_manifest_completeness",
 ]
+
+from .manifest_validator import validate_manifest_completeness
