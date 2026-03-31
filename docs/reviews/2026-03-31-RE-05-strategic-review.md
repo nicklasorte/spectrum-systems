@@ -1,5 +1,9 @@
 # Spectrum Systems — RE-05 Strategic Review (2026-03-31)
 
+## Review Inputs
+- Canonical RE-04 validation artifact: `docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`
+- Candidate roadmap under strategic review: `docs/roadmaps/re-03-candidate-roadmap-source-grounded.md`
+
 ## 1. CONTROL LOOP STATUS
 **Near MVP but missing loop closure.**
 The roadmap explicitly recognizes that the system is not yet true closed-loop control, and it correctly inserts CL-01..CL-05 as a hard pre-expansion gate. But the gate is still a planned control surface, not yet proven by enforced recurrence-prevention evidence and longitudinal policy updates in live progression decisions.
