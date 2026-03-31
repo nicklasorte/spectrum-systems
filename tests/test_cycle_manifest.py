@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.orchestration.cycle_manifest_validator import CycleManifestError, validate_cycle_manifest
+from spectrum_systems.orchestration.cycle_manifest_validator import (
+    CycleManifestError,
+    normalize_cycle_manifest,
+    validate_cycle_manifest,
+)
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -43,4 +47,40 @@ def test_cycle_manifest_rejects_inconsistent_timing() -> None:
     manifest["execution_completed_at"] = "2026-03-31T11:00:00Z"
 
     with pytest.raises(CycleManifestError, match="execution_completed_at must be >= execution_started_at"):
+        validate_cycle_manifest(manifest)
+
+
+def test_cycle_manifest_rejects_sequence_state_without_traceability() -> None:
+    manifest = _example_manifest()
+    manifest["sequence_mode"] = "three_slice"
+    manifest["current_state"] = "admitted"
+    manifest["sequence_trace_id"] = None
+    manifest["sequence_lineage"] = []
+
+    with pytest.raises(CycleManifestError, match="None is not of type 'string'"):
+        validate_cycle_manifest(manifest)
+
+
+def test_cycle_manifest_normalizes_missing_sequence_mode_to_legacy() -> None:
+    manifest = _example_manifest()
+    manifest.pop("sequence_mode", None)
+
+    normalized = normalize_cycle_manifest(manifest)
+    assert normalized["sequence_mode"] == "legacy"
+    validate_cycle_manifest(manifest)
+
+
+def test_cycle_manifest_rejects_unknown_sequence_mode() -> None:
+    manifest = _example_manifest()
+    manifest["sequence_mode"] = "surprise"
+
+    with pytest.raises(CycleManifestError, match="is not one of"):
+        validate_cycle_manifest(manifest)
+
+
+def test_cycle_manifest_still_fails_when_other_required_field_missing() -> None:
+    manifest = _example_manifest()
+    manifest.pop("next_action", None)
+
+    with pytest.raises(CycleManifestError, match="'next_action' is a required property"):
         validate_cycle_manifest(manifest)

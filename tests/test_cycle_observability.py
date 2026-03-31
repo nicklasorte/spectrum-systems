@@ -132,6 +132,18 @@ def test_cycle_status_artifact_generation_deterministic_for_healthy_cycle(tmp_pa
     assert first["phase_metrics"]["execution_seconds"] == 300.0
 
 
+def test_cycle_status_accepts_legacy_manifest_without_sequence_mode(tmp_path: Path) -> None:
+    manifest = _base_manifest(cycle_id="cycle-legacy", state="execution_ready", updated_at="2026-03-30T02:00:00Z")
+    manifest.pop("sequence_mode", None)
+    manifest["next_action"] = "prepare_execution_request"
+    path = tmp_path / "legacy_manifest.json"
+    _write(path, manifest)
+
+    status = build_cycle_status(path)
+    assert status["cycle_id"] == "cycle-legacy"
+    assert status["current_state"] == "execution_ready"
+
+
 def test_blocked_cycle_status_normalizes_blocked_reason(tmp_path: Path) -> None:
     manifest = _load_fixture("cycle_status_blocked_manifest.json")
     path = tmp_path / "blocked_manifest.json"

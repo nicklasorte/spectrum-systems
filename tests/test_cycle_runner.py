@@ -89,6 +89,7 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
     base = {
         "cycle_id": "cycle-test",
         "current_state": state,
+        "sequence_mode": "legacy",
         "roadmap_artifact_path": str(roadmap_path),
         "strategy_authority": {
             "path": "docs/architecture/system_strategy.md",
@@ -166,6 +167,10 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         },
         "drift_remediation_artifact_path": None,
         "fix_plan_artifact_path": None,
+        "sequence_trace_id": "trace-cycle-test",
+        "sequence_lineage": ["contracts/examples/roadmap_eligibility_artifact.json"],
+        "sequence_transition_history": [],
+        "control_allow_promotion": False,
         "updated_at": "2026-03-30T00:00:00Z",
     }
     path = tmp_path / "cycle_manifest.json"
@@ -803,3 +808,44 @@ def test_cycle_runner_deterministic_governance_blocking(tmp_path: Path) -> None:
     first = cycle_runner.run_cycle(first_dir / "cycle_manifest.json")
     second = cycle_runner.run_cycle(second_dir / "cycle_manifest.json")
     assert first == second
+
+
+def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="admitted")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["roadmap_artifact_path"] = str(_REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md")
+    manifest["execution_report_paths"] = [
+        str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json"),
+        str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json"),
+        str(_REPO_ROOT / "contracts" / "examples" / "execution_report_artifact.json"),
+    ]
+    manifest["implementation_review_paths"] = [str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "implementation_review_claude.json")]
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = True
+    _write(manifest_path, manifest)
+
+    expected = [
+        "executing_slice_1",
+        "executing_slice_2",
+        "executing_slice_3",
+        "review_pending",
+        "certification_pending",
+        "promoted",
+    ]
+    for next_state in expected:
+        result = cycle_runner.run_cycle(manifest_path)
+        assert result["next_state"] == next_state
+
+
+def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = False
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "control_allow_promotion" in result["blocking_issues"][-1]

@@ -11,6 +11,7 @@ from typing import Any, Mapping, Sequence
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.orchestration.cycle_manifest_validator import normalize_cycle_manifest
 
 
 class CycleObservabilityError(ValueError):
@@ -299,7 +300,7 @@ def _build_phase_durations(manifest: dict[str, Any]) -> dict[str, Any]:
 
 def build_cycle_status(manifest_path: str | Path) -> dict[str, Any]:
     """Build schema-backed status summary for one cycle manifest."""
-    manifest = _load_json(manifest_path)
+    manifest = normalize_cycle_manifest(_load_json(manifest_path))
     _validate(manifest, "cycle_manifest")
 
     cycle_id = _require_string(manifest.get("cycle_id"), field="cycle_id")

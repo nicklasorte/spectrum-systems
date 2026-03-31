@@ -100,5 +100,12 @@
     "completed_steps": 0,
     "eligible_steps": 1,
     "blocked_steps": 0
-  }
+  },
+  "sequence_trace_id": "trace-cycle-0001",
+  "sequence_lineage": [
+    "contracts/examples/roadmap_eligibility_artifact.json"
+  ],
+  "sequence_transition_history": [],
+  "control_allow_promotion": false,
+  "sequence_mode": "legacy"
 }
