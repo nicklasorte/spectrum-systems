@@ -1,0 +1,36 @@
+{
+  "artifact_type": "contract_impact_artifact",
+  "schema_version": "1.0.0",
+  "impact_id": "f11d5d12f47f7547d6119d91d4d5633c59dca95f3f899f1fdd0a4af11e0189ce",
+  "generated_at": "2026-03-30T00:00:00Z",
+  "analyzer_version": "1.0.0",
+  "standards_manifest_path": "contracts/standards-manifest.json",
+  "changed_contract_paths": [
+    "contracts/schemas/pqx_execution_result.schema.json"
+  ],
+  "changed_example_paths": [
+    "contracts/examples/pqx_execution_result.json"
+  ],
+  "impacted_consumer_paths": [
+    "docs/architecture/autonomous_execution_loop.md"
+  ],
+  "impacted_test_paths": [
+    "tests/test_pqx_slice_runner.py"
+  ],
+  "impacted_runtime_paths": [
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py"
+  ],
+  "impacted_script_paths": [
+    "scripts/pqx_runner.py"
+  ],
+  "compatibility_class": "compatible",
+  "blocking": false,
+  "blocking_reasons": [],
+  "required_remediations": [],
+  "safe_to_execute": true,
+  "evidence_refs": [
+    "contracts/examples/pqx_execution_result.json",
+    "contracts/standards-manifest.json"
+  ],
+  "summary": "compatibility=compatible; changed_contracts=1; impacted_paths=4"
+}

@@ -35,6 +35,23 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=REPO_ROOT / "data" / "pqx_runs",
     )
+    parser.add_argument(
+        "--contract-impact-artifact-path",
+        type=Path,
+        help="Optional path to precomputed contract_impact_artifact JSON; blocks PQX when unresolved.",
+    )
+    parser.add_argument(
+        "--changed-contract-path",
+        action="append",
+        default=[],
+        help="Changed contract schema path(s). If provided without --contract-impact-artifact-path, analyzer runs pre-execution.",
+    )
+    parser.add_argument(
+        "--changed-example-path",
+        action="append",
+        default=[],
+        help="Optional changed contract example path(s) forwarded to analyzer.",
+    )
     return parser.parse_args()
 
 
@@ -50,6 +67,9 @@ def main() -> int:
         roadmap_path=args.roadmap_path,
         state_path=args.state_path,
         runs_root=args.runs_root,
+        contract_impact_artifact_path=args.contract_impact_artifact_path,
+        changed_contract_paths=args.changed_contract_path,
+        changed_example_paths=args.changed_example_path,
     )
 
     print(result)

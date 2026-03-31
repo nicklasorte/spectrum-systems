@@ -84,3 +84,83 @@ def test_run_pqx_slice_bypass_attempt_without_artifact_emission_blocks(tmp_path:
     )
     assert result["status"] == "blocked"
     assert result["block_type"] == "ARTIFACT_EMISSION_BLOCKED"
+
+
+def _impact_artifact(*, compatibility_class: str, blocking: bool, safe_to_execute: bool) -> dict:
+    return {
+        "artifact_type": "contract_impact_artifact",
+        "schema_version": "1.0.0",
+        "impact_id": "f11d5d12f47f7547d6119d91d4d5633c59dca95f3f899f1fdd0a4af11e0189ce",
+        "generated_at": "2026-03-30T00:00:00Z",
+        "analyzer_version": "1.0.0",
+        "standards_manifest_path": "contracts/standards-manifest.json",
+        "changed_contract_paths": ["contracts/schemas/pqx_execution_result.schema.json"],
+        "changed_example_paths": ["contracts/examples/pqx_execution_result.json"],
+        "impacted_consumer_paths": [],
+        "impacted_test_paths": [],
+        "impacted_runtime_paths": [],
+        "impacted_script_paths": [],
+        "compatibility_class": compatibility_class,
+        "blocking": blocking,
+        "blocking_reasons": ["test blocking reason"] if blocking else [],
+        "required_remediations": ["test remediation"] if blocking else [],
+        "safe_to_execute": safe_to_execute,
+        "evidence_refs": ["contracts/standards-manifest.json"],
+        "summary": "test",
+    }
+
+
+def test_run_pqx_slice_blocks_on_breaking_contract_impact(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    impact_path = tmp_path / "impact.json"
+    impact_path.write_text(json.dumps(_impact_artifact(compatibility_class="breaking", blocking=True, safe_to_execute=False)))
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_impact_artifact_path=impact_path,
+        clock=FixedClock(),
+    )
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_IMPACT_BLOCKED"
+
+
+def test_run_pqx_slice_blocks_on_indeterminate_contract_impact(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    impact_path = tmp_path / "impact-indeterminate.json"
+    impact_path.write_text(json.dumps(_impact_artifact(compatibility_class="indeterminate", blocking=True, safe_to_execute=False)))
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_impact_artifact_path=impact_path,
+        clock=FixedClock(),
+    )
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_IMPACT_BLOCKED"
+
+
+def test_run_pqx_slice_allows_compatible_contract_impact(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    impact_path = tmp_path / "impact-compatible.json"
+    impact_path.write_text(json.dumps(_impact_artifact(compatibility_class="compatible", blocking=False, safe_to_execute=True)))
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_impact_artifact_path=impact_path,
+        clock=FixedClock(),
+    )
+    assert result["status"] == "complete"
