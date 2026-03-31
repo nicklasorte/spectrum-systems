@@ -18,9 +18,17 @@ from spectrum_systems.orchestration.next_step_decision import build_next_step_de
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", required=True, help="Path to cycle manifest JSON")
+    parser.add_argument(
+        "--roadmap-eligibility-artifact",
+        required=True,
+        help="Path to roadmap eligibility artifact JSON",
+    )
     args = parser.parse_args()
 
-    decision = build_next_step_decision(args.manifest)
+    decision = build_next_step_decision(
+        args.manifest,
+        roadmap_eligibility_artifact_path=args.roadmap_eligibility_artifact,
+    )
     print(json.dumps(decision, indent=2))
     return 1 if decision.get("blocking") else 0
 

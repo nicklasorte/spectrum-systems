@@ -212,6 +212,15 @@ def _validate_artifact_file(path: str, schema_name: str, *, label: str) -> None:
         raise CycleRunnerError(f"{label} failed schema validation ({schema_name}): {details}")
 
 
+def _validate_roadmap_eligibility_artifact(path: str) -> Dict[str, Any]:
+    _validate_artifact_file(path, "roadmap_eligibility_artifact", label="roadmap_eligibility_artifact")
+    payload = _load_json(path)
+    eligible_step_ids = payload.get("eligible_step_ids")
+    if not isinstance(eligible_step_ids, list) or not all(isinstance(step_id, str) and step_id for step_id in eligible_step_ids):
+        raise CycleRunnerError("roadmap_eligibility_artifact missing eligible_step_ids")
+    return payload
+
+
 def _certification_handoff(manifest: Dict[str, Any]) -> Dict[str, Any]:
     refs = manifest.get("done_certification_input_refs")
     if not isinstance(refs, dict) or not refs:
@@ -415,8 +424,19 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     if governance_error is not None:
         return blocked(governance_error)
 
+    eligibility_artifact_path = manifest.get("roadmap_eligibility_artifact_path")
+    if not _path_exists(eligibility_artifact_path):
+        return blocked("missing required artifact: roadmap_eligibility_artifact_path")
     try:
-        decision = build_next_step_decision(str(manifest_path))
+        _validate_roadmap_eligibility_artifact(str(eligibility_artifact_path))
+    except CycleRunnerError as exc:
+        return blocked(str(exc))
+
+    try:
+        decision = build_next_step_decision(
+            str(manifest_path),
+            roadmap_eligibility_artifact_path=str(eligibility_artifact_path),
+        )
     except ValueError as exc:
         return blocked(f"next-step decision generation failed: {exc}")
     decision_path = Path(manifest_path).resolve().parent / "next_step_decision_artifact.json"
@@ -439,6 +459,9 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     decision_path.write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
 
     manifest["next_step_decision_artifact_path"] = str(decision_path)
+    manifest["roadmap_eligibility_artifact_path"] = str(eligibility_artifact_path)
+    manifest["selected_step_id"] = decision.get("selected_step_id")
+    manifest["selected_step_status"] = "authorized" if isinstance(decision.get("selected_step_id"), str) else None
     manifest["drift_remediation_artifact_path"] = remediation_path
     manifest["fix_plan_artifact_path"] = fix_plan_path
     _write_manifest(manifest_path, manifest)
@@ -448,6 +471,12 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         if decision.get("remediation_required") is True:
             reason = f"{reason}; remediation_required=true"
         return blocked(f"next-step decision blocked progression: {reason}")
+    selected_step_id = decision.get("selected_step_id")
+    eligible_snapshot = decision.get("eligible_step_ids_snapshot", [])
+    if not isinstance(selected_step_id, str) or not selected_step_id:
+        return blocked("next-step decision missing selected_step_id")
+    if not isinstance(eligible_snapshot, list) or selected_step_id not in eligible_snapshot:
+        return blocked("next-step decision selected_step_id is not eligibility-authorized")
 
     roadmap_path = manifest.get("roadmap_artifact_path")
     if state != "certified_done" and not _path_exists(roadmap_path):

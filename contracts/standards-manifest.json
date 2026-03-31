@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.3",
+  "artifact_version": "1.3.4",
   "schema_version": "1.0.0",
-  "standards_version": "1.3.3",
-  "record_id": "REC-STD-2026-03-30-ROADMAP-ELIGIBILITY",
-  "run_id": "run-20260330T120000Z",
-  "created_at": "2026-03-30T00:00:00Z",
+  "standards_version": "1.3.4",
+  "record_id": "REC-STD-2026-03-31-G11-ELIGIBILITY-BINDING",
+  "run_id": "run-20260331T000000Z",
+  "created_at": "2026-03-31T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -330,15 +330,15 @@
     {
       "artifact_type": "cycle_manifest",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.88",
-      "last_updated_in": "1.2.0",
+      "last_updated_in": "1.3.4",
       "example_path": "contracts/examples/cycle_manifest.json",
-      "notes": "Cycle manifest now requires explicit strategy_authority and bounded source_authorities for governed cycle entry fail-closed progression."
+      "notes": "Cycle manifest now hard-binds roadmap eligibility provenance with authorized selected step linkage whenever next-step decisions are recorded."
     },
     {
       "artifact_type": "cycle_status_artifact",
@@ -1281,15 +1281,15 @@
     {
       "artifact_type": "next_step_decision_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.0",
-      "last_updated_in": "1.3.1",
+      "last_updated_in": "1.3.4",
       "example_path": "contracts/examples/next_step_decision_artifact.json",
-      "notes": "Deterministic fail-closed control-layer next-step decision artifact enforcing lifecycle progression with governed policy provenance (policy_id/version/hash) bound into decision identity."
+      "notes": "Next-step decision artifact now includes eligibility provenance, eligible-step snapshot, and eligibility-constrained selected step identity in deterministic decision hashing."
     },
     {
       "artifact_type": "next_step_decision_policy",

@@ -60,6 +60,31 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
     }
     pqx_request_path = tmp_path / "pqx_request.json"
     _write(pqx_request_path, pqx_request)
+    eligibility_path = tmp_path / "roadmap_eligibility.json"
+    _write(
+        eligibility_path,
+        {
+            "artifact_type": "roadmap_eligibility_artifact",
+            "schema_version": "1.0.0",
+            "artifact_version": "1.0.0",
+            "roadmap_ref": "docs/roadmaps/system_roadmap.md",
+            "evaluated_at": "2026-03-30T00:00:00Z",
+            "identity_basis": {
+                "roadmap_artifact_id": "roadmap-cycle-test",
+                "roadmap_digest": "a542be4e4e3d2a77e6a508d46267f37754378291a075e59977fe80c0baab1128",
+            },
+            "eligible_step_ids": ["CTRL-02"],
+            "recommended_next_step_ids": ["CTRL-02"],
+            "blocked_steps": [],
+            "summary": {
+                "total_steps": 1,
+                "completed_steps": 0,
+                "eligible_steps": 1,
+                "blocked_steps": 0,
+            },
+            "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1",
+        },
+    )
 
     base = {
         "cycle_id": "cycle-test",
@@ -125,6 +150,9 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
         "next_step_decision_artifact_path": None,
+        "roadmap_eligibility_artifact_path": str(eligibility_path),
+        "selected_step_id": None,
+        "selected_step_status": None,
         "drift_remediation_artifact_path": None,
         "fix_plan_artifact_path": None,
         "updated_at": "2026-03-30T00:00:00Z",
@@ -271,6 +299,28 @@ def test_cycle_runner_persists_remediation_and_fix_plan_when_decision_blocks(tmp
     assert decision_payload["remediation_required"] is True
     assert decision_payload["drift_remediation_artifact_path"] == updated["drift_remediation_artifact_path"]
     assert decision_payload["fix_plan_artifact_path"] == updated["fix_plan_artifact_path"]
+
+
+def test_cycle_runner_blocks_when_eligibility_artifact_missing(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+    manifest["roadmap_eligibility_artifact_path"] = str(tmp_path / "missing_eligibility.json")
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "roadmap_eligibility_artifact_path" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_persists_selected_step_linkage(tmp_path: Path) -> None:
+    _, manifest_path = _manifest(tmp_path, state="roadmap_under_review")
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "ok"
+
+    updated = _load(manifest_path)
+    assert updated["selected_step_id"] == "CTRL-02"
+    assert updated["selected_step_status"] == "authorized"
+    assert updated["roadmap_eligibility_artifact_path"]
 
 
 def test_cycle_runner_blocks_on_invalid_review_artifact(tmp_path: Path) -> None:
