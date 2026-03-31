@@ -7,6 +7,7 @@
 - **Operational compatibility mirror (required until migration complete):** `docs/roadmap/system_roadmap.md`
 - The compatibility mirror must remain parseable for existing PQX/tests that still consume `docs/roadmap/system_roadmap.md`.
 - During transition, updates to roadmap rows that affect operational parsing must be mirrored in both surfaces.
+- Strategic revisions in active authority must not remove legacy executable step IDs/rows from `docs/roadmap/system_roadmap.md` unless runtime/tests are migrated in the same slice.
 - Compatibility surfaces must remain aligned to the step execution contract in `docs/roadmap/roadmap_step_contract.md`.
 
 ## March 31, 2026 gate note

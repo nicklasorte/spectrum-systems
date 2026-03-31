@@ -17,6 +17,7 @@ Save the March 31, 2026 roadmap as repo-governed authority, preserve compatibili
 | docs/roadmap/system_roadmap.md | MODIFY | Keep legacy machine-parseable compatibility mirror aligned to authority changes including gate requirement. |
 | docs/roadmaps/roadmap_authority.md | MODIFY | Preserve authority/mirror bridge and add pre-expansion gate rule. |
 | docs/roadmap/roadmap_step_contract.md | MODIFY | Reconcile authority wording so contract references active authority plus compatibility execution surface. |
+| scripts/check_roadmap_authority.py | MODIFY | Reconcile checker semantics with authority docs/tests and enforce legacy executable-row compatibility checks. |
 | docs/architecture/strategy_control_document.md | CREATE | Add stable governing strategy/control doc for roadmap generation + drift prevention. |
 | docs/roadmaps/2026-03-31-roadmap-transition-note.md | CREATE | Record supersession rationale and transition constraints for March 31 revision. |
 | docs/review-actions/PLAN-CONTROL-LOOP-CLOSURE-GATE-2026-03-31.md | CREATE | Required PLAN artifact for this multi-file governance change. |

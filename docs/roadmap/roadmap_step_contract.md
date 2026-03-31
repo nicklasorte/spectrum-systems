@@ -65,3 +65,4 @@ The roadmap is a **machine-readable execution contract**.
 - Active authority declaration: `docs/roadmaps/system_roadmap.md`.
 - Machine execution surface during compatibility transition: `docs/roadmap/system_roadmap.md`.
 - PQX must resolve these via `docs/roadmaps/roadmap_authority.md` and fail closed on ambiguity/mismatch before evaluating step rows.
+- During compatibility transition, machine execution continues to consume `docs/roadmap/system_roadmap.md`; legacy executable IDs/dependencies must remain present until explicit cutover.
