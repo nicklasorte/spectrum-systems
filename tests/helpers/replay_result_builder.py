@@ -9,6 +9,9 @@ from typing import Any, Dict, Optional
 
 from spectrum_systems.contracts import load_example, load_schema
 
+_DEFAULT_REPLAY_METRICS = ("replay_success_rate",)
+_HIGHER_IS_BETTER_METRICS = frozenset({"replay_success_rate"})
+
 
 def _current_replay_schema_version() -> str:
     schema = load_schema("replay_result")
@@ -45,12 +48,21 @@ def enforce_replay_budget_consistency(result: Dict[str, Any]) -> Dict[str, Any]:
     severity_rank = {"healthy": 0, "warning": 1, "exhausted": 2, "invalid": 3}
 
     computed_highest = "healthy"
+    objective_by_metric = {}
     for objective in objectives:
         if not isinstance(objective, dict):
             continue
         metric_name = str(objective.get("metric_name") or "")
-        if metric_name not in {"replay_success_rate", "drift_exceed_threshold_rate"}:
-            continue
+        objective_by_metric[metric_name] = objective
+    required_metrics = sorted(
+        metric_name for metric_name in metrics.keys() if metric_name != "total_runs"
+    )
+    for metric_name in required_metrics:
+        objective = objective_by_metric.get(metric_name)
+        if not isinstance(objective, dict):
+            raise ValueError(
+                f"budget consistency mismatch for {metric_name}: missing error_budget_status objective"
+            )
         metric_value = metrics.get(metric_name)
         observed_value = objective.get("observed_value")
         if not isinstance(metric_value, (int, float)) or not isinstance(observed_value, (int, float)):
@@ -102,7 +114,7 @@ def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, 
         if not isinstance(objective, dict):
             continue
         metric_name = objective.get("metric_name")
-        if metric_name not in {"replay_success_rate", "drift_exceed_threshold_rate"}:
+        if metric_name not in metrics or metric_name == "total_runs":
             continue
         observed_metric = metrics.get(metric_name)
         if not isinstance(observed_metric, (int, float)):
@@ -111,7 +123,7 @@ def align_replay_budget_with_observability(result: Dict[str, Any]) -> Dict[str, 
         objective["observed_value"] = observed_value
         target_value = float(objective.get("target_value", 0.0))
         allowed_error = float(objective.get("allowed_error", 0.0))
-        if metric_name == "replay_success_rate":
+        if metric_name in _HIGHER_IS_BETTER_METRICS:
             consumed_error = round(max(0.0, target_value - observed_value), 6)
         else:
             consumed_error = round(max(0.0, observed_value - target_value), 6)
@@ -211,10 +223,33 @@ def _apply_budget_patch(result: Dict[str, Any], budget_patch: Optional[Dict[str,
     observed_values = budget_patch.get("observed_values")
     if isinstance(observed_values, dict) and isinstance(result.get("observability_metrics"), dict):
         metrics = result["observability_metrics"].get("metrics")
+        budget_objectives = budget.get("objectives")
         if isinstance(metrics, dict):
             for metric_name, observed_value in observed_values.items():
                 if isinstance(observed_value, (int, float)):
                     metrics[metric_name] = float(observed_value)
+            if isinstance(budget_objectives, list):
+                existing = {
+                    str(item.get("metric_name"))
+                    for item in budget_objectives
+                    if isinstance(item, dict) and isinstance(item.get("metric_name"), str)
+                }
+                for metric_name in metrics.keys():
+                    if metric_name == "total_runs" or metric_name in existing:
+                        continue
+                    target_value = 0.99 if metric_name in _HIGHER_IS_BETTER_METRICS else 0.05
+                    budget_objectives.append(
+                        {
+                            "metric_name": metric_name,
+                            "target_value": target_value,
+                            "observed_value": float(metrics[metric_name]),
+                            "allowed_error": round(max(0.0, 1.0 - target_value) if metric_name in _HIGHER_IS_BETTER_METRICS else target_value, 6),
+                            "consumed_error": 0.0,
+                            "remaining_error": 0.0,
+                            "consumption_ratio": 0.0,
+                            "status": "healthy",
+                        }
+                    )
         enforce_replay_budget_consistency(result)
     budget_status = budget_patch.get("budget_status")
     if isinstance(budget_status, str):
@@ -239,13 +274,19 @@ def make_canonical_replay_result(
     """
     observability = deepcopy(load_example("observability_metrics"))
     observability["trace_refs"]["trace_id"] = trace_id
-    observability["metrics"]["drift_exceed_threshold_rate"] = float(
-        observability["metrics"].get("drift_exceed_threshold_rate", 0.0)
-    )
+    observability["metrics"] = {
+        "total_runs": 1,
+        "replay_success_rate": float(observability["metrics"].get("replay_success_rate", 1.0)),
+    }
 
     error_budget = deepcopy(load_example("error_budget_status"))
     error_budget["trace_refs"]["trace_id"] = trace_id
     error_budget["observability_metrics_id"] = observability["artifact_id"]
+    error_budget["objectives"] = [
+        objective
+        for objective in error_budget.get("objectives", [])
+        if isinstance(objective, dict) and objective.get("metric_name") in set(_DEFAULT_REPLAY_METRICS)
+    ]
 
     result: Dict[str, Any] = {
         "artifact_id": "",

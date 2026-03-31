@@ -29,6 +29,11 @@ def _replay_result_artifact(*, replay_success_rate: float = 0.95, drift_rate: fl
         replay_id="RPL-control-integration-001",
         trace_id="44444444-4444-4444-8444-444444444444",
         replay_run_id="eval-run-20260322T000000Z",
+        budget_patch={
+            "observed_values": {
+                "drift_exceed_threshold_rate": drift_rate,
+            }
+        },
     )
     artifact["observability_metrics"]["metrics"]["replay_success_rate"] = replay_success_rate
     artifact["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = drift_rate
