@@ -12,17 +12,21 @@ Use this prompt only for roadmap generation inside governed workflow seams.
 
 ## NON-NEGOTIABLE (STRICT MODE)
 - Every step MUST reference at least one strategy invariant.
+- Every step MUST reference at least one trust gain category.
 - Every step MUST state primary trust gain.
 - Every step MUST include explicit eval reference linkage.
 - Every step MUST include explicit control-loop stage integration (Observe/Interpret/Decide/Enforce).
+- For any step affecting system behavior, the step MUST explicitly state replay or trace implications.
 - Every step MUST include replay and trace considerations for auditability.
 - Roadmap generation MUST bind to `strategy_version: "strategy-control.md::<hash_or_version>"`.
 - Missing alignment is invalid output.
+- Missing these fields = invalid output.
 
 ## INVALID OUTPUT CONDITIONS
-- missing strategy alignment
-- missing trust gain
+- missing Strategy Alignment
+- missing Primary Trust Gain
 - agent-first or prompt-first steps
+- capability without eval/control/replay
 - capability without governance
 
 - Strategy Control Document is highest authority.
@@ -43,6 +47,11 @@ Use this prompt only for roadmap generation inside governed workflow seams.
 ### Roadmap Table
 | ID | Prompt | Status | What It Does | Why It Matters | Strategy Alignment | Source Grounding | Primary Trust Gain |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+
+### Example Row (Anchor Pattern)
+| ID | Prompt | Status | What It Does | Why It Matters | Strategy Alignment | Primary Trust Gain |
+| --- | --- | --- | --- | --- | --- | --- |
+| EX-01 | Add eval gating | Not Run | Adds eval enforcement | Prevents unverified outputs | Strengthens Eval Invariants 6–9; Control Rule fail-closed | eval coverage |
 
 ### Recommended Next Hard Gate
 - Single gate recommendation with rationale tied to trust-before-speed.
