@@ -8,6 +8,7 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.orchestration.sequence_transition_policy import SEQUENCE_STATES
 
 
 class CycleManifestError(ValueError):
@@ -57,3 +58,22 @@ def validate_cycle_manifest(manifest: dict) -> None:
         raise CycleManifestError("execution_completed_at must be >= execution_started_at")
     if completed_at and updated_at and updated_at < completed_at:
         raise CycleManifestError("updated_at must be >= execution_completed_at")
+
+    state = manifest.get("current_state")
+    if manifest.get("sequence_mode") == "three_slice" and state in SEQUENCE_STATES:
+        trace_id = manifest.get("sequence_trace_id")
+        if not isinstance(trace_id, str) or not trace_id:
+            raise CycleManifestError("sequence state requires non-empty sequence_trace_id")
+        lineage = manifest.get("sequence_lineage")
+        if not isinstance(lineage, list) or not lineage:
+            raise CycleManifestError("sequence state requires non-empty sequence_lineage")
+        history = manifest.get("sequence_transition_history")
+        if not isinstance(history, list):
+            raise CycleManifestError("sequence_transition_history must be a list")
+        for idx, entry in enumerate(history):
+            if not isinstance(entry, dict):
+                raise CycleManifestError(f"sequence_transition_history[{idx}] must be an object")
+            from_state = entry.get("from_state")
+            to_state = entry.get("to_state")
+            if from_state not in SEQUENCE_STATES or to_state not in SEQUENCE_STATES:
+                raise CycleManifestError("sequence_transition_history includes unknown state")

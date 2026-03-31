@@ -8,6 +8,7 @@
   "required": [
     "cycle_id",
     "current_state",
+    "sequence_mode",
     "roadmap_artifact_path",
     "source_authorities",
     "strategy_authority",
@@ -45,7 +46,11 @@
     "decision_block_reason",
     "eligibility_summary_snapshot",
     "eligible_step_ids_snapshot",
-    "recommended_next_step_ids"
+    "recommended_next_step_ids",
+    "sequence_trace_id",
+    "sequence_lineage",
+    "sequence_transition_history",
+    "control_allow_promotion"
   ],
   "properties": {
     "cycle_id": {
@@ -67,8 +72,24 @@
         "fixes_complete_unreviewed",
         "certification_pending",
         "certified_done",
-        "blocked"
+        "blocked",
+        "admitted",
+        "executing_slice_1",
+        "executing_slice_2",
+        "executing_slice_3",
+        "review_pending",
+        "remediation_pending",
+        "promoted",
+        "frozen"
       ]
+    },
+    "sequence_mode": {
+      "type": "string",
+      "enum": [
+        "legacy",
+        "three_slice"
+      ],
+      "default": "legacy"
     },
     "roadmap_artifact_path": {
       "type": [
@@ -443,6 +464,67 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "sequence_trace_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "sequence_lineage": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "sequence_transition_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_state",
+          "to_state",
+          "transitioned_at",
+          "policy_decision_id",
+          "artifact_refs"
+        ],
+        "properties": {
+          "from_state": {
+            "type": "string"
+          },
+          "to_state": {
+            "type": "string"
+          },
+          "transitioned_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_decision_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "control_allow_promotion": {
+      "type": "boolean"
     }
   },
   "allOf": [
@@ -507,6 +589,40 @@
             "type": "null"
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sequence_mode": {
+            "const": "three_slice"
+          },
+          "current_state": {
+            "enum": [
+              "admitted",
+              "executing_slice_1",
+              "executing_slice_2",
+              "executing_slice_3",
+              "review_pending",
+              "remediation_pending",
+              "certification_pending",
+              "promoted",
+              "blocked",
+              "frozen"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sequence_trace_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sequence_lineage"
+        ]
       }
     }
   ]

@@ -44,3 +44,14 @@ def test_cycle_manifest_rejects_inconsistent_timing() -> None:
 
     with pytest.raises(CycleManifestError, match="execution_completed_at must be >= execution_started_at"):
         validate_cycle_manifest(manifest)
+
+
+def test_cycle_manifest_rejects_sequence_state_without_traceability() -> None:
+    manifest = _example_manifest()
+    manifest["sequence_mode"] = "three_slice"
+    manifest["current_state"] = "admitted"
+    manifest["sequence_trace_id"] = None
+    manifest["sequence_lineage"] = []
+
+    with pytest.raises(CycleManifestError, match="None is not of type 'string'"):
+        validate_cycle_manifest(manifest)

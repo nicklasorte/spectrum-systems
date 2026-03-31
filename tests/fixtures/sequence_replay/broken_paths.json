@@ -1,0 +1,7 @@
+{
+  "cases": [
+    {"name": "skip_slice_2", "from": "executing_slice_1", "to": "executing_slice_3", "reason": "illegal transition"},
+    {"name": "skip_review", "from": "executing_slice_3", "to": "certification_pending", "reason": "illegal transition"},
+    {"name": "skip_certification", "from": "review_pending", "to": "promoted", "reason": "illegal transition"}
+  ]
+}

@@ -15,6 +15,10 @@ from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError
 from spectrum_systems.orchestration.cycle_manifest_validator import CycleManifestError, validate_cycle_manifest
 from spectrum_systems.orchestration.next_step_decision import build_next_step_decision
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
+from spectrum_systems.orchestration.sequence_transition_policy import (
+    SEQUENCE_STATES,
+    evaluate_sequence_transition,
+)
 
 
 class CycleRunnerError(ValueError):
@@ -35,6 +39,14 @@ _STATES = {
     "certification_pending",
     "certified_done",
     "blocked",
+    "admitted",
+    "executing_slice_1",
+    "executing_slice_2",
+    "executing_slice_3",
+    "review_pending",
+    "remediation_pending",
+    "promoted",
+    "frozen",
 }
 
 _CANONICAL_STRATEGY_PATH = "docs/architecture/system_strategy.md"
@@ -467,6 +479,57 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     governance_error = _validate_governance_authority(manifest)
     if governance_error is not None:
         return blocked(governance_error)
+
+    def _authorize_sequence_transition(target_state: str) -> str | None:
+        decision = evaluate_sequence_transition(manifest, target_state)
+        return None if decision.allowed else decision.reason or "sequence transition blocked by policy"
+
+    def _record_sequence_transition(target_state: str, *, reason: str | None = None) -> None:
+        history = manifest.get("sequence_transition_history")
+        if not isinstance(history, list):
+            history = []
+        history.append(
+            {
+                "from_state": state,
+                "to_state": target_state,
+                "transitioned_at": _deterministic_timestamp(manifest.get("updated_at")),
+                "policy_decision_id": f"{manifest['cycle_id']}:{state}->{target_state}",
+                "artifact_refs": sorted(set(manifest.get("execution_report_paths", []))),
+                "reason": reason,
+            }
+        )
+        manifest["sequence_transition_history"] = history
+
+    if manifest.get("sequence_mode") == "three_slice" and state in SEQUENCE_STATES:
+        target_map = {
+            "admitted": ("executing_slice_1", "execute_slice_1"),
+            "executing_slice_1": ("executing_slice_2", "execute_slice_2"),
+            "executing_slice_2": ("executing_slice_3", "execute_slice_3"),
+            "executing_slice_3": ("review_pending", "collect_reviews"),
+            "review_pending": ("certification_pending", "run_done_certification"),
+            "remediation_pending": ("certification_pending", "run_done_certification"),
+            "certification_pending": ("promoted", "archive_cycle"),
+            "promoted": ("promoted", "none"),
+            "blocked": ("blocked", "resolve_blocking_issues"),
+            "frozen": ("frozen", "manual_unfreeze_required"),
+        }
+        target_state, next_action = target_map[state]
+        blocked_reason = _authorize_sequence_transition(target_state)
+        if blocked_reason is not None:
+            return blocked(blocked_reason)
+        if state != target_state:
+            _record_sequence_transition(target_state)
+            manifest["current_state"] = target_state
+            manifest["next_action"] = next_action
+            _write_manifest(manifest_path, manifest)
+        return {
+            "cycle_id": manifest["cycle_id"],
+            "status": "ok",
+            "current_state": state,
+            "next_state": target_state,
+            "next_action": next_action,
+            "blocking_issues": manifest.get("blocking_issues", []),
+        }
 
     eligibility_artifact_path = manifest.get("roadmap_eligibility_artifact_path")
     if not _path_exists(eligibility_artifact_path):

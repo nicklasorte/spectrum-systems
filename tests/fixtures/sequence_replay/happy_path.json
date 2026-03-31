@@ -1,0 +1,11 @@
+{
+  "states": [
+    "admitted",
+    "executing_slice_1",
+    "executing_slice_2",
+    "executing_slice_3",
+    "review_pending",
+    "certification_pending",
+    "promoted"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "cases": [
+    {
+      "name": "missing_traceability",
+      "from": "admitted",
+      "to": "executing_slice_1",
+      "mutations": {"sequence_trace_id": null, "sequence_lineage": []},
+      "reason": "missing required sequence traceability"
+    },
+    {
+      "name": "promotion_without_control_allow",
+      "from": "certification_pending",
+      "to": "promoted",
+      "mutations": {"control_allow_promotion": false},
+      "reason": "explicit control_allow_promotion"
+    }
+  ]
+}
