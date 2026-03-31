@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -30,6 +32,21 @@ _ERROR_BUDGET_SEVERITY_ORDER = {
 }
 _MAX_EMBEDDED_TIMESTAMP_DELTA_SECONDS = 366 * 24 * 60 * 60
 _OBSERVABILITY_BUDGET_TOLERANCE = 1e-6
+_CONTROL_RESPONSE_PRECEDENCE = {
+    "allow": 0,
+    "warn": 1,
+    "freeze": 2,
+    "block": 3,
+}
+_JUDGMENT_INTENT_TO_RESPONSE = {
+    "allow": "allow",
+    "warn": "warn",
+    "require_review": "warn",
+    "freeze": "freeze",
+    "block": "block",
+    "deny": "block",
+}
+_JUDGMENT_AUTHORITY_LEVELS = frozenset({"advisory", "influencing", "authoritative"})
 
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> List[str]:
@@ -338,6 +355,144 @@ def _validate_control_trace(control_trace: Dict[str, Any]) -> None:
         raise ControlLoopError("control_trace failed validation: " + "; ".join(errors))
 
 
+def _deterministic_judgment_identity(judgment: Dict[str, Any]) -> str:
+    seed = {
+        "judgment_id": str(judgment.get("judgment_id") or ""),
+        "policy_id": str(judgment.get("policy_id") or ""),
+        "judgment_type": str(judgment.get("judgment_type") or ""),
+        "decision_intent": str(judgment.get("decision_intent") or ""),
+        "control_decision_surface": str(judgment.get("control_decision_surface") or ""),
+        "trace_id": str(judgment.get("trace_id") or ""),
+    }
+    encoded = json.dumps(seed, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _normalize_judgment_authority_records(
+    *,
+    trace_context: Dict[str, Any],
+    signal: Dict[str, Any],
+) -> List[Dict[str, str]]:
+    raw_records = trace_context.get("judgment_authority_records")
+    if raw_records is None:
+        return []
+    if not isinstance(raw_records, list):
+        raise ControlLoopError("judgment_authority_records must be a list when provided")
+
+    normalized: List[Dict[str, str]] = []
+    signal_trace_id = str(signal.get("trace_id") or "")
+    for idx, record in enumerate(raw_records):
+        if not isinstance(record, dict):
+            raise ControlLoopError(f"judgment_authority_records[{idx}] must be an object")
+        required = (
+            "judgment_id",
+            "policy_id",
+            "judgment_type",
+            "decision_intent",
+            "control_decision_surface",
+            "trace_id",
+            "deterministic_identity",
+            "authority_level",
+        )
+        for field in required:
+            value = record.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ControlLoopError(f"judgment_authority_records[{idx}] missing required field: {field}")
+
+        if record["control_decision_surface"] != "evaluation_control_decision":
+            raise ControlLoopError("judgment authority control_decision_surface must target evaluation_control_decision")
+        if record["authority_level"] not in _JUDGMENT_AUTHORITY_LEVELS:
+            raise ControlLoopError("judgment authority level must be advisory|influencing|authoritative")
+        if record["trace_id"] != signal_trace_id:
+            continue
+        if record["decision_intent"] not in _JUDGMENT_INTENT_TO_RESPONSE:
+            raise ControlLoopError("judgment authority decision_intent is not supported for control precedence")
+        expected_identity = _deterministic_judgment_identity(record)
+        if record["deterministic_identity"] != expected_identity:
+            raise ControlLoopError("judgment authority deterministic_identity mismatch")
+        normalized.append(
+            {
+                "judgment_id": record["judgment_id"],
+                "policy_id": record["policy_id"],
+                "judgment_type": record["judgment_type"],
+                "decision_intent": record["decision_intent"],
+                "control_decision_surface": record["control_decision_surface"],
+                "trace_id": record["trace_id"],
+                "deterministic_identity": record["deterministic_identity"],
+                "authority_level": record["authority_level"],
+            }
+        )
+    return sorted(normalized, key=lambda item: item["judgment_id"])
+
+
+def _apply_judgment_authority(
+    *,
+    decision: Dict[str, Any],
+    authority_records: List[Dict[str, str]],
+) -> Dict[str, Any]:
+    if not authority_records:
+        return decision
+
+    current_response = str(decision.get("system_response") or "")
+    current_rank = _CONTROL_RESPONSE_PRECEDENCE.get(current_response)
+    if current_rank is None:
+        raise ControlLoopError("evaluation_control_decision missing supported system_response for judgment authority")
+
+    applicable = [record for record in authority_records if record["control_decision_surface"] == "evaluation_control_decision"]
+    if not applicable:
+        return decision
+
+    if any(record["authority_level"] == "advisory" for record in applicable):
+        raise ControlLoopError("advisory judgment is invalid for authoritative control surfaces")
+
+    authoritative = [record for record in applicable if record["authority_level"] == "authoritative"]
+    if not authoritative:
+        # Influencing judgments are treated as metadata-only in this seam and therefore invalid.
+        raise ControlLoopError("applicable judgment authority exists but is not authoritative for control decisions")
+
+    intents = {record["decision_intent"] for record in authoritative}
+    ranked_intents: Dict[int, set[str]] = {}
+    for intent in intents:
+        response = _JUDGMENT_INTENT_TO_RESPONSE[intent]
+        rank = _CONTROL_RESPONSE_PRECEDENCE[response]
+        ranked_intents.setdefault(rank, set()).add(intent)
+    max_rank = max(ranked_intents)
+    if len(ranked_intents[max_rank]) > 1:
+        raise ControlLoopError("conflicting authoritative judgment intents cannot be resolved deterministically")
+
+    if max_rank < current_rank:
+        return decision
+    if max_rank == current_rank:
+        raise ControlLoopError("authoritative judgment was applicable but did not change the control decision")
+
+    updated = dict(decision)
+    mapped_response = next(
+        response for response, rank in _CONTROL_RESPONSE_PRECEDENCE.items() if rank == max_rank
+    )
+    updated["system_response"] = mapped_response
+    updated_signals = list(updated.get("triggered_signals") or [])
+    if mapped_response == "warn":
+        updated["system_status"] = "warning"
+        updated["decision"] = "require_review"
+        updated["rationale_code"] = "require_review_warning_signal"
+        if "reliability_breach" not in updated_signals:
+            updated_signals.append("reliability_breach")
+    elif mapped_response == "freeze":
+        updated["system_status"] = "exhausted"
+        updated["decision"] = "deny"
+        updated["rationale_code"] = "deny_stability_breach"
+        if "stability_breach" not in updated_signals:
+            updated_signals.append("stability_breach")
+    else:
+        updated["system_status"] = "blocked"
+        updated["decision"] = "deny"
+        updated["rationale_code"] = "deny_trust_breach"
+        if "trust_breach" not in updated_signals:
+            updated_signals.append("trust_breach")
+    updated["triggered_signals"] = updated_signals
+    return updated
+
+
 def run_control_loop(
     artifact: Dict[str, Any],
     trace_context: Dict[str, Any],
@@ -353,6 +508,14 @@ def run_control_loop(
     _validate_trace_context_binding(trace_context, artifact)
 
     decision = _evaluate_signal(signal, artifact, trace_context)
+    authority_records = _normalize_judgment_authority_records(
+        trace_context=trace_context,
+        signal=signal,
+    )
+    decision = _apply_judgment_authority(
+        decision=decision,
+        authority_records=authority_records,
+    )
     decision_schema = load_schema("evaluation_control_decision")
     decision_errors = _validate(decision, decision_schema)
     if decision_errors:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -39,6 +41,40 @@ def _replay_result() -> Dict[str, Any]:
     replay = copy.deepcopy(load_example("replay_result"))
     replay.setdefault("observability_metrics", {}).setdefault("metrics", {})["drift_exceed_threshold_rate"] = 0.0
     return replay
+
+
+def _judgment_authority_record(
+    *,
+    trace_id: str,
+    decision_intent: str = "block",
+    authority_level: str = "authoritative",
+    policy_id: str = "judgment-policy-artifact-release-readiness-v1",
+    judgment_id: str = "judgment-cl04-001",
+) -> dict[str, str]:
+    record = {
+        "judgment_id": judgment_id,
+        "policy_id": policy_id,
+        "judgment_type": "artifact_release_readiness",
+        "decision_intent": decision_intent,
+        "control_decision_surface": "evaluation_control_decision",
+        "trace_id": trace_id,
+        "authority_level": authority_level,
+    }
+    record["deterministic_identity"] = hashlib.sha256(
+        json.dumps(
+            {
+                "judgment_id": record["judgment_id"],
+                "policy_id": record["policy_id"],
+                "judgment_type": record["judgment_type"],
+                "decision_intent": record["decision_intent"],
+                "control_decision_surface": record["control_decision_surface"],
+                "trace_id": record["trace_id"],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return record
 
 
 def _failure_eval_case() -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
@@ -231,6 +267,84 @@ def test_repeat_failure_changes_control_decision() -> None:
     decision = run_control_loop(failure_eval, trace_context)["evaluation_control_decision"]
     assert decision["decision"] == "deny"
     assert decision["system_response"] == "block"
+
+
+def test_judgment_maps_to_policy() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    record = _judgment_authority_record(trace_id=replay["trace_id"], policy_id="policy-cl04-1")
+    trace_context["judgment_authority_records"] = [record]
+    decision = run_control_loop(replay, trace_context)["evaluation_control_decision"]
+    assert decision["system_response"] == "block"
+
+
+def test_judgment_affects_control() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    trace_context["judgment_authority_records"] = [
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="freeze")
+    ]
+    decision = run_control_loop(replay, trace_context)["evaluation_control_decision"]
+    assert decision["system_response"] == "freeze"
+    assert decision["decision"] == "deny"
+
+
+def test_authoritative_judgment_escalates() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    trace_context["judgment_authority_records"] = [
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="block")
+    ]
+    decision = run_control_loop(replay, trace_context)["evaluation_control_decision"]
+    assert decision["system_response"] == "block"
+    assert decision["decision"] == "deny"
+
+
+def test_judgment_cannot_downgrade_safety() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "exhausted"
+    replay["error_budget_status"]["highest_severity"] = "exhausted"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {"metric_name": "replay_success_rate", "status": "exhausted", "consumption_ratio": 1.0}
+    ]
+    trace_context = _trace_context(replay)
+    trace_context["judgment_authority_records"] = [
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="allow")
+    ]
+    decision = run_control_loop(replay, trace_context)["evaluation_control_decision"]
+    assert decision["system_response"] in {"freeze", "block"}
+    assert decision["decision"] == "deny"
+
+
+def test_missing_judgment_policy_blocks() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    record = _judgment_authority_record(trace_id=replay["trace_id"])
+    record.pop("policy_id")
+    trace_context["judgment_authority_records"] = [record]
+    with pytest.raises(ControlLoopError, match="missing required field: policy_id"):
+        run_control_loop(replay, trace_context)
+
+
+def test_conflicting_signals_resolve_deterministically() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    trace_context["judgment_authority_records"] = [
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="freeze", judgment_id="judgment-a"),
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="block", judgment_id="judgment-b"),
+    ]
+    decision = run_control_loop(replay, trace_context)["evaluation_control_decision"]
+    assert decision["system_response"] == "block"
+
+
+def test_ignored_judgment_fails() -> None:
+    replay = _replay_result()
+    trace_context = _trace_context(replay)
+    trace_context["judgment_authority_records"] = [
+        _judgment_authority_record(trace_id=replay["trace_id"], decision_intent="allow", authority_level="influencing")
+    ]
+    with pytest.raises(ControlLoopError, match="not authoritative for control decisions"):
+        run_control_loop(replay, trace_context)
 
 
 def _judgment_learning_inputs() -> dict[str, Any]:
