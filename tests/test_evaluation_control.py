@@ -14,10 +14,36 @@ from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     EvaluationControlError,
     build_evaluation_control_decision,
 )
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
+    generate_failure_eval_case,
+    register_failure_eval_case,
+)
 
 
 def _replay_result() -> dict:
     return copy.deepcopy(load_example("replay_result"))
+
+
+def _failure_eval_case() -> tuple[dict, dict]:
+    artifact = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-cl01-001",
+            "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        },
+        source_run_id="run-cl01-001",
+        stage="control",
+        runtime_environment="test",
+        execution_result={"continuation_allowed": False, "publication_blocked": True, "decision_blocked": True},
+    )
+    registry: dict[str, dict] = {}
+    binding = register_failure_eval_case(
+        failure_eval_case=artifact,
+        eval_registry=registry,
+        policy_id="failure-binding-policy-v1",
+        trigger_condition="on_failure_record_emitted",
+    )
+    return artifact, binding
 
 
 def test_replay_result_healthy_allows() -> None:
@@ -160,3 +186,16 @@ def test_indeterminate_replay_routes_to_trust_breach_rationale() -> None:
     assert decision["decision"] == "deny"
     assert decision["rationale_code"] == "deny_trust_breach"
     assert "indeterminate_failure" in decision["triggered_signals"]
+
+
+def test_failure_eval_case_requires_policy_binding() -> None:
+    failure_eval, _ = _failure_eval_case()
+    with pytest.raises(EvaluationControlError, match="requires deterministic failure_policy_binding"):
+        build_evaluation_control_decision(failure_eval)
+
+
+def test_failure_eval_case_with_policy_binding_routes_to_non_allow() -> None:
+    failure_eval, binding = _failure_eval_case()
+    decision = build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
+    assert decision["decision"] in {"deny", "require_review"}
+    assert decision["input_signal_reference"]["signal_type"] == "failure_eval_case"

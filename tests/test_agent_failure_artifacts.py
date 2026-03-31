@@ -7,6 +7,10 @@ from pathlib import Path
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.agent_golden_path import GoldenPathConfig, run_agent_golden_path
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (
+    generate_failure_eval_case,
+    register_failure_eval_case,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -83,3 +87,33 @@ def test_cli_failure_returns_non_zero_and_emits_failure_summary(tmp_path: Path) 
     assert payload["status"] == "failed"
     assert payload["failure_stage"] == "agent"
     assert (output_dir / "failure_artifact.json").exists()
+
+
+def test_failure_generates_eval_case_and_registers_policy_binding(tmp_path: Path) -> None:
+    artifacts = run_agent_golden_path(_config(tmp_path, fail_eval_execution=True))
+    failure = artifacts["failure_artifact"]
+    failure_eval_case = generate_failure_eval_case(
+        source_artifact=failure,
+        source_run_id=failure["run_id"],
+        stage=failure["failure_stage"],
+        runtime_environment="agent_golden_path",
+        execution_result={
+            "continuation_allowed": False,
+            "publication_blocked": True,
+            "decision_blocked": True,
+            "human_review_required": False,
+            "escalation_triggered": True,
+        },
+    )
+    registry: dict[str, dict] = {}
+    binding = register_failure_eval_case(
+        failure_eval_case=failure_eval_case,
+        eval_registry=registry,
+        policy_id="failure-binding-policy-v1",
+        trigger_condition="on_agent_failure_record",
+    )
+    assert failure_eval_case["eval_case_id"]
+    assert failure_eval_case["failure_class"]
+    assert failure_eval_case["trace_id"] == failure["trace_id"]
+    assert registry[failure_eval_case["eval_case_id"]]["failure_id"] == failure["id"]
+    assert binding["policy_id"] == "failure-binding-policy-v1"

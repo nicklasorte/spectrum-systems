@@ -162,6 +162,23 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
 
 def _normalize_signal(artifact: Dict[str, Any]) -> Dict[str, Any]:
     artifact_type = artifact.get("artifact_type")
+    if artifact_type == "failure_eval_case":
+        eval_case_id = str(artifact.get("eval_case_id") or "")
+        trace_id = str(artifact.get("trace_id") or "")
+        source_artifact_id = str(artifact.get("source_artifact_id") or "")
+        run_id = str(artifact.get("source_run_id") or eval_case_id)
+        return {
+            "signal_type": artifact_type,
+            "source_artifact_id": eval_case_id,
+            "key_metrics": {
+                "failure_class": artifact.get("failure_class"),
+                "failure_stage": artifact.get("failure_stage"),
+                "source_failure_id": source_artifact_id,
+            },
+            "trace_id": trace_id,
+            "run_id": run_id,
+            "artifact_type": artifact_type,
+        }
     if artifact_type != "replay_result":
         raise ControlLoopError(f"unsupported artifact_type for control loop: {artifact_type}")
     _validate_replay_budget_inputs(artifact)
@@ -199,6 +216,20 @@ def _validate_trace_context_binding(
     trace_context: Dict[str, Any],
     artifact: Dict[str, Any],
 ) -> None:
+    if artifact.get("artifact_type") == "failure_eval_case":
+        required_linkage = ("trace_id",)
+        for key in required_linkage:
+            trace_value = trace_context.get(key)
+            if not isinstance(trace_value, str) or not trace_value.strip():
+                raise ControlLoopError(f"trace_context missing required linkage field: {key}")
+            artifact_value = artifact.get(key)
+            if not isinstance(artifact_value, str) or not artifact_value.strip():
+                raise ControlLoopError(f"artifact missing required trace linkage field: {key}")
+            if trace_value != artifact_value:
+                raise ControlLoopError(
+                    f"trace_context linkage mismatch for {key}: expected artifact identity binding"
+                )
+        return
     required_linkage = ("trace_id", "replay_id", "replay_run_id")
     for key in required_linkage:
         trace_value = trace_context.get(key)
@@ -235,11 +266,24 @@ def build_trace_context_from_replay_artifact(
 def _evaluate_signal(
     signal: Dict[str, Any],
     artifact: Dict[str, Any],
+    trace_context: Dict[str, Any],
 ) -> Dict[str, Any]:
     signal_type = signal["signal_type"]
 
     if signal_type == "replay_result":
         return build_evaluation_control_decision(artifact)
+    if signal_type == "failure_eval_case":
+        registry = trace_context.get("failure_eval_registry")
+        if not isinstance(registry, dict):
+            raise ControlLoopError("failure_eval_case requires failure_eval_registry in trace_context")
+        eval_case_id = str(artifact.get("eval_case_id") or "")
+        binding = registry.get(eval_case_id)
+        if not isinstance(binding, dict):
+            raise ControlLoopError("failure_eval_case is not registered in failure_eval_registry")
+        return build_evaluation_control_decision(
+            artifact,
+            failure_policy_binding=binding,
+        )
 
     raise ControlLoopError(f"unsupported signal_type for evaluation stage: {signal_type}")
 
@@ -261,10 +305,10 @@ def _validate_control_trace(control_trace: Dict[str, Any]) -> None:
             "trace_id": {"type": "string", "minLength": 1},
             "run_id": {"type": "string", "minLength": 1},
             "input_artifact_id": {"type": "string", "minLength": 1},
-            "signal_type": {"type": "string", "enum": ["replay_result"]},
+            "signal_type": {"type": "string", "enum": ["replay_result", "failure_eval_case"]},
             "evaluation_path": {
                 "type": "string",
-                "enum": ["evaluation_control_from_replay_result"],
+                "enum": ["evaluation_control_from_replay_result", "evaluation_control_from_failure_eval_case"],
             },
             "decision": {"type": "string", "enum": ["allow", "deny", "require_review"]},
             "timestamp": {"type": "string", "format": "date-time"},
@@ -289,7 +333,7 @@ def run_control_loop(
     _validate_normalized_signal(signal)
     _validate_trace_context_binding(trace_context, artifact)
 
-    decision = _evaluate_signal(signal, artifact)
+    decision = _evaluate_signal(signal, artifact, trace_context)
     decision_schema = load_schema("evaluation_control_decision")
     decision_errors = _validate(decision, decision_schema)
     if decision_errors:
@@ -303,7 +347,9 @@ def run_control_loop(
         "input_artifact_id": signal["source_artifact_id"],
         "signal_type": signal["signal_type"],
         "evaluation_path": (
-            "evaluation_control_from_replay_result"
+            "evaluation_control_from_failure_eval_case"
+            if signal["signal_type"] == "failure_eval_case"
+            else "evaluation_control_from_replay_result"
         ),
         "decision": decision["decision"],
         "timestamp": decision["created_at"],

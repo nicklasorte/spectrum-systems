@@ -17,6 +17,10 @@ from spectrum_systems.modules.runtime.control_loop import (  # noqa: E402
     run_control_loop,
     run_judgment_learning_control_loop,
 )
+from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
+    generate_failure_eval_case,
+    register_failure_eval_case,
+)
 
 
 def _trace_context(replay: Dict[str, Any] | None = None) -> Dict[str, Any]:
@@ -35,6 +39,29 @@ def _replay_result() -> Dict[str, Any]:
     replay = copy.deepcopy(load_example("replay_result"))
     replay.setdefault("observability_metrics", {}).setdefault("metrics", {})["drift_exceed_threshold_rate"] = 0.0
     return replay
+
+
+def _failure_eval_case() -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
+    failure_eval = generate_failure_eval_case(
+        source_artifact={
+            "artifact_type": "agent_failure_record",
+            "id": "afr-loop-001",
+            "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        },
+        source_run_id="run-loop-001",
+        stage="control",
+        runtime_environment="test",
+        execution_result={"continuation_allowed": False, "publication_blocked": True, "decision_blocked": True},
+    )
+    registry: dict[str, dict[str, Any]] = {}
+    register_failure_eval_case(
+        failure_eval_case=failure_eval,
+        eval_registry=registry,
+        policy_id="failure-binding-policy-v1",
+        trigger_condition="on_failure_record_emitted",
+    )
+    trace_context = {"trace_id": failure_eval["trace_id"], "failure_eval_registry": registry}
+    return failure_eval, registry, trace_context
 
 
 def test_replay_result_allow_path() -> None:
@@ -155,6 +182,21 @@ def test_error_budget_schema_delegation_rejects_invalid_objective_status() -> No
     replay["error_budget_status"]["objectives"][0]["status"] = "not-a-valid-status"
     with pytest.raises(ControlLoopError, match="error_budget_status failed validation"):
         run_control_loop(replay, _trace_context(replay))
+
+
+def test_control_loop_uses_failure_eval() -> None:
+    failure_eval, _, trace_context = _failure_eval_case()
+    result = run_control_loop(failure_eval, trace_context)
+    assert result["control_trace"]["signal_type"] == "failure_eval_case"
+    assert result["control_trace"]["evaluation_path"] == "evaluation_control_from_failure_eval_case"
+    assert result["evaluation_control_decision"]["decision"] in {"deny", "require_review"}
+
+
+def test_missing_binding_blocks_execution() -> None:
+    failure_eval, _, trace_context = _failure_eval_case()
+    trace_context["failure_eval_registry"] = {}
+    with pytest.raises(ControlLoopError, match="not registered in failure_eval_registry"):
+        run_control_loop(failure_eval, trace_context)
 
 
 def _judgment_learning_inputs() -> dict[str, Any]:
