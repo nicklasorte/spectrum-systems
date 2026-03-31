@@ -903,6 +903,55 @@ def _stable_replay_id(original_run_id: str, trace_id: str, source_ref: str) -> s
     return f"RPL-{uuid.uuid5(uuid.NAMESPACE_URL, seed).hex[:12]}"
 
 
+def _expected_replay_metric_set(*, baseline_artifact: Dict[str, Any] | None) -> set[str]:
+    metrics = {"replay_success_rate"}
+    if baseline_artifact is not None:
+        metrics.update({"drift_exceed_threshold_rate", "baseline_gate_block_rate"})
+    return metrics
+
+
+def _validate_slo_for_expected_metrics(
+    slo_definition: Dict[str, Any],
+    *,
+    expected_metrics: set[str],
+) -> None:
+    objectives = slo_definition.get("objectives")
+    if not isinstance(objectives, list) or not objectives:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_SLO_DEFINITION: objectives must be a non-empty list"
+        )
+    objective_metrics = {
+        str(objective.get("metric_name"))
+        for objective in objectives
+        if isinstance(objective, dict) and isinstance(objective.get("metric_name"), str)
+    }
+    missing = sorted(metric for metric in expected_metrics if metric not in objective_metrics)
+    if missing:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_SLO_DEFINITION: missing objectives for emitted metrics: "
+            + ", ".join(missing)
+        )
+
+
+def _validate_error_budget_policy_for_expected_metrics(
+    policy: Dict[str, Any] | None,
+    *,
+    expected_metrics: set[str],
+) -> None:
+    if policy is None:
+        return
+    supported_metrics = policy.get("supported_metrics")
+    if not isinstance(supported_metrics, list):
+        raise ReplayEngineError("REPLAY_INVALID_ERROR_BUDGET_POLICY: supported_metrics must be a list")
+    supported = {str(metric) for metric in supported_metrics}
+    missing = sorted(metric for metric in expected_metrics if metric not in supported)
+    if missing:
+        raise ReplayEngineError(
+            "REPLAY_INVALID_ERROR_BUDGET_POLICY: supported_metrics missing emitted metrics: "
+            + ", ".join(missing)
+        )
+
+
 def _resolve_source_artifact_id(artifact: Dict[str, Any]) -> str:
     source_id = (
         artifact.get("eval_run_id")
@@ -1238,6 +1287,15 @@ def run_replay(
             "REPLAY_MISSING_REQUIRED_GOVERNED_ARTIFACT: slo_definition is required to produce "
             "authoritative error_budget_status and alert_trigger artifacts"
         )
+    expected_metrics = _expected_replay_metric_set(baseline_artifact=baseline_artifact)
+    _validate_slo_for_expected_metrics(
+        slo_definition,
+        expected_metrics=expected_metrics,
+    )
+    _validate_error_budget_policy_for_expected_metrics(
+        error_budget_policy,
+        expected_metrics=expected_metrics,
+    )
     _validate_replay_lineage_or_raise(
         artifact=artifact_input,
         original_decision=original_decision_input,

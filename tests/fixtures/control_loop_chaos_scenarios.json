@@ -95,8 +95,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 1.0,
-          "drift_exceed_threshold_rate": 0.0,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.0
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -208,8 +207,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 1.0,
-          "drift_exceed_threshold_rate": 0.0,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.0
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -324,8 +322,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.984,
-          "drift_exceed_threshold_rate": 0.08,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.08
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -454,8 +451,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.85,
-          "drift_exceed_threshold_rate": 0.2,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.2
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -582,8 +578,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.8499,
-          "drift_exceed_threshold_rate": 0.02,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.02
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -705,8 +700,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.95,
-          "drift_exceed_threshold_rate": 0.2001,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.2001
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -834,8 +828,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.95,
-          "drift_exceed_threshold_rate": 0.02,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.02
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -957,8 +950,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.99,
-          "drift_exceed_threshold_rate": 0.9,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.9
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1080,8 +1072,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.99,
-          "drift_exceed_threshold_rate": 0.01,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.01
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1194,8 +1185,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.95,
-          "drift_exceed_threshold_rate": 0.9,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.9
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1324,8 +1314,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 1.0,
-          "drift_exceed_threshold_rate": 0.0,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.0
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1440,8 +1429,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 1.0,
-          "drift_exceed_threshold_rate": 0.0,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.0
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1553,8 +1541,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.984,
-          "drift_exceed_threshold_rate": 0.08,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.08
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",
@@ -1681,8 +1668,7 @@
         "metrics": {
           "total_runs": 1,
           "replay_success_rate": 0.984,
-          "drift_exceed_threshold_rate": 0.08,
-          "baseline_gate_block_rate": 0.0
+          "drift_exceed_threshold_rate": 0.08
         },
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "policy_id": "sre-observability-policy-v1",

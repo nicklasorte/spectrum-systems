@@ -86,7 +86,38 @@ def _trace_context() -> dict:
 
 
 
-def _slo_definition() -> dict:
+def _slo_definition(*, include_baseline_gate_block_rate: bool = False) -> dict:
+    objectives = [
+        {
+            "metric_name": "replay_success_rate",
+            "target_operator": "gte",
+            "target_value": 0.99,
+            "unit": "ratio",
+            "severity_on_breach": "block",
+            "description": "Replay consistency objective",
+        },
+    ]
+    if include_baseline_gate_block_rate:
+        objectives.append(
+            {
+                "metric_name": "drift_exceed_threshold_rate",
+                "target_operator": "lte",
+                "target_value": 0.05,
+                "unit": "ratio",
+                "severity_on_breach": "warn",
+                "description": "Replay drift exceedance objective",
+            }
+        )
+        objectives.append(
+            {
+                "metric_name": "baseline_gate_block_rate",
+                "target_operator": "lte",
+                "target_value": 0.05,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "Baseline gate should not block promotion",
+            }
+        )
     return {
         "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
         "artifact_type": "service_level_objective",
@@ -95,23 +126,15 @@ def _slo_definition() -> dict:
         "service_name": "spectrum-runtime-control",
         "service_scope": "runtime_replay_control_surface",
         "objective_window": "rolling_24h",
-        "objectives": [
-            {
-                "metric_name": "replay_success_rate",
-                "target_operator": "gte",
-                "target_value": 0.99,
-                "unit": "ratio",
-                "severity_on_breach": "block",
-                "description": "Replay consistency objective",
-            }
-        ],
+        "objectives": objectives,
         "policy_id": "sre-observability-policy-v1",
         "generated_by_version": "sre-08-sre-10@1.0.0",
     }
 
 
 def _run_replay(*args, **kwargs) -> dict:
-    kwargs.setdefault("slo_definition", _slo_definition())
+    include_baseline = bool(kwargs.get("baseline_artifact") is not None)
+    kwargs.setdefault("slo_definition", _slo_definition(include_baseline_gate_block_rate=include_baseline))
     return run_replay(*args, **kwargs)
 def _originals(artifact: dict | None = None, trace_context: dict | None = None) -> tuple[dict, dict]:
     payload = copy.deepcopy(artifact or _artifact())

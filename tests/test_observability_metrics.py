@@ -829,6 +829,38 @@ from spectrum_systems.modules.runtime.observability_metrics import (  # noqa: E4
 
 
 class TestRuntimeObservabilityMetrics:
+    @staticmethod
+    def _slo_for_all_runtime_metrics() -> dict:
+        slo = load_example("service_level_objective")
+        slo["objective_window"] = "per_run"
+        slo["objectives"] = [
+            {
+                "metric_name": "replay_success_rate",
+                "target_operator": "gte",
+                "target_value": 0.99,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "Replay consistency success threshold",
+            },
+            {
+                "metric_name": "drift_exceed_threshold_rate",
+                "target_operator": "lte",
+                "target_value": 0.05,
+                "unit": "ratio",
+                "severity_on_breach": "block",
+                "description": "Drift exceedance threshold",
+            },
+            {
+                "metric_name": "baseline_gate_block_rate",
+                "target_operator": "lte",
+                "target_value": 0.05,
+                "unit": "ratio",
+                "severity_on_breach": "warn",
+                "description": "Baseline gate blocking threshold",
+            },
+        ]
+        return slo
+
     def test_valid_slo_definition_example_validates(self):
         instance = load_example("service_level_objective")
         validate_artifact(instance, "service_level_objective")
@@ -861,15 +893,40 @@ class TestRuntimeObservabilityMetrics:
         replay = load_example("replay_result")
         drift = load_example("drift_detection_result")
         baseline = load_example("baseline_gate_decision")
-        first = build_observability_metrics([replay, drift, baseline])
-        second = build_observability_metrics([replay, drift, baseline])
+        slo = self._slo_for_all_runtime_metrics()
+        first = build_observability_metrics([replay, drift, baseline], slo_definition=slo)
+        second = build_observability_metrics([replay, drift, baseline], slo_definition=slo)
         assert first == second
+
+    def test_metric_maps_to_slo(self):
+        replay = load_example("replay_result")
+        drift = load_example("drift_detection_result")
+        baseline = load_example("baseline_gate_decision")
+        result = build_observability_metrics(
+            [replay, drift, baseline],
+            slo_definition=self._slo_for_all_runtime_metrics(),
+        )
+        assert result["slo_id"]
+        assert set(result["metrics"].keys()) >= {"replay_success_rate", "drift_exceed_threshold_rate", "baseline_gate_block_rate"}
+
+    def test_missing_slo_fails(self):
+        replay = load_example("replay_result")
+        with pytest.raises(ObservabilityMetricsError, match="slo_definition is required"):
+            build_observability_metrics([replay])
+
+    def test_metric_without_slo_objective_fails(self):
+        replay = load_example("replay_result")
+        drift = load_example("drift_detection_result")
+        slo = load_example("service_level_objective")
+        slo["objectives"] = [slo["objectives"][0]]
+        with pytest.raises(ObservabilityMetricsError, match="missing objectives"):
+            build_observability_metrics([replay, drift], slo_definition=slo)
 
     def test_missing_required_fields_fail_closed(self):
         replay = load_example("replay_result")
         replay.pop("replay_run_id")
         with pytest.raises(ObservabilityMetricsError):
-            build_observability_metrics([replay])
+            build_observability_metrics([replay], slo_definition=self._slo_for_all_runtime_metrics())
 
     def test_incompatible_artifact_type_fails_closed(self):
         with pytest.raises(ObservabilityMetricsError):

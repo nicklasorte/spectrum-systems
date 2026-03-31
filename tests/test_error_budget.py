@@ -18,6 +18,7 @@ from spectrum_systems.modules.runtime.error_budget import (  # noqa: E402
     ErrorBudgetTracker,
     build_error_budget_status,
     compute_burn_rate,
+    normalize_budget_state,
     update_error_budget,
 )
 from tests.helpers.replay_adjacent_builders import (  # noqa: E402
@@ -85,12 +86,28 @@ def test_warning_objective_case() -> None:
     status = build_error_budget_status(_observability(0.985), _slo(), policy=_policy(warning=0.3, exhausted=0.8))
     assert status["budget_status"] == "warning"
     assert status["objectives"][0]["status"] == "warning"
+    assert normalize_budget_state(status["budget_status"]) == "warning"
 
 
 def test_exhausted_objective_case() -> None:
     status = build_error_budget_status(_observability(0.95), _slo(), policy=_policy())
     assert status["budget_status"] == "exhausted"
     assert status["objectives"][0]["status"] == "exhausted"
+    assert normalize_budget_state(status["budget_status"]) == "exceeded"
+
+
+def test_error_budget_calculation() -> None:
+    status = build_error_budget_status(_observability(0.98), _slo(target=0.99), policy=_policy())
+    objective = status["objectives"][0]
+    assert objective["consumed_error"] == 0.01
+    assert objective["remaining_error"] == 0.0
+    assert objective["consumption_ratio"] == 1.0
+
+
+def test_budget_state_classification() -> None:
+    assert normalize_budget_state("healthy") == "ok"
+    assert normalize_budget_state("warning") == "warning"
+    assert normalize_budget_state("exhausted") == "exceeded"
 
 
 def test_invalid_due_to_malformed_observability_input() -> None:

@@ -163,6 +163,13 @@ def test_budget_exhausted_forces_non_allow_response() -> None:
     assert "budget_exhausted" in decision["triggered_signals"]
 
 
+def test_missing_budget_evaluation_blocks() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["objectives"] = []
+    with pytest.raises(EvaluationControlError, match="replay_result failed validation"):
+        build_evaluation_control_decision(replay)
+
+
 def test_budget_invalid_forces_deny_response() -> None:
     replay = _replay_result()
     replay["error_budget_status"]["budget_status"] = "invalid"
