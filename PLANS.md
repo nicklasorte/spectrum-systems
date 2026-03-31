@@ -219,6 +219,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-PQX-NEXT-STEP-DECISION-POLICY-2026-03-30.md | PQX Next-Step Decision Policy Externalization | Active |
 | docs/review-actions/PLAN-G11-ELIGIBILITY-DECISION-HARD-BINDING-2026-03-31.md | G11 — Eligibility → Decision Hard Binding | Active |
 | docs/review-actions/PLAN-G11-CYCLE-MANIFEST-SOURCE-OF-TRUTH-2026-03-31.md | G11 — Cycle manifest source-of-truth hardening | Active |
+| docs/review-actions/PLAN-STRATEGY-ENFORCEMENT-LAYER-2026-03-31.md | STRATEGY-ENFORCEMENT-LAYER — Strategy control enforcement across roadmap prompt/output and CI | Active |
+| docs/review-actions/PLAN-ROADMAP-CONTRACT-REPAIR-2026-03-31.md | ROADMAP-CONTRACT-REPAIR — roadmap table contract and replay/trace compliance remediation | Active |
 | docs/review-actions/PLAN-PQX-G14-EXECUTION-CHANGE-IMPACT-GATE-2026-03-30.md | G14 — Execution change impact pre-execution fail-closed gate | Active |
 | docs/review-actions/PLAN-G17-MANIFEST-COMPLETENESS-GATE-2026-03-31.md | G17 — Manifest Completeness Gate (Pre-PR Structural Integrity) | Active |
 | docs/review-actions/PLAN-G17-SCOPE-REPAIR-2026-03-31.md | G17 — Manifest Completeness Gate Scope Repair | Active |

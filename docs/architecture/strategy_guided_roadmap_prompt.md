@@ -9,6 +9,22 @@ Use this prompt only for roadmap generation inside governed workflow seams.
 4. source design documents (PDFs/data lake artifacts and governed source extracts)
 
 ## Enforcement Requirements
+
+## NON-NEGOTIABLE (STRICT MODE)
+- Every step MUST reference at least one strategy invariant.
+- Every step MUST state primary trust gain.
+- Every step MUST include explicit eval reference linkage.
+- Every step MUST include explicit control-loop stage integration (Observe/Interpret/Decide/Enforce).
+- Every step MUST include replay and trace considerations for auditability.
+- Roadmap generation MUST bind to `strategy_version: "strategy-control.md::<hash_or_version>"`.
+- Missing alignment is invalid output.
+
+## INVALID OUTPUT CONDITIONS
+- missing strategy alignment
+- missing trust gain
+- agent-first or prompt-first steps
+- capability without governance
+
 - Strategy Control Document is highest authority.
 - Every roadmap step must explicitly align to strategy invariants from `docs/architecture/strategy-control.md`.
 - Source docs are mandatory bounded grounding inputs.
@@ -34,6 +50,7 @@ Use this prompt only for roadmap generation inside governed workflow seams.
 ## Provenance Block (Mandatory)
 Every roadmap output must include:
 - `strategy_ref` (path + version/date)
+- `strategy_version` (`strategy-control.md::<hash_or_version>`)
 - `source_refs[]` (source id + path + enforcement purpose)
 - `invariant_checks_applied[]`
 - `drift_detected[]`
@@ -42,8 +59,12 @@ Every roadmap output must include:
 ## Fail-Closed Conditions
 Reject roadmap output when any of the following is true:
 - strategy reference missing
+- strategy_version lock missing
 - source grounding list missing or empty
 - invariant checks missing
 - any roadmap step missing explicit strategy-invariant alignment
+- any roadmap step missing primary trust gain
+- roadmap includes agent-first or prompt-first step framing
+- roadmap proposes capability without governance control integration
 - drift detected but not stabilized
 - roadmap step justification lacks trust rationale

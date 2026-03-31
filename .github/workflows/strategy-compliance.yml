@@ -1,0 +1,30 @@
+name: strategy-compliance
+
+on:
+  pull_request:
+    paths:
+      - 'docs/roadmaps/**'
+      - 'docs/roadmap/**'
+      - 'docs/architecture/**'
+      - 'docs/**/prompt*.md'
+      - 'scripts/check_strategy_compliance.py'
+      - 'contracts/schemas/roadmap_output.schema.json'
+      - '.github/workflows/strategy-compliance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  strategy-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run strategy compliance checker
+        run: python scripts/check_strategy_compliance.py
