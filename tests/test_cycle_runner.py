@@ -73,8 +73,8 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
                 "roadmap_artifact_id": "roadmap-cycle-test",
                 "roadmap_digest": "a542be4e4e3d2a77e6a508d46267f37754378291a075e59977fe80c0baab1128",
             },
-            "eligible_step_ids": ["CTRL-02"],
-            "recommended_next_step_ids": ["CTRL-02"],
+            "eligible_step_ids": ["AI-01"],
+            "recommended_next_step_ids": ["AI-01"],
             "blocked_steps": [],
             "summary": {
                 "total_steps": 1,
@@ -151,8 +151,19 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "judgment_eval_result_path": None,
         "next_step_decision_artifact_path": None,
         "roadmap_eligibility_artifact_path": str(eligibility_path),
-        "selected_step_id": None,
-        "selected_step_status": None,
+        "eligible_step_ids_snapshot": ["AI-01"],
+        "recommended_next_step_ids": ["AI-01"],
+        "selected_step_id": "AI-01",
+        "selected_step_status": "authorized",
+        "decision_summary": "Preseeded eligibility decision summary.",
+        "decision_blocked": False,
+        "decision_block_reason": None,
+        "eligibility_summary_snapshot": {
+            "total_steps": 1,
+            "completed_steps": 0,
+            "eligible_steps": 1,
+            "blocked_steps": 0,
+        },
         "drift_remediation_artifact_path": None,
         "fix_plan_artifact_path": None,
         "updated_at": "2026-03-30T00:00:00Z",
@@ -269,6 +280,17 @@ def test_cycle_runner_blocks_when_pqx_output_artifact_missing(tmp_path: Path, mo
     assert "pqx handoff failed" in " ".join(result["blocking_issues"])
 
 
+def test_cycle_runner_blocks_when_pqx_request_step_not_authorized(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="execution_ready")
+    request = _load(Path(manifest["pqx_execution_request_path"]))
+    request["step_id"] = "CTRL-99"
+    _write(Path(manifest["pqx_execution_request_path"]), request)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "step_id must match manifest selected_step_id" in " ".join(result["blocking_issues"])
+
+
 def test_cycle_runner_blocks_when_required_review_missing(tmp_path: Path) -> None:
     manifest, manifest_path = _manifest(tmp_path, state="execution_complete_unreviewed")
     codex_path = tmp_path / "implementation_review_codex.json"
@@ -318,9 +340,13 @@ def test_cycle_runner_persists_selected_step_linkage(tmp_path: Path) -> None:
     assert result["status"] == "ok"
 
     updated = _load(manifest_path)
-    assert updated["selected_step_id"] == "CTRL-02"
+    assert updated["selected_step_id"] == "AI-01"
     assert updated["selected_step_status"] == "authorized"
     assert updated["roadmap_eligibility_artifact_path"]
+    assert updated["eligible_step_ids_snapshot"] == ["AI-01"]
+    assert updated["recommended_next_step_ids"] == ["AI-01"]
+    assert isinstance(updated["decision_summary"], str) and updated["decision_summary"]
+    assert updated["decision_blocked"] is False
 
 
 def test_cycle_runner_blocks_on_invalid_review_artifact(tmp_path: Path) -> None:

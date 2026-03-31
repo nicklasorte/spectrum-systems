@@ -11,6 +11,16 @@ This slice extends the deterministic fail-closed control-plane from foundation s
 - GOV-10 done certification is the required final gate.
 - Missing required artifact, invalid artifact, or failed handoff blocks progression.
 
+## Cycle Manifest as Source of Truth
+- `cycle_manifest` is the authoritative control artifact for loop state; if a field is not persisted in the manifest, it is not part of loop state.
+- The manifest must link roadmap, eligibility, and decision artifacts through explicit paths:
+  - `roadmap_artifact_path`
+  - `roadmap_eligibility_artifact_path`
+  - `next_step_decision_artifact_path`
+- Decision trace state is persisted directly in the manifest (`selected_step_id`, `selected_step_status`, `decision_summary`, `decision_blocked`, `decision_block_reason`, eligibility snapshots).
+- PQX execution is authorization-bound: execution requests are valid only when `step_id == selected_step_id` from the manifest.
+- Replay is artifact-driven and deterministic: manifest + referenced artifacts are sufficient to reconstruct why progression advanced or blocked.
+
 ## Implemented components
 - `cycle_manifest` contract and example with live handoff/write-back tracking fields.
 - `spectrum_systems/orchestration/cycle_runner.py` deterministic state progression with execution + certification write-back.
