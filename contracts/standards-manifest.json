@@ -792,7 +792,8 @@
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
-      ]
+      ],
+      "artifact_class": "coordination"
     },
     {
       "artifact_type": "execution_report_artifact",
