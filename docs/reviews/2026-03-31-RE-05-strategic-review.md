@@ -1,5 +1,9 @@
 # Spectrum Systems — RE-05 Strategic Review (Candidate Branch, 2026-03-31)
 
+## Review Inputs
+- Canonical RE-04 validation artifact: `docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`
+- Candidate roadmap under strategic review: `docs/roadmaps/re-03-candidate-roadmap-source-grounded.md`
+
 ## 1. CONTROL LOOP STATUS
 **Near MVP but missing loop closure.**
 The candidate roadmap correctly centers CL-01..CL-05 and explicitly states the current posture as “near governed pipeline MVP, not true closed-loop control,” but the branch does not contain the required RE-04 validation artifact at `docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`, so closure proof cannot be verified from the mandated evidence set.
