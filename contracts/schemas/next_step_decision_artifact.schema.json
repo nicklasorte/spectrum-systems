@@ -22,6 +22,10 @@
     "policy_id",
     "policy_version",
     "policy_hash",
+    "eligibility_artifact_path",
+    "eligible_step_ids_snapshot",
+    "selected_step_id",
+    "selection_basis",
     "decision_rationale",
     "decided_at",
     "remediation_required",
@@ -150,6 +154,29 @@
         "object",
         "null"
       ]
+    },
+    "eligibility_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eligible_step_ids_snapshot": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "selected_step_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "selection_basis": {
+      "type": "string",
+      "const": "eligibility_constrained"
     }
   }
 }

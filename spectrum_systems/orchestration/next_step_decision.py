@@ -226,13 +226,32 @@ def _decision_id(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
+def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artifact_path: str) -> Dict[str, Any]:
     policy, policy_hash = _load_next_step_policy()
     manifest = _load_json(cycle_manifest_path)
+
+    if not _path_exists(roadmap_eligibility_artifact_path):
+        raise NextStepDecisionError("roadmap eligibility artifact missing")
+    try:
+        eligibility = _load_json(roadmap_eligibility_artifact_path)
+    except json.JSONDecodeError as exc:
+        raise NextStepDecisionError("roadmap eligibility artifact is not valid JSON") from exc
+
+    eligibility_schema = load_schema("roadmap_eligibility_artifact")
+    eligibility_validator = Draft202012Validator(eligibility_schema, format_checker=FormatChecker())
+    eligibility_errors = sorted(eligibility_validator.iter_errors(eligibility), key=lambda err: str(list(err.absolute_path)))
+    if eligibility_errors:
+        details = "; ".join(error.message for error in eligibility_errors)
+        raise NextStepDecisionError(f"roadmap eligibility artifact failed schema validation: {details}")
 
     cycle_id = str(manifest.get("cycle_id", "cycle-invalid"))
     state = str(manifest.get("current_state", "invalid"))
     decided_at = manifest.get("updated_at") if isinstance(manifest.get("updated_at"), str) else "1970-01-01T00:00:00Z"
+
+    eligible_step_ids = eligibility.get("eligible_step_ids")
+    if not isinstance(eligible_step_ids, list) or not all(isinstance(step, str) and step for step in eligible_step_ids):
+        raise NextStepDecisionError("roadmap eligibility artifact missing eligible_step_ids")
+    eligible_step_ids_snapshot = sorted(set(eligible_step_ids))
 
     states = set(policy["allowed_states"])
     governance = policy["governance_requirements"]
@@ -260,8 +279,22 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
         next_action = policy["drift_blocking_rules"]["remediation_action"]
         blocking_reasons.append(policy["drift_blocking_rules"]["blocking_reason"])
 
+    requested_selected_step_id = manifest.get("selected_step_id")
+    if requested_selected_step_id is not None and (not isinstance(requested_selected_step_id, str) or not requested_selected_step_id):
+        raise NextStepDecisionError("selected_step_id must be a non-empty string when provided")
+
+    if requested_selected_step_id is not None:
+        if requested_selected_step_id not in eligible_step_ids_snapshot:
+            raise NextStepDecisionError("selected step_id is not eligible")
+        selected_step_id = requested_selected_step_id
+    else:
+        selected_step_id = eligible_step_ids_snapshot[0] if eligible_step_ids_snapshot else None
+
+    if selected_step_id is None:
+        blocking_reasons.append("no eligible steps available")
+
     blocking = bool(missing_inputs or blocking_reasons or state == "blocked")
-    if state == "certified_done" and not (missing_inputs or drift_detected):
+    if state == "certified_done" and not (missing_inputs or drift_detected or blocking_reasons):
         blocking = False
 
     trust_score = 100
@@ -278,6 +311,10 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
     source_grounded = source_ok
 
     core_id_fields = {
+        "eligibility_artifact_path": str(roadmap_eligibility_artifact_path),
+        "eligible_step_ids_snapshot": eligible_step_ids_snapshot,
+        "selected_step_id": selected_step_id,
+        "selection_basis": "eligibility_constrained",
         "cycle_id": cycle_id,
         "current_state": state,
         "next_action": next_action,
@@ -312,6 +349,10 @@ def build_next_step_decision(cycle_manifest_path: str) -> Dict[str, Any]:
         "policy_id": policy["policy_id"],
         "policy_version": policy["version"],
         "policy_hash": policy_hash,
+        "eligibility_artifact_path": str(roadmap_eligibility_artifact_path),
+        "eligible_step_ids_snapshot": eligible_step_ids_snapshot,
+        "selected_step_id": selected_step_id,
+        "selection_basis": "eligibility_constrained",
         "decision_rationale": (
             f"state={state};action={next_action};blocking={'true' if blocking else 'false'};"
             f"reasons={len(set(blocking_reasons))};drift={'true' if drift_detected else 'false'};trust={trust_score}"

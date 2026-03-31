@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
@@ -64,21 +65,51 @@ def _manifest(state: str = "draft_roadmap") -> dict:
     }
 
 
+def _eligibility(eligible_step_ids: list[str] | None = None) -> dict:
+    if eligible_step_ids is None:
+        eligible_step_ids = ["CTRL-02"]
+    return {
+        "artifact_type": "roadmap_eligibility_artifact",
+        "schema_version": "1.0.0",
+        "artifact_version": "1.0.0",
+        "roadmap_ref": "docs/roadmaps/system_roadmap.md",
+        "evaluated_at": "2026-03-30T00:00:00Z",
+        "identity_basis": {
+            "roadmap_artifact_id": "roadmap-cycle-test",
+            "roadmap_digest": "a542be4e4e3d2a77e6a508d46267f37754378291a075e59977fe80c0baab1128",
+        },
+        "eligible_step_ids": eligible_step_ids,
+        "recommended_next_step_ids": eligible_step_ids,
+        "blocked_steps": [],
+        "summary": {
+            "total_steps": 1,
+            "completed_steps": 0,
+            "eligible_steps": len(eligible_step_ids),
+            "blocked_steps": 0,
+        },
+        "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1",
+    }
+
+
 def test_happy_path_progression(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", _manifest("draft_roadmap"))
-    decision = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["next_action"] == "submit_for_review"
     assert decision["blocking"] is False
     assert decision["remediation_required"] is False
     assert decision["policy_id"] == "NEXT_STEP_DECISION_POLICY"
     assert decision["policy_version"] == "1.0.0"
+    assert decision["selection_basis"] == "eligibility_constrained"
+    assert decision["selected_step_id"] == "CTRL-02"
 
 
 def test_missing_strategy_fails_closed(tmp_path: Path) -> None:
     payload = _manifest("roadmap_under_review")
     payload.pop("strategy_authority")
     path = _write(tmp_path / "cycle_manifest.json", payload)
-    decision = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["next_action"] == "block"
     assert "strategy_authority" in " ".join(decision["required_inputs_missing"])
     assert decision["blocking"] is True
@@ -88,7 +119,8 @@ def test_missing_sources_fail_closed(tmp_path: Path) -> None:
     payload = _manifest("roadmap_under_review")
     payload["source_authorities"] = []
     path = _write(tmp_path / "cycle_manifest.json", payload)
-    decision = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["next_action"] == "block"
     assert "source_authorities" in " ".join(decision["required_inputs_missing"])
 
@@ -99,7 +131,8 @@ def test_drift_detected_forces_remediation(tmp_path: Path) -> None:
     _write(drift_path, {"drift_detected": True, "drift_status": "exceeds_threshold"})
     payload["drift_detection_result_path"] = str(drift_path)
     path = _write(tmp_path / "cycle_manifest.json", payload)
-    decision = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["next_action"] == "generate_fix_roadmap"
     assert decision["blocking"] is True
     assert decision["drift_detected"] is True
@@ -112,16 +145,52 @@ def test_drift_detected_forces_remediation(tmp_path: Path) -> None:
 
 def test_invalid_state_fails_closed(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", _manifest("invalid_state"))
-    decision = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["next_action"] == "block"
     assert decision["blocking"] is True
 
 
 def test_deterministic_output_id(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", _manifest("roadmap_approved"))
-    first = build_next_step_decision(str(path))
-    second = build_next_step_decision(str(path))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    first = build_next_step_decision(str(path), str(eligibility_path))
+    second = build_next_step_decision(str(path), str(eligibility_path))
     assert first["decision_id"] == second["decision_id"]
+
+
+def test_selecting_non_eligible_step_fails(tmp_path: Path) -> None:
+    payload = _manifest("roadmap_approved")
+    payload["selected_step_id"] = "CTRL-99"
+    path = _write(tmp_path / "cycle_manifest.json", payload)
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility(["CTRL-02"]))
+    with pytest.raises(ValueError, match="selected step_id is not eligible"):
+        build_next_step_decision(str(path), str(eligibility_path))
+
+
+def test_missing_eligibility_artifact_fails(tmp_path: Path) -> None:
+    path = _write(tmp_path / "cycle_manifest.json", _manifest("roadmap_approved"))
+    with pytest.raises(ValueError, match="roadmap eligibility artifact missing"):
+        build_next_step_decision(str(path), str(tmp_path / "missing-eligibility.json"))
+
+
+def test_empty_eligible_steps_blocks(tmp_path: Path) -> None:
+    path = _write(tmp_path / "cycle_manifest.json", _manifest("roadmap_approved"))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility([]))
+    decision = build_next_step_decision(str(path), str(eligibility_path))
+    assert decision["blocking"] is True
+    assert "no eligible steps available" in decision["blocking_reasons"]
+    assert decision["selected_step_id"] is None
+
+
+def test_eligibility_provenance_present_in_decision_artifact(tmp_path: Path) -> None:
+    path = _write(tmp_path / "cycle_manifest.json", _manifest("roadmap_approved"))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility(["CTRL-02", "CTRL-03"]))
+    decision = build_next_step_decision(str(path), str(eligibility_path))
+    assert decision["eligibility_artifact_path"] == str(eligibility_path)
+    assert decision["eligible_step_ids_snapshot"] == ["CTRL-02", "CTRL-03"]
+    assert decision["selected_step_id"] == "CTRL-02"
+    assert decision["selection_basis"] == "eligibility_constrained"
 
 
 def test_contract_example_cases_validate() -> None:

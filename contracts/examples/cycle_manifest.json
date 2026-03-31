@@ -80,7 +80,10 @@
       "title": "Mapping Google SRE Reliability Principles to Spectrum Systems"
     }
   ],
-  "next_step_decision_artifact_path": null,
+  "next_step_decision_artifact_path": "contracts/examples/next_step_decision_artifact.json",
   "drift_remediation_artifact_path": null,
-  "fix_plan_artifact_path": null
+  "fix_plan_artifact_path": null,
+  "roadmap_eligibility_artifact_path": "contracts/examples/roadmap_eligibility_artifact.json",
+  "selected_step_id": "CTRL-02",
+  "selected_step_status": "authorized"
 }

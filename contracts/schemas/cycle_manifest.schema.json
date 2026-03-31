@@ -351,6 +351,62 @@
         "string",
         "null"
       ]
+    },
+    "roadmap_eligibility_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "selected_step_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "selected_step_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "authorized",
+        null
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "next_step_decision_artifact_path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "next_step_decision_artifact_path"
+        ]
+      },
+      "then": {
+        "required": [
+          "roadmap_eligibility_artifact_path",
+          "selected_step_id",
+          "selected_step_status"
+        ],
+        "properties": {
+          "roadmap_eligibility_artifact_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selected_step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selected_step_status": {
+            "const": "authorized"
+          }
+        }
+      }
+    }
+  ]
 }

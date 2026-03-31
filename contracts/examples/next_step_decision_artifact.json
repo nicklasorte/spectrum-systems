@@ -24,7 +24,13 @@
     "remediation_class": null,
     "blocking_reason_category": null,
     "drift_remediation_artifact_path": null,
-    "fix_plan_artifact_path": null
+    "fix_plan_artifact_path": null,
+    "eligibility_artifact_path": "contracts/examples/roadmap_eligibility_artifact.json",
+    "eligible_step_ids_snapshot": [
+      "CTRL-02"
+    ],
+    "selected_step_id": "CTRL-02",
+    "selection_basis": "eligibility_constrained"
   },
   "blocked_case": {
     "decision_id": "dd7862ad8994a20f2c58e0d3a2df9953b2f729f98ea78a6b16008b5e6fcf7bde",
@@ -56,7 +62,13 @@
     "remediation_class": null,
     "blocking_reason_category": null,
     "drift_remediation_artifact_path": null,
-    "fix_plan_artifact_path": null
+    "fix_plan_artifact_path": null,
+    "eligibility_artifact_path": "contracts/examples/roadmap_eligibility_artifact.json",
+    "eligible_step_ids_snapshot": [
+      "CTRL-02"
+    ],
+    "selected_step_id": "CTRL-02",
+    "selection_basis": "eligibility_constrained"
   },
   "drift_case": {
     "decision_id": "f383dd614f1a9f6f1303bc50b95be6f4fd8d95496ba532e31f66a0d779ea4ab8",
@@ -88,6 +100,12 @@
     "remediation_class": "roadmap_repair",
     "blocking_reason_category": "blocking_drift_finding",
     "drift_remediation_artifact_path": "artifacts/remediation/cycle-0003/drift_remediation_artifact.json",
-    "fix_plan_artifact_path": "artifacts/remediation/cycle-0003/fix_plan_artifact.json"
+    "fix_plan_artifact_path": "artifacts/remediation/cycle-0003/fix_plan_artifact.json",
+    "eligibility_artifact_path": "contracts/examples/roadmap_eligibility_artifact.json",
+    "eligible_step_ids_snapshot": [
+      "CTRL-02"
+    ],
+    "selected_step_id": "CTRL-02",
+    "selection_basis": "eligibility_constrained"
   }
 }
