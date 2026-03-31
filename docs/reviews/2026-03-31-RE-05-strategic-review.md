@@ -1,4 +1,4 @@
-# Spectrum Systems — RE-05 Strategic Review (2026-03-31)
+# Spectrum Systems — RE-05 Strategic Review (Candidate Branch, 2026-03-31)
 
 ## Review Inputs
 - Canonical RE-04 validation artifact: `docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`
@@ -6,41 +6,48 @@
 
 ## 1. CONTROL LOOP STATUS
 **Near MVP but missing loop closure.**
-The roadmap explicitly recognizes that the system is not yet true closed-loop control, and it correctly inserts CL-01..CL-05 as a hard pre-expansion gate. But the gate is still a planned control surface, not yet proven by enforced recurrence-prevention evidence and longitudinal policy updates in live progression decisions.
+The candidate roadmap correctly centers CL-01..CL-05 and explicitly states the current posture as “near governed pipeline MVP, not true closed-loop control,” but the branch does not contain the required RE-04 validation artifact at `docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`, so closure proof cannot be verified from the mandated evidence set.
 
 ## 2. TRUE BOTTLENECK
-The dominant bottleneck is the absence of enforced learning authority where validated failure classes automatically and deterministically change future policy and execution progression.
+The dominant bottleneck is the lack of enforced learning authority that makes recurrence-prevention artifacts mandatory and non-bypassable in promotion/progression decisions.
 
-## 3. CRITICAL FLAWS
-- **Flaw:** CL-01..CL-05 are defined clearly, but proof obligations are still roadmap-level and not yet locked to a mandatory promotion blocker with explicit pass/fail evidence semantics.  
-  **Why it matters:** A documented gate without evidence-hard enforcement can be bypassed by execution pressure.  
-  **Risk:** Pipeline breadth grows while recurrence risk remains structurally intact.
+## 3. WHAT THE CANDIDATE GETS RIGHT
+- It identifies the same dominant bottleneck as RE-02: learning-to-prevention is partial and must be hard-bound before scale.
+- It enforces one trust spine sequence in structure: `CL-01..CL-05` → `NX-01..NX-03` → proof gate → `NX-04+`.
+- It keeps source-grounded scope on the five partial obligations instead of reopening already covered obligations.
+- It keeps strategic consistency with active authority posture: near governed pipeline MVP, not true closed-loop control MVP.
 
-- **Flaw:** NX work remains broad after CL-05 (NX-01..NX-24), with multiple trust-sensitive tracks advancing before demonstrating one confidence-grade 3-slice trust spine in operation.  
-  **Why it matters:** Parallel trust work dilutes accountability for the one path that must be proven first.  
-  **Risk:** Fragmented progress, delayed closure, and false “near-MVP” confidence.
+## 4. CRITICAL FLAWS
+- **Missing mandatory validation input (RE-04 artifact path absent).**  
+  **Why it matters:** RE-05 requires validated technical/authority/compatibility evidence to confirm adoption readiness.  
+  **Risk:** false-positive adoption decision without the required validation chain of custody.
 
-- **Flaw:** Source-authority depth is still ingestion-heavy; runtime/certification obligations remain shallow.  
-  **Why it matters:** Strategic intent cannot fully constrain runtime behavior if obligations are placeholders.  
-  **Risk:** Strategy-to-execution drift under scale pressure.
+- **Control-loop closure is still specified as planned gate behavior, not demonstrated in this review package by required RE-04 evidence.**  
+  **Why it matters:** planned gates do not prove non-bypassability.  
+  **Risk:** recurrence prevention remains optional in practice under delivery pressure.
 
-## 4. REQUIRED CORRECTIONS
-- Reorder post-CL execution to force **one** dominant trust spine: CL gate pass → NX-01..NX-03 only → hard proof review → then NX-04+.
-- Insert a formal **Control Loop Closure Certification Gate** artifact that is required by transition policy before any grouped execution/promotion/certification expansion.
-- Remove concurrent advancement of non-spine tracks until 3-slice deterministic closure is proven with replay + recurrence-prevention evidence.
-- Delay all AI execution expansion work (NX-22..NX-24) until longitudinal calibration and prevention efficacy are evidenced over a bounded run window.
+- **Proof-before-scale intent is strong, but governance cannot claim execution-readiness until gate evidence is explicitly present and consumable.**  
+  **Why it matters:** sequencing discipline depends on enforceable evidence, not roadmap prose.  
+  **Risk:** premature `NX-04+` pressure before confidence-grade trust-spine proof.
 
-## 5. APPROVED STRUCTURE
-- **Phase A (Mandatory):** CL-01..CL-05 implemented and evidenced as enforced progression controls.
-- **Phase B (Dominant path only):** NX-01..NX-03 executed as the single trust spine for 1→2→3 slice deterministic closure.
-- **Phase C (Conditional grouped expansion):** NX-04..NX-12 only after Phase B proof artifact passes.
-- **Phase D (System proof + lifecycle hardening):** NX-13..NX-21 with audit-grade certification and source-obligation hardening.
-- **Phase E (Last):** NX-22..NX-24 AI expansion.
+## 5. REQUIRED CORRECTIONS
+- Add the missing RE-04 validation artifact at the mandated path (`docs/reviews/2026-03-31-re-04-candidate-roadmap-validation.md`) or update authority references to the exact canonical RE-04 file path in all RE documents.
+- Include explicit evidence references in RE-04 showing CL gate pass/fail semantics for: failure→eval→policy binding, error-budget enforcement, recurrence-prevention blocking, judgment authority consumption, and longitudinal calibration-triggered freeze/revoke behavior.
+- Require transition-policy consumption of the Control Loop Closure Certification Gate artifact before any `NX-04+` work item is admissible.
 
-**Must be proven before scaling:** For repeated failure classes, the system must show failure detection, classification, policy mutation, enforced replay/fixture prevention, and measurable recurrence reduction across sequential slices.
+## 6. APPROVED STRUCTURE
+- **Phase A:** `CL-01..CL-05` (mandatory control-loop closure work).
+- **Phase B:** `NX-01..NX-03` only (single dominant trust spine, no parallel trust-sensitive tracks).
+- **Hard blocker:** Control Loop Closure Certification Gate pass.
+- **Phase C:** `NX-04..NX-12` conditional grouped expansion only after blocker pass.
+- **Phase D:** `NX-13..NX-21` certification + source hardening.
+- **Phase E:** `NX-22..NX-24` AI expansion last, only after bounded-window calibration/prevention efficacy evidence.
 
-## 6. NEXT HARD GATE
-Proceed only if a governed evidence bundle proves, on a 3-slice sequential run, that every severity-qualified failure generated a bound eval/policy update, that those updates were enforced by transition policy, and that at least one subsequent slice was blocked/frozen or corrected by the new policy without manual override.
+## 7. NEXT HARD GATE
+A governed certification artifact must prove on 3 sequential slices that severity-qualified failures always produce bound eval/policy updates, those updates deterministically alter subsequent transition outcomes (including at least one freeze/block/corrective effect), and recurrence-prevention assets are linked and enforced without manual override.
 
-## 7. FINAL VERDICT
+## 8. FINAL VERDICT
 **APPROVE WITH CORRECTIONS**
+
+## 9. ADOPTION GUIDANCE
+**Stop and revise candidate package first:** merge only after the RE-04 validation artifact path/evidence chain is corrected; then proceed to RE-06 authority reconciliation.
