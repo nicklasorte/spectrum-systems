@@ -617,6 +617,34 @@ def run_judgment_learning_control_loop(
         decision = "block"
         rationale.extend(fail_closed_reasons)
     else:
+        calibration_events = judgment_calibration_result.get("calibration_events")
+        if not isinstance(calibration_events, list) or not calibration_events:
+            raise ControlLoopError("calibration authority exists but no calibration events were provided")
+        required_linkage = ("judgment_id", "decision_id", "policy_id", "trace_id", "observation_time", "deterministic_identity")
+        expected_policy_id = str((judgment_policy or {}).get("artifact_id") or "")
+        if not expected_policy_id:
+            raise ControlLoopError("calibration linkage requires governed judgment policy identity")
+
+        identities: set[str] = set()
+        policy_linked_events = 0
+        for idx, event in enumerate(calibration_events):
+            if not isinstance(event, dict):
+                raise ControlLoopError(f"calibration event {idx} must be an object")
+            missing = [field for field in required_linkage if not str(event.get(field) or "").strip()]
+            if missing:
+                raise ControlLoopError(
+                    f"calibration event {idx} missing linkage fields: {', '.join(missing)}"
+                )
+            identity = str(event.get("deterministic_identity") or "")
+            if identity in identities:
+                raise ControlLoopError("calibration linkage contains duplicate deterministic_identity values")
+            identities.add(identity)
+            if str(event.get("policy_id") or "") == expected_policy_id:
+                policy_linked_events += 1
+
+        if policy_linked_events <= 0:
+            raise ControlLoopError("calibration linkage is ambiguous for active policy context")
+
         eval_failures = [
             item.get("eval_type")
             for item in judgment_eval_result.get("eval_results", [])
@@ -669,6 +697,9 @@ def run_judgment_learning_control_loop(
         if has_rising_override and decision == "allow":
             decision = "warn"
             rationale.append("override rate rising")
+
+        if triggering_signals["calibration"] in {"degraded_freeze_band", "degraded_warn_band"} and decision == "allow":
+            raise ControlLoopError("calibration authority exists but was ignored by control decision")
 
     escalation = {
         "artifact_type": "judgment_control_escalation_record",

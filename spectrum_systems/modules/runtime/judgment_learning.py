@@ -38,20 +38,29 @@ def build_judgment_outcome_label(
     *,
     artifact_id: str,
     judgment_id: str,
+    decision_id: str,
+    policy_id: str,
+    trace_id: str,
     observed_outcome: str,
     expected_outcome: str,
     correctness: bool,
     source: str,
     timestamp: str,
+    outcome_status: str = "observed",
     notes: list[str] | None = None,
 ) -> dict[str, Any]:
     payload = {
         "artifact_type": "judgment_outcome_label",
         "artifact_id": artifact_id,
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.94",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
+        "standards_version": "1.1.0",
         "judgment_id": judgment_id,
+        "decision_id": decision_id,
+        "policy_id": policy_id,
+        "trace_id": trace_id,
+        "outcome_status": outcome_status,
+        "observation_time": timestamp,
         "observed_outcome": observed_outcome,
         "expected_outcome": expected_outcome,
         "correctness": correctness,
@@ -65,6 +74,30 @@ def build_judgment_outcome_label(
         raise JudgmentLearningError(f"invalid judgment_outcome_label artifact: {exc}") from exc
     return payload
 
+
+
+
+def _derive_record_policy_id(record: dict[str, Any]) -> str:
+    direct = str(record.get("policy_id") or "").strip()
+    if direct:
+        return direct
+    policy_ref = str(record.get("policy_ref") or "").strip()
+    if not policy_ref:
+        return ""
+    tail = policy_ref.rsplit("/", 1)[-1]
+    if tail.endswith('.json'):
+        tail = tail[:-5]
+    return tail
+
+
+def _derive_record_trace_id(record: dict[str, Any]) -> str:
+    direct = str(record.get("trace_id") or "").strip()
+    if direct:
+        return direct
+    cycle_id = str(record.get("cycle_id") or "").strip()
+    if cycle_id:
+        return cycle_id
+    return ""
 
 def _deterministic_confidence(judgment_record: dict[str, Any], label: dict[str, Any]) -> float:
     explicit = judgment_record.get("confidence_score")
@@ -126,6 +159,7 @@ def run_judgment_calibration(
         raise JudgmentLearningError("calibration requires at least one judgment_outcome_label")
 
     grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    calibration_events: list[dict[str, Any]] = []
     for label in sorted(label_list, key=lambda item: (item.get("judgment_id", ""), item.get("timestamp", ""), item.get("artifact_id", ""))):
         try:
             validate_artifact(label, "judgment_outcome_label")
@@ -143,12 +177,41 @@ def run_judgment_calibration(
         if not judgment_type or not policy_version:
             raise JudgmentLearningError(f"judgment record missing grouping fields for judgment_id={judgment_id}")
 
+        record_policy_id = _derive_record_policy_id(record)
+        if record_policy_id and record_policy_id != str(label.get("policy_id") or ""):
+            raise JudgmentLearningError(f"outcome linkage policy mismatch for judgment_id={judgment_id}")
+        record_trace_id = _derive_record_trace_id(record)
+        if record_trace_id and record_trace_id != str(label.get("trace_id") or ""):
+            raise JudgmentLearningError(f"outcome linkage trace mismatch for judgment_id={judgment_id}")
+
+        aligned = str(label.get("observed_outcome") or "") == str(label.get("expected_outcome") or "")
+        if aligned != bool(label["correctness"]):
+            raise JudgmentLearningError(
+                f"outcome correctness classification inconsistent for judgment_id={judgment_id}"
+            )
+
         enriched = {
             "correctness": bool(label["correctness"]),
             "confidence": _deterministic_confidence(record, label),
             "observed_outcome": label["observed_outcome"],
+            "alignment": "aligned" if aligned else "misaligned",
         }
         grouped[(judgment_type, policy_version, environment)].append(enriched)
+        calibration_events.append(
+            {
+                "event_id": str(label.get("artifact_id") or ""),
+                "judgment_id": judgment_id,
+                "decision_id": str(label.get("decision_id") or ""),
+                "policy_id": str(label.get("policy_id") or ""),
+                "trace_id": str(label.get("trace_id") or ""),
+                "observed_outcome": str(label.get("observed_outcome") or ""),
+                "expected_outcome": str(label.get("expected_outcome") or ""),
+                "calibration_status": "aligned" if aligned else "misaligned",
+                "calibration_score": 1.0 if aligned else 0.0,
+                "observation_time": str(label.get("observation_time") or label.get("timestamp") or ""),
+                "deterministic_identity": f"{judgment_id}:{label.get('decision_id')}:{label.get('trace_id')}:{label.get('artifact_id')}",
+            }
+        )
 
     group_metrics: list[dict[str, Any]] = []
     for (judgment_type, policy_version, environment), entries in sorted(grouped.items()):
@@ -185,21 +248,29 @@ def run_judgment_calibration(
                     )
                 },
                 "error_rate": round(1.0 - accuracy, 6),
+                "aligned_count": sum(1 for item in entries if item["alignment"] == "aligned"),
+                "misaligned_count": sum(1 for item in entries if item["alignment"] == "misaligned"),
             }
         )
 
     payload = {
         "artifact_type": "judgment_calibration_result",
         "artifact_id": artifact_id,
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.94",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
+        "standards_version": "1.1.0",
         "grouping_keys": ["judgment_type", "policy_version", "environment"],
         "group_metrics": group_metrics,
         "formulas": {
             "accuracy": "correct_count / sample_size",
             "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
             "calibration_delta": "mean_confidence - accuracy",
+        },
+        "calibration_events": calibration_events,
+        "longitudinal_summary": {
+            "observation_count": len(calibration_events),
+            "aligned_count": sum(1 for item in calibration_events if item["calibration_status"] == "aligned"),
+            "misaligned_count": sum(1 for item in calibration_events if item["calibration_status"] == "misaligned"),
         },
         "created_at": created_at,
     }

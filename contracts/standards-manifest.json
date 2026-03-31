@@ -995,15 +995,15 @@
     {
       "artifact_type": "judgment_calibration_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.94",
-      "last_updated_in": "1.0.94",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_calibration_result.json",
-      "notes": "CTRL-LOOP-01 longitudinal confidence-vs-correctness calibration artifact grouped by judgment_type, policy_version, and environment."
+      "notes": "CL-05 machine-consumable longitudinal calibration artifact with per-outcome linkage events and accumulation summary for control authority consumption."
     },
     {
       "artifact_type": "judgment_control_escalation_record",
@@ -1099,15 +1099,15 @@
     {
       "artifact_type": "judgment_outcome_label",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.94",
-      "last_updated_in": "1.0.94",
+      "last_updated_in": "1.1.0",
       "example_path": "contracts/examples/judgment_outcome_label.json",
-      "notes": "CTRL-LOOP-01 deterministic ingestion contract for human/downstream/external outcome labels bound to prior judgment ids."
+      "notes": "CL-05 longitudinal calibration outcome linkage contract with required judgment/decision/policy/trace binding and observation timestamp."
     },
     {
       "artifact_type": "judgment_policy",
