@@ -12,7 +12,11 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
-from spectrum_systems.orchestration.cycle_manifest_validator import CycleManifestError, validate_cycle_manifest
+from spectrum_systems.orchestration.cycle_manifest_validator import (
+    CycleManifestError,
+    normalize_cycle_manifest,
+    validate_cycle_manifest,
+)
 from spectrum_systems.orchestration.next_step_decision import build_next_step_decision
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 from spectrum_systems.orchestration.sequence_transition_policy import (
@@ -298,8 +302,9 @@ def _certification_handoff(manifest: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _write_manifest(manifest_path: str | Path, manifest: Dict[str, Any]) -> None:
-    _validate_manifest(manifest)
-    Path(manifest_path).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    normalized = normalize_cycle_manifest(manifest)
+    _validate_manifest(normalized)
+    Path(manifest_path).write_text(json.dumps(normalized, indent=2) + "\n", encoding="utf-8")
 
 
 def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: str | Path) -> Dict[str, Any]:
@@ -454,7 +459,7 @@ def _certification_summary(certification: Dict[str, Any]) -> str:
 
 def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     """Load cycle manifest and return deterministic next-action decision."""
-    manifest = _load_json(manifest_path)
+    manifest = normalize_cycle_manifest(_load_json(manifest_path))
     _validate_manifest(manifest)
 
     state = manifest["current_state"]

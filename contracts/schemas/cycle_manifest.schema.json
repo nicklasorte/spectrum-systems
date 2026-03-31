@@ -46,11 +46,7 @@
     "decision_block_reason",
     "eligibility_summary_snapshot",
     "eligible_step_ids_snapshot",
-    "recommended_next_step_ids",
-    "sequence_trace_id",
-    "sequence_lineage",
-    "sequence_transition_history",
-    "control_allow_promotion"
+    "recommended_next_step_ids"
   ],
   "properties": {
     "cycle_id": {
@@ -614,15 +610,28 @@
         }
       },
       "then": {
+        "required": [
+          "sequence_trace_id",
+          "sequence_lineage",
+          "sequence_transition_history",
+          "control_allow_promotion"
+        ],
         "properties": {
           "sequence_trace_id": {
             "type": "string",
             "minLength": 1
+          },
+          "sequence_lineage": {
+            "type": "array",
+            "minItems": 1
+          },
+          "sequence_transition_history": {
+            "type": "array"
+          },
+          "control_allow_promotion": {
+            "type": "boolean"
           }
-        },
-        "required": [
-          "sequence_lineage"
-        ]
+        }
       }
     }
   ]

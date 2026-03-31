@@ -15,6 +15,16 @@ class CycleManifestError(ValueError):
     """Raised when cycle manifest fails schema or semantic validation."""
 
 
+def normalize_cycle_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Apply narrow backward-compatibility normalization before validation."""
+    if not isinstance(manifest, dict):
+        raise CycleManifestError("cycle_manifest payload must be an object")
+    normalized = dict(manifest)
+    if "sequence_mode" not in normalized:
+        normalized["sequence_mode"] = "legacy"
+    return normalized
+
+
 def _parse_timestamp(value: Any, *, field_name: str) -> datetime | None:
     if value is None:
         return None
@@ -28,6 +38,7 @@ def _parse_timestamp(value: Any, *, field_name: str) -> datetime | None:
 
 def validate_cycle_manifest(manifest: dict) -> None:
     """Validate cycle_manifest contract and semantic invariants."""
+    manifest = normalize_cycle_manifest(manifest)
     schema = load_schema("cycle_manifest")
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(manifest), key=lambda err: str(list(err.absolute_path)))
