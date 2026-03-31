@@ -83,6 +83,22 @@ The roadmap foundation is strong, but authoritative learning-loop closure is sti
 - **Proof artifacts:** outcome labels, calibration artifacts, drift/budget-triggered freeze or revoke records.
 - **Dependencies unlocked:** confidence-grade N-slice trust claims and canary/promotion safety at scale.
 
+
+## March 31, 2026 Governance Refresh Snapshot (Roadmap Generation Run)
+### Source authority inputs consumed
+- `docs/source_structured/*.json` (all governed structured source artifacts).
+- `docs/source_indexes/source_inventory.json`, `docs/source_indexes/obligation_index.json`, `docs/source_indexes/component_source_map.json` (machine planning surface).
+- `docs/roadmaps/execution_state_inventory.md` and `docs/architecture/strategy_control_document.md` for strategy-control alignment.
+
+### Gap scan summary (obligation coverage)
+- **Covered obligations:** inventory/index discipline exists and remains machine-usable for all registered source IDs.
+- **Partial obligations:** source obligations are still predominantly ingest/place-holder obligations due missing raw source files, limiting depth for runtime-ready obligation derivation.
+- **Missing obligations:** no source-specific deep obligations yet for certification-grade runtime behavior beyond ingestion/governance stubs.
+- **Drift indicators:** source authority and runtime readiness still require explicit bridge hardening to prevent strategic-vs-machine execution drift.
+
+### Next bottleneck confirmation
+The immediate bottleneck remains **trust-depth closure** (Control Loop Closure Gate completion), not breadth expansion.
+
 ## Ordered Roadmap (Post-Revision)
 
 | Step ID | Step Name | What It Builds | Why It Matters | Control Loop Stage | Learning Loop Stage | Dependency | Primary Trust Gain |
@@ -112,6 +128,7 @@ The roadmap foundation is strong, but authoritative learning-loop closure is sti
 
 ## Prioritization Rationale
 - The next bottleneck is convergence and trust closure, not breadth.
+- Source-index evidence confirms obligations are machine-usable but still shallow; trust-loop hardening must precede broader autonomy.
 - One dominant trusted sequential path is more valuable than parallel partial paths.
 - Expansion without binding failure learning increases recurrence and certification risk.
 
