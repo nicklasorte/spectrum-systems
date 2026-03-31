@@ -1,57 +1,84 @@
 {
   "components": [
     {
-      "component_id": "COMP-AGENT-EVAL",
+      "component_id": "COMP-ARTIFACT-AUTHORITY",
       "obligation_ids": [
-        "OBL-AGENT-EVAL-INGEST"
+        "OBL-AIDUR-ARTIFACT-SOR"
       ],
       "source_ids": [
-        "SRC-AGENT-EVAL-INTEGRATION"
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     },
     {
-      "component_id": "COMP-BUILD-GOVERNANCE",
+      "component_id": "COMP-CONTROL-AUTHORITY",
       "obligation_ids": [
-        "OBL-SBGE-INGEST"
+        "OBL-AIDUR-CONTROL-EXTERNALIZED"
       ],
       "source_ids": [
-        "SRC-SBGE-DESIGN"
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     },
     {
-      "component_id": "COMP-DONE-CERTIFICATION",
+      "component_id": "COMP-DOWNSTREAM-CONSUMPTION",
       "obligation_ids": [
-        "OBL-GOV10-CERT-INGEST"
+        "OBL-AIDUR-SCHEMA-BEFORE-CONSUME"
       ],
       "source_ids": [
-        "SRC-GOV10-CERTIFICATION"
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     },
     {
-      "component_id": "COMP-GOVERNED-API-ADAPTER",
+      "component_id": "COMP-EVAL-POLICY-GATING",
       "obligation_ids": [
-        "OBL-AI-ADAPTER-INGEST"
+        "OBL-AIDUR-EVAL-POLICY-BEFORE-PROMOTION"
       ],
       "source_ids": [
-        "SRC-AI-ADAPTER-DESIGN"
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     },
     {
-      "component_id": "COMP-GOVERNED-EXTRACTION",
+      "component_id": "COMP-FAIL-CLOSED-ENFORCEMENT",
       "obligation_ids": [
-        "OBL-AI-WORKFLOW-INGEST"
+        "OBL-AIDUR-FAIL-CLOSED-MISSING-EVIDENCE"
       ],
       "source_ids": [
-        "SRC-AI-WORKFLOW-PRACTICES"
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     },
     {
-      "component_id": "COMP-SOURCE-INGESTION",
+      "component_id": "COMP-LEARNING-LOOP",
       "obligation_ids": [
-        "OBL-SRE-RELIABILITY-INGEST"
+        "OBL-AIDUR-LEARNING-PREVENTION-CLOSURE"
       ],
       "source_ids": [
-        "SRC-SRE-RELIABILITY"
+        "SRC-AI-DURABILITY-STRATEGY"
+      ]
+    },
+    {
+      "component_id": "COMP-MODEL-ADAPTER",
+      "obligation_ids": [
+        "OBL-AIDUR-MODEL-REPLACEABLE"
+      ],
+      "source_ids": [
+        "SRC-AI-DURABILITY-STRATEGY"
+      ]
+    },
+    {
+      "component_id": "COMP-PROMOTION-CONTROL",
+      "obligation_ids": [
+        "OBL-AIDUR-LINEAGE-BEFORE-PROMOTION"
+      ],
+      "source_ids": [
+        "SRC-AI-DURABILITY-STRATEGY"
+      ]
+    },
+    {
+      "component_id": "COMP-ROLLOUT-GOVERNANCE",
+      "obligation_ids": [
+        "OBL-AIDUR-MEASURABLE-PROMOTION-ROLLOUT"
+      ],
+      "source_ids": [
+        "SRC-AI-DURABILITY-STRATEGY"
       ]
     }
   ],

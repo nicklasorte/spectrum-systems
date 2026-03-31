@@ -2,64 +2,192 @@
   "index_name": "obligation_index",
   "obligations": [
     {
-      "component_id": "COMP-AGENT-EVAL",
+      "category": "artifact_authority",
+      "component_id": "COMP-ARTIFACT-AUTHORITY",
+      "description": "Treat governed artifacts as the system of record for decisions, handoffs, and lifecycle state.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-AGENT-EVAL-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-AGENT-EVAL-INTEGRATION",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-AGENT-EVAL-INTEGRATION-001"
+      "layer": "governance",
+      "obligation_id": "OBL-AIDUR-ARTIFACT-SOR",
+      "required_artifacts": [
+        "governed_artifact",
+        "artifact_envelope"
+      ],
+      "required_gates": [
+        "schema_validation_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "core_principles",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-ARTIFACT-SOR"
     },
     {
-      "component_id": "COMP-GOVERNED-API-ADAPTER",
+      "category": "authority_boundary",
+      "component_id": "COMP-CONTROL-AUTHORITY",
+      "description": "Keep control authority external to model execution and require explicit governed control decisions.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-AI-ADAPTER-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-AI-ADAPTER-DESIGN",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-AI-ADAPTER-DESIGN-001"
+      "layer": "control",
+      "obligation_id": "OBL-AIDUR-CONTROL-EXTERNALIZED",
+      "required_artifacts": [
+        "control_decision",
+        "policy_snapshot"
+      ],
+      "required_gates": [
+        "control_decision_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "control_authority",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-CONTROL-EXTERNALIZED"
     },
     {
-      "component_id": "COMP-GOVERNED-EXTRACTION",
+      "category": "promotion_gating",
+      "component_id": "COMP-EVAL-POLICY-GATING",
+      "description": "Require evaluation and policy gates to pass before any promotion action is eligible.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-AI-WORKFLOW-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-AI-WORKFLOW-PRACTICES",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-AI-WORKFLOW-PRACTICES-001"
+      "layer": "promotion",
+      "obligation_id": "OBL-AIDUR-EVAL-POLICY-BEFORE-PROMOTION",
+      "required_artifacts": [
+        "eval_result",
+        "policy_decision"
+      ],
+      "required_gates": [
+        "eval_gate",
+        "policy_gate",
+        "promotion_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "promotion_controls",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-EVAL-POLICY-BEFORE-PROMOTION"
     },
     {
-      "component_id": "COMP-DONE-CERTIFICATION",
+      "category": "fail_closed",
+      "component_id": "COMP-FAIL-CLOSED-ENFORCEMENT",
+      "description": "Fail closed when schema, trace, or policy evidence is missing at decision time.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-GOV10-CERT-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-GOV10-CERTIFICATION",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-GOV10-CERTIFICATION-001"
+      "layer": "enforcement",
+      "obligation_id": "OBL-AIDUR-FAIL-CLOSED-MISSING-EVIDENCE",
+      "required_artifacts": [
+        "schema_reference",
+        "trace_record",
+        "policy_decision"
+      ],
+      "required_gates": [
+        "fail_closed_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "fail_closed_requirements",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-FAIL-CLOSED-MISSING-EVIDENCE"
     },
     {
-      "component_id": "COMP-BUILD-GOVERNANCE",
+      "category": "learning_prevention",
+      "component_id": "COMP-LEARNING-LOOP",
+      "description": "Require learning-loop outputs to include recurrence prevention actions linked to prior failures.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-SBGE-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-SBGE-DESIGN",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-SBGE-DESIGN-001"
+      "layer": "learning",
+      "obligation_id": "OBL-AIDUR-LEARNING-PREVENTION-CLOSURE",
+      "required_artifacts": [
+        "failure_analysis",
+        "prevention_action",
+        "policy_update"
+      ],
+      "required_gates": [
+        "recurrence_prevention_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "learning_and_prevention",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-LEARNING-PREVENTION-CLOSURE"
     },
     {
-      "component_id": "COMP-SOURCE-INGESTION",
+      "category": "lineage",
+      "component_id": "COMP-PROMOTION-CONTROL",
+      "description": "Deny promotion when lineage evidence is missing, incomplete, or unverifiable.",
       "duplicate_allowed": false,
       "duplicate_reason": "",
-      "obligation_id": "OBL-SRE-RELIABILITY-INGEST",
-      "obligation_statement": "Register source in governed inventory and require structured extraction validation before design obligations are consumed.",
-      "source_id": "SRC-SRE-RELIABILITY",
-      "source_section": "starter_extraction_placeholder",
-      "trace_id": "TRACE-SRC-SRE-RELIABILITY-001"
+      "layer": "promotion",
+      "obligation_id": "OBL-AIDUR-LINEAGE-BEFORE-PROMOTION",
+      "required_artifacts": [
+        "lineage_record",
+        "certification_bundle"
+      ],
+      "required_gates": [
+        "lineage_integrity_gate",
+        "promotion_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "promotion_controls",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-LINEAGE-BEFORE-PROMOTION"
+    },
+    {
+      "category": "rollout_control",
+      "component_id": "COMP-ROLLOUT-GOVERNANCE",
+      "description": "Gate promotion and rollout through measurable thresholds and explicit rollout policy states.",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "layer": "operations",
+      "obligation_id": "OBL-AIDUR-MEASURABLE-PROMOTION-ROLLOUT",
+      "required_artifacts": [
+        "rollout_plan",
+        "metric_thresholds",
+        "promotion_decision"
+      ],
+      "required_gates": [
+        "readiness_gate",
+        "rollout_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "rollout_governance",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-MEASURABLE-PROMOTION-ROLLOUT"
+    },
+    {
+      "category": "architecture_boundary",
+      "component_id": "COMP-MODEL-ADAPTER",
+      "description": "Constrain models to replaceable execution engines behind stable contract and adapter boundaries.",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "layer": "architecture",
+      "obligation_id": "OBL-AIDUR-MODEL-REPLACEABLE",
+      "required_artifacts": [
+        "adapter_contract",
+        "execution_trace"
+      ],
+      "required_gates": [
+        "adapter_conformance_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "replaceable_execution",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-MODEL-REPLACEABLE"
+    },
+    {
+      "category": "validation_gate",
+      "component_id": "COMP-DOWNSTREAM-CONSUMPTION",
+      "description": "Block downstream consumption when required schema validation is absent or fails.",
+      "duplicate_allowed": false,
+      "duplicate_reason": "",
+      "layer": "enforcement",
+      "obligation_id": "OBL-AIDUR-SCHEMA-BEFORE-CONSUME",
+      "required_artifacts": [
+        "schema_reference",
+        "validated_payload"
+      ],
+      "required_gates": [
+        "schema_validation_gate",
+        "fail_closed_gate"
+      ],
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "source_section": "contract_enforcement",
+      "status": "planned",
+      "trace_id": "TRACE-AIDUR-SCHEMA-BEFORE-CONSUME"
     }
   ],
   "schema_version": "1.0.0"
