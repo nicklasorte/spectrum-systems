@@ -22,6 +22,10 @@
       "order_index": 1,
       "title": "Publish governed roadmap",
       "status": "completed",
+      "strategy_alignment": "Authority anchoring and dependency traceability are explicit.",
+      "primary_trust_gain": "execution authority",
+      "hardening_vs_expansion": "hardening",
+      "behavior_affecting": false,
       "dependency_step_ids": [],
       "dependency_artifact_refs": [],
       "trust_requirements": [],
@@ -33,6 +37,11 @@
       "order_index": 2,
       "title": "Evaluate roadmap eligibility",
       "status": "planned",
+      "strategy_alignment": "Eligibility gating binds replay and trust requirements before execution.",
+      "primary_trust_gain": "replay determinism",
+      "hardening_vs_expansion": "hardening",
+      "behavior_affecting": true,
+      "replay_trace_implications": "Eligibility decision now carries explicit replay/trace basis for each row.",
       "dependency_step_ids": [
         "CTRL-01"
       ],
@@ -54,6 +63,13 @@
       "order_index": 3,
       "title": "Authorize single next step",
       "status": "planned",
+      "strategy_alignment": "Expansion is blocked until explicit control/eval path and hardening completion.",
+      "primary_trust_gain": "policy authority",
+      "hardening_vs_expansion": "expansion",
+      "behavior_affecting": true,
+      "replay_trace_implications": "Progression decisions emit replay-linked strategy status artifacts.",
+      "eval_control_path": "contracts/examples/evaluation_control_decision.json",
+      "bounded_strategy_risk": true,
       "dependency_step_ids": [
         "CTRL-02"
       ],

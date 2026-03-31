@@ -80,6 +80,10 @@
           "order_index",
           "title",
           "status",
+          "strategy_alignment",
+          "primary_trust_gain",
+          "hardening_vs_expansion",
+          "behavior_affecting",
           "dependency_step_ids",
           "dependency_artifact_refs",
           "trust_requirements",
@@ -108,6 +112,31 @@
               "completed",
               "blocked"
             ]
+          },
+          "strategy_alignment": {
+            "type": "string"
+          },
+          "primary_trust_gain": {
+            "type": "string"
+          },
+          "hardening_vs_expansion": {
+            "type": "string",
+            "enum": [
+              "hardening",
+              "expansion"
+            ]
+          },
+          "behavior_affecting": {
+            "type": "boolean"
+          },
+          "replay_trace_implications": {
+            "type": "string"
+          },
+          "eval_control_path": {
+            "type": "string"
+          },
+          "bounded_strategy_risk": {
+            "type": "boolean"
           },
           "dependency_step_ids": {
             "type": "array",
@@ -149,7 +178,37 @@
               "minLength": 1
             }
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "behavior_affecting": {
+                  "const": true
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "replay_trace_implications"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "hardening_vs_expansion": {
+                  "const": "expansion"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "eval_control_path"
+              ]
+            }
+          }
+        ]
       }
     }
   }

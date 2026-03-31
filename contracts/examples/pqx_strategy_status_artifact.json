@@ -1,0 +1,12 @@
+{
+  "artifact_type": "pqx_strategy_status_artifact",
+  "schema_version": "1.0.0",
+  "roadmap_row_id": "CTRL-02",
+  "strategy_gate_decision": "allow",
+  "violated_invariants": [],
+  "drift_signals": [],
+  "hardening_vs_expansion": "hardening",
+  "replay_trace_declared": true,
+  "eval_control_declared": false,
+  "rationale": "strategy gate allows execution; required strategy and trust declarations are complete"
+}

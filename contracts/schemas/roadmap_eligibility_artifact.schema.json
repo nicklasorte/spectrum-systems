@@ -16,6 +16,7 @@
     "eligible_step_ids",
     "recommended_next_step_ids",
     "blocked_steps",
+    "strategy_status_artifacts",
     "summary"
   ],
   "properties": {
@@ -108,7 +109,9 @@
                 "unmet_review_requirements",
                 "unmet_eval_requirements",
                 "ambiguous_dependency_reference",
-                "step_not_planned"
+                "step_not_planned",
+                "strategy_gate_block",
+                "strategy_gate_freeze"
               ]
             }
           },
@@ -155,6 +158,12 @@
         }
       }
     },
+    "strategy_status_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/strategy_status_artifact"
+      }
+    },
     "summary": {
       "type": "object",
       "additionalProperties": false,
@@ -162,7 +171,8 @@
         "total_steps",
         "completed_steps",
         "eligible_steps",
-        "blocked_steps"
+        "blocked_steps",
+        "strategy_gate"
       ],
       "properties": {
         "total_steps": {
@@ -180,6 +190,107 @@
         "blocked_steps": {
           "type": "integer",
           "minimum": 0
+        },
+        "strategy_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "allow",
+            "warn",
+            "freeze",
+            "block"
+          ],
+          "properties": {
+            "allow": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warn": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "freeze": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "block": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "strategy_status_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "roadmap_row_id",
+        "strategy_gate_decision",
+        "violated_invariants",
+        "drift_signals",
+        "hardening_vs_expansion",
+        "replay_trace_declared",
+        "eval_control_declared",
+        "rationale"
+      ],
+      "properties": {
+        "artifact_type": {
+          "const": "pqx_strategy_status_artifact"
+        },
+        "schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "roadmap_row_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strategy_gate_decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "warn",
+            "freeze",
+            "block"
+          ]
+        },
+        "violated_invariants": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "drift_signals": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "hardening_vs_expansion": {
+          "type": "string",
+          "enum": [
+            "hardening",
+            "expansion"
+          ]
+        },
+        "replay_trace_declared": {
+          "type": "boolean"
+        },
+        "eval_control_declared": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }

@@ -32,6 +32,10 @@ def _base_roadmap() -> dict:
                 "order_index": 1,
                 "title": "Completed",
                 "status": "completed",
+                "strategy_alignment": "baseline hardening complete",
+                "primary_trust_gain": "policy confidence",
+                "hardening_vs_expansion": "hardening",
+                "behavior_affecting": False,
                 "dependency_step_ids": [],
                 "dependency_artifact_refs": [],
                 "trust_requirements": [],
@@ -43,6 +47,11 @@ def _base_roadmap() -> dict:
                 "order_index": 2,
                 "title": "Eligible",
                 "status": "planned",
+                "strategy_alignment": "aligned with roadmap authority",
+                "primary_trust_gain": "determinism",
+                "hardening_vs_expansion": "hardening",
+                "behavior_affecting": True,
+                "replay_trace_implications": "replay lineage required",
                 "dependency_step_ids": ["STEP-001"],
                 "dependency_artifact_refs": ["artifact://review-approved"],
                 "trust_requirements": ["trust:strategy"],
@@ -54,6 +63,12 @@ def _base_roadmap() -> dict:
                 "order_index": 3,
                 "title": "Blocked",
                 "status": "planned",
+                "strategy_alignment": "expansion after controls",
+                "primary_trust_gain": "coverage",
+                "hardening_vs_expansion": "expansion",
+                "behavior_affecting": True,
+                "replay_trace_implications": "expansion impacts replay",
+                "eval_control_path": "eval/control/path",
                 "dependency_step_ids": ["STEP-404"],
                 "dependency_artifact_refs": ["artifact://missing"],
                 "trust_requirements": ["trust:control"],
@@ -98,6 +113,8 @@ def test_ready_step_marked_eligible(tmp_path: Path) -> None:
     path = _write_roadmap(tmp_path, _base_roadmap())
     artifact = build_roadmap_eligibility(path)
     assert artifact["eligible_step_ids"] == ["STEP-002"]
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-002"]["strategy_gate_decision"] == "allow"
 
 
 def test_completed_steps_not_recommended(tmp_path: Path) -> None:
@@ -136,3 +153,44 @@ def test_cli_writes_valid_artifact(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(out_path.read_text(encoding="utf-8"))
     validate_artifact(payload, "roadmap_eligibility_artifact")
+
+
+def test_missing_strategy_alignment_blocks(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][1]["strategy_alignment"] = ""
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-002"]["strategy_gate_decision"] == "block"
+
+
+def test_missing_primary_trust_gain_blocks(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][1]["primary_trust_gain"] = ""
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-002"]["strategy_gate_decision"] == "block"
+
+
+def test_expansion_without_eval_control_path_blocks(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][2]["eval_control_path"] = ""
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-003"]["strategy_gate_decision"] == "block"
+
+
+def test_expansion_while_prior_hardening_partial_freezes(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][1]["status"] = "in_progress"
+    roadmap["steps"][2]["dependency_step_ids"] = []
+    roadmap["steps"][2]["dependency_artifact_refs"] = []
+    roadmap["steps"][2]["trust_requirements"] = []
+    roadmap["steps"][2]["review_requirements"] = []
+    roadmap["steps"][2]["eval_requirements"] = []
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-003"]["strategy_gate_decision"] == "freeze"

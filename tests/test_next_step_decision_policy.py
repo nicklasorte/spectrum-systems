@@ -47,6 +47,18 @@ def _manifest(state: str = "draft_roadmap") -> dict:
 
 
 def _eligibility() -> dict:
+    strategy_status = {
+        "artifact_type": "pqx_strategy_status_artifact",
+        "schema_version": "1.0.0",
+        "roadmap_row_id": "CTRL-02",
+        "strategy_gate_decision": "allow",
+        "violated_invariants": [],
+        "drift_signals": [],
+        "hardening_vs_expansion": "hardening",
+        "replay_trace_declared": True,
+        "eval_control_declared": False,
+        "rationale": "strategy gate allows execution; required strategy and trust declarations are complete",
+    }
     return {
         "artifact_type": "roadmap_eligibility_artifact",
         "schema_version": "1.0.0",
@@ -60,11 +72,18 @@ def _eligibility() -> dict:
         "eligible_step_ids": ["CTRL-02"],
         "recommended_next_step_ids": ["CTRL-02"],
         "blocked_steps": [],
+        "strategy_status_artifacts": [strategy_status],
         "summary": {
             "total_steps": 1,
             "completed_steps": 0,
             "eligible_steps": 1,
             "blocked_steps": 0,
+            "strategy_gate": {
+                "allow": 1,
+                "warn": 0,
+                "freeze": 0,
+                "block": 0,
+            },
         },
         "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1",
     }

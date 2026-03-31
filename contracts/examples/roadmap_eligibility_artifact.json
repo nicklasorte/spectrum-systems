@@ -22,7 +22,8 @@
         "unmet_dependency_artifacts",
         "unmet_trust_requirements",
         "unmet_review_requirements",
-        "unmet_eval_requirements"
+        "unmet_eval_requirements",
+        "strategy_gate_freeze"
       ],
       "missing_dependency_step_ids": [
         "CTRL-02"
@@ -41,11 +42,45 @@
       ]
     }
   ],
+  "strategy_status_artifacts": [
+    {
+      "artifact_type": "pqx_strategy_status_artifact",
+      "schema_version": "1.0.0",
+      "roadmap_row_id": "CTRL-02",
+      "strategy_gate_decision": "allow",
+      "violated_invariants": [],
+      "drift_signals": [],
+      "hardening_vs_expansion": "hardening",
+      "replay_trace_declared": true,
+      "eval_control_declared": false,
+      "rationale": "strategy gate allows execution; required strategy and trust declarations are complete"
+    },
+    {
+      "artifact_type": "pqx_strategy_status_artifact",
+      "schema_version": "1.0.0",
+      "roadmap_row_id": "CTRL-03",
+      "strategy_gate_decision": "freeze",
+      "violated_invariants": [],
+      "drift_signals": [
+        "expansion_precedes_hardening_completion"
+      ],
+      "hardening_vs_expansion": "expansion",
+      "replay_trace_declared": true,
+      "eval_control_declared": true,
+      "rationale": "strategy gate froze expansion until earlier hardening slices are complete"
+    }
+  ],
   "summary": {
     "total_steps": 3,
     "completed_steps": 1,
     "eligible_steps": 1,
-    "blocked_steps": 1
+    "blocked_steps": 1,
+    "strategy_gate": {
+      "allow": 1,
+      "warn": 0,
+      "freeze": 1,
+      "block": 0
+    }
   },
   "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1"
 }

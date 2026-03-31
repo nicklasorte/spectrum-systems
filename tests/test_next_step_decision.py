@@ -68,6 +68,21 @@ def _manifest(state: str = "draft_roadmap") -> dict:
 def _eligibility(eligible_step_ids: list[str] | None = None) -> dict:
     if eligible_step_ids is None:
         eligible_step_ids = ["CTRL-02"]
+    status_artifacts = [
+        {
+            "artifact_type": "pqx_strategy_status_artifact",
+            "schema_version": "1.0.0",
+            "roadmap_row_id": step_id,
+            "strategy_gate_decision": "allow",
+            "violated_invariants": [],
+            "drift_signals": [],
+            "hardening_vs_expansion": "hardening",
+            "replay_trace_declared": True,
+            "eval_control_declared": False,
+            "rationale": "strategy gate allows execution; required strategy and trust declarations are complete",
+        }
+        for step_id in sorted(set(eligible_step_ids))
+    ]
     return {
         "artifact_type": "roadmap_eligibility_artifact",
         "schema_version": "1.0.0",
@@ -81,11 +96,18 @@ def _eligibility(eligible_step_ids: list[str] | None = None) -> dict:
         "eligible_step_ids": eligible_step_ids,
         "recommended_next_step_ids": eligible_step_ids,
         "blocked_steps": [],
+        "strategy_status_artifacts": status_artifacts,
         "summary": {
             "total_steps": 1,
             "completed_steps": 0,
             "eligible_steps": len(eligible_step_ids),
             "blocked_steps": 0,
+            "strategy_gate": {
+                "allow": len(status_artifacts),
+                "warn": 0,
+                "freeze": 0,
+                "block": 0,
+            },
         },
         "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1",
     }

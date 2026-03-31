@@ -43,6 +43,8 @@ def test_roadmap_parser_extracts_rows_and_dependencies() -> None:
     ai02 = next(row for row in rows if row.step_id == "AI-02")
     assert ai02.dependencies == ("AI-01",)
     assert ai02.status == "VALID"
+    assert ai02.strategy_alignment
+    assert ai02.primary_trust_gain
 
 
 def test_authority_resolution_selects_legacy_execution_mirror() -> None:
@@ -102,9 +104,33 @@ def test_dependency_resolver_blocks_incomplete_dependency() -> None:
 
 def test_dependency_resolver_selects_lowest_row_index_with_satisfied_dependencies() -> None:
     rows = [
-        RoadmapRow(row_index=0, step_id="STEP-20", step_name="A", dependencies=("STEP-30",), status="VALID"),
-        RoadmapRow(row_index=1, step_id="STEP-30", step_name="B", dependencies=(), status="VALID"),
-        RoadmapRow(row_index=2, step_id="STEP-10", step_name="C", dependencies=(), status="VALID"),
+        RoadmapRow(
+            row_index=0,
+            step_id="STEP-20",
+            step_name="A",
+            dependencies=("STEP-30",),
+            status="VALID",
+            strategy_alignment="aligned",
+            primary_trust_gain="trust",
+        ),
+        RoadmapRow(
+            row_index=1,
+            step_id="STEP-30",
+            step_name="B",
+            dependencies=(),
+            status="VALID",
+            strategy_alignment="aligned",
+            primary_trust_gain="trust",
+        ),
+        RoadmapRow(
+            row_index=2,
+            step_id="STEP-10",
+            step_name="C",
+            dependencies=(),
+            status="VALID",
+            strategy_alignment="aligned",
+            primary_trust_gain="trust",
+        ),
     ]
     state = {"schema_version": "1.0.0", "rows": []}
 
@@ -112,6 +138,44 @@ def test_dependency_resolver_selects_lowest_row_index_with_satisfied_dependencie
     assert block is None
     assert row is not None
     assert row.step_id == "STEP-30"
+
+
+def test_strategy_gate_blocks_when_strategy_alignment_missing() -> None:
+    rows = [
+        RoadmapRow(
+            row_index=0,
+            step_id="STEP-01",
+            step_name="A",
+            dependencies=(),
+            status="VALID",
+            strategy_alignment="",
+            primary_trust_gain="trust",
+        )
+    ]
+    state = {"schema_version": "1.0.0", "rows": []}
+    row, block = resolve_executable_row(rows, state, step_id="STEP-01")
+    assert row is None
+    assert block is not None
+    assert block["block_type"] == "STRATEGY_GATE_BLOCK"
+
+
+def test_strategy_gate_blocks_when_primary_trust_gain_missing() -> None:
+    rows = [
+        RoadmapRow(
+            row_index=0,
+            step_id="STEP-01",
+            step_name="A",
+            dependencies=(),
+            status="VALID",
+            strategy_alignment="aligned",
+            primary_trust_gain="",
+        )
+    ]
+    state = {"schema_version": "1.0.0", "rows": []}
+    row, block = resolve_executable_row(rows, state, step_id="STEP-01")
+    assert row is None
+    assert block is not None
+    assert block["block_type"] == "STRATEGY_GATE_BLOCK"
 
 
 def test_runner_fail_closed_when_step_missing(tmp_path: Path) -> None:

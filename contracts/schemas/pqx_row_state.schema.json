@@ -29,7 +29,8 @@
         "status",
         "last_run",
         "dependencies_satisfied",
-        "retries"
+        "retries",
+        "strategy_gate_decision"
       ],
       "properties": {
         "step_id": {
@@ -58,6 +59,15 @@
         "retries": {
           "type": "integer",
           "minimum": 0
+        },
+        "strategy_gate_decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "warn",
+            "freeze",
+            "block"
+          ]
         }
       }
     }

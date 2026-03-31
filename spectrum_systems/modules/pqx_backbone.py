@@ -31,6 +31,8 @@ class RoadmapRow:
     step_name: str
     dependencies: tuple[str, ...]
     status: str
+    strategy_alignment: str
+    primary_trust_gain: str
 
 
 @dataclass(frozen=True)
@@ -128,6 +130,8 @@ def parse_system_roadmap(path: Path | None = None) -> list[RoadmapRow]:
                 step_name=cells[1],
                 dependencies=_parse_dependencies(cells[11]),
                 status=cells[14],
+                strategy_alignment=cells[15] if len(cells) > 15 else "",
+                primary_trust_gain=cells[16] if len(cells) > 16 else "",
             )
         )
 
@@ -149,6 +153,8 @@ def load_state(path: Path = STATE_PATH) -> dict:
     if not path.exists():
         return {"schema_version": "1.0.0", "rows": []}
     payload = json.loads(path.read_text(encoding="utf-8"))
+    for row in payload.get("rows", []):
+        row.setdefault("strategy_gate_decision", "block")
     _validate_with_schema(payload, "pqx_row_state")
     return payload
 
@@ -170,6 +176,7 @@ def _ensure_row_state(state: dict, step_id: str) -> dict:
         "last_run": None,
         "dependencies_satisfied": False,
         "retries": 0,
+        "strategy_gate_decision": "block",
     }
     state["rows"].append(row_state)
     return _ensure_row_state(state, step_id)
@@ -241,7 +248,45 @@ def resolve_executable_row(
             blocked_candidates.append(blocked)
             continue
 
+        missing_strategy: list[str] = []
+        if not row.strategy_alignment.strip():
+            missing_strategy.append("strategy_alignment")
+        if not row.primary_trust_gain.strip():
+            missing_strategy.append("primary_trust_gain")
+
+        if missing_strategy:
+            row_state["dependencies_satisfied"] = True
+            row_state["strategy_gate_decision"] = "block"
+            blocked = {
+                "block_type": "STRATEGY_GATE_BLOCK",
+                "reason": (
+                    f"Strategy gate blocked row '{row.step_id}'; missing required fields: "
+                    + ", ".join(missing_strategy)
+                ),
+                "step_id": row.step_id,
+                "blocking_dependencies": [],
+            }
+            if step_id:
+                return None, blocked
+            blocked_candidates.append(blocked)
+            continue
+
+        if str(row.status).strip().upper() in {"PARTIAL", "INCOMPLETE"}:
+            row_state["dependencies_satisfied"] = True
+            row_state["strategy_gate_decision"] = "freeze"
+            blocked = {
+                "block_type": "STRATEGY_GATE_FREEZE",
+                "reason": f"Strategy gate froze row '{row.step_id}' because row status is partial/incomplete.",
+                "step_id": row.step_id,
+                "blocking_dependencies": [],
+            }
+            if step_id:
+                return None, blocked
+            blocked_candidates.append(blocked)
+            continue
+
         row_state["dependencies_satisfied"] = True
+        row_state["strategy_gate_decision"] = "allow"
         return row, None
 
     if blocked_candidates:

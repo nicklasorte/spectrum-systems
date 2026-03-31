@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_strategy_status_artifact.schema.json",
+  "title": "PQX Strategy Status Artifact",
+  "description": "Deterministic per-row strategy/trust gate outcome for PQX roadmap execution eligibility.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "roadmap_row_id",
+    "strategy_gate_decision",
+    "violated_invariants",
+    "drift_signals",
+    "hardening_vs_expansion",
+    "replay_trace_declared",
+    "eval_control_declared",
+    "rationale"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "pqx_strategy_status_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "roadmap_row_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strategy_gate_decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "violated_invariants": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "drift_signals": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "hardening_vs_expansion": {
+      "type": "string",
+      "enum": [
+        "hardening",
+        "expansion"
+      ]
+    },
+    "replay_trace_declared": {
+      "type": "boolean"
+    },
+    "eval_control_declared": {
+      "type": "boolean"
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
