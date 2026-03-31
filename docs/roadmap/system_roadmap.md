@@ -7,6 +7,7 @@
 - If content diverges, the editorial source of truth is `docs/roadmaps/system_roadmap.md`; this mirror must be updated in lockstep to remain parseable.
 - Bridge metadata (B2): PQX execution authority resolution is declared in `docs/roadmaps/roadmap_authority.md`; this file is the resolved machine-executable roadmap surface during migration.
 - March 31, 2026 strategic revision note: Control Loop Closure Gate (CL-01..CL-05) is mandatory before broader expansion in active authority; this mirror preserves legacy executable IDs until runtime/tests are migrated.
+- March 31, 2026 reconciliation note (roadmap-generation run): active authority gap-scan confirms source obligations remain ingestion-heavy; compatibility mirror continues preserving executable IDs while strategic control-loop closure remains the next hard gate.
 
 ## PQX Execution Contract Standard
 

@@ -92,3 +92,21 @@ Status claims are tagged with basis markers:
 - Scope: one dominant 1→2→3 slice path with explicit transition, replay, review-routing, and certification closure semantics.
 - Constraints: reuse existing contracts/modules; no architecture replacement.
 - Exit criteria: evidence-backed readiness for 3 sequential trusted slices and explicit fail-closed non-readiness for 5–10 until validated.
+
+
+## March 31, 2026 Source Obligation Gap Scan (Structured Surface)
+
+### Inputs used
+- `docs/source_structured/*.json`
+- `docs/source_indexes/source_inventory.json`
+- `docs/source_indexes/obligation_index.json`
+- `docs/source_indexes/component_source_map.json`
+
+### Coverage classification
+- **Covered:** All registered `source_id` entries have structured artifacts and index rows, and index artifacts remain deterministic/machine-readable.
+- **Partial:** Obligation statements are primarily ingestion/validation obligations and do not yet provide deeper runtime/certification behavior constraints.
+- **Missing:** Source-derived obligations for stronger runtime control-loop calibration/certification closure semantics remain absent in structured source payloads.
+- **Drift indicators:** Missing raw source artifacts constrain confidence when translating strategic source intent into execution-grade criteria.
+
+### Impact on roadmap ordering
+This scan reinforces Control Loop Closure Gate-first ordering and keeps source authority hardening (`NX-19..NX-21`) ahead of AI execution expansion (`NX-22..NX-24`).
