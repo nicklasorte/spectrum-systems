@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/execution_change_impact_artifact.schema.json",
+  "title": "Execution Change Impact Artifact",
+  "description": "Deterministic fail-closed execution-path impact analysis used as a pre-execution PQX governance gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "impact_id",
+    "generated_at",
+    "baseline_ref",
+    "changed_paths",
+    "analyzed_paths",
+    "path_assessments",
+    "touched_sensitive_surfaces",
+    "highest_sensitivity",
+    "risk_classification",
+    "blocking",
+    "safe_to_execute",
+    "indeterminate",
+    "required_reviews",
+    "required_eval_artifacts",
+    "required_followup_actions",
+    "rationale",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": { "const": "execution_change_impact_artifact" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "impact_id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "baseline_ref": { "type": "string", "minLength": 1 },
+    "changed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "analyzed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "path_assessments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "exists_in_baseline",
+          "exists_in_worktree",
+          "change_type",
+          "sensitivity_class",
+          "governed_surface_types",
+          "impact_reason_codes",
+          "review_required",
+          "eval_required",
+          "blocking_reason"
+        ],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "exists_in_baseline": { "type": "boolean" },
+          "exists_in_worktree": { "type": "boolean" },
+          "change_type": { "type": "string", "enum": ["added", "modified", "deleted", "renamed", "unknown"] },
+          "sensitivity_class": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+          "governed_surface_types": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "contract",
+                "orchestration",
+                "runtime",
+                "control",
+                "review",
+                "certification",
+                "pqx",
+                "docs_governance",
+                "tests_critical",
+                "unknown"
+              ]
+            }
+          },
+          "impact_reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "review_required": { "type": "boolean" },
+          "eval_required": { "type": "boolean" },
+          "blocking_reason": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    },
+    "touched_sensitive_surfaces": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "contract",
+          "orchestration",
+          "runtime",
+          "control",
+          "review",
+          "certification",
+          "pqx",
+          "docs_governance",
+          "tests_critical",
+          "unknown"
+        ]
+      }
+    },
+    "highest_sensitivity": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+    "risk_classification": {
+      "type": "string",
+      "enum": ["safe", "cautionary", "high_risk", "blocking", "indeterminate"]
+    },
+    "blocking": { "type": "boolean" },
+    "safe_to_execute": { "type": "boolean" },
+    "indeterminate": { "type": "boolean" },
+    "required_reviews": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "required_eval_artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "required_followup_actions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rationale": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analyzer_version", "standards_manifest_path", "rule_set", "deterministic"],
+      "properties": {
+        "analyzer_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "standards_manifest_path": { "type": "string", "const": "contracts/standards-manifest.json" },
+        "rule_set": { "type": "string", "minLength": 1 },
+        "deterministic": { "type": "boolean", "const": true }
+      }
+    }
+  }
+}

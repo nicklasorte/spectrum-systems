@@ -237,6 +237,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("contract_impact_artifact")
         validate_artifact(instance, "contract_impact_artifact")
 
+    def test_execution_change_impact_artifact_example_validates(self) -> None:
+        instance = load_example("execution_change_impact_artifact")
+        validate_artifact(instance, "execution_change_impact_artifact")
+
     def test_pqx_g5_contract_examples_validate(self) -> None:
         for name in (
             "pqx_bundle_schedule_decision",

@@ -787,6 +787,14 @@
       "notes": "Evidence map linking strategic claims to anchored source evidence."
     },
     {
+      "artifact_type": "execution_change_impact_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ]
+    },
+    {
       "artifact_type": "execution_report_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

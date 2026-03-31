@@ -1,0 +1,50 @@
+{
+  "artifact_type": "execution_change_impact_artifact",
+  "schema_version": "1.0.0",
+  "impact_id": "db18a23663cc6fd92213d6a7222d10856317beaf3f0841ac84853d2ec48ef5d5",
+  "generated_at": "2026-03-30T00:00:00Z",
+  "baseline_ref": "HEAD",
+  "changed_paths": [
+    "README.md"
+  ],
+  "analyzed_paths": [
+    "README.md"
+  ],
+  "path_assessments": [
+    {
+      "path": "README.md",
+      "exists_in_baseline": true,
+      "exists_in_worktree": true,
+      "change_type": "modified",
+      "sensitivity_class": "low",
+      "governed_surface_types": [
+        "unknown"
+      ],
+      "impact_reason_codes": [
+        "general_non_governed_path"
+      ],
+      "review_required": false,
+      "eval_required": false,
+      "blocking_reason": null
+    }
+  ],
+  "touched_sensitive_surfaces": [],
+  "highest_sensitivity": "low",
+  "risk_classification": "safe",
+  "blocking": false,
+  "safe_to_execute": true,
+  "indeterminate": false,
+  "required_reviews": [],
+  "required_eval_artifacts": [],
+  "required_followup_actions": [],
+  "rationale": [
+    "All changed files are outside governed execution/control/review/certification surfaces.",
+    "No governed runtime path was modified; execution gate remains open."
+  ],
+  "provenance": {
+    "analyzer_version": "1.0.0",
+    "standards_manifest_path": "contracts/standards-manifest.json",
+    "rule_set": "execution-change-impact-g14",
+    "deterministic": true
+  }
+}

@@ -5,9 +5,17 @@ from .contract_impact import (
     analyze_contract_impact,
     write_contract_impact_artifact,
 )
+from .execution_change_impact import (
+    ExecutionChangeImpactAnalysisError,
+    analyze_execution_change_impact,
+    write_execution_change_impact_artifact,
+)
 
 __all__ = [
     "ContractImpactAnalysisError",
     "analyze_contract_impact",
     "write_contract_impact_artifact",
+    "ExecutionChangeImpactAnalysisError",
+    "analyze_execution_change_impact",
+    "write_execution_change_impact_artifact",
 ]
