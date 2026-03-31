@@ -94,21 +94,53 @@ Status claims are tagged with basis markers:
 - Exit criteria: evidence-backed readiness for 3 sequential trusted slices and explicit fail-closed non-readiness for 5–10 until validated.
 
 
-## March 31, 2026 Source Obligation Gap Scan (Structured Surface)
+## March 31, 2026 RE-02 Source-vs-Repo Gap Scan
 
-### Inputs used
-- `docs/source_structured/*.json`
+### Source Inputs Used
+- `docs/source_structured/ai_durability_strategy.source.md`
 - `docs/source_indexes/source_inventory.json`
 - `docs/source_indexes/obligation_index.json`
 - `docs/source_indexes/component_source_map.json`
+- `docs/architecture/strategy_control_document.md`
+- `docs/roadmaps/system_roadmap.md`
+- `docs/roadmap/system_roadmap.md`
+- `scripts/build_source_indexes.py`
+- `tests/test_source_indexes_build.py`
+- `tests/test_source_structured_files_validate.py`
+- `tests/test_source_design_extraction_schema.py`
 
-### Coverage classification
-- **Covered:** All registered `source_id` entries have structured artifacts and index rows, and index artifacts remain deterministic/machine-readable.
-- **Partial:** Obligation statements are primarily ingestion/validation obligations and do not yet provide deeper runtime/certification behavior constraints.
-- **Missing:** Source-derived obligations for stronger runtime control-loop calibration/certification closure semantics remain absent in structured source payloads.
-- **Drift indicators:** Missing raw source artifacts constrain confidence when translating strategic source intent into execution-grade criteria.
+### Obligation Coverage Table
+| Obligation ID | Description | Status | Grounded Repo Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| OBL-AIDUR-ARTIFACT-SOR | Governed artifacts are the system of record for decisions/handoffs/state. | covered | `contracts/schemas/artifact_envelope.schema.json`; `spectrum_systems/utils/artifact_envelope.py`; artifact-first contracts/examples and validation seams across governance/runtime modules. | Envelope and contract-first artifact handling are explicit and enforced at producer boundaries. |
+| OBL-AIDUR-MODEL-REPLACEABLE | Models are replaceable engines behind stable adapter contracts. | covered | `spectrum_systems/modules/runtime/model_adapter.py`; `contracts/schemas/ai_model_request.schema.json`; `contracts/schemas/ai_model_response.schema.json`; `tests/test_model_adapter.py`. | Canonical adapter seam rejects provider-native leakage and enforces request/response contracts. |
+| OBL-AIDUR-SCHEMA-BEFORE-CONSUME | Downstream consumption must be blocked when schema validation is absent/fails. | partial | `spectrum_systems/modules/runtime/contract_runtime.py`; `spectrum_systems/modules/governance/done_certification.py`; `tests/test_contract_runtime_enforcement.py`; `tests/test_done_certification.py`. | Strong local fail-closed enforcement exists, but there is not one universal repo-wide downstream-consumption gate proving complete coverage across all entrypoints. |
+| OBL-AIDUR-LINEAGE-BEFORE-PROMOTION | Promotion denied when lineage evidence is missing/incomplete/unverifiable. | partial | `spectrum_systems/modules/governance/done_certification.py`; `spectrum_systems/modules/governance/promotion_gate_attack.py`; `tests/test_done_certification.py`; `tests/test_promotion_gate_attack.py`. | Promotion seam checks trace/provenance consistency and blocks attack paths, but lineage enforcement is concentrated in selected seams rather than a single platform-wide promotion authority boundary. |
+| OBL-AIDUR-CONTROL-EXTERNALIZED | Control authority remains external to model execution and explicit. | covered | `contracts/schemas/evaluation_control_decision.schema.json`; `spectrum_systems/modules/runtime/control_loop.py`; `spectrum_systems/modules/runtime/evaluation_control.py`; `tests/test_control_loop.py`. | Explicit control-decision artifacts mediate allow/warn/freeze/block behavior outside model execution paths. |
+| OBL-AIDUR-EVAL-POLICY-BEFORE-PROMOTION | Eval and policy gates must pass before promotion eligibility. | partial | `spectrum_systems/modules/governance/done_certification.py`; `spectrum_systems/modules/runtime/evaluation_enforcement_bridge.py`; `tests/test_done_certification.py`; `tests/test_evaluation_enforcement_bridge.py`. | Evaluation and policy artifacts are required in key seams, but full promotion eligibility proof remains distributed rather than singular and globally enforced. |
+| OBL-AIDUR-FAIL-CLOSED-MISSING-EVIDENCE | Missing schema/trace/policy evidence must fail closed at decision time. | covered | `spectrum_systems/modules/runtime/control_loop.py`; `spectrum_systems/modules/runtime/contract_runtime.py`; `spectrum_systems/modules/governance/done_certification.py`; `tests/test_control_loop.py`; `tests/test_contract_runtime_enforcement.py`; `tests/test_done_certification.py`. | Multiple critical seams explicitly block on missing/invalid evidence with deterministic failure outputs. |
+| OBL-AIDUR-MEASURABLE-PROMOTION-ROLLOUT | Promotion/rollout are gated by measurable thresholds and explicit rollout states. | partial | `spectrum_systems/modules/runtime/judgment_policy_lifecycle.py`; `spectrum_systems/modules/runtime/pqx_canary_rollout.py`; `contracts/schemas/judgment_policy_rollout_record.schema.json`; `tests/test_pqx_canary_rollout.py`. | Rollout-state and canary controls exist, but measurable threshold-to-promotion closure is not yet demonstrated end-to-end as one dominant promotion pathway. |
+| OBL-AIDUR-LEARNING-PREVENTION-CLOSURE | Learning outputs must include recurrence-prevention actions tied to prior failures. | partial | `spectrum_systems/modules/runtime/judgment_learning.py`; `spectrum_systems/modules/runtime/control_loop.py`; `tests/test_control_loop.py`; strategy/control-loop docs (`CL-03`, `CL-05`). | Learning artifacts and escalation exist, but hard binding from learning outputs to mandatory recurrence-prevention closure in promotion/progression remains incomplete. |
 
-### Impact on roadmap ordering
-This scan reinforces Control Loop Closure Gate-first ordering and keeps source authority hardening (`NX-19..NX-21`) ahead of AI execution expansion (`NX-22..NX-24`).
-Execution sequencing is now explicitly phase-gated: **Phase A** `CL-01..CL-05` (mandatory enforced controls) → **Phase B** `NX-01..NX-03` (single dominant trust spine only) → Control Loop Closure Certification Gate proof review → **Phase C** `NX-04..NX-12` (conditional grouped expansion) → **Phase D** `NX-13..NX-21` → **Phase E** `NX-22..NX-24` last.
-No concurrent non-spine advancement is considered valid before 3-slice deterministic closure evidence passes the certification gate.
+### Covered Obligations
+- Repo evidence strongly covers artifact system-of-record behavior, replaceable model-adapter boundaries, externalized control authority, and fail-closed decision behavior.
+
+### Partial Obligations
+- Schema-before-consumption, lineage-before-promotion, eval/policy-before-promotion, measurable rollout governance, and learning/prevention closure are implemented in meaningful seams but not yet as a single complete enforcement spine.
+
+### Missing Obligations
+- None of the seeded obligations are completely absent in repo state.
+
+### Drift Signals
+- No seeded obligation is currently classified as drifted.
+- Primary risk is **distributed partial enforcement**, not a direct contradiction of source intent.
+
+### Single Dominant Bottleneck
+Learning-loop outputs are not yet hard-bound as mandatory recurrence-prevention authority in the promotion/progression path.
+
+### Why This Bottleneck Matters
+Without enforced learning-to-prevention closure, the system can record and evaluate failures yet still permit repeated failure classes to re-enter progression under distributed gate semantics.
+
+### Immediate Implications for Roadmap Generation
+- **RE-03 focus:** bind learning/calibration/drift artifacts to deterministic recurrence-prevention and promotion eligibility gates in one dominant enforcement path.
+- **Do not prioritize yet:** broader adapter/runtime expansion or additional route surfaces that do not improve enforced learning-authority closure.
