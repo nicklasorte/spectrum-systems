@@ -3,12 +3,68 @@
   "schema_version": "1.0.0",
   "sources": [
     {
+      "file_path": "docs/source_structured/agent_eval_integration_design.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-AGENT-EVAL-INTEGRATION-DESIGN",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/agent_eval_integration_design.source.md",
+      "title": "Agent Eval Integration Design"
+    },
+    {
       "file_path": "docs/source_structured/ai_durability_strategy.source.md",
       "notes": "",
       "source_id": "SRC-AI-DURABILITY-STRATEGY",
       "status": "active",
       "structured_artifact": "docs/source_structured/ai_durability_strategy.source.md",
       "title": "AI Durability Strategy"
+    },
+    {
+      "file_path": "docs/source_structured/done_certification_gate_gov10.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-DONE-CERTIFICATION-GATE-GOV10",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/done_certification_gate_gov10.source.md",
+      "title": "Done Certification Gate GOV10 Design"
+    },
+    {
+      "file_path": "docs/source_structured/google_sre_mapping.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-GOOGLE-SRE-MAPPING",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/google_sre_mapping.source.md",
+      "title": "Google SRE Mapping"
+    },
+    {
+      "file_path": "docs/source_structured/governed_api_adapter_design.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-GOVERNED-API-ADAPTER-DESIGN",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/governed_api_adapter_design.source.md",
+      "title": "Governed API Adapter Design"
+    },
+    {
+      "file_path": "docs/source_structured/judgment_capture_reuse_system_design.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-JUDGMENT-CAPTURE-REUSE-SYSTEM-DESIGN",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/judgment_capture_reuse_system_design.source.md",
+      "title": "Judgment Capture Reuse System Design"
+    },
+    {
+      "file_path": "docs/source_structured/production_ai_workflow_best_practices.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-PRODUCTION-AI-WORKFLOW-BEST-PRACTICES",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/production_ai_workflow_best_practices.source.md",
+      "title": "Production AI Workflow Best Practices"
+    },
+    {
+      "file_path": "docs/source_structured/sbge_design.source.md",
+      "notes": "FAIL_CLOSED: Automated PDF text extraction is unavailable in the current environment (no PDF parser tooling present). Source converted to inventory metadata only; no source-grounded obligations extracted.",
+      "source_id": "SRC-SBGE-DESIGN",
+      "status": "inactive",
+      "structured_artifact": "docs/source_structured/sbge_design.source.md",
+      "title": "SBGE Design"
     }
   ]
 }

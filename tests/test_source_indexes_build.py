@@ -58,7 +58,16 @@ def test_build_source_indexes_generates_deterministic_outputs() -> None:
 
     source_ids = [entry["source_id"] for entry in source_inventory["sources"]]
     assert source_ids == sorted(source_ids)
-    assert source_ids == ["SRC-AI-DURABILITY-STRATEGY"]
+    assert source_ids == [
+        "SRC-AGENT-EVAL-INTEGRATION-DESIGN",
+        "SRC-AI-DURABILITY-STRATEGY",
+        "SRC-DONE-CERTIFICATION-GATE-GOV10",
+        "SRC-GOOGLE-SRE-MAPPING",
+        "SRC-GOVERNED-API-ADAPTER-DESIGN",
+        "SRC-JUDGMENT-CAPTURE-REUSE-SYSTEM-DESIGN",
+        "SRC-PRODUCTION-AI-WORKFLOW-BEST-PRACTICES",
+        "SRC-SBGE-DESIGN",
+    ]
 
     obligation_ids = [entry["obligation_id"] for entry in obligation_index["obligations"]]
     assert obligation_ids == sorted(obligation_ids)

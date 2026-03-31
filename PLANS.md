@@ -229,6 +229,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-RE-07-CL-02.1-2026-03-31.md | RE-07 CL-02.1 — Error Budget Contract Repair | Active |
 | docs/review-actions/PLAN-RE-07-CL-03-2026-03-31.md | RE-07 CL-03 — Recurrence Prevention | Active |
 
+| docs/review-actions/PLAN-SOURCE-INGESTION-2026-03-31.md | SOURCE-INGESTION — Remaining project PDF structured source ingestion + index regeneration | Active |
+
 Update this table when plans are created or completed.
 
 ---
