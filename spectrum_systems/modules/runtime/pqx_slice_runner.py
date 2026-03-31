@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from spectrum_systems.contracts import validate_artifact
-from spectrum_systems.governance import analyze_contract_impact
+from spectrum_systems.governance import analyze_contract_impact, analyze_execution_change_impact
 from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
@@ -94,6 +94,50 @@ def _enforce_contract_impact_gate(
     return artifact, artifact_ref
 
 
+def _enforce_execution_change_impact_gate(
+    *,
+    execution_change_impact_artifact_path: Optional[Path],
+    changed_paths: Optional[list[str]],
+    baseline_ref: str,
+    provided_reviews: Optional[list[str]],
+    provided_eval_artifacts: Optional[list[str]],
+    run_id: str,
+    step_id: str,
+    runs_root: Path,
+) -> tuple[Optional[dict], Optional[str]]:
+    artifact = None
+    artifact_ref = None
+
+    if execution_change_impact_artifact_path is not None:
+        artifact = json.loads(execution_change_impact_artifact_path.read_text(encoding="utf-8"))
+        validate_artifact(artifact, "execution_change_impact_artifact")
+        artifact_ref = str(execution_change_impact_artifact_path)
+    elif changed_paths:
+        artifact = analyze_execution_change_impact(
+            repo_root=REPO_ROOT,
+            changed_paths=changed_paths,
+            baseline_ref=baseline_ref,
+            provided_reviews=provided_reviews or [],
+            provided_eval_artifacts=provided_eval_artifacts or [],
+        )
+        impact_path = runs_root / step_id / f"{run_id}.execution_change_impact_artifact.json"
+        _write_json(impact_path, artifact)
+        artifact_ref = _relative(impact_path)
+
+    if artifact is None:
+        return None, None
+
+    if (
+        artifact.get("blocking") is True
+        or artifact.get("indeterminate") is True
+        or artifact.get("safe_to_execute") is not True
+    ):
+        reason = "; ".join(artifact.get("rationale", [])) or "execution change impact safe_to_execute=false"
+        raise PQXSliceRunnerError(f"execution change impact gate blocked: {reason}")
+
+    return artifact, artifact_ref
+
+
 def _find_row(rows: list[RoadmapRow], step_id: str) -> RoadmapRow:
     row = next((entry for entry in rows if entry.step_id == step_id), None)
     if row is None:
@@ -156,6 +200,11 @@ def run_pqx_slice(
     contract_impact_artifact_path: Optional[Path] = None,
     changed_contract_paths: Optional[list[str]] = None,
     changed_example_paths: Optional[list[str]] = None,
+    execution_change_impact_artifact_path: Optional[Path] = None,
+    changed_paths: Optional[list[str]] = None,
+    execution_change_baseline_ref: str = "HEAD",
+    provided_reviews: Optional[list[str]] = None,
+    provided_eval_artifacts: Optional[list[str]] = None,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -210,6 +259,25 @@ def run_pqx_slice(
             run_id=run_id,
             reason=str(exc),
             block_type="CONTRACT_IMPACT_BLOCKED",
+        )
+
+    try:
+        _enforce_execution_change_impact_gate(
+            execution_change_impact_artifact_path=execution_change_impact_artifact_path,
+            changed_paths=changed_paths,
+            baseline_ref=execution_change_baseline_ref,
+            provided_reviews=provided_reviews,
+            provided_eval_artifacts=provided_eval_artifacts,
+            run_id=run_id,
+            step_id=normalized_step_id,
+            runs_root=runs_root,
+        )
+    except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=str(exc),
+            block_type="EXECUTION_CHANGE_IMPACT_BLOCKED",
         )
 
     trace_id = f"trace:{run_id}:{normalized_step_id}"

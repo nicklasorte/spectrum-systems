@@ -52,6 +52,34 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Optional changed contract example path(s) forwarded to analyzer.",
     )
+    parser.add_argument(
+        "--execution-change-impact-artifact-path",
+        type=Path,
+        help="Optional path to precomputed execution_change_impact_artifact JSON; blocks PQX when unresolved.",
+    )
+    parser.add_argument(
+        "--changed-path",
+        action="append",
+        default=[],
+        help="Changed file path(s) for deterministic execution change impact analysis.",
+    )
+    parser.add_argument(
+        "--execution-change-baseline-ref",
+        default="HEAD",
+        help="Git baseline reference for execution change impact analysis.",
+    )
+    parser.add_argument(
+        "--provided-review",
+        action="append",
+        default=[],
+        help="Review evidence ids supplied to execution change impact gate.",
+    )
+    parser.add_argument(
+        "--provided-eval-artifact",
+        action="append",
+        default=[],
+        help="Evaluation artifact ids supplied to execution change impact gate.",
+    )
     return parser.parse_args()
 
 
@@ -70,6 +98,11 @@ def main() -> int:
         contract_impact_artifact_path=args.contract_impact_artifact_path,
         changed_contract_paths=args.changed_contract_path,
         changed_example_paths=args.changed_example_path,
+        execution_change_impact_artifact_path=args.execution_change_impact_artifact_path,
+        changed_paths=args.changed_path,
+        execution_change_baseline_ref=args.execution_change_baseline_ref,
+        provided_reviews=args.provided_review,
+        provided_eval_artifacts=args.provided_eval_artifact,
     )
 
     print(result)

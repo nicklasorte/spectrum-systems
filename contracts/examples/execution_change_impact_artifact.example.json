@@ -1,0 +1,84 @@
+{
+  "artifact_type": "execution_change_impact_artifact",
+  "schema_version": "1.0.0",
+  "impact_id": "2375367d029bece6c41dd655ec38c68ed1d51f37ed4d0be2f92402fe6ad3b793",
+  "generated_at": "2026-03-30T00:00:00Z",
+  "baseline_ref": "HEAD",
+  "changed_paths": [
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py",
+    "tests/test_pqx_slice_runner.py"
+  ],
+  "analyzed_paths": [
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py",
+    "tests/test_pqx_slice_runner.py"
+  ],
+  "path_assessments": [
+    {
+      "path": "spectrum_systems/modules/runtime/pqx_slice_runner.py",
+      "exists_in_baseline": true,
+      "exists_in_worktree": true,
+      "change_type": "modified",
+      "sensitivity_class": "critical",
+      "governed_surface_types": [
+        "runtime",
+        "control",
+        "pqx"
+      ],
+      "impact_reason_codes": [
+        "runtime_orchestration_or_pqx_change",
+        "review_evidence_missing"
+      ],
+      "review_required": true,
+      "eval_required": true,
+      "blocking_reason": "critical governed surface touched without mandatory review/eval evidence"
+    },
+    {
+      "path": "tests/test_pqx_slice_runner.py",
+      "exists_in_baseline": true,
+      "exists_in_worktree": true,
+      "change_type": "modified",
+      "sensitivity_class": "high",
+      "governed_surface_types": [
+        "tests_critical"
+      ],
+      "impact_reason_codes": [
+        "critical_tests_touched"
+      ],
+      "review_required": false,
+      "eval_required": true,
+      "blocking_reason": null
+    }
+  ],
+  "touched_sensitive_surfaces": [
+    "control",
+    "pqx",
+    "runtime",
+    "tests_critical"
+  ],
+  "highest_sensitivity": "critical",
+  "risk_classification": "blocking",
+  "blocking": true,
+  "safe_to_execute": false,
+  "indeterminate": false,
+  "required_reviews": [
+    "runtime-governance-review"
+  ],
+  "required_eval_artifacts": [
+    "regression_result",
+    "control_loop_certification_pack"
+  ],
+  "required_followup_actions": [
+    "attach_required_reviews",
+    "attach_required_eval_artifacts"
+  ],
+  "rationale": [
+    "Critical governed runtime/PQX surfaces were modified.",
+    "Fail-closed policy requires explicit review and evaluation evidence before execution."
+  ],
+  "provenance": {
+    "analyzer_version": "1.0.0",
+    "standards_manifest_path": "contracts/standards-manifest.json",
+    "rule_set": "execution-change-impact-g14",
+    "deterministic": true
+  }
+}
