@@ -101,7 +101,7 @@ Status claims are tagged with basis markers:
 - `docs/source_indexes/source_inventory.json`
 - `docs/source_indexes/obligation_index.json`
 - `docs/source_indexes/component_source_map.json`
-- `docs/architecture/strategy_control_document.md`
+- `docs/architecture/strategy-control.md`
 - `docs/roadmaps/system_roadmap.md`
 - `docs/roadmap/system_roadmap.md`
 - `scripts/build_source_indexes.py`

@@ -1,5 +1,19 @@
 # Strategy Control Document
 
+## Role in Spectrum Systems
+
+This document is the governing control surface for:
+- roadmap generation
+- architectural alignment
+- drift detection and correction
+
+It is authoritative over:
+- roadmap prompts
+- architecture decisions
+- implementation sequencing
+
+All roadmap steps must be validated against this document before execution.
+
 ## Purpose
 Define the governing control rules for roadmap generation, execution ordering, and architecture drift prevention so Spectrum Systems remains fail-closed, source-grounded, and control-loop-complete.
 

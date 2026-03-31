@@ -3,13 +3,14 @@
 Use this prompt only for roadmap generation inside governed workflow seams.
 
 ## Operating Order (Strict)
-1. `docs/architecture/system_strategy.md`
-2. `docs/architecture/system_source_index.md`
-3. current repository state
-4. referenced source architecture docs
+1. `docs/architecture/strategy-control.md`
+2. current repository
+3. current roadmap (`docs/roadmaps/system_roadmap.md` with required `docs/roadmap/system_roadmap.md` compatibility mirror)
+4. source design documents (PDFs/data lake artifacts and governed source extracts)
 
 ## Enforcement Requirements
-- Strategy is highest authority.
+- Strategy Control Document is highest authority.
+- Every roadmap step must explicitly align to strategy invariants from `docs/architecture/strategy-control.md`.
 - Source docs are mandatory bounded grounding inputs.
 - Foundation-before-expansion is required.
 - Output must be structured and provenance-bearing.
@@ -43,5 +44,6 @@ Reject roadmap output when any of the following is true:
 - strategy reference missing
 - source grounding list missing or empty
 - invariant checks missing
+- any roadmap step missing explicit strategy-invariant alignment
 - drift detected but not stabilized
 - roadmap step justification lacks trust rationale

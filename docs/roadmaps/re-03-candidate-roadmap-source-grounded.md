@@ -4,12 +4,13 @@
 Generate the next candidate roadmap as a **gap-closing execution sequence** grounded in source obligations and RE-02 repo truth, without redesigning architecture, breaking parser/mirror compatibility, or introducing parallel trust spines.
 
 ## 2) Source Inputs Used
-Authoritative inputs used directly for this candidate:
-1. `docs/source_indexes/obligation_index.json`
-2. `docs/roadmaps/execution_state_inventory.md` (including March 31, 2026 RE-02 scan block)
-3. `docs/source_structured/ai_durability_strategy.source.md`
-4. `docs/architecture/strategy_control_document.md`
-5. Repository seams (modules/schemas/tests) in `spectrum_systems/modules/`, `contracts/schemas/`, and `tests/`
+Authoritative inputs used directly for this candidate (strict order):
+1. `docs/architecture/strategy-control.md`
+2. Current repository seams (modules/schemas/tests) in `spectrum_systems/modules/`, `contracts/schemas/`, and `tests/`
+3. Current roadmap surfaces: `docs/roadmaps/system_roadmap.md` and required compatibility mirror `docs/roadmap/system_roadmap.md`
+4. Source design documents and governed extracts: `docs/source_indexes/obligation_index.json`, `docs/roadmaps/execution_state_inventory.md` (including March 31, 2026 RE-02 scan block), and `docs/source_structured/ai_durability_strategy.source.md`
+
+All roadmap steps in this candidate are required to align to strategy invariants from `docs/architecture/strategy-control.md`.
 
 ## 3) Current System State (RE-02 Summary)
 - Contracts and fail-closed core seams are broadly implemented, but enforcement remains distributed for promotion/lineage/eval-policy coupling.
