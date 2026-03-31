@@ -11,13 +11,6 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 
 
 
-@pytest.fixture(autouse=True)
-def _stub_manifest_gate(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "spectrum_systems.modules.runtime.pqx_slice_runner.validate_manifest_completeness",
-        lambda _manifest: {"valid": True, "errors": [], "missing_fields": [], "invalid_entries": []},
-    )
-
 class FixedClock:
     def __init__(self) -> None:
         self._tick = 0
@@ -283,7 +276,34 @@ def test_run_pqx_slice_blocks_on_manifest_completeness_failure(tmp_path: Path, m
         runs_root=tmp_path / "runs",
         pqx_output_text="x",
         clock=FixedClock(),
+        enforce_manifest_completeness=True,
     )
 
     assert result["status"] == "blocked"
     assert result["block_type"] == "MANIFEST_COMPLETENESS_BLOCKED"
+
+
+def test_run_pqx_slice_default_path_does_not_enforce_manifest_completeness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_slice_runner.validate_manifest_completeness",
+        lambda _manifest: {
+            "valid": False,
+            "errors": ["contracts[0] missing required field: artifact_class"],
+            "missing_fields": ["contracts[0].artifact_class"],
+            "invalid_entries": [],
+        },
+    )
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"

@@ -344,6 +344,7 @@ def execute_sequence_run(
 
     _verify_continuity(state, slice_requests)
     state = _persist_and_reload_exact(state, state_path)
+    _verify_continuity(state, slice_requests)
 
     if resolved_bundle_state_path is not None:
         bundle_state = _load_or_initialize_bundle_state(

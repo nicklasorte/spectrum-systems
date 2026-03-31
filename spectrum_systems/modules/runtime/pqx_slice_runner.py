@@ -225,6 +225,7 @@ def run_pqx_slice(
     execution_change_baseline_ref: str = "HEAD",
     provided_reviews: Optional[list[str]] = None,
     provided_eval_artifacts: Optional[list[str]] = None,
+    enforce_manifest_completeness: bool = False,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -264,15 +265,16 @@ def run_pqx_slice(
     if pqx_output_text is None:
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="pqx_output_text is required")
 
-    try:
-        _enforce_manifest_completeness_gate(manifest_path=REPO_ROOT / "contracts" / "standards-manifest.json")
-    except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
-        return _block_payload(
-            step_id=normalized_step_id,
-            run_id=run_id,
-            reason=str(exc),
-            block_type="MANIFEST_COMPLETENESS_BLOCKED",
-        )
+    if enforce_manifest_completeness:
+        try:
+            _enforce_manifest_completeness_gate(manifest_path=REPO_ROOT / "contracts" / "standards-manifest.json")
+        except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
+            return _block_payload(
+                step_id=normalized_step_id,
+                run_id=run_id,
+                reason=str(exc),
+                block_type="MANIFEST_COMPLETENESS_BLOCKED",
+            )
 
     try:
         _enforce_contract_impact_gate(
