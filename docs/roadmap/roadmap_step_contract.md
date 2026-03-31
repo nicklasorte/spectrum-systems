@@ -1,4 +1,4 @@
-This file is subordinate to docs/roadmap/system_roadmap.md
+This file is subordinate to active editorial authority `docs/roadmaps/system_roadmap.md` and is enforced by machine execution surface `docs/roadmap/system_roadmap.md` during compatibility transition
 
 # Roadmap Step Contract (PQX Execution Standard)
 
@@ -65,3 +65,4 @@ The roadmap is a **machine-readable execution contract**.
 - Active authority declaration: `docs/roadmaps/system_roadmap.md`.
 - Machine execution surface during compatibility transition: `docs/roadmap/system_roadmap.md`.
 - PQX must resolve these via `docs/roadmaps/roadmap_authority.md` and fail closed on ambiguity/mismatch before evaluating step rows.
+- During compatibility transition, machine execution continues to consume `docs/roadmap/system_roadmap.md`; legacy executable IDs/dependencies must remain present until explicit cutover.

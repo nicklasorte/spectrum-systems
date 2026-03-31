@@ -1,140 +1,119 @@
 # Spectrum Systems — System Roadmap
 
-**Authority status:** ACTIVE ROADMAP AUTHORITY (Bundle B1, 2026-03-29)
+**Authority status:** ACTIVE ROADMAP AUTHORITY (March 31, 2026 revision)
+
+## March 31, 2026 Authority Revision (Supersession / Extension)
+This revision supersedes the prior B1/B2 roadmap state by preserving valid completed governance foundations and extending forward execution with a stricter pre-expansion gate.
+
+- **Active editorial authority remains:** `docs/roadmaps/system_roadmap.md`
+- Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror for legacy PQX consumers until migration completes.
+- **New mandatory rule:** broader grouped expansion and later AI execution expansion are subordinate to passing the **Control Loop Closure Gate**.
+- **Current posture:** Spectrum Systems is near a governed pipeline MVP, but **not yet** at a true MVP closed-loop control system.
 
 ## Intent
-Consolidate roadmap execution authority into one repo-native document and provide an execution path that is explicitly grounded in (a) source design obligations and (b) current repository implementation evidence.
+Converge existing strong governance seams into one dominant trusted sequential path and then a bounded grouped path, while hard-binding failure learning into future decisions before any wider execution expansion.
 
 ## System Goal
-Operate Spectrum Systems as a governed, fail-closed, artifact-first execution surface that can run trusted PQX slices through eval → control → enforcement loops with replayable evidence and explicit certification boundaries.
+Operate Spectrum Systems as a governed, fail-closed, artifact-first execution surface with replayable evidence where failures materially and measurably change future control decisions.
 
 ## Architectural Invariants
-- Schema-validated artifacts are required at all control boundaries. **[SOURCE + REPO]**
-- Queue and runtime advancement must be driven by explicit decision artifacts, not prose interpretation. **[SOURCE + REPO]**
-- Execution must halt on ambiguity, missing evidence, invalid contracts, or missing policy context. **[SOURCE + REPO]**
-- Replayability and trace continuity are mandatory for trust claims. **[SOURCE + REPO]**
-- Certification is a gate, not an annotation. **[SOURCE + REPO]**
-- Missing raw source design PDFs are treated as a source-traceability constraint, not silently ignored. **[REPO + SOURCE GAP (FILLED)]**
-
-## Execution Rules
-- This file is the only active roadmap authority for implementation execution.
-- `docs/roadmap/` and other roadmap-adjacent documents are subordinate or reference-only.
-- Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror for legacy PQX consumers until migration is complete.
-- Mirror contract rule: keep roadmap table header and operational rows parseable in the compatibility mirror; update both surfaces in lockstep during transition.
-- PQX bridge rule (B2): PQX authority resolution must consume `docs/roadmaps/roadmap_authority.md`, then execute only the resolved machine roadmap (`docs/roadmap/system_roadmap.md` during transition). Ambiguous or inconsistent bridge metadata must fail closed.
-- Status discipline is strict:
-  - Done = implementation + tests + contracts + docs materially align.
-  - Partial = real implementation exists but material gaps remain.
-  - Present but fragmented = multiple seams exist with no dominant unified path.
-  - Missing = materially absent.
-  - Unclear = evidence insufficient.
-- Do not infer multi-slice readiness from single-slice success.
-- For claims where source materials are incomplete in-repo, mark **SOURCE GAP (FILLED)** explicitly.
-
-## Source Inventory Used
-| Source | Basis | Status |
-| --- | --- | --- |
-| Mapping Google SRE Reliability Principles to Spectrum Systems | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Production-Ready Best Practices for Integrating AI Models into Automated Engineering Workflows | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Spectrum Systems Build & Governance Engine (SBGE) Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Agent + Eval Integration Design (Spectrum Systems) | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Spectrum Systems AI Integration – Governed API Adapter Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Spectrum Systems Done Certification Gate (GOV-10) Design | SOURCE (structured extraction) | Available as structured artifact; raw source file missing in repo |
-| Repo implementation, tests, contracts, docs | REPO | Primary execution-state evidence surface |
+- artifact-first
+- schema-first
+- eval-mandatory
+- control authority externalized
+- replayable
+- fail-closed
+- certification-gated
 
 ## Current Repo State Summary
-- Autonomous cycle loop now includes contract-first judgment policy/record/application/eval artifacts with deterministic precedent retrieval and fail-closed promotion gating. **[REPO]**
-- Judgment learning control escalation now materializes deterministic downstream enforcement action/outcome/remediation artifacts with fail-closed progression blocking when required downstream artifacts are missing. **[REPO]**
-- Cycle observability now includes deterministic remediation-closure readiness and progression-reinstatement readiness status artifacts, plus remediation-state backlog visibility derived from governed artifacts only. **[REPO]**
-- Next-step control decisions now route blocking drift/governance failures through governed `drift_remediation_policy` and emit deterministic `drift_remediation_artifact` + `fix_plan_artifact` outputs persisted in cycle state before progression stop. **[REPO]**
-- Autonomous cycle progression now fail-closes on missing/invalid strategy authority, missing/invalid bounded source authorities, and missing roadmap governance provenance linkage (`strategy/source -> roadmap -> progression`). **[REPO]**
-- Repo has broad contract and module coverage for runtime, prompt queue, control, replay, observability, and certification seams. **[REPO]**
-- PQX and queue capabilities exist across many modules and tests, but several behaviors remain distributed across parallel seams. **[REPO + INFERRED]**
-- Roadmap authority signals are duplicated across `docs/roadmap/` and `docs/roadmaps/` trees and prior governance docs. **[REPO]**
-- Source design extraction exists, but original raw source PDFs are missing; source-derived claims remain bounded by structured artifacts. **[REPO + SOURCE GAP (FILLED)]**
+### What is strong
+- Broad contract/governance seams across runtime, replay, observability, judgment, and certification.
+- Active roadmap authority and execution inventory already exist.
+- Autonomous cycle runner, PQX handoff, and review/fix re-entry seams are present.
 
-## System Decomposition
-- Contract spine: `contracts/schemas/`, `contracts/standards-manifest.json`. **[REPO]**
-- Runtime governance: `spectrum_systems/modules/runtime/`. **[REPO]**
-- Prompt queue governance: `spectrum_systems/modules/prompt_queue/`. **[REPO]**
-- Review and readiness evidence: `docs/reviews/`, `docs/review-actions/`. **[REPO]**
-- Roadmap and execution control: `docs/roadmaps/`, subordinate `docs/roadmap/`. **[REPO + INFERRED]**
+### What is partial
+- No confidence-grade dominant 3+ slice sequential trust path.
+- Grouped PQX execution exists in pieces, not one canonical bundle path.
+- Review trigger/routing/rack-and-stack are fragmented.
+- Long-sequence certification and audit closure remain below confidence-grade.
 
-## Trust Boundaries
-1. Contract validity boundary (schema conformance).
-2. Context admission boundary (fail-closed).
-3. Execution boundary (step result normalization).
-4. Decision boundary (control/post-execution/transition policies).
-5. Enforcement boundary (policy action materialization).
-6. Replay boundary (resume + deterministic re-run).
-7. Certification boundary (done/trusted gating).
-8. Audit boundary (bundle completeness + lineage integrity).
+### Critical current gap
+The roadmap foundation is strong, but authoritative learning-loop closure is still insufficient: failures are not yet bound strongly enough to automatically alter future policy and progression behavior.
 
-## Control Loop Mapping
-- Observe: admission, execution outputs, observability snapshots.
-- Interpret: eval and review parsing artifacts.
-- Decide: loop control, next-step, post-execution, policy decisions.
-- Enforce: gating, retry/recovery branching, enforcement actions.
-- Learn: replay, drift, policy backtesting, cross-run intelligence.
+## Control Loop Closure Gate
+**Gate position:** Mandatory pre-expansion hard gate before broader grouped scale-out or AI execution expansion.
 
-## Artifact Taxonomy
-- Inputs: request/context/manifest/state artifacts.
-- Execution: execution result, review invocation, parsing handoff/findings.
-- Decisions: transition, loop control, gating, retry/recovery, next-step.
-- Trust: replay records, certification records, integrity and consistency checks.
-- Evidence: observability snapshots, audit bundles, trace + lineage attachments.
+### CL-01 — Failure Binding
+- **What it does:** makes `failure -> eval case -> policy linkage` mandatory.
+- **Why now:** prevents learning from being advisory-only.
+- **Risk reduced:** repeat failures due to non-binding postmortems.
+- **Loop stage closed:** Learn -> Decide.
+- **Proof artifacts:** failure classification artifacts linked to required eval additions and policy references.
+- **Dependencies unlocked:** grouped review/fix scaling, promotion hardening, and later AI boundary expansion.
 
-## Dependency Spine
-1. Contract + schema authority
-2. Context admission + adapter boundaries
-3. Step execution + parsing normalization
-4. Transition/control decision spine
-5. Enforcement + gating
-6. Replay/resume determinism
-7. Certification + audit packaging
-8. Multi-slice sequencing governance
+### CL-02 — Error Budget Engine
+- **What it does:** converts burn-rate/budget status into governed warn/freeze/block transitions.
+- **Why now:** status-only budgets do not change behavior.
+- **Risk reduced:** silent quality drift during continued execution.
+- **Loop stage closed:** Interpret -> Enforce.
+- **Proof artifacts:** deterministic error budget status + control escalation + enforcement action records.
+- **Dependencies unlocked:** long-sequence promotion trust and operational drift containment.
 
-## Roadmap Table
+### CL-03 — Recurrence Prevention Enforcement
+- **What it does:** requires discovered failure classes to tighten future behavior through regression fixtures, policy updates, or equivalent governed prevention assets.
+- **Why now:** incident closure without recurrence hardening is not loop closure.
+- **Risk reduced:** same defect class reappears at higher scale.
+- **Loop stage closed:** Validation -> Prevention.
+- **Proof artifacts:** remediation closure linked to generated/required replay+eval prevention assets.
+- **Dependencies unlocked:** grouped PQX confidence, certification durability.
 
-| Step ID | Step Name | What It Builds | Why It Matters | Source Basis | Repo Seams | Implementation Mode | Contracts | Artifacts | Integration | Control Loop | Dependencies | DoD | Prompt Class | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| RM-01 | Roadmap authority consolidation | Single active roadmap authority with subordinate/reference designation | Removes competing execution signals | SOURCE + REPO | `docs/roadmaps/`, `docs/roadmap/`, `AGENTS.md`, `CODEX.md`, roadmap tests | MODIFY EXISTING | None | `roadmap_authority.md`, updated authority docs | Governance docs + tests | Decide/Enforce | None | One active authority file and no competing active claims | BUILD | Done |
-| RM-02 | Execution-state inventory | Repo-native maturity inventory across PQX/governed layers | Prevents fake completeness and wrong execution claims | SOURCE + REPO + INFERRED | runtime + prompt_queue modules, tests, contracts, reviews | ADD NEW | None | `execution_state_inventory.md` | Contracts + runtime + reviews + PQX docs | Observe/Interpret/Decide/Learn | RM-01 | Layer statuses and blocking gaps documented with evidence discipline | BUILD | Done |
-| PQX-BASE | Single trusted slice run path | Dominant one-slice governed path (admission→execution→decision→enforcement→certification) | Baseline for trusted execution | SOURCE + REPO | queue state machine, execution runner, transition policy, certification, audit | MODIFY EXISTING | Existing prompt queue/runtime schemas | sequence run + certification + audit artifacts | prompt queue + runtime + review seams | Full loop | RM-01, RM-02 | One path is executable with deterministic fail-closed handling and clear operator entrypoint | WIRE | Partial |
-| PQX-SEQ-2 | Two-slice sequential governance | Reliable carry-forward state and bounded continuation for second slice | First real sequential trust threshold | SOURCE + REPO + SOURCE GAP (FILLED) | queue loop continuation, retry/reentry, sequence runner, replay resume | MODIFY EXISTING | existing queue sequence/replay schemas | sequential run records | queue + replay + control integration | Decide/Enforce/Learn | PQX-BASE | Second slice advancement is policy-gated, replayable, and non-ambiguous | WIRE | Partial |
-| PQX-SEQ-3 | Three-slice sequential governance | Stable multi-hop sequencing with durable control visibility | Validates medium-chain reliability | SOURCE + INFERRED | queue observability, transition policies, certification integrity, review routing seams | MODIFY EXISTING | existing observability/certification/review schemas | sequence observability + certification evidence | PQX + review + cert | Full loop | PQX-SEQ-2 | Three ordered slices complete without manual override dependency | WIRE | Present but fragmented |
-| CTRL-LOOP-03 | Remediation closure + reinstatement governance | Deterministic remediation lifecycle transitions, replay-safe closure artifact checks, and explicit progression reinstatement approvals | Hardens freeze/block/warn remediation paths so progression resumes only through governed closure + approval artifacts | SOURCE + REPO | `spectrum_systems/modules/runtime/judgment_enforcement.py`, `spectrum_systems/modules/runtime/control_loop.py`, `tests/test_judgment_enforcement.py`, `contracts/schemas/judgment_operator_remediation_record.schema.json`, `contracts/schemas/judgment_remediation_closure_record.schema.json`, `contracts/schemas/judgment_progression_reinstatement_record.schema.json` | EXTEND EXISTING | `judgment_operator_remediation_record` (lifecycle status extension), `judgment_remediation_closure_record`, `judgment_progression_reinstatement_record` | remediation transition history, closure decisions with replay-safe checks, reinstatement approvals | runtime control/enforcement/remediation seam + standards manifest + observability status surfaces | O / I / D / E / L | CTRL-LOOP-02 | Freeze/block and policy-required warn progression remains fail-closed until deterministic closure and required reinstatement artifacts validate; integration tests prove remediation -> closure -> reinstatement -> resumed progression | BUILD | Done |
-| CTRL-LOOP-04 | Remediation/reinstatement readiness observability | Deterministic read-only readiness status artifacts and remediation queue/backlog visibility extensions | Gives operators/automation explicit “why not progressing” diagnostics while preserving authority boundaries | SOURCE + REPO | `spectrum_systems/orchestration/cycle_observability.py`, `tests/test_cycle_observability.py`, `contracts/schemas/judgment_remediation_readiness_status.schema.json`, `contracts/schemas/judgment_reinstatement_readiness_status.schema.json`, `contracts/schemas/cycle_backlog_snapshot.schema.json` | EXTEND EXISTING | `judgment_remediation_readiness_status`, `judgment_reinstatement_readiness_status`, `cycle_backlog_snapshot`(remediation queue extension) | readiness status artifacts, backlog remediation/reinstatement queue slices, deterministic blocking reason surfaces | cycle observability seam + remediation/judgment artifacts + standards manifest | O / I | CTRL-LOOP-03 | Readiness is artifact-derived, deterministic, and fail-closed on missing evidence/closure/reinstatement inputs; backlog exposes remediation bottlenecks and reinstatement eligibility without mutating control state | BUILD | Done |
-| PQX-SEQ-5-10 | 5–10 trusted sequential slice governance | Repeatable batch/sequence-run governance with bounded risk | Required for production-scale governed execution | SOURCE + INFERRED + SOURCE GAP (FILLED) | pqx sequence runner, policy backtesting, batch/routing seams | MODIFY EXISTING + ADD NEW | possibly additional sequence/batch governance contracts | durable sequence control artifacts | PQX + control + replay + certification + review routing | Full loop | PQX-SEQ-3 | 5–10 slice runs have explicit readiness gates, budget controls, and review/cert closure semantics | PLAN→BUILD→VALIDATE | Missing |
+### CL-04 — Judgment Authority Activation
+- **What it does:** ensures judgment and policy artifacts directly influence progression and enforcement outcomes.
+- **Why now:** artifacts existing as side-records does not provide control.
+- **Risk reduced:** policy bypass or informational-only judgment.
+- **Loop stage closed:** Decide -> Enforce.
+- **Proof artifacts:** judgment application records and policy lifecycle controls consumed in transition decisions.
+- **Dependencies unlocked:** safe judgment-driven scaling and policy lifecycle governance.
 
-## Failure Modes Prevented
-- Competing roadmap docs driving contradictory execution.
-- Maturity inflation from isolated tests without integrated trust path evidence.
-- Queue advancement without explicit decision artifacts.
-- Certification claims without replay/cross-slice support.
-- Multi-slice optimism that bypasses sequence governance gaps.
+### CL-05 — Longitudinal Calibration Loop
+- **What it does:** feeds delayed truth/audit outcomes into calibration, confidence governance, and freeze/revoke decisions over time.
+- **Why now:** immediate-only evals miss long-horizon failure patterns.
+- **Risk reduced:** stale or degraded policies staying active.
+- **Loop stage closed:** Observe -> Learn -> Decide.
+- **Proof artifacts:** outcome labels, calibration artifacts, drift/budget-triggered freeze or revoke records.
+- **Dependencies unlocked:** confidence-grade N-slice trust claims and canary/promotion safety at scale.
 
-## Guarantees Provided
-- One active roadmap authority location.
-- Explicit classification discipline (SOURCE / REPO / INFERRED / SOURCE GAP (FILLED)).
-- Repo-grounded readiness accounting for PQX sequential execution.
-- Clear dependency ordering between authority consolidation, inventory, and sequential governance.
+## Ordered Roadmap (Post-Revision)
 
-## Known Limits
-- Source extraction artifacts are present, but raw source files are missing in-repo.
-- Queue/review/replay/certification seams are broad but still distributed across many modules.
-- Batch-level governance and long-horizon sequential readiness are not fully proven by current integrated evidence.
+| Step ID | Step Name | What It Builds | Why It Matters | Control Loop Stage | Learning Loop Stage | Dependency | Primary Trust Gain |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| RM-01 | Roadmap authority consolidation | Active authority + mirror bridge discipline | Removes contradictory roadmap execution signals | Decide / Enforce | Prevention | done | stronger policy authority |
+| RM-02 | Execution-state inventory | Repo-grounded maturity map | Prevents false readiness claims | Observe / Interpret | Detection | RM-01 | more measurable |
+| CL-01 | Failure Binding | Mandatory failure→eval→policy linkage | Converts incidents into binding governance inputs | Learn / Decide | Detection / Root Cause | RM-02 | stronger recurrence prevention |
+| CL-02 | Error Budget Engine | Burn-rate enforcement transitions | Ensures quality budgets control progression | Interpret / Enforce | Validation | CL-01 | safer |
+| CL-03 | Recurrence Prevention Enforcement | Required regression/policy tightening on serious failures | Makes recurrence measurably harder | Learn / Enforce | Prevention | CL-02 | stronger recurrence prevention |
+| CL-04 | Judgment Authority Activation | Judgment/policy artifacts become decision-active | Prevents informational-only judgment surfaces | Decide / Enforce | Classification | CL-03 | more trustworthy decisions |
+| CL-05 | Longitudinal Calibration Loop | Delayed-truth calibration + freeze/revoke hooks | Closes long-horizon learning loop | Observe / Learn / Decide | Validation / Prevention | CL-04 | safer + more measurable |
+| NX-01..NX-03 | Dominant sequential trust path | Contract hardening + transition policy + chaos/replay pack | Proves 3-slice confidence-grade path | Observe/Interpret/Decide/Enforce | Validation | CL-05 | more replayable |
+| NX-04..NX-06 | Canonical grouped PQX bundle path | Bundle contracts + orchestrator wiring + blocked-path certification | Enables bounded grouped execution safely | Decide / Enforce | Validation / Prevention | NX-03 | safer |
+| NX-07..NX-12 | Review/fix/recurrence hardening | Trigger policy + routing + rack-and-stack + fix closure + prevention assets | Converges review-to-prevention loop | Interpret / Decide / Enforce / Learn | Root Cause / Fix / Prevention | NX-06 | stronger recurrence prevention |
+| NX-13..NX-15 | Certification + audit + promotion closure | Grouped/sequence cert extension + audit bundle + promotion gate | Moves trust claims to system-level proof | Decide / Enforce | Validation | NX-12 | stronger certification |
+| NX-16..NX-18 | Judgment learning operationalization | Outcome labeling + calibration budgets + drift freeze/revoke | Makes learning influence policy lifecycle | Observe / Interpret / Decide / Enforce / Learn | Detection / Validation / Prevention | NX-15 | more trustworthy decisions |
+| NX-19..NX-21 | Source authority hardening | Source package ingestion + runtime strategy compliance + obligation coverage | Prevents source/strategy drift | Observe / Decide / Enforce / Learn | Classification / Prevention | NX-18 | stronger policy authority |
+| NX-22..NX-24 | AI execution expansion under governance | Retrieval replacement + adapter convergence + eval-backed canary | Enables later AI improvement without architecture drift | Observe / Interpret / Decide / Enforce / Learn | Fix / Validation / Prevention | NX-21 and Control Loop Closure Gate pass | safer + more measurable |
 
-## Next Risks
-- Authority drift reappears if status updates are written outside this file.
-- Sequential readiness claims outpace deterministic replay/certification coupling.
-- Review routing and repair reentry remain fragmented under scale.
-- Policy/adapter/batch seams converge unevenly without focused follow-on bundle.
+## Execution Bundles (Rack-and-Stack)
+1. **Control-loop closure work (hard gate first):** CL-01 → CL-02 → CL-03 → CL-04 → CL-05.
+2. **Grouped PQX execution work:** NX-01..NX-06.
+3. **Review/fix loop hardening:** NX-07..NX-12.
+4. **Certification/audit closure:** NX-13..NX-15.
+5. **Source authority hardening:** NX-19..NX-21 (after judgment loop operationalization).
+6. **Later AI execution expansion:** NX-22..NX-24 (explicitly last).
 
-## Active Execution Order
-1. RM-01 — maintain and enforce single authority.
-2. RM-02 — keep execution-state inventory current after each bundle.
-3. PQX-BASE — harden one dominant trusted slice path.
-4. PQX-SEQ-2 — prove two-slice sequential reliability.
-5. PQX-SEQ-3 — stabilize three-slice governance.
-6. PQX-SEQ-5-10 — implement and validate batch-scale trusted sequencing.
+## Prioritization Rationale
+- The next bottleneck is convergence and trust closure, not breadth.
+- One dominant trusted sequential path is more valuable than parallel partial paths.
+- Expansion without binding failure learning increases recurrence and certification risk.
+
+## Next Hard Gate
+**Control Loop Closure Gate (CL-01 through CL-05) must pass before broader expansion is considered complete.**
