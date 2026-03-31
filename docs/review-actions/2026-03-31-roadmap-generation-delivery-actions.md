@@ -16,6 +16,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | HI-1 | Continue source-authority hardening by promoting ingestion-only obligations to runtime/certification-grade obligations as structured source depth improves. | Governance (spectrum-systems) | Open | spectrum-systems | Source artifact depth increase | New obligations are added to `docs/source_structured/*.json` and reflected by `docs/source_indexes/obligation_index.json` without schema/index validation failures. |
 | HI-2 | Preserve Control Loop Closure Gate-first sequencing; do not claim true closed-loop MVP until CL-01..CL-05 evidence is complete. | Governance (spectrum-systems) | Open | spectrum-systems | None | Roadmap updates keep CL-01..CL-05 as pre-expansion hard gate and do not assert true closed-loop MVP before evidence-backed completion. |
+| HI-3 | Enforce RE-05 checkpoint ordering: complete CL-01..CL-05 evidence, then execute NX-01..NX-03 only until Control Loop Closure Certification Gate passes. | Governance (spectrum-systems) | Open | spectrum-systems | CL-01..CL-05 evidence bundle + 3-slice trust-spine proof bundle | Transition policy blocks NX-04+ until certification artifact proves deterministic failure-to-policy enforcement and recurrence-prevention effect. |
 
 ## Medium-Priority Items
 

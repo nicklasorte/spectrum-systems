@@ -223,6 +223,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-G17-MANIFEST-COMPLETENESS-GATE-2026-03-31.md | G17 — Manifest Completeness Gate (Pre-PR Structural Integrity) | Active |
 | docs/review-actions/PLAN-G17-SCOPE-REPAIR-2026-03-31.md | G17 — Manifest Completeness Gate Scope Repair | Active |
 | docs/review-actions/PLAN-ROADMAP-GENERATION-OPERATING-MODEL-2026-03-31.md | ROADMAP-GENERATION-OPERATING-MODEL — governed roadmap refresh + compatibility reconciliation | Active |
+| docs/review-actions/PLAN-RE-06-ROADMAP-RECONCILIATION-2026-03-31.md | RE-06 — roadmap authority reconciliation to approved RE-05 corrections | Active |
 
 Update this table when plans are created or completed.
 

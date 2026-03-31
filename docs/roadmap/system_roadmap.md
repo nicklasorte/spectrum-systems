@@ -8,6 +8,8 @@
 - Bridge metadata (B2): PQX execution authority resolution is declared in `docs/roadmaps/roadmap_authority.md`; this file is the resolved machine-executable roadmap surface during migration.
 - March 31, 2026 strategic revision note: Control Loop Closure Gate (CL-01..CL-05) is mandatory before broader expansion in active authority; this mirror preserves legacy executable IDs until runtime/tests are migrated.
 - March 31, 2026 reconciliation note (roadmap-generation run): active authority gap-scan confirms source obligations remain ingestion-heavy; compatibility mirror continues preserving executable IDs while strategic control-loop closure remains the next hard gate.
+- RE-05 correction note (March 31, 2026): after CL gate pass, active authority permits only trust-spine execution (`NX-01..NX-03`) until a Control Loop Closure Certification Gate artifact passes; grouped/certification/promotion expansion (`NX-04+`) remains blocked before proof.
+- AI expansion ordering note: active authority keeps `NX-22..NX-24` last and blocked until bounded-window longitudinal calibration + recurrence-prevention efficacy evidence is present.
 
 ## PQX Execution Contract Standard
 
@@ -34,4 +36,5 @@ Slice specs live under:
 
 ## Strategic Crosswalk (Non-Executable)
 - Active strategic roadmap (`docs/roadmaps/system_roadmap.md`) defines March 31, 2026 sequencing and Control Loop Closure Gate (CL-01..CL-05).
+- Active strategic roadmap also enforces a single dominant post-CL trust spine (`NX-01..NX-03`) and a proof-before-scale Control Loop Closure Certification Gate before `NX-04+`.
 - This compatibility mirror intentionally preserves legacy executable IDs (AI-01, AI-02, TRUST-01, etc.) as the machine execution contract until explicit runtime/test cutover.

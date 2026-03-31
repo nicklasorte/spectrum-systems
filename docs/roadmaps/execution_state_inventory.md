@@ -110,3 +110,5 @@ Status claims are tagged with basis markers:
 
 ### Impact on roadmap ordering
 This scan reinforces Control Loop Closure Gate-first ordering and keeps source authority hardening (`NX-19..NX-21`) ahead of AI execution expansion (`NX-22..NX-24`).
+Execution sequencing is now explicitly phase-gated: **Phase A** `CL-01..CL-05` (mandatory enforced controls) → **Phase B** `NX-01..NX-03` (single dominant trust spine only) → Control Loop Closure Certification Gate proof review → **Phase C** `NX-04..NX-12` (conditional grouped expansion) → **Phase D** `NX-13..NX-21` → **Phase E** `NX-22..NX-24` last.
+No concurrent non-spine advancement is considered valid before 3-slice deterministic closure evidence passes the certification gate.

@@ -8,6 +8,7 @@ This revision supersedes the prior B1/B2 roadmap state by preserving valid compl
 - **Active editorial authority remains:** `docs/roadmaps/system_roadmap.md`
 - Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror for legacy PQX consumers until migration completes.
 - **New mandatory rule:** broader grouped expansion and later AI execution expansion are subordinate to passing the **Control Loop Closure Gate**.
+- **RE-05 tightening (approved with corrections):** post-CL execution narrows to one dominant trust spine (`NX-01..NX-03`) and requires proof-before-scale certification gating before `NX-04+`.
 - **Current posture:** Spectrum Systems is near a governed pipeline MVP, but **not yet** at a true MVP closed-loop control system.
 
 ## Intent
@@ -39,6 +40,14 @@ Operate Spectrum Systems as a governed, fail-closed, artifact-first execution su
 
 ### Critical current gap
 The roadmap foundation is strong, but authoritative learning-loop closure is still insufficient: failures are not yet bound strongly enough to automatically alter future policy and progression behavior.
+
+## RE-05 Reconciliation Guardrails (March 31, 2026)
+- The roadmap remains valid in broad direction; this update narrows execution sequencing without replacing structure.
+- Post-CL execution is constrained to **one dominant trust spine**: `NX-01..NX-03` only until proof passes.
+- No grouped execution expansion before trust-spine proof.
+- No certification/promotion expansion before trust-spine proof.
+- No AI execution expansion before longitudinal calibration and recurrence-prevention efficacy are evidenced over a bounded run window.
+- Spectrum Systems remains near governed pipeline MVP and **not yet** true closed-loop control MVP.
 
 ## Control Loop Closure Gate
 **Gate position:** Mandatory pre-expansion hard gate before broader grouped scale-out or AI execution expansion.
@@ -83,6 +92,19 @@ The roadmap foundation is strong, but authoritative learning-loop closure is sti
 - **Proof artifacts:** outcome labels, calibration artifacts, drift/budget-triggered freeze or revoke records.
 - **Dependencies unlocked:** confidence-grade N-slice trust claims and canary/promotion safety at scale.
 
+## Control Loop Closure Certification Gate (Proof-Before-Scale Blocker)
+**Gate position:** Required transition-policy blocker between `NX-01..NX-03` and any `NX-04+` execution.
+
+**Required artifact:** `control_loop_closure_certification_gate` (or equivalent governed evidence bundle artifact consumed by transition policy).
+
+**Pass conditions (all required):**
+1. Governed 3-slice sequential run evidence proves every severity-qualified failure generated a bound eval/policy update.
+2. Transition policy evidence proves those updates were enforced deterministically in subsequent progression decisions.
+3. At least one subsequent slice was blocked/frozen or corrected by the new policy without manual override.
+4. Replay + recurrence-prevention evidence is linked to the same failure classes.
+
+**Fail-closed rule:** if any condition is missing, malformed, or non-deterministic, progression remains restricted to CL closure and trust-spine work.
+
 
 ## March 31, 2026 Governance Refresh Snapshot (Roadmap Generation Run)
 ### Source authority inputs consumed
@@ -110,21 +132,21 @@ The immediate bottleneck remains **trust-depth closure** (Control Loop Closure G
 | CL-03 | Recurrence Prevention Enforcement | Required regression/policy tightening on serious failures | Makes recurrence measurably harder | Learn / Enforce | Prevention | CL-02 | stronger recurrence prevention |
 | CL-04 | Judgment Authority Activation | Judgment/policy artifacts become decision-active | Prevents informational-only judgment surfaces | Decide / Enforce | Classification | CL-03 | more trustworthy decisions |
 | CL-05 | Longitudinal Calibration Loop | Delayed-truth calibration + freeze/revoke hooks | Closes long-horizon learning loop | Observe / Learn / Decide | Validation / Prevention | CL-04 | safer + more measurable |
-| NX-01..NX-03 | Dominant sequential trust path | Contract hardening + transition policy + chaos/replay pack | Proves 3-slice confidence-grade path | Observe/Interpret/Decide/Enforce | Validation | CL-05 | more replayable |
-| NX-04..NX-06 | Canonical grouped PQX bundle path | Bundle contracts + orchestrator wiring + blocked-path certification | Enables bounded grouped execution safely | Decide / Enforce | Validation / Prevention | NX-03 | safer |
-| NX-07..NX-12 | Review/fix/recurrence hardening | Trigger policy + routing + rack-and-stack + fix closure + prevention assets | Converges review-to-prevention loop | Interpret / Decide / Enforce / Learn | Root Cause / Fix / Prevention | NX-06 | stronger recurrence prevention |
+| NX-01..NX-03 | Dominant sequential trust spine (exclusive post-CL path) | Contract hardening + transition policy + chaos/replay pack | Proves 3-slice confidence-grade path before any expansion | Observe/Interpret/Decide/Enforce | Validation | CL-05 | more replayable |
+| NX-04..NX-06 | Canonical grouped PQX bundle path | Bundle contracts + orchestrator wiring + blocked-path certification | Enables bounded grouped execution only after trust-spine proof | Decide / Enforce | Validation / Prevention | Control Loop Closure Certification Gate pass (NX-01..NX-03 proof accepted) | safer |
+| NX-07..NX-12 | Review/fix/recurrence hardening | Trigger policy + routing + rack-and-stack + fix closure + prevention assets | Converges review-to-prevention loop after proof-gated grouped entry | Interpret / Decide / Enforce / Learn | Root Cause / Fix / Prevention | NX-06 | stronger recurrence prevention |
 | NX-13..NX-15 | Certification + audit + promotion closure | Grouped/sequence cert extension + audit bundle + promotion gate | Moves trust claims to system-level proof | Decide / Enforce | Validation | NX-12 | stronger certification |
 | NX-16..NX-18 | Judgment learning operationalization | Outcome labeling + calibration budgets + drift freeze/revoke | Makes learning influence policy lifecycle | Observe / Interpret / Decide / Enforce / Learn | Detection / Validation / Prevention | NX-15 | more trustworthy decisions |
 | NX-19..NX-21 | Source authority hardening | Source package ingestion + runtime strategy compliance + obligation coverage | Prevents source/strategy drift | Observe / Decide / Enforce / Learn | Classification / Prevention | NX-18 | stronger policy authority |
-| NX-22..NX-24 | AI execution expansion under governance | Retrieval replacement + adapter convergence + eval-backed canary | Enables later AI improvement without architecture drift | Observe / Interpret / Decide / Enforce / Learn | Fix / Validation / Prevention | NX-21 and Control Loop Closure Gate pass | safer + more measurable |
+| NX-22..NX-24 | AI execution expansion under governance (explicitly last) | Retrieval replacement + adapter convergence + eval-backed canary | Enables later AI improvement only after longitudinal calibration + recurrence-prevention efficacy evidence | Observe / Interpret / Decide / Enforce / Learn | Fix / Validation / Prevention | NX-21 + Control Loop Closure Certification Gate pass + bounded-window calibration/prevention efficacy evidence | safer + more measurable |
 
 ## Execution Bundles (Rack-and-Stack)
 1. **Control-loop closure work (hard gate first):** CL-01 → CL-02 → CL-03 → CL-04 → CL-05.
-2. **Grouped PQX execution work:** NX-01..NX-06.
-3. **Review/fix loop hardening:** NX-07..NX-12.
-4. **Certification/audit closure:** NX-13..NX-15.
-5. **Source authority hardening:** NX-19..NX-21 (after judgment loop operationalization).
-6. **Later AI execution expansion:** NX-22..NX-24 (explicitly last).
+2. **Phase B (dominant trust spine only):** NX-01..NX-03 and no concurrent non-spine advancement.
+3. **Hard proof review blocker:** Control Loop Closure Certification Gate pass is required before any `NX-04+`.
+4. **Phase C (conditional grouped expansion):** NX-04..NX-12 only after trust-spine proof acceptance.
+5. **Phase D (system proof + lifecycle + source authority):** NX-13..NX-21.
+6. **Phase E (AI execution expansion last):** NX-22..NX-24 only after bounded-window longitudinal calibration + recurrence-prevention efficacy evidence.
 
 ## Prioritization Rationale
 - The next bottleneck is convergence and trust closure, not breadth.
@@ -133,4 +155,4 @@ The immediate bottleneck remains **trust-depth closure** (Control Loop Closure G
 - Expansion without binding failure learning increases recurrence and certification risk.
 
 ## Next Hard Gate
-**Control Loop Closure Gate (CL-01 through CL-05) must pass before broader expansion is considered complete.**
+**Proceed only when governed 3-slice evidence proves deterministic failure-to-policy binding, enforced transition-policy consumption, and recurrence-prevention effect without manual override. Until then, progression is restricted to CL-01..CL-05 and NX-01..NX-03.**
