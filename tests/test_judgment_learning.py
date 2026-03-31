@@ -26,6 +26,7 @@ def _judgment_record() -> dict:
         "selected_outcome": "approve",
         "cycle_id": "cycle-0001",
         "policy_ref": "contracts/examples/judgment_policy.json",
+        "policy_id": "judgment-policy-artifact-release-readiness-v1",
         "claims_considered": [
             {
                 "claim_id": "claim-001",
@@ -59,9 +60,9 @@ def _application_record() -> dict:
     return {
         "artifact_type": "judgment_application_record",
         "artifact_id": "judgment-application-cycle-0001",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.94",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
+        "standards_version": "1.1.0",
         "judgment_record_ref": "judgment_record::cycle-0001",
         "selected_policy_ref": "contracts/examples/judgment_policy.json",
         "matched_policy_refs": ["contracts/examples/judgment_policy.json"],
@@ -105,6 +106,21 @@ def _policy(*, require_reference: bool) -> dict:
     }
 
 
+def _label(*, artifact_id: str, judgment_id: str, observed_outcome: str, expected_outcome: str, correctness: bool, timestamp: str) -> dict:
+    return build_judgment_outcome_label(
+        artifact_id=artifact_id,
+        judgment_id=judgment_id,
+        decision_id=f"decision-{artifact_id}",
+        policy_id="judgment-policy-artifact-release-readiness-v1",
+        trace_id="cycle-0001",
+        observed_outcome=observed_outcome,
+        expected_outcome=expected_outcome,
+        correctness=correctness,
+        source="human_review",
+        timestamp=timestamp,
+    )
+
+
 def test_replay_reference_mismatch_fails_closed() -> None:
     replay_reference = {
         "artifact_type": "replay_result",
@@ -126,13 +142,12 @@ def test_replay_reference_mismatch_fails_closed() -> None:
 
 
 def test_labeled_outcome_ingestion_builds_valid_artifact() -> None:
-    artifact = build_judgment_outcome_label(
+    artifact = _label(
         artifact_id="label-1",
         judgment_id="judgment-record-cycle-0001",
         observed_outcome="approve",
         expected_outcome="approve",
         correctness=True,
-        source="human_review",
         timestamp="2026-03-30T00:00:00Z",
     )
     assert artifact["artifact_type"] == "judgment_outcome_label"
@@ -140,24 +155,22 @@ def test_labeled_outcome_ingestion_builds_valid_artifact() -> None:
 
 def test_calibration_metrics_are_deterministic() -> None:
     labels = [
-        build_judgment_outcome_label(
+        _label(
             artifact_id="label-1",
             judgment_id="judgment-record-cycle-0001",
             observed_outcome="approve",
             expected_outcome="approve",
             correctness=True,
-            source="human_review",
             timestamp="2026-03-30T00:00:00Z",
         ),
-        build_judgment_outcome_label(
+        _label(
             artifact_id="label-2",
             judgment_id="judgment-record-cycle-0002",
             observed_outcome="block",
             expected_outcome="approve",
             correctness=False,
-            source="downstream_signal",
             timestamp="2026-03-30T00:01:00Z",
-        ),
+        ) | {"source": "downstream_signal"},
     ]
     records = {
         "judgment-record-cycle-0001": _judgment_record(),
@@ -182,9 +195,9 @@ def test_drift_signal_computation_is_deterministic() -> None:
     baseline = {
         "artifact_type": "judgment_calibration_result",
         "artifact_id": "baseline",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "standards_version": "1.0.94",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
+        "standards_version": "1.1.0",
         "grouping_keys": ["judgment_type", "policy_version", "environment"],
         "group_metrics": [
             {
@@ -200,6 +213,8 @@ def test_drift_signal_computation_is_deterministic() -> None:
                 "ece_bins": [{"bin": "0.9-1.0", "count": 10, "mean_confidence": 0.9, "mean_accuracy": 0.9, "absolute_gap": 0.0}],
                 "outcome_distribution": {"approve": 9, "block": 1},
                 "error_rate": 0.1,
+                "aligned_count": 9,
+                "misaligned_count": 1,
             }
         ],
         "formulas": {
@@ -207,6 +222,22 @@ def test_drift_signal_computation_is_deterministic() -> None:
             "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
             "calibration_delta": "mean_confidence - accuracy",
         },
+        "calibration_events": [
+            {
+                "event_id": "baseline-event-1",
+                "judgment_id": "judgment-record-cycle-0001",
+                "decision_id": "decision-baseline-event-1",
+                "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                "trace_id": "cycle-0001",
+                "observed_outcome": "approve",
+                "expected_outcome": "approve",
+                "calibration_status": "aligned",
+                "calibration_score": 1.0,
+                "observation_time": "2026-03-30T00:00:00Z",
+                "deterministic_identity": "baseline-event-1"
+            }
+        ],
+        "longitudinal_summary": {"observation_count": 1, "aligned_count": 1, "misaligned_count": 0},
         "created_at": "2026-03-30T00:02:00Z",
     }
     current = deepcopy(baseline)
@@ -246,22 +277,20 @@ def test_missing_replay_reference_when_required_is_blocked() -> None:
 
 def test_error_budget_status_is_deterministic() -> None:
     labels = [
-        build_judgment_outcome_label(
+        _label(
             artifact_id="label-1",
             judgment_id="judgment-record-cycle-0001",
             observed_outcome="approve",
             expected_outcome="approve",
             correctness=True,
-            source="human_review",
             timestamp="2026-03-30T00:00:00Z",
         ),
-        build_judgment_outcome_label(
+        _label(
             artifact_id="label-2",
             judgment_id="judgment-record-cycle-0002",
             observed_outcome="approve",
             expected_outcome="block",
             correctness=False,
-            source="human_review",
             timestamp="2026-03-30T00:01:00Z",
         ),
     ]
@@ -300,13 +329,12 @@ def test_error_budget_fails_closed_without_evals() -> None:
         run_judgment_error_budget_status(
             artifact_id="error-budget-empty",
             labels=[
-                build_judgment_outcome_label(
+                _label(
                     artifact_id="label-1",
                     judgment_id="judgment-record-cycle-0001",
                     observed_outcome="approve",
                     expected_outcome="approve",
                     correctness=True,
-                    source="human_review",
                     timestamp="2026-03-30T00:00:00Z",
                 )
             ],
@@ -323,9 +351,9 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
         baseline={
             "artifact_type": "judgment_calibration_result",
             "artifact_id": "baseline",
-            "artifact_version": "1.0.0",
-            "schema_version": "1.0.0",
-            "standards_version": "1.0.94",
+            "artifact_version": "1.1.0",
+            "schema_version": "1.1.0",
+            "standards_version": "1.1.0",
             "grouping_keys": ["judgment_type", "policy_version", "environment"],
             "group_metrics": [
                 {
@@ -341,6 +369,8 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                     "ece_bins": [{"bin": "0.9-1.0", "count": 10, "mean_confidence": 0.9, "mean_accuracy": 0.9, "absolute_gap": 0.0}],
                     "outcome_distribution": {"approve": 9, "block": 1},
                     "error_rate": 0.1,
+                    "aligned_count": 9,
+                    "misaligned_count": 1,
                 }
             ],
             "formulas": {
@@ -348,14 +378,30 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                 "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
                 "calibration_delta": "mean_confidence - accuracy",
             },
+            "calibration_events": [
+                {
+                    "event_id": "baseline-event-2",
+                    "judgment_id": "judgment-record-cycle-0001",
+                    "decision_id": "decision-baseline-event-2",
+                    "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                    "trace_id": "cycle-0001",
+                    "observed_outcome": "approve",
+                    "expected_outcome": "approve",
+                    "calibration_status": "aligned",
+                    "calibration_score": 1.0,
+                    "observation_time": "2026-03-30T00:00:00Z",
+                    "deterministic_identity": "baseline-event-2"
+                }
+            ],
+            "longitudinal_summary": {"observation_count": 1, "aligned_count": 1, "misaligned_count": 0},
             "created_at": "2026-03-30T00:02:00Z",
         },
         current={
             "artifact_type": "judgment_calibration_result",
             "artifact_id": "current",
-            "artifact_version": "1.0.0",
-            "schema_version": "1.0.0",
-            "standards_version": "1.0.94",
+            "artifact_version": "1.1.0",
+            "schema_version": "1.1.0",
+            "standards_version": "1.1.0",
             "grouping_keys": ["judgment_type", "policy_version", "environment"],
             "group_metrics": [
                 {
@@ -371,6 +417,8 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                     "ece_bins": [{"bin": "0.9-1.0", "count": 10, "mean_confidence": 0.9, "mean_accuracy": 0.7, "absolute_gap": 0.2}],
                     "outcome_distribution": {"approve": 6, "block": 4},
                     "error_rate": 0.3,
+                    "aligned_count": 7,
+                    "misaligned_count": 3,
                 }
             ],
             "formulas": {
@@ -378,6 +426,22 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                 "expected_calibration_error": "sum_over_bins((bin_count / total_count) * abs(bin_accuracy - bin_mean_confidence))",
                 "calibration_delta": "mean_confidence - accuracy",
             },
+            "calibration_events": [
+                {
+                    "event_id": "current-event-1",
+                    "judgment_id": "judgment-record-cycle-0001",
+                    "decision_id": "decision-current-event-1",
+                    "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                    "trace_id": "cycle-0001",
+                    "observed_outcome": "block",
+                    "expected_outcome": "approve",
+                    "calibration_status": "misaligned",
+                    "calibration_score": 0.0,
+                    "observation_time": "2026-03-30T00:03:00Z",
+                    "deterministic_identity": "current-event-1"
+                }
+            ],
+            "longitudinal_summary": {"observation_count": 1, "aligned_count": 0, "misaligned_count": 1},
             "created_at": "2026-03-30T00:03:00Z",
         },
         created_at="2026-03-30T00:04:00Z",
@@ -395,3 +459,131 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
         created_at="2026-03-30T00:05:00Z",
     )
     assert first == second
+
+
+def test_outcome_links_to_prior_judgment() -> None:
+    labels = [
+        _label(
+            artifact_id="label-link-1",
+            judgment_id="judgment-record-cycle-0001",
+            observed_outcome="approve",
+            expected_outcome="approve",
+            correctness=True,
+            timestamp="2026-03-30T00:00:00Z",
+        )
+    ]
+    calibration = run_judgment_calibration(
+        artifact_id="calibration-link-1",
+        labels=labels,
+        judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+        created_at="2026-03-30T00:01:00Z",
+    )
+    event = calibration["calibration_events"][0]
+    assert event["judgment_id"] == "judgment-record-cycle-0001"
+    assert event["decision_id"] == "decision-label-link-1"
+
+
+def test_calibration_artifact_emitted() -> None:
+    calibration = run_judgment_calibration(
+        artifact_id="calibration-emitted-1",
+        labels=[
+            _label(
+                artifact_id="label-emitted-1",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="approve",
+                expected_outcome="approve",
+                correctness=True,
+                timestamp="2026-03-30T00:00:00Z",
+            )
+        ],
+        judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+        created_at="2026-03-30T00:01:00Z",
+    )
+    assert calibration["artifact_type"] == "judgment_calibration_result"
+    assert calibration["longitudinal_summary"]["observation_count"] == 1
+
+
+def test_calibration_classifies_alignment() -> None:
+    calibration = run_judgment_calibration(
+        artifact_id="calibration-classification-1",
+        labels=[
+            _label(
+                artifact_id="label-align-1",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="approve",
+                expected_outcome="approve",
+                correctness=True,
+                timestamp="2026-03-30T00:00:00Z",
+            ),
+            _label(
+                artifact_id="label-align-2",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="block",
+                expected_outcome="approve",
+                correctness=False,
+                timestamp="2026-03-30T00:02:00Z",
+            ),
+        ],
+        judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+        created_at="2026-03-30T00:03:00Z",
+    )
+    statuses = {item["calibration_status"] for item in calibration["calibration_events"]}
+    assert statuses == {"aligned", "misaligned"}
+
+
+def test_repeated_outcomes_accumulate_signal() -> None:
+    calibration = run_judgment_calibration(
+        artifact_id="calibration-accumulate-1",
+        labels=[
+            _label(
+                artifact_id="label-accumulate-1",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="approve",
+                expected_outcome="approve",
+                correctness=True,
+                timestamp="2026-03-30T00:00:00Z",
+            ),
+            _label(
+                artifact_id="label-accumulate-2",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="approve",
+                expected_outcome="approve",
+                correctness=True,
+                timestamp="2026-03-30T00:01:00Z",
+            ),
+            _label(
+                artifact_id="label-accumulate-3",
+                judgment_id="judgment-record-cycle-0001",
+                observed_outcome="block",
+                expected_outcome="approve",
+                correctness=False,
+                timestamp="2026-03-30T00:02:00Z",
+            ),
+        ],
+        judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+        created_at="2026-03-30T00:03:00Z",
+    )
+    assert calibration["longitudinal_summary"] == {
+        "observation_count": 3,
+        "aligned_count": 2,
+        "misaligned_count": 1,
+    }
+
+
+def test_missing_outcome_linkage_blocks() -> None:
+    bad_label = _label(
+        artifact_id="label-bad-link-1",
+        judgment_id="judgment-record-cycle-0001",
+        observed_outcome="approve",
+        expected_outcome="approve",
+        correctness=True,
+        timestamp="2026-03-30T00:00:00Z",
+    )
+    bad_label["trace_id"] = "other-trace"
+    with pytest.raises(JudgmentLearningError, match="trace mismatch"):
+        run_judgment_calibration(
+            artifact_id="calibration-bad-link-1",
+            labels=[bad_label],
+            judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+            created_at="2026-03-30T00:01:00Z",
+        )

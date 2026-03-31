@@ -193,3 +193,23 @@ def test_deterministic_repeated_lifecycle_transition_for_same_inputs() -> None:
     first = transition_policy(**deepcopy(args))
     second = transition_policy(**deepcopy(args))
     assert first == second
+
+
+def test_degraded_calibration_blocks_promotion_gate() -> None:
+    gates = evaluate_promotion_gates(
+        PromotionInputs(
+            judgment_eval_result={"eval_results": [{"eval_type": "evidence_coverage", "passed": True}]},
+            judgment_drift_signal={"group_signals": [{"drift_detected": False}]},
+            judgment_error_budget_status={"status": "healthy"},
+            judgment_calibration_result={
+                "group_metrics": [
+                    {
+                        "expected_calibration_error": 0.2,
+                    }
+                ]
+            },
+            remediation_readiness_statuses=[{"closure_eligible": True}],
+            control_ready=True,
+        )
+    )
+    assert gates["calibration_within_bounds"] is False

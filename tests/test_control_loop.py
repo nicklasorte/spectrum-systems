@@ -364,7 +364,7 @@ def _judgment_learning_inputs() -> dict[str, Any]:
         "judgment_drift_signal": drift,
         "judgment_error_budget_status": load_example("judgment_error_budget_status"),
         "judgment_policy": load_example("judgment_policy"),
-        "trace_context": {"trace_id": "trace-001", "replay_run_id": "run-001"},
+        "trace_context": {"trace_id": "cycle-0001", "replay_run_id": "run-001"},
         "created_at": "2026-03-30T00:10:00Z",
     }
 
@@ -433,3 +433,17 @@ def test_judgment_learning_control_propagates_policy_lifecycle_linkage_to_enforc
     assert action["policy_refs"]["judgment_policy_version"] == "1.2.0"
     assert action["policy_refs"]["policy_lifecycle_status"] == "active"
     assert outcome["trace"]["judgment_policy_version"] == "1.2.0"
+
+
+def test_degraded_calibration_affects_policy() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_calibration_result"]["group_metrics"][0]["expected_calibration_error"] = 0.12
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] in {"freeze", "block"}
+
+
+def test_ignored_calibration_fails() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_calibration_result"]["calibration_events"] = []
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "block"

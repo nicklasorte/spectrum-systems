@@ -25,8 +25,9 @@ class PromotionInputs:
     judgment_eval_result: dict[str, Any] | None
     judgment_drift_signal: dict[str, Any] | None
     judgment_error_budget_status: dict[str, Any] | None
-    remediation_readiness_statuses: list[dict[str, Any]]
-    control_ready: bool
+    judgment_calibration_result: dict[str, Any] | None = None
+    remediation_readiness_statuses: list[dict[str, Any]] = None
+    control_ready: bool = False
 
 
 def _artifact_identity(policy: dict[str, Any]) -> tuple[str, str]:
@@ -196,8 +197,21 @@ def evaluate_promotion_gates(inputs: PromotionInputs) -> dict[str, bool]:
     eval_healthy = all(bool(item.get("passed")) for item in evals if isinstance(item, dict))
     drift_healthy = not any(bool(item.get("drift_detected")) for item in drift_signal.get("group_signals", []) if isinstance(item, dict))
     error_budget_healthy = str(error_budget.get("status")) == "healthy"
-    critical_remediation_clear = not any(not bool(item.get("closure_eligible")) for item in inputs.remediation_readiness_statuses if isinstance(item, dict))
+    critical_remediation_clear = not any(
+        not bool(item.get("closure_eligible"))
+        for item in (inputs.remediation_readiness_statuses or [])
+        if isinstance(item, dict)
+    )
     control_ready = bool(inputs.control_ready)
+
+    calibration_healthy = True
+    calibration = inputs.judgment_calibration_result
+    if isinstance(calibration, dict):
+        max_ece = 0.0
+        for row in calibration.get("group_metrics", []):
+            if isinstance(row, dict):
+                max_ece = max(max_ece, float(row.get("expected_calibration_error", 0.0)))
+        calibration_healthy = max_ece < 0.1
 
     gates = {
         "judgment_eval_healthy": eval_healthy,
@@ -205,6 +219,7 @@ def evaluate_promotion_gates(inputs: PromotionInputs) -> dict[str, bool]:
         "error_budget_healthy": error_budget_healthy,
         "critical_remediation_clear": critical_remediation_clear,
         "readiness_control_checks": control_ready,
+        "calibration_within_bounds": calibration_healthy,
     }
     return gates
 

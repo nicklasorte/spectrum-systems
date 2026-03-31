@@ -617,6 +617,21 @@ def run_judgment_learning_control_loop(
         decision = "block"
         rationale.extend(fail_closed_reasons)
     else:
+        calibration_events = judgment_calibration_result.get("calibration_events")
+        if not isinstance(calibration_events, list) or not calibration_events:
+            raise ControlLoopError("calibration authority exists but no calibration events were provided")
+        required_linkage = ("judgment_id", "decision_id", "policy_id", "trace_id", "observation_time")
+        for idx, event in enumerate(calibration_events):
+            if not isinstance(event, dict):
+                raise ControlLoopError(f"calibration event {idx} must be an object")
+            missing = [field for field in required_linkage if not str(event.get(field) or "").strip()]
+            if missing:
+                raise ControlLoopError(
+                    f"calibration event {idx} missing linkage fields: {', '.join(missing)}"
+                )
+            if str(event.get("trace_id")) != trace_id:
+                raise ControlLoopError("calibration trace linkage is ambiguous for current control loop")
+
         eval_failures = [
             item.get("eval_type")
             for item in judgment_eval_result.get("eval_results", [])
@@ -669,6 +684,9 @@ def run_judgment_learning_control_loop(
         if has_rising_override and decision == "allow":
             decision = "warn"
             rationale.append("override rate rising")
+
+        if triggering_signals["calibration"] in {"degraded_freeze_band", "degraded_warn_band"} and decision == "allow":
+            raise ControlLoopError("calibration authority exists but was ignored by control decision")
 
     escalation = {
         "artifact_type": "judgment_control_escalation_record",
