@@ -1,4 +1,4 @@
-This file is subordinate to docs/roadmap/system_roadmap.md
+This file is subordinate to active editorial authority `docs/roadmaps/system_roadmap.md` and is enforced by machine execution surface `docs/roadmap/system_roadmap.md` during compatibility transition
 
 # Roadmap Step Contract (PQX Execution Standard)
 

@@ -7,6 +7,11 @@
 - **Operational compatibility mirror (required until migration complete):** `docs/roadmap/system_roadmap.md`
 - The compatibility mirror must remain parseable for existing PQX/tests that still consume `docs/roadmap/system_roadmap.md`.
 - During transition, updates to roadmap rows that affect operational parsing must be mirrored in both surfaces.
+- Compatibility surfaces must remain aligned to the step execution contract in `docs/roadmap/roadmap_step_contract.md`.
+
+## March 31, 2026 gate note
+- The March 31, 2026 roadmap revision adds a mandatory **Control Loop Closure Gate** before broader expansion.
+- Future roadmap updates must not skip or bypass this pre-expansion gate.
 
 ## PQX authority resolution bridge (B2)
 - PQX must resolve roadmap authority from this document first, not from ad-hoc hardcoded path selection.
