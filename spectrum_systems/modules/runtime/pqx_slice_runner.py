@@ -8,7 +8,11 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from spectrum_systems.contracts import validate_artifact
-from spectrum_systems.governance import analyze_contract_impact, analyze_execution_change_impact
+from spectrum_systems.governance import (
+    analyze_contract_impact,
+    analyze_execution_change_impact,
+    validate_manifest_completeness,
+)
 from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
@@ -138,6 +142,22 @@ def _enforce_execution_change_impact_gate(
     return artifact, artifact_ref
 
 
+
+
+def _enforce_manifest_completeness_gate(*, manifest_path: Path) -> None:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    result = validate_manifest_completeness(manifest)
+    if result["valid"]:
+        return
+
+    reason_parts = ["manifest completeness gate blocked"]
+    if result["errors"]:
+        reason_parts.append("errors=" + "; ".join(result["errors"]))
+    if result["missing_fields"]:
+        reason_parts.append("missing_fields=" + ", ".join(result["missing_fields"]))
+    raise PQXSliceRunnerError(" | ".join(reason_parts))
+
+
 def _find_row(rows: list[RoadmapRow], step_id: str) -> RoadmapRow:
     row = next((entry for entry in rows if entry.step_id == step_id), None)
     if row is None:
@@ -205,6 +225,7 @@ def run_pqx_slice(
     execution_change_baseline_ref: str = "HEAD",
     provided_reviews: Optional[list[str]] = None,
     provided_eval_artifacts: Optional[list[str]] = None,
+    enforce_manifest_completeness: bool = False,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -243,6 +264,17 @@ def run_pqx_slice(
 
     if pqx_output_text is None:
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="pqx_output_text is required")
+
+    if enforce_manifest_completeness:
+        try:
+            _enforce_manifest_completeness_gate(manifest_path=REPO_ROOT / "contracts" / "standards-manifest.json")
+        except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
+            return _block_payload(
+                step_id=normalized_step_id,
+                run_id=run_id,
+                reason=str(exc),
+                block_type="MANIFEST_COMPLETENESS_BLOCKED",
+            )
 
     try:
         _enforce_contract_impact_gate(

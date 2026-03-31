@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+
+import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
+
+
 
 
 class FixedClock:
@@ -248,4 +252,58 @@ def test_run_pqx_slice_allows_explicit_safe_execution_change_impact(tmp_path: Pa
         execution_change_impact_artifact_path=impact_path,
         clock=FixedClock(),
     )
+    assert result["status"] == "complete"
+
+
+def test_run_pqx_slice_blocks_on_manifest_completeness_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_slice_runner.validate_manifest_completeness",
+        lambda _manifest: {
+            "valid": False,
+            "errors": ["contracts[0] missing required field: artifact_class"],
+            "missing_fields": ["contracts[0].artifact_class"],
+            "invalid_entries": [],
+        },
+    )
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        clock=FixedClock(),
+        enforce_manifest_completeness=True,
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "MANIFEST_COMPLETENESS_BLOCKED"
+
+
+def test_run_pqx_slice_default_path_does_not_enforce_manifest_completeness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_slice_runner.validate_manifest_completeness",
+        lambda _manifest: {
+            "valid": False,
+            "errors": ["contracts[0] missing required field: artifact_class"],
+            "missing_fields": ["contracts[0].artifact_class"],
+            "invalid_entries": [],
+        },
+    )
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        clock=FixedClock(),
+    )
+
     assert result["status"] == "complete"

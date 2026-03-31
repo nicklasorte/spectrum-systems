@@ -220,6 +220,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-G11-ELIGIBILITY-DECISION-HARD-BINDING-2026-03-31.md | G11 — Eligibility → Decision Hard Binding | Active |
 | docs/review-actions/PLAN-G11-CYCLE-MANIFEST-SOURCE-OF-TRUTH-2026-03-31.md | G11 — Cycle manifest source-of-truth hardening | Active |
 | docs/review-actions/PLAN-PQX-G14-EXECUTION-CHANGE-IMPACT-GATE-2026-03-30.md | G14 — Execution change impact pre-execution fail-closed gate | Active |
+| docs/review-actions/PLAN-G17-MANIFEST-COMPLETENESS-GATE-2026-03-31.md | G17 — Manifest Completeness Gate (Pre-PR Structural Integrity) | Active |
+| docs/review-actions/PLAN-G17-SCOPE-REPAIR-2026-03-31.md | G17 — Manifest Completeness Gate Scope Repair | Active |
 
 Update this table when plans are created or completed.
 
