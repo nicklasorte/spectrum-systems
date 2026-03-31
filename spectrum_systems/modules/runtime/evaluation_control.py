@@ -130,6 +130,16 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
     budget_errors = _validate(error_budget, load_schema("error_budget_status"))
     if budget_errors:
         raise EvaluationControlError("error_budget_status failed validation: " + "; ".join(budget_errors))
+    if not isinstance(error_budget.get("objectives"), list) or not error_budget["objectives"]:
+        raise EvaluationControlError("replay_result.error_budget_status.objectives must be present and non-empty")
+    for objective in error_budget["objectives"]:
+        if not isinstance(objective, dict):
+            raise EvaluationControlError("replay_result.error_budget_status.objectives entries must be objects")
+        for field in ("consumed_error", "remaining_error", "consumption_ratio", "status"):
+            if field not in objective:
+                raise EvaluationControlError(
+                    f"replay_result.error_budget_status.objectives entry missing required field: {field}"
+                )
 
     trace_id = replay_result.get("trace_id")
     if not isinstance(trace_id, str) or not trace_id:
@@ -207,6 +217,21 @@ def _apply_budget_status_override(
     if "budget_invalid" not in triggered_signals:
         triggered_signals.append("budget_invalid")
     return "blocked", "block", "deny", "deny_budget_invalid"
+
+
+def _enforce_budget_authority(*, budget_status: str, system_response: str, decision_label: str) -> None:
+    if budget_status == "exhausted" and system_response not in {"freeze", "block"}:
+        raise EvaluationControlError(
+            "BUDGET_ENFORCEMENT_MISSING: exhausted budget must produce freeze or block response"
+        )
+    if budget_status == "warning" and system_response == "allow":
+        raise EvaluationControlError(
+            "BUDGET_ENFORCEMENT_MISSING: warning budget must not produce allow response"
+        )
+    if budget_status in {"exhausted", "invalid"} and decision_label != "deny":
+        raise EvaluationControlError(
+            "BUDGET_ENFORCEMENT_MISSING: exhausted/invalid budget must produce deny decision"
+        )
 
 
 def build_evaluation_control_decision(
@@ -367,6 +392,11 @@ def build_evaluation_control_decision(
             system_response=system_response,
             decision_label=decision_label,
             rationale_code=rationale_code,
+        )
+        _enforce_budget_authority(
+            budget_status=budget_status,
+            system_response=system_response,
+            decision_label=decision_label,
         )
 
     schema_version = "1.1.0"

@@ -45,6 +45,15 @@ _SLO_METRICS = frozenset({
     "baseline_gate_block_rate",
     "regression_failure_rate",
 })
+_METRIC_MEASUREMENT_FUNCTIONS = {
+    "replay_success_rate": "compute_replay_success_rate",
+    "grounding_block_rate": "compute_grounding_block_rate",
+    "unsupported_claim_rate": "compute_unsupported_claim_rate",
+    "invalid_evidence_ref_rate": "compute_invalid_evidence_ref_rate",
+    "drift_exceed_threshold_rate": "compute_drift_exceed_threshold_rate",
+    "baseline_gate_block_rate": "compute_baseline_gate_block_rate",
+    "regression_failure_rate": "compute_regression_failure_rate",
+}
 
 
 class ObservabilityMetricsError(ValueError):
@@ -87,6 +96,11 @@ def load_slo_definition(slo_definition: Dict[str, Any]) -> Dict[str, Any]:
         metric_name = objective.get("metric_name")
         if metric_name not in _SLO_METRICS:
             raise ObservabilityMetricsError(f"unsupported SLO metric_name: {metric_name!r}")
+        measurement_function = _METRIC_MEASUREMENT_FUNCTIONS.get(metric_name)
+        if not isinstance(measurement_function, str) or not measurement_function:
+            raise ObservabilityMetricsError(
+                f"SLO objective metric {metric_name!r} has no deterministic measurement function mapping"
+            )
     return normalized
 
 
@@ -158,9 +172,18 @@ def _collect_artifact_ids(artifacts: Sequence[Dict[str, Any]]) -> List[str]:
 
 def _evaluate_slo(metrics: Dict[str, Any], slo_definition: Optional[Dict[str, Any]]) -> tuple[Optional[str], Optional[str], Dict[str, Any]]:
     if slo_definition is None:
-        return None, None, {"breached_metrics": [], "highest_severity": "none", "reasons": []}
+        raise ObservabilityMetricsError("slo_definition is required for observability metrics evaluation")
 
     slo = load_slo_definition(slo_definition)
+    objective_metrics = {objective["metric_name"] for objective in slo.get("objectives") or []}
+    missing_objectives = sorted(
+        metric_name for metric_name in metrics.keys() if metric_name != "total_runs" and metric_name not in objective_metrics
+    )
+    if missing_objectives:
+        raise ObservabilityMetricsError(
+            "every computed metric must map to an explicit SLO objective; missing objectives for: "
+            + ", ".join(missing_objectives)
+        )
     breached: List[str] = []
     reasons: List[str] = []
     highest = "none"

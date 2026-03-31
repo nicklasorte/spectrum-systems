@@ -225,6 +225,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-ROADMAP-GENERATION-OPERATING-MODEL-2026-03-31.md | ROADMAP-GENERATION-OPERATING-MODEL — governed roadmap refresh + compatibility reconciliation | Active |
 | docs/review-actions/PLAN-RE-06-ROADMAP-RECONCILIATION-2026-03-31.md | RE-06 — roadmap authority reconciliation to approved RE-05 corrections | Active |
 | docs/review-actions/PLAN-RE-02-REPO-GAP-SCAN-2026-03-31.md | RE-02 — source-obligation repo gap scan and bottleneck classification | Active |
+| docs/review-actions/PLAN-RE-07-CL-02-2026-03-31.md | RE-07 CL-02 — Error Budget Enforcement | Active |
 
 Update this table when plans are created or completed.
 

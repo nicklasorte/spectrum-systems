@@ -146,6 +146,19 @@ def _status_for_ratio(consumption_ratio: float, policy: Dict[str, Any]) -> str:
     return "healthy"
 
 
+def normalize_budget_state(status: str) -> str:
+    mapping = {
+        "healthy": "ok",
+        "warning": "warning",
+        "exhausted": "exceeded",
+        "invalid": "invalid",
+    }
+    normalized = mapping.get(str(status))
+    if normalized is None:
+        raise ErrorBudgetError(f"unknown error budget status: {status!r}")
+    return normalized
+
+
 def build_error_budget_status(
     observability_metrics: Dict[str, Any],
     slo_definition: Dict[str, Any],
@@ -203,6 +216,7 @@ def build_error_budget_status(
             target_value=target_value,
             observed_value=observed_value,
         )
+        burn_rate = terms["consumption_ratio"]
         objective_status = _status_for_ratio(terms["consumption_ratio"], resolved_policy)
 
         objective_record = {
@@ -222,11 +236,12 @@ def build_error_budget_status(
                 {
                     "metric_name": metric_name,
                     "status": objective_status,
-                    "consumption_ratio": terms["consumption_ratio"],
+                    "consumption_ratio": burn_rate,
                 }
             )
             reasons.append(
-                f"{metric_name} consumption_ratio={terms['consumption_ratio']:.6f} status={objective_status}"
+                f"{metric_name} consumed_error={terms['consumed_error']:.6f} "
+                f"remaining_error={terms['remaining_error']:.6f} burn_rate={burn_rate:.6f} status={objective_status}"
             )
 
     severity_rank = {"healthy": 0, "warning": 1, "exhausted": 2, "invalid": 3}

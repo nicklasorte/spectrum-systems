@@ -112,6 +112,18 @@ def test_budget_warning_forces_warn() -> None:
     assert decision["system_response"] == "warn"
 
 
+def test_control_loop_uses_budget() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "warning"
+    replay["error_budget_status"]["highest_severity"] = "warning"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {"metric_name": "replay_success_rate", "status": "warning", "consumption_ratio": 0.7}
+    ]
+    decision = run_control_loop(replay, _trace_context(replay))["evaluation_control_decision"]
+    assert "budget_warning" in decision["triggered_signals"]
+    assert decision["decision"] == "require_review"
+
+
 def test_budget_observability_mismatch_fails_closed() -> None:
     replay = _replay_result()
     replay["error_budget_status"]["objectives"][0]["observed_value"] = 0.01
@@ -180,6 +192,13 @@ def test_budget_status_more_severe_than_highest_severity_fails_closed() -> None:
 def test_error_budget_schema_delegation_rejects_invalid_objective_status() -> None:
     replay = _replay_result()
     replay["error_budget_status"]["objectives"][0]["status"] = "not-a-valid-status"
+    with pytest.raises(ControlLoopError, match="error_budget_status failed validation"):
+        run_control_loop(replay, _trace_context(replay))
+
+
+def test_missing_budget_evaluation_blocks() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["objectives"] = []
     with pytest.raises(ControlLoopError, match="error_budget_status failed validation"):
         run_control_loop(replay, _trace_context(replay))
 

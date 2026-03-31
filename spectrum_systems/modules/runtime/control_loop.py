@@ -124,6 +124,16 @@ def _validate_replay_budget_inputs(artifact: Dict[str, Any]) -> None:
     objective_by_metric = {
         obj.get("metric_name"): obj for obj in objectives if isinstance(obj, dict) and obj.get("metric_name")
     }
+    unmapped_metrics = sorted(
+        metric_name
+        for metric_name in metrics.keys()
+        if metric_name != "total_runs" and metric_name not in objective_by_metric
+    )
+    if unmapped_metrics:
+        raise ControlLoopError(
+            "no-dead-metrics violation: observability metrics missing error_budget_status objectives for "
+            + ", ".join(unmapped_metrics)
+        )
     for metric_name in ("replay_success_rate", "drift_exceed_threshold_rate"):
         metric_value = metrics.get(metric_name)
         objective = objective_by_metric.get(metric_name)
@@ -340,6 +350,10 @@ def run_control_loop(
         raise ControlLoopError(
             "evaluation_control_decision failed schema validation: " + "; ".join(decision_errors)
         )
+    if signal["signal_type"] == "replay_result":
+        budget_status = str((artifact.get("error_budget_status") or {}).get("budget_status") or "invalid")
+        if budget_status == "exhausted" and decision.get("system_response") not in {"freeze", "block"}:
+            raise ControlLoopError("budget exceeded without deterministic enforcement action")
 
     control_trace = {
         "trace_id": decision["trace_id"],
