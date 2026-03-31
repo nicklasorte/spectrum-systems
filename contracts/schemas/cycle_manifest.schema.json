@@ -35,7 +35,17 @@
     "judgment_application_record_path",
     "judgment_eval_result_path",
     "drift_remediation_artifact_path",
-    "fix_plan_artifact_path"
+    "fix_plan_artifact_path",
+    "roadmap_eligibility_artifact_path",
+    "next_step_decision_artifact_path",
+    "selected_step_id",
+    "selected_step_status",
+    "decision_summary",
+    "decision_blocked",
+    "decision_block_reason",
+    "eligibility_summary_snapshot",
+    "eligible_step_ids_snapshot",
+    "recommended_next_step_ids"
   ],
   "properties": {
     "cycle_id": {
@@ -373,6 +383,66 @@
         "authorized",
         null
       ]
+    },
+    "decision_summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "decision_blocked": {
+      "type": "boolean"
+    },
+    "decision_block_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "eligibility_summary_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_steps",
+        "completed_steps",
+        "eligible_steps",
+        "blocked_steps"
+      ],
+      "properties": {
+        "total_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eligible_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked_steps": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "eligible_step_ids_snapshot": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "recommended_next_step_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     }
   },
   "allOf": [
@@ -380,12 +450,10 @@
       "if": {
         "properties": {
           "next_step_decision_artifact_path": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
-        },
-        "required": [
-          "next_step_decision_artifact_path"
-        ]
+        }
       },
       "then": {
         "required": [
@@ -404,6 +472,39 @@
           },
           "selected_step_status": {
             "const": "authorized"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_blocked": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision_block_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_blocked": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decision_block_reason": {
+            "type": "null"
           }
         }
       }

@@ -57,6 +57,21 @@
   "judgment_record_path": null,
   "judgment_application_record_path": null,
   "judgment_eval_result_path": null,
+  "roadmap_eligibility_artifact_path": null,
+  "next_step_decision_artifact_path": null,
+  "selected_step_id": null,
+  "selected_step_status": null,
+  "decision_summary": "observability-default-blocked",
+  "decision_blocked": true,
+  "decision_block_reason": "missing_required_artifact",
+  "eligibility_summary_snapshot": {
+    "total_steps": 0,
+    "completed_steps": 0,
+    "eligible_steps": 0,
+    "blocked_steps": 0
+  },
+  "eligible_step_ids_snapshot": [],
+  "recommended_next_step_ids": [],
   "drift_remediation_artifact_path": null,
   "fix_plan_artifact_path": null
 }

@@ -29,6 +29,7 @@ def _load_fixture(name: str) -> dict:
 
 
 def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
+    decision_blocked = state == "blocked"
     return {
         "cycle_id": cycle_id,
         "current_state": state,
@@ -86,6 +87,21 @@ def _base_manifest(*, cycle_id: str, state: str, updated_at: str) -> dict:
         "judgment_record_path": None,
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
+        "roadmap_eligibility_artifact_path": None,
+        "next_step_decision_artifact_path": None,
+        "selected_step_id": None,
+        "selected_step_status": None,
+        "decision_summary": f"observability-default-{state}",
+        "decision_blocked": decision_blocked,
+        "decision_block_reason": "blocked_state_detected" if decision_blocked else None,
+        "eligibility_summary_snapshot": {
+            "total_steps": 0,
+            "completed_steps": 0,
+            "eligible_steps": 0,
+            "blocked_steps": 0,
+        },
+        "eligible_step_ids_snapshot": [],
+        "recommended_next_step_ids": [],
         "drift_remediation_artifact_path": None,
         "fix_plan_artifact_path": None,
     }

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
@@ -11,6 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
+from spectrum_systems.orchestration.cycle_manifest_validator import CycleManifestError, validate_cycle_manifest
 from spectrum_systems.orchestration.next_step_decision import build_next_step_decision
 from spectrum_systems.orchestration.pqx_handoff_adapter import PQXHandoffError, handoff_to_pqx
 
@@ -47,8 +49,50 @@ def _load_json(path: str | Path) -> Dict[str, Any]:
 
 
 def _validate_manifest(manifest: Dict[str, Any]) -> None:
-    schema = load_schema("cycle_manifest")
-    Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest)
+    try:
+        validate_cycle_manifest(manifest)
+    except CycleManifestError as exc:
+        raise CycleRunnerError(str(exc)) from exc
+
+
+def _deterministic_timestamp(value: str | None = None) -> str:
+    if isinstance(value, str) and value:
+        ts = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    else:
+        ts = datetime.now(tz=timezone.utc)
+    ts = ts.astimezone(timezone.utc).replace(microsecond=0)
+    return ts.isoformat().replace("+00:00", "Z")
+
+
+def _enrich_manifest_decision_trace(manifest: Dict[str, Any], decision: Dict[str, Any], eligibility: Dict[str, Any]) -> None:
+    eligible_snapshot = sorted(set(decision.get("eligible_step_ids_snapshot", [])))
+    recommended_snapshot = sorted(set(eligibility.get("recommended_next_step_ids", [])))
+    summary = eligibility.get("summary", {})
+    if not isinstance(summary, dict):
+        summary = {"total_steps": 0, "completed_steps": 0, "eligible_steps": 0, "blocked_steps": 0}
+    def _to_int(value: Any) -> int:
+        return value if isinstance(value, int) and value >= 0 else 0
+
+    normalized_summary = {
+        "total_steps": _to_int(summary.get("total_steps")),
+        "completed_steps": _to_int(summary.get("completed_steps")),
+        "eligible_steps": _to_int(summary.get("eligible_steps")),
+        "blocked_steps": _to_int(summary.get("blocked_steps")),
+    }
+    decision_blocked = bool(decision.get("blocking"))
+    reason = "; ".join(sorted(set(decision.get("blocking_reasons", [])))) if decision_blocked else None
+    selected_step_id = decision.get("selected_step_id")
+    manifest["eligible_step_ids_snapshot"] = eligible_snapshot
+    manifest["recommended_next_step_ids"] = recommended_snapshot
+    manifest["selected_step_id"] = selected_step_id
+    manifest["selected_step_status"] = "authorized" if isinstance(selected_step_id, str) else None
+    manifest["decision_summary"] = decision.get("decision_rationale") or (
+        f"selected_step_id={selected_step_id};blocking={'true' if decision_blocked else 'false'}"
+    )
+    manifest["decision_blocked"] = decision_blocked
+    manifest["decision_block_reason"] = reason
+    manifest["eligibility_summary_snapshot"] = normalized_summary
+    manifest["updated_at"] = _deterministic_timestamp(manifest.get("updated_at"))
 
 
 def _path_exists(path_value: Any) -> bool:
@@ -433,6 +477,11 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         return blocked(str(exc))
 
     try:
+        eligibility = _validate_roadmap_eligibility_artifact(str(eligibility_artifact_path))
+    except CycleRunnerError as exc:
+        return blocked(str(exc))
+
+    try:
         decision = build_next_step_decision(
             str(manifest_path),
             roadmap_eligibility_artifact_path=str(eligibility_artifact_path),
@@ -460,13 +509,15 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
 
     manifest["next_step_decision_artifact_path"] = str(decision_path)
     manifest["roadmap_eligibility_artifact_path"] = str(eligibility_artifact_path)
-    manifest["selected_step_id"] = decision.get("selected_step_id")
-    manifest["selected_step_status"] = "authorized" if isinstance(decision.get("selected_step_id"), str) else None
+    _enrich_manifest_decision_trace(manifest, decision, eligibility)
+    if manifest.get("decision_blocked") is True:
+        decision_reason = manifest.get("decision_block_reason") or "next-step decision blocked progression"
+        manifest["blocking_issues"] = [*manifest.get("blocking_issues", []), str(decision_reason)]
     manifest["drift_remediation_artifact_path"] = remediation_path
     manifest["fix_plan_artifact_path"] = fix_plan_path
     _write_manifest(manifest_path, manifest)
 
-    if decision.get("blocking") is True:
+    if decision.get("blocking") is True or manifest.get("decision_blocked") is True:
         reason = "; ".join(decision.get("blocking_reasons", [])) or "next-step decision blocked progression"
         if decision.get("remediation_required") is True:
             reason = f"{reason}; remediation_required=true"
@@ -570,6 +621,9 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         request_path = manifest.get("pqx_execution_request_path")
         if not _path_exists(request_path):
             return blocked("missing required artifact: pqx_execution_request_path")
+        request_payload = _load_json(str(request_path))
+        if request_payload.get("step_id") != manifest.get("selected_step_id"):
+            return blocked("pqx_execution_request_path step_id must match manifest selected_step_id")
         try:
             handoff = handoff_to_pqx(
                 cycle_id=manifest["cycle_id"],

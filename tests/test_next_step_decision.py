@@ -193,6 +193,13 @@ def test_eligibility_provenance_present_in_decision_artifact(tmp_path: Path) -> 
     assert decision["selection_basis"] == "eligibility_constrained"
 
 
+def test_eligibility_snapshot_is_stably_sorted(tmp_path: Path) -> None:
+    path = _write(tmp_path / "cycle_manifest.json", _manifest("roadmap_approved"))
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility(["CTRL-03", "CTRL-02"]))
+    decision = build_next_step_decision(str(path), str(eligibility_path))
+    assert decision["eligible_step_ids_snapshot"] == ["CTRL-02", "CTRL-03"]
+
+
 def test_contract_example_cases_validate() -> None:
     schema = load_schema("next_step_decision_artifact")
     validator = Draft202012Validator(schema, format_checker=FormatChecker())

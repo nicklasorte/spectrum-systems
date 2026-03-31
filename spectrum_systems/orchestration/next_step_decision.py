@@ -230,10 +230,11 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
     policy, policy_hash = _load_next_step_policy()
     manifest = _load_json(cycle_manifest_path)
 
-    if not _path_exists(roadmap_eligibility_artifact_path):
+    normalized_eligibility_path = str(Path(roadmap_eligibility_artifact_path))
+    if not _path_exists(normalized_eligibility_path):
         raise NextStepDecisionError("roadmap eligibility artifact missing")
     try:
-        eligibility = _load_json(roadmap_eligibility_artifact_path)
+        eligibility = _load_json(normalized_eligibility_path)
     except json.JSONDecodeError as exc:
         raise NextStepDecisionError("roadmap eligibility artifact is not valid JSON") from exc
 
@@ -311,7 +312,7 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
     source_grounded = source_ok
 
     core_id_fields = {
-        "eligibility_artifact_path": str(roadmap_eligibility_artifact_path),
+        "eligibility_artifact_path": normalized_eligibility_path,
         "eligible_step_ids_snapshot": eligible_step_ids_snapshot,
         "selected_step_id": selected_step_id,
         "selection_basis": "eligibility_constrained",
@@ -349,7 +350,7 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "policy_id": policy["policy_id"],
         "policy_version": policy["version"],
         "policy_hash": policy_hash,
-        "eligibility_artifact_path": str(roadmap_eligibility_artifact_path),
+        "eligibility_artifact_path": normalized_eligibility_path,
         "eligible_step_ids_snapshot": eligible_step_ids_snapshot,
         "selected_step_id": selected_step_id,
         "selection_basis": "eligibility_constrained",

@@ -85,5 +85,20 @@
   "fix_plan_artifact_path": null,
   "roadmap_eligibility_artifact_path": "contracts/examples/roadmap_eligibility_artifact.json",
   "selected_step_id": "CTRL-02",
-  "selected_step_status": "authorized"
+  "selected_step_status": "authorized",
+  "eligible_step_ids_snapshot": [
+    "CTRL-02"
+  ],
+  "recommended_next_step_ids": [
+    "CTRL-02"
+  ],
+  "decision_summary": "Selected CTRL-02 from eligibility-authorized set for deterministic single-step execution.",
+  "decision_blocked": false,
+  "decision_block_reason": null,
+  "eligibility_summary_snapshot": {
+    "total_steps": 1,
+    "completed_steps": 0,
+    "eligible_steps": 1,
+    "blocked_steps": 0
+  }
 }

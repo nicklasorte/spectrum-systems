@@ -218,6 +218,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-PQX-NEXT-STEP-DECISION-POLICY-2026-03-30.md | PQX Next-Step Decision Policy Externalization | Active |
 | docs/review-actions/PLAN-G11-ELIGIBILITY-DECISION-HARD-BINDING-2026-03-31.md | G11 — Eligibility → Decision Hard Binding | Active |
+| docs/review-actions/PLAN-G11-CYCLE-MANIFEST-SOURCE-OF-TRUTH-2026-03-31.md | G11 — Cycle manifest source-of-truth hardening | Active |
 
 Update this table when plans are created or completed.
 
