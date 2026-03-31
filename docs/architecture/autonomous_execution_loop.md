@@ -370,3 +370,9 @@ If any required signal is missing, promotion fails closed.
 - Missing lifecycle evidence or missing canary rollout evidence fails closed and blocks cycle progression (no optional bypass on governed runtime/control paths).
 - Governed cycle manifests must provide `judgment_policy_lifecycle_paths` and `judgment_policy_rollout_paths`; lifecycle/rollout artifacts are validated before policy selection.
 - Downstream linkage is preserved from policy selection through escalation/enforcement artifacts: `selected_policy_id`, `selected_policy_version`, `policy_lifecycle_status`, and `policy_rollout_id` (or `none` when non-canary).
+
+## Contract-impact pre-execution gate (G13)
+- PQX slice execution now supports a governed `contract_impact_artifact` preflight.
+- The artifact may be supplied directly or generated from changed contract paths before execution.
+- Execution blocks fail-closed when compatibility is `breaking` or `indeterminate`, when `blocking=true`, or when `safe_to_execute=false`.
+- This gate is pre-execution trust enforcement and does not replace contract/runtime tests.

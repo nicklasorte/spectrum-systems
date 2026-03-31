@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.5",
+  "artifact_version": "1.3.6",
   "schema_version": "1.0.0",
   "standards_version": "1.3.5",
   "record_id": "REC-STD-2026-03-31-G11-MANIFEST-SOURCE-OF-TRUTH",
@@ -263,6 +263,19 @@
       "last_updated_in": "1.0.62",
       "example_path": "contracts/examples/context_validation_result.json",
       "notes": "TRUST-01 deterministic fail-closed pre-execution context validation artifact for bundle/schema/trust/source/policy checks."
+    },
+    {
+      "artifact_type": "contract_impact_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/contract_impact_artifact.json",
+      "notes": "G13 deterministic fail-closed pre-execution compatibility artifact for governed contract impact assessment and PQX blocking decisions."
     },
     {
       "artifact_type": "control_decision_consistency_result",
