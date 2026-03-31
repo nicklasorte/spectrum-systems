@@ -211,6 +211,58 @@ def generate_failure_eval_case(
     return artifact
 
 
+def register_failure_eval_case(
+    *,
+    failure_eval_case: Dict[str, Any],
+    eval_registry: Dict[str, Dict[str, Any]],
+    policy_id: str,
+    trigger_condition: str,
+    control_decision_surface: str = "evaluation_control_decision",
+) -> Dict[str, Any]:
+    """Register a failure_eval_case and return deterministic policy binding metadata.
+
+    This is a fail-closed CL-01 seam: failure-derived evals must be both
+    registry-tracked and policy-bound before they can influence control.
+    """
+    if not isinstance(eval_registry, dict):
+        raise EvalCaseGenerationError("eval_registry must be a dict")
+    if not isinstance(failure_eval_case, dict):
+        raise EvalCaseGenerationError("failure_eval_case must be a dict")
+    try:
+        _validate_failure_eval_case(failure_eval_case)
+    except Exception as exc:  # pragma: no cover - defensive boundary
+        raise EvalCaseGenerationError(f"failure_eval_case failed validation before registration: {exc}") from exc
+
+    eval_case_id = _string(failure_eval_case.get("eval_case_id"), field="failure_eval_case.eval_case_id")
+    trace_id = _string(failure_eval_case.get("trace_id"), field="failure_eval_case.trace_id")
+    failure_id = _string(failure_eval_case.get("source_artifact_id"), field="failure_eval_case.source_artifact_id")
+    resolved_policy_id = _string(policy_id, field="policy_id")
+    resolved_trigger = _string(trigger_condition, field="trigger_condition")
+    decision_surface = _string(control_decision_surface, field="control_decision_surface")
+
+    binding_payload = {
+        "eval_case_id": eval_case_id,
+        "failure_id": failure_id,
+        "trace_id": trace_id,
+        "policy_id": resolved_policy_id,
+        "trigger_condition": resolved_trigger,
+        "control_decision_surface": decision_surface,
+        "binding_id": deterministic_id(
+            prefix="fcb",
+            namespace="cl01_failure_eval_policy_binding",
+            payload={
+                "eval_case_id": eval_case_id,
+                "trace_id": trace_id,
+                "policy_id": resolved_policy_id,
+                "trigger_condition": resolved_trigger,
+                "control_decision_surface": decision_surface,
+            },
+        ),
+    }
+    eval_registry[eval_case_id] = binding_payload
+    return dict(binding_payload)
+
+
 # Backwards-compatible alias for existing callers/tests.
 def generate_eval_case_from_failure(context: Dict[str, Any], integration_result: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(context, dict):

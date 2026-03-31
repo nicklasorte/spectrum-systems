@@ -213,11 +213,13 @@ def build_evaluation_control_decision(
     signal_artifact: Dict[str, Any],
     *,
     thresholds: Optional[Dict[str, float]] = None,
+    failure_policy_binding: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
     t = dict(DEFAULT_THRESHOLDS)
     if thresholds:
         t.update(thresholds)
+    seeded_signals: List[str] = []
     artifact_type = signal_artifact.get("artifact_type") if isinstance(signal_artifact, dict) else None
     if artifact_type == "replay_result":
         eval_summary = _to_eval_summary_from_replay_result(signal_artifact)
@@ -251,15 +253,72 @@ def build_evaluation_control_decision(
         raise EvaluationControlError(
             "RUNTIME_REPLAY_BOUNDARY_VIOLATION: eval_summary is not permitted in runtime seams; replay_result is required"
         )
+    elif artifact_type == "failure_eval_case":
+        failure_schema = load_schema("failure_eval_case")
+        failure_errors = _validate(signal_artifact, failure_schema)
+        if failure_errors:
+            raise EvaluationControlError("failure_eval_case failed validation: " + "; ".join(failure_errors))
+        if not isinstance(failure_policy_binding, dict):
+            raise EvaluationControlError("failure_eval_case requires deterministic failure_policy_binding")
+        required_binding = (
+            "eval_case_id",
+            "failure_id",
+            "trace_id",
+            "policy_id",
+            "trigger_condition",
+            "control_decision_surface",
+        )
+        for field in required_binding:
+            value = failure_policy_binding.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise EvaluationControlError(f"failure_policy_binding missing required field: {field}")
+        if failure_policy_binding["eval_case_id"] != signal_artifact.get("eval_case_id"):
+            raise EvaluationControlError("failure_policy_binding.eval_case_id must match failure_eval_case.eval_case_id")
+        if failure_policy_binding["trace_id"] != signal_artifact.get("trace_id"):
+            raise EvaluationControlError("failure_policy_binding.trace_id must match failure_eval_case.trace_id")
+        if failure_policy_binding["failure_id"] != signal_artifact.get("source_artifact_id"):
+            raise EvaluationControlError(
+                "failure_policy_binding.failure_id must match failure_eval_case.source_artifact_id"
+            )
+        if failure_policy_binding["control_decision_surface"] != "evaluation_control_decision":
+            raise EvaluationControlError("failure_policy_binding.control_decision_surface must target evaluation_control_decision")
+
+        classification_map = {
+            "runtime_failure": ("blocked", "block", ["trust_breach", "stability_breach"], "deny_failure_eval_case"),
+            "review_boundary_halt": ("warning", "warn", ["indeterminate_failure"], "require_review_warning_signal"),
+            "control_indeterminate": ("blocked", "block", ["indeterminate_failure", "trust_breach"], "deny_failure_eval_case"),
+        }
+        failure_class = str(signal_artifact.get("failure_class") or "")
+        if failure_class not in classification_map:
+            raise EvaluationControlError("failure_eval_case.failure_class must be runtime_failure|review_boundary_halt|control_indeterminate")
+        system_status, system_response, seeded_signals, rationale_code = classification_map[failure_class]
+        eval_case_id = str(signal_artifact.get("eval_case_id") or "")
+        created_at = _canonical_timestamp(signal_artifact.get("created_at"))
+        eval_summary = {
+            "artifact_type": "eval_summary",
+            "schema_version": "1.0.0",
+            "trace_id": str(signal_artifact.get("trace_id") or ""),
+            "eval_run_id": eval_case_id,
+            "pass_rate": 0.0,
+            "drift_rate": 1.0 if failure_class != "review_boundary_halt" else 0.3,
+            "reproducibility_score": 0.0 if failure_class != "review_boundary_halt" else 0.5,
+            "indeterminate_failure_count": 1 if failure_class != "runtime_failure" else 0,
+            "created_at": created_at,
+            "budget_status": "exhausted",
+        }
+        source_artifact_id = eval_case_id
+        signal_type = "failure_eval_case"
     else:
-        raise EvaluationControlError("signal_artifact must be replay_result or cross_run_intelligence_decision")
+        raise EvaluationControlError(
+            "signal_artifact must be replay_result, cross_run_intelligence_decision, or failure_eval_case"
+        )
 
     pass_rate = float(eval_summary["pass_rate"])
     drift_rate = float(eval_summary["drift_rate"])
     reproducibility = float(eval_summary["reproducibility_score"])
     indeterminate_failures = _extract_indeterminate_failure_count(eval_summary)
 
-    triggered_signals: List[str] = []
+    triggered_signals: List[str] = list(seeded_signals if artifact_type == "failure_eval_case" else [])
     if pass_rate < t["reliability_threshold"]:
         triggered_signals.append("reliability_breach")
     if drift_rate > t["drift_threshold"]:
@@ -268,18 +327,21 @@ def build_evaluation_control_decision(
         triggered_signals.append("trust_breach")
     if indeterminate_failures > 0:
         triggered_signals.append("indeterminate_failure")
+    triggered_signals = list(dict.fromkeys(triggered_signals))
 
     severe_hits = [s for s in triggered_signals if s in SEVERE_SIGNALS]
-
-    if not triggered_signals:
-        system_status = "healthy"
-    elif "trust_breach" in triggered_signals or len(severe_hits) >= 2:
-        system_status = "blocked"
-    elif "stability_breach" in triggered_signals:
-        system_status = "exhausted"
+    if artifact_type == "failure_eval_case":
+        pass
     else:
-        system_status = "warning"
-    system_status, system_response = map_status_to_response(system_status)
+        if not triggered_signals:
+            system_status = "healthy"
+        elif "trust_breach" in triggered_signals or len(severe_hits) >= 2:
+            system_status = "blocked"
+        elif "stability_breach" in triggered_signals:
+            system_status = "exhausted"
+        else:
+            system_status = "warning"
+        system_status, system_response = map_status_to_response(system_status)
 
     if system_response == "allow":
         decision_label = "allow"
@@ -296,15 +358,16 @@ def build_evaluation_control_decision(
     else:
         decision_label = "deny"
         rationale_code = "deny_reliability_breach"
-    budget_status = str(eval_summary.get("budget_status") or "invalid")
-    system_status, system_response, decision_label, rationale_code = _apply_budget_status_override(
-        budget_status=budget_status,
-        triggered_signals=triggered_signals,
-        system_status=system_status,
-        system_response=system_response,
-        decision_label=decision_label,
-        rationale_code=rationale_code,
-    )
+    if artifact_type != "failure_eval_case":
+        budget_status = str(eval_summary.get("budget_status") or "invalid")
+        system_status, system_response, decision_label, rationale_code = _apply_budget_status_override(
+            budget_status=budget_status,
+            triggered_signals=triggered_signals,
+            system_status=system_status,
+            system_response=system_response,
+            decision_label=decision_label,
+            rationale_code=rationale_code,
+        )
 
     schema_version = "1.1.0"
     decision = {
