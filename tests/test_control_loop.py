@@ -447,3 +447,17 @@ def test_ignored_calibration_fails() -> None:
     inputs["judgment_calibration_result"]["calibration_events"] = []
     result = run_judgment_learning_control_loop(**inputs)
     assert result["decision"] == "block"
+
+
+def test_judgment_learning_control_allows_longitudinal_calibration_from_prior_trace() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["trace_context"]["trace_id"] = "trace-current-different"
+    result = run_judgment_learning_control_loop(**inputs)
+    assert result["decision"] == "allow"
+
+
+def test_judgment_learning_control_blocks_when_no_calibration_event_links_active_policy() -> None:
+    inputs = _judgment_learning_inputs()
+    inputs["judgment_calibration_result"]["calibration_events"][0]["policy_id"] = "other-policy"
+    with pytest.raises(ControlLoopError, match="ambiguous for active policy context"):
+        run_judgment_learning_control_loop(**inputs)

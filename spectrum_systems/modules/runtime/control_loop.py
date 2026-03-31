@@ -620,7 +620,13 @@ def run_judgment_learning_control_loop(
         calibration_events = judgment_calibration_result.get("calibration_events")
         if not isinstance(calibration_events, list) or not calibration_events:
             raise ControlLoopError("calibration authority exists but no calibration events were provided")
-        required_linkage = ("judgment_id", "decision_id", "policy_id", "trace_id", "observation_time")
+        required_linkage = ("judgment_id", "decision_id", "policy_id", "trace_id", "observation_time", "deterministic_identity")
+        expected_policy_id = str((judgment_policy or {}).get("artifact_id") or "")
+        if not expected_policy_id:
+            raise ControlLoopError("calibration linkage requires governed judgment policy identity")
+
+        identities: set[str] = set()
+        policy_linked_events = 0
         for idx, event in enumerate(calibration_events):
             if not isinstance(event, dict):
                 raise ControlLoopError(f"calibration event {idx} must be an object")
@@ -629,8 +635,15 @@ def run_judgment_learning_control_loop(
                 raise ControlLoopError(
                     f"calibration event {idx} missing linkage fields: {', '.join(missing)}"
                 )
-            if str(event.get("trace_id")) != trace_id:
-                raise ControlLoopError("calibration trace linkage is ambiguous for current control loop")
+            identity = str(event.get("deterministic_identity") or "")
+            if identity in identities:
+                raise ControlLoopError("calibration linkage contains duplicate deterministic_identity values")
+            identities.add(identity)
+            if str(event.get("policy_id") or "") == expected_policy_id:
+                policy_linked_events += 1
+
+        if policy_linked_events <= 0:
+            raise ControlLoopError("calibration linkage is ambiguous for active policy context")
 
         eval_failures = [
             item.get("eval_type")
