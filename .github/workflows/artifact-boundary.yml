@@ -60,7 +60,36 @@ jobs:
       - name: Validate orchestration boundaries and artifact-bus schema
         run: python scripts/validate_orchestration_boundaries.py
 
+  contract-preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run contract preflight gate
+        run: python scripts/run_contract_preflight.py --output-dir outputs/contract_preflight
+
+      - name: Upload contract preflight report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-preflight-report
+          path: outputs/contract_preflight/
+
   run-pytest:
+    needs:
+      - enforce-artifact-boundary
+      - validate-module-architecture
+      - validate-orchestration-boundaries
+      - contract-preflight
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
