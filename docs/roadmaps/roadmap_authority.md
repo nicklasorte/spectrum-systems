@@ -1,5 +1,14 @@
 # Roadmap Authority — Operational Note
 
+## Primary strategy authority (must be resolved first)
+- **Primary governing document:** `docs/architecture/strategy-control.md`
+- Roadmap generation input order is mandatory:
+  1. `docs/architecture/strategy-control.md`
+  2. Current repository
+  3. Current roadmap (`docs/roadmaps/system_roadmap.md` + required compatibility mirror)
+  4. Source design documents (PDFs/data lake artifacts/governed extracts)
+- Every roadmap step must validate alignment against strategy invariants before execution.
+
 ## Active roadmap authority file
 - **Active editorial authority:** `docs/roadmaps/system_roadmap.md`
 
@@ -38,7 +47,7 @@ These support execution but are not top-level authority documents:
 
 ## How old roadmaps are treated
 - `docs/roadmap/system_roadmap.md`: subordinate for editorial governance, but required as an operational compatibility mirror during migration.
-- `docs/roadmap.md`: deprecated historical artifact.
+- `docs/roadmap.md`: deprecated historical artifact (subordinate reference only).
 - Any roadmap-like document outside `docs/roadmaps/system_roadmap.md` is subordinate planning material or reference history.
 
 ## Where future status updates belong

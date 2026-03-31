@@ -2,6 +2,8 @@
 
 Active roadmap authority is `docs/roadmaps/system_roadmap.md`.
 
+- Strategy Control Document → `docs/architecture/strategy-control.md` (Primary governing document)
+
 ## Status
 This `docs/roadmap/` directory is subordinate execution/reference material.
 It does not define active top-level roadmap authority.

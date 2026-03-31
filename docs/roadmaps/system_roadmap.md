@@ -115,7 +115,7 @@ The roadmap foundation is strong, but **enforced learning authority / recurrence
 ### Source authority inputs consumed
 - `docs/source_structured/*.json` (all governed structured source artifacts).
 - `docs/source_indexes/source_inventory.json`, `docs/source_indexes/obligation_index.json`, `docs/source_indexes/component_source_map.json` (machine planning surface).
-- `docs/roadmaps/execution_state_inventory.md` and `docs/architecture/strategy_control_document.md` for strategy-control alignment.
+- `docs/roadmaps/execution_state_inventory.md` and `docs/architecture/strategy-control.md` for strategy-control alignment.
 
 ### Gap scan summary (obligation coverage)
 - **Covered obligations:** inventory/index discipline exists and remains machine-usable for all registered source IDs.
