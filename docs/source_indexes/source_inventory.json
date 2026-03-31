@@ -3,52 +3,12 @@
   "schema_version": "1.0.0",
   "sources": [
     {
-      "file_path": "docs/source_raw/agent_eval_integration_design_spectrum_systems.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-AGENT-EVAL-INTEGRATION",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/agent_eval_integration_design_spectrum_systems.json",
-      "title": "Agent Eval Integration Design \u2014 Spectrum Systems"
-    },
-    {
-      "file_path": "docs/source_raw/spectrum_systems_ai_integration_governed_api_adapter_design.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-AI-ADAPTER-DESIGN",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/spectrum_systems_ai_integration_governed_api_adapter_design.json",
-      "title": "Spectrum Systems AI Integration Governed API Adapter Design"
-    },
-    {
-      "file_path": "docs/source_raw/production_ready_best_practices_for_integrating_ai_models_into_automated_engineering_workflows.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-AI-WORKFLOW-PRACTICES",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/production_ready_best_practices_for_integrating_ai_models_into_automated_engineering_workflows.json",
-      "title": "Production-Ready Best Practices for Integrating AI Models into Automated Engineering Workflows"
-    },
-    {
-      "file_path": "docs/source_raw/spectrum_systems_done_certification_gate_gov10_design.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-GOV10-CERTIFICATION",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/spectrum_systems_done_certification_gate_gov10_design.json",
-      "title": "Spectrum Systems Done Certification Gate GOV10 Design"
-    },
-    {
-      "file_path": "docs/source_raw/spectrum_systems_build_governance_engine_sbge_design.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-SBGE-DESIGN",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/spectrum_systems_build_governance_engine_sbge_design.json",
-      "title": "Spectrum Systems Build Governance Engine (SBGE) Design"
-    },
-    {
-      "file_path": "docs/source_raw/mapping_google_sre_reliability_principles_to_spectrum_systems.pdf",
-      "notes": "Raw PDF is not present in repository at extraction time; artifact is a fail-closed starter extraction with declared obligations only.",
-      "source_id": "SRC-SRE-RELIABILITY",
-      "status": "missing",
-      "structured_artifact": "docs/source_structured/mapping_google_sre_reliability_principles_to_spectrum_systems.json",
-      "title": "Mapping Google SRE Reliability Principles to Spectrum Systems"
+      "file_path": "docs/source_structured/ai_durability_strategy.source.md",
+      "notes": "",
+      "source_id": "SRC-AI-DURABILITY-STRATEGY",
+      "status": "active",
+      "structured_artifact": "docs/source_structured/ai_durability_strategy.source.md",
+      "title": "AI Durability Strategy"
     }
   ]
 }

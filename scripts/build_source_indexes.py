@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Build deterministic source authority indexes from structured extraction artifacts."""
+"""Build deterministic source authority indexes from structured source artifacts."""
 
 from __future__ import annotations
 
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -36,20 +37,81 @@ def _validate_artifact(validator: Draft202012Validator, artifact: dict[str, Any]
         raise ValueError("\n".join(lines))
 
 
-def _load_structured_sources() -> list[dict[str, Any]]:
+def _extract_machine_json_block(markdown: str, heading: str) -> Any:
+    pattern = rf"##\s+{re.escape(heading)}\s*\n```json\s*(.*?)\s*```"
+    match = re.search(pattern, markdown, re.DOTALL)
+    if not match:
+        raise ValueError(f"Missing required json block for heading: {heading}")
+    return json.loads(match.group(1))
+
+
+def _load_markdown_artifacts() -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for source_path in sorted(SOURCE_STRUCTURED_DIR.glob("*.source.md")):
+        raw_text = source_path.read_text(encoding="utf-8")
+        source_document = _extract_machine_json_block(raw_text, "machine_source_document")
+        obligations = _extract_machine_json_block(raw_text, "machine_obligations")
+
+        if source_document.get("status") not in {"active", "inactive"}:
+            raise ValueError(f"Invalid source status in {source_path}: {source_document.get('status')}")
+
+        normalized_obligations: list[dict[str, Any]] = []
+        for row in obligations:
+            normalized_obligations.append({
+                "obligation_id": row["obligation_id"],
+                "trace_id": row.get("trace_id", f"TRACE-{row['obligation_id'].replace('OBL-', '')}"),
+                "component_id": row["component_id"],
+                "category": row["category"],
+                "description": row["description"],
+                "layer": row["layer"],
+                "required_artifacts": row.get("required_artifacts", []),
+                "required_gates": row.get("required_gates", []),
+                "status": row.get("status", "planned"),
+                "source_section": row.get("source_section", "unspecified"),
+                "duplicate_allowed": row.get("duplicate_allowed", False),
+                "duplicate_reason": row.get("duplicate_reason", "")
+            })
+
+        try:
+            relative_path = str(source_path.relative_to(REPO_ROOT))
+        except ValueError:
+            relative_path = str(source_path)
+
+        artifacts.append({
+            "source_document": {
+                "source_id": source_document["source_id"],
+                "title": source_document["title"],
+                "file_path": source_document["path"],
+                "status": source_document["status"],
+                "notes": source_document.get("notes", "")
+            },
+            "source_traceability_rows": normalized_obligations,
+            "__path": relative_path
+        })
+    return artifacts
+
+
+def _load_legacy_json_artifacts() -> list[dict[str, Any]]:
     validator = _build_validator()
     artifacts: list[dict[str, Any]] = []
     for source_path in sorted(SOURCE_STRUCTURED_DIR.glob("*.json")):
         artifact = _load_json(source_path)
         _validate_artifact(validator, artifact, source_path)
-        try:
-            artifact["__path"] = str(source_path.relative_to(REPO_ROOT))
-        except ValueError:
-            artifact["__path"] = str(source_path)
+        artifact["__path"] = str(source_path.relative_to(REPO_ROOT))
         artifacts.append(artifact)
-    if not artifacts:
-        raise ValueError(f"No structured source files found in {SOURCE_STRUCTURED_DIR}")
     return artifacts
+
+
+def _load_structured_sources() -> list[dict[str, Any]]:
+    markdown_artifacts = _load_markdown_artifacts()
+    if markdown_artifacts:
+        return markdown_artifacts
+
+    legacy_artifacts = _load_legacy_json_artifacts()
+    if legacy_artifacts:
+        return legacy_artifacts
+
+    raise ValueError(f"No structured source files found in {SOURCE_STRUCTURED_DIR}")
 
 
 def _check_duplicate_obligation_ids(artifacts: list[dict[str, Any]]) -> None:
@@ -108,7 +170,12 @@ def _emit_obligation_index(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
                 "source_id": source_id,
                 "trace_id": row["trace_id"],
                 "component_id": row["component_id"],
-                "obligation_statement": row["obligation_statement"],
+                "category": row.get("category", "unspecified"),
+                "description": row.get("description", row.get("obligation_statement", "")),
+                "layer": row.get("layer", "unspecified"),
+                "required_artifacts": row.get("required_artifacts", []),
+                "required_gates": row.get("required_gates", []),
+                "status": row.get("status", "planned"),
                 "source_section": row["source_section"],
                 "duplicate_allowed": row.get("duplicate_allowed", False),
                 "duplicate_reason": row.get("duplicate_reason", "")
