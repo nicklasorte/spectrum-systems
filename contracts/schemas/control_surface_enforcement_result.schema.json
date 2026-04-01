@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_surface_enforcement_result.schema.json",
+  "title": "Control Surface Enforcement Result",
+  "description": "Deterministic fail-closed enforcement result for governed control surface manifest completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "manifest_ref",
+    "manifest_identity",
+    "enforcement_status",
+    "required_surface_policy_version",
+    "required_surfaces_evaluated",
+    "missing_required_surfaces",
+    "surfaces_missing_invariants",
+    "surfaces_missing_test_coverage",
+    "blocking_reasons",
+    "coverage_summary",
+    "deterministic_enforcement_id",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "control_surface_enforcement_result"},
+    "schema_version": {"const": "1.0.0"},
+    "manifest_ref": {"type": "string", "minLength": 1},
+    "manifest_identity": {"type": "string", "pattern": "^csm-[a-f0-9]{16}$"},
+    "enforcement_status": {"type": "string", "enum": ["PASS", "BLOCK"]},
+    "required_surface_policy_version": {"type": "string", "const": "1.0.0"},
+    "required_surfaces_evaluated": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "missing_required_surfaces": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "surfaces_missing_invariants": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "surfaces_missing_test_coverage": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "coverage_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_surface_count",
+        "required_surface_present_count",
+        "required_surface_invariant_covered_count",
+        "required_surface_test_covered_count",
+        "blocking_gaps_present"
+      ],
+      "properties": {
+        "required_surface_count": {"type": "integer", "minimum": 1},
+        "required_surface_present_count": {"type": "integer", "minimum": 0},
+        "required_surface_invariant_covered_count": {"type": "integer", "minimum": 0},
+        "required_surface_test_covered_count": {"type": "integer", "minimum": 0},
+        "blocking_gaps_present": {"type": "boolean"}
+      }
+    },
+    "deterministic_enforcement_id": {"type": "string", "pattern": "^cse-[a-f0-9]{16}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "policy_ref", "manifest_schema_version"],
+      "properties": {
+        "producer": {"const": "spectrum_systems.modules.runtime.control_surface_enforcement"},
+        "policy_ref": {"type": "string", "minLength": 1},
+        "manifest_schema_version": {"type": "string", "const": "1.0.0"}
+      }
+    }
+  }
+}

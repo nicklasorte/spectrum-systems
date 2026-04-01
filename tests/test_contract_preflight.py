@@ -526,3 +526,46 @@ def test_contract_preflight_example_references_existing_impacted_paths() -> None
         + example["impacted_consumers"]
     ):
         assert Path(rel_path).exists(), f"preflight seam path missing: {rel_path}"
+
+
+def test_main_contract_preflight_blocks_when_control_surface_enforcement_blocks(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["spectrum_systems/modules/runtime/control_surface_manifest.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_enforcement",
+        lambda _paths: {
+            "artifact_type": "control_surface_enforcement_result",
+            "enforcement_status": "BLOCK",
+            "blocking_reasons": ["REQUIRED_SURFACES_TEST_COVERAGE_MISSING"],
+        },
+    )
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "failed"
+    assert report["control_surface_enforcement"]["enforcement_status"] == "BLOCK"
+    assert "REQUIRED_SURFACES_TEST_COVERAGE_MISSING" in report["invariant_violations"]
+
+
+def test_control_surface_enforcement_not_invoked_for_enforcement_only_paths() -> None:
+    assert preflight.evaluate_control_surface_enforcement(
+        ["spectrum_systems/modules/runtime/control_surface_enforcement.py"]
+    ) is None

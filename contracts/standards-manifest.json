@@ -328,6 +328,19 @@
       "notes": "EFG-01/EFG-02 hard-gate proof surface requires fail-closed failure-binding/recurrence evidence and explicit hard-gate falsification references consumed by promotion policy."
     },
     {
+      "artifact_type": "control_surface_enforcement_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.17",
+      "last_updated_in": "1.3.17",
+      "example_path": "contracts/examples/control_surface_enforcement_result.json",
+      "notes": "CON-030 deterministic fail-closed enforcement result for required control surfaces, invariant mappings, and required test coverage."
+    },
+    {
       "artifact_type": "control_surface_manifest",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
