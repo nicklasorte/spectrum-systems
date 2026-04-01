@@ -35,6 +35,7 @@ def _signals(*, eval_passed: bool = True, drift: bool = False, budget: str = "he
         judgment_eval_result={"eval_results": [{"eval_type": "evidence_coverage", "passed": eval_passed}]},
         judgment_drift_signal={"group_signals": [{"drift_detected": drift}]},
         judgment_error_budget_status={"status": budget},
+        judgment_calibration_result={"calibration_health": {"status": "healthy"}},
         remediation_readiness_statuses=[{"closure_eligible": True}],
         control_ready=True,
     )
@@ -202,14 +203,26 @@ def test_degraded_calibration_blocks_promotion_gate() -> None:
             judgment_drift_signal={"group_signals": [{"drift_detected": False}]},
             judgment_error_budget_status={"status": "healthy"},
             judgment_calibration_result={
-                "group_metrics": [
-                    {
-                        "expected_calibration_error": 0.2,
-                    }
-                ]
+                "calibration_health": {"status": "failing"}
             },
             remediation_readiness_statuses=[{"closure_eligible": True}],
             control_ready=True,
         )
     )
     assert gates["calibration_within_bounds"] is False
+    assert gates["calibration_lifecycle_block"] is True
+
+
+def test_missing_required_calibration_evidence_fails_closed() -> None:
+    with pytest.raises(JudgmentPolicyLifecycleError, match="requires judgment_calibration_result"):
+        evaluate_promotion_gates(
+            PromotionInputs(
+                judgment_eval_result={"eval_results": [{"eval_type": "evidence_coverage", "passed": True}]},
+                judgment_drift_signal={"group_signals": [{"drift_detected": False}]},
+                judgment_error_budget_status={"status": "healthy"},
+                judgment_calibration_result=None,
+                remediation_readiness_statuses=[{"closure_eligible": True}],
+                control_ready=True,
+                calibration_required=True,
+            )
+        )

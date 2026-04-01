@@ -129,6 +129,16 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         if not isinstance(review_paths, list) or not review_paths:
             return SequenceTransitionDecision(False, "certification_pending requires review artifacts")
     elif target_state == "promoted":
+        required_judgments = manifest.get("required_judgments")
+        if isinstance(required_judgments, list) and "artifact_release_readiness" in required_judgments:
+            required_paths = {
+                "judgment_record_path": manifest.get("judgment_record_path"),
+                "judgment_application_record_path": manifest.get("judgment_application_record_path"),
+                "judgment_eval_result_path": manifest.get("judgment_eval_result_path"),
+            }
+            for field, path in required_paths.items():
+                if not _path_exists(path):
+                    return SequenceTransitionDecision(False, f"promotion requires {field} when artifact_release_readiness judgment is required")
         if manifest.get("certification_status") != "passed":
             return SequenceTransitionDecision(False, "promotion requires certification_status=passed")
         if not _path_exists(manifest.get("certification_record_path")):

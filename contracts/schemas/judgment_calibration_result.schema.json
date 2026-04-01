@@ -15,13 +15,17 @@
     "formulas",
     "calibration_events",
     "longitudinal_summary",
+    "evidence_window",
+    "policy_reference",
+    "calibration_health",
+    "trace_linkage",
     "created_at"
   ],
   "properties": {
     "artifact_type": {"const": "judgment_calibration_result"},
     "artifact_id": {"type": "string", "minLength": 1},
-    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "schema_version": {"type": "string", "const": "1.1.0"},
+    "artifact_version": {"type": "string", "const": "1.2.0"},
+    "schema_version": {"type": "string", "const": "1.2.0"},
     "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "grouping_keys": {
       "type": "array",
@@ -138,6 +142,69 @@
         "observation_count": {"type": "integer", "minimum": 1},
         "aligned_count": {"type": "integer", "minimum": 0},
         "misaligned_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "evidence_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "window_type",
+        "lookback_event_count",
+        "observed_event_count",
+        "window_start_observation_time",
+        "window_end_observation_time"
+      ],
+      "properties": {
+        "window_type": {"type": "string", "const": "rolling_event_count"},
+        "lookback_event_count": {"type": "integer", "minimum": 1},
+        "observed_event_count": {"type": "integer", "minimum": 1},
+        "window_start_observation_time": {"type": "string", "format": "date-time"},
+        "window_end_observation_time": {"type": "string", "format": "date-time"}
+      }
+    },
+    "policy_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_id", "policy_version", "policy_source"],
+      "properties": {
+        "policy_id": {"type": "string", "minLength": 1},
+        "policy_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "policy_source": {"type": "string", "minLength": 1}
+      }
+    },
+    "calibration_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "trend", "threshold_comparison"],
+      "properties": {
+        "status": {"type": "string", "enum": ["healthy", "degraded", "failing"]},
+        "trend": {"type": "string", "enum": ["improving", "stable", "worsening"]},
+        "threshold_comparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "warn_if_expected_calibration_error_greater_than",
+            "freeze_if_expected_calibration_error_greater_than",
+            "max_expected_calibration_error",
+            "breach_level"
+          ],
+          "properties": {
+            "warn_if_expected_calibration_error_greater_than": {"type": "number", "minimum": 0, "maximum": 1},
+            "freeze_if_expected_calibration_error_greater_than": {"type": "number", "minimum": 0, "maximum": 1},
+            "max_expected_calibration_error": {"type": "number", "minimum": 0, "maximum": 1},
+            "breach_level": {"type": "string", "enum": ["none", "warn", "freeze"]}
+          }
+        }
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["judgment_ids", "trace_ids", "deterministic_identity_refs"],
+      "properties": {
+        "judgment_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "trace_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "deterministic_identity_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
       }
     },
     "created_at": {"type": "string", "format": "date-time"}

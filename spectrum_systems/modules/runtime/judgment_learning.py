@@ -153,6 +153,10 @@ def run_judgment_calibration(
     labels: Iterable[dict[str, Any]],
     judgment_records_by_id: dict[str, dict[str, Any]],
     created_at: str,
+    lookback_window_size: int | None = None,
+    policy_id: str | None = None,
+    policy_version: str | None = None,
+    policy_source: str | None = None,
 ) -> dict[str, Any]:
     label_list = [dict(item) for item in labels if isinstance(item, dict)]
     if not label_list:
@@ -213,6 +217,56 @@ def run_judgment_calibration(
             }
         )
 
+    if lookback_window_size is None:
+        resolved_lookback = len(calibration_events)
+    elif isinstance(lookback_window_size, int) and lookback_window_size > 0:
+        resolved_lookback = lookback_window_size
+    else:
+        raise JudgmentLearningError("lookback_window_size must be a positive integer when provided")
+    if len(calibration_events) > resolved_lookback:
+        raise JudgmentLearningError("calibration events exceed declared lookback_window_size")
+
+    resolved_policy_id = str(policy_id or "").strip()
+    if not resolved_policy_id:
+        policy_ids = sorted(
+            {
+                str(item.get("policy_id") or "").strip()
+                for item in calibration_events
+                if isinstance(item, dict) and str(item.get("policy_id") or "").strip()
+            }
+        )
+        if len(policy_ids) != 1:
+            raise JudgmentLearningError("calibration requires a deterministic single policy_id for lifecycle binding")
+        resolved_policy_id = policy_ids[0]
+
+    resolved_policy_version = str(policy_version or "").strip()
+    if not resolved_policy_version:
+        versions = {
+            str(item.get("policy_version") or "").strip()
+            for item in judgment_records_by_id.values()
+            if isinstance(item, dict)
+            and _derive_record_policy_id(item) == resolved_policy_id
+            and str(item.get("artifact_version") or "").strip()
+        }
+        if len(versions) != 1:
+            raise JudgmentLearningError("calibration requires deterministic policy_version for lifecycle binding")
+        resolved_policy_version = next(iter(versions))
+
+    resolved_policy_source = str(policy_source or "").strip()
+    if not resolved_policy_source:
+        policy_sources = sorted(
+            {
+                str(item.get("policy_ref") or "").strip()
+                for item in judgment_records_by_id.values()
+                if isinstance(item, dict)
+                and _derive_record_policy_id(item) == resolved_policy_id
+                and str(item.get("policy_ref") or "").strip()
+            }
+        )
+        if len(policy_sources) != 1:
+            raise JudgmentLearningError("calibration requires deterministic policy_source for lifecycle binding")
+        resolved_policy_source = policy_sources[0]
+
     group_metrics: list[dict[str, Any]] = []
     for (judgment_type, policy_version, environment), entries in sorted(grouped.items()):
         total = len(entries)
@@ -253,11 +307,31 @@ def run_judgment_calibration(
             }
         )
 
+    max_ece = max(float(item.get("expected_calibration_error", 0.0)) for item in group_metrics)
+    warn_threshold = 0.05
+    freeze_threshold = 0.1
+    if max_ece >= freeze_threshold:
+        calibration_health_status = "failing"
+        breach_level = "freeze"
+    elif max_ece >= warn_threshold:
+        calibration_health_status = "degraded"
+        breach_level = "warn"
+    else:
+        calibration_health_status = "healthy"
+        breach_level = "none"
+    trend = "stable"
+    total_aligned = sum(1 for item in calibration_events if item["calibration_status"] == "aligned")
+    if total_aligned == len(calibration_events):
+        trend = "improving"
+    elif total_aligned == 0:
+        trend = "worsening"
+
+    observation_times = sorted(item["observation_time"] for item in calibration_events)
     payload = {
         "artifact_type": "judgment_calibration_result",
         "artifact_id": artifact_id,
-        "artifact_version": "1.1.0",
-        "schema_version": "1.1.0",
+        "artifact_version": "1.2.0",
+        "schema_version": "1.2.0",
         "standards_version": "1.1.0",
         "grouping_keys": ["judgment_type", "policy_version", "environment"],
         "group_metrics": group_metrics,
@@ -271,6 +345,33 @@ def run_judgment_calibration(
             "observation_count": len(calibration_events),
             "aligned_count": sum(1 for item in calibration_events if item["calibration_status"] == "aligned"),
             "misaligned_count": sum(1 for item in calibration_events if item["calibration_status"] == "misaligned"),
+        },
+        "evidence_window": {
+            "window_type": "rolling_event_count",
+            "lookback_event_count": resolved_lookback,
+            "observed_event_count": len(calibration_events),
+            "window_start_observation_time": observation_times[0],
+            "window_end_observation_time": observation_times[-1],
+        },
+        "policy_reference": {
+            "policy_id": resolved_policy_id,
+            "policy_version": resolved_policy_version,
+            "policy_source": resolved_policy_source,
+        },
+        "calibration_health": {
+            "status": calibration_health_status,
+            "trend": trend,
+            "threshold_comparison": {
+                "warn_if_expected_calibration_error_greater_than": warn_threshold,
+                "freeze_if_expected_calibration_error_greater_than": freeze_threshold,
+                "max_expected_calibration_error": round(max_ece, 6),
+                "breach_level": breach_level,
+            },
+        },
+        "trace_linkage": {
+            "judgment_ids": sorted({item["judgment_id"] for item in calibration_events}),
+            "trace_ids": sorted({item["trace_id"] for item in calibration_events}),
+            "deterministic_identity_refs": sorted({item["deterministic_identity"] for item in calibration_events}),
         },
         "created_at": created_at,
     }

@@ -19,8 +19,8 @@ def _judgment_record() -> dict:
     return {
         "artifact_type": "judgment_record",
         "artifact_id": "judgment-record-cycle-0001",
-        "artifact_version": "1.1.0",
-        "schema_version": "1.1.0",
+        "artifact_version": "1.2.0",
+        "schema_version": "1.2.0",
         "standards_version": "1.0.94",
         "judgment_type": "artifact_release_readiness",
         "selected_outcome": "approve",
@@ -60,8 +60,8 @@ def _application_record() -> dict:
     return {
         "artifact_type": "judgment_application_record",
         "artifact_id": "judgment-application-cycle-0001",
-        "artifact_version": "1.1.0",
-        "schema_version": "1.1.0",
+        "artifact_version": "1.2.0",
+        "schema_version": "1.2.0",
         "standards_version": "1.1.0",
         "judgment_record_ref": "judgment_record::cycle-0001",
         "selected_policy_ref": "contracts/examples/judgment_policy.json",
@@ -195,8 +195,8 @@ def test_drift_signal_computation_is_deterministic() -> None:
     baseline = {
         "artifact_type": "judgment_calibration_result",
         "artifact_id": "baseline",
-        "artifact_version": "1.1.0",
-        "schema_version": "1.1.0",
+        "artifact_version": "1.2.0",
+        "schema_version": "1.2.0",
         "standards_version": "1.1.0",
         "grouping_keys": ["judgment_type", "policy_version", "environment"],
         "group_metrics": [
@@ -238,6 +238,33 @@ def test_drift_signal_computation_is_deterministic() -> None:
             }
         ],
         "longitudinal_summary": {"observation_count": 1, "aligned_count": 1, "misaligned_count": 0},
+        "evidence_window": {
+            "window_type": "rolling_event_count",
+            "lookback_event_count": 10,
+            "observed_event_count": 1,
+            "window_start_observation_time": "2026-03-30T00:00:00Z",
+            "window_end_observation_time": "2026-03-30T00:00:00Z",
+        },
+        "policy_reference": {
+            "policy_id": "judgment-policy-artifact-release-readiness-v1",
+            "policy_version": "1.1.0",
+            "policy_source": "contracts/examples/judgment_policy.json",
+        },
+        "calibration_health": {
+            "status": "healthy",
+            "trend": "stable",
+            "threshold_comparison": {
+                "warn_if_expected_calibration_error_greater_than": 0.05,
+                "freeze_if_expected_calibration_error_greater_than": 0.1,
+                "max_expected_calibration_error": 0.02,
+                "breach_level": "none",
+            },
+        },
+        "trace_linkage": {
+            "judgment_ids": ["judgment-record-cycle-0001"],
+            "trace_ids": ["cycle-0001"],
+            "deterministic_identity_refs": ["baseline-event-1"],
+        },
         "created_at": "2026-03-30T00:02:00Z",
     }
     current = deepcopy(baseline)
@@ -351,8 +378,8 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
         baseline={
             "artifact_type": "judgment_calibration_result",
             "artifact_id": "baseline",
-            "artifact_version": "1.1.0",
-            "schema_version": "1.1.0",
+            "artifact_version": "1.2.0",
+            "schema_version": "1.2.0",
             "standards_version": "1.1.0",
             "grouping_keys": ["judgment_type", "policy_version", "environment"],
             "group_metrics": [
@@ -394,13 +421,40 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                 }
             ],
             "longitudinal_summary": {"observation_count": 1, "aligned_count": 1, "misaligned_count": 0},
+            "evidence_window": {
+                "window_type": "rolling_event_count",
+                "lookback_event_count": 10,
+                "observed_event_count": 1,
+                "window_start_observation_time": "2026-03-30T00:00:00Z",
+                "window_end_observation_time": "2026-03-30T00:00:00Z",
+            },
+            "policy_reference": {
+                "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                "policy_version": "1.1.0",
+                "policy_source": "contracts/examples/judgment_policy.json",
+            },
+            "calibration_health": {
+                "status": "healthy",
+                "trend": "stable",
+                "threshold_comparison": {
+                    "warn_if_expected_calibration_error_greater_than": 0.05,
+                    "freeze_if_expected_calibration_error_greater_than": 0.1,
+                    "max_expected_calibration_error": 0.02,
+                    "breach_level": "none",
+                },
+            },
+            "trace_linkage": {
+                "judgment_ids": ["judgment-record-cycle-0001"],
+                "trace_ids": ["cycle-0001"],
+                "deterministic_identity_refs": ["baseline-event-2"],
+            },
             "created_at": "2026-03-30T00:02:00Z",
         },
         current={
             "artifact_type": "judgment_calibration_result",
             "artifact_id": "current",
-            "artifact_version": "1.1.0",
-            "schema_version": "1.1.0",
+            "artifact_version": "1.2.0",
+            "schema_version": "1.2.0",
             "standards_version": "1.1.0",
             "grouping_keys": ["judgment_type", "policy_version", "environment"],
             "group_metrics": [
@@ -442,6 +496,33 @@ def test_drift_threshold_policy_evaluation_is_deterministic() -> None:
                 }
             ],
             "longitudinal_summary": {"observation_count": 1, "aligned_count": 0, "misaligned_count": 1},
+            "evidence_window": {
+                "window_type": "rolling_event_count",
+                "lookback_event_count": 10,
+                "observed_event_count": 1,
+                "window_start_observation_time": "2026-03-30T00:03:00Z",
+                "window_end_observation_time": "2026-03-30T00:03:00Z",
+            },
+            "policy_reference": {
+                "policy_id": "judgment-policy-artifact-release-readiness-v1",
+                "policy_version": "1.1.0",
+                "policy_source": "contracts/examples/judgment_policy.json",
+            },
+            "calibration_health": {
+                "status": "failing",
+                "trend": "worsening",
+                "threshold_comparison": {
+                    "warn_if_expected_calibration_error_greater_than": 0.05,
+                    "freeze_if_expected_calibration_error_greater_than": 0.1,
+                    "max_expected_calibration_error": 0.12,
+                    "breach_level": "freeze",
+                },
+            },
+            "trace_linkage": {
+                "judgment_ids": ["judgment-record-cycle-0001"],
+                "trace_ids": ["cycle-0001"],
+                "deterministic_identity_refs": ["current-event-1"],
+            },
             "created_at": "2026-03-30T00:03:00Z",
         },
         created_at="2026-03-30T00:04:00Z",
@@ -501,6 +582,28 @@ def test_calibration_artifact_emitted() -> None:
     )
     assert calibration["artifact_type"] == "judgment_calibration_result"
     assert calibration["longitudinal_summary"]["observation_count"] == 1
+    assert calibration["evidence_window"]["window_type"] == "rolling_event_count"
+    assert calibration["policy_reference"]["policy_id"] == "judgment-policy-artifact-release-readiness-v1"
+
+
+def test_calibration_window_requires_positive_lookback() -> None:
+    with pytest.raises(JudgmentLearningError, match="lookback_window_size"):
+        run_judgment_calibration(
+            artifact_id="calibration-bad-window-1",
+            labels=[
+                _label(
+                    artifact_id="label-bad-window-1",
+                    judgment_id="judgment-record-cycle-0001",
+                    observed_outcome="approve",
+                    expected_outcome="approve",
+                    correctness=True,
+                    timestamp="2026-03-30T00:00:00Z",
+                )
+            ],
+            judgment_records_by_id={"judgment-record-cycle-0001": _judgment_record()},
+            created_at="2026-03-30T00:01:00Z",
+            lookback_window_size=0,
+        )
 
 
 def test_calibration_classifies_alignment() -> None:
