@@ -2,12 +2,19 @@
 
 ## Primary strategy authority (must be resolved first)
 - **Primary governing document:** `docs/architecture/strategy-control.md`
+- **Mandatory foundation architecture authority:** `docs/architecture/foundation_pqx_eval_control.md`
 - Roadmap generation input order is mandatory:
   1. `docs/architecture/strategy-control.md`
-  2. Current repository
-  3. Current roadmap (`docs/roadmaps/system_roadmap.md` + required compatibility mirror)
-  4. Source design documents (PDFs/data lake artifacts/governed extracts)
-- Every roadmap step must validate alignment against strategy invariants before execution.
+  2. `docs/architecture/foundation_pqx_eval_control.md`
+  3. current repository state
+  4. current roadmap (`docs/roadmaps/system_roadmap.md` + required compatibility mirror)
+  5. source design documents / architecture artifacts
+- Every roadmap step must validate alignment against strategy invariants and foundation chain hardening requirements before execution.
+
+## Foundation-first gate (non-compliance if violated)
+- Roadmap generation must compare repository state against `docs/architecture/foundation_pqx_eval_control.md` before proposing steps.
+- Expansion is blocked when required foundation layers are missing, partial, bypassable, or ambiguous.
+- If foundation and roadmap disagree, record mismatch as a foundation gap and prioritize closure; do not rewrite architecture.
 
 ## Active roadmap authority file
 - **Active editorial authority:** `docs/roadmaps/system_roadmap.md`
@@ -35,6 +42,11 @@
   - `docs/roadmaps/system_roadmap.md` must explicitly declare the compatibility transition rule.
   - `docs/roadmap/system_roadmap.md` must explicitly declare the active authority and remain aligned to `docs/roadmap/roadmap_step_contract.md`.
   - Any mismatch blocks execution.
+
+## Roadmap generator authority normalization
+- Reusable roadmap generator prompt authority surface: `docs/architecture/strategy_guided_roadmap_prompt.md`.
+- Generator authority note surface: `docs/roadmaps/roadmap_generator_authority.md`.
+- Competing roadmap-generator prompt variants are non-compliant; stale variants must be marked and not used for generation.
 
 ## Allowed supporting docs
 These support execution but are not top-level authority documents:
