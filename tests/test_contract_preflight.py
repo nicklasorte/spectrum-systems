@@ -294,6 +294,67 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
     assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "WARN"
 
 
+def test_main_dedupes_refs_attempted_preserving_order(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    duplicate_refs = [
+        "base..sha-a",
+        "base..HEAD",
+        "base..sha-a",
+        "working_tree_vs_HEAD",
+        "base..HEAD",
+    ]
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="degraded_full_governed_scan",
+            refs_attempted=duplicate_refs,
+            fallback_used=True,
+            warnings=["changed-path detection degraded; running full governed contract scan"],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "build_impact_map",
+        lambda *_args, **_kwargs: {
+            "producers": [],
+            "fixtures_or_builders": [],
+            "consumers": [],
+            "required_smoke_tests": [],
+            "contract_impact_artifact": {},
+        },
+    )
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+
+    expected_refs = ["base..sha-a", "base..HEAD", "working_tree_vs_HEAD"]
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["changed_path_detection"]["refs_attempted"] == expected_refs
+    preflight_artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert preflight_artifact["trace"]["refs_attempted"] == expected_refs
+
+
 def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:
     report = {
         "status": "failed",

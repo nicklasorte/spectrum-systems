@@ -60,6 +60,18 @@ class ChangedPathDetectionResult:
     warnings: list[str]
 
 
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        normalized = str(value).strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return ordered
+
+
 def _run(command: list[str], cwd: Path) -> CommandResult:
     proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
     return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
@@ -485,6 +497,7 @@ def build_preflight_result_artifact(
     hardening_flow: bool,
 ) -> dict[str, Any]:
     detection = report.get("changed_path_detection", {})
+    refs_attempted = _dedupe_preserve_order(list(detection.get("refs_attempted", [])))
     control_signal = map_preflight_control_signal(report=report, hardening_flow=hardening_flow)
     return {
         "artifact_type": "contract_preflight_result_artifact",
@@ -505,7 +518,7 @@ def build_preflight_result_artifact(
         "trace": {
             "producer": "scripts/run_contract_preflight.py",
             "policy_version": _PREFLIGHT_POLICY_VERSION,
-            "refs_attempted": detection.get("refs_attempted", []),
+            "refs_attempted": refs_attempted,
             "fallback_used": bool(detection.get("fallback_used", False)),
             "provenance_ref": "contracts/standards-manifest.json",
         },
@@ -526,7 +539,7 @@ def main() -> int:
     changed_examples = classified["changed_example_paths"]
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
-        "refs_attempted": detection.refs_attempted,
+        "refs_attempted": _dedupe_preserve_order(detection.refs_attempted),
         "fallback_used": detection.fallback_used,
         "warnings": detection.warnings,
     }
