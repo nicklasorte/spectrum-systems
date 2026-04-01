@@ -167,6 +167,23 @@ def _enforce_contract_preflight_gate(
     if not isinstance(control_signal, dict):
         raise PQXSliceRunnerError("contract preflight artifact missing control_signal")
     action = _normalize_strategy_decision(control_signal.get("strategy_gate_decision"))
+    preflight_status = str(artifact.get("preflight_status") or "")
+    degraded_detection = bool(control_signal.get("degraded_detection"))
+    masking_detected = bool(artifact.get("masking_detected"))
+    allowed_actions_by_status = {
+        "passed": {"allow", "warn"},
+        "failed": {"block", "freeze"},
+        "skipped": {"block"},
+    }
+    allowed_actions = allowed_actions_by_status.get(preflight_status)
+    if allowed_actions is None or action not in allowed_actions:
+        raise PQXSliceRunnerError(
+            f"inconsistent preflight control mapping: preflight_status={preflight_status} decision={action}"
+        )
+    if action == "warn" and not degraded_detection:
+        raise PQXSliceRunnerError("contract preflight WARN decision requires degraded_detection=true")
+    if masking_detected and action != "block":
+        raise PQXSliceRunnerError("contract preflight masking_detected=true requires BLOCK decision")
     rationale = str(control_signal.get("rationale") or "contract preflight control signal missing rationale")
     if action == "block":
         raise PQXSliceRunnerError(f"contract preflight BLOCK: {rationale}")

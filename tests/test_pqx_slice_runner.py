@@ -441,6 +441,49 @@ def test_run_pqx_slice_blocks_when_contract_changes_lack_preflight_artifact(tmp_
     assert "required for governed contract/example changes" in result["reason"]
 
 
+def test_run_pqx_slice_blocks_on_inconsistent_preflight_status_and_decision(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-inconsistent-status-decision.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="failed", decision="ALLOW")), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
+    assert "inconsistent preflight control mapping" in result["reason"]
+
+
+def test_run_pqx_slice_blocks_on_preflight_warn_without_degraded_detection(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    payload = _preflight_artifact(status="passed", decision="WARN", degraded=False)
+    preflight_path = tmp_path / "preflight-warn-without-degraded.json"
+    preflight_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
+    assert "WARN decision requires degraded_detection=true" in result["reason"]
+
+
 def test_runtime_module_import_has_no_done_certification_cycle() -> None:
     runtime_module = importlib.import_module("spectrum_systems.modules.runtime")
     assert runtime_module is not None
