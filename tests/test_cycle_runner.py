@@ -284,6 +284,29 @@ def test_cycle_runner_review_to_fix_reentry_happy_path(tmp_path: Path) -> None:
     assert cert_result["next_state"] == "certified_done"
 
 
+def test_build_fix_request_preserves_contract_preflight_artifact_path(tmp_path: Path) -> None:
+    base_request = {
+        "step_id": "AI-01",
+        "roadmap_path": "docs/roadmap/system_roadmap.md",
+        "state_path": str(tmp_path / "state.json"),
+        "runs_root": str(tmp_path / "runs"),
+        "pqx_output_text": "deterministic pqx output",
+        "contract_preflight_result_artifact_path": "outputs/contract_preflight/contract_preflight_result_artifact.json",
+    }
+    bundle = {"bundle_id": "bundle-001", "title": "Fix one deterministic seam"}
+
+    request_path = cycle_runner._build_fix_request(
+        base_request=base_request,
+        bundle=bundle,
+        cycle_id="cycle-test",
+        bundle_index=0,
+        root_dir=tmp_path,
+    )
+
+    payload = _load(Path(request_path))
+    assert payload["contract_preflight_result_artifact_path"] == base_request["contract_preflight_result_artifact_path"]
+
+
 def test_cycle_runner_blocks_when_pqx_output_artifact_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _, manifest_path = _manifest(tmp_path, state="execution_ready")
 

@@ -255,6 +255,10 @@ def _build_fix_request(
         "fix_reentry": True,
         "cycle_id": cycle_id,
     }
+    preflight_artifact_path = base_request.get("contract_preflight_result_artifact_path")
+    if isinstance(preflight_artifact_path, str) and preflight_artifact_path.strip():
+        request_payload["contract_preflight_result_artifact_path"] = preflight_artifact_path
+
     requests_dir = root_dir / "fix_requests"
     requests_dir.mkdir(parents=True, exist_ok=True)
     request_path = requests_dir / f"{bundle_id}.json"
