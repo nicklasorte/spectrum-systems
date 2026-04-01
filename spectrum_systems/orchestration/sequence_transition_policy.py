@@ -7,6 +7,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from spectrum_systems.modules.runtime.trust_spine_invariants import (
+    validate_trust_spine_invariants,
+)
+
 SEQUENCE_STATES = {
     "admitted",
     "executing_slice_1",
@@ -171,6 +175,22 @@ def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | Non
         return False, "promotion requires readable eval_coverage_summary_ref artifact"
     if _coverage_required_deficit(coverage_payload):
         return False, "promotion blocked: required eval coverage gaps present"
+
+    invariant_result = validate_trust_spine_invariants(
+        replay_result=replay_payload,
+        evaluation_control_decision=policy_payload,
+        enforcement_result=enforcement_payload,
+        eval_coverage_summary=coverage_payload,
+        gate_proof_evidence=manifest.get("control_loop_gate_proof"),
+        done_certification_record=None,
+        target_surface="promotion",
+    )
+    if not invariant_result.passed:
+        return (
+            False,
+            "promotion blocked by trust-spine invariant violations: "
+            + "; ".join(invariant_result.blocking_reasons),
+        )
 
     return True, None
 

@@ -178,6 +178,30 @@ def test_promotion_blocks_when_policy_has_no_decision_or_system_response(tmp_pat
     assert "decision/system_response" in str(decision.reason)
 
 
+def test_promotion_blocks_when_threshold_context_is_comparative_analysis(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    policy = json.loads(Path(manifest["done_certification_input_refs"]["policy_ref"]).read_text(encoding="utf-8"))
+    policy["threshold_context"] = "comparative_analysis"
+    path = tmp_path / "policy_comparative.json"
+    path.write_text(json.dumps(policy), encoding="utf-8")
+    manifest["done_certification_input_refs"]["policy_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "TRUST_SPINE_THRESHOLD_CONTEXT_MISMATCH" in str(decision.reason)
+
+
+def test_promotion_blocks_when_policy_allow_conflicts_with_enforcement_deny(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    enforcement = json.loads(Path(manifest["done_certification_input_refs"]["enforcement_result_ref"]).read_text(encoding="utf-8"))
+    enforcement["final_status"] = "deny"
+    path = tmp_path / "enforcement_deny.json"
+    path.write_text(json.dumps(enforcement), encoding="utf-8")
+    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "enforcement result" in str(decision.reason) or "TRUST_SPINE_CONTROL_ENFORCEMENT_MISMATCH" in str(decision.reason)
+
+
 def test_promotion_blocks_when_replay_ref_content_is_blocked(tmp_path: Path) -> None:
     manifest = _base_manifest("certification_pending")
     replay = json.loads(Path(manifest["done_certification_input_refs"]["replay_result_ref"]).read_text(encoding="utf-8"))

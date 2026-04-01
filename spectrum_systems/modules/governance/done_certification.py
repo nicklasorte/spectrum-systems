@@ -15,6 +15,9 @@ from spectrum_systems.modules.runtime.provenance_verification import (
     assert_linked_identity_consistency,
     validate_required_identity,
 )
+from spectrum_systems.modules.runtime.trust_spine_invariants import (
+    validate_trust_spine_invariants,
+)
 
 
 class DoneCertificationError(ValueError):
@@ -94,6 +97,13 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
         if not isinstance(optional_value, str) or not optional_value.strip():
             raise DoneCertificationError("failure_injection_ref must be a non-empty string when provided")
         refs["failure_injection_ref"] = optional_value
+    for optional_key in ("enforcement_result_ref", "eval_coverage_summary_ref"):
+        optional = input_refs.get(optional_key)
+        if optional is None:
+            continue
+        if not isinstance(optional, str) or not optional.strip():
+            raise DoneCertificationError(f"{optional_key} must be a non-empty string when provided")
+        refs[optional_key] = optional
     return refs
 
 
@@ -220,6 +230,12 @@ def run_done_certification(input_refs: dict) -> dict:
     certification_pack = _load_json(refs["certification_pack_ref"], label="control_loop_certification_pack")
     error_budget = _load_json(refs["error_budget_ref"], label="error_budget_status")
     control_decision = _load_json(refs["policy_ref"], label="evaluation_control_decision")
+    enforcement_result: Dict[str, Any] | None = None
+    eval_coverage_summary: Dict[str, Any] | None = None
+    if "enforcement_result_ref" in refs:
+        enforcement_result = _load_json(refs["enforcement_result_ref"], label="enforcement_result")
+    if "eval_coverage_summary_ref" in refs:
+        eval_coverage_summary = _load_json(refs["eval_coverage_summary_ref"], label="eval_coverage_summary")
 
     failure_injection: Optional[Dict[str, Any]] = None
     if "failure_injection_ref" in refs:
@@ -230,6 +246,10 @@ def run_done_certification(input_refs: dict) -> dict:
     _validate_schema(certification_pack, "control_loop_certification_pack", label="control_loop_certification_pack")
     _validate_schema(error_budget, "error_budget_status", label="error_budget_status")
     _validate_schema(control_decision, "evaluation_control_decision", label="evaluation_control_decision")
+    if enforcement_result is not None:
+        _validate_schema(enforcement_result, "enforcement_result", label="enforcement_result")
+    if eval_coverage_summary is not None:
+        _validate_schema(eval_coverage_summary, "eval_coverage_summary", label="eval_coverage_summary")
     if failure_injection is not None:
         _validate_schema(failure_injection, "governed_failure_injection_summary", label="governed_failure_injection_summary")
 
@@ -377,6 +397,29 @@ def run_done_certification(input_refs: dict) -> dict:
     if not control_consistency_pass:
         blocking_reasons.extend(control_consistency_details)
 
+    if enforcement_result is not None and eval_coverage_summary is not None:
+        trust_spine_result = validate_trust_spine_invariants(
+            replay_result=replay,
+            evaluation_control_decision=control_decision,
+            enforcement_result=enforcement_result,
+            eval_coverage_summary=eval_coverage_summary,
+            gate_proof_evidence=certification_pack.get("gate_proof_evidence"),
+            done_certification_record=None,
+            target_surface="certification",
+        )
+        if not trust_spine_result.passed:
+            blocking_reasons.extend(trust_spine_result.violations)
+    else:
+        trust_spine_result = validate_trust_spine_invariants(
+            replay_result=replay,
+            evaluation_control_decision=control_decision,
+            enforcement_result={"artifact_type": "enforcement_result", "final_status": "allow"},
+            eval_coverage_summary={"artifact_type": "eval_coverage_summary", "coverage_gaps": []},
+            gate_proof_evidence=certification_pack.get("gate_proof_evidence"),
+            done_certification_record=None,
+            target_surface="certification",
+        )
+
     trace_linkage_pass, trace_linkage_details, resolved_trace_id = _validate_trace_linkage(
         replay=replay,
         regression=regression,
@@ -436,6 +479,16 @@ def run_done_certification(input_refs: dict) -> dict:
                 "passed": trace_linkage_pass,
                 "details": trace_linkage_details,
             },
+            "trust_spine_invariants": {
+                "passed": trust_spine_result.passed,
+                "details": trust_spine_result.violations,
+            },
+        },
+        "trust_spine_invariant_result": {
+            "passed": trust_spine_result.passed,
+            "categories_checked": trust_spine_result.categories_checked,
+            "blocking_reasons": trust_spine_result.blocking_reasons,
+            "evaluated_surfaces": trust_spine_result.evaluated_surfaces,
         },
         "final_status": final_status,
         "system_response": system_response,
