@@ -1,10 +1,10 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.13",
+  "artifact_version": "1.3.14",
   "schema_version": "1.0.0",
-  "standards_version": "1.3.12",
-  "record_id": "REC-STD-2026-04-01-BUNDLE-B-017",
+  "standards_version": "1.3.13",
+  "record_id": "REC-STD-2026-04-01-FOUNDATION-ALIGNMENT-019",
   "run_id": "run-20260401T000000Z",
   "created_at": "2026-04-01T00:00:00Z",
   "created_by": {
@@ -317,15 +317,15 @@
     {
       "artifact_type": "control_loop_certification_pack",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.65",
-      "last_updated_in": "1.3.10",
+      "last_updated_in": "1.3.13",
       "example_path": "contracts/examples/control_loop_certification_pack.json",
-      "notes": "EFG-01/EFG-02 hard-gate proof surface now requires fail-closed gate-proof evidence for failure-binding, deterministic transition-policy consumption, policy-caused control action, and recurrence-prevention linkage."
+      "notes": "RE18 hard-gate CL conditions expanded with mandatory closure bundle, replay parity, and trace completeness checks."
     },
     {
       "artifact_type": "cross_run_intelligence_decision",
@@ -2479,6 +2479,32 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "control_loop_closure_evidence_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.13",
+      "last_updated_in": "1.3.13",
+      "example_path": "contracts/examples/control_loop_closure_evidence_bundle.json",
+      "notes": "RE18 canonical proof-spine artifact linking PQX/output/eval/control/enforcement/replay and recurrence prevention with deterministic parity/completeness assertions."
+    },
+    {
+      "artifact_type": "recurrence_prevention_closure",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.13",
+      "last_updated_in": "1.3.13",
+      "example_path": "contracts/examples/recurrence_prevention_closure.json",
+      "notes": "RE18 recurrence prevention closure artifact binding failure class to remediation asset, regression fixture, and policy update reference."
     }
   ]
 }

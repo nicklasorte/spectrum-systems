@@ -1,6 +1,6 @@
 {
   "artifact_type": "control_loop_certification_pack",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "certification_id": "clcp-0da4d0d7766408d5",
   "certification_scope": "trust-boundary/runtime",
   "certification_status": "certified",
@@ -84,6 +84,9 @@
     "missing_binding_blocks_progression": true,
     "advisory_only_learning_rejected": true,
     "transition_policy_consumes_binding_deterministically": true,
+    "control_loop_closure_bundle_complete": true,
+    "replay_parity_exact": true,
+    "trace_completeness_verified": true,
     "severity_linkage_refs": [
       "contracts/examples/failure_eval_case.json",
       "contracts/examples/evaluation_control_decision.json"
@@ -96,6 +99,9 @@
     ],
     "recurrence_prevention_refs": [
       "contracts/examples/failure_policy_binding.json"
+    ],
+    "control_loop_closure_bundle_refs": [
+      "contracts/examples/control_loop_closure_evidence_bundle.json"
     ]
   }
 }

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_loop_closure_evidence_bundle.schema.json",
+  "title": "Control Loop Closure Evidence Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "run_id",
+    "pqx_execution_record_refs",
+    "output_artifact_refs",
+    "eval_summary_refs",
+    "control_decision_refs",
+    "enforcement_action_refs",
+    "replay_trace_refs",
+    "recurrence_prevention_closure",
+    "replay_parity_exact",
+    "trace_completeness",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "control_loop_closure_evidence_bundle"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "pqx_execution_record_refs": {"$ref": "#/$defs/refList"},
+    "output_artifact_refs": {"$ref": "#/$defs/refList"},
+    "eval_summary_refs": {"$ref": "#/$defs/refList"},
+    "control_decision_refs": {"$ref": "#/$defs/refList"},
+    "enforcement_action_refs": {"$ref": "#/$defs/refList"},
+    "replay_trace_refs": {"$ref": "#/$defs/refList"},
+    "recurrence_prevention_closure": {"$ref": "#/$defs/recurrencePreventionClosure"},
+    "replay_parity_exact": {"type": "boolean", "const": true},
+    "trace_completeness": {"type": "boolean", "const": true},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "refList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "recurrencePreventionClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "closure_id",
+        "failure_class",
+        "remediation_asset_ref",
+        "regression_fixture_ref",
+        "policy_update_ref",
+        "created_at"
+      ],
+      "properties": {
+        "artifact_type": {"type": "string", "const": "recurrence_prevention_closure"},
+        "schema_version": {"type": "string", "const": "1.0.0"},
+        "closure_id": {"type": "string", "minLength": 1},
+        "failure_class": {"type": "string", "minLength": 1},
+        "remediation_asset_ref": {"type": "string", "minLength": 1},
+        "regression_fixture_ref": {"type": "string", "minLength": 1},
+        "policy_update_ref": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

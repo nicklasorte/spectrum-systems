@@ -29,6 +29,9 @@ def _base_manifest(state: str) -> dict:
         "judgment_application_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_application_record.json"),
         "judgment_eval_result_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_eval_result.json"),
         "hard_gate_falsification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"),
+        "control_loop_closure_evidence_bundle": json.loads(
+            (_REPO_ROOT / "contracts" / "examples" / "control_loop_closure_evidence_bundle.json").read_text(encoding="utf-8")
+        ),
         "control_loop_gate_proof": {
             "severity_linkage_complete": True,
             "deterministic_transition_consumption": True,
@@ -38,10 +41,14 @@ def _base_manifest(state: str) -> dict:
             "missing_binding_blocks_progression": True,
             "advisory_only_learning_rejected": True,
             "transition_policy_consumes_binding_deterministically": True,
+            "control_loop_closure_bundle_complete": True,
+            "replay_parity_exact": True,
+            "trace_completeness_verified": True,
             "severity_linkage_refs": ["contracts/examples/failure_eval_case.json"],
             "transition_consumption_refs": ["contracts/examples/prompt_queue_transition_decision.json"],
             "policy_action_refs": ["contracts/examples/pqx_slice_execution_record.json"],
             "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
+            "control_loop_closure_bundle_refs": ["contracts/examples/control_loop_closure_evidence_bundle.json"],
         },
         "sequence_trace_id": "trace-seq",
         "sequence_lineage": ["contracts/examples/roadmap_eligibility_artifact.json"],
@@ -103,3 +110,11 @@ def test_promotion_blocks_when_hard_gate_falsification_fails(tmp_path: Path) -> 
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "hard gate falsification" in str(decision.reason)
+
+
+def test_promotion_blocks_when_control_loop_closure_bundle_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest.pop("control_loop_closure_evidence_bundle")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "control_loop_closure_evidence_bundle" in str(decision.reason)

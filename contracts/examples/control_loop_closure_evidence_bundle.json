@@ -1,0 +1,25 @@
+{
+  "artifact_type": "control_loop_closure_evidence_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "CLCEB-20260401-001",
+  "run_id": "pqx-run-20260401-001",
+  "pqx_execution_record_refs": ["outputs/pqx/runs/re18/slice-1.execution.json", "outputs/pqx/runs/re18/slice-2.execution.json", "outputs/pqx/runs/re18/slice-3.execution.json"],
+  "output_artifact_refs": ["outputs/pqx/runs/re18/slice-1.output.json", "outputs/pqx/runs/re18/slice-2.output.json", "outputs/pqx/runs/re18/slice-3.output.json"],
+  "eval_summary_refs": ["outputs/pqx/runs/re18/slice-1.eval_summary.json", "outputs/pqx/runs/re18/slice-2.eval_summary.json", "outputs/pqx/runs/re18/slice-3.eval_summary.json"],
+  "control_decision_refs": ["outputs/pqx/runs/re18/slice-1.evaluation_control_decision.json", "outputs/pqx/runs/re18/slice-2.evaluation_control_decision.json", "outputs/pqx/runs/re18/slice-3.evaluation_control_decision.json"],
+  "enforcement_action_refs": ["outputs/pqx/runs/re18/slice-1.enforcement_result.json", "outputs/pqx/runs/re18/slice-2.enforcement_result.json", "outputs/pqx/runs/re18/slice-3.enforcement_result.json"],
+  "replay_trace_refs": ["outputs/pqx/runs/re18/slice-1.replay_execution_record.json", "outputs/pqx/runs/re18/slice-2.replay_execution_record.json", "outputs/pqx/runs/re18/slice-3.replay_execution_record.json"],
+  "recurrence_prevention_closure": {
+    "artifact_type": "recurrence_prevention_closure",
+    "schema_version": "1.0.0",
+    "closure_id": "RPCL-20260401-001",
+    "failure_class": "drift_exceeded_threshold",
+    "remediation_asset_ref": "docs/reviews/remediation/drift-threshold-tightening.md",
+    "regression_fixture_ref": "tests/fixtures/control_loop_chaos_scenarios.json#scenario-3",
+    "policy_update_ref": "contracts/examples/judgment_policy.json",
+    "created_at": "2026-04-01T00:00:00Z"
+  },
+  "replay_parity_exact": true,
+  "trace_completeness": true,
+  "created_at": "2026-04-01T00:00:00Z"
+}

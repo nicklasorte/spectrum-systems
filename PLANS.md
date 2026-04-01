@@ -235,6 +235,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-FOUNDATION-AUTHORITY-WIRING-2026-04-01.md | ROADMAP-GOVERNANCE-FOUNDATION-AUTHORITY-WIRING — foundation-first authority normalization | Active |
 | docs/review-actions/PLAN-BUNDLE-B-017-2026-04-01.md | BUNDLE-B-017 — Proof Closure + Certification Hardening (G3/G4 + Hard Gate Proof) | Active |
+| docs/review-actions/PLAN-FOUNDATION-ALIGNMENT-019-2026-04-01.md | FOUNDATION-ALIGNMENT-019 — RE18 core bundle trust-spine closure hardening | Active |
 
 Update this table when plans are created or completed.
 

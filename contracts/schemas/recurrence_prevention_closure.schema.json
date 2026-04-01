@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/recurrence_prevention_closure.schema.json",
+  "title": "Recurrence Prevention Closure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "closure_id",
+    "failure_class",
+    "remediation_asset_ref",
+    "regression_fixture_ref",
+    "policy_update_ref",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "recurrence_prevention_closure"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "closure_id": {"type": "string", "minLength": 1},
+    "failure_class": {"type": "string", "minLength": 1},
+    "remediation_asset_ref": {"type": "string", "minLength": 1},
+    "regression_fixture_ref": {"type": "string", "minLength": 1},
+    "policy_update_ref": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

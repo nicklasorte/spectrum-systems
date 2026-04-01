@@ -123,6 +123,35 @@ def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str
         return False, "promotion blocked: one or more hard-gate falsification checks failed"
     return True, None
 
+
+def _control_loop_closure_bundle_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    bundle = manifest.get("control_loop_closure_evidence_bundle")
+    if not isinstance(bundle, dict):
+        return False, "promotion requires control_loop_closure_evidence_bundle"
+    for key in (
+        "pqx_execution_record_refs",
+        "output_artifact_refs",
+        "eval_summary_refs",
+        "control_decision_refs",
+        "enforcement_action_refs",
+        "replay_trace_refs",
+    ):
+        refs = bundle.get(key)
+        if not isinstance(refs, list) or not refs:
+            return False, f"promotion requires non-empty closure evidence: {key}"
+    recurrence = bundle.get("recurrence_prevention_closure")
+    if not isinstance(recurrence, dict):
+        return False, "promotion requires recurrence_prevention_closure in evidence bundle"
+    for field in ("failure_class", "remediation_asset_ref", "regression_fixture_ref", "policy_update_ref"):
+        value = recurrence.get(field)
+        if not isinstance(value, str) or not value:
+            return False, f"promotion requires recurrence_prevention_closure.{field}"
+    if bundle.get("replay_parity_exact") is not True:
+        return False, "promotion requires replay_parity_exact=true"
+    if bundle.get("trace_completeness") is not True:
+        return False, "promotion requires trace_completeness=true"
+    return True, None
+
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
     current_state = manifest.get("current_state")
     if not isinstance(current_state, str) or current_state not in SEQUENCE_STATES:
@@ -176,6 +205,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         falsification_passed, falsification_error = _hard_gate_falsification_passes(manifest)
         if not falsification_passed:
             return SequenceTransitionDecision(False, falsification_error)
+        closure_passed, closure_error = _control_loop_closure_bundle_passes(manifest)
+        if not closure_passed:
+            return SequenceTransitionDecision(False, closure_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:

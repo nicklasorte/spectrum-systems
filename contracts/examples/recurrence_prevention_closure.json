@@ -1,0 +1,10 @@
+{
+  "artifact_type": "recurrence_prevention_closure",
+  "schema_version": "1.0.0",
+  "closure_id": "RPCL-20260401-001",
+  "failure_class": "drift_exceeded_threshold",
+  "remediation_asset_ref": "docs/reviews/remediation/drift-threshold-tightening.md",
+  "regression_fixture_ref": "tests/fixtures/control_loop_chaos_scenarios.json#scenario-3",
+  "policy_update_ref": "contracts/examples/judgment_policy.json",
+  "created_at": "2026-04-01T00:00:00Z"
+}

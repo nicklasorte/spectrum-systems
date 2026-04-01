@@ -134,6 +134,8 @@ class ContractSchemaTests(unittest.TestCase):
             "evaluation_release_record",
             "evaluation_control_chaos_summary",
             "control_loop_certification_pack",
+            "control_loop_closure_evidence_bundle",
+            "recurrence_prevention_closure",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
