@@ -42,6 +42,10 @@
     "trust_spine_invariants": {
       "passed": true,
       "details": []
+    },
+    "trust_spine_evidence_completeness": {
+      "passed": true,
+      "details": []
     }
   },
   "trust_spine_invariant_result": {
@@ -64,6 +68,27 @@
       "gate_proof": "embedded",
       "done_certification": "absent"
     }
+  },
+  "trust_spine_evidence_completeness_result": {
+    "passed": true,
+    "categories_checked": [
+      "required_authority_refs_present",
+      "enforcement_evidence_present",
+      "coverage_evidence_present",
+      "certification_supporting_refs_present",
+      "promotion_supporting_refs_present",
+      "active_path_vs_legacy_mode_consistency"
+    ],
+    "blocking_reasons": [],
+    "missing_refs": [],
+    "evaluated_surfaces": {
+      "target_surface": "certification",
+      "authority_path_mode": "active_runtime",
+      "refs_count": "7"
+    },
+    "authority_path_mode": "active_runtime",
+    "promotable": false,
+    "certifiable": true
   },
   "final_status": "PASSED",
   "system_response": "allow",

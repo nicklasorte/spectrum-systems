@@ -24,6 +24,18 @@ class TrustSpineInvariantResult:
     evaluated_surfaces: Dict[str, str]
 
 
+@dataclass(frozen=True)
+class TrustSpineEvidenceCompletenessResult:
+    passed: bool
+    categories_checked: List[str]
+    blocking_reasons: List[str]
+    missing_refs: List[str]
+    evaluated_surfaces: Dict[str, str]
+    authority_path_mode: str
+    promotable: bool
+    certifiable: bool
+
+
 _DEF_CATEGORIES = [
     "threshold_context_consistency",
     "policy_authority_consistency",
@@ -31,6 +43,15 @@ _DEF_CATEGORIES = [
     "coverage_promotion_alignment",
     "gate_proof_truthfulness",
     "certification_closure_coherence",
+]
+
+_COMPLETENESS_CATEGORIES = [
+    "required_authority_refs_present",
+    "enforcement_evidence_present",
+    "coverage_evidence_present",
+    "certification_supporting_refs_present",
+    "promotion_supporting_refs_present",
+    "active_path_vs_legacy_mode_consistency",
 ]
 
 
@@ -71,6 +92,82 @@ def _coverage_has_required_gap(coverage_payload: Dict[str, Any]) -> bool:
         if status in {"missing", "uncovered", "gap"}:
             return True
     return False
+
+
+def validate_trust_spine_evidence_completeness(
+    *,
+    refs: Dict[str, Any],
+    target_surface: str,
+    authority_path_mode: str,
+) -> TrustSpineEvidenceCompletenessResult:
+    """Validate trust-spine evidence completeness for active/legacy authority modes."""
+    missing_refs: List[str] = []
+    blocking_reasons: List[str] = []
+    normalized_mode = _norm(authority_path_mode) or "active_runtime"
+    normalized_surface = _norm(target_surface)
+    is_active_authority = normalized_mode == "active_runtime"
+    is_legacy_mode = normalized_mode in {"legacy_compatibility", "reduced_depth_non_authority"}
+
+    required_base_refs = ("replay_result_ref", "policy_ref")
+    required_active_refs = ("enforcement_result_ref", "eval_coverage_summary_ref")
+    required_promotion_refs = ("certification_pack_ref", "gate_proof_ref", "closure_bundle_ref")
+    required_certification_refs = ("certification_pack_ref", "gate_proof_ref", "closure_bundle_ref")
+
+    def _present(ref_key: str) -> bool:
+        value = refs.get(ref_key)
+        return isinstance(value, str) and bool(value.strip())
+
+    for key in required_base_refs:
+        if not _present(key):
+            missing_refs.append(key)
+            blocking_reasons.append("TRUST_SPINE_REQUIRED_REF_MISSING")
+
+    if is_active_authority:
+        for key in required_active_refs:
+            if not _present(key):
+                missing_refs.append(key)
+                reason = "TRUST_SPINE_ENFORCEMENT_REF_MISSING" if key == "enforcement_result_ref" else "TRUST_SPINE_COVERAGE_REF_MISSING"
+                blocking_reasons.append(reason)
+
+        if normalized_surface == "promotion":
+            for key in required_promotion_refs:
+                if not _present(key):
+                    missing_refs.append(key)
+                    blocking_reasons.append("TRUST_SPINE_REQUIRED_REF_MISSING")
+        if normalized_surface == "certification":
+            for key in required_certification_refs:
+                if not _present(key):
+                    missing_refs.append(key)
+                    blocking_reasons.append("TRUST_SPINE_REQUIRED_REF_MISSING")
+
+        if missing_refs:
+            blocking_reasons.append("TRUST_SPINE_ACTIVE_PATH_INCOMPLETE")
+            if normalized_surface == "certification":
+                blocking_reasons.append("TRUST_SPINE_CERTIFICATION_EVIDENCE_INCOMPLETE")
+
+    if is_legacy_mode and normalized_surface == "promotion":
+        blocking_reasons.append("TRUST_SPINE_LEGACY_PATH_NOT_PROMOTABLE")
+
+    unique_missing_refs = sorted(set(missing_refs))
+    unique_reasons = sorted(set(blocking_reasons))
+    passed = len(unique_reasons) == 0
+    evaluated_surfaces = {
+        "target_surface": normalized_surface or "unknown",
+        "authority_path_mode": normalized_mode,
+        "refs_count": str(len(refs)),
+    }
+    promotable = passed and is_active_authority and normalized_surface == "promotion"
+    certifiable = passed and is_active_authority and normalized_surface == "certification"
+    return TrustSpineEvidenceCompletenessResult(
+        passed=passed,
+        categories_checked=list(_COMPLETENESS_CATEGORIES),
+        blocking_reasons=unique_reasons,
+        missing_refs=unique_missing_refs,
+        evaluated_surfaces=evaluated_surfaces,
+        authority_path_mode=normalized_mode,
+        promotable=promotable,
+        certifiable=certifiable,
+    )
 
 
 def validate_trust_spine_invariants(

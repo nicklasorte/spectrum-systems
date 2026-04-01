@@ -12,6 +12,7 @@
     "input_refs",
     "check_results",
     "trust_spine_invariant_result",
+    "trust_spine_evidence_completeness_result",
     "final_status",
     "system_response",
     "blocking_reasons",
@@ -45,7 +46,7 @@
     "check_results": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants"],
+      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants", "trust_spine_evidence_completeness"],
       "properties": {
         "replay": {"$ref": "#/$defs/check_result"},
         "regression": {"$ref": "#/$defs/check_result"},
@@ -54,7 +55,8 @@
         "fail_closed": {"$ref": "#/$defs/check_result"},
         "control_consistency": {"$ref": "#/$defs/check_result"},
         "trace_linkage": {"$ref": "#/$defs/check_result"},
-        "trust_spine_invariants": {"$ref": "#/$defs/check_result"}
+        "trust_spine_invariants": {"$ref": "#/$defs/check_result"},
+        "trust_spine_evidence_completeness": {"$ref": "#/$defs/check_result"}
       }
     },
     "trust_spine_invariant_result": {
@@ -79,6 +81,47 @@
           "additionalProperties": {"type": "string", "minLength": 1},
           "required": ["target_surface"]
         }
+      }
+    },
+    "trust_spine_evidence_completeness_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "categories_checked",
+        "blocking_reasons",
+        "missing_refs",
+        "evaluated_surfaces",
+        "authority_path_mode",
+        "promotable",
+        "certifiable"
+      ],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "categories_checked": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "missing_refs": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "evaluated_surfaces": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "minLength": 1},
+          "required": ["target_surface", "authority_path_mode"]
+        },
+        "authority_path_mode": {"type": "string", "minLength": 1},
+        "promotable": {"type": "boolean"},
+        "certifiable": {"type": "boolean"}
       }
     },
     "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},

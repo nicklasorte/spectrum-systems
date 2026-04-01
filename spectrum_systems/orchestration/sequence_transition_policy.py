@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from spectrum_systems.modules.runtime.trust_spine_invariants import (
+    validate_trust_spine_evidence_completeness,
     validate_trust_spine_invariants,
 )
 
@@ -79,6 +80,13 @@ def _is_blocking_value(value: Any) -> bool:
     return _normalized_block_value(value) in _BLOCK_VOCAB
 
 
+def _authority_path_mode(manifest: dict[str, Any]) -> str:
+    value = manifest.get("authority_path_mode")
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return "active_runtime"
+
+
 def _validate_policy_authority(policy_payload: dict[str, Any]) -> tuple[bool, str | None]:
     decision = policy_payload.get("decision")
     system_response = policy_payload.get("system_response")
@@ -136,6 +144,42 @@ def _coverage_required_deficit(coverage_payload: dict[str, Any]) -> bool:
 
 
 def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    refs_dict = refs if isinstance(refs, dict) else {}
+    closure_bundle_ref = manifest.get("hard_gate_falsification_record_path")
+    if not isinstance(closure_bundle_ref, str) or not closure_bundle_ref.strip():
+        closure_bundle_ref = refs_dict.get("hard_gate_falsification_record_path")
+    gate_proof_ref = "embedded" if isinstance(manifest.get("control_loop_gate_proof"), dict) else refs_dict.get("certification_pack_ref")
+    if not isinstance(closure_bundle_ref, str) or not closure_bundle_ref.strip():
+        closure_bundle_ref = refs_dict.get("certification_pack_ref")
+    completeness_result = validate_trust_spine_evidence_completeness(
+        refs={
+            "replay_result_ref": refs_dict.get("replay_result_ref"),
+            "policy_ref": refs_dict.get("policy_ref"),
+            "enforcement_result_ref": refs_dict.get("enforcement_result_ref"),
+            "eval_coverage_summary_ref": refs_dict.get("eval_coverage_summary_ref"),
+            "certification_pack_ref": refs_dict.get("certification_pack_ref"),
+            "gate_proof_ref": gate_proof_ref,
+            "closure_bundle_ref": closure_bundle_ref,
+        },
+        target_surface="promotion",
+        authority_path_mode=_authority_path_mode(manifest),
+    )
+    if not completeness_result.passed:
+        required_refs_suffix = (
+            " (required_refs=replay_result_ref,policy_ref,enforcement_result_ref,eval_coverage_summary_ref)"
+        )
+        missing_suffix = ""
+        if completeness_result.missing_refs:
+            missing_suffix = " (missing_refs=" + ",".join(completeness_result.missing_refs) + ")"
+        return (
+            False,
+            "promotion blocked by trust-spine evidence completeness: "
+            + "; ".join(completeness_result.blocking_reasons)
+            + required_refs_suffix
+            + missing_suffix,
+        )
+
     replay_ref = _ref_from_manifest(manifest, "replay_result_ref")
     if not _path_exists(replay_ref):
         return False, "promotion requires done_certification_input_refs.replay_result_ref"

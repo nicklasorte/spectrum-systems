@@ -16,6 +16,7 @@ from spectrum_systems.modules.runtime.provenance_verification import (
     validate_required_identity,
 )
 from spectrum_systems.modules.runtime.trust_spine_invariants import (
+    validate_trust_spine_evidence_completeness,
     validate_trust_spine_invariants,
 )
 
@@ -223,6 +224,13 @@ def _validate_trace_linkage(
 def run_done_certification(input_refs: dict) -> dict:
     """Run deterministic fail-closed done certification and return governed artifact."""
     refs = _require_refs(input_refs)
+    authority_path_mode = str(input_refs.get("authority_path_mode") or "").strip()
+    if not authority_path_mode:
+        authority_path_mode = (
+            "active_runtime"
+            if "enforcement_result_ref" in refs and "eval_coverage_summary_ref" in refs
+            else "reduced_depth_non_authority"
+        )
     identity_policy = _identity_policy(input_refs)
 
     replay = _load_json(refs["replay_result_ref"], label="replay_result")
@@ -397,6 +405,24 @@ def run_done_certification(input_refs: dict) -> dict:
     if not control_consistency_pass:
         blocking_reasons.extend(control_consistency_details)
 
+    completeness_result = validate_trust_spine_evidence_completeness(
+        refs={
+            "replay_result_ref": refs.get("replay_result_ref"),
+            "policy_ref": refs.get("policy_ref"),
+            "enforcement_result_ref": refs.get("enforcement_result_ref"),
+            "eval_coverage_summary_ref": refs.get("eval_coverage_summary_ref"),
+            "certification_pack_ref": refs.get("certification_pack_ref"),
+            "gate_proof_ref": "embedded" if isinstance(certification_pack.get("gate_proof_evidence"), dict) else "",
+            "closure_bundle_ref": refs.get("certification_pack_ref"),
+        },
+        target_surface="certification",
+        authority_path_mode=authority_path_mode,
+    )
+    if not completeness_result.passed:
+        blocking_reasons.extend(completeness_result.blocking_reasons)
+        if completeness_result.missing_refs:
+            blocking_reasons.append("missing trust-spine refs: " + ",".join(completeness_result.missing_refs))
+
     if enforcement_result is not None and eval_coverage_summary is not None:
         trust_spine_result = validate_trust_spine_invariants(
             replay_result=replay,
@@ -483,12 +509,29 @@ def run_done_certification(input_refs: dict) -> dict:
                 "passed": trust_spine_result.passed,
                 "details": trust_spine_result.violations,
             },
+            "trust_spine_evidence_completeness": {
+                "passed": completeness_result.passed,
+                "details": [
+                    *completeness_result.blocking_reasons,
+                    *[f"missing_ref:{ref}" for ref in completeness_result.missing_refs],
+                ],
+            },
         },
         "trust_spine_invariant_result": {
             "passed": trust_spine_result.passed,
             "categories_checked": trust_spine_result.categories_checked,
             "blocking_reasons": trust_spine_result.blocking_reasons,
             "evaluated_surfaces": trust_spine_result.evaluated_surfaces,
+        },
+        "trust_spine_evidence_completeness_result": {
+            "passed": completeness_result.passed,
+            "categories_checked": completeness_result.categories_checked,
+            "blocking_reasons": completeness_result.blocking_reasons,
+            "missing_refs": completeness_result.missing_refs,
+            "evaluated_surfaces": completeness_result.evaluated_surfaces,
+            "authority_path_mode": completeness_result.authority_path_mode,
+            "promotable": completeness_result.promotable,
+            "certifiable": completeness_result.certifiable,
         },
         "final_status": final_status,
         "system_response": system_response,
