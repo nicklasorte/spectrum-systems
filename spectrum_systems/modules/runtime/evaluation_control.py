@@ -364,6 +364,8 @@ def build_evaluation_control_decision(
     *,
     thresholds: Optional[Dict[str, float]] = None,
     failure_policy_binding: Optional[Dict[str, Any]] = None,
+    review_control_signal: Optional[Dict[str, Any]] = None,
+    review_signal_required: bool = False,
     threshold_context: ThresholdContext = "active_runtime",
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
@@ -512,6 +514,43 @@ def build_evaluation_control_decision(
             system_response=system_response,
             decision_label=decision_label,
         )
+    if review_signal_required and not isinstance(review_control_signal, dict):
+        triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
+        system_status, system_response, decision_label, rationale_code = (
+            "blocked",
+            "block",
+            "deny",
+            "deny_missing_required_signal",
+        )
+    elif isinstance(review_control_signal, dict):
+        review_errors = _validate(review_control_signal, load_schema("review_control_signal"))
+        if review_errors:
+            raise EvaluationControlError("review_control_signal failed validation: " + "; ".join(review_errors))
+        gate_assessment = str(review_control_signal.get("gate_assessment") or "")
+        scale_recommendation = str(review_control_signal.get("scale_recommendation") or "")
+        if gate_assessment == "FAIL":
+            triggered_signals = list(dict.fromkeys([*triggered_signals, "trust_breach"]))
+            system_status, system_response, decision_label, rationale_code = (
+                "blocked",
+                "block",
+                "deny",
+                "deny_trust_breach",
+            )
+        elif gate_assessment == "CONDITIONAL" and decision_label != "deny":
+            system_status, system_response, decision_label, rationale_code = (
+                "warning",
+                "warn",
+                "require_review",
+                "require_review_warning_signal",
+            )
+        if scale_recommendation == "NO" and decision_label != "deny":
+            triggered_signals = list(dict.fromkeys([*triggered_signals, "stability_breach"]))
+            system_status, system_response, decision_label, rationale_code = (
+                "exhausted",
+                "freeze",
+                "deny",
+                "deny_stability_breach",
+            )
 
     schema_version = "1.2.0"
     decision = {

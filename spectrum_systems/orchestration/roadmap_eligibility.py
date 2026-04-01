@@ -50,6 +50,26 @@ def _step_map(steps: list[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
     return {str(step["step_id"]): step for step in steps}
 
 
+def _load_review_control_signals(available_artifacts: set[str]) -> list[Dict[str, Any]]:
+    signals: list[Dict[str, Any]] = []
+    validator = Draft202012Validator(load_schema("review_control_signal"), format_checker=FormatChecker())
+    for ref in sorted(available_artifacts):
+        path = Path(ref)
+        if not path.is_file():
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict) or payload.get("artifact_type") != "review_control_signal":
+            continue
+        errors = sorted(validator.iter_errors(payload), key=lambda err: str(list(err.absolute_path)))
+        if errors:
+            raise RoadmapEligibilityError("review_control_signal failed schema validation in available_artifact_refs")
+        signals.append(payload)
+    return signals
+
+
 def _evaluate_step(
     step: Dict[str, Any],
     *,
@@ -58,6 +78,7 @@ def _evaluate_step(
     satisfied_trust: set[str],
     satisfied_review: set[str],
     satisfied_eval: set[str],
+    review_signals: list[Dict[str, Any]],
 ) -> Dict[str, Any]:
     dependency_steps = [str(item) for item in step["dependency_step_ids"]]
     ambiguous_dependency_steps = sorted(dep for dep in dependency_steps if dep not in step_by_id)
@@ -75,6 +96,20 @@ def _evaluate_step(
 
     review_requirements = [str(item) for item in step["review_requirements"]]
     missing_review = sorted(req for req in review_requirements if req not in satisfied_review)
+    if review_signals:
+        failed_reviews = sorted(
+            str(item["review_id"]) for item in review_signals if str(item.get("gate_assessment") or "") == "FAIL"
+        )
+        if failed_reviews:
+            missing_review.extend([f"review_gate_fail:{review_id}" for review_id in failed_reviews])
+        mode = str(step.get("hardening_vs_expansion") or "").strip().lower()
+        if mode == "expansion":
+            no_scale_reviews = sorted(
+                str(item["review_id"]) for item in review_signals if str(item.get("scale_recommendation") or "") == "NO"
+            )
+            if no_scale_reviews:
+                missing_review.extend([f"review_scale_no:{review_id}" for review_id in no_scale_reviews])
+    missing_review = sorted(set(missing_review))
 
     eval_requirements = [str(item) for item in step["eval_requirements"]]
     missing_eval = sorted(req for req in eval_requirements if req not in satisfied_eval)
@@ -177,6 +212,7 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
     step_by_id = _step_map(steps)
 
     available_artifacts = {str(item) for item in roadmap["available_artifact_refs"]}
+    review_signals = _load_review_control_signals(available_artifacts)
     satisfied_trust = {str(item) for item in roadmap["satisfied_trust_requirements"]}
     satisfied_review = {str(item) for item in roadmap["satisfied_review_requirements"]}
     satisfied_eval = {str(item) for item in roadmap["satisfied_eval_requirements"]}
@@ -214,6 +250,7 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
             satisfied_trust=satisfied_trust,
             satisfied_review=satisfied_review,
             satisfied_eval=satisfied_eval,
+            review_signals=review_signals,
         )
         strategy_status = _strategy_status(step, steps=steps)
         strategy_status_artifacts.append(strategy_status)

@@ -22,7 +22,10 @@ def _base_roadmap() -> dict:
         "schema_version": "1.0.0",
         "roadmap_ref": "docs/roadmaps/system_roadmap.md",
         "generated_at": "2026-03-30T00:00:00Z",
-        "available_artifact_refs": ["artifact://review-approved"],
+        "available_artifact_refs": [
+            "artifact://review-approved",
+            str(REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
+        ],
         "satisfied_trust_requirements": ["trust:strategy"],
         "satisfied_review_requirements": ["review:approved"],
         "satisfied_eval_requirements": ["eval:passed"],
@@ -194,3 +197,33 @@ def test_expansion_while_prior_hardening_partial_freezes(tmp_path: Path) -> None
     artifact = build_roadmap_eligibility(path)
     statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
     assert statuses["STEP-003"]["strategy_gate_decision"] == "freeze"
+
+
+def test_fail_review_signal_blocks_step_via_review_requirements(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    signal = json.loads((REPO_ROOT / "contracts" / "examples" / "review_control_signal.json").read_text(encoding="utf-8"))
+    signal["gate_assessment"] = "FAIL"
+    signal["scale_recommendation"] = "NO"
+    signal_path = tmp_path / "review_control_signal.fail.json"
+    signal_path.write_text(json.dumps(signal), encoding="utf-8")
+    roadmap["available_artifact_refs"] = [str(signal_path)]
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    blocked = {item["step_id"]: item for item in artifact["blocked_steps"]}
+    assert "STEP-002" in blocked
+    assert any(reason.startswith("review_gate_fail:") for reason in blocked["STEP-002"]["unmet_review_requirements"])
+
+
+def test_scale_no_signal_blocks_expansion_steps(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    signal = json.loads((REPO_ROOT / "contracts" / "examples" / "review_control_signal.json").read_text(encoding="utf-8"))
+    signal["gate_assessment"] = "PASS"
+    signal["scale_recommendation"] = "NO"
+    signal_path = tmp_path / "review_control_signal.no-scale.json"
+    signal_path.write_text(json.dumps(signal), encoding="utf-8")
+    roadmap["available_artifact_refs"] = [str(signal_path)]
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    blocked = {item["step_id"]: item for item in artifact["blocked_steps"]}
+    assert "STEP-003" in blocked
+    assert any(reason.startswith("review_scale_no:") for reason in blocked["STEP-003"]["unmet_review_requirements"])

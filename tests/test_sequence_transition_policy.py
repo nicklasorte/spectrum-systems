@@ -36,7 +36,9 @@ def _base_manifest(state: str) -> dict:
             "enforcement_result_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json"),
             "eval_coverage_summary_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"),
             "certification_pack_ref": str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"),
+            "review_control_signal_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
         },
+        "review_signal_policy": {"required_for_promotion": True},
         "control_loop_gate_proof": {
             "severity_linkage_complete": True,
             "deterministic_transition_consumption": True,
@@ -258,4 +260,24 @@ def test_enforcement_vocabulary_normalization_blocks_variants(tmp_path: Path) ->
         manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(path)
         decision = evaluate_sequence_transition(manifest, "promoted")
         assert decision.allowed is False
-        assert "enforcement result" in str(decision.reason)
+
+
+def test_promotion_blocks_when_review_signal_missing_and_required() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("review_control_signal_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "required review_control_signal is missing" in str(decision.reason)
+
+
+def test_promotion_blocks_when_review_signal_gate_fails(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    signal = json.loads(Path(manifest["done_certification_input_refs"]["review_control_signal_ref"]).read_text(encoding="utf-8"))
+    signal["gate_assessment"] = "FAIL"
+    signal["scale_recommendation"] = "NO"
+    path = tmp_path / "review_control_signal_fail.json"
+    path.write_text(json.dumps(signal), encoding="utf-8")
+    manifest["done_certification_input_refs"]["review_control_signal_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "gate_assessment=FAIL" in str(decision.reason)

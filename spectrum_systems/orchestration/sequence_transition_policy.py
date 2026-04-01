@@ -7,6 +7,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator
+
+from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.trust_spine_invariants import (
     validate_trust_spine_evidence_completeness,
     validate_trust_spine_invariants,
@@ -336,6 +339,41 @@ def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str
         return False, "promotion blocked: one or more hard-gate falsification checks failed"
     return True, None
 
+
+def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    policy = manifest.get("review_signal_policy")
+    policy_dict = policy if isinstance(policy, dict) else {}
+    review_required = policy_dict.get("required_for_promotion") is True
+    review_ref = manifest.get("review_control_signal_ref")
+    if not isinstance(review_ref, str) or not review_ref.strip():
+        refs = manifest.get("done_certification_input_refs")
+        if isinstance(refs, dict):
+            review_ref = refs.get("review_control_signal_ref")
+    if not isinstance(review_ref, str) or not review_ref.strip():
+        if review_required:
+            return False, "promotion blocked: required review_control_signal is missing"
+        return True, None
+    if not _path_exists(review_ref):
+        return False, "promotion blocked: review_control_signal_ref is unreadable"
+    try:
+        payload = json.loads(Path(review_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "promotion blocked: review_control_signal_ref is unreadable"
+    errors = sorted(
+        Draft202012Validator(load_schema("review_control_signal")).iter_errors(payload),
+        key=lambda err: str(list(err.absolute_path)),
+    )
+    if errors:
+        return False, "promotion blocked: review_control_signal failed schema validation"
+    gate_assessment = str(payload.get("gate_assessment") or "")
+    if gate_assessment == "FAIL":
+        return False, "promotion blocked by review_control_signal gate_assessment=FAIL"
+    if gate_assessment == "CONDITIONAL":
+        return False, "promotion blocked by review_control_signal gate_assessment=CONDITIONAL"
+    if str(payload.get("scale_recommendation") or "") == "NO":
+        return False, "promotion blocked by review_control_signal scale_recommendation=NO"
+    return True, None
+
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
     current_state = manifest.get("current_state")
     if not isinstance(current_state, str) or current_state not in SEQUENCE_STATES:
@@ -392,6 +430,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         authority_passed, authority_error = _promotion_authority_gate(manifest)
         if not authority_passed:
             return SequenceTransitionDecision(False, authority_error)
+        review_signal_passed, review_signal_error = _review_signal_gate(manifest)
+        if not review_signal_passed:
+            return SequenceTransitionDecision(False, review_signal_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:
