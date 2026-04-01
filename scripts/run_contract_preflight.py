@@ -153,6 +153,19 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
         )
     warnings.append(f"base/head diff unavailable: {error}")
 
+    if head_ref != "HEAD":
+        refs_attempted.append(f"{base_ref}..HEAD")
+        current_head_paths, current_head_error = _diff_name_only(repo_root, base_ref, "HEAD")
+        if not current_head_error:
+            return ChangedPathDetectionResult(
+                changed_paths=current_head_paths,
+                changed_path_detection_mode="base_to_current_head_fallback",
+                refs_attempted=refs_attempted,
+                fallback_used=True,
+                warnings=warnings + ["head ref unavailable; used current HEAD fallback"],
+            )
+        warnings.append(f"base..HEAD fallback unavailable: {current_head_error}")
+
     # C: GitHub event-aware refs (PR base/head SHA; push before/current SHA).
     sha_pair = _github_sha_pair()
     if sha_pair:
@@ -171,27 +184,33 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
 
     # D: safe local fallback paths.
     local_changes = _local_workspace_changes(repo_root)
-    if local_changes:
+    local_governed = [path for path in local_changes if path.startswith("contracts/")]
+    if local_governed:
         return ChangedPathDetectionResult(
-            changed_paths=local_changes,
+            changed_paths=sorted(set(local_governed)),
             changed_path_detection_mode="local_workspace_status",
             refs_attempted=refs_attempted,
             fallback_used=True,
             warnings=warnings + ["using git status porcelain fallback"],
         )
+    if local_changes:
+        warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
 
     refs_attempted.append("working_tree_vs_HEAD")
     working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
     if working_tree.returncode == 0:
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
-        if paths:
+        governed_paths = [path for path in paths if path.startswith("contracts/")]
+        if governed_paths:
             return ChangedPathDetectionResult(
-                changed_paths=paths,
+                changed_paths=sorted(set(governed_paths)),
                 changed_path_detection_mode="working_tree_diff_head",
                 refs_attempted=refs_attempted,
                 fallback_used=True,
                 warnings=warnings + ["using working tree diff fallback"],
             )
+        if paths:
+            warnings.append("working tree fallback had no governed contract paths; degrading to full governed scan")
     else:
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
@@ -290,7 +309,10 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
 
 
 def _schema_name_from_example(path: str) -> str:
-    return Path(path).name.replace(".json", "")
+    name = Path(path).name
+    if name.endswith(".example.json"):
+        return name.removesuffix(".example.json")
+    return name.removesuffix(".json")
 
 
 def validate_examples(changed_example_paths: list[str]) -> list[dict[str, Any]]:
@@ -490,7 +512,9 @@ def main() -> int:
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
     classified = classify_changed_contracts(detection.changed_paths)
 
-    changed_contracts = classified["changed_contract_paths"] + classified["changed_governed_definitions"]
+    changed_contract_paths = classified["changed_contract_paths"]
+    changed_governed_definitions = classified["changed_governed_definitions"]
+    changed_contracts = changed_contract_paths + changed_governed_definitions
     changed_examples = classified["changed_example_paths"]
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
@@ -539,7 +563,17 @@ def main() -> int:
             "recommended_repair_areas": [],
         }
     else:
-        impact = build_impact_map(REPO_ROOT, changed_contracts, changed_examples)
+        if changed_contract_paths:
+            impact = build_impact_map(REPO_ROOT, changed_contract_paths, changed_examples)
+            contract_impact_artifact = impact["contract_impact_artifact"]
+        else:
+            impact = {
+                "producers": [],
+                "fixtures_or_builders": [],
+                "consumers": [],
+                "required_smoke_tests": [],
+            }
+            contract_impact_artifact = None
 
         schema_example_failures = validate_examples(changed_examples)
 
@@ -574,7 +608,7 @@ def main() -> int:
                 "consumers": impact["consumers"],
                 "required_smoke_tests": impact["required_smoke_tests"],
             },
-            "contract_impact_artifact": impact["contract_impact_artifact"],
+            "contract_impact_artifact": contract_impact_artifact,
             "schema_example_failures": schema_example_failures,
             "producer_failures": producer_failures,
             "fixture_failures": fixture_failures,

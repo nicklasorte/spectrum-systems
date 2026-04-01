@@ -13,7 +13,6 @@ from spectrum_systems.governance import (
     analyze_execution_change_impact,
     validate_manifest_completeness,
 )
-from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
     PQXBackboneError,
@@ -446,6 +445,8 @@ def run_pqx_slice(
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="artifact emission disabled", block_type="ARTIFACT_EMISSION_BLOCKED")
 
     try:
+        from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
+
         certification = run_done_certification(
             {
                 "replay_result_ref": str(replay_path),

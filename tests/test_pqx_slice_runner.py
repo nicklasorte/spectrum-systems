@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 
 import pytest
@@ -419,3 +420,8 @@ def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path
 
     assert result["status"] == "complete"
     assert result["contract_preflight_decision"] == "warn"
+
+
+def test_runtime_module_import_has_no_done_certification_cycle() -> None:
+    runtime_module = importlib.import_module("spectrum_systems.modules.runtime")
+    assert runtime_module is not None
