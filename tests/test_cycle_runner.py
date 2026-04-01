@@ -866,6 +866,9 @@ def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> N
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = True
+    manifest["done_certification_input_refs"]["hard_gate_falsification_record_path"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
+    )
     manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
         _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
     )
@@ -890,6 +893,9 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = False
+    manifest["done_certification_input_refs"]["hard_gate_falsification_record_path"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
+    )
     manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
         _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
     )
@@ -898,3 +904,37 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "control_allow_promotion" in result["blocking_issues"][-1]
+
+
+def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsification(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = True
+    manifest["done_certification_input_refs"].pop("hard_gate_falsification_record_path", None)
+    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
+    )
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "hard_gate_falsification" in result["blocking_issues"][-1]
+
+
+def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_before_control_allow(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = False
+    manifest["done_certification_input_refs"].pop("hard_gate_falsification_record_path", None)
+    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
+    )
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "hard_gate_falsification" in result["blocking_issues"][-1]

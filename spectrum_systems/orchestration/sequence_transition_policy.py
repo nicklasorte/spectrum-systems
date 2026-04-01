@@ -101,6 +101,10 @@ def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str
     artifact = manifest.get("hard_gate_falsification")
     if not isinstance(artifact, dict):
         ref = manifest.get("hard_gate_falsification_record_path")
+        if not isinstance(ref, str) or not ref:
+            refs = manifest.get("done_certification_input_refs")
+            if isinstance(refs, dict):
+                ref = refs.get("hard_gate_falsification_record_path")
         if _path_exists(ref):
             try:
                 artifact = json.loads(Path(ref).read_text(encoding="utf-8"))
