@@ -338,3 +338,49 @@ def test_main_passes_only_contract_schema_paths_into_impact_analyzer(tmp_path: P
     code = preflight.main()
     assert code == 0
     assert captured["changed_contract_paths"] == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+
+
+def test_build_preflight_result_artifact_emits_impacted_seams() -> None:
+    report = {
+        "status": "passed",
+        "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+        "changed_path_detection": {
+            "changed_path_detection_mode": "base_head_diff",
+        },
+        "impact": {
+            "producers": [
+                "spectrum_systems/orchestration/cycle_runner.py",
+                "spectrum_systems/orchestration/next_step_decision.py",
+            ],
+            "fixtures_or_builders": ["tests/fixtures/autonomous_cycle/cycle_status_blocked_manifest.json"],
+            "consumers": ["tests/test_roadmap_eligibility.py"],
+        },
+        "masked_failures": [],
+        "recommended_repair_areas": [],
+        "schema_example_failures": [],
+        "producer_failures": [],
+        "fixture_failures": [],
+        "consumer_failures": [],
+    }
+
+    artifact = preflight.build_preflight_result_artifact(
+        report=report,
+        json_report_path=Path("outputs/contract_preflight/contract_preflight_report.json"),
+        markdown_report_path=Path("outputs/contract_preflight/contract_preflight_report.md"),
+        hardening_flow=False,
+    )
+
+    assert artifact["impacted_producers"] == report["impact"]["producers"]
+    assert artifact["impacted_fixtures"] == report["impact"]["fixtures_or_builders"]
+    assert artifact["impacted_consumers"] == report["impact"]["consumers"]
+    assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
+
+
+def test_contract_preflight_example_references_existing_impacted_paths() -> None:
+    example = json.loads(Path("contracts/examples/contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    for rel_path in (
+        example["impacted_producers"]
+        + example["impacted_fixtures"]
+        + example["impacted_consumers"]
+    ):
+        assert Path(rel_path).exists(), f"preflight seam path missing: {rel_path}"
