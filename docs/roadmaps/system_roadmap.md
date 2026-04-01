@@ -161,3 +161,130 @@ The immediate bottleneck remains **trust-depth closure** (Control Loop Closure G
 
 ## Next Hard Gate
 **Proceed only when governed 3-slice evidence proves deterministic failure-to-policy binding, enforced transition-policy consumption, and recurrence-prevention effect without manual override. Until then, progression is restricted to CL-01..CL-05 and NX-01..NX-03.**
+
+## April 1, 2026 Roadmap Strengthening Overlay (EVAL-FOUNDATION)
+
+This is a controlled strengthening pass on the current roadmap using `EVAL-GAP-014-EVAL-FOUNDATION-OVERLAY-2026-04-01.md` and `G-RESUME-008-CONTROLLED-REENTRY-2026-04-01.md`.
+It preserves the CL → G1 → HARD GATE → G2–G8 execution shape and tightens hardening-before-expansion sequencing.
+
+### Strengthened CL → G1 → HARD GATE → G2–G8 table
+
+| ID | Prompt | Status | What It Does | Why It Matters | Strategy Alignment | Primary Trust Gain |
+| --- | --- | --- | --- | --- | --- | --- |
+| CL | Control Loop Closure implementation (CL-01..CL-05) with EFG overlays | in_progress (must complete first) | Executes CL-01..CL-05 with explicit EFG hard blockers: EFG-01 certification pass-condition encoding, EFG-02 non-bypassable failure-binding enforcement, EFG-03 longitudinal calibration enforcement. | Prevents procedural pass artifacts from being treated as closed-loop proof when control-learning authority is still incomplete. | `strategy-control.md` non-negotiables (`eval-mandatory`, `fail-closed`, `certification-gated`) and Control Loop Closure Gate requirements. | policy authority |
+| G1 | Dominant single-slice canonical path (B11–B14) | done (retained) | Keeps one canonical fail-closed execution spine (`run_pqx_slice`) and governed artifact emission discipline. | Preserves deterministic base path while CL hardening is completed. | Strategy thesis step 1 (stabilize one dominant trusted path). | replay determinism |
+| HARD GATE | Control Loop Closure Certification Gate (proof-before-scale) | blocked until EFG-01/02/03 close | Requires governed evidence for severity-qualified failure→eval/policy binding, deterministic transition-policy consumption, policy-caused block/freeze/correct behavior, and recurrence-prevention linkage. | This is the non-bypassable admission barrier between trust-depth hardening and broader execution. | Pre-expansion gate in active roadmap + fail-closed progression rule. | certification rigor |
+| G2 | Two-slice continuation governance (B15–B18) | done (retained) | Enforces N→N+1 continuation contracts and replay parity checks. | Maintains continuity correctness but does not supersede CL hard gate. | Artifact-first continuation trust under fail-closed governance. | replay determinism |
+| G3 | 3-slice transition/readiness governance (B19–B22) | partial/unverified (next build target) | Completes transition policy, review checkpoints, and sequence budget evidence under active gates. | First sequence-depth trust layer needed before bundle-scale claims. | Hardening-before-expansion; CL-first sequencing. | certification rigor |
+| G4 | Bundle-level certification and audit synthesis (B23–B26) | partial/unverified (next build target) | Produces closure-grade bundle certification/audit artifacts under strategy + G13/G14 + CL constraints. | Turns plan-level intent into inspectable trust proof. | Certification-gated + replay/audit lineage obligations. | observability completeness |
+| G5 | Queue-aware scheduling/canary/judgment/N-slice proof (B27–B30) | done_with_required_adaptation | Keeps breadth features but explicitly subordinates them to CL gate status and pre-execution admission outcomes. | Prevents scheduler/canary/judgment paths from becoming expansion bypass channels. | Hardening-before-expansion and control authority externalization. | promotion safety |
+| G6 | Legacy resume-hardening bridge | blocked | Remains non-executable unless remapped to active CL/NX semantics with gate prerequisites. | Avoids legacy-label drift causing uncontrolled expansion. | Authority clarity + fail-closed execution control. | drift resistance |
+| G7 | Legacy resume-hardening bridge | blocked | Same as G6: no execution admission without CL/NX-equivalent artifacts and gate proof. | Prevents policy authority ambiguity in resumed execution. | Roadmap authority discipline and drift correction. | policy authority |
+| G8 | Legacy resume-hardening bridge | blocked | Same as G6/G7: blocked until explicit active-authority mapping and prerequisites are met. | Prevents speculative expansion claims without trust-depth evidence. | Certification-gated expansion discipline. | certification rigor |
+
+### EFG-01 / EFG-02 / EFG-03 hard-gate sequencing impact (explicit)
+
+1. **EFG-01 is now a gate-definition dependency, not a quality enhancement.**
+   - The HARD GATE cannot pass unless certification artifacts/runners encode all CL pass-condition semantics as required fields/checks.
+2. **EFG-02 is now a progression-admission dependency.**
+   - Transition/policy surfaces must fail closed when failure-class linkage to eval/policy updates is missing.
+3. **EFG-03 is now a lifecycle-enforcement dependency.**
+   - Longitudinal calibration evidence must influence freeze/revoke/lifecycle decisions before broader scaling is admissible.
+
+### Immediate pre-scaling slices (must happen before broader G2/G3/G4 scaling claims)
+
+The following slices are now ordered as immediate next build work before any broader scaling claims:
+1. **EFG-01 + EFG-02 alignment sprint:** update control-loop certification contract/runner and progression policy checks to be fail-closed on missing binding evidence.
+2. **EFG-05 + EFG-04 resume-safe closure:** complete preflight→PQX admission mapping and then produce closure-grade G3/G4 execution evidence.
+3. **EFG-03 + EFG-07 enforcement/adaptation:** make longitudinal calibration lifecycle-active, then re-validate G5 breadth behaviors as subordinate to these controls.
+
+### Current Gate Risks
+
+- **Certification false-positive risk:** gate artifact can appear complete without full CL pass-condition semantics (EFG-01).
+- **Advisory-only learning risk:** failures can still be recorded without deterministically constraining next-step progression (EFG-02).
+- **Short-horizon trust risk:** deferred/scaffolded longitudinal calibration permits stale policy operation under apparent local health (EFG-03).
+- **Resume evidence gap risk:** G3/G4 readiness remains partial until closure-grade execution summary artifacts are emitted (EFG-04).
+- **Admission drift risk:** incomplete preflight→PQX mapping allows gate-result-to-runtime-action mismatch (EFG-05).
+
+### Recommended Next Hard Gate
+
+**Control Loop Closure Certification Gate pass under strengthened criteria (EFG-01/02/03 complete), then and only then admit broader post-G1/G2 scaling.**
+
+### Recommended Next 3 Build Steps
+
+1. **Build Step 1 — Gate-proof hardening:** implement EFG-01 + EFG-02 fail-closed certification/progression bindings.
+2. **Build Step 2 — Resume-safe trust-depth closure:** implement EFG-05 and emit EFG-04 closure evidence for G3/G4.
+3. **Build Step 3 — Longitudinal enforcement activation:** implement EFG-03 and re-qualify G5 via EFG-07 adaptation checks.
+
+## Blind Spots
+
+### 1) Decision-signal quality gaps
+- **CL and hard-gate evidence still lean heavily toward structure/completeness checks** (artifact presence, linkage shape, process traceability) more than demonstrated decision-quality uplift across hard cases.
+- **G3/G4 partial state increases signal risk:** sequence-readiness can be over-inferred from governance scaffolding before decision-quality eval depth is proven under multi-slice stress.
+- **G5 “done with adaptation required” indicates breadth controls exist, but correctness-sensitive eval coverage may lag behind compliance coverage.**
+
+### 2) Policy-update enforcement gaps
+- **Known gap remains EFG-02:** learning can still terminate in artifacts unless transition/policy surfaces reject progression when failure-binding is missing.
+- **Policy-consumption determinism is not yet universally evidenced across all progression surfaces** (preflight, PQX admission, transition policy, lifecycle gate decisions).
+
+### 3) Masking-risk seams
+- **Upstream contract/schema invalidation can mask downstream behavioral failures** by preventing execution paths from reaching the failure mode that CL controls are meant to catch.
+- **If preflight blocks early without failure-mode simulation parity, downstream policy-caused block/freeze/correct logic may remain under-exercised** despite apparently healthy validation runs.
+
+### 4) Override / bypass surfaces
+- **Manual interpretation seams** remain possible wherever gate outcomes are not yet consumed as strict machine-enforced admission inputs.
+- **Advisory artifacts risk bypass** when produced but not hard-required by transition policy (core EFG-02 concern).
+- **Legacy G6–G8 labels create implicit bypass pressure** if used as shorthand for progression without CL/NX-equivalent gate prerequisites.
+
+### 5) Compliance vs correctness imbalance
+- **RM/Roadmap/governance discipline is strong on compliance** (authority, artifact lineage, fail-closed framing).
+- **Correctness depth is comparatively weaker where longitudinal and policy-effect evidence is still scaffolded/partial** (EFG-03, G3/G4 closure gap).
+
+### 6) State / decision inconsistency risks
+- **Preflight, PQX, strategy gating, and control semantics can diverge** if one surface treats decisions as advisory while another treats them as blocking.
+- **Duplicate authority expressions** (roadmap row status, gate artifacts, execution summaries) can disagree without a single deterministic conflict-resolution rule encoded at runtime.
+
+### 7) Longitudinal evidence sufficiency
+- **Current state appears insufficient for strong longitudinal calibration/drift-response claims** until rolling-window calibration evidence is required per cycle and bound to freeze/revoke outcomes (EFG-03).
+- **Short-horizon pass evidence should be treated as necessary but not sufficient** for lifecycle-confidence assertions.
+
+### 8) Hard-gate falsification criteria (summary pointer)
+- The HARD GATE must fail if any strengthened pass-condition evidence is missing, ambiguous, non-deterministic, or not consumed by progression policy as a blocking control.
+
+## Hard-Gate Falsification Criteria
+
+Even if many tests pass, the HARD GATE is **falsified** (must fail closed) when any of the following conditions hold:
+
+1. **Missing severity-qualified binding evidence**
+   - No complete evidence chain from failure classification to required eval additions and policy update references.
+2. **Non-deterministic policy consumption**
+   - Transition decisions do not show deterministic, replayable consumption of updated policy/eval artifacts.
+3. **No demonstrated policy-caused behavioral effect**
+   - There is no concrete blocked/frozen/corrected subsequent path attributable to the updated policy.
+4. **Recurrence-prevention linkage absent**
+   - Remediation closure lacks linked regression/prevention assets for the same failure class.
+5. **Preflight/PQX semantic mismatch**
+   - Gate outcomes (`allow/warn/freeze/block`) are not consistently mapped into runtime admission behavior.
+6. **Bypass path detected**
+   - Any manual override/advisory path allows progression that should have been blocked under strengthened criteria.
+7. **Longitudinal evidence insufficiency**
+   - Calibration artifacts are missing, out-of-window, or not connected to freeze/revoke/lifecycle decisions.
+8. **Authority inconsistency unresolved**
+   - Strategy control, roadmap status, and gate artifacts disagree with no deterministic precedence behavior in execution controls.
+
+## Compliance vs Correctness Balance
+
+### Where compliance/governance is currently stronger
+- Authority ordering, roadmap control framing, and fail-closed posture are explicit and consistently documented.
+- Artifact-centric traceability and certification language are mature enough to prevent many procedural drift modes.
+
+### Where correctness/learning depth is currently weaker
+- Decision-quality eval depth is not yet uniformly demonstrated across multi-slice and longitudinal conditions.
+- Policy-update effects are not yet proven non-bypassable across every progression surface.
+- Longitudinal calibration and drift response are still emerging as enforceable runtime controls rather than universally binding outcomes.
+
+### Strengthening principle for next execution window
+- For each near-term build step, pair **one compliance artifact** with **one correctness-effect artifact**:
+  - compliance: contract/check/status evidence,
+  - correctness: demonstrated decision/outcome change caused by that evidence.
+- Do not count a step as complete unless both artifact types are present and replay-linked.
