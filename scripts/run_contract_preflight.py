@@ -11,6 +11,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+import re
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -61,7 +62,10 @@ class ChangedPathDetectionResult:
 
 
 def _run(command: list[str], cwd: Path) -> CommandResult:
-    proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
+    try:
+        proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        return CommandResult(command=command, returncode=127, stdout="", stderr=str(exc))
     return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
 
 
@@ -290,6 +294,22 @@ def build_impact_map(repo_root: Path, changed_contract_paths: list[str], changed
 
 
 def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str]:
+    tests_root = repo_root / "tests"
+
+    def _python_search_tests(token: str) -> set[str]:
+        if not token or not tests_root.is_dir():
+            return set()
+        pattern = re.compile(rf"\b{re.escape(token)}\b")
+        discovered: set[str] = set()
+        for path in tests_root.rglob("test_*.py"):
+            try:
+                content = path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if pattern.search(content):
+                discovered.add(str(path.relative_to(repo_root)))
+        return discovered
+
     targets: set[str] = set()
     for rel_path in impacted_paths:
         candidate = Path(rel_path)
@@ -299,11 +319,7 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
 
         if rel_path.startswith("tests/helpers/") or rel_path.startswith("tests/fixtures/"):
             stem = candidate.stem
-            search = _run(["rg", "-l", stem, "tests"], cwd=repo_root)
-            if search.returncode == 0:
-                for line in search.stdout.splitlines():
-                    if line.startswith("tests/test_") and line.endswith(".py"):
-                        targets.add(line.strip())
+            targets.update(_python_search_tests(stem))
 
     return sorted(targets)
 

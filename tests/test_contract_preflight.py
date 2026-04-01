@@ -194,6 +194,42 @@ def test_masking_detection_labels_contract_masking() -> None:
     ]
 
 
+def test_resolve_test_targets_uses_python_search_without_rg(tmp_path: Path, monkeypatch) -> None:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "helpers").mkdir()
+    (tmp_path / "tests" / "helpers" / "replay_result_builder.py").write_text("# helper", encoding="utf-8")
+    (tmp_path / "tests" / "test_alpha.py").write_text(
+        "from tests.helpers.replay_result_builder import build\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "tests" / "test_beta.py").write_text("print('no match')\n", encoding="utf-8")
+
+    def _fail_if_rg(command: list[str], cwd: Path) -> preflight.CommandResult:
+        assert "rg" not in command
+        assert "ripgrep" not in command
+        return preflight.CommandResult(command=command, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(preflight, "_run", _fail_if_rg)
+
+    targets = preflight.resolve_test_targets(
+        tmp_path,
+        ["tests/helpers/replay_result_builder.py"],
+    )
+
+    assert targets == ["tests/test_alpha.py"]
+
+
+def test_run_handles_missing_optional_tool_without_raising(tmp_path: Path, monkeypatch) -> None:
+    def _missing(_command: list[str], **_kwargs: object) -> None:
+        raise FileNotFoundError("tool missing")
+
+    monkeypatch.setattr(preflight.subprocess, "run", _missing)
+    result = preflight._run(["optional-tool"], cwd=tmp_path)
+
+    assert result.returncode == 127
+    assert "tool missing" in result.stderr
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
 
