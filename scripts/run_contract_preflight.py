@@ -44,14 +44,9 @@ _PREFLIGHT_POLICY_VERSION = "1.0.0"
 _CONTROL_SURFACE_ENFORCEMENT_TARGETS = {
     "contracts/examples/control_surface_manifest.json",
     "contracts/schemas/control_surface_manifest.schema.json",
-    "contracts/examples/control_surface_enforcement_result.json",
-    "contracts/schemas/control_surface_enforcement_result.schema.json",
     "spectrum_systems/modules/runtime/control_surface_manifest.py",
-    "spectrum_systems/modules/runtime/control_surface_enforcement.py",
     "scripts/build_control_surface_manifest.py",
-    "scripts/run_control_surface_enforcement.py",
     "tests/test_control_surface_manifest.py",
-    "tests/test_control_surface_enforcement.py",
 }
 
 

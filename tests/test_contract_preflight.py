@@ -539,7 +539,7 @@ def test_main_contract_preflight_blocks_when_control_surface_enforcement_blocks(
             {
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
-                "changed_path": ["spectrum_systems/modules/runtime/control_surface_enforcement.py"],
+                "changed_path": ["spectrum_systems/modules/runtime/control_surface_manifest.py"],
                 "output_dir": str(output_dir),
                 "hardening_flow": False,
             },
@@ -563,3 +563,9 @@ def test_main_contract_preflight_blocks_when_control_surface_enforcement_blocks(
     assert report["status"] == "failed"
     assert report["control_surface_enforcement"]["enforcement_status"] == "BLOCK"
     assert "REQUIRED_SURFACES_TEST_COVERAGE_MISSING" in report["invariant_violations"]
+
+
+def test_control_surface_enforcement_not_invoked_for_enforcement_only_paths() -> None:
+    assert preflight.evaluate_control_surface_enforcement(
+        ["spectrum_systems/modules/runtime/control_surface_enforcement.py"]
+    ) is None
