@@ -43,10 +43,12 @@ def _gate_proof_evidence() -> dict:
         "missing_binding_blocks_progression": True,
         "advisory_only_learning_rejected": True,
         "transition_policy_consumes_binding_deterministically": True,
+        "hard_gate_falsification_required_for_promotion": True,
         "severity_linkage_refs": ["contracts/examples/failure_eval_case.json"],
         "transition_consumption_refs": ["contracts/examples/prompt_queue_transition_decision.json"],
         "policy_action_refs": ["contracts/examples/pqx_slice_execution_record.json"],
         "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
+        "hard_gate_falsification_refs": ["contracts/examples/pqx_hard_gate_falsification_record.json"],
     }
 
 
@@ -159,6 +161,14 @@ def test_gate_proof_evidence_requires_non_advisory_failure_binding() -> None:
     passed, failures = clc._evaluate_gate_proof_evidence(evidence)
     assert passed is False
     assert any("advisory_only_learning_rejected" in message for message in failures)
+
+
+def test_gate_proof_evidence_requires_hard_gate_falsification_refs() -> None:
+    evidence = _gate_proof_evidence()
+    evidence["hard_gate_falsification_refs"] = []
+    passed, failures = clc._evaluate_gate_proof_evidence(evidence)
+    assert passed is False
+    assert any("hard_gate_falsification_refs" in message for message in failures)
 
 
 def test_cli_integration_emits_artifact(tmp_path: Path) -> None:

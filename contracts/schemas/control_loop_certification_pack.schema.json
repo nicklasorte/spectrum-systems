@@ -31,7 +31,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "certification_id": {
       "type": "string",
@@ -324,10 +324,12 @@
         "missing_binding_blocks_progression",
         "advisory_only_learning_rejected",
         "transition_policy_consumes_binding_deterministically",
+        "hard_gate_falsification_required_for_promotion",
         "severity_linkage_refs",
         "transition_consumption_refs",
         "policy_action_refs",
-        "recurrence_prevention_refs"
+        "recurrence_prevention_refs",
+        "hard_gate_falsification_refs"
       ],
       "properties": {
         "severity_linkage_complete": {
@@ -352,6 +354,9 @@
           "type": "boolean"
         },
         "transition_policy_consumes_binding_deterministically": {
+          "type": "boolean"
+        },
+        "hard_gate_falsification_required_for_promotion": {
           "type": "boolean"
         },
         "severity_linkage_refs": {
@@ -379,6 +384,14 @@
           "uniqueItems": true
         },
         "recurrence_prevention_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "hard_gate_falsification_refs": {
           "type": "array",
           "items": {
             "type": "string",

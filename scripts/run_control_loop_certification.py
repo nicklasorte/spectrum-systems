@@ -423,9 +423,10 @@ def _build_certification_artifact(
         "related_plan_refs": sorted(related_plan_refs),
     }
 
+    trace_refs = sorted({trace_id})
     return {
         "artifact_type": "control_loop_certification_pack",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "certification_id": deterministic_id(
             prefix="clcp",
             namespace="control_loop_certification_pack",
@@ -458,7 +459,7 @@ def _build_certification_artifact(
         "provenance_trace_refs": {
             "commit_sha": _git_value("rev-parse", "HEAD"),
             "branch": _git_value("rev-parse", "--abbrev-ref", "HEAD"),
-            "trace_refs": [trace_id],
+            "trace_refs": trace_refs,
         },
     }
 
@@ -473,12 +474,14 @@ def _evaluate_gate_proof_evidence(gate_proof_evidence: dict[str, Any]) -> tuple[
         "missing_binding_blocks_progression",
         "advisory_only_learning_rejected",
         "transition_policy_consumes_binding_deterministically",
+        "hard_gate_falsification_required_for_promotion",
     )
     required_refs = (
         "severity_linkage_refs",
         "transition_consumption_refs",
         "policy_action_refs",
         "recurrence_prevention_refs",
+        "hard_gate_falsification_refs",
     )
     failures: list[str] = []
     for field in required_true_fields:
@@ -590,10 +593,12 @@ def main(argv: list[str] | None = None) -> int:
         "missing_binding_blocks_progression": bool(gate_proof_refs),
         "advisory_only_learning_rejected": bool(gate_proof_refs),
         "transition_policy_consumes_binding_deterministically": bool(gate_proof_refs),
+        "hard_gate_falsification_required_for_promotion": bool(gate_proof_refs),
         "severity_linkage_refs": list(gate_proof_refs),
         "transition_consumption_refs": list(gate_proof_refs),
         "policy_action_refs": list(gate_proof_refs),
         "recurrence_prevention_refs": list(gate_proof_refs),
+        "hard_gate_falsification_refs": list(gate_proof_refs),
     }
 
     artifact = _build_certification_artifact(
