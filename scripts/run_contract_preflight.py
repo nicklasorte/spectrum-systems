@@ -21,6 +21,10 @@ if str(REPO_ROOT) not in sys.path:
 
 from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.governance.contract_impact import analyze_contract_impact  # noqa: E402
+from spectrum_systems.modules.runtime.control_surface_enforcement import (  # noqa: E402
+    ControlSurfaceEnforcementError,
+    run_control_surface_enforcement,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -37,6 +41,18 @@ MASKING_MARKERS = (
     "next_step_decision_artifact",
 )
 _PREFLIGHT_POLICY_VERSION = "1.0.0"
+_CONTROL_SURFACE_ENFORCEMENT_TARGETS = {
+    "contracts/examples/control_surface_manifest.json",
+    "contracts/schemas/control_surface_manifest.schema.json",
+    "contracts/examples/control_surface_enforcement_result.json",
+    "contracts/schemas/control_surface_enforcement_result.schema.json",
+    "spectrum_systems/modules/runtime/control_surface_manifest.py",
+    "spectrum_systems/modules/runtime/control_surface_enforcement.py",
+    "scripts/build_control_surface_manifest.py",
+    "scripts/run_control_surface_enforcement.py",
+    "tests/test_control_surface_manifest.py",
+    "tests/test_control_surface_enforcement.py",
+}
 
 
 @dataclass
@@ -516,6 +532,10 @@ def render_markdown(report: dict[str, Any]) -> str:
     for key in ("schema_example_failures", "producer_failures", "fixture_failures", "consumer_failures"):
         values = report.get(key, [])
         lines.append(f"- **{key}**: {len(values)}")
+    control_surface_enforcement = report.get("control_surface_enforcement")
+    if control_surface_enforcement:
+        lines.append(f"- **control_surface_enforcement_status**: {control_surface_enforcement.get('enforcement_status')}")
+        lines.append(f"- **control_surface_enforcement_blocking_reasons**: {len(control_surface_enforcement.get('blocking_reasons', []))}")
 
     lines.append("")
     if report.get("masked_failures"):
@@ -539,6 +559,31 @@ def render_markdown(report: dict[str, Any]) -> str:
             lines.append(f"- {item}")
     lines.append("")
     return "\n".join(lines)
+
+
+def _should_run_control_surface_enforcement(changed_paths: list[str]) -> bool:
+    return any(path in _CONTROL_SURFACE_ENFORCEMENT_TARGETS for path in changed_paths)
+
+
+def evaluate_control_surface_enforcement(changed_paths: list[str]) -> dict[str, Any] | None:
+    if not _should_run_control_surface_enforcement(changed_paths):
+        return None
+
+    manifest_path = REPO_ROOT / "outputs" / "control_surface_manifest" / "control_surface_manifest.json"
+    try:
+        result = run_control_surface_enforcement(
+            manifest_path=manifest_path,
+            manifest_ref="outputs/control_surface_manifest/control_surface_manifest.json",
+        )
+    except ControlSurfaceEnforcementError as exc:
+        return {
+            "artifact_type": "control_surface_enforcement_result",
+            "enforcement_status": "BLOCK",
+            "blocking_reasons": ["CONTROL_SURFACE_ENFORCEMENT_INPUT_INVALID"],
+            "error": str(exc),
+            "manifest_ref": str(manifest_path.as_posix()),
+        }
+    return result
 
 
 def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
@@ -680,6 +725,7 @@ def main() -> int:
             "missing_required_surface": [],
             "skip_reason": None,
             "invariant_violations": ["changed-path detection failed before evaluation"],
+            "control_surface_enforcement": None,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -703,6 +749,7 @@ def main() -> int:
             "missing_required_surface": [],
             "skip_reason": "explicit no-op: changed paths have no applicable contract surface",
             "invariant_violations": [],
+            "control_surface_enforcement": None,
         }
     else:
         if changed_contract_paths:
@@ -777,7 +824,19 @@ def main() -> int:
             "missing_required_surface": missing_required_surface,
             "skip_reason": None,
             "invariant_violations": [],
+            "control_surface_enforcement": evaluate_control_surface_enforcement(surface_classification["required_paths"]),
         }
+        if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(
+                    report.get("invariant_violations", [])
+                    + report["control_surface_enforcement"].get("blocking_reasons", [])
+                )
+            )
+            report["recommended_repair_areas"] = sorted(
+                set(report["recommended_repair_areas"] + ["control surface manifest required coverage mappings"])
+            )
 
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"

@@ -1,0 +1,33 @@
+{
+  "artifact_type": "control_surface_enforcement_result",
+  "schema_version": "1.0.0",
+  "manifest_ref": "contracts/examples/control_surface_manifest.json",
+  "manifest_identity": "csm-aaaaaaaaaaaaaaaa",
+  "enforcement_status": "PASS",
+  "required_surface_policy_version": "1.0.0",
+  "required_surfaces_evaluated": [
+    "contract_preflight_gate",
+    "done_certification_gate",
+    "evaluation_control_runtime",
+    "replay_governance_gate",
+    "sequence_transition_promotion",
+    "trust_spine_invariant_validation"
+  ],
+  "missing_required_surfaces": [],
+  "surfaces_missing_invariants": [],
+  "surfaces_missing_test_coverage": [],
+  "blocking_reasons": [],
+  "coverage_summary": {
+    "required_surface_count": 6,
+    "required_surface_present_count": 6,
+    "required_surface_invariant_covered_count": 6,
+    "required_surface_test_covered_count": 6,
+    "blocking_gaps_present": false
+  },
+  "deterministic_enforcement_id": "cse-bbbbbbbbbbbbbbbb",
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.control_surface_enforcement",
+    "policy_ref": "CON-030.required_surfaces.v1",
+    "manifest_schema_version": "1.0.0"
+  }
+}

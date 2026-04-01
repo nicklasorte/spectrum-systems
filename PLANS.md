@@ -241,6 +241,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CONVERGENCE-025-TRUST-SPINE-INVARIANTS-2026-04-01.md | CONVERGENCE-025 — Trust-Spine Invariants + Cross-Seam Drift Detection Hardening | Active |
 | docs/review-actions/PLAN-CONVERGENCE-026-TRUST-SPINE-EVIDENCE-COMPLETENESS-2026-04-01.md | CONVERGENCE-026 — Trust-Spine Evidence Completeness | Active |
 | docs/review-actions/PLAN-CON-029-CONTROL-SURFACE-MANIFEST-2026-04-01.md | CON-029 — Control Surface Manifest + Invariant Coverage Registry | Active |
+| docs/review-actions/PLAN-CON-030-CONTROL-SURFACE-ENFORCEMENT-2026-04-01.md | CON-030 — Control Surface Manifest Enforcement | Active |
 
 Update this table when plans are created or completed.
 
