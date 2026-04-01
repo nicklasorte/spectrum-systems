@@ -721,6 +721,12 @@ def replay_run(bundle_path: str, original_decision: Dict[str, Any]) -> Dict[str,
     if missing:
         return _indeterminate(f"original decision malformed: missing required fields {missing}")
 
+    source_artifact_type = str(original_decision.get("artifact_type") or "")
+    if source_artifact_type and source_artifact_type != "evaluation_control_decision":
+        return _indeterminate(
+            "replay_run only supports canonical evaluation_control_decision authority on trust spine"
+        )
+
     try:
         from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
         from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision

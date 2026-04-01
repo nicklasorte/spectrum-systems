@@ -1,0 +1,18 @@
+{
+  "artifact_type": "enforcement_result",
+  "schema_version": "1.1.0",
+  "enforcement_result_id": "ENF-allow-20260401T000000Z",
+  "timestamp": "2026-04-01T00:00:00Z",
+  "trace_id": "44444444-4444-4444-8444-444444444444",
+  "run_id": "eval-run-allow-20260401T000000Z",
+  "input_decision_reference": "ecd-allow-20260401T000000Z",
+  "enforcement_action": "allow_execution",
+  "final_status": "allow",
+  "rationale_code": "allow_all_signals_healthy",
+  "fail_closed": false,
+  "enforcement_path": "baf_single_path",
+  "provenance": {
+    "source_artifact_type": "evaluation_control_decision",
+    "source_artifact_id": "ecd-allow-20260401T000000Z"
+  }
+}

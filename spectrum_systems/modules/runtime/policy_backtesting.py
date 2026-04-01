@@ -192,10 +192,12 @@ def run_policy_backtest(input_refs: dict) -> dict:
             baseline_decision = build_evaluation_control_decision(
                 replay,
                 thresholds=baseline_policy["thresholds"],
+                threshold_context="comparative_analysis",
             )
             candidate_decision = build_evaluation_control_decision(
                 replay,
                 thresholds=candidate_policy["thresholds"],
+                threshold_context="comparative_analysis",
             )
         except EvaluationControlError as exc:
             raise PolicyBacktestingError(f"inconsistent decision results: {exc}") from exc

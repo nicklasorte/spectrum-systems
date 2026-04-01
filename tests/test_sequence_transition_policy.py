@@ -10,6 +10,7 @@ _FIXTURES = _REPO_ROOT / "tests" / "fixtures" / "sequence_replay"
 
 
 def _base_manifest(state: str) -> dict:
+    allow_policy_path = _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "evaluation_control_decision_allow.json"
     return {
         "cycle_id": "cycle-seq",
         "current_state": state,
@@ -29,6 +30,13 @@ def _base_manifest(state: str) -> dict:
         "judgment_application_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_application_record.json"),
         "judgment_eval_result_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_eval_result.json"),
         "hard_gate_falsification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"),
+        "done_certification_input_refs": {
+            "replay_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json"),
+            "policy_ref": str(allow_policy_path),
+            "enforcement_result_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json"),
+            "eval_coverage_summary_ref": str(_REPO_ROOT / "contracts" / "examples" / "eval_coverage_summary.json"),
+            "certification_pack_ref": str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"),
+        },
         "control_loop_gate_proof": {
             "severity_linkage_complete": True,
             "deterministic_transition_consumption": True,
@@ -105,7 +113,7 @@ def test_promotion_blocks_when_hard_gate_falsification_fails(tmp_path: Path) -> 
     assert "hard gate falsification" in str(decision.reason)
 
 
-def test_promotion_consumes_hard_gate_falsification_ref_from_certification_pack(tmp_path: Path) -> None:
+def test_promotion_requires_replay_authority_refs_even_when_falsification_ref_can_be_resolved(tmp_path: Path) -> None:
     manifest = _base_manifest("certification_pending")
     cert_pack = json.loads(Path(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json").read_text(encoding="utf-8"))
     cert_pack["gate_proof_evidence"]["hard_gate_falsification_refs"] = [manifest["hard_gate_falsification_record_path"]]
@@ -115,4 +123,29 @@ def test_promotion_consumes_hard_gate_falsification_ref_from_certification_pack(
     manifest["hard_gate_falsification_record_path"] = ""
     manifest["done_certification_input_refs"] = {"certification_pack_ref": str(cert_pack_path)}
     decision = evaluate_sequence_transition(manifest, "promoted")
-    assert decision.allowed is True
+    assert decision.allowed is False
+    assert "replay_result_ref" in str(decision.reason)
+
+
+def test_promotion_blocks_when_enforcement_result_is_deny(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    enforcement = json.loads(Path(manifest["done_certification_input_refs"]["enforcement_result_ref"]).read_text(encoding="utf-8"))
+    enforcement["final_status"] = "deny"
+    bad_path = tmp_path / "enforcement_result_blocked.json"
+    bad_path.write_text(json.dumps(enforcement), encoding="utf-8")
+    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(bad_path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "enforcement result" in str(decision.reason)
+
+
+def test_promotion_blocks_when_required_eval_coverage_gap_present(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    coverage = json.loads(Path(manifest["done_certification_input_refs"]["eval_coverage_summary_ref"]).read_text(encoding="utf-8"))
+    coverage["required_slice_gaps"] = [{"slice_id": "runtime_guardrails", "reason": "missing"}]
+    bad_path = tmp_path / "eval_coverage_summary_gap.json"
+    bad_path.write_text(json.dumps(coverage), encoding="utf-8")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(bad_path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "coverage gaps" in str(decision.reason)

@@ -106,6 +106,14 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         },
     )
 
+    allow_policy_path = tmp_path / "evaluation_control_decision_allow.json"
+    allow_policy = json.loads((_REPO_ROOT / "contracts" / "examples" / "evaluation_control_decision.json").read_text(encoding="utf-8"))
+    allow_policy["decision"] = "allow"
+    allow_policy["system_response"] = "allow"
+    allow_policy["system_status"] = "healthy"
+    allow_policy["rationale_code"] = "allow_all_signals_healthy"
+    _write(allow_policy_path, allow_policy)
+
     base = {
         "cycle_id": "cycle-test",
         "current_state": state,
@@ -149,7 +157,7 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
             "regression_result_ref": "b",
             "certification_pack_ref": "c",
             "error_budget_ref": "d",
-            "policy_ref": "e",
+            "policy_ref": str(allow_policy_path),
         },
         "required_judgments": [],
         "required_judgment_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],
@@ -872,6 +880,12 @@ def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> N
     manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
         _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
     )
+    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
+    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
+    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
+    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
     _write(manifest_path, manifest)
 
     expected = [
@@ -899,6 +913,9 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
         _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
     )
+    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
+    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
@@ -906,7 +923,7 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     assert "control_allow_promotion" in result["blocking_issues"][-1]
 
 
-def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsification(tmp_path: Path) -> None:
+def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsification_and_missing_replay_authority_refs(tmp_path: Path) -> None:
     manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
     manifest["sequence_mode"] = "three_slice"
     manifest["certification_status"] = "passed"
@@ -919,8 +936,8 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsific
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
-    assert result["status"] == "ok"
-    assert result["next_state"] == "promoted"
+    assert result["status"] == "blocked"
+    assert "replay_result_ref" in result["blocking_issues"][-1]
 
 
 def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_before_control_allow(tmp_path: Path) -> None:
@@ -937,4 +954,4 @@ def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_befo
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert "control_allow_promotion" in result["blocking_issues"][-1]
+    assert "replay_result_ref" in result["blocking_issues"][-1]

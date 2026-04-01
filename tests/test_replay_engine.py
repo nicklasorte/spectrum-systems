@@ -896,3 +896,17 @@ def test_run_replay_attaches_error_budget_status_when_slo_is_provided() -> None:
     assert result["alert_trigger"]["replay_result_id"] == result["replay_id"]
     assert result["alert_trigger"]["trace_refs"]["trace_id"] == result["trace_id"]
     validate_artifact(result, "replay_result")
+
+
+def test_replay_run_rejects_non_canonical_original_decision_artifact_type() -> None:
+    result = replay_run(
+        "bundle/path.json",
+        {
+            "artifact_type": "evaluation_budget_decision",
+            "run_id": "run-legacy",
+            "trace_id": "trace-legacy",
+            "decision": "allow",
+        },
+    )
+    assert result["replay_status"] == "indeterminate"
+    assert any("canonical evaluation_control_decision" in reason for reason in result["reasons"])
