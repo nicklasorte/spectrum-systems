@@ -383,6 +383,7 @@ def _build_certification_artifact(
     scenario_summary: dict[str, Any],
     test_summary: dict[str, Any],
     artifact_validation_summary: dict[str, Any],
+    gate_proof_evidence: dict[str, Any],
     related_review_refs: list[str],
     related_plan_refs: list[str],
 ) -> dict[str, Any]:
@@ -424,7 +425,7 @@ def _build_certification_artifact(
 
     return {
         "artifact_type": "control_loop_certification_pack",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "certification_id": deterministic_id(
             prefix="clcp",
             namespace="control_loop_certification_pack",
@@ -450,6 +451,7 @@ def _build_certification_artifact(
         "scenario_summary": scenario_summary,
         "test_summary": test_summary,
         "artifact_validation_summary": artifact_validation_summary,
+        "gate_proof_evidence": gate_proof_evidence,
         "related_review_refs": related_review_refs,
         "related_plan_refs": related_plan_refs,
         "generated_at": _utc_now(),
@@ -459,6 +461,34 @@ def _build_certification_artifact(
             "trace_refs": [trace_id],
         },
     }
+
+
+def _evaluate_gate_proof_evidence(gate_proof_evidence: dict[str, Any]) -> tuple[bool, list[str]]:
+    required_true_fields = (
+        "severity_linkage_complete",
+        "deterministic_transition_consumption",
+        "policy_caused_action_observed",
+        "recurrence_prevention_linked",
+        "failure_binding_required_for_progression",
+        "missing_binding_blocks_progression",
+        "advisory_only_learning_rejected",
+        "transition_policy_consumes_binding_deterministically",
+    )
+    required_refs = (
+        "severity_linkage_refs",
+        "transition_consumption_refs",
+        "policy_action_refs",
+        "recurrence_prevention_refs",
+    )
+    failures: list[str] = []
+    for field in required_true_fields:
+        if gate_proof_evidence.get(field) is not True:
+            failures.append(f"{field} must be true")
+    for field in required_refs:
+        refs = gate_proof_evidence.get(field)
+        if not isinstance(refs, list) or not refs:
+            failures.append(f"{field} must include at least one evidence reference")
+    return not failures, failures
 
 
 def _validate_certification_schema(artifact: dict[str, Any]) -> list[str]:
@@ -501,6 +531,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tests-command", default=DEFAULT_COMMANDS["targeted_control_loop_eval_gate_tests"])
     parser.add_argument("--review-command", default=DEFAULT_COMMANDS["review_artifact_validation"])
     parser.add_argument("--repo-review-command", default=DEFAULT_COMMANDS["repo_review_validator"])
+    parser.add_argument(
+        "--gate-proof-ref",
+        action="append",
+        default=[],
+        help="Evidence path supporting hard-gate proof alignment and failure-binding enforcement (repeatable).",
+    )
     return parser
 
 
@@ -544,12 +580,28 @@ def main(argv: list[str] | None = None) -> int:
 
     related_review_refs = args.related_review_ref or [str(Path(args.review_json).as_posix())]
     related_plan_refs = args.related_plan_ref
+    gate_proof_refs = sorted(dict.fromkeys(args.gate_proof_ref))
+    gate_proof_evidence = {
+        "severity_linkage_complete": bool(gate_proof_refs),
+        "deterministic_transition_consumption": bool(gate_proof_refs),
+        "policy_caused_action_observed": bool(gate_proof_refs),
+        "recurrence_prevention_linked": bool(gate_proof_refs),
+        "failure_binding_required_for_progression": bool(gate_proof_refs),
+        "missing_binding_blocks_progression": bool(gate_proof_refs),
+        "advisory_only_learning_rejected": bool(gate_proof_refs),
+        "transition_policy_consumes_binding_deterministically": bool(gate_proof_refs),
+        "severity_linkage_refs": list(gate_proof_refs),
+        "transition_consumption_refs": list(gate_proof_refs),
+        "policy_action_refs": list(gate_proof_refs),
+        "recurrence_prevention_refs": list(gate_proof_refs),
+    }
 
     artifact = _build_certification_artifact(
         checks=checks,
         scenario_summary=scenario_summary,
         test_summary=test_summary,
         artifact_validation_summary=artifact_validation_summary,
+        gate_proof_evidence=gate_proof_evidence,
         related_review_refs=related_review_refs,
         related_plan_refs=related_plan_refs,
     )
@@ -567,6 +619,21 @@ def main(argv: list[str] | None = None) -> int:
                 "command": "internal:schema_validation",
                 "evidence_ref": "contracts/schemas/control_loop_certification_pack.schema.json",
                 "summary": f"Generated artifact failed schema validation: {'; '.join(schema_errors)}",
+            }
+        )
+    gate_proof_ok, gate_proof_failures = _evaluate_gate_proof_evidence(artifact["gate_proof_evidence"])
+    if not gate_proof_ok:
+        artifact["certification_status"] = "blocked"
+        artifact["decision"] = "blocked"
+        artifact["executed_checks"].append(
+            {
+                "check_id": "repo_review_validator",
+                "check_name": "Hard-gate proof validation",
+                "status": "blocked",
+                "exit_code": None,
+                "command": "internal:gate_proof_validation",
+                "evidence_ref": "control_loop_certification_pack.gate_proof_evidence",
+                "summary": "Missing required hard-gate proof evidence: " + "; ".join(gate_proof_failures),
             }
         )
 
