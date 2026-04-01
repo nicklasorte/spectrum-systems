@@ -2194,6 +2194,19 @@
       "notes": "BAG deterministic canonical trust-loop replay artifact with required embedded observability_metrics, error_budget_status, and alert_trigger attachments plus deterministic artifact identity for authoritative replay-only signal consumption."
     },
     {
+      "artifact_type": "review_control_signal",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.13",
+      "last_updated_in": "1.3.13",
+      "example_path": "contracts/examples/review_control_signal.json",
+      "notes": "Deterministic machine-readable control signal extracted from canonical review markdown for runtime control and promotion gating."
+    },
+    {
       "artifact_type": "review_artifact",
       "artifact_class": "review",
       "schema_version": "1.0.0",

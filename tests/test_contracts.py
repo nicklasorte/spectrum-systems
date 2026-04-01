@@ -174,6 +174,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("prompt_queue_review_invocation_result")
         validate_artifact(instance, "prompt_queue_review_invocation_result")
 
+    def test_review_control_signal_example_validates(self) -> None:
+        instance = load_example("review_control_signal")
+        validate_artifact(instance, "review_control_signal")
+
 
 
 

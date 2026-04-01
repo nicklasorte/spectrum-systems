@@ -166,6 +166,33 @@ def _strategy_status(step: Dict[str, Any], *, steps: list[Dict[str, Any]]) -> Di
     }
 
 
+def _review_control_signal_from_requirements(satisfied_review: set[str]) -> Dict[str, Any] | None:
+    gate = None
+    scale = None
+    findings: list[str] = []
+    required = False
+    for item in sorted(satisfied_review):
+        text = str(item)
+        if text == "review_control_signal:required":
+            required = True
+        elif text.startswith("review_control_signal:gate_assessment="):
+            gate = text.split("=", 1)[1].strip().upper()
+        elif text.startswith("review_control_signal:scale_recommendation="):
+            scale = text.split("=", 1)[1].strip().upper()
+        elif text.startswith("review_control_signal:critical_finding="):
+            finding = text.split("=", 1)[1].strip()
+            if finding:
+                findings.append(finding)
+    if gate is None and scale is None and not findings and not required:
+        return None
+    return {
+        "required": required,
+        "gate_assessment": gate,
+        "scale_recommendation": scale,
+        "critical_findings": sorted(set(findings)),
+    }
+
+
 def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, Any]:
     roadmap = _load_json(governed_roadmap_path)
     _validate_schema(roadmap, "governed_roadmap_artifact")
@@ -179,6 +206,7 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
     available_artifacts = {str(item) for item in roadmap["available_artifact_refs"]}
     satisfied_trust = {str(item) for item in roadmap["satisfied_trust_requirements"]}
     satisfied_review = {str(item) for item in roadmap["satisfied_review_requirements"]}
+    review_control_signal = _review_control_signal_from_requirements(satisfied_review)
     satisfied_eval = {str(item) for item in roadmap["satisfied_eval_requirements"]}
 
     completed_steps = [str(step["step_id"]) for step in steps if str(step["status"]) == "completed"]
@@ -216,6 +244,35 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
             satisfied_eval=satisfied_eval,
         )
         strategy_status = _strategy_status(step, steps=steps)
+        if review_control_signal is not None:
+            gate_assessment = review_control_signal.get("gate_assessment")
+            scale_recommendation = review_control_signal.get("scale_recommendation")
+            if review_control_signal.get("required") and gate_assessment is None:
+                strategy_status["strategy_gate_decision"] = "block"
+                strategy_status["rationale"] = "strategy gate blocked: required review_control_signal missing gate_assessment"
+                strategy_status["violated_invariants"] = sorted(
+                    set(strategy_status["violated_invariants"] + ["missing_required_review_control_signal"])
+                )
+            elif gate_assessment == "FAIL":
+                strategy_status["strategy_gate_decision"] = "block"
+                strategy_status["rationale"] = "strategy gate blocked by review_control_signal gate_assessment=FAIL"
+                strategy_status["violated_invariants"] = sorted(
+                    set(strategy_status["violated_invariants"] + ["review_control_signal_gate_fail"])
+                )
+            elif (
+                scale_recommendation == "NO"
+                and str(step.get("hardening_vs_expansion") or "").strip().lower() == "expansion"
+                and strategy_status["strategy_gate_decision"] in {"allow", "warn"}
+            ):
+                strategy_status["strategy_gate_decision"] = "freeze"
+                strategy_status["rationale"] = "strategy gate froze expansion by review_control_signal scale_recommendation=NO"
+                strategy_status["drift_signals"] = sorted(
+                    set(strategy_status["drift_signals"] + ["review_control_signal_scale_block"])
+                )
+            if review_control_signal.get("critical_findings"):
+                strategy_status["drift_signals"] = sorted(
+                    set(strategy_status["drift_signals"] + ["review_control_signal_critical_findings_present"])
+                )
         strategy_status_artifacts.append(strategy_status)
 
         if strategy_status["strategy_gate_decision"] == "block":

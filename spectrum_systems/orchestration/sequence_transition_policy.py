@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from spectrum_systems.contracts import validate_artifact
+
 SEQUENCE_STATES = {
     "admitted",
     "executing_slice_1",
@@ -175,6 +177,45 @@ def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | Non
     return True, None
 
 
+def _review_signal_required(manifest: dict[str, Any]) -> bool:
+    if manifest.get("require_review_control_signal") is True:
+        return True
+    required = manifest.get("required_control_signals")
+    return isinstance(required, list) and "review_control_signal" in {str(item) for item in required}
+
+
+def _is_expansion_context(manifest: dict[str, Any]) -> bool:
+    fields = (
+        manifest.get("hardening_vs_expansion"),
+        manifest.get("promotion_scope"),
+        manifest.get("next_step_mode"),
+    )
+    return any(str(value).strip().lower() == "expansion" for value in fields if value is not None)
+
+
+def _review_control_signal_gate(manifest: dict[str, Any], *, target_state: str) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    review_ref = refs.get("review_control_signal_ref") if isinstance(refs, dict) else None
+    required = _review_signal_required(manifest)
+    if not _path_exists(review_ref):
+        if required:
+            return False, "promotion requires done_certification_input_refs.review_control_signal_ref"
+        return True, None
+    review_payload = _load_json_if_path(review_ref)
+    if not isinstance(review_payload, dict):
+        return False, "promotion requires readable review_control_signal_ref artifact"
+    try:
+        validate_artifact(review_payload, "review_control_signal")
+    except Exception as exc:
+        return False, f"promotion requires valid review_control_signal artifact: {exc}"
+
+    if str(review_payload.get("gate_assessment") or "") == "FAIL":
+        return False, "promotion blocked by review_control_signal gate_assessment=FAIL"
+    if str(review_payload.get("scale_recommendation") or "") == "NO" and target_state == "promoted" and _is_expansion_context(manifest):
+        return False, "promotion blocked for expansion scope by review_control_signal scale_recommendation=NO"
+    return True, None
+
+
 def _has_traceability(manifest: dict[str, Any]) -> bool:
     trace_id = manifest.get("sequence_trace_id")
     lineage = manifest.get("sequence_lineage")
@@ -328,6 +369,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         authority_passed, authority_error = _promotion_authority_gate(manifest)
         if not authority_passed:
             return SequenceTransitionDecision(False, authority_error)
+        review_passed, review_error = _review_control_signal_gate(manifest, target_state=target_state)
+        if not review_passed:
+            return SequenceTransitionDecision(False, review_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:

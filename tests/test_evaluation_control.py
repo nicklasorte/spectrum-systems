@@ -46,6 +46,26 @@ def _failure_eval_case() -> tuple[dict, dict]:
     return artifact, binding
 
 
+def _review_signal(*, gate: str = "PASS", scale: str = "YES") -> dict:
+    return {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "artifact_id": "a" * 64,
+        "review_id": "REV-TEST-001",
+        "review_type": "trust_boundary_surgical",
+        "gate_assessment": gate,
+        "scale_recommendation": scale,
+        "critical_findings": [],
+        "confidence": 0.7,
+        "trace_linkage": {
+            "source_type": "review_markdown",
+            "source_path": "docs/reviews/test.md",
+            "source_digest": "b" * 64,
+            "trace_id": "TRC-1111111111111111",
+        },
+    }
+
+
 def test_replay_result_healthy_allows() -> None:
     decision = build_evaluation_control_decision(_replay_result())
     assert decision["system_response"] == "allow"
@@ -316,3 +336,24 @@ def test_malformed_threshold_payload_fails_closed_in_both_contexts() -> None:
             thresholds={"reliability_threshold": "low"},  # type: ignore[dict-item]
             threshold_context="comparative_analysis",
         )
+
+
+def test_review_signal_fail_blocks_control_decision() -> None:
+    replay = _replay_result()
+    decision = build_evaluation_control_decision(replay, review_control_signal=_review_signal(gate="FAIL", scale="NO"))
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+
+
+def test_review_signal_conditional_escalates_allow_to_require_review() -> None:
+    replay = _replay_result()
+    decision = build_evaluation_control_decision(replay, review_control_signal=_review_signal(gate="CONDITIONAL"))
+    assert decision["decision"] == "require_review"
+    assert decision["system_response"] == "warn"
+
+
+def test_missing_required_review_signal_fails_closed() -> None:
+    replay = _replay_result()
+    decision = build_evaluation_control_decision(replay, review_signal_required=True)
+    assert decision["decision"] == "deny"
+    assert decision["rationale_code"] == "deny_missing_required_signal"

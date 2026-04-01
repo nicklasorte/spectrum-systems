@@ -1,0 +1,20 @@
+{
+  "artifact_type": "review_control_signal",
+  "schema_version": "1.0.0",
+  "artifact_id": "3f7adf90333fd2636ff9224a7c7de6c47030395f3cf8686d7f6fb97e6d9f3dda",
+  "review_id": "REV-CONTROL-TRUST-2026-03-27",
+  "review_type": "trust_boundary_surgical",
+  "gate_assessment": "CONDITIONAL",
+  "scale_recommendation": "NO",
+  "critical_findings": [
+    "F-001 deny_indeterminate_failure path is effectively unreachable.",
+    "F-002 require_review uses blocked execution state with non-blocked publication/decision flags."
+  ],
+  "confidence": 0.7,
+  "trace_linkage": {
+    "source_type": "review_markdown",
+    "source_path": "docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.md",
+    "source_digest": "6e4878ad31687cbf9b7dd6b32a18a5f8045479666c8c992854b0fdcef673625f",
+    "trace_id": "TRC-4DC9B855646B3E5D"
+  }
+}

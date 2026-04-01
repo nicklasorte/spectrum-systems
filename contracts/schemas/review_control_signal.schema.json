@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_control_signal.schema.json",
+  "title": "Review Control Signal",
+  "description": "Machine-readable governed control signal extracted from canonical review artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "review_id",
+    "review_type",
+    "gate_assessment",
+    "scale_recommendation",
+    "critical_findings",
+    "confidence",
+    "trace_linkage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "review_control_signal"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "review_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gate_assessment": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "CONDITIONAL"]
+    },
+    "scale_recommendation": {
+      "type": "string",
+      "enum": ["YES", "NO"]
+    },
+    "critical_findings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source_path", "source_digest", "trace_id"],
+      "properties": {
+        "source_type": {
+          "const": "review_markdown"
+        },
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^TRC-[A-F0-9]{16}$"
+        }
+      }
+    }
+  }
+}

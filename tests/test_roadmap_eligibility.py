@@ -194,3 +194,32 @@ def test_expansion_while_prior_hardening_partial_freezes(tmp_path: Path) -> None
     artifact = build_roadmap_eligibility(path)
     statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
     assert statuses["STEP-003"]["strategy_gate_decision"] == "freeze"
+
+
+def test_review_control_signal_fail_blocks_strategy_gate(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["satisfied_review_requirements"] = [
+        "review_control_signal:gate_assessment=FAIL",
+        "review_control_signal:scale_recommendation=NO",
+    ]
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-002"]["strategy_gate_decision"] == "block"
+
+
+def test_review_scale_no_freezes_expansion_steps(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][2]["dependency_step_ids"] = []
+    roadmap["steps"][2]["dependency_artifact_refs"] = []
+    roadmap["steps"][2]["trust_requirements"] = []
+    roadmap["steps"][2]["review_requirements"] = []
+    roadmap["steps"][2]["eval_requirements"] = []
+    roadmap["satisfied_review_requirements"] = [
+        "review_control_signal:gate_assessment=PASS",
+        "review_control_signal:scale_recommendation=NO",
+    ]
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(path)
+    statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
+    assert statuses["STEP-003"]["strategy_gate_decision"] == "freeze"

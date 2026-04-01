@@ -226,3 +226,66 @@ def test_enforcement_vocabulary_normalization_blocks_variants(tmp_path: Path) ->
         decision = evaluate_sequence_transition(manifest, "promoted")
         assert decision.allowed is False
         assert "enforcement result" in str(decision.reason)
+
+
+def test_promotion_blocks_when_review_control_signal_fails(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "artifact_id": "1" * 64,
+        "review_id": "REV-TEST",
+        "review_type": "trust_boundary",
+        "gate_assessment": "FAIL",
+        "scale_recommendation": "NO",
+        "critical_findings": ["F-001 critical"],
+        "confidence": 0.7,
+        "trace_linkage": {
+            "source_type": "review_markdown",
+            "source_path": "docs/reviews/test.md",
+            "source_digest": "2" * 64,
+            "trace_id": "TRC-1234567890ABCDEF",
+        },
+    }
+    path = tmp_path / "review_control_signal.json"
+    path.write_text(json.dumps(review_signal), encoding="utf-8")
+    manifest["done_certification_input_refs"]["review_control_signal_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "gate_assessment=FAIL" in str(decision.reason)
+
+
+def test_required_missing_review_control_signal_fails_closed() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["require_review_control_signal"] = True
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "review_control_signal_ref" in str(decision.reason)
+
+
+def test_scale_no_blocks_expansion_promotion(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["hardening_vs_expansion"] = "expansion"
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "artifact_id": "3" * 64,
+        "review_id": "REV-TEST",
+        "review_type": "trust_boundary",
+        "gate_assessment": "PASS",
+        "scale_recommendation": "NO",
+        "critical_findings": [],
+        "confidence": 0.9,
+        "trace_linkage": {
+            "source_type": "review_markdown",
+            "source_path": "docs/reviews/test.md",
+            "source_digest": "4" * 64,
+            "trace_id": "TRC-ABCDEF1234567890",
+        },
+    }
+    path = tmp_path / "review_control_signal_scale.json"
+    path.write_text(json.dumps(review_signal), encoding="utf-8")
+    manifest["done_certification_input_refs"]["review_control_signal_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "scale_recommendation=NO" in str(decision.reason)
