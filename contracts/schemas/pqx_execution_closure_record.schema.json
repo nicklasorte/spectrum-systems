@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_closure_record.schema.json",
+  "title": "PQX Execution Closure Record",
+  "description": "RF-18 deterministic sequence closure proof linking execution, evaluation, control, enforcement, and replay evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "closure_id",
+    "run_id",
+    "trace_id",
+    "slice_sequence_identifiers",
+    "pqx_execution_records",
+    "output_artifacts",
+    "eval_summaries",
+    "control_decisions",
+    "enforcement_actions",
+    "replay_verification",
+    "failure_eval_policy_linkage",
+    "policy_consumption_in_transition",
+    "recurrence_prevention_linkage",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_execution_closure_record"},
+    "closure_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "slice_sequence_identifiers": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "pqx_execution_records": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "output_artifacts": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "eval_summaries": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "control_decisions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "enforcement_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "replay_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "replay_refs"],
+      "properties": {
+        "status": {"type": "string", "enum": ["verified"]},
+        "replay_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "failure_eval_policy_linkage": {"$ref": "#/$defs/linkedEvidence"},
+    "policy_consumption_in_transition": {"$ref": "#/$defs/linkedEvidence"},
+    "recurrence_prevention_linkage": {"$ref": "#/$defs/linkedEvidence"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "linkedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["linked", "evidence_refs"],
+      "properties": {
+        "linked": {"type": "boolean", "const": true},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

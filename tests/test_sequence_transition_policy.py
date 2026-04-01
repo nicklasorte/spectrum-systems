@@ -28,6 +28,7 @@ def _base_manifest(state: str) -> dict:
         "judgment_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"),
         "judgment_application_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_application_record.json"),
         "judgment_eval_result_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_eval_result.json"),
+        "hard_gate_falsification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"),
         "control_loop_gate_proof": {
             "severity_linkage_complete": True,
             "deterministic_transition_consumption": True,
@@ -90,3 +91,15 @@ def test_promotion_blocks_when_required_judgment_artifact_missing() -> None:
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "judgment_eval_result_path" in str(decision.reason)
+
+
+def test_promotion_blocks_when_hard_gate_falsification_fails(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    payload = json.loads(Path(manifest["hard_gate_falsification_record_path"]).read_text(encoding="utf-8"))
+    payload["overall_result"] = "fail"
+    bad_path = tmp_path / "hard_gate_falsification_failed.json"
+    bad_path.write_text(json.dumps(payload), encoding="utf-8")
+    manifest["hard_gate_falsification_record_path"] = str(bad_path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "hard gate falsification" in str(decision.reason)

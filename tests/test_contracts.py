@@ -229,7 +229,13 @@ class ContractSchemaTests(unittest.TestCase):
         validate_artifact(instance, "pqx_sequence_budget")
 
     def test_pqx_chain_and_bundle_contract_examples_validate(self) -> None:
-        for name in ("pqx_chain_certification_record", "pqx_bundle_certification_record", "pqx_bundle_audit_record"):
+        for name in (
+            "pqx_chain_certification_record",
+            "pqx_bundle_certification_record",
+            "pqx_bundle_audit_record",
+            "pqx_execution_closure_record",
+            "pqx_hard_gate_falsification_record",
+        ):
             instance = load_example(name)
             validate_artifact(instance, name)
 
