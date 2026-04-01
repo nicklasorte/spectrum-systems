@@ -175,6 +175,30 @@ def test_detect_changed_paths_skips_non_governed_working_tree_fallback(monkeypat
     assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
 
 
+def test_detect_changed_paths_refs_attempted_are_unique_in_order(monkeypatch) -> None:
+    monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: ([], "fatal: unavailable"))
+    monkeypatch.setattr(preflight, "_github_sha_pair", lambda: ("base-sha", "head-sha", "github_pr_sha_pair"))
+    monkeypatch.setattr(preflight, "_local_workspace_changes", lambda _repo: [])
+
+    class _Result:
+        returncode = 0
+        stdout = "contracts/schemas/replay_result.schema.json\n"
+        combined_output = ""
+
+    monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
+
+    detected = preflight.detect_changed_paths(
+        repo_root=Path("."),
+        base_ref="base-sha",
+        head_ref="head-sha",
+        explicit=[],
+    )
+
+    assert detected.changed_path_detection_mode == "working_tree_diff_head"
+    assert detected.refs_attempted == ["base-sha..head-sha", "base-sha..HEAD", "working_tree_vs_HEAD"]
+    assert len(detected.refs_attempted) == len(set(detected.refs_attempted))
+
+
 def test_masking_detection_labels_contract_masking() -> None:
     masked = preflight.detect_masked_failures(
         [
