@@ -17,7 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -48,6 +48,44 @@ STATUS_RESPONSE_MAP = {
 
 class EvaluationControlError(Exception):
     """Raised for any evaluation control mapping failure."""
+
+ThresholdContext = Literal["active_runtime", "comparative_analysis"]
+
+
+def _resolve_threshold_context(context: ThresholdContext) -> ThresholdContext:
+    if context not in {"active_runtime", "comparative_analysis"}:
+        raise EvaluationControlError(
+            "threshold_context must be 'active_runtime' or 'comparative_analysis'"
+        )
+    return context
+
+
+def _resolve_comparative_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
+    resolved = dict(DEFAULT_THRESHOLDS)
+    if not thresholds:
+        return resolved
+
+    for key, value in thresholds.items():
+        if key not in DEFAULT_THRESHOLDS:
+            raise EvaluationControlError(f"threshold override contains unknown key: {key}")
+        if not isinstance(value, (int, float)):
+            raise EvaluationControlError(f"threshold override for {key} must be numeric")
+
+    candidate = dict(resolved)
+    candidate.update({k: float(v) for k, v in thresholds.items()})
+
+    for key, value in candidate.items():
+        if value < 0.0 or value > 1.0:
+            raise EvaluationControlError(f"threshold override for {key} must be between 0.0 and 1.0")
+
+    return candidate
+
+
+def _resolve_thresholds(*, thresholds: Optional[Dict[str, float]], threshold_context: ThresholdContext) -> Dict[str, float]:
+    resolved_context = _resolve_threshold_context(threshold_context)
+    if resolved_context == "comparative_analysis":
+        return _resolve_comparative_thresholds(thresholds)
+    return _resolve_governed_thresholds(thresholds)
 
 
 def _canonical_timestamp(value: Any) -> str:
@@ -335,9 +373,10 @@ def build_evaluation_control_decision(
     *,
     thresholds: Optional[Dict[str, float]] = None,
     failure_policy_binding: Optional[Dict[str, Any]] = None,
+    threshold_context: ThresholdContext = "active_runtime",
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
-    t = _resolve_governed_thresholds(thresholds)
+    t = _resolve_thresholds(thresholds=thresholds, threshold_context=threshold_context)
     seeded_signals: List[str] = []
     artifact_type = signal_artifact.get("artifact_type") if isinstance(signal_artifact, dict) else None
     if artifact_type == "replay_result":

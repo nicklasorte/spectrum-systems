@@ -237,6 +237,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BUNDLE-B-017-2026-04-01.md | BUNDLE-B-017 — Proof Closure + Certification Hardening (G3/G4 + Hard Gate Proof) | Active |
 | docs/review-actions/PLAN-ALIGNMENT-019-RESET-2026-04-01.md | ALIGNMENT-019-RESET — Foundation Alignment Reset (Trust Spine Closure, Preflight-First) | Active |
 | docs/review-actions/PLAN-RED-TEAM-CLOSURE-021-2026-04-01.md | RED-TEAM-CLOSURE-021 — Post-ALIGNMENT_020 trust-spine hardening bundle | Active |
+| docs/review-actions/PLAN-RED-TEAM-CLOSURE-021-FIX-2026-04-01.md | RED-TEAM-CLOSURE-021-FIX — Threshold context boundary repair (runtime vs comparative analysis) | Active |
 
 Update this table when plans are created or completed.
 

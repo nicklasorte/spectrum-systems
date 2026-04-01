@@ -285,8 +285,8 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
         }
         strict = _clone(base["alternate_policy_ref"]["thresholds"])
 
-        p_decision = build_evaluation_control_decision(replay, thresholds=permissive)
-        s_decision = build_evaluation_control_decision(replay, thresholds=strict)
+        p_decision = build_evaluation_control_decision(replay, thresholds=permissive, threshold_context="comparative_analysis")
+        s_decision = build_evaluation_control_decision(replay, thresholds=strict, threshold_context="comparative_analysis")
         if p_decision["system_response"] != s_decision["system_response"]:
             actual_outcome = f"distinct:{p_decision['system_response']}->{s_decision['system_response']}"
         else:
@@ -486,6 +486,7 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
         control = build_evaluation_control_decision(
             replay,
             thresholds={"reliability_threshold": 0.8, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            threshold_context="comparative_analysis",
         )
 
         routing_input = _clone(base["routing_input_ref"])

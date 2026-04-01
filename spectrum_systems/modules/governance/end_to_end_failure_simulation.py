@@ -342,7 +342,11 @@ def _execute_case(case_id: str, case_type: str, injected_faults: List[str], expe
                     f"policy_backtest_result:{backtest.get('backtest_id', 'missing')}",
                 ]
             )
-            control = build_evaluation_control_decision(replay, thresholds={"reliability_threshold": 0.99, "drift_threshold": 0.01, "trust_threshold": 0.99})
+            control = build_evaluation_control_decision(
+                replay,
+                thresholds={"reliability_threshold": 0.99, "drift_threshold": 0.01, "trust_threshold": 0.99},
+                threshold_context="comparative_analysis",
+            )
 
         if case_type == "multi_fault_combined":
             gfi = run_governed_failure_injection(case_filter=["context_missing_upstream_refs", "replay_missing_trace_context"])

@@ -236,3 +236,47 @@ def test_ambiguous_recurrence_scope_blocks() -> None:
     binding["recurrence_scope"]["runtime_environment"] = "*"
     with pytest.raises(EvaluationControlError, match="ambiguous recurrence scope"):
         build_evaluation_control_decision(failure_eval, failure_policy_binding=binding)
+
+
+def test_active_runtime_rejects_relaxed_thresholds() -> None:
+    replay = _replay_result()
+    with pytest.raises(EvaluationControlError, match="cannot relax reliability_threshold"):
+        build_evaluation_control_decision(
+            replay,
+            thresholds={"reliability_threshold": 0.6, "drift_threshold": 0.2, "trust_threshold": 0.8},
+        )
+
+
+def test_comparative_analysis_allows_relaxed_thresholds() -> None:
+    replay = _replay_result()
+    decision = build_evaluation_control_decision(
+        replay,
+        thresholds={"reliability_threshold": 0.6, "drift_threshold": 0.2, "trust_threshold": 0.8},
+        threshold_context="comparative_analysis",
+    )
+    assert decision["decision"] in {"allow", "require_review", "deny"}
+
+
+def test_threshold_context_is_explicit_and_fail_closed() -> None:
+    replay = _replay_result()
+    with pytest.raises(EvaluationControlError, match="threshold_context"):
+        build_evaluation_control_decision(
+            replay,
+            thresholds={"reliability_threshold": 0.6},
+            threshold_context="runtime_fallback",  # type: ignore[arg-type]
+        )
+
+
+def test_malformed_threshold_payload_fails_closed_in_both_contexts() -> None:
+    replay = _replay_result()
+    with pytest.raises(EvaluationControlError, match="must be numeric"):
+        build_evaluation_control_decision(
+            replay,
+            thresholds={"reliability_threshold": "low"},  # type: ignore[dict-item]
+        )
+    with pytest.raises(EvaluationControlError, match="must be numeric"):
+        build_evaluation_control_decision(
+            replay,
+            thresholds={"reliability_threshold": "low"},  # type: ignore[dict-item]
+            threshold_context="comparative_analysis",
+        )
