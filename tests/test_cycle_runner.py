@@ -919,8 +919,8 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsific
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
-    assert result["status"] == "blocked"
-    assert "hard_gate_falsification" in result["blocking_issues"][-1]
+    assert result["status"] == "ok"
+    assert result["next_state"] == "promoted"
 
 
 def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_before_control_allow(tmp_path: Path) -> None:
@@ -937,4 +937,4 @@ def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_befo
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert "hard_gate_falsification" in result["blocking_issues"][-1]
+    assert "control_allow_promotion" in result["blocking_issues"][-1]

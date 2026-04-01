@@ -99,12 +99,30 @@ def _gate_proof_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
 
 def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     artifact = manifest.get("hard_gate_falsification")
+    certification_pack: dict[str, Any] | None = None
+    falsification_ref: str | None = None
+    refs = manifest.get("done_certification_input_refs")
+    if isinstance(refs, dict):
+        candidate_pack_ref = refs.get("certification_pack_ref")
+        if _path_exists(candidate_pack_ref):
+            try:
+                certification_pack = json.loads(Path(candidate_pack_ref).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return False, "promotion requires readable certification_pack_ref for falsification resolution"
+            gate = certification_pack.get("gate_proof_evidence")
+            if isinstance(gate, dict):
+                falsification_refs = gate.get("hard_gate_falsification_refs")
+                if isinstance(falsification_refs, list) and falsification_refs:
+                    first_ref = falsification_refs[0]
+                    if isinstance(first_ref, str) and first_ref:
+                        falsification_ref = first_ref
     if not isinstance(artifact, dict):
         ref = manifest.get("hard_gate_falsification_record_path")
         if not isinstance(ref, str) or not ref:
-            refs = manifest.get("done_certification_input_refs")
             if isinstance(refs, dict):
                 ref = refs.get("hard_gate_falsification_record_path")
+        if (not isinstance(ref, str) or not ref) and isinstance(falsification_ref, str):
+            ref = falsification_ref
         if _path_exists(ref):
             try:
                 artifact = json.loads(Path(ref).read_text(encoding="utf-8"))

@@ -103,3 +103,16 @@ def test_promotion_blocks_when_hard_gate_falsification_fails(tmp_path: Path) -> 
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "hard gate falsification" in str(decision.reason)
+
+
+def test_promotion_consumes_hard_gate_falsification_ref_from_certification_pack(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    cert_pack = json.loads(Path(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json").read_text(encoding="utf-8"))
+    cert_pack["gate_proof_evidence"]["hard_gate_falsification_refs"] = [manifest["hard_gate_falsification_record_path"]]
+    cert_pack_path = tmp_path / "control_loop_certification_pack.json"
+    cert_pack_path.write_text(json.dumps(cert_pack), encoding="utf-8")
+
+    manifest["hard_gate_falsification_record_path"] = ""
+    manifest["done_certification_input_refs"] = {"certification_pack_ref": str(cert_pack_path)}
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is True
