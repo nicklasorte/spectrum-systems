@@ -1,0 +1,23 @@
+{
+  "artifact_type": "evaluation_control_decision",
+  "schema_version": "1.1.0",
+  "decision_id": "ecd-allow-20260401T000000Z",
+  "eval_run_id": "eval-run-allow-20260401T000000Z",
+  "system_status": "healthy",
+  "system_response": "allow",
+  "triggered_signals": [],
+  "threshold_snapshot": {
+    "reliability_threshold": 0.85,
+    "drift_threshold": 0.2,
+    "trust_threshold": 0.8
+  },
+  "trace_id": "44444444-4444-4444-8444-444444444444",
+  "created_at": "2026-04-01T00:00:00Z",
+  "decision": "allow",
+  "rationale_code": "allow_all_signals_healthy",
+  "input_signal_reference": {
+    "signal_type": "eval_summary",
+    "source_artifact_id": "eval-run-allow-20260401T000000Z"
+  },
+  "run_id": "eval-run-allow-20260401T000000Z"
+}

@@ -44,6 +44,64 @@ def _path_exists(value: Any) -> bool:
     return isinstance(value, str) and value != "" and Path(value).is_file()
 
 
+def _load_json_if_path(path_value: Any) -> dict[str, Any] | None:
+    if not _path_exists(path_value):
+        return None
+    try:
+        payload = json.loads(Path(path_value).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _ref_from_manifest(manifest: dict[str, Any], key: str) -> str | None:
+    refs = manifest.get("done_certification_input_refs")
+    if not isinstance(refs, dict):
+        return None
+    value = refs.get(key)
+    if isinstance(value, str) and value:
+        return value
+    return None
+
+
+def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    replay_ref = _ref_from_manifest(manifest, "replay_result_ref")
+    if not _path_exists(replay_ref):
+        return False, "promotion requires done_certification_input_refs.replay_result_ref"
+
+    policy_ref = _ref_from_manifest(manifest, "policy_ref")
+    if not _path_exists(policy_ref):
+        return False, "promotion requires done_certification_input_refs.policy_ref"
+
+    policy_payload = _load_json_if_path(policy_ref)
+    if not isinstance(policy_payload, dict):
+        return False, "promotion requires readable control decision policy_ref artifact"
+
+    decision_value = str(policy_payload.get("decision") or policy_payload.get("system_response") or "").strip().lower()
+    if decision_value in {"deny", "block", "freeze", "hold", "require_review"}:
+        return False, f"promotion blocked by control authority decision ({decision_value})"
+
+    enforcement_ref = _ref_from_manifest(manifest, "enforcement_result_ref")
+    if enforcement_ref is not None:
+        enforcement_payload = _load_json_if_path(enforcement_ref)
+        if not isinstance(enforcement_payload, dict):
+            return False, "promotion requires readable enforcement_result_ref artifact when declared"
+        final_status = str(enforcement_payload.get("final_status") or enforcement_payload.get("enforcement_status") or "").strip().lower()
+        if final_status in {"deny", "blocked", "freeze", "frozen", "require_review"}:
+            return False, f"promotion blocked by consumed enforcement result ({final_status})"
+
+    coverage_ref = _ref_from_manifest(manifest, "eval_coverage_summary_ref")
+    if coverage_ref is not None:
+        coverage_payload = _load_json_if_path(coverage_ref)
+        if not isinstance(coverage_payload, dict):
+            return False, "promotion requires readable eval_coverage_summary_ref artifact when declared"
+        required_gaps = coverage_payload.get("required_slice_gaps")
+        if isinstance(required_gaps, list) and required_gaps:
+            return False, "promotion blocked: required eval coverage gaps present"
+
+    return True, None
+
+
 def _has_traceability(manifest: dict[str, Any]) -> bool:
     trace_id = manifest.get("sequence_trace_id")
     lineage = manifest.get("sequence_lineage")
@@ -194,6 +252,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         falsification_passed, falsification_error = _hard_gate_falsification_passes(manifest)
         if not falsification_passed:
             return SequenceTransitionDecision(False, falsification_error)
+        authority_passed, authority_error = _promotion_authority_gate(manifest)
+        if not authority_passed:
+            return SequenceTransitionDecision(False, authority_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:

@@ -234,6 +234,31 @@ def _enforce_budget_authority(*, budget_status: str, system_response: str, decis
         )
 
 
+
+
+def _resolve_governed_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
+    resolved = dict(DEFAULT_THRESHOLDS)
+    if not thresholds:
+        return resolved
+
+    for key, value in thresholds.items():
+        if key not in DEFAULT_THRESHOLDS:
+            raise EvaluationControlError(f"threshold override contains unknown key: {key}")
+        if not isinstance(value, (int, float)):
+            raise EvaluationControlError(f"threshold override for {key} must be numeric")
+
+    candidate = dict(resolved)
+    candidate.update({k: float(v) for k, v in thresholds.items()})
+
+    if candidate["reliability_threshold"] < DEFAULT_THRESHOLDS["reliability_threshold"]:
+        raise EvaluationControlError("threshold override cannot relax reliability_threshold below governed default")
+    if candidate["trust_threshold"] < DEFAULT_THRESHOLDS["trust_threshold"]:
+        raise EvaluationControlError("threshold override cannot relax trust_threshold below governed default")
+    if candidate["drift_threshold"] > DEFAULT_THRESHOLDS["drift_threshold"]:
+        raise EvaluationControlError("threshold override cannot relax drift_threshold above governed default")
+
+    return candidate
+
 def _resolve_recurrence_prevention_binding(
     signal_artifact: Dict[str, Any],
     failure_policy_binding: Dict[str, Any],
@@ -312,9 +337,7 @@ def build_evaluation_control_decision(
     failure_policy_binding: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
-    t = dict(DEFAULT_THRESHOLDS)
-    if thresholds:
-        t.update(thresholds)
+    t = _resolve_governed_thresholds(thresholds)
     seeded_signals: List[str] = []
     artifact_type = signal_artifact.get("artifact_type") if isinstance(signal_artifact, dict) else None
     if artifact_type == "replay_result":
