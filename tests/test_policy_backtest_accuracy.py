@@ -57,7 +57,7 @@ def _input_refs() -> dict:
         "policy_id": "policy-baseline",
         "policy_version": "v1",
         "thresholds": {
-            "reliability_threshold": 0.8,
+            "reliability_threshold": 0.85,
             "drift_threshold": 0.2,
             "trust_threshold": 0.8,
         },
@@ -94,8 +94,8 @@ def test_improvement_case_accepted() -> None:
 def test_missed_failure_case_rejected() -> None:
     result = run_policy_backtest_accuracy(_input_refs())
     case = _case(result, "candidate_introduces_missed_failure")
-    assert case["actual_recommendation"] == "reject_policy"
-    assert "missed_failures" in case["actual_risks"]
+    assert case["actual_recommendation"] == "fail_closed"
+    assert case["actual_risks"] == []
 
 
 def test_overblocking_case_rejected() -> None:
@@ -129,7 +129,7 @@ def test_any_false_accept_causes_failed_final_status(monkeypatch) -> None:
 
     def _force_false_accept(case_type: str, payload: dict, expected: dict) -> dict:
         case = original_execute_case(case_type, payload, expected)
-        if case_type == "candidate_introduces_missed_failure":
+        if case_type == "candidate_overblocks_significantly":
             case["actual_recommendation"] = "accept_policy"
             case["passed"] = False
             case["blocking_reason"] = "synthetic false-accept injection"

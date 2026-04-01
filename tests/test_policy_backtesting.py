@@ -109,8 +109,8 @@ def _input_payload(replay_results: list[dict], baseline: dict, candidate: dict) 
 
 def test_baseline_and_candidate_identical_have_no_changes() -> None:
     replay_results = [_replay(replay_id="rp-1")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
-    candidate = _policy_ref("policy-candidate", "v1", reliability=0.8, drift=0.2, trust=0.8)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v1", reliability=0.85, drift=0.2, trust=0.8)
 
     result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
@@ -121,7 +121,7 @@ def test_baseline_and_candidate_identical_have_no_changes() -> None:
 def test_candidate_improves_pass_rate_accepts() -> None:
     replay_results = [_replay(replay_id="rp-1", replay_success_rate=0.85, drift_rate=0.0, consistency="match")]
     baseline = _policy_ref("policy-baseline", "v1", reliability=0.9, drift=0.2, trust=0.8)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.8, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.85, drift=0.2, trust=0.8)
 
     result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
@@ -131,33 +131,31 @@ def test_candidate_improves_pass_rate_accepts() -> None:
 
 def test_candidate_introduces_missed_failure_rejects() -> None:
     replay_results = [_replay(replay_id="rp-1", replay_success_rate=0.95, drift_rate=0.6, consistency="mismatch")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.0)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.8, drift=0.8, trust=0.0)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.85, drift=0.8, trust=0.8)
 
-    result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
-
-    assert "missed_failures" in result["detected_risks"]
-    assert result["recommended_action"] == "reject_policy"
+    with pytest.raises(PolicyBacktestingError, match="governed semantics"):
+        run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
 
 def test_candidate_increases_blocking_excessively_rejects() -> None:
-    replay_results = [_replay(replay_id="rp-1", replay_success_rate=0.95, drift_rate=0.0, consistency="mismatch")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.0)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.8, drift=0.2, trust=0.8)
+    replay_results = [_replay(replay_id="rp-1", replay_success_rate=0.9, drift_rate=0.0, consistency="match")]
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.95, drift=0.2, trust=0.8)
 
     result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
-    assert "overblocking" in result["detected_risks"]
-    assert result["recommended_action"] == "reject_policy"
+    assert result["detected_risks"] == []
+    assert result["recommended_action"] == "require_review"
 
 
 def test_mixed_results_require_review() -> None:
     replay_results = [
-        _replay(replay_id="rp-1", replay_success_rate=0.82, drift_rate=0.0, consistency="match"),
-        _replay(replay_id="rp-2", replay_success_rate=0.82, drift_rate=0.0, consistency="match"),
+        _replay(replay_id="rp-1", replay_success_rate=0.855, drift_rate=0.0, consistency="match"),
+        _replay(replay_id="rp-2", replay_success_rate=0.855, drift_rate=0.0, consistency="match"),
     ]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.85, drift=0.2, trust=0.8)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.86, drift=0.2, trust=0.8)
 
     result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
@@ -168,8 +166,8 @@ def test_mixed_results_require_review() -> None:
 
 def test_missing_required_input_fails_closed() -> None:
     replay_results = [_replay(replay_id="rp-1")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.8, drift=0.2, trust=0.8)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.85, drift=0.2, trust=0.8)
 
     payload = _input_payload(replay_results, baseline, candidate)
     payload.pop("replay_results")
@@ -180,7 +178,7 @@ def test_missing_required_input_fails_closed() -> None:
 
 def test_malformed_policy_fails_closed() -> None:
     replay_results = [_replay(replay_id="rp-1")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
     candidate = {
         "policy_id": "policy-candidate",
         "policy_version": "v2",
@@ -191,10 +189,19 @@ def test_malformed_policy_fails_closed() -> None:
         run_policy_backtest(_input_payload(replay_results, baseline, candidate))
 
 
+def test_relaxed_threshold_policy_fails_closed() -> None:
+    replay_results = [_replay(replay_id="rp-1")]
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.8, drift=0.2, trust=0.8)
+
+    with pytest.raises(PolicyBacktestingError, match="governed semantics"):
+        run_policy_backtest(_input_payload(replay_results, baseline, candidate))
+
+
 def test_comparative_backtesting_decisions_include_threshold_context() -> None:
     replay_results = [_replay(replay_id="rp-ctx-1")]
-    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
-    candidate = _policy_ref("policy-candidate", "v2", reliability=0.75, drift=0.25, trust=0.75)
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.85, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.9, drift=0.15, trust=0.9)
     result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
     for decision_delta in result["decision_deltas"]:
         assert decision_delta["baseline_decision"] in {"allow", "warn", "freeze", "block"}

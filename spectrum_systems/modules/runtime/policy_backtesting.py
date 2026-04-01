@@ -25,6 +25,7 @@ from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.modules.runtime.evaluation_control import (
     EvaluationControlError,
     build_evaluation_control_decision,
+    resolve_canonical_thresholds,
 )
 
 
@@ -76,9 +77,16 @@ def _parse_policy_ref(policy_ref: Any, field: str) -> Dict[str, Any]:
         raise PolicyBacktestingError(f"{field}.thresholds must be an object")
 
     required = ("reliability_threshold", "drift_threshold", "trust_threshold")
-    parsed_thresholds: Dict[str, float] = {}
     for key in required:
-        parsed_thresholds[key] = _require_ratio(thresholds.get(key), f"{field}.thresholds.{key}")
+        _require_ratio(thresholds.get(key), f"{field}.thresholds.{key}")
+    parsed_thresholds: Dict[str, float]
+    try:
+        parsed_thresholds = resolve_canonical_thresholds(
+            {key: float(thresholds[key]) for key in required},
+            threshold_context="comparative_analysis",
+        )
+    except EvaluationControlError as exc:
+        raise PolicyBacktestingError(f"{field}.thresholds invalid under governed semantics: {exc}") from exc
 
     return {
         "policy_id": _require_non_empty_string(
