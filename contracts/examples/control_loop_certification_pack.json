@@ -1,6 +1,6 @@
 {
   "artifact_type": "control_loop_certification_pack",
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "certification_id": "clcp-0da4d0d7766408d5",
   "certification_scope": "trust-boundary/runtime",
   "certification_status": "certified",
@@ -57,6 +57,38 @@
   "artifact_validation_summary": {
     "review_artifact_validation_status": "pass",
     "repo_review_validator_status": "pass"
+  },
+  "hard_gate_summary": {
+    "severity_qualified_failure_binding": {
+      "status": "pass",
+      "required_failure_count": 2,
+      "bound_failure_count": 2,
+      "missing_failure_bindings": [],
+      "evidence_refs": [
+        "outputs/control_loop_certification/failure_binding.json"
+      ]
+    },
+    "deterministic_transition_consumption": {
+      "status": "pass",
+      "enforced_transition_count": 2,
+      "evidence_refs": [
+        "outputs/control_loop_certification/transition_consumption.json"
+      ]
+    },
+    "policy_caused_control_action": {
+      "status": "pass",
+      "action_type": "freeze",
+      "evidence_ref": "outputs/control_loop_certification/policy_action.json"
+    },
+    "recurrence_prevention_linkage": {
+      "status": "pass",
+      "linked_failure_classes": [
+        "runtime_failure"
+      ],
+      "evidence_refs": [
+        "outputs/control_loop_certification/recurrence_linkage.json"
+      ]
+    }
   },
   "related_review_refs": [
     "docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"

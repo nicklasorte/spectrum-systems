@@ -56,6 +56,42 @@ def _reports_count(manifest: dict[str, Any]) -> int:
     return sum(1 for item in reports if _path_exists(item))
 
 
+def _has_failure_binding_enforcement(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    payload = manifest.get("failure_binding_enforcement")
+    if not isinstance(payload, dict):
+        return False, "promotion requires failure_binding_enforcement evidence"
+    required = (
+        "severity_qualified_failure_count",
+        "bound_failure_count",
+        "missing_failure_bindings",
+        "eval_update_refs",
+        "policy_update_refs",
+        "transition_enforcement_refs",
+        "learning_authority_applied",
+    )
+    for field in required:
+        if field not in payload:
+            return False, f"promotion requires failure_binding_enforcement.{field}"
+    if not isinstance(payload["severity_qualified_failure_count"], int) or payload["severity_qualified_failure_count"] < 0:
+        return False, "failure_binding_enforcement.severity_qualified_failure_count must be integer >= 0"
+    if not isinstance(payload["bound_failure_count"], int) or payload["bound_failure_count"] < 0:
+        return False, "failure_binding_enforcement.bound_failure_count must be integer >= 0"
+    if payload["bound_failure_count"] < payload["severity_qualified_failure_count"]:
+        return False, "missing severity-qualified failure binding evidence"
+    missing = payload["missing_failure_bindings"]
+    if not isinstance(missing, list):
+        return False, "failure_binding_enforcement.missing_failure_bindings must be a list"
+    if missing:
+        return False, "missing severity-qualified failure binding evidence"
+    for field in ("eval_update_refs", "policy_update_refs", "transition_enforcement_refs"):
+        refs = payload[field]
+        if not isinstance(refs, list) or not refs or not all(isinstance(item, str) and item for item in refs):
+            return False, f"failure_binding_enforcement.{field} must be a non-empty list of refs"
+    if payload.get("learning_authority_applied") is not True:
+        return False, "learning authority not applied on promotion surface"
+    return True, None
+
+
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
     current_state = manifest.get("current_state")
     if not isinstance(current_state, str) or current_state not in SEQUENCE_STATES:
@@ -97,6 +133,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:
             return SequenceTransitionDecision(False, "promotion requires explicit control_allow_promotion=true")
+        valid_binding, reason = _has_failure_binding_enforcement(manifest)
+        if not valid_binding:
+            return SequenceTransitionDecision(False, reason)
 
     if target_state in {"blocked", "frozen"}:
         issues = manifest.get("blocking_issues")

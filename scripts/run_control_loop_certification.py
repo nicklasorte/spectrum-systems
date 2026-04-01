@@ -57,6 +57,7 @@ CHECK_NAMES = {
 }
 
 REQUIRED_CHECK_IDS = tuple(DEFAULT_COMMANDS.keys())
+_GATE_STATUS_VALUES = {"pass", "fail", "blocked"}
 
 
 @dataclass
@@ -127,6 +128,78 @@ def _status_from_checks(checks: list[CheckResult]) -> tuple[str, str]:
     if "fail" in statuses:
         return "uncertified", "fail"
     return "certified", "pass"
+
+
+def _validate_hard_gate_summary(payload: Any) -> tuple[dict[str, Any], list[str]]:
+    errors: list[str] = []
+    if not isinstance(payload, dict):
+        return {}, ["hard-gate evidence must be a JSON object"]
+
+    required_sections = (
+        "severity_qualified_failure_binding",
+        "deterministic_transition_consumption",
+        "policy_caused_control_action",
+        "recurrence_prevention_linkage",
+    )
+    for section in required_sections:
+        if not isinstance(payload.get(section), dict):
+            errors.append(f"missing required hard-gate section: {section}")
+    if errors:
+        return {}, errors
+
+    binding = payload["severity_qualified_failure_binding"]
+    status = str(binding.get("status") or "")
+    required_count = binding.get("required_failure_count")
+    bound_count = binding.get("bound_failure_count")
+    missing = binding.get("missing_failure_bindings")
+    evidence_refs = binding.get("evidence_refs")
+    if status not in _GATE_STATUS_VALUES:
+        errors.append("severity_qualified_failure_binding.status must be pass|fail|blocked")
+    if not isinstance(required_count, int) or required_count < 0:
+        errors.append("severity_qualified_failure_binding.required_failure_count must be integer >= 0")
+    if not isinstance(bound_count, int) or bound_count < 0:
+        errors.append("severity_qualified_failure_binding.bound_failure_count must be integer >= 0")
+    if not isinstance(missing, list):
+        errors.append("severity_qualified_failure_binding.missing_failure_bindings must be a list")
+        missing = []
+    if not isinstance(evidence_refs, list) or not evidence_refs:
+        errors.append("severity_qualified_failure_binding.evidence_refs must be a non-empty list")
+
+    transition = payload["deterministic_transition_consumption"]
+    if str(transition.get("status") or "") not in _GATE_STATUS_VALUES:
+        errors.append("deterministic_transition_consumption.status must be pass|fail|blocked")
+    if not isinstance(transition.get("enforced_transition_count"), int) or transition["enforced_transition_count"] < 0:
+        errors.append("deterministic_transition_consumption.enforced_transition_count must be integer >= 0")
+    if not isinstance(transition.get("evidence_refs"), list) or not transition["evidence_refs"]:
+        errors.append("deterministic_transition_consumption.evidence_refs must be a non-empty list")
+
+    policy_action = payload["policy_caused_control_action"]
+    if str(policy_action.get("status") or "") not in _GATE_STATUS_VALUES:
+        errors.append("policy_caused_control_action.status must be pass|fail|blocked")
+    if str(policy_action.get("action_type") or "") not in {"block", "freeze", "correct"}:
+        errors.append("policy_caused_control_action.action_type must be block|freeze|correct")
+    if not isinstance(policy_action.get("evidence_ref"), str) or not policy_action["evidence_ref"]:
+        errors.append("policy_caused_control_action.evidence_ref must be a non-empty string")
+
+    recurrence = payload["recurrence_prevention_linkage"]
+    if str(recurrence.get("status") or "") not in _GATE_STATUS_VALUES:
+        errors.append("recurrence_prevention_linkage.status must be pass|fail|blocked")
+    if not isinstance(recurrence.get("linked_failure_classes"), list) or not recurrence["linked_failure_classes"]:
+        errors.append("recurrence_prevention_linkage.linked_failure_classes must be a non-empty list")
+    if not isinstance(recurrence.get("evidence_refs"), list) or not recurrence["evidence_refs"]:
+        errors.append("recurrence_prevention_linkage.evidence_refs must be a non-empty list")
+
+    if isinstance(required_count, int) and isinstance(bound_count, int) and bound_count < required_count:
+        errors.append("severity_qualified_failure_binding.bound_failure_count must be >= required_failure_count")
+    if isinstance(missing, list) and missing and status == "pass":
+        errors.append("severity_qualified_failure_binding.status=pass requires no missing failure bindings")
+    if any(
+        str(payload[section].get("status") or "") != "pass"
+        for section in required_sections
+        if isinstance(payload.get(section), dict)
+    ):
+        errors.append("all hard-gate sections must report status=pass")
+    return dict(payload), errors
 
 
 def _validate_chaos_payload(payload: Any) -> tuple[bool, str]:
@@ -383,10 +456,21 @@ def _build_certification_artifact(
     scenario_summary: dict[str, Any],
     test_summary: dict[str, Any],
     artifact_validation_summary: dict[str, Any],
+    hard_gate_summary: dict[str, Any],
     related_review_refs: list[str],
     related_plan_refs: list[str],
 ) -> dict[str, Any]:
     certification_status, decision = _status_from_checks(checks)
+    if any(
+        str(hard_gate_summary.get(section, {}).get("status") or "") != "pass"
+        for section in (
+            "severity_qualified_failure_binding",
+            "deterministic_transition_consumption",
+            "policy_caused_control_action",
+            "recurrence_prevention_linkage",
+        )
+    ):
+        certification_status, decision = "blocked", "blocked"
 
     run_id = deterministic_id(
         prefix="run",
@@ -424,7 +508,7 @@ def _build_certification_artifact(
 
     return {
         "artifact_type": "control_loop_certification_pack",
-        "schema_version": "1.0.0",
+        "schema_version": "1.2.0",
         "certification_id": deterministic_id(
             prefix="clcp",
             namespace="control_loop_certification_pack",
@@ -450,6 +534,7 @@ def _build_certification_artifact(
         "scenario_summary": scenario_summary,
         "test_summary": test_summary,
         "artifact_validation_summary": artifact_validation_summary,
+        "hard_gate_summary": hard_gate_summary,
         "related_review_refs": related_review_refs,
         "related_plan_refs": related_plan_refs,
         "generated_at": _utc_now(),
@@ -501,6 +586,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tests-command", default=DEFAULT_COMMANDS["targeted_control_loop_eval_gate_tests"])
     parser.add_argument("--review-command", default=DEFAULT_COMMANDS["review_artifact_validation"])
     parser.add_argument("--repo-review-command", default=DEFAULT_COMMANDS["repo_review_validator"])
+    parser.add_argument(
+        "--hard-gate-evidence",
+        required=True,
+        help="Path to hard-gate evidence JSON containing CL pass-condition proof fields.",
+    )
     return parser
 
 
@@ -544,12 +634,57 @@ def main(argv: list[str] | None = None) -> int:
 
     related_review_refs = args.related_review_ref or [str(Path(args.review_json).as_posix())]
     related_plan_refs = args.related_plan_ref
+    hard_gate_errors: list[str] = []
+    try:
+        hard_gate_payload = _load_json(Path(args.hard_gate_evidence).resolve())
+    except (OSError, json.JSONDecodeError) as exc:
+        hard_gate_payload = {}
+        hard_gate_errors = [f"unable to load hard-gate evidence: {exc}"]
+    hard_gate_summary, validation_errors = _validate_hard_gate_summary(hard_gate_payload)
+    hard_gate_errors.extend(validation_errors)
+    if hard_gate_errors:
+        hard_gate_summary = {
+            "severity_qualified_failure_binding": {
+                "status": "blocked",
+                "required_failure_count": 0,
+                "bound_failure_count": 0,
+                "missing_failure_bindings": ["hard_gate_evidence_invalid"],
+                "evidence_refs": [str(Path(args.hard_gate_evidence).as_posix())],
+            },
+            "deterministic_transition_consumption": {
+                "status": "blocked",
+                "enforced_transition_count": 0,
+                "evidence_refs": [str(Path(args.hard_gate_evidence).as_posix())],
+            },
+            "policy_caused_control_action": {
+                "status": "blocked",
+                "action_type": "block",
+                "evidence_ref": str(Path(args.hard_gate_evidence).as_posix()),
+            },
+            "recurrence_prevention_linkage": {
+                "status": "blocked",
+                "linked_failure_classes": ["hard_gate_evidence_invalid"],
+                "evidence_refs": [str(Path(args.hard_gate_evidence).as_posix())],
+            },
+        }
+        checks.append(
+            CheckResult(
+                check_id="repo_review_validator",
+                check_name="Hard-gate evidence validation",
+                command="internal:hard_gate_evidence_validation",
+                status="blocked",
+                exit_code=None,
+                evidence_ref=str(Path(args.hard_gate_evidence).as_posix()),
+                summary="Hard-gate evidence malformed: " + "; ".join(hard_gate_errors),
+            )
+        )
 
     artifact = _build_certification_artifact(
         checks=checks,
         scenario_summary=scenario_summary,
         test_summary=test_summary,
         artifact_validation_summary=artifact_validation_summary,
+        hard_gate_summary=hard_gate_summary,
         related_review_refs=related_review_refs,
         related_plan_refs=related_plan_refs,
     )

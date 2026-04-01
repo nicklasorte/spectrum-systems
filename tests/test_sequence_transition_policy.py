@@ -27,6 +27,15 @@ def _base_manifest(state: str) -> dict:
         "sequence_trace_id": "trace-seq",
         "sequence_lineage": ["contracts/examples/roadmap_eligibility_artifact.json"],
         "blocking_issues": ["explicit block"],
+        "failure_binding_enforcement": {
+            "severity_qualified_failure_count": 1,
+            "bound_failure_count": 1,
+            "missing_failure_bindings": [],
+            "eval_update_refs": ["outputs/control_loop_certification/failure_binding.json"],
+            "policy_update_refs": ["outputs/control_loop_certification/policy_update.json"],
+            "transition_enforcement_refs": ["outputs/control_loop_certification/transition_consumption.json"],
+            "learning_authority_applied": True,
+        },
     }
 
 
@@ -56,3 +65,23 @@ def test_sequence_indeterminate_fixture_blocks_inconsistent_evidence() -> None:
         decision = evaluate_sequence_transition(manifest, case["to"])
         assert decision.allowed is False
         assert case["reason"] in str(decision.reason)
+
+
+def test_promotion_blocks_when_failure_binding_evidence_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["failure_binding_enforcement"]["missing_failure_bindings"] = ["failure-1"]
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+
+    assert decision.allowed is False
+    assert "missing severity-qualified failure binding evidence" in str(decision.reason)
+
+
+def test_promotion_blocks_when_learning_authority_not_applied() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["failure_binding_enforcement"]["learning_authority_applied"] = False
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+
+    assert decision.allowed is False
+    assert "learning authority not applied" in str(decision.reason)

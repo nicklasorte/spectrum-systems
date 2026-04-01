@@ -107,6 +107,30 @@ def test_generated_artifact_is_schema_valid_and_id_deterministic() -> None:
             "review_artifact_validation_status": "pass",
             "repo_review_validator_status": "pass",
         },
+        hard_gate_summary={
+            "severity_qualified_failure_binding": {
+                "status": "pass",
+                "required_failure_count": 2,
+                "bound_failure_count": 2,
+                "missing_failure_bindings": [],
+                "evidence_refs": ["outputs/control_loop_certification/failure_binding.json"],
+            },
+            "deterministic_transition_consumption": {
+                "status": "pass",
+                "enforced_transition_count": 2,
+                "evidence_refs": ["outputs/control_loop_certification/transition_consumption.json"],
+            },
+            "policy_caused_control_action": {
+                "status": "pass",
+                "action_type": "freeze",
+                "evidence_ref": "outputs/control_loop_certification/policy_action.json",
+            },
+            "recurrence_prevention_linkage": {
+                "status": "pass",
+                "linked_failure_classes": ["runtime_failure"],
+                "evidence_refs": ["outputs/control_loop_certification/recurrence_linkage.json"],
+            },
+        },
         related_review_refs=["docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"],
         related_plan_refs=["docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"],
     )
@@ -122,6 +146,30 @@ def test_generated_artifact_is_schema_valid_and_id_deterministic() -> None:
         artifact_validation_summary={
             "review_artifact_validation_status": "pass",
             "repo_review_validator_status": "pass",
+        },
+        hard_gate_summary={
+            "severity_qualified_failure_binding": {
+                "status": "pass",
+                "required_failure_count": 2,
+                "bound_failure_count": 2,
+                "missing_failure_bindings": [],
+                "evidence_refs": ["outputs/control_loop_certification/failure_binding.json"],
+            },
+            "deterministic_transition_consumption": {
+                "status": "pass",
+                "enforced_transition_count": 2,
+                "evidence_refs": ["outputs/control_loop_certification/transition_consumption.json"],
+            },
+            "policy_caused_control_action": {
+                "status": "pass",
+                "action_type": "freeze",
+                "evidence_ref": "outputs/control_loop_certification/policy_action.json",
+            },
+            "recurrence_prevention_linkage": {
+                "status": "pass",
+                "linked_failure_classes": ["runtime_failure"],
+                "evidence_refs": ["outputs/control_loop_certification/recurrence_linkage.json"],
+            },
         },
         related_review_refs=["docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"],
         related_plan_refs=["docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"],
@@ -147,6 +195,36 @@ def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
     review_md = tmp_path / "review.md"
     review_json.write_text("{}", encoding="utf-8")
     review_md.write_text("synthetic", encoding="utf-8")
+    hard_gate = tmp_path / "hard_gate.json"
+    hard_gate.write_text(
+        json.dumps(
+            {
+                "severity_qualified_failure_binding": {
+                    "status": "pass",
+                    "required_failure_count": 2,
+                    "bound_failure_count": 2,
+                    "missing_failure_bindings": [],
+                    "evidence_refs": ["outputs/control_loop_certification/failure_binding.json"],
+                },
+                "deterministic_transition_consumption": {
+                    "status": "pass",
+                    "enforced_transition_count": 2,
+                    "evidence_refs": ["outputs/control_loop_certification/transition_consumption.json"],
+                },
+                "policy_caused_control_action": {
+                    "status": "pass",
+                    "action_type": "freeze",
+                    "evidence_ref": "outputs/control_loop_certification/policy_action.json",
+                },
+                "recurrence_prevention_linkage": {
+                    "status": "pass",
+                    "linked_failure_classes": ["runtime_failure"],
+                    "evidence_refs": ["outputs/control_loop_certification/recurrence_linkage.json"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
 
     cmd = [
         sys.executable,
@@ -167,6 +245,8 @@ def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
         "python -c \"print('ok review')\"",
         "--repo-review-command",
         "python -c \"print('ok repo review')\"",
+        "--hard-gate-evidence",
+        str(hard_gate),
     ]
 
     result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
@@ -176,3 +256,49 @@ def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
     assert artifact["certification_status"] == "certified"
     assert artifact["decision"] == "pass"
     assert len(artifact["executed_checks"]) == 4
+
+
+def test_hard_gate_evidence_missing_binding_fails_closed() -> None:
+    checks = [_check(cid, "pass", exit_code=0) for cid in clc.REQUIRED_CHECK_IDS]
+    artifact = clc._build_certification_artifact(
+        checks=checks,
+        scenario_summary={"chaos_run_id": "chaos-1", "scenario_count": 4, "pass_count": 4, "fail_count": 0},
+        test_summary={
+            "targeted_test_command": clc.DEFAULT_COMMANDS["targeted_control_loop_eval_gate_tests"],
+            "targeted_test_status": "pass",
+            "targeted_test_exit_code": 0,
+        },
+        artifact_validation_summary={
+            "review_artifact_validation_status": "pass",
+            "repo_review_validator_status": "pass",
+        },
+        hard_gate_summary={
+            "severity_qualified_failure_binding": {
+                "status": "fail",
+                "required_failure_count": 2,
+                "bound_failure_count": 1,
+                "missing_failure_bindings": ["failure-a"],
+                "evidence_refs": ["outputs/control_loop_certification/failure_binding.json"],
+            },
+            "deterministic_transition_consumption": {
+                "status": "pass",
+                "enforced_transition_count": 2,
+                "evidence_refs": ["outputs/control_loop_certification/transition_consumption.json"],
+            },
+            "policy_caused_control_action": {
+                "status": "pass",
+                "action_type": "freeze",
+                "evidence_ref": "outputs/control_loop_certification/policy_action.json",
+            },
+            "recurrence_prevention_linkage": {
+                "status": "pass",
+                "linked_failure_classes": ["runtime_failure"],
+                "evidence_refs": ["outputs/control_loop_certification/recurrence_linkage.json"],
+            },
+        },
+        related_review_refs=["docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"],
+        related_plan_refs=["docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"],
+    )
+
+    assert artifact["certification_status"] == "blocked"
+    assert artifact["decision"] == "blocked"

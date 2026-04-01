@@ -18,6 +18,7 @@
     "scenario_summary",
     "test_summary",
     "artifact_validation_summary",
+    "hard_gate_summary",
     "related_review_refs",
     "related_plan_refs",
     "generated_at",
@@ -30,7 +31,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.2.0"
     },
     "certification_id": {
       "type": "string",
@@ -79,6 +80,9 @@
     },
     "artifact_validation_summary": {
       "$ref": "#/$defs/artifact_validation_summary"
+    },
+    "hard_gate_summary": {
+      "$ref": "#/$defs/hard_gate_summary"
     },
     "related_review_refs": {
       "type": "array",
@@ -138,6 +142,44 @@
           }
         }
       ]
+    },
+    {
+      "if": {
+        "properties": {
+          "certification_status": { "const": "certified" },
+          "decision": { "const": "pass" }
+        }
+      },
+      "then": {
+        "properties": {
+          "hard_gate_summary": {
+            "properties": {
+              "severity_qualified_failure_binding": {
+                "properties": {
+                  "status": { "const": "pass" },
+                  "missing_failure_bindings": { "maxItems": 0 }
+                }
+              },
+              "deterministic_transition_consumption": {
+                "properties": {
+                  "status": { "const": "pass" },
+                  "enforced_transition_count": { "minimum": 1 }
+                }
+              },
+              "policy_caused_control_action": {
+                "properties": {
+                  "status": { "const": "pass" }
+                }
+              },
+              "recurrence_prevention_linkage": {
+                "properties": {
+                  "status": { "const": "pass" }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -277,6 +319,90 @@
             "fail",
             "blocked"
           ]
+        }
+      }
+    },
+    "hard_gate_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity_qualified_failure_binding",
+        "deterministic_transition_consumption",
+        "policy_caused_control_action",
+        "recurrence_prevention_linkage"
+      ],
+      "properties": {
+        "severity_qualified_failure_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "required_failure_count",
+            "bound_failure_count",
+            "missing_failure_bindings",
+            "evidence_refs"
+          ],
+          "properties": {
+            "status": { "type": "string", "enum": ["pass", "fail", "blocked"] },
+            "required_failure_count": { "type": "integer", "minimum": 0 },
+            "bound_failure_count": { "type": "integer", "minimum": 0 },
+            "missing_failure_bindings": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "evidence_refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        },
+        "deterministic_transition_consumption": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "enforced_transition_count", "evidence_refs"],
+          "properties": {
+            "status": { "type": "string", "enum": ["pass", "fail", "blocked"] },
+            "enforced_transition_count": { "type": "integer", "minimum": 0 },
+            "evidence_refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        },
+        "policy_caused_control_action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "action_type", "evidence_ref"],
+          "properties": {
+            "status": { "type": "string", "enum": ["pass", "fail", "blocked"] },
+            "action_type": { "type": "string", "enum": ["block", "freeze", "correct"] },
+            "evidence_ref": { "type": "string", "minLength": 1 }
+          }
+        },
+        "recurrence_prevention_linkage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "linked_failure_classes", "evidence_refs"],
+          "properties": {
+            "status": { "type": "string", "enum": ["pass", "fail", "blocked"] },
+            "linked_failure_classes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "evidence_refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
         }
       }
     },
