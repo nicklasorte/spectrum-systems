@@ -13,7 +13,6 @@ from spectrum_systems.governance import (
     analyze_execution_change_impact,
     validate_manifest_completeness,
 )
-from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
     PQXBackboneError,
@@ -142,6 +141,34 @@ def _enforce_execution_change_impact_gate(
     return artifact, artifact_ref
 
 
+def _normalize_strategy_decision(value: str | None) -> str:
+    mapping = {"ALLOW": "allow", "WARN": "warn", "FREEZE": "freeze", "BLOCK": "block"}
+    normalized = mapping.get(str(value or "").upper())
+    if normalized is None:
+        raise PQXSliceRunnerError(f"unsupported preflight strategy_gate_decision: {value}")
+    return normalized
+
+
+def _enforce_contract_preflight_gate(
+    *,
+    contract_preflight_result_artifact_path: Optional[Path],
+) -> tuple[Optional[dict], Optional[dict]]:
+    if contract_preflight_result_artifact_path is None:
+        return None, None
+    artifact = json.loads(contract_preflight_result_artifact_path.read_text(encoding="utf-8"))
+    validate_artifact(artifact, "contract_preflight_result_artifact")
+    control_signal = artifact.get("control_signal")
+    if not isinstance(control_signal, dict):
+        raise PQXSliceRunnerError("contract preflight artifact missing control_signal")
+    action = _normalize_strategy_decision(control_signal.get("strategy_gate_decision"))
+    rationale = str(control_signal.get("rationale") or "contract preflight control signal missing rationale")
+    if action == "block":
+        raise PQXSliceRunnerError(f"contract preflight BLOCK: {rationale}")
+    if action == "freeze":
+        raise PQXSliceRunnerError(f"contract preflight FREEZE: {rationale}")
+    return artifact, control_signal
+
+
 
 
 def _enforce_manifest_completeness_gate(*, manifest_path: Path) -> None:
@@ -226,6 +253,7 @@ def run_pqx_slice(
     provided_reviews: Optional[list[str]] = None,
     provided_eval_artifacts: Optional[list[str]] = None,
     enforce_manifest_completeness: bool = False,
+    contract_preflight_result_artifact_path: Optional[Path] = None,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -265,6 +293,18 @@ def run_pqx_slice(
     if pqx_output_text is None:
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="pqx_output_text is required")
 
+    row_state = next((item for item in state["rows"] if item["step_id"] == normalized_step_id), None)
+    if row_state is None:
+        row_state = {
+            "step_id": normalized_step_id,
+            "status": "not_started",
+            "last_run": None,
+            "dependencies_satisfied": True,
+            "retries": 0,
+            "strategy_gate_decision": "block",
+        }
+        state["rows"].append(row_state)
+
     if enforce_manifest_completeness:
         try:
             _enforce_manifest_completeness_gate(manifest_path=REPO_ROOT / "contracts" / "standards-manifest.json")
@@ -275,6 +315,26 @@ def run_pqx_slice(
                 reason=str(exc),
                 block_type="MANIFEST_COMPLETENESS_BLOCKED",
             )
+
+    preflight_artifact = None
+    preflight_signal = None
+    try:
+        preflight_artifact, preflight_signal = _enforce_contract_preflight_gate(
+            contract_preflight_result_artifact_path=contract_preflight_result_artifact_path
+        )
+    except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
+        row_state["status"] = "blocked"
+        row_state["last_run"] = iso_now(active_clock)
+        row_state["strategy_gate_decision"] = "freeze" if "FREEZE" in str(exc) else "block"
+        save_state(state, state_path)
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=str(exc),
+            block_type="CONTRACT_PREFLIGHT_BLOCKED" if row_state["strategy_gate_decision"] == "block" else "CONTRACT_PREFLIGHT_FROZEN",
+        )
+    if preflight_signal is not None:
+        row_state["strategy_gate_decision"] = _normalize_strategy_decision(preflight_signal.get("strategy_gate_decision"))
 
     try:
         _enforce_contract_impact_gate(
@@ -385,6 +445,8 @@ def run_pqx_slice(
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="artifact emission disabled", block_type="ARTIFACT_EMISSION_BLOCKED")
 
     try:
+        from spectrum_systems.modules.governance.done_certification import DoneCertificationError, run_done_certification
+
         certification = run_done_certification(
             {
                 "replay_result_ref": str(replay_path),
@@ -428,6 +490,9 @@ def run_pqx_slice(
         "replay_result_ref": _relative(replay_path),
         "control_decision_ref": _relative(control_path),
     }
+    if preflight_signal is not None:
+        execution_record["decision_summary"]["control_decision"] = row_state["strategy_gate_decision"]
+        execution_record["artifacts_emitted"].append(str(contract_preflight_result_artifact_path))
     validate_artifact(execution_record, "pqx_slice_execution_record")
     execution_record_path = _write_json(step_dir / f"{run_id}.pqx_slice_execution_record.json", execution_record)
 
@@ -444,24 +509,12 @@ def run_pqx_slice(
     }
     audit_bundle_path = _write_json(step_dir / f"{run_id}.pqx_slice_audit_bundle.json", audit_bundle)
 
-    row_state = next((item for item in state["rows"] if item["step_id"] == normalized_step_id), None)
-    if row_state is None:
-        state["rows"].append(
-            {
-                "step_id": normalized_step_id,
-                "status": "complete",
-                "last_run": iso_now(active_clock),
-                "dependencies_satisfied": True,
-                "retries": 0,
-            }
-        )
-    else:
-        row_state["status"] = "complete"
-        row_state["dependencies_satisfied"] = True
-        row_state["last_run"] = iso_now(active_clock)
+    row_state["status"] = "complete"
+    row_state["dependencies_satisfied"] = True
+    row_state["last_run"] = iso_now(active_clock)
     save_state(state, state_path)
 
-    return {
+    response = {
         "status": "complete",
         "step_id": normalized_step_id,
         "run_id": run_id,
@@ -473,3 +526,7 @@ def run_pqx_slice(
         "certification_status": "certified",
         "pqx_slice_audit_bundle": str(audit_bundle_path),
     }
+    if preflight_artifact is not None:
+        response["contract_preflight_status"] = preflight_artifact.get("preflight_status")
+        response["contract_preflight_decision"] = row_state["strategy_gate_decision"]
+    return response

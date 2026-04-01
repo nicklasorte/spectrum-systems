@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 
 import pytest
@@ -156,6 +157,38 @@ def _execution_impact_artifact(*, blocking: bool, indeterminate: bool, safe_to_e
     }
 
 
+def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = False, degraded: bool = False) -> dict:
+    return {
+        "artifact_type": "contract_preflight_result_artifact",
+        "schema_version": "1.0.0",
+        "preflight_status": status,
+        "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+        "impacted_producers": ["spectrum_systems/orchestration/roadmap_eligibility.py"],
+        "impacted_fixtures": ["tests/helpers/roadmap_eligibility_builder.py"],
+        "impacted_consumers": ["tests/test_roadmap_eligibility.py"],
+        "masking_detected": masking_detected,
+        "recommended_repair_area": [] if decision in {"ALLOW", "WARN"} else ["targeted downstream consumer tests"],
+        "report_paths": {
+            "json_report_path": "outputs/contract_preflight/contract_preflight_report.json",
+            "markdown_report_path": "outputs/contract_preflight/contract_preflight_report.md",
+        },
+        "generated_at": "2026-04-01T00:00:00Z",
+        "control_signal": {
+            "strategy_gate_decision": decision,
+            "rationale": "test preflight mapping rationale",
+            "changed_path_detection_mode": "degraded_full_governed_scan" if degraded else "base_head_diff",
+            "degraded_detection": degraded,
+        },
+        "trace": {
+            "producer": "scripts/run_contract_preflight.py",
+            "policy_version": "1.0.0",
+            "refs_attempted": ["origin/main..HEAD"],
+            "fallback_used": degraded,
+            "provenance_ref": "contracts/standards-manifest.json",
+        },
+    }
+
+
 def test_run_pqx_slice_blocks_on_breaking_contract_impact(tmp_path: Path) -> None:
     state_path = tmp_path / "pqx_state.json"
     state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
@@ -307,3 +340,88 @@ def test_run_pqx_slice_default_path_does_not_enforce_manifest_completeness(tmp_p
     )
 
     assert result["status"] == "complete"
+
+
+def test_run_pqx_slice_allows_progression_on_passing_preflight(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-pass.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="passed", decision="ALLOW")), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"
+    assert result["contract_preflight_decision"] == "allow"
+
+
+def test_run_pqx_slice_blocks_progression_on_failed_preflight(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-fail.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="failed", decision="BLOCK")), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
+
+
+def test_run_pqx_slice_blocks_on_preflight_masking_detected(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-masking.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="failed", decision="BLOCK", masking_detected=True)), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert "preflight BLOCK" in result["reason"]
+
+
+def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-warn.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="passed", decision="WARN", degraded=True)), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"
+    assert result["contract_preflight_decision"] == "warn"
+
+
+def test_runtime_module_import_has_no_done_certification_cycle() -> None:
+    runtime_module = importlib.import_module("spectrum_systems.modules.runtime")
+    assert runtime_module is not None

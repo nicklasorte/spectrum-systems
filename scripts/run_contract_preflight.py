@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 import subprocess
@@ -35,6 +36,7 @@ MASKING_MARKERS = (
     "roadmap_eligibility_artifact",
     "next_step_decision_artifact",
 )
+_PREFLIGHT_POLICY_VERSION = "1.0.0"
 
 
 @dataclass
@@ -69,7 +71,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--head-ref", default="HEAD", help="Git head ref used for diff detection")
     parser.add_argument("--changed-path", action="append", default=[], help="Optional explicit changed paths")
     parser.add_argument("--output-dir", default="outputs/contract_preflight", help="Preflight output directory")
+    parser.add_argument(
+        "--hardening-flow",
+        action="store_true",
+        help="Mark run as a hardening flow so unresolved downstream seam impact is frozen instead of directly allowed.",
+    )
     return parser.parse_args()
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _all_governed_paths(repo_root: Path) -> list[str]:
@@ -142,6 +153,19 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
         )
     warnings.append(f"base/head diff unavailable: {error}")
 
+    if head_ref != "HEAD":
+        refs_attempted.append(f"{base_ref}..HEAD")
+        current_head_paths, current_head_error = _diff_name_only(repo_root, base_ref, "HEAD")
+        if not current_head_error:
+            return ChangedPathDetectionResult(
+                changed_paths=current_head_paths,
+                changed_path_detection_mode="base_to_current_head_fallback",
+                refs_attempted=refs_attempted,
+                fallback_used=True,
+                warnings=warnings + ["head ref unavailable; used current HEAD fallback"],
+            )
+        warnings.append(f"base..HEAD fallback unavailable: {current_head_error}")
+
     # C: GitHub event-aware refs (PR base/head SHA; push before/current SHA).
     sha_pair = _github_sha_pair()
     if sha_pair:
@@ -160,27 +184,33 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
 
     # D: safe local fallback paths.
     local_changes = _local_workspace_changes(repo_root)
-    if local_changes:
+    local_governed = [path for path in local_changes if path.startswith("contracts/")]
+    if local_governed:
         return ChangedPathDetectionResult(
-            changed_paths=local_changes,
+            changed_paths=sorted(set(local_governed)),
             changed_path_detection_mode="local_workspace_status",
             refs_attempted=refs_attempted,
             fallback_used=True,
             warnings=warnings + ["using git status porcelain fallback"],
         )
+    if local_changes:
+        warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
 
     refs_attempted.append("working_tree_vs_HEAD")
     working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
     if working_tree.returncode == 0:
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
-        if paths:
+        governed_paths = [path for path in paths if path.startswith("contracts/")]
+        if governed_paths:
             return ChangedPathDetectionResult(
-                changed_paths=paths,
+                changed_paths=sorted(set(governed_paths)),
                 changed_path_detection_mode="working_tree_diff_head",
                 refs_attempted=refs_attempted,
                 fallback_used=True,
                 warnings=warnings + ["using working tree diff fallback"],
             )
+        if paths:
+            warnings.append("working tree fallback had no governed contract paths; degrading to full governed scan")
     else:
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
@@ -279,7 +309,10 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
 
 
 def _schema_name_from_example(path: str) -> str:
-    return Path(path).name.replace(".json", "")
+    name = Path(path).name
+    if name.endswith(".example.json"):
+        return name.removesuffix(".example.json")
+    return name.removesuffix(".json")
 
 
 def validate_examples(changed_example_paths: list[str]) -> list[dict[str, Any]]:
@@ -391,6 +424,86 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
+    changed_path_detection = report.get("changed_path_detection", {})
+    detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
+    degraded = detection_mode == "degraded_full_governed_scan"
+    masking_detected = bool(report.get("masked_failures"))
+    has_propagation_failures = bool(report.get("schema_example_failures") or report.get("producer_failures"))
+    impacted_downstream = bool(report.get("fixture_failures") or report.get("consumer_failures"))
+    status = str(report.get("status", "failed"))
+
+    if masking_detected or has_propagation_failures:
+        return {
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "preflight failed on propagation or masking risk",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if hardening_flow and impacted_downstream:
+        return {
+            "strategy_gate_decision": "FREEZE",
+            "rationale": "hardening flow requires downstream seam repair before progression",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if status == "passed" and degraded:
+        return {
+            "strategy_gate_decision": "WARN",
+            "rationale": "preflight passed under degraded full governed scan mode",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if status == "passed":
+        return {
+            "strategy_gate_decision": "ALLOW",
+            "rationale": "preflight passed with clean detection and no masking risk",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    return {
+        "strategy_gate_decision": "BLOCK",
+        "rationale": "preflight status unresolved or failed",
+        "changed_path_detection_mode": detection_mode,
+        "degraded_detection": degraded,
+    }
+
+
+def build_preflight_result_artifact(
+    *,
+    report: dict[str, Any],
+    json_report_path: Path,
+    markdown_report_path: Path,
+    hardening_flow: bool,
+) -> dict[str, Any]:
+    detection = report.get("changed_path_detection", {})
+    control_signal = map_preflight_control_signal(report=report, hardening_flow=hardening_flow)
+    return {
+        "artifact_type": "contract_preflight_result_artifact",
+        "schema_version": "1.0.0",
+        "preflight_status": report.get("status", "failed"),
+        "changed_contracts": report.get("changed_contracts", []),
+        "impacted_producers": report.get("impact", {}).get("producers", []),
+        "impacted_fixtures": report.get("impact", {}).get("fixtures_or_builders", []),
+        "impacted_consumers": report.get("impact", {}).get("consumers", []),
+        "masking_detected": bool(report.get("masked_failures")),
+        "recommended_repair_area": report.get("recommended_repair_areas", []),
+        "report_paths": {
+            "json_report_path": str(json_report_path),
+            "markdown_report_path": str(markdown_report_path),
+        },
+        "generated_at": _utc_now(),
+        "control_signal": control_signal,
+        "trace": {
+            "producer": "scripts/run_contract_preflight.py",
+            "policy_version": _PREFLIGHT_POLICY_VERSION,
+            "refs_attempted": detection.get("refs_attempted", []),
+            "fallback_used": bool(detection.get("fallback_used", False)),
+            "provenance_ref": "contracts/standards-manifest.json",
+        },
+    }
+
+
 def main() -> int:
     args = _parse_args()
     output_dir = REPO_ROOT / args.output_dir
@@ -399,7 +512,9 @@ def main() -> int:
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
     classified = classify_changed_contracts(detection.changed_paths)
 
-    changed_contracts = classified["changed_contract_paths"] + classified["changed_governed_definitions"]
+    changed_contract_paths = classified["changed_contract_paths"]
+    changed_governed_definitions = classified["changed_governed_definitions"]
+    changed_contracts = changed_contract_paths + changed_governed_definitions
     changed_examples = classified["changed_example_paths"]
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
@@ -448,7 +563,17 @@ def main() -> int:
             "recommended_repair_areas": [],
         }
     else:
-        impact = build_impact_map(REPO_ROOT, changed_contracts, changed_examples)
+        if changed_contract_paths:
+            impact = build_impact_map(REPO_ROOT, changed_contract_paths, changed_examples)
+            contract_impact_artifact = impact["contract_impact_artifact"]
+        else:
+            impact = {
+                "producers": [],
+                "fixtures_or_builders": [],
+                "consumers": [],
+                "required_smoke_tests": [],
+            }
+            contract_impact_artifact = None
 
         schema_example_failures = validate_examples(changed_examples)
 
@@ -483,7 +608,7 @@ def main() -> int:
                 "consumers": impact["consumers"],
                 "required_smoke_tests": impact["required_smoke_tests"],
             },
-            "contract_impact_artifact": impact["contract_impact_artifact"],
+            "contract_impact_artifact": contract_impact_artifact,
             "schema_example_failures": schema_example_failures,
             "producer_failures": producer_failures,
             "fixture_failures": fixture_failures,
@@ -496,8 +621,29 @@ def main() -> int:
     md_path = output_dir / "contract_preflight_report.md"
     json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     md_path.write_text(render_markdown(report), encoding="utf-8")
+    preflight_artifact = build_preflight_result_artifact(
+        report=report,
+        json_report_path=json_path,
+        markdown_report_path=md_path,
+        hardening_flow=bool(args.hardening_flow),
+    )
+    preflight_schema = load_schema("contract_preflight_result_artifact")
+    Draft202012Validator(preflight_schema, format_checker=FormatChecker()).validate(preflight_artifact)
+    preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
+    preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
 
-    print(json.dumps({"status": report["status"], "json_report": str(json_path), "markdown_report": str(md_path)}, indent=2))
+    print(
+        json.dumps(
+            {
+                "status": report["status"],
+                "json_report": str(json_path),
+                "markdown_report": str(md_path),
+                "preflight_artifact": str(preflight_artifact_path),
+                "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+            },
+            indent=2,
+        )
+    )
 
     return 2 if report["status"] == "failed" else 0
 
