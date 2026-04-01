@@ -2209,7 +2209,7 @@
     },
     {
       "artifact_type": "review_control_signal",
-      "artifact_class": "governance",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
