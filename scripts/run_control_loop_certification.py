@@ -538,9 +538,33 @@ def _build_parser() -> argparse.ArgumentParser:
         "--gate-proof-ref",
         action="append",
         default=[],
-        help="Evidence path supporting hard-gate proof alignment and failure-binding enforcement (repeatable).",
+        help="Deprecated generic gate proof reference. Does not satisfy grouped proof requirements by itself.",
+    )
+    parser.add_argument("--severity-linkage-ref", action="append", default=[], help="Evidence refs for severity linkage.")
+    parser.add_argument(
+        "--transition-consumption-ref",
+        action="append",
+        default=[],
+        help="Evidence refs for deterministic transition consumption.",
+    )
+    parser.add_argument("--policy-action-ref", action="append", default=[], help="Evidence refs for policy-caused action.")
+    parser.add_argument(
+        "--recurrence-prevention-ref",
+        action="append",
+        default=[],
+        help="Evidence refs for recurrence prevention linkage.",
+    )
+    parser.add_argument(
+        "--hard-gate-falsification-ref",
+        action="append",
+        default=[],
+        help="Evidence refs for hard-gate falsification proof.",
     )
     return parser
+
+
+def _dedupe_refs(values: list[str]) -> list[str]:
+    return sorted({value for value in values if isinstance(value, str) and value.strip()})
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -583,22 +607,26 @@ def main(argv: list[str] | None = None) -> int:
 
     related_review_refs = args.related_review_ref or [str(Path(args.review_json).as_posix())]
     related_plan_refs = args.related_plan_ref
-    gate_proof_refs = sorted(dict.fromkeys(args.gate_proof_ref))
+    severity_refs = _dedupe_refs(args.severity_linkage_ref)
+    transition_refs = _dedupe_refs(args.transition_consumption_ref)
+    policy_action_refs = _dedupe_refs(args.policy_action_ref)
+    recurrence_refs = _dedupe_refs(args.recurrence_prevention_ref)
+    hard_gate_refs = _dedupe_refs(args.hard_gate_falsification_ref)
     gate_proof_evidence = {
-        "severity_linkage_complete": bool(gate_proof_refs),
-        "deterministic_transition_consumption": bool(gate_proof_refs),
-        "policy_caused_action_observed": bool(gate_proof_refs),
-        "recurrence_prevention_linked": bool(gate_proof_refs),
-        "failure_binding_required_for_progression": bool(gate_proof_refs),
-        "missing_binding_blocks_progression": bool(gate_proof_refs),
-        "advisory_only_learning_rejected": bool(gate_proof_refs),
-        "transition_policy_consumes_binding_deterministically": bool(gate_proof_refs),
-        "hard_gate_falsification_required_for_promotion": bool(gate_proof_refs),
-        "severity_linkage_refs": list(gate_proof_refs),
-        "transition_consumption_refs": list(gate_proof_refs),
-        "policy_action_refs": list(gate_proof_refs),
-        "recurrence_prevention_refs": list(gate_proof_refs),
-        "hard_gate_falsification_refs": list(gate_proof_refs),
+        "severity_linkage_complete": bool(severity_refs),
+        "deterministic_transition_consumption": bool(transition_refs),
+        "policy_caused_action_observed": bool(policy_action_refs),
+        "recurrence_prevention_linked": bool(recurrence_refs),
+        "failure_binding_required_for_progression": bool(recurrence_refs),
+        "missing_binding_blocks_progression": bool(recurrence_refs),
+        "advisory_only_learning_rejected": bool(recurrence_refs),
+        "transition_policy_consumes_binding_deterministically": bool(transition_refs),
+        "hard_gate_falsification_required_for_promotion": bool(hard_gate_refs),
+        "severity_linkage_refs": severity_refs,
+        "transition_consumption_refs": transition_refs,
+        "policy_action_refs": policy_action_refs,
+        "recurrence_prevention_refs": recurrence_refs,
+        "hard_gate_falsification_refs": hard_gate_refs,
     }
 
     artifact = _build_certification_artifact(

@@ -270,3 +270,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-RUNTIME-PROVENANCE-ANCHORS-2026-03-29.md | Post-runtime-identity hardening — provenance anchors across persistence and downstream seams | Active |
 
 | docs/review-actions/PLAN-NEXT-STEP-DECISION-ENGINE-P1-2026-03-30.md | NEXT-STEP-DECISION-ENGINE-P1 — Controlled next-step decision engine | Active |
+
+| docs/review-actions/PLAN-CONVERGENCE-024-TRUST-SPINE-HARDENING-2026-04-01.md | CONVERGENCE-024 — Trust-spine hardening convergence fix | Active |

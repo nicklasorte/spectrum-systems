@@ -171,6 +171,38 @@ def test_gate_proof_evidence_requires_hard_gate_falsification_refs() -> None:
     assert any("hard_gate_falsification_refs" in message for message in failures)
 
 
+def test_shared_generic_ref_does_not_satisfy_all_proof_groups() -> None:
+    args = clc._build_parser().parse_args(["--gate-proof-ref", "contracts/examples/failure_eval_case.json"])
+    evidence = {
+        "severity_linkage_complete": bool(args.severity_linkage_ref),
+        "deterministic_transition_consumption": bool(args.transition_consumption_ref),
+        "policy_caused_action_observed": bool(args.policy_action_ref),
+        "recurrence_prevention_linked": bool(args.recurrence_prevention_ref),
+        "failure_binding_required_for_progression": bool(args.recurrence_prevention_ref),
+        "missing_binding_blocks_progression": bool(args.recurrence_prevention_ref),
+        "advisory_only_learning_rejected": bool(args.recurrence_prevention_ref),
+        "transition_policy_consumes_binding_deterministically": bool(args.transition_consumption_ref),
+        "hard_gate_falsification_required_for_promotion": bool(args.hard_gate_falsification_ref),
+        "severity_linkage_refs": args.severity_linkage_ref,
+        "transition_consumption_refs": args.transition_consumption_ref,
+        "policy_action_refs": args.policy_action_ref,
+        "recurrence_prevention_refs": args.recurrence_prevention_ref,
+        "hard_gate_falsification_refs": args.hard_gate_falsification_ref,
+    }
+    passed, failures = clc._evaluate_gate_proof_evidence(evidence)
+    assert passed is False
+    assert any("severity_linkage_refs" in failure for failure in failures)
+
+
+def test_missing_required_proof_group_blocks() -> None:
+    evidence = _gate_proof_evidence()
+    evidence["transition_consumption_refs"] = []
+    evidence["deterministic_transition_consumption"] = False
+    passed, failures = clc._evaluate_gate_proof_evidence(evidence)
+    assert passed is False
+    assert any("deterministic_transition_consumption" in failure for failure in failures)
+
+
 def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
     script_path = REPO_ROOT / "scripts" / "run_control_loop_certification.py"
     output = tmp_path / "certification.json"
@@ -204,7 +236,15 @@ def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
         "python -c \"print('ok review')\"",
         "--repo-review-command",
         "python -c \"print('ok repo review')\"",
-        "--gate-proof-ref",
+        "--severity-linkage-ref",
+        "contracts/examples/failure_eval_case.json",
+        "--transition-consumption-ref",
+        "contracts/examples/prompt_queue_transition_decision.json",
+        "--policy-action-ref",
+        "contracts/examples/pqx_slice_execution_record.json",
+        "--recurrence-prevention-ref",
+        "contracts/examples/failure_policy_binding.json",
+        "--hard-gate-falsification-ref",
         "contracts/examples/failure_eval_case.json",
     ]
 

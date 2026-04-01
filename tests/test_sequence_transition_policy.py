@@ -34,7 +34,7 @@ def _base_manifest(state: str) -> dict:
             "replay_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json"),
             "policy_ref": str(allow_policy_path),
             "enforcement_result_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json"),
-            "eval_coverage_summary_ref": str(_REPO_ROOT / "contracts" / "examples" / "eval_coverage_summary.json"),
+            "eval_coverage_summary_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"),
             "certification_pack_ref": str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"),
         },
         "control_loop_gate_proof": {
@@ -149,3 +149,80 @@ def test_promotion_blocks_when_required_eval_coverage_gap_present(tmp_path: Path
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "coverage gaps" in str(decision.reason)
+
+
+def test_promotion_blocks_when_enforcement_result_ref_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("enforcement_result_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "enforcement_result_ref" in str(decision.reason)
+
+
+def test_promotion_blocks_when_eval_coverage_summary_ref_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("eval_coverage_summary_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "eval_coverage_summary_ref" in str(decision.reason)
+
+
+def test_promotion_blocks_when_policy_has_no_decision_or_system_response(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    ambiguous = {"artifact_type": "evaluation_control_decision", "schema_version": "1.2.0"}
+    path = tmp_path / "ambiguous_policy.json"
+    path.write_text(json.dumps(ambiguous), encoding="utf-8")
+    manifest["done_certification_input_refs"]["policy_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "decision/system_response" in str(decision.reason)
+
+
+def test_promotion_blocks_when_replay_ref_content_is_blocked(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    replay = json.loads(Path(manifest["done_certification_input_refs"]["replay_result_ref"]).read_text(encoding="utf-8"))
+    replay["status"] = "blocked"
+    path = tmp_path / "blocked_replay.json"
+    path.write_text(json.dumps(replay), encoding="utf-8")
+    manifest["done_certification_input_refs"]["replay_result_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "status=blocked" in str(decision.reason)
+
+
+def test_promotion_blocks_when_uncovered_required_slices_present(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    coverage = json.loads(Path(manifest["done_certification_input_refs"]["eval_coverage_summary_ref"]).read_text(encoding="utf-8"))
+    coverage["uncovered_required_slices"] = ["runtime_guardrails"]
+    path = tmp_path / "coverage_uncovered_required.json"
+    path.write_text(json.dumps(coverage), encoding="utf-8")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "coverage gaps" in str(decision.reason)
+
+
+def test_promotion_blocks_when_coverage_gaps_show_required_high_severity(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    coverage = json.loads(Path(manifest["done_certification_input_refs"]["eval_coverage_summary_ref"]).read_text(encoding="utf-8"))
+    coverage["coverage_gaps"] = [{"slice_id": "runtime_guardrails", "required": True, "severity": "critical", "status": "missing"}]
+    path = tmp_path / "coverage_required_high.json"
+    path.write_text(json.dumps(coverage), encoding="utf-8")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "coverage gaps" in str(decision.reason)
+
+
+def test_enforcement_vocabulary_normalization_blocks_variants(tmp_path: Path) -> None:
+    variants = ["block", "blocked", "freeze", "frozen", "hold"]
+    for variant in variants:
+        manifest = _base_manifest("certification_pending")
+        enforcement = json.loads(Path(manifest["done_certification_input_refs"]["enforcement_result_ref"]).read_text(encoding="utf-8"))
+        enforcement["final_status"] = variant
+        path = tmp_path / f"enforcement_{variant}.json"
+        path.write_text(json.dumps(enforcement), encoding="utf-8")
+        manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(path)
+        decision = evaluate_sequence_transition(manifest, "promoted")
+        assert decision.allowed is False
+        assert "enforcement result" in str(decision.reason)

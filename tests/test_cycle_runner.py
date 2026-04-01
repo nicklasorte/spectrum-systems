@@ -883,9 +883,18 @@ def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> N
     manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
     manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
     manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
+    )
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
+    )
     manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
     manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
     manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
+    )
     _write(manifest_path, manifest)
 
     expected = [
@@ -916,6 +925,9 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
     manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
     manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
+    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
+    )
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)

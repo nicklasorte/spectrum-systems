@@ -255,6 +255,42 @@ def test_comparative_analysis_allows_relaxed_thresholds() -> None:
         threshold_context="comparative_analysis",
     )
     assert decision["decision"] in {"allow", "require_review", "deny"}
+    assert decision["threshold_context"] == "comparative_analysis"
+
+
+def test_default_threshold_context_is_active_runtime() -> None:
+    decision = build_evaluation_control_decision(_replay_result())
+    assert decision["threshold_context"] == "active_runtime"
+
+
+def test_comparative_decision_carries_context_tag() -> None:
+    decision = build_evaluation_control_decision(
+        _replay_result(),
+        threshold_context="comparative_analysis",
+    )
+    assert decision["threshold_context"] == "comparative_analysis"
+
+
+def test_runtime_tightened_thresholds_succeed() -> None:
+    decision = build_evaluation_control_decision(
+        _replay_result(),
+        thresholds={"reliability_threshold": 0.9, "drift_threshold": 0.1, "trust_threshold": 0.9},
+    )
+    assert decision["threshold_context"] == "active_runtime"
+    assert decision["decision"] in {"allow", "require_review", "deny"}
+
+
+def test_budget_enforcement_still_applies_in_comparative_context() -> None:
+    replay = _replay_result()
+    replay["error_budget_status"]["budget_status"] = "exhausted"
+    replay["error_budget_status"]["highest_severity"] = "exhausted"
+    replay["error_budget_status"]["triggered_conditions"] = [
+        {"metric_name": "replay_success_rate", "status": "exhausted", "consumption_ratio": 1.0}
+    ]
+    decision = build_evaluation_control_decision(replay, threshold_context="comparative_analysis")
+    assert decision["threshold_context"] == "comparative_analysis"
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] in {"freeze", "block"}
 
 
 def test_threshold_context_is_explicit_and_fail_closed() -> None:
