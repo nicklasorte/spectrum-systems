@@ -279,7 +279,7 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
         replay["observability_metrics"]["metrics"]["replay_success_rate"] = 0.88
 
         permissive = {
-            "reliability_threshold": 0.80,
+            "reliability_threshold": 0.85,
             "drift_threshold": 0.20,
             "trust_threshold": 0.80,
         }
@@ -412,7 +412,7 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
             "policy_id": "policy-val10-baseline",
             "policy_version": "v1",
             "thresholds": {
-                "reliability_threshold": 0.80,
+                "reliability_threshold": 0.85,
                 "drift_threshold": 0.20,
                 "trust_threshold": 0.80,
             },
@@ -485,7 +485,7 @@ def _execute_case(case_id: str, case_type: str, target_seam: str, base: Dict[str
         replay["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = 0.9
         control = build_evaluation_control_decision(
             replay,
-            thresholds={"reliability_threshold": 0.8, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            thresholds={"reliability_threshold": 0.85, "drift_threshold": 0.2, "trust_threshold": 0.8},
             threshold_context="comparative_analysis",
         )
 

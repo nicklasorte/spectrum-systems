@@ -262,12 +262,12 @@ def _run_xrun_and_backtest(base: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[s
             "baseline_policy_ref": {
                 "policy_id": "baseline-policy",
                 "policy_version": "1.0.0",
-                "thresholds": {"reliability_threshold": 0.99, "drift_threshold": 0.01, "trust_threshold": 0.99},
+                "thresholds": {"reliability_threshold": 0.85, "drift_threshold": 0.2, "trust_threshold": 0.8},
             },
             "candidate_policy_ref": {
                 "policy_id": "candidate-policy",
                 "policy_version": "1.1.0",
-                "thresholds": {"reliability_threshold": 0.1, "drift_threshold": 1.0, "trust_threshold": 0.1},
+                "thresholds": {"reliability_threshold": 0.99, "drift_threshold": 0.01, "trust_threshold": 0.99},
             },
         }
     )

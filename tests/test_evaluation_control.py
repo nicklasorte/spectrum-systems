@@ -247,15 +247,14 @@ def test_active_runtime_rejects_relaxed_thresholds() -> None:
         )
 
 
-def test_comparative_analysis_allows_relaxed_thresholds() -> None:
+def test_comparative_analysis_rejects_relaxed_thresholds() -> None:
     replay = _replay_result()
-    decision = build_evaluation_control_decision(
-        replay,
-        thresholds={"reliability_threshold": 0.6, "drift_threshold": 0.2, "trust_threshold": 0.8},
-        threshold_context="comparative_analysis",
-    )
-    assert decision["decision"] in {"allow", "require_review", "deny"}
-    assert decision["threshold_context"] == "comparative_analysis"
+    with pytest.raises(EvaluationControlError, match="cannot relax reliability_threshold"):
+        build_evaluation_control_decision(
+            replay,
+            thresholds={"reliability_threshold": 0.6, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            threshold_context="comparative_analysis",
+        )
 
 
 def test_default_threshold_context_is_active_runtime() -> None:

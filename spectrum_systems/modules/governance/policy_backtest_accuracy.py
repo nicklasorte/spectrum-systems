@@ -33,7 +33,7 @@ _CASE_TYPES = (
 _DEFAULT_EXPECTED = {
     "identical_policy_no_change": {"recommendation": "require_review", "risks": []},
     "candidate_improves_without_new_risk": {"recommendation": "accept_policy", "risks": []},
-    "candidate_introduces_missed_failure": {"recommendation": "reject_policy", "risks": ["missed_failures"]},
+    "candidate_introduces_missed_failure": {"recommendation": "fail_closed", "risks": []},
     "candidate_overblocks_significantly": {"recommendation": "reject_policy", "risks": ["overblocking"]},
     "mixed_delta_requires_review": {"recommendation": "require_review", "risks": []},
     "malformed_candidate_policy": {"recommendation": "fail_closed", "risks": []},
@@ -122,7 +122,7 @@ def _default_bundle() -> Dict[str, Any]:
         "policy_id": "policy-baseline",
         "policy_version": "v1",
         "thresholds": {
-            "reliability_threshold": 0.8,
+            "reliability_threshold": 0.85,
             "drift_threshold": 0.2,
             "trust_threshold": 0.8,
         },
@@ -170,7 +170,7 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-improved",
             "policy_version": "v2",
-            "thresholds": {"reliability_threshold": 0.8, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            "thresholds": {"reliability_threshold": 0.85, "drift_threshold": 0.2, "trust_threshold": 0.8},
         }
     elif case_type == "candidate_introduces_missed_failure":
         replay = payload["replay_results"][0]
@@ -178,31 +178,31 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
         replay["drift_detected"] = True
         replay["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = 0.6
         replay["observability_metrics"]["metrics"]["replay_success_rate"] = 0.95
-        payload["baseline_policy_ref"]["thresholds"]["trust_threshold"] = 0.0
+        payload["baseline_policy_ref"]["thresholds"]["trust_threshold"] = 0.8
         payload["baseline_policy_ref"]["thresholds"]["drift_threshold"] = 0.2
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-missed-failure",
             "policy_version": "v2",
-            "thresholds": {"reliability_threshold": 0.8, "drift_threshold": 0.8, "trust_threshold": 0.0},
+            "thresholds": {"reliability_threshold": 0.84, "drift_threshold": 0.8, "trust_threshold": 0.8},
         }
     elif case_type == "candidate_overblocks_significantly":
         replay = payload["replay_results"][0]
-        replay["consistency_status"] = "mismatch"
-        replay["drift_detected"] = True
-        replay["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = 0.0
-        replay["observability_metrics"]["metrics"]["replay_success_rate"] = 0.95
-        payload["baseline_policy_ref"]["thresholds"]["trust_threshold"] = 0.0
+        replay["consistency_status"] = "match"
+        replay["drift_detected"] = False
+        replay["observability_metrics"]["metrics"]["drift_exceed_threshold_rate"] = 0.15
+        replay["observability_metrics"]["metrics"]["replay_success_rate"] = 0.99
+        payload["baseline_policy_ref"]["thresholds"]["trust_threshold"] = 0.8
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-overblock",
             "policy_version": "v2",
-            "thresholds": {"reliability_threshold": 0.8, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            "thresholds": {"reliability_threshold": 0.9, "drift_threshold": 0.1, "trust_threshold": 0.8},
         }
     elif case_type == "mixed_delta_requires_review":
         replay = payload["replay_results"][0]
         replay["consistency_status"] = "match"
         replay["drift_detected"] = False
         replay["observability_metrics"]["metrics"]["replay_success_rate"] = 0.82
-        payload["baseline_policy_ref"]["thresholds"]["reliability_threshold"] = 0.8
+        payload["baseline_policy_ref"]["thresholds"]["reliability_threshold"] = 0.85
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-mixed",
             "policy_version": "v2",
@@ -212,13 +212,13 @@ def _case_payload(base: Dict[str, Any], case_type: str) -> Dict[str, Any]:
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-malformed",
             "policy_version": "v2",
-            "thresholds": {"reliability_threshold": 0.8, "drift_threshold": 0.2},
+            "thresholds": {"reliability_threshold": 0.85, "drift_threshold": 0.2},
         }
     elif case_type == "inconsistent_input_bundle":
         payload["candidate_policy_ref"] = {
             "policy_id": "policy-candidate-safe",
             "policy_version": "v2",
-            "thresholds": {"reliability_threshold": 0.8, "drift_threshold": 0.2, "trust_threshold": 0.8},
+            "thresholds": {"reliability_threshold": 0.85, "drift_threshold": 0.2, "trust_threshold": 0.8},
         }
         payload["eval_summaries"][0]["trace_id"] = "22222222-2222-4222-8222-222222222222"
     else:

@@ -61,12 +61,10 @@ def _resolve_threshold_context(context: ThresholdContext) -> ThresholdContext:
 
 
 def _resolve_comparative_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
-    candidate = _validated_threshold_candidate(thresholds)
-    for key, value in candidate.items():
-        if value < 0.0 or value > 1.0:
-            raise EvaluationControlError(f"threshold override for {key} must be between 0.0 and 1.0")
-
-    return candidate
+    # Comparative analysis must preserve the same governed semantics as active runtime.
+    # Candidate policy comparisons are allowed only when thresholds are equal or stricter
+    # than governed defaults; relaxed policy thresholds are invalid and fail closed.
+    return _resolve_governed_thresholds(thresholds)
 
 
 def _resolve_thresholds(*, thresholds: Optional[Dict[str, float]], threshold_context: ThresholdContext) -> Dict[str, float]:
@@ -74,6 +72,16 @@ def _resolve_thresholds(*, thresholds: Optional[Dict[str, float]], threshold_con
     if resolved_context == "comparative_analysis":
         return _resolve_comparative_thresholds(thresholds)
     return _resolve_governed_thresholds(thresholds)
+
+
+def resolve_canonical_thresholds(
+    thresholds: Optional[Dict[str, float]],
+    *,
+    threshold_context: ThresholdContext = "active_runtime",
+) -> Dict[str, float]:
+    """Resolve thresholds using canonical governed semantics for all consumers."""
+    resolved_context = _resolve_threshold_context(threshold_context)
+    return _resolve_thresholds(thresholds=thresholds, threshold_context=resolved_context)
 
 
 def _canonical_timestamp(value: Any) -> str:
