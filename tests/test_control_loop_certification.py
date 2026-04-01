@@ -43,10 +43,14 @@ def _gate_proof_evidence() -> dict:
         "missing_binding_blocks_progression": True,
         "advisory_only_learning_rejected": True,
         "transition_policy_consumes_binding_deterministically": True,
+        "control_loop_closure_bundle_complete": True,
+        "replay_parity_exact": True,
+        "trace_completeness_verified": True,
         "severity_linkage_refs": ["contracts/examples/failure_eval_case.json"],
         "transition_consumption_refs": ["contracts/examples/prompt_queue_transition_decision.json"],
         "policy_action_refs": ["contracts/examples/pqx_slice_execution_record.json"],
         "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
+        "control_loop_closure_bundle_refs": ["contracts/examples/control_loop_closure_evidence_bundle.json"],
     }
 
 

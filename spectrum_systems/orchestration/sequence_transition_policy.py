@@ -127,6 +127,22 @@ def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str
 def _control_loop_closure_bundle_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     bundle = manifest.get("control_loop_closure_evidence_bundle")
     if not isinstance(bundle, dict):
+        refs = manifest.get("done_certification_input_refs")
+        pack_ref = refs.get("certification_pack_ref") if isinstance(refs, dict) else None
+        if _path_exists(pack_ref):
+            try:
+                pack = json.loads(Path(pack_ref).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return False, "promotion requires readable certification_pack_ref for closure bundle discovery"
+            gate = pack.get("gate_proof_evidence")
+            bundle_refs = gate.get("control_loop_closure_bundle_refs") if isinstance(gate, dict) else None
+            first_ref = bundle_refs[0] if isinstance(bundle_refs, list) and bundle_refs else None
+            if _path_exists(first_ref):
+                try:
+                    bundle = json.loads(Path(first_ref).read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    return False, "promotion requires readable control_loop_closure_bundle_refs evidence"
+    if not isinstance(bundle, dict):
         return False, "promotion requires control_loop_closure_evidence_bundle"
     for key in (
         "pqx_execution_record_refs",

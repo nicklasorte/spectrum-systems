@@ -425,7 +425,7 @@ def _build_certification_artifact(
 
     return {
         "artifact_type": "control_loop_certification_pack",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "certification_id": deterministic_id(
             prefix="clcp",
             namespace="control_loop_certification_pack",
@@ -473,12 +473,16 @@ def _evaluate_gate_proof_evidence(gate_proof_evidence: dict[str, Any]) -> tuple[
         "missing_binding_blocks_progression",
         "advisory_only_learning_rejected",
         "transition_policy_consumes_binding_deterministically",
+        "control_loop_closure_bundle_complete",
+        "replay_parity_exact",
+        "trace_completeness_verified",
     )
     required_refs = (
         "severity_linkage_refs",
         "transition_consumption_refs",
         "policy_action_refs",
         "recurrence_prevention_refs",
+        "control_loop_closure_bundle_refs",
     )
     failures: list[str] = []
     for field in required_true_fields:
@@ -590,10 +594,14 @@ def main(argv: list[str] | None = None) -> int:
         "missing_binding_blocks_progression": bool(gate_proof_refs),
         "advisory_only_learning_rejected": bool(gate_proof_refs),
         "transition_policy_consumes_binding_deterministically": bool(gate_proof_refs),
+        "control_loop_closure_bundle_complete": bool(gate_proof_refs),
+        "replay_parity_exact": bool(gate_proof_refs),
+        "trace_completeness_verified": bool(gate_proof_refs),
         "severity_linkage_refs": list(gate_proof_refs),
         "transition_consumption_refs": list(gate_proof_refs),
         "policy_action_refs": list(gate_proof_refs),
         "recurrence_prevention_refs": list(gate_proof_refs),
+        "control_loop_closure_bundle_refs": list(gate_proof_refs),
     }
 
     artifact = _build_certification_artifact(
