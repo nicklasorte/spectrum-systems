@@ -189,3 +189,13 @@ def test_malformed_policy_fails_closed() -> None:
 
     with pytest.raises(PolicyBacktestingError, match="trust_threshold"):
         run_policy_backtest(_input_payload(replay_results, baseline, candidate))
+
+
+def test_comparative_backtesting_decisions_include_threshold_context() -> None:
+    replay_results = [_replay(replay_id="rp-ctx-1")]
+    baseline = _policy_ref("policy-baseline", "v1", reliability=0.8, drift=0.2, trust=0.8)
+    candidate = _policy_ref("policy-candidate", "v2", reliability=0.75, drift=0.25, trust=0.75)
+    result = run_policy_backtest(_input_payload(replay_results, baseline, candidate))
+    for decision_delta in result["decision_deltas"]:
+        assert decision_delta["baseline_decision"] in {"allow", "warn", "freeze", "block"}
+        assert decision_delta["candidate_decision"] in {"allow", "warn", "freeze", "block"}

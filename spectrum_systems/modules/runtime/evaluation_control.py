@@ -61,19 +61,7 @@ def _resolve_threshold_context(context: ThresholdContext) -> ThresholdContext:
 
 
 def _resolve_comparative_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
-    resolved = dict(DEFAULT_THRESHOLDS)
-    if not thresholds:
-        return resolved
-
-    for key, value in thresholds.items():
-        if key not in DEFAULT_THRESHOLDS:
-            raise EvaluationControlError(f"threshold override contains unknown key: {key}")
-        if not isinstance(value, (int, float)):
-            raise EvaluationControlError(f"threshold override for {key} must be numeric")
-
-    candidate = dict(resolved)
-    candidate.update({k: float(v) for k, v in thresholds.items()})
-
+    candidate = _validated_threshold_candidate(thresholds)
     for key, value in candidate.items():
         if value < 0.0 or value > 1.0:
             raise EvaluationControlError(f"threshold override for {key} must be between 0.0 and 1.0")
@@ -275,18 +263,7 @@ def _enforce_budget_authority(*, budget_status: str, system_response: str, decis
 
 
 def _resolve_governed_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
-    resolved = dict(DEFAULT_THRESHOLDS)
-    if not thresholds:
-        return resolved
-
-    for key, value in thresholds.items():
-        if key not in DEFAULT_THRESHOLDS:
-            raise EvaluationControlError(f"threshold override contains unknown key: {key}")
-        if not isinstance(value, (int, float)):
-            raise EvaluationControlError(f"threshold override for {key} must be numeric")
-
-    candidate = dict(resolved)
-    candidate.update({k: float(v) for k, v in thresholds.items()})
+    candidate = _validated_threshold_candidate(thresholds)
 
     if candidate["reliability_threshold"] < DEFAULT_THRESHOLDS["reliability_threshold"]:
         raise EvaluationControlError("threshold override cannot relax reliability_threshold below governed default")
@@ -295,6 +272,20 @@ def _resolve_governed_thresholds(thresholds: Optional[Dict[str, float]]) -> Dict
     if candidate["drift_threshold"] > DEFAULT_THRESHOLDS["drift_threshold"]:
         raise EvaluationControlError("threshold override cannot relax drift_threshold above governed default")
 
+    return candidate
+
+
+def _validated_threshold_candidate(thresholds: Optional[Dict[str, float]]) -> Dict[str, float]:
+    resolved = dict(DEFAULT_THRESHOLDS)
+    if not thresholds:
+        return resolved
+    for key, value in thresholds.items():
+        if key not in DEFAULT_THRESHOLDS:
+            raise EvaluationControlError(f"threshold override contains unknown key: {key}")
+        if not isinstance(value, (int, float)):
+            raise EvaluationControlError(f"threshold override for {key} must be numeric")
+    candidate = dict(resolved)
+    candidate.update({k: float(v) for k, v in thresholds.items()})
     return candidate
 
 def _resolve_recurrence_prevention_binding(
@@ -376,7 +367,8 @@ def build_evaluation_control_decision(
     threshold_context: ThresholdContext = "active_runtime",
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
-    t = _resolve_thresholds(thresholds=thresholds, threshold_context=threshold_context)
+    resolved_threshold_context = _resolve_threshold_context(threshold_context)
+    t = _resolve_thresholds(thresholds=thresholds, threshold_context=resolved_threshold_context)
     seeded_signals: List[str] = []
     artifact_type = signal_artifact.get("artifact_type") if isinstance(signal_artifact, dict) else None
     if artifact_type == "replay_result":
@@ -521,7 +513,7 @@ def build_evaluation_control_decision(
             decision_label=decision_label,
         )
 
-    schema_version = "1.1.0"
+    schema_version = "1.2.0"
     decision = {
         "artifact_type": "evaluation_control_decision",
         "schema_version": schema_version,
@@ -539,6 +531,7 @@ def build_evaluation_control_decision(
             "drift_threshold": t["drift_threshold"],
             "trust_threshold": t["trust_threshold"],
         },
+        "threshold_context": resolved_threshold_context,
         "trace_id": eval_summary["trace_id"],
         "created_at": created_at,
         "decision": decision_label,

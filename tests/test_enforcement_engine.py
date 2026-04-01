@@ -22,7 +22,7 @@ import spectrum_systems.modules.runtime.enforcement_engine as enforcement_engine
 def _decision(decision: str = "allow") -> dict:
     return {
         "artifact_type": "evaluation_control_decision",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "decision_id": "ecd-20260322T000000Z",
         "eval_run_id": "eval-run-20260322T000000Z",
         "system_status": "healthy" if decision == "allow" else "warning",
@@ -33,6 +33,7 @@ def _decision(decision: str = "allow") -> dict:
             "drift_threshold": 0.2,
             "trust_threshold": 0.8,
         },
+        "threshold_context": "active_runtime",
         "trace_id": "44444444-4444-4444-8444-444444444444",
         "created_at": "2026-03-22T00:00:00Z",
         "decision": decision,

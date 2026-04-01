@@ -64,10 +64,83 @@ def _ref_from_manifest(manifest: dict[str, Any], key: str) -> str | None:
     return None
 
 
+_BLOCK_VOCAB = frozenset({"deny", "block", "blocked", "freeze", "frozen", "hold", "require_review"})
+
+
+def _normalized_block_value(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def _is_blocking_value(value: Any) -> bool:
+    return _normalized_block_value(value) in _BLOCK_VOCAB
+
+
+def _validate_policy_authority(policy_payload: dict[str, Any]) -> tuple[bool, str | None]:
+    decision = policy_payload.get("decision")
+    system_response = policy_payload.get("system_response")
+    decision_norm = _normalized_block_value(decision)
+    response_norm = _normalized_block_value(system_response)
+    if not decision_norm and not response_norm:
+        return False, "promotion requires policy_ref decision/system_response authority"
+    if decision is not None and not decision_norm:
+        return False, "promotion requires non-empty policy_ref decision when present"
+    if system_response is not None and not response_norm:
+        return False, "promotion requires non-empty policy_ref system_response when present"
+    contradictory = {
+        ("allow", "block"),
+        ("allow", "freeze"),
+        ("deny", "allow"),
+        ("require_review", "allow"),
+    }
+    if (decision_norm, response_norm) in contradictory:
+        return False, "promotion blocked: policy_ref contains contradictory decision/system_response authority"
+    if _is_blocking_value(decision_norm) or _is_blocking_value(response_norm):
+        blocked_by = decision_norm if _is_blocking_value(decision_norm) else response_norm
+        return False, f"promotion blocked by control authority decision ({blocked_by})"
+    return True, None
+
+
+def _validate_replay_authority(replay_payload: dict[str, Any]) -> tuple[bool, str | None]:
+    status = _normalized_block_value(replay_payload.get("status"))
+    if status == "blocked":
+        return False, "promotion blocked by replay_result_ref status=blocked"
+    if replay_payload.get("prerequisites_valid") is False:
+        return False, "promotion blocked by replay_result_ref prerequisites_valid=false"
+    return True, None
+
+
+def _coverage_required_deficit(coverage_payload: dict[str, Any]) -> bool:
+    required_gaps = coverage_payload.get("required_slice_gaps")
+    if isinstance(required_gaps, list) and required_gaps:
+        return True
+    uncovered = coverage_payload.get("uncovered_required_slices")
+    if isinstance(uncovered, list) and uncovered:
+        return True
+    coverage_gaps = coverage_payload.get("coverage_gaps")
+    if isinstance(coverage_gaps, list):
+        for entry in coverage_gaps:
+            if not isinstance(entry, dict):
+                continue
+            severity = _normalized_block_value(entry.get("severity"))
+            gap_type = _normalized_block_value(entry.get("gap_type"))
+            is_required = entry.get("required") is True or "required" in gap_type
+            if is_required and severity in {"high", "critical"}:
+                return True
+            if is_required and _normalized_block_value(entry.get("status")) in {"missing", "uncovered", "gap"}:
+                return True
+    return False
+
+
 def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     replay_ref = _ref_from_manifest(manifest, "replay_result_ref")
     if not _path_exists(replay_ref):
         return False, "promotion requires done_certification_input_refs.replay_result_ref"
+    replay_payload = _load_json_if_path(replay_ref)
+    if not isinstance(replay_payload, dict):
+        return False, "promotion requires readable replay_result_ref artifact"
+    replay_valid, replay_error = _validate_replay_authority(replay_payload)
+    if not replay_valid:
+        return False, replay_error
 
     policy_ref = _ref_from_manifest(manifest, "policy_ref")
     if not _path_exists(policy_ref):
@@ -76,28 +149,28 @@ def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | Non
     policy_payload = _load_json_if_path(policy_ref)
     if not isinstance(policy_payload, dict):
         return False, "promotion requires readable control decision policy_ref artifact"
-
-    decision_value = str(policy_payload.get("decision") or policy_payload.get("system_response") or "").strip().lower()
-    if decision_value in {"deny", "block", "freeze", "hold", "require_review"}:
-        return False, f"promotion blocked by control authority decision ({decision_value})"
+    policy_valid, policy_error = _validate_policy_authority(policy_payload)
+    if not policy_valid:
+        return False, policy_error
 
     enforcement_ref = _ref_from_manifest(manifest, "enforcement_result_ref")
-    if enforcement_ref is not None:
-        enforcement_payload = _load_json_if_path(enforcement_ref)
-        if not isinstance(enforcement_payload, dict):
-            return False, "promotion requires readable enforcement_result_ref artifact when declared"
-        final_status = str(enforcement_payload.get("final_status") or enforcement_payload.get("enforcement_status") or "").strip().lower()
-        if final_status in {"deny", "blocked", "freeze", "frozen", "require_review"}:
-            return False, f"promotion blocked by consumed enforcement result ({final_status})"
+    if not _path_exists(enforcement_ref):
+        return False, "promotion requires done_certification_input_refs.enforcement_result_ref"
+    enforcement_payload = _load_json_if_path(enforcement_ref)
+    if not isinstance(enforcement_payload, dict):
+        return False, "promotion requires readable enforcement_result_ref artifact"
+    final_status = enforcement_payload.get("final_status") or enforcement_payload.get("enforcement_status")
+    if _is_blocking_value(final_status):
+        return False, f"promotion blocked by consumed enforcement result ({_normalized_block_value(final_status)})"
 
     coverage_ref = _ref_from_manifest(manifest, "eval_coverage_summary_ref")
-    if coverage_ref is not None:
-        coverage_payload = _load_json_if_path(coverage_ref)
-        if not isinstance(coverage_payload, dict):
-            return False, "promotion requires readable eval_coverage_summary_ref artifact when declared"
-        required_gaps = coverage_payload.get("required_slice_gaps")
-        if isinstance(required_gaps, list) and required_gaps:
-            return False, "promotion blocked: required eval coverage gaps present"
+    if not _path_exists(coverage_ref):
+        return False, "promotion requires done_certification_input_refs.eval_coverage_summary_ref"
+    coverage_payload = _load_json_if_path(coverage_ref)
+    if not isinstance(coverage_payload, dict):
+        return False, "promotion requires readable eval_coverage_summary_ref artifact"
+    if _coverage_required_deficit(coverage_payload):
+        return False, "promotion blocked: required eval coverage gaps present"
 
     return True, None
 

@@ -61,3 +61,8 @@ def test_missing_failure_artifact_forces_failed_final_status() -> None:
     result = run_end_to_end_failure_simulation({"inject_missing_failure_artifact_for_testing": True})
     assert result["summary"]["missing_failure_artifact_detected"] is True
     assert result["final_status"] == "FAILED"
+
+
+def test_end_to_end_regression_still_yields_nonempty_case_set() -> None:
+    result = run_end_to_end_failure_simulation({})
+    assert len(result["simulation_cases"]) >= 1

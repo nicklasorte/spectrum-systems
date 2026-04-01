@@ -70,3 +70,9 @@ def test_inconsistent_seam_application_causes_failed_final_status() -> None:
     assert case["passed"] is True
     assert result["summary"]["inconsistent_policy_application_detected"] is True
     assert result["final_status"] == "FAILED"
+
+
+def test_comparative_policy_cases_remain_contextualized() -> None:
+    result = run_policy_enforcement_integrity_validation({})
+    case = _case(result, "control_seam_policy_enforcement")
+    assert "distinct:" in case["actual_outcome"]

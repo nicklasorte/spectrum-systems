@@ -140,3 +140,9 @@ def test_any_false_accept_causes_failed_final_status(monkeypatch) -> None:
     assert result["summary"]["false_accept_detected"] is True
     assert result["final_status"] == "FAILED"
     validate_artifact(result, "policy_backtest_accuracy_result")
+
+
+def test_no_blanket_fail_closed_from_threshold_context_requirement() -> None:
+    result = run_policy_backtest_accuracy(_input_refs())
+    case = _case(result, "candidate_improves_without_new_risk")
+    assert case["actual_recommendation"] == "accept_policy"
