@@ -60,6 +60,15 @@ class ChangedPathDetectionResult:
     warnings: list[str]
 
 
+@dataclass
+class EvaluationSurfaceClassification:
+    path: str
+    classification: str
+    reason: str
+    requires_evaluation: bool
+    surface: str
+
+
 def _run(command: list[str], cwd: Path) -> CommandResult:
     proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
     return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
@@ -251,6 +260,82 @@ def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]
     }
 
 
+def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
+    if path.startswith("spectrum_systems/modules/runtime/"):
+        return True, "runtime_module", "runtime module changed"
+    if path.startswith("spectrum_systems/orchestration/"):
+        return True, "orchestration", "orchestration path changed"
+    if path.startswith("spectrum_systems/governance/") or path.startswith("scripts/"):
+        return True, "governance", "governance/control script changed"
+    if path.startswith("tests/") and path.endswith(".py"):
+        tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner")
+        if any(marker in path for marker in tied_markers):
+            return True, "contract_tied_tests", "contract-tied test changed"
+    return False, "other", "path does not map to governed contract surface"
+
+
+def classify_evaluation_surfaces(changed_paths: list[str], classified_contracts: dict[str, list[str]]) -> dict[str, Any]:
+    contract_surface_paths = set(
+        classified_contracts["changed_contract_paths"]
+        + classified_contracts["changed_example_paths"]
+        + classified_contracts["changed_governed_definitions"]
+    )
+    classifications: list[EvaluationSurfaceClassification] = []
+    required_paths: list[str] = []
+    no_op_paths: list[str] = []
+    evaluated_surfaces: set[str] = set()
+
+    for path in sorted(set(changed_paths)):
+        if path in contract_surface_paths:
+            classifications.append(
+                EvaluationSurfaceClassification(
+                    path=path,
+                    classification="evaluated",
+                    reason="contract/example change is always evaluated",
+                    requires_evaluation=True,
+                    surface="contract_surface",
+                )
+            )
+            required_paths.append(path)
+            evaluated_surfaces.add("contract_surface")
+            continue
+
+        requires_eval, surface, reason = _is_forced_evaluation_surface(path)
+        if requires_eval:
+            classifications.append(
+                EvaluationSurfaceClassification(
+                    path=path,
+                    classification="evaluated",
+                    reason=reason,
+                    requires_evaluation=True,
+                    surface=surface,
+                )
+            )
+            required_paths.append(path)
+            evaluated_surfaces.add(surface)
+            continue
+
+        classifications.append(
+            EvaluationSurfaceClassification(
+                path=path,
+                classification="no_applicable_contract_surface",
+                reason=reason,
+                requires_evaluation=False,
+                surface=surface,
+            )
+        )
+        no_op_paths.append(path)
+
+    mode = "no-op" if not required_paths else ("full" if len(required_paths) == len(set(changed_paths)) else "partial")
+    return {
+        "evaluation_mode": mode,
+        "path_classifications": [item.__dict__ for item in classifications],
+        "required_paths": sorted(set(required_paths)),
+        "no_op_paths": sorted(set(no_op_paths)),
+        "evaluated_surfaces": sorted(evaluated_surfaces),
+    }
+
+
 def build_impact_map(repo_root: Path, changed_contract_paths: list[str], changed_example_paths: list[str]) -> dict[str, list[str]]:
     impact = analyze_contract_impact(
         repo_root=repo_root,
@@ -314,6 +399,30 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
                     targets.add(rel_test)
 
     return sorted(targets)
+
+
+def resolve_required_surface_tests(repo_root: Path, changed_paths: list[str]) -> dict[str, list[str]]:
+    tests_root = repo_root / "tests"
+    test_files = sorted(path for path in tests_root.rglob("test_*.py") if path.is_file()) if tests_root.is_dir() else []
+    path_to_targets: dict[str, list[str]] = {}
+    for rel_path in changed_paths:
+        targets: set[str] = set()
+        candidate = Path(rel_path)
+        if rel_path.startswith("tests/test_") and rel_path.endswith(".py"):
+            targets.add(rel_path)
+        else:
+            needles = {candidate.stem.lower(), candidate.name.lower()}
+            needles = {needle for needle in needles if needle and needle not in {"test", "tests"}}
+            for test_file in test_files:
+                rel_test = test_file.relative_to(repo_root).as_posix()
+                try:
+                    text = test_file.read_text(encoding="utf-8").lower()
+                except (OSError, UnicodeDecodeError):
+                    continue
+                if any(needle in text for needle in needles):
+                    targets.add(rel_test)
+        path_to_targets[rel_path] = sorted(targets)
+    return path_to_targets
 
 
 def _schema_name_from_example(path: str) -> str:
@@ -439,12 +548,21 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
     masking_detected = bool(report.get("masked_failures"))
     has_propagation_failures = bool(report.get("schema_example_failures") or report.get("producer_failures"))
     impacted_downstream = bool(report.get("fixture_failures") or report.get("consumer_failures"))
+    invariant_violations = bool(report.get("invariant_violations"))
+    missing_required_surface = bool(report.get("missing_required_surface"))
     status = str(report.get("status", "failed"))
 
-    if masking_detected or has_propagation_failures:
+    if status == "skipped":
         return {
             "strategy_gate_decision": "BLOCK",
-            "rationale": "preflight failed on propagation or masking risk",
+            "rationale": "skipped status is non-compliant unless explicitly justified",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if masking_detected or has_propagation_failures or invariant_violations or missing_required_surface:
+        return {
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "preflight failed on propagation/masking/invariant/required-surface risk",
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
@@ -507,6 +625,10 @@ def build_preflight_result_artifact(
             "policy_version": _PREFLIGHT_POLICY_VERSION,
             "refs_attempted": detection.get("refs_attempted", []),
             "fallback_used": bool(detection.get("fallback_used", False)),
+            "evaluation_mode": detection.get("evaluation_mode", "partial"),
+            "skip_reason": report.get("skip_reason"),
+            "changed_paths_resolved": detection.get("changed_paths_resolved", []),
+            "evaluated_surfaces": detection.get("evaluated_surfaces", []),
             "provenance_ref": "contracts/standards-manifest.json",
         },
     }
@@ -519,6 +641,7 @@ def main() -> int:
 
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
     classified = classify_changed_contracts(detection.changed_paths)
+    surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
 
     changed_contract_paths = classified["changed_contract_paths"]
     changed_governed_definitions = classified["changed_governed_definitions"]
@@ -526,9 +649,12 @@ def main() -> int:
     changed_examples = classified["changed_example_paths"]
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
+        "changed_paths_resolved": detection.changed_paths,
         "refs_attempted": detection.refs_attempted,
         "fallback_used": detection.fallback_used,
         "warnings": detection.warnings,
+        "evaluation_mode": surface_classification["evaluation_mode"],
+        "evaluated_surfaces": surface_classification["evaluated_surfaces"],
     }
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
@@ -550,10 +676,14 @@ def main() -> int:
             "masked_failures": [],
             "recommended_repair_areas": ["contracts/"],
             "bootstrap_failures": ["changed-path detection failed and no governed paths were available"],
+            "evaluation_classification": surface_classification["path_classifications"],
+            "missing_required_surface": [],
+            "skip_reason": None,
+            "invariant_violations": ["changed-path detection failed before evaluation"],
         }
-    elif not changed_contracts and not changed_examples:
+    elif not surface_classification["required_paths"]:
         report = {
-            "status": "skipped",
+            "status": "passed",
             "changed_contracts": [],
             "changed_examples": [],
             "changed_path_detection": detection_meta,
@@ -569,6 +699,10 @@ def main() -> int:
             "consumer_failures": [],
             "masked_failures": [],
             "recommended_repair_areas": [],
+            "evaluation_classification": surface_classification["path_classifications"],
+            "missing_required_surface": [],
+            "skip_reason": "explicit no-op: changed paths have no applicable contract surface",
+            "invariant_violations": [],
         }
     else:
         if changed_contract_paths:
@@ -588,8 +722,20 @@ def main() -> int:
         producer_targets = resolve_test_targets(REPO_ROOT, impact["producers"] + impact["consumers"])
         fixture_targets = resolve_test_targets(REPO_ROOT, impact["fixtures_or_builders"])
         smoke_targets = sorted(set(impact["required_smoke_tests"]))
+        forced_eval_targets_by_path = resolve_required_surface_tests(REPO_ROOT, surface_classification["required_paths"])
+        contract_surface_paths = set(changed_contracts + changed_examples)
+        missing_required_surface = [
+            {
+                "path": path,
+                "reason": "required contract surface changed but no deterministic evaluation target was found",
+            }
+            for path, targets in forced_eval_targets_by_path.items()
+            if not targets and path not in contract_surface_paths
+        ]
+        forced_targets = sorted({target for targets in forced_eval_targets_by_path.values() for target in targets})
 
-        producer_failures = run_targeted_pytests(producer_targets) if producer_targets else []
+        producer_eval_targets = sorted(set(producer_targets + forced_targets))
+        producer_failures = run_targeted_pytests(producer_eval_targets) if producer_eval_targets else []
         fixture_failures = run_targeted_pytests(fixture_targets) if fixture_targets else []
         consumer_failures = run_targeted_pytests(smoke_targets) if smoke_targets else []
 
@@ -604,9 +750,13 @@ def main() -> int:
             recommended_areas.append("tests/fixtures and tests/helpers builders")
         if consumer_failures:
             recommended_areas.append("targeted downstream consumer tests")
+        if missing_required_surface:
+            recommended_areas.append("required evaluation mapping for changed governance/runtime/test surfaces")
 
         report = {
-            "status": "failed" if (schema_example_failures or producer_failures or fixture_failures or consumer_failures) else "passed",
+            "status": "failed"
+            if (schema_example_failures or producer_failures or fixture_failures or consumer_failures or missing_required_surface)
+            else "passed",
             "changed_contracts": changed_contracts,
             "changed_examples": changed_examples,
             "changed_path_detection": detection_meta,
@@ -623,6 +773,10 @@ def main() -> int:
             "consumer_failures": consumer_failures,
             "masked_failures": masked_failures,
             "recommended_repair_areas": sorted(set(recommended_areas)),
+            "evaluation_classification": surface_classification["path_classifications"],
+            "missing_required_surface": missing_required_surface,
+            "skip_reason": None,
+            "invariant_violations": [],
         }
 
     json_path = output_dir / "contract_preflight_report.json"

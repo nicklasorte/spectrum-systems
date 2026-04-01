@@ -62,6 +62,30 @@ def test_detect_changed_paths_uses_explicit_paths_first() -> None:
     assert detected.fallback_used is False
 
 
+def test_classify_evaluation_surfaces_marks_runtime_changes_as_evaluated() -> None:
+    classified_contracts = preflight.classify_changed_contracts([])
+    evaluation = preflight.classify_evaluation_surfaces(
+        ["spectrum_systems/modules/runtime/evaluation_control.py"],
+        classified_contracts,
+    )
+
+    assert evaluation["evaluation_mode"] == "full"
+    assert evaluation["path_classifications"][0]["classification"] == "evaluated"
+    assert evaluation["path_classifications"][0]["surface"] == "runtime_module"
+
+
+def test_classify_evaluation_surfaces_marks_contract_tied_tests_as_evaluated() -> None:
+    classified_contracts = preflight.classify_changed_contracts([])
+    evaluation = preflight.classify_evaluation_surfaces(
+        ["tests/test_contract_preflight.py"],
+        classified_contracts,
+    )
+
+    assert evaluation["evaluation_mode"] == "full"
+    assert evaluation["path_classifications"][0]["classification"] == "evaluated"
+    assert evaluation["path_classifications"][0]["surface"] == "contract_tied_tests"
+
+
 def test_detect_changed_paths_uses_base_head_when_available(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: (["contracts/schemas/a.schema.json"], None))
 
@@ -309,6 +333,79 @@ def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstr
 
     signal = preflight.map_preflight_control_signal(report=report, hardening_flow=True)
     assert signal["strategy_gate_decision"] == "FREEZE"
+
+
+def test_map_preflight_control_signal_blocks_skipped_status() -> None:
+    signal = preflight.map_preflight_control_signal(
+        report={
+            "status": "skipped",
+            "changed_path_detection": {"changed_path_detection_mode": "base_head_diff"},
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "masked_failures": [],
+        },
+        hardening_flow=False,
+    )
+    assert signal["strategy_gate_decision"] == "BLOCK"
+
+
+def test_main_irrelevant_changed_file_reports_explicit_no_op(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "passed"
+    assert report["changed_path_detection"]["evaluation_mode"] == "no-op"
+    assert report["skip_reason"] == "explicit no-op: changed paths have no applicable contract surface"
+
+
+def test_main_required_surface_without_eval_target_fails_closed(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["spectrum_systems/modules/runtime/policy_backtesting.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "resolve_required_surface_tests", lambda *_args, **_kwargs: {"spectrum_systems/modules/runtime/policy_backtesting.py": []})
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "failed"
+    assert report["missing_required_surface"] == [
+        {
+            "path": "spectrum_systems/modules/runtime/policy_backtesting.py",
+            "reason": "required contract surface changed but no deterministic evaluation target was found",
+        }
+    ]
 
 
 def test_main_passes_only_contract_schema_paths_into_impact_analyzer(tmp_path: Path, monkeypatch) -> None:

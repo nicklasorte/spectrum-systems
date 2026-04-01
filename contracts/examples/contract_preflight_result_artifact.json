@@ -44,6 +44,14 @@
       "origin/main..HEAD"
     ],
     "fallback_used": false,
+    "evaluation_mode": "full",
+    "skip_reason": null,
+    "changed_paths_resolved": [
+      "contracts/schemas/roadmap_eligibility_artifact.schema.json"
+    ],
+    "evaluated_surfaces": [
+      "contract_surface"
+    ],
     "provenance_ref": "contracts/standards-manifest.json"
   }
 }
