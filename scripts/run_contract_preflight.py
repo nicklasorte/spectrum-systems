@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 import subprocess
@@ -35,6 +36,7 @@ MASKING_MARKERS = (
     "roadmap_eligibility_artifact",
     "next_step_decision_artifact",
 )
+_PREFLIGHT_POLICY_VERSION = "1.0.0"
 
 
 @dataclass
@@ -69,7 +71,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--head-ref", default="HEAD", help="Git head ref used for diff detection")
     parser.add_argument("--changed-path", action="append", default=[], help="Optional explicit changed paths")
     parser.add_argument("--output-dir", default="outputs/contract_preflight", help="Preflight output directory")
+    parser.add_argument(
+        "--hardening-flow",
+        action="store_true",
+        help="Mark run as a hardening flow so unresolved downstream seam impact is frozen instead of directly allowed.",
+    )
     return parser.parse_args()
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _all_governed_paths(repo_root: Path) -> list[str]:
@@ -391,6 +402,86 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
+    changed_path_detection = report.get("changed_path_detection", {})
+    detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
+    degraded = detection_mode == "degraded_full_governed_scan"
+    masking_detected = bool(report.get("masked_failures"))
+    has_propagation_failures = bool(report.get("schema_example_failures") or report.get("producer_failures"))
+    impacted_downstream = bool(report.get("fixture_failures") or report.get("consumer_failures"))
+    status = str(report.get("status", "failed"))
+
+    if masking_detected or has_propagation_failures:
+        return {
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "preflight failed on propagation or masking risk",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if hardening_flow and impacted_downstream:
+        return {
+            "strategy_gate_decision": "FREEZE",
+            "rationale": "hardening flow requires downstream seam repair before progression",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if status == "passed" and degraded:
+        return {
+            "strategy_gate_decision": "WARN",
+            "rationale": "preflight passed under degraded full governed scan mode",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if status == "passed":
+        return {
+            "strategy_gate_decision": "ALLOW",
+            "rationale": "preflight passed with clean detection and no masking risk",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    return {
+        "strategy_gate_decision": "BLOCK",
+        "rationale": "preflight status unresolved or failed",
+        "changed_path_detection_mode": detection_mode,
+        "degraded_detection": degraded,
+    }
+
+
+def build_preflight_result_artifact(
+    *,
+    report: dict[str, Any],
+    json_report_path: Path,
+    markdown_report_path: Path,
+    hardening_flow: bool,
+) -> dict[str, Any]:
+    detection = report.get("changed_path_detection", {})
+    control_signal = map_preflight_control_signal(report=report, hardening_flow=hardening_flow)
+    return {
+        "artifact_type": "contract_preflight_result_artifact",
+        "schema_version": "1.0.0",
+        "preflight_status": report.get("status", "failed"),
+        "changed_contracts": report.get("changed_contracts", []),
+        "impacted_producers": report.get("impact", {}).get("producers", []),
+        "impacted_fixtures": report.get("impact", {}).get("fixtures_or_builders", []),
+        "impacted_consumers": report.get("impact", {}).get("consumers", []),
+        "masking_detected": bool(report.get("masked_failures")),
+        "recommended_repair_area": report.get("recommended_repair_areas", []),
+        "report_paths": {
+            "json_report_path": str(json_report_path),
+            "markdown_report_path": str(markdown_report_path),
+        },
+        "generated_at": _utc_now(),
+        "control_signal": control_signal,
+        "trace": {
+            "producer": "scripts/run_contract_preflight.py",
+            "policy_version": _PREFLIGHT_POLICY_VERSION,
+            "refs_attempted": detection.get("refs_attempted", []),
+            "fallback_used": bool(detection.get("fallback_used", False)),
+            "provenance_ref": "contracts/standards-manifest.json",
+        },
+    }
+
+
 def main() -> int:
     args = _parse_args()
     output_dir = REPO_ROOT / args.output_dir
@@ -496,8 +587,29 @@ def main() -> int:
     md_path = output_dir / "contract_preflight_report.md"
     json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     md_path.write_text(render_markdown(report), encoding="utf-8")
+    preflight_artifact = build_preflight_result_artifact(
+        report=report,
+        json_report_path=json_path,
+        markdown_report_path=md_path,
+        hardening_flow=bool(args.hardening_flow),
+    )
+    preflight_schema = load_schema("contract_preflight_result_artifact")
+    Draft202012Validator(preflight_schema, format_checker=FormatChecker()).validate(preflight_artifact)
+    preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
+    preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
 
-    print(json.dumps({"status": report["status"], "json_report": str(json_path), "markdown_report": str(md_path)}, indent=2))
+    print(
+        json.dumps(
+            {
+                "status": report["status"],
+                "json_report": str(json_path),
+                "markdown_report": str(md_path),
+                "preflight_artifact": str(preflight_artifact_path),
+                "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+            },
+            indent=2,
+        )
+    )
 
     return 2 if report["status"] == "failed" else 0
 

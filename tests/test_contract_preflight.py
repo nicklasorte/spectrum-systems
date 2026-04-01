@@ -140,6 +140,7 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
                 "head_ref": "HEAD",
                 "changed_path": [],
                 "output_dir": str(output_dir),
+                "hardening_flow": False,
             },
         )(),
     )
@@ -175,3 +176,23 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["changed_path_detection"]["changed_path_detection_mode"] == "degraded_full_governed_scan"
     assert report["changed_path_detection"]["fallback_used"] is True
+    preflight_artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert preflight_artifact["artifact_type"] == "contract_preflight_result_artifact"
+    assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "WARN"
+
+
+def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:
+    report = {
+        "status": "failed",
+        "changed_path_detection": {
+            "changed_path_detection_mode": "base_head_diff",
+        },
+        "schema_example_failures": [],
+        "producer_failures": [],
+        "fixture_failures": [{"path": "tests/helpers/foo.py"}],
+        "consumer_failures": [],
+        "masked_failures": [],
+    }
+
+    signal = preflight.map_preflight_control_signal(report=report, hardening_flow=True)
+    assert signal["strategy_gate_decision"] == "FREEZE"

@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/contract_preflight_result_artifact.schema.json",
+  "title": "Contract Preflight Result Artifact",
+  "description": "Governed contract preflight status artifact consumed by PQX pre-execution control mapping.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "preflight_status",
+    "changed_contracts",
+    "impacted_producers",
+    "impacted_fixtures",
+    "impacted_consumers",
+    "masking_detected",
+    "recommended_repair_area",
+    "report_paths",
+    "generated_at",
+    "control_signal",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "contract_preflight_result_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "preflight_status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "skipped"
+      ]
+    },
+    "changed_contracts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "impacted_producers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "impacted_fixtures": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "impacted_consumers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "masking_detected": {
+      "type": "boolean"
+    },
+    "recommended_repair_area": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "report_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "json_report_path",
+        "markdown_report_path"
+      ],
+      "properties": {
+        "json_report_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "markdown_report_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "control_signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy_gate_decision",
+        "rationale",
+        "changed_path_detection_mode",
+        "degraded_detection"
+      ],
+      "properties": {
+        "strategy_gate_decision": {
+          "type": "string",
+          "enum": [
+            "ALLOW",
+            "WARN",
+            "FREEZE",
+            "BLOCK"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "changed_path_detection_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degraded_detection": {
+          "type": "boolean"
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer",
+        "policy_version",
+        "refs_attempted",
+        "fallback_used",
+        "provenance_ref"
+      ],
+      "properties": {
+        "producer": {
+          "type": "string",
+          "const": "scripts/run_contract_preflight.py"
+        },
+        "policy_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "refs_attempted": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "provenance_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
