@@ -239,6 +239,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-RED-TEAM-CLOSURE-021-2026-04-01.md | RED-TEAM-CLOSURE-021 — Post-ALIGNMENT_020 trust-spine hardening bundle | Active |
 | docs/review-actions/PLAN-RED-TEAM-CLOSURE-021-FIX-2026-04-01.md | RED-TEAM-CLOSURE-021-FIX — Threshold context boundary repair (runtime vs comparative analysis) | Active |
 | docs/review-actions/PLAN-CONVERGENCE-025-TRUST-SPINE-INVARIANTS-2026-04-01.md | CONVERGENCE-025 — Trust-Spine Invariants + Cross-Seam Drift Detection Hardening | Active |
+| docs/review-actions/PLAN-CONVERGENCE-026-TRUST-SPINE-EVIDENCE-COMPLETENESS-2026-04-01.md | CONVERGENCE-026 — Trust-Spine Evidence Completeness | Active |
 
 Update this table when plans are created or completed.
 

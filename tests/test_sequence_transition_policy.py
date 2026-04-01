@@ -124,7 +124,7 @@ def test_promotion_requires_replay_authority_refs_even_when_falsification_ref_ca
     manifest["done_certification_input_refs"] = {"certification_pack_ref": str(cert_pack_path)}
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
-    assert "replay_result_ref" in str(decision.reason)
+    assert "TRUST_SPINE_REQUIRED_REF_MISSING" in str(decision.reason)
 
 
 def test_promotion_blocks_when_enforcement_result_is_deny(tmp_path: Path) -> None:
@@ -156,7 +156,7 @@ def test_promotion_blocks_when_enforcement_result_ref_missing() -> None:
     manifest["done_certification_input_refs"].pop("enforcement_result_ref")
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
-    assert "enforcement_result_ref" in str(decision.reason)
+    assert "TRUST_SPINE_ENFORCEMENT_REF_MISSING" in str(decision.reason)
 
 
 def test_promotion_blocks_when_eval_coverage_summary_ref_missing() -> None:
@@ -164,7 +164,16 @@ def test_promotion_blocks_when_eval_coverage_summary_ref_missing() -> None:
     manifest["done_certification_input_refs"].pop("eval_coverage_summary_ref")
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
-    assert "eval_coverage_summary_ref" in str(decision.reason)
+    assert "TRUST_SPINE_COVERAGE_REF_MISSING" in str(decision.reason)
+
+
+def test_promotion_legacy_mode_is_explicitly_non_promotable_when_refs_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["authority_path_mode"] = "legacy_compatibility"
+    manifest["done_certification_input_refs"].pop("enforcement_result_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "TRUST_SPINE_LEGACY_PATH_NOT_PROMOTABLE" in str(decision.reason)
 
 
 def test_promotion_blocks_when_policy_has_no_decision_or_system_response(tmp_path: Path) -> None:

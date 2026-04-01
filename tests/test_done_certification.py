@@ -165,6 +165,8 @@ def test_certification_pass(tmp_path: Path) -> None:
     assert first["system_response"] == "allow"
     assert first["blocking_reasons"] == []
     assert first["trust_spine_invariant_result"]["passed"] is True
+    assert first["trust_spine_evidence_completeness_result"]["passed"] is True
+    assert first["check_results"]["trust_spine_evidence_completeness"]["passed"] is True
     assert first == second
 
 
@@ -189,6 +191,38 @@ def test_trust_spine_coverage_contradiction_blocks(tmp_path: Path) -> None:
     result = run_done_certification(refs)
     assert result["final_status"] == "FAILED"
     assert "TRUST_SPINE_COVERAGE_PROMOTION_CONTRADICTION" in result["trust_spine_invariant_result"]["blocking_reasons"]
+
+
+def test_done_certification_active_path_fails_closed_when_enforcement_ref_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("enforcement_result_ref")
+
+    result = run_done_certification({**refs, "authority_path_mode": "active_runtime"})
+    assert result["final_status"] == "FAILED"
+    assert result["check_results"]["trust_spine_evidence_completeness"]["passed"] is False
+    assert "TRUST_SPINE_ENFORCEMENT_REF_MISSING" in result["trust_spine_evidence_completeness_result"]["blocking_reasons"]
+    assert "TRUST_SPINE_ACTIVE_PATH_INCOMPLETE" in result["trust_spine_evidence_completeness_result"]["blocking_reasons"]
+    assert "TRUST_SPINE_CERTIFICATION_EVIDENCE_INCOMPLETE" in result["trust_spine_evidence_completeness_result"]["blocking_reasons"]
+
+
+def test_done_certification_active_path_fails_closed_when_coverage_ref_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("eval_coverage_summary_ref")
+
+    result = run_done_certification({**refs, "authority_path_mode": "active_runtime"})
+    assert result["final_status"] == "FAILED"
+    assert result["check_results"]["trust_spine_evidence_completeness"]["passed"] is False
+    assert "TRUST_SPINE_COVERAGE_REF_MISSING" in result["trust_spine_evidence_completeness_result"]["blocking_reasons"]
+
+
+def test_done_certification_legacy_mode_is_non_certifiable_when_incomplete(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("enforcement_result_ref")
+
+    result = run_done_certification({**refs, "authority_path_mode": "legacy_compatibility"})
+    assert result["final_status"] == "PASSED"
+    assert result["trust_spine_evidence_completeness_result"]["authority_path_mode"] == "legacy_compatibility"
+    assert result["trust_spine_evidence_completeness_result"]["certifiable"] is False
 
 
 def test_replay_failure_blocks(tmp_path: Path) -> None:
