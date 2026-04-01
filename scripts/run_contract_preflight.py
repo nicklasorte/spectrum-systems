@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -48,6 +49,15 @@ class CommandResult:
         return f"{self.stdout}\n{self.stderr}".strip()
 
 
+@dataclass
+class ChangedPathDetectionResult:
+    changed_paths: list[str]
+    changed_path_detection_mode: str
+    refs_attempted: list[str]
+    fallback_used: bool
+    warnings: list[str]
+
+
 def _run(command: list[str], cwd: Path) -> CommandResult:
     proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
     return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
@@ -62,20 +72,136 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit: list[str] | None = None) -> list[str]:
-    if explicit:
-        return sorted(set(explicit))
+def _all_governed_paths(repo_root: Path) -> list[str]:
+    governed = []
+    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "schemas").glob("*.schema.json")))
+    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "examples").glob("*.json")))
+    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts").glob("*.schema.json")))
+    return sorted(set(governed))
 
-    merge_base = _run(["git", "merge-base", base_ref, head_ref], cwd=repo_root)
-    if merge_base.returncode == 0 and merge_base.stdout.strip():
-        baseline = merge_base.stdout.strip()
-    else:
-        baseline = "HEAD~1"
 
-    diff = _run(["git", "diff", "--name-only", f"{baseline}..{head_ref}"], cwd=repo_root)
+def _diff_name_only(repo_root: Path, base_ref: str, head_ref: str) -> tuple[list[str], str | None]:
+    diff = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"], cwd=repo_root)
     if diff.returncode != 0:
-        raise RuntimeError(f"unable to detect changed paths: {diff.combined_output}")
-    return sorted({line.strip() for line in diff.stdout.splitlines() if line.strip()})
+        return [], diff.combined_output
+    paths = sorted({line.strip() for line in diff.stdout.splitlines() if line.strip()})
+    return paths, None
+
+
+def _github_sha_pair() -> tuple[str, str, str] | None:
+    event_name = (os.environ.get("GITHUB_EVENT_NAME") or "").strip()
+    base_sha = (os.environ.get("GITHUB_BASE_SHA") or "").strip()
+    head_sha = (os.environ.get("GITHUB_HEAD_SHA") or "").strip()
+    before_sha = (os.environ.get("GITHUB_BEFORE_SHA") or "").strip()
+    sha = (os.environ.get("GITHUB_SHA") or "").strip()
+
+    if event_name == "pull_request" and base_sha and head_sha:
+        return base_sha, head_sha, "github_pr_sha_pair"
+    if event_name == "push" and before_sha and sha and before_sha != "0000000000000000000000000000000000000000":
+        return before_sha, sha, "github_push_sha_pair"
+    return None
+
+
+def _local_workspace_changes(repo_root: Path) -> list[str]:
+    changes = _run(["git", "status", "--porcelain"], cwd=repo_root)
+    if changes.returncode != 0:
+        return []
+    paths = []
+    for line in changes.stdout.splitlines():
+        if not line:
+            continue
+        path = line[3:].strip()
+        if path:
+            paths.append(path)
+    return sorted(set(paths))
+
+
+def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit: list[str] | None = None) -> ChangedPathDetectionResult:
+    refs_attempted: list[str] = []
+    warnings: list[str] = []
+
+    if explicit:
+        return ChangedPathDetectionResult(
+            changed_paths=sorted(set(explicit)),
+            changed_path_detection_mode="explicit_paths",
+            refs_attempted=[],
+            fallback_used=False,
+            warnings=[],
+        )
+
+    # B: explicit base/head refs when resolvable.
+    refs_attempted.append(f"{base_ref}..{head_ref}")
+    diff_paths, error = _diff_name_only(repo_root, base_ref, head_ref)
+    if not error:
+        return ChangedPathDetectionResult(
+            changed_paths=diff_paths,
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=refs_attempted,
+            fallback_used=False,
+            warnings=[],
+        )
+    warnings.append(f"base/head diff unavailable: {error}")
+
+    # C: GitHub event-aware refs (PR base/head SHA; push before/current SHA).
+    sha_pair = _github_sha_pair()
+    if sha_pair:
+        gh_base, gh_head, mode = sha_pair
+        refs_attempted.append(f"{gh_base}..{gh_head}")
+        gh_paths, gh_error = _diff_name_only(repo_root, gh_base, gh_head)
+        if not gh_error:
+            return ChangedPathDetectionResult(
+                changed_paths=gh_paths,
+                changed_path_detection_mode=mode,
+                refs_attempted=refs_attempted,
+                fallback_used=False,
+                warnings=warnings,
+            )
+        warnings.append(f"github event ref diff unavailable: {gh_error}")
+
+    # D: safe local fallback paths.
+    local_changes = _local_workspace_changes(repo_root)
+    if local_changes:
+        return ChangedPathDetectionResult(
+            changed_paths=local_changes,
+            changed_path_detection_mode="local_workspace_status",
+            refs_attempted=refs_attempted,
+            fallback_used=True,
+            warnings=warnings + ["using git status porcelain fallback"],
+        )
+
+    refs_attempted.append("working_tree_vs_HEAD")
+    working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
+    if working_tree.returncode == 0:
+        paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
+        if paths:
+            return ChangedPathDetectionResult(
+                changed_paths=paths,
+                changed_path_detection_mode="working_tree_diff_head",
+                refs_attempted=refs_attempted,
+                fallback_used=True,
+                warnings=warnings + ["using working tree diff fallback"],
+            )
+    else:
+        warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
+
+    # E: fail-closed degraded full governed scan.
+    governed = _all_governed_paths(repo_root)
+    if governed:
+        return ChangedPathDetectionResult(
+            changed_paths=governed,
+            changed_path_detection_mode="degraded_full_governed_scan",
+            refs_attempted=refs_attempted,
+            fallback_used=True,
+            warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
+        )
+
+    return ChangedPathDetectionResult(
+        changed_paths=[],
+        changed_path_detection_mode="detection_failed_no_governed_paths",
+        refs_attempted=refs_attempted,
+        fallback_used=True,
+        warnings=warnings + ["changed-path detection failed and no governed paths were available"],
+    )
 
 
 def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]:
@@ -217,6 +343,12 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append(f"- **status**: `{report['status']}`")
     lines.append(f"- **changed_contracts**: {len(report['changed_contracts'])}")
     lines.append(f"- **changed_examples**: {len(report['changed_examples'])}")
+    detection = report.get("changed_path_detection", {})
+    if detection:
+        lines.append(f"- **changed_path_detection_mode**: `{detection.get('changed_path_detection_mode', 'unknown')}`")
+        lines.append(f"- **fallback_used**: `{detection.get('fallback_used', False)}`")
+        warnings = detection.get("warnings", [])
+        lines.append(f"- **detection_warnings**: {len(warnings)}")
     lines.append("")
 
     lines.append("## Impacted seams")
@@ -250,6 +382,11 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- {area}")
     if not report.get("recommended_repair_areas"):
         lines.append("- none")
+    if report.get("bootstrap_failures"):
+        lines.append("")
+        lines.append("## Bootstrap failures")
+        for item in report["bootstrap_failures"]:
+            lines.append(f"- {item}")
     lines.append("")
     return "\n".join(lines)
 
@@ -259,17 +396,44 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    changed_paths = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
-    classified = classify_changed_contracts(changed_paths)
+    detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
+    classified = classify_changed_contracts(detection.changed_paths)
 
     changed_contracts = classified["changed_contract_paths"] + classified["changed_governed_definitions"]
     changed_examples = classified["changed_example_paths"]
+    detection_meta = {
+        "changed_path_detection_mode": detection.changed_path_detection_mode,
+        "refs_attempted": detection.refs_attempted,
+        "fallback_used": detection.fallback_used,
+        "warnings": detection.warnings,
+    }
 
-    if not changed_contracts and not changed_examples:
+    if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
+        report = {
+            "status": "failed",
+            "changed_contracts": [],
+            "changed_examples": [],
+            "changed_path_detection": detection_meta,
+            "impact": {
+                "producers": [],
+                "fixtures_or_builders": [],
+                "consumers": [],
+                "required_smoke_tests": [],
+            },
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "masked_failures": [],
+            "recommended_repair_areas": ["contracts/"],
+            "bootstrap_failures": ["changed-path detection failed and no governed paths were available"],
+        }
+    elif not changed_contracts and not changed_examples:
         report = {
             "status": "skipped",
             "changed_contracts": [],
             "changed_examples": [],
+            "changed_path_detection": detection_meta,
             "impact": {
                 "producers": [],
                 "fixtures_or_builders": [],
@@ -312,6 +476,7 @@ def main() -> int:
             "status": "failed" if (schema_example_failures or producer_failures or fixture_failures or consumer_failures) else "passed",
             "changed_contracts": changed_contracts,
             "changed_examples": changed_examples,
+            "changed_path_detection": detection_meta,
             "impact": {
                 "producers": impact["producers"],
                 "fixtures_or_builders": impact["fixtures_or_builders"],
