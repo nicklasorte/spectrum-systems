@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_control_signal.schema.json",
+  "title": "Review Control Signal",
+  "description": "Deterministic machine-readable review signal consumed by control and promotion gating.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "review_signal_id",
+    "review_id",
+    "review_type",
+    "gate_assessment",
+    "scale_recommendation",
+    "critical_findings",
+    "confidence",
+    "trace_linkage"
+  ],
+  "properties": {
+    "artifact_type": { "const": "review_control_signal" },
+    "schema_version": { "const": "1.0.0" },
+    "review_signal_id": { "type": "string", "pattern": "^rcs-[a-f0-9]{20}$" },
+    "review_id": { "type": "string", "minLength": 1 },
+    "review_type": { "type": "string", "minLength": 1 },
+    "gate_assessment": { "type": "string", "enum": ["PASS", "FAIL", "CONDITIONAL"] },
+    "scale_recommendation": { "type": "string", "enum": ["YES", "NO"] },
+    "critical_findings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_review_path", "source_hash", "review_date"],
+      "properties": {
+        "source_review_path": { "type": "string", "minLength": 1 },
+        "source_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "review_date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+      }
+    }
+  }
+}

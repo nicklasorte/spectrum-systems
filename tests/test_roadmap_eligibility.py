@@ -194,3 +194,28 @@ def test_expansion_while_prior_hardening_partial_freezes(tmp_path: Path) -> None
     artifact = build_roadmap_eligibility(path)
     statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
     assert statuses["STEP-003"]["strategy_gate_decision"] == "freeze"
+
+
+def test_review_signal_fail_blocks_steps_via_review_requirements(tmp_path: Path) -> None:
+    review_path = tmp_path / "review_control_signal.json"
+    review_path.write_text(json.dumps({"gate_assessment": "FAIL", "scale_recommendation": "NO", "critical_findings": ["Critical control gap"]}), encoding="utf-8")
+
+    roadmap = _base_roadmap()
+    roadmap["review_control_signal_refs"] = [str(review_path)]
+    path = _write_roadmap(tmp_path, roadmap)
+
+    artifact = build_roadmap_eligibility(path)
+    blocked = {item["step_id"]: item for item in artifact["blocked_steps"]}
+    assert "STEP-002" in blocked
+    assert "review:gate_fail" in blocked["STEP-002"]["unmet_review_requirements"]
+
+
+def test_required_review_signal_missing_blocks_all_planned_steps(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["review_signal_required"] = True
+    path = _write_roadmap(tmp_path, roadmap)
+
+    artifact = build_roadmap_eligibility(path)
+    blocked = {item["step_id"]: item for item in artifact["blocked_steps"]}
+    assert "STEP-002" in blocked
+    assert "review:required_signal_missing" in blocked["STEP-002"]["unmet_review_requirements"]

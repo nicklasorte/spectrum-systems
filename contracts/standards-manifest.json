@@ -2208,6 +2208,19 @@
       "notes": "Canonical governed review artifact for deterministic retrieval, decision tracking, and remediation orchestration handoff."
     },
     {
+      "artifact_type": "review_control_signal",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.1.0",
+      "last_updated_in": "1.1.0",
+      "example_path": "contracts/examples/review_control_signal.json",
+      "notes": "Deterministic extracted review signal consumed by evaluation control, PQX admission, transition policy, and roadmap eligibility fail-closed gates."
+    },
+    {
       "artifact_type": "reviewer_comment_set",
       "artifact_class": "review",
       "schema_version": "1.0.0",

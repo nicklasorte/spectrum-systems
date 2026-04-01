@@ -102,6 +102,44 @@ def _promotion_authority_gate(manifest: dict[str, Any]) -> tuple[bool, str | Non
     return True, None
 
 
+
+
+def _review_signal_gate(manifest: dict[str, Any], target_state: str) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    review_ref = manifest.get("review_control_signal_path")
+    if (not isinstance(review_ref, str) or not review_ref) and isinstance(refs, dict):
+        review_ref = refs.get("review_control_signal_ref")
+
+    required = bool(manifest.get("review_signal_required_for_progression"))
+    if target_state == "promoted":
+        required = required or bool(manifest.get("review_signal_required_for_promotion"))
+
+    if (not isinstance(review_ref, str) or not review_ref):
+        if required:
+            return False, "missing required review_control_signal_ref"
+        return True, None
+
+    payload = _load_json_if_path(review_ref)
+    if not isinstance(payload, dict):
+        return False, "promotion/progression requires readable review_control_signal artifact"
+
+    gate = str(payload.get("gate_assessment") or "").upper()
+    scale = str(payload.get("scale_recommendation") or "").upper()
+    if gate not in {"PASS", "FAIL", "CONDITIONAL"}:
+        return False, "review_control_signal missing gate_assessment"
+    if scale not in {"YES", "NO"}:
+        return False, "review_control_signal missing scale_recommendation"
+
+    if gate == "FAIL":
+        return False, "progression blocked by review gate_assessment=FAIL"
+    if gate == "CONDITIONAL" and target_state == "promoted":
+        return False, "promotion requires resolving review gate_assessment=CONDITIONAL"
+
+    expansion_states = {"executing_slice_2", "executing_slice_3", "promoted"}
+    if scale == "NO" and target_state in expansion_states:
+        return False, "expansion blocked by review scale_recommendation=NO"
+    return True, None
+
 def _has_traceability(manifest: dict[str, Any]) -> bool:
     trace_id = manifest.get("sequence_trace_id")
     lineage = manifest.get("sequence_lineage")
@@ -210,6 +248,10 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
 
     if current_state != target_state and not _has_traceability(manifest):
         return SequenceTransitionDecision(False, "missing required sequence traceability")
+
+    review_ok, review_error = _review_signal_gate(manifest, target_state)
+    if not review_ok:
+        return SequenceTransitionDecision(False, review_error)
 
     if target_state == "executing_slice_1":
         if not _path_exists(manifest.get("roadmap_artifact_path")):

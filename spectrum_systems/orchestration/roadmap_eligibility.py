@@ -40,6 +40,56 @@ def _validate_schema(payload: Dict[str, Any], schema_name: str) -> None:
         raise RoadmapEligibilityError(f"{schema_name} failed schema validation: {details}")
 
 
+
+
+def _load_review_signals(roadmap: Dict[str, Any]) -> tuple[list[Dict[str, Any]], list[str]]:
+    refs = roadmap.get("review_control_signal_refs")
+    required = bool(roadmap.get("review_signal_required"))
+    if refs is None:
+        if required:
+            return [], ["review:required_signal_missing"]
+        return [], []
+    if not isinstance(refs, list) or any(not isinstance(ref, str) or not ref for ref in refs):
+        raise RoadmapEligibilityError("governed roadmap review_control_signal_refs must be an array of artifact refs")
+
+    signals: list[Dict[str, Any]] = []
+    missing: list[str] = []
+    for ref in sorted(set(refs)):
+        path = Path(ref)
+        if not path.is_file():
+            missing.append(f"review:missing:{ref}")
+            continue
+        payload = _load_json(path)
+        gate = str(payload.get("gate_assessment") or "").upper()
+        scale = str(payload.get("scale_recommendation") or "").upper()
+        if gate not in {"PASS", "FAIL", "CONDITIONAL"} or scale not in {"YES", "NO"}:
+            raise RoadmapEligibilityError("review_control_signal artifact missing required gate/scale fields")
+        signals.append(payload)
+    if required and not signals:
+        missing.append("review:required_signal_missing")
+    return signals, sorted(set(missing))
+
+
+def _review_requirements_for_step(step: Dict[str, Any], review_signals: list[Dict[str, Any]], base_missing: list[str]) -> list[str]:
+    missing = list(base_missing)
+    mode = str(step.get("hardening_vs_expansion") or "").strip().lower()
+
+    if any(str(signal.get("gate_assessment")).upper() == "FAIL" for signal in review_signals):
+        missing.append("review:gate_fail")
+
+    if mode == "expansion" and any(str(signal.get("scale_recommendation")).upper() == "NO" for signal in review_signals):
+        missing.append("review:scale_no")
+
+    critical_findings = []
+    for signal in review_signals:
+        findings = signal.get("critical_findings")
+        if isinstance(findings, list):
+            critical_findings.extend(str(item) for item in findings if isinstance(item, str) and item.strip())
+    if critical_findings and mode == "expansion":
+        missing.append("review:critical_findings_present")
+
+    return sorted(set(missing))
+
 def _step_map(steps: list[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
     step_ids = [str(step["step_id"]) for step in steps]
     if len(step_ids) != len(set(step_ids)):
@@ -58,6 +108,8 @@ def _evaluate_step(
     satisfied_trust: set[str],
     satisfied_review: set[str],
     satisfied_eval: set[str],
+    review_signals: list[Dict[str, Any]],
+    global_missing_review: list[str],
 ) -> Dict[str, Any]:
     dependency_steps = [str(item) for item in step["dependency_step_ids"]]
     ambiguous_dependency_steps = sorted(dep for dep in dependency_steps if dep not in step_by_id)
@@ -75,6 +127,7 @@ def _evaluate_step(
 
     review_requirements = [str(item) for item in step["review_requirements"]]
     missing_review = sorted(req for req in review_requirements if req not in satisfied_review)
+    missing_review = sorted(set(missing_review + _review_requirements_for_step(step, review_signals, global_missing_review)))
 
     eval_requirements = [str(item) for item in step["eval_requirements"]]
     missing_eval = sorted(req for req in eval_requirements if req not in satisfied_eval)
@@ -180,6 +233,7 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
     satisfied_trust = {str(item) for item in roadmap["satisfied_trust_requirements"]}
     satisfied_review = {str(item) for item in roadmap["satisfied_review_requirements"]}
     satisfied_eval = {str(item) for item in roadmap["satisfied_eval_requirements"]}
+    review_signals, global_missing_review = _load_review_signals(roadmap)
 
     completed_steps = [str(step["step_id"]) for step in steps if str(step["status"]) == "completed"]
 
@@ -214,6 +268,8 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
             satisfied_trust=satisfied_trust,
             satisfied_review=satisfied_review,
             satisfied_eval=satisfied_eval,
+            review_signals=review_signals,
+            global_missing_review=global_missing_review,
         )
         strategy_status = _strategy_status(step, steps=steps)
         strategy_status_artifacts.append(strategy_status)

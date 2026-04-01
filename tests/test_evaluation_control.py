@@ -280,3 +280,49 @@ def test_malformed_threshold_payload_fails_closed_in_both_contexts() -> None:
             thresholds={"reliability_threshold": "low"},  # type: ignore[dict-item]
             threshold_context="comparative_analysis",
         )
+
+
+def test_review_signal_fail_overrides_allow_to_block() -> None:
+    replay = _replay_result()
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "review_signal_id": "rcs-aaaaaaaaaaaaaaaaaaaa",
+        "review_id": "review-a",
+        "review_type": "Test Review",
+        "gate_assessment": "FAIL",
+        "scale_recommendation": "NO",
+        "critical_findings": ["critical"],
+        "confidence": 0.8,
+        "trace_linkage": {
+            "source_review_path": "docs/reviews/test.md",
+            "source_hash": "a" * 64,
+            "review_date": "2026-04-01",
+        },
+    }
+    decision = build_evaluation_control_decision(replay, review_control_signal=review_signal)
+    assert decision["system_response"] == "block"
+    assert decision["decision"] == "deny"
+
+
+def test_review_signal_conditional_requires_review_without_bypass() -> None:
+    replay = _replay_result()
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "review_signal_id": "rcs-bbbbbbbbbbbbbbbbbbbb",
+        "review_id": "review-b",
+        "review_type": "Test Review",
+        "gate_assessment": "CONDITIONAL",
+        "scale_recommendation": "YES",
+        "critical_findings": [],
+        "confidence": 0.7,
+        "trace_linkage": {
+            "source_review_path": "docs/reviews/test.md",
+            "source_hash": "b" * 64,
+            "review_date": "2026-04-01",
+        },
+    }
+    decision = build_evaluation_control_decision(replay, review_control_signal=review_signal)
+    assert decision["system_response"] == "warn"
+    assert decision["decision"] == "require_review"

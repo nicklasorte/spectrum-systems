@@ -25,6 +25,32 @@ def _load_json_object(path_value: str, *, label: str) -> dict:
     return payload
 
 
+
+
+def _validate_review_signal_gate(sequence_state: dict) -> None:
+    review_ref = sequence_state.get("review_control_signal_ref")
+    required = bool(sequence_state.get("review_signal_required"))
+
+    if not isinstance(review_ref, str) or not review_ref:
+        if required:
+            raise PQXNSliceValidationError("missing required review_control_signal_ref")
+        return
+
+    review_signal = _load_json_object(review_ref, label="review_control_signal")
+    gate = str(review_signal.get("gate_assessment") or "").upper()
+    scale = str(review_signal.get("scale_recommendation") or "").upper()
+    if gate not in {"PASS", "FAIL", "CONDITIONAL"}:
+        raise PQXNSliceValidationError("review_control_signal missing gate_assessment")
+    if scale not in {"YES", "NO"}:
+        raise PQXNSliceValidationError("review_control_signal missing scale_recommendation")
+
+    if gate == "FAIL":
+        raise PQXNSliceValidationError("review gate_assessment=FAIL blocks PQX admission")
+
+    expansion_requested = bool(sequence_state.get("expansion_requested", True))
+    if expansion_requested and scale == "NO":
+        raise PQXNSliceValidationError("review scale_recommendation=NO blocks expansion admission")
+
 def build_n_slice_validation_record(
     *,
     validation_id: str,
@@ -56,6 +82,8 @@ def build_n_slice_validation_record(
         raise PQXNSliceValidationError("hard-gate falsification evidence has wrong artifact_type")
     if falsification.get("overall_result") != "pass":
         raise PQXNSliceValidationError("hard-gate falsification did not pass")
+
+    _validate_review_signal_gate(sequence_state)
 
     parity_status = sequence_state.get("replay_verification", {}).get("status")
     if parity_status not in {"verified", "not_run"}:

@@ -1,0 +1,19 @@
+{
+  "artifact_type": "review_control_signal",
+  "schema_version": "1.0.0",
+  "review_signal_id": "rcs-9f8af2f23d6e9da8f63b",
+  "review_id": "review-8ac9a9d01607b7a4b4d8",
+  "review_type": "Replay Engine Architecture Review",
+  "gate_assessment": "FAIL",
+  "scale_recommendation": "NO",
+  "critical_findings": [
+    "RA-1 (Critical): Post-validation mutation of replay result with drift_result field breaks schema contract.",
+    "RA-2 (High): Silent exception absorption in run_replay masks canonical-path failures."
+  ],
+  "confidence": 0.85,
+  "trace_linkage": {
+    "source_review_path": "docs/reviews/2026-03-22-replay-engine-review.md",
+    "source_hash": "7caa8b1fd2a7abf31fd8d78f00e820fda8d7782bcf95ca4f4f1f75cc4eb3fefd",
+    "review_date": "2026-03-22"
+  }
+}

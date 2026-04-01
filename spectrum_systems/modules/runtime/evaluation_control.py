@@ -123,6 +123,43 @@ def _validate(artifact: Any, schema: Dict[str, Any]) -> List[str]:
     return [e.message for e in errors]
 
 
+
+
+def _validate_review_control_signal(review_control_signal: Dict[str, Any]) -> None:
+    errors = _validate(review_control_signal, load_schema("review_control_signal"))
+    if errors:
+        raise EvaluationControlError("review_control_signal failed validation: " + "; ".join(errors))
+
+
+def _apply_review_control_signal(
+    *,
+    review_control_signal: Dict[str, Any],
+    system_status: str,
+    system_response: str,
+    decision_label: str,
+    rationale_code: str,
+    triggered_signals: List[str],
+) -> tuple[str, str, str, str]:
+    gate = str(review_control_signal.get("gate_assessment") or "").upper()
+    scale = str(review_control_signal.get("scale_recommendation") or "").upper()
+
+    if gate == "FAIL":
+        if "trust_breach" not in triggered_signals:
+            triggered_signals.append("trust_breach")
+        return "blocked", "block", "deny", "deny_trust_breach"
+
+    if gate == "CONDITIONAL" and decision_label == "allow":
+        if "missing_required_signal" not in triggered_signals:
+            triggered_signals.append("missing_required_signal")
+        return "warning", "warn", "require_review", "require_review_warning_signal"
+
+    if scale == "NO" and decision_label == "allow":
+        if "missing_required_signal" not in triggered_signals:
+            triggered_signals.append("missing_required_signal")
+        return "warning", "warn", "require_review", "require_review_warning_signal"
+
+    return system_status, system_response, decision_label, rationale_code
+
 def _extract_indeterminate_failure_count(summary: Dict[str, Any]) -> int:
     value = summary.get("indeterminate_failure_count")
     return value if isinstance(value, int) and value > 0 else 0
@@ -374,6 +411,7 @@ def build_evaluation_control_decision(
     thresholds: Optional[Dict[str, float]] = None,
     failure_policy_binding: Optional[Dict[str, Any]] = None,
     threshold_context: ThresholdContext = "active_runtime",
+    review_control_signal: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
     t = _resolve_thresholds(thresholds=thresholds, threshold_context=threshold_context)
@@ -519,6 +557,17 @@ def build_evaluation_control_decision(
             budget_status=budget_status,
             system_response=system_response,
             decision_label=decision_label,
+        )
+
+    if review_control_signal is not None:
+        _validate_review_control_signal(review_control_signal)
+        system_status, system_response, decision_label, rationale_code = _apply_review_control_signal(
+            review_control_signal=review_control_signal,
+            system_status=system_status,
+            system_response=system_response,
+            decision_label=decision_label,
+            rationale_code=rationale_code,
+            triggered_signals=triggered_signals,
         )
 
     schema_version = "1.1.0"

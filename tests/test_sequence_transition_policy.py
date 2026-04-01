@@ -149,3 +149,47 @@ def test_promotion_blocks_when_required_eval_coverage_gap_present(tmp_path: Path
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "coverage gaps" in str(decision.reason)
+
+
+def test_promotion_blocks_when_review_gate_fails(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    review_path = tmp_path / "review_control_signal.json"
+    review_path.write_text(
+        json.dumps(
+            {
+                "gate_assessment": "FAIL",
+                "scale_recommendation": "NO",
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest["done_certification_input_refs"]["review_control_signal_ref"] = str(review_path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "gate_assessment=FAIL" in str(decision.reason)
+
+
+def test_expansion_blocks_when_scale_recommendation_is_no(tmp_path: Path) -> None:
+    manifest = _base_manifest("executing_slice_1")
+    review_path = tmp_path / "review_control_signal.json"
+    review_path.write_text(
+        json.dumps(
+            {
+                "gate_assessment": "PASS",
+                "scale_recommendation": "NO",
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest["done_certification_input_refs"]["review_control_signal_ref"] = str(review_path)
+    decision = evaluate_sequence_transition(manifest, "executing_slice_2")
+    assert decision.allowed is False
+    assert "scale_recommendation=NO" in str(decision.reason)
+
+
+def test_required_review_signal_missing_fails_closed() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["review_signal_required_for_promotion"] = True
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "missing required review_control_signal_ref" in str(decision.reason)

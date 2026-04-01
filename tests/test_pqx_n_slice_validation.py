@@ -97,3 +97,37 @@ def test_validation_fails_on_failed_hard_gate_falsification(tmp_path: Path) -> N
             trace_id="trace-5",
             created_at="2026-03-29T00:00:00Z",
         )
+
+
+def _write_review_signal(tmp_path: Path, *, gate: str = "PASS", scale: str = "YES") -> str:
+    path = tmp_path / "review_control_signal.json"
+    path.write_text(json.dumps({"gate_assessment": gate, "scale_recommendation": scale}), encoding="utf-8")
+    return str(path)
+
+
+def test_pqx_admission_blocks_on_failed_review_signal(tmp_path: Path) -> None:
+    state = _state(["S1", "S2", "S3", "S4", "S5"], _write_falsification(tmp_path))
+    state["review_control_signal_ref"] = _write_review_signal(tmp_path, gate="FAIL", scale="NO")
+    state["review_signal_required"] = True
+    with pytest.raises(PQXNSliceValidationError, match="gate_assessment=FAIL"):
+        build_n_slice_validation_record(
+            validation_id="val-6",
+            sequence_state=state,
+            run_id="run-6",
+            trace_id="trace-6",
+            created_at="2026-04-01T00:00:00Z",
+        )
+
+
+def test_pqx_admission_blocks_expansion_when_scale_no(tmp_path: Path) -> None:
+    state = _state(["S1", "S2", "S3", "S4", "S5"], _write_falsification(tmp_path))
+    state["review_control_signal_ref"] = _write_review_signal(tmp_path, gate="PASS", scale="NO")
+    state["expansion_requested"] = True
+    with pytest.raises(PQXNSliceValidationError, match="scale_recommendation=NO"):
+        build_n_slice_validation_record(
+            validation_id="val-7",
+            sequence_state=state,
+            run_id="run-7",
+            trace_id="trace-7",
+            created_at="2026-04-01T00:00:00Z",
+        )
