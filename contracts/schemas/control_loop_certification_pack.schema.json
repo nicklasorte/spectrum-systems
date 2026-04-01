@@ -18,6 +18,7 @@
     "scenario_summary",
     "test_summary",
     "artifact_validation_summary",
+    "gate_proof_evidence",
     "related_review_refs",
     "related_plan_refs",
     "generated_at",
@@ -30,7 +31,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "certification_id": {
       "type": "string",
@@ -102,6 +103,9 @@
     },
     "provenance_trace_refs": {
       "$ref": "#/$defs/provenance_trace_refs"
+    },
+    "gate_proof_evidence": {
+      "$ref": "#/$defs/gate_proof_evidence"
     }
   },
   "allOf": [
@@ -300,6 +304,82 @@
         "trace_refs": {
           "type": "array",
           "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "gate_proof_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity_linkage_complete",
+        "deterministic_transition_consumption",
+        "policy_caused_action_observed",
+        "recurrence_prevention_linked",
+        "failure_binding_required_for_progression",
+        "missing_binding_blocks_progression",
+        "advisory_only_learning_rejected",
+        "transition_policy_consumes_binding_deterministically",
+        "severity_linkage_refs",
+        "transition_consumption_refs",
+        "policy_action_refs",
+        "recurrence_prevention_refs"
+      ],
+      "properties": {
+        "severity_linkage_complete": {
+          "type": "boolean"
+        },
+        "deterministic_transition_consumption": {
+          "type": "boolean"
+        },
+        "policy_caused_action_observed": {
+          "type": "boolean"
+        },
+        "recurrence_prevention_linked": {
+          "type": "boolean"
+        },
+        "failure_binding_required_for_progression": {
+          "type": "boolean"
+        },
+        "missing_binding_blocks_progression": {
+          "type": "boolean"
+        },
+        "advisory_only_learning_rejected": {
+          "type": "boolean"
+        },
+        "transition_policy_consumes_binding_deterministically": {
+          "type": "boolean"
+        },
+        "severity_linkage_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "transition_consumption_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "policy_action_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "recurrence_prevention_refs": {
+          "type": "array",
           "items": {
             "type": "string",
             "minLength": 1

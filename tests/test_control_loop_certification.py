@@ -33,6 +33,23 @@ def _check(
     )
 
 
+def _gate_proof_evidence() -> dict:
+    return {
+        "severity_linkage_complete": True,
+        "deterministic_transition_consumption": True,
+        "policy_caused_action_observed": True,
+        "recurrence_prevention_linked": True,
+        "failure_binding_required_for_progression": True,
+        "missing_binding_blocks_progression": True,
+        "advisory_only_learning_rejected": True,
+        "transition_policy_consumes_binding_deterministically": True,
+        "severity_linkage_refs": ["contracts/examples/failure_eval_case.json"],
+        "transition_consumption_refs": ["contracts/examples/prompt_queue_transition_decision.json"],
+        "policy_action_refs": ["contracts/examples/pqx_slice_execution_record.json"],
+        "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
+    }
+
+
 def test_status_mapping_happy_path_is_certified() -> None:
     checks = [_check(cid, "pass", exit_code=0) for cid in clc.REQUIRED_CHECK_IDS]
     status, decision = clc._status_from_checks(checks)
@@ -107,6 +124,7 @@ def test_generated_artifact_is_schema_valid_and_id_deterministic() -> None:
             "review_artifact_validation_status": "pass",
             "repo_review_validator_status": "pass",
         },
+        gate_proof_evidence=_gate_proof_evidence(),
         related_review_refs=["docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"],
         related_plan_refs=["docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"],
     )
@@ -123,6 +141,7 @@ def test_generated_artifact_is_schema_valid_and_id_deterministic() -> None:
             "review_artifact_validation_status": "pass",
             "repo_review_validator_status": "pass",
         },
+        gate_proof_evidence=_gate_proof_evidence(),
         related_review_refs=["docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"],
         related_plan_refs=["docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"],
     )
@@ -132,6 +151,14 @@ def test_generated_artifact_is_schema_valid_and_id_deterministic() -> None:
     validator = Draft202012Validator(load_schema("control_loop_certification_pack"), format_checker=FormatChecker())
     errors = list(validator.iter_errors(artifact_a))
     assert errors == []
+
+
+def test_gate_proof_evidence_requires_non_advisory_failure_binding() -> None:
+    evidence = _gate_proof_evidence()
+    evidence["advisory_only_learning_rejected"] = False
+    passed, failures = clc._evaluate_gate_proof_evidence(evidence)
+    assert passed is False
+    assert any("advisory_only_learning_rejected" in message for message in failures)
 
 
 def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
@@ -167,6 +194,8 @@ def test_cli_integration_emits_artifact(tmp_path: Path) -> None:
         "python -c \"print('ok review')\"",
         "--repo-review-command",
         "python -c \"print('ok repo review')\"",
+        "--gate-proof-ref",
+        "contracts/examples/failure_eval_case.json",
     ]
 
     result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)

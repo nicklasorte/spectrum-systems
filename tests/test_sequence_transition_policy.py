@@ -24,6 +24,20 @@ def _base_manifest(state: str) -> dict:
         "certification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json"),
         "decision_blocked": False,
         "control_allow_promotion": True,
+        "control_loop_gate_proof": {
+            "severity_linkage_complete": True,
+            "deterministic_transition_consumption": True,
+            "policy_caused_action_observed": True,
+            "recurrence_prevention_linked": True,
+            "failure_binding_required_for_progression": True,
+            "missing_binding_blocks_progression": True,
+            "advisory_only_learning_rejected": True,
+            "transition_policy_consumes_binding_deterministically": True,
+            "severity_linkage_refs": ["contracts/examples/failure_eval_case.json"],
+            "transition_consumption_refs": ["contracts/examples/prompt_queue_transition_decision.json"],
+            "policy_action_refs": ["contracts/examples/pqx_slice_execution_record.json"],
+            "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
+        },
         "sequence_trace_id": "trace-seq",
         "sequence_lineage": ["contracts/examples/roadmap_eligibility_artifact.json"],
         "blocking_issues": ["explicit block"],
@@ -56,3 +70,11 @@ def test_sequence_indeterminate_fixture_blocks_inconsistent_evidence() -> None:
         decision = evaluate_sequence_transition(manifest, case["to"])
         assert decision.allowed is False
         assert case["reason"] in str(decision.reason)
+
+
+def test_promotion_blocks_when_failure_binding_proof_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["control_loop_gate_proof"]["failure_binding_required_for_progression"] = False
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "failure_binding_required_for_progression" in str(decision.reason)

@@ -866,6 +866,9 @@ def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> N
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = True
+    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
+    )
     _write(manifest_path, manifest)
 
     expected = [
@@ -887,6 +890,9 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = False
+    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
+    )
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)

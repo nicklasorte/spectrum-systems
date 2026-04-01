@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any
 
@@ -56,6 +57,45 @@ def _reports_count(manifest: dict[str, Any]) -> int:
     return sum(1 for item in reports if _path_exists(item))
 
 
+def _gate_proof_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    gate = manifest.get("control_loop_gate_proof")
+    if not isinstance(gate, dict):
+        refs = manifest.get("done_certification_input_refs")
+        pack_ref = refs.get("certification_pack_ref") if isinstance(refs, dict) else None
+        if isinstance(pack_ref, str) and pack_ref:
+            pack_path = Path(pack_ref)
+            if pack_path.is_file():
+                try:
+                    gate = json.loads(pack_path.read_text(encoding="utf-8")).get("gate_proof_evidence")
+                except (OSError, json.JSONDecodeError):
+                    return False, "promotion requires readable certification pack gate_proof_evidence"
+    if not isinstance(gate, dict):
+        return False, "promotion requires control_loop_gate_proof"
+    required_true = (
+        "severity_linkage_complete",
+        "deterministic_transition_consumption",
+        "policy_caused_action_observed",
+        "recurrence_prevention_linked",
+        "failure_binding_required_for_progression",
+        "missing_binding_blocks_progression",
+        "advisory_only_learning_rejected",
+        "transition_policy_consumes_binding_deterministically",
+    )
+    for field in required_true:
+        if gate.get(field) is not True:
+            return False, f"promotion requires gate proof field {field}=true"
+    for refs_key in (
+        "severity_linkage_refs",
+        "transition_consumption_refs",
+        "policy_action_refs",
+        "recurrence_prevention_refs",
+    ):
+        refs = gate.get(refs_key)
+        if not isinstance(refs, list) or not refs:
+            return False, f"promotion requires gate proof evidence in {refs_key}"
+    return True, None
+
+
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
     current_state = manifest.get("current_state")
     if not isinstance(current_state, str) or current_state not in SEQUENCE_STATES:
@@ -93,6 +133,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
             return SequenceTransitionDecision(False, "promotion requires certification_status=passed")
         if not _path_exists(manifest.get("certification_record_path")):
             return SequenceTransitionDecision(False, "promotion requires certification_record_path")
+        gate_passed, gate_error = _gate_proof_passes(manifest)
+        if not gate_passed:
+            return SequenceTransitionDecision(False, gate_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:
