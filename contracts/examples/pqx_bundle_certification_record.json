@@ -1,25 +1,37 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_type": "pqx_bundle_certification_record",
   "bundle_id": "BUNDLE-PQX-CORE",
-  "slice_certifications": {
-    "PQX-QUEUE-01": true,
-    "PQX-QUEUE-02": true,
-    "PQX-QUEUE-03": true
+  "execution_closure_ref": "contracts/examples/pqx_execution_closure_record.json",
+  "hard_gate_falsification_ref": "contracts/examples/pqx_hard_gate_falsification_record.json",
+  "supporting_artifacts": [
+    "contracts/examples/pqx_execution_closure_record.json",
+    "contracts/examples/pqx_hard_gate_falsification_record.json",
+    "contracts/examples/pqx_bundle_audit_record.json"
+  ],
+  "policy_versions_used": {
+    "transition_policy": "sequence-transition-policy@1.0.0",
+    "promotion_admission": "n-slice-validation@1.0.0",
+    "certification_gating": "pqx-proof-closure@1.0.0"
   },
-  "chain_certification_refs": [
-    "queue-run-pqx-001:chain-3"
+  "decision_trace_lineage": [
+    "trace:run-g3-001:slice-1",
+    "trace:run-g3-001:slice-2",
+    "trace:run-g3-001:slice-3"
   ],
-  "review_outcomes": [
-    {
-      "checkpoint_id": "slice-2-required-review",
-      "status": "satisfied"
-    },
-    {
-      "checkpoint_id": "slice-3-strict-review",
-      "status": "satisfied"
-    }
-  ],
+  "replay_verification_results": {
+    "status": "verified",
+    "details": [
+      "all sequence decisions replayed deterministically"
+    ]
+  },
+  "assertions": {
+    "sequence_correctness": true,
+    "eval_completeness": true,
+    "control_enforcement_validity": true,
+    "lifecycle_calibration_enforcement": true,
+    "judgment_enforcement": true
+  },
   "final_status": "certified",
-  "created_at": "2026-03-29T12:06:00Z"
+  "created_at": "2026-04-01T10:00:00Z"
 }

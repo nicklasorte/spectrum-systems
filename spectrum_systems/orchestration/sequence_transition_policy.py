@@ -96,6 +96,33 @@ def _gate_proof_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     return True, None
 
 
+
+def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    artifact = manifest.get("hard_gate_falsification")
+    if not isinstance(artifact, dict):
+        ref = manifest.get("hard_gate_falsification_record_path")
+        if not isinstance(ref, str) or not ref:
+            refs = manifest.get("done_certification_input_refs")
+            if isinstance(refs, dict):
+                ref = refs.get("hard_gate_falsification_record_path")
+        if _path_exists(ref):
+            try:
+                artifact = json.loads(Path(ref).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                return False, "promotion requires readable hard_gate_falsification_record_path"
+    if not isinstance(artifact, dict):
+        return False, "promotion requires hard_gate_falsification evidence"
+    if artifact.get("artifact_type") != "pqx_hard_gate_falsification_record":
+        return False, "promotion requires pqx_hard_gate_falsification_record artifact"
+    if artifact.get("overall_result") != "pass":
+        return False, "promotion blocked: hard gate falsification result is fail"
+    checks = artifact.get("checks")
+    if not isinstance(checks, list) or len(checks) < 8:
+        return False, "promotion requires complete hard-gate falsification checks"
+    if any(check.get("passed") is not True for check in checks if isinstance(check, dict)):
+        return False, "promotion blocked: one or more hard-gate falsification checks failed"
+    return True, None
+
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
     current_state = manifest.get("current_state")
     if not isinstance(current_state, str) or current_state not in SEQUENCE_STATES:
@@ -146,6 +173,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         gate_passed, gate_error = _gate_proof_passes(manifest)
         if not gate_passed:
             return SequenceTransitionDecision(False, gate_error)
+        falsification_passed, falsification_error = _hard_gate_falsification_passes(manifest)
+        if not falsification_passed:
+            return SequenceTransitionDecision(False, falsification_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:

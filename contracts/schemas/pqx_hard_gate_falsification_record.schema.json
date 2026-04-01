@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_hard_gate_falsification_record.schema.json",
+  "title": "PQX Hard-Gate Falsification Record",
+  "description": "RF-20 fail-closed hard-gate falsification artifact with per-condition results and trace-linked explanations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "falsification_id",
+    "run_id",
+    "trace_id",
+    "overall_result",
+    "failed_conditions",
+    "checks",
+    "consumed_by",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_hard_gate_falsification_record"},
+    "falsification_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "overall_result": {"type": "string", "enum": ["pass", "fail"]},
+    "failed_conditions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "checks": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition", "passed", "reason_code", "explanation", "trace_links"],
+        "properties": {
+          "condition": {"type": "string", "minLength": 1},
+          "passed": {"type": "boolean"},
+          "reason_code": {"type": "string", "minLength": 1},
+          "explanation": {"type": "string", "minLength": 1},
+          "trace_links": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "consumed_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transition_policy", "promotion_admission", "certification_gating"],
+      "properties": {
+        "transition_policy": {"type": "string", "minLength": 1},
+        "promotion_admission": {"type": "string", "minLength": 1},
+        "certification_gating": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

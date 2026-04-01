@@ -1,12 +1,28 @@
-"""Validation of first governed PQX 5–10 slice runs."""
+"""Validation of first governed PQX 5–10 slice runs with proof-closure gating."""
 
 from __future__ import annotations
+
+import json
+from pathlib import Path
 
 from spectrum_systems.contracts import validate_artifact
 
 
 class PQXNSliceValidationError(ValueError):
     """Raised when governed n-slice validation fails closed."""
+
+
+def _load_json_object(path_value: str, *, label: str) -> dict:
+    path = Path(path_value)
+    if not path.is_file():
+        raise PQXNSliceValidationError(f"{label} file not found: {path_value}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise PQXNSliceValidationError(f"{label} is not valid JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise PQXNSliceValidationError(f"{label} must be a JSON object")
+    return payload
 
 
 def build_n_slice_validation_record(
@@ -31,6 +47,15 @@ def build_n_slice_validation_record(
         raise PQXNSliceValidationError("missing bundle certification")
     if sequence_state.get("bundle_audit_status") != "synthesized":
         raise PQXNSliceValidationError("missing bundle audit synthesis")
+
+    falsification_ref = sequence_state.get("hard_gate_falsification_ref")
+    if not isinstance(falsification_ref, str) or not falsification_ref:
+        raise PQXNSliceValidationError("missing hard-gate falsification evidence")
+    falsification = _load_json_object(falsification_ref, label="hard_gate_falsification")
+    if falsification.get("artifact_type") != "pqx_hard_gate_falsification_record":
+        raise PQXNSliceValidationError("hard-gate falsification evidence has wrong artifact_type")
+    if falsification.get("overall_result") != "pass":
+        raise PQXNSliceValidationError("hard-gate falsification did not pass")
 
     parity_status = sequence_state.get("replay_verification", {}).get("status")
     if parity_status not in {"verified", "not_run"}:

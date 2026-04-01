@@ -2,42 +2,64 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/pqx_bundle_certification_record.schema.json",
   "title": "PQX Bundle Certification Record",
-  "description": "Bundle-level certification aggregation across slice, chain, and review outcomes.",
+  "description": "RF-19 deterministic fail-closed bundle certification artifact binding execution closure proof and hard-gate falsification outcomes.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
     "artifact_type",
     "bundle_id",
-    "slice_certifications",
-    "chain_certification_refs",
-    "review_outcomes",
+    "execution_closure_ref",
+    "hard_gate_falsification_ref",
+    "supporting_artifacts",
+    "policy_versions_used",
+    "decision_trace_lineage",
+    "replay_verification_results",
+    "assertions",
     "final_status",
     "created_at"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "artifact_type": {"type": "string", "const": "pqx_bundle_certification_record"},
     "bundle_id": {"type": "string", "minLength": 1},
-    "slice_certifications": {
+    "execution_closure_ref": {"type": "string", "minLength": 1},
+    "hard_gate_falsification_ref": {"type": "string", "minLength": 1},
+    "supporting_artifacts": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "policy_versions_used": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1},
+      "required": ["transition_policy", "promotion_admission", "certification_gating"]
+    },
+    "decision_trace_lineage": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "replay_verification_results": {
       "type": "object",
       "additionalProperties": false,
-      "patternProperties": {"^[A-Za-z0-9._:-]+$": {"type": "boolean"}}
-    },
-    "chain_certification_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "review_outcomes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["checkpoint_id", "status"],
-        "properties": {
-          "checkpoint_id": {"type": "string", "minLength": 1},
-          "status": {"type": "string", "enum": ["satisfied", "missing", "blocked"]}
-        }
+      "required": ["status", "details"],
+      "properties": {
+        "status": {"type": "string", "enum": ["verified"]},
+        "details": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
       }
     },
-    "final_status": {"type": "string", "enum": ["certified", "failed"]},
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence_correctness",
+        "eval_completeness",
+        "control_enforcement_validity",
+        "lifecycle_calibration_enforcement",
+        "judgment_enforcement"
+      ],
+      "properties": {
+        "sequence_correctness": {"type": "boolean", "const": true},
+        "eval_completeness": {"type": "boolean", "const": true},
+        "control_enforcement_validity": {"type": "boolean", "const": true},
+        "lifecycle_calibration_enforcement": {"type": "boolean", "const": true},
+        "judgment_enforcement": {"type": "boolean", "const": true}
+      }
+    },
+    "final_status": {"type": "string", "enum": ["certified"]},
     "created_at": {"type": "string", "format": "date-time"}
   }
 }

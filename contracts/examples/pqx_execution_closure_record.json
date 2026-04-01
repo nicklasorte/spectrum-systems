@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_execution_closure_record",
+  "closure_id": "31ed4cd6219d8a74156dbde495a9f6b147653fcd806d5d8af54eb0543e08fd0e",
+  "run_id": "run-g3-001",
+  "trace_id": "trace-g3-001",
+  "slice_sequence_identifiers": [
+    "PQX-QUEUE-01",
+    "PQX-QUEUE-02",
+    "PQX-QUEUE-03"
+  ],
+  "pqx_execution_records": [
+    "PQX-QUEUE-01.record.json",
+    "PQX-QUEUE-02.record.json",
+    "PQX-QUEUE-03.record.json"
+  ],
+  "output_artifacts": [
+    "PQX-QUEUE-01.audit.json",
+    "PQX-QUEUE-01.cert.json",
+    "PQX-QUEUE-02.audit.json",
+    "PQX-QUEUE-02.cert.json",
+    "PQX-QUEUE-03.audit.json",
+    "PQX-QUEUE-03.cert.json"
+  ],
+  "eval_summaries": [
+    "PQX-QUEUE-01:eval-summary",
+    "PQX-QUEUE-02:eval-summary",
+    "PQX-QUEUE-03:eval-summary"
+  ],
+  "control_decisions": [
+    "PQX-QUEUE-01:control-decision",
+    "PQX-QUEUE-02:control-decision",
+    "PQX-QUEUE-03:control-decision"
+  ],
+  "enforcement_actions": [
+    "PQX-QUEUE-01:enforcement-action",
+    "PQX-QUEUE-02:enforcement-action",
+    "PQX-QUEUE-03:enforcement-action"
+  ],
+  "replay_verification": {
+    "status": "verified",
+    "replay_refs": [
+      "PQX-QUEUE-01:replay",
+      "PQX-QUEUE-02:replay",
+      "PQX-QUEUE-03:replay"
+    ]
+  },
+  "failure_eval_policy_linkage": {
+    "linked": true,
+    "evidence_refs": [
+      "failure-binding:critical-001"
+    ]
+  },
+  "policy_consumption_in_transition": {
+    "linked": true,
+    "evidence_refs": [
+      "transition-policy:consumed:critical-001"
+    ]
+  },
+  "recurrence_prevention_linkage": {
+    "linked": true,
+    "evidence_refs": [
+      "regression-fixture:critical-001"
+    ]
+  },
+  "created_at": "2026-04-01T10:00:00Z"
+}
