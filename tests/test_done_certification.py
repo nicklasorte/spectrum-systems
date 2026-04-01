@@ -113,6 +113,45 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
         "certification_pack_ref": _write_json(tmp_path / "certification_pack.json", certification_pack),
         "error_budget_ref": _write_json(tmp_path / "error_budget.json", error_budget),
         "policy_ref": _write_json(tmp_path / "policy.json", control_decision),
+        "enforcement_result_ref": _write_json(
+            tmp_path / "enforcement.json",
+            {
+                "artifact_type": "enforcement_result",
+                "schema_version": "1.1.0",
+                "enforcement_result_id": "enf-001",
+                "timestamp": "2026-03-28T00:00:00Z",
+                "trace_id": trace_id,
+                "run_id": run_id,
+                "input_decision_reference": "ecd-001",
+                "enforcement_action": "allow_execution",
+                "final_status": "allow",
+                "rationale_code": "allow_authorized",
+                "fail_closed": False,
+                "enforcement_path": "baf_single_path",
+                "provenance": {
+                    "source_artifact_type": "evaluation_control_decision",
+                    "source_artifact_id": control_decision["decision_id"],
+                },
+            },
+        ),
+        "eval_coverage_summary_ref": _write_json(
+            tmp_path / "coverage.json",
+            {
+                "artifact_type": "eval_coverage_summary",
+                "schema_version": "1.1.0",
+                "id": "coverage-001",
+                "coverage_run_id": run_id,
+                "timestamp": "2026-03-28T00:00:00Z",
+                "trace_refs": {"primary": trace_id, "related": []},
+                "dataset_refs": ["contracts/examples/eval_case_dataset.json"],
+                "total_eval_cases": 1,
+                "covered_slices": ["runtime_guardrails"],
+                "uncovered_required_slices": [],
+                "slice_case_counts": {"runtime_guardrails": 1},
+                "risk_weighted_coverage_score": 1.0,
+                "coverage_gaps": [],
+            },
+        ),
         "failure_injection_ref": _write_json(tmp_path / "failure_injection.json", failure_injection),
     }
 
@@ -125,7 +164,31 @@ def test_certification_pass(tmp_path: Path) -> None:
     assert first["final_status"] == "PASSED"
     assert first["system_response"] == "allow"
     assert first["blocking_reasons"] == []
+    assert first["trust_spine_invariant_result"]["passed"] is True
     assert first == second
+
+
+def test_trust_spine_threshold_context_mismatch_blocks(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    control = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control["threshold_context"] = "comparative_analysis"
+    Path(refs["policy_ref"]).write_text(json.dumps(control), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert result["check_results"]["trust_spine_invariants"]["passed"] is False
+    assert "TRUST_SPINE_THRESHOLD_CONTEXT_MISMATCH" in result["trust_spine_invariant_result"]["blocking_reasons"]
+
+
+def test_trust_spine_coverage_contradiction_blocks(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    coverage = json.loads(Path(refs["eval_coverage_summary_ref"]).read_text(encoding="utf-8"))
+    coverage["uncovered_required_slices"] = ["runtime_guardrails"]
+    Path(refs["eval_coverage_summary_ref"]).write_text(json.dumps(coverage), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert "TRUST_SPINE_COVERAGE_PROMOTION_CONTRADICTION" in result["trust_spine_invariant_result"]["blocking_reasons"]
 
 
 def test_replay_failure_blocks(tmp_path: Path) -> None:
