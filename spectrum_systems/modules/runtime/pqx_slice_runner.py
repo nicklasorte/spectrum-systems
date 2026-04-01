@@ -152,8 +152,14 @@ def _normalize_strategy_decision(value: str | None) -> str:
 def _enforce_contract_preflight_gate(
     *,
     contract_preflight_result_artifact_path: Optional[Path],
+    changed_contract_paths: Optional[list[str]] = None,
+    changed_example_paths: Optional[list[str]] = None,
 ) -> tuple[Optional[dict], Optional[dict]]:
     if contract_preflight_result_artifact_path is None:
+        if changed_contract_paths or changed_example_paths:
+            raise PQXSliceRunnerError(
+                "contract preflight artifact is required for governed contract/example changes"
+            )
         return None, None
     artifact = json.loads(contract_preflight_result_artifact_path.read_text(encoding="utf-8"))
     validate_artifact(artifact, "contract_preflight_result_artifact")
@@ -320,7 +326,9 @@ def run_pqx_slice(
     preflight_signal = None
     try:
         preflight_artifact, preflight_signal = _enforce_contract_preflight_gate(
-            contract_preflight_result_artifact_path=contract_preflight_result_artifact_path
+            contract_preflight_result_artifact_path=contract_preflight_result_artifact_path,
+            changed_contract_paths=changed_contract_paths,
+            changed_example_paths=changed_example_paths,
         )
     except (PQXSliceRunnerError, FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
         row_state["status"] = "blocked"
