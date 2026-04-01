@@ -198,6 +198,10 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "policy_version": "1.0.0",
             "refs_attempted": ["origin/main..HEAD"],
             "fallback_used": degraded,
+            "evaluation_mode": "full",
+            "skip_reason": None,
+            "changed_paths_resolved": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            "evaluated_surfaces": ["contract_surface"],
             "provenance_ref": "contracts/standards-manifest.json",
         },
     }

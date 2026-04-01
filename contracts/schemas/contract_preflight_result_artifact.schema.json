@@ -141,6 +141,10 @@
         "policy_version",
         "refs_attempted",
         "fallback_used",
+        "evaluation_mode",
+        "skip_reason",
+        "changed_paths_resolved",
+        "evaluated_surfaces",
         "provenance_ref"
       ],
       "properties": {
@@ -162,6 +166,36 @@
         },
         "fallback_used": {
           "type": "boolean"
+        },
+        "evaluation_mode": {
+          "type": "string",
+          "enum": [
+            "full",
+            "partial",
+            "no-op"
+          ]
+        },
+        "skip_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changed_paths_resolved": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "evaluated_surfaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         },
         "provenance_ref": {
           "type": "string",
