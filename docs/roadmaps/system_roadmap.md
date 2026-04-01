@@ -288,3 +288,92 @@ Even if many tests pass, the HARD GATE is **falsified** (must fail closed) when 
   - compliance: contract/check/status evidence,
   - correctness: demonstrated decision/outcome change caused by that evidence.
 - Do not count a step as complete unless both artifact types are present and replay-linked.
+
+## April 1, 2026 Post-Gate Reevaluation — ROADMAP-REEVALUATION-018 (Foundation + Proof Aware)
+
+### 1) Current Strategy Risks (Top 5)
+1. **Distributed enforcement risk:** core control/eval/enforcement capabilities exist, but multiple legacy/parallel decision paths can still dilute non-bypassable behavior.
+2. **Certification false-pass risk:** hard-gate evidence can be assembled from structural completeness without proving behavior-changing policy enforcement in subsequent slices.
+3. **Learning-to-prevention gap risk:** failure capture and judgment learning exist, but deterministic recurrence-prevention enforcement is not yet universally required on continuation/admission surfaces.
+4. **Promotion authority fragmentation risk:** promotion, rollout, and lineage checks are present across several modules without one canonical runtime authority seam.
+5. **Replay/trace reconstruction drift risk:** replay and trace modules are strong, but multi-surface integration leaves residual risk of inconsistent cross-surface decision reconstruction.
+
+### 2) Foundation Gap Classification (Repo vs Foundation Chain)
+
+| Foundation Layer | Classification | Repo-grounded rationale |
+| --- | --- | --- |
+| canonical artifact schemas | present_and_governed | Broad schema inventory and runtime validation seams are implemented and actively consumed. |
+| PQX execution coordination | present_but_partial | Canonical slice and sequence runners exist, but pathway dominance remains split across queue/runtime surfaces. |
+| eval case / eval result / eval summary surfaces | present_but_partial | `eval_summary`, failure/eval artifacts, and output-evaluation modules exist; end-to-end mandatory consumption is not singular. |
+| deterministic control decision logic | present_but_partial | Control-loop logic is deterministic and schema-validated, but platform-wide single authority is still distributed. |
+| enforcement action recording | present_but_bypassable | Canonical enforcement path exists alongside constrained legacy compatibility mapper, leaving managed-but-real bypass surface. |
+| replay integrity | present_but_partial | Replay engines/governance and tests are present, but long-sequence confidence-grade closure remains partial. |
+| trace completeness | present_but_partial | Trace stores/engines and lineage seams are present; full cross-surface closure remains integration-sensitive. |
+| golden path artifact_release_readiness | present_but_partial | Golden-path seams exist, but hard-gate proof criteria for expansion are not yet fully evidenced. |
+
+**Hard blockers for expansion right now:** `present_but_bypassable` and all `present_but_partial` rows above (per foundation hard-gate policy).
+
+### 3) Hard Gate Readiness Assessment
+
+**Control Loop Closure Gate (enhanced): NOT READY**
+
+| Enhanced Gate Check | Assessment | Notes |
+| --- | --- | --- |
+| 1. failure → eval → policy linkage exists | partial | Implemented seams exist, but mandatory enforcement across every progression surface is incomplete. |
+| 2. deterministic policy consumption | partial | Deterministic logic exists in modules, but end-to-end singular consumption authority is not fully closed. |
+| 3. policy causes behavior change (block/freeze/correct) | partial | Behavior-changing controls are implemented, but proof of universal non-bypassable operation is incomplete. |
+| 4. recurrence-prevention exists | partial | Recurrence-prevention assets exist; mandatory closure enforcement remains uneven. |
+| 5. longitudinal calibration exists | partial | Calibration/lifecycle components exist, but hard lifecycle influence is still being tightened. |
+| 6. calibration affects lifecycle decisions | partial | Designed and partially wired; insufficient confidence-grade evidence over bounded windows. |
+| 7. replay + trace fully reconstruct decisions | partial | Strong foundation present; sequence-wide deterministic reconstruction remains not yet confidence-grade. |
+| 8. falsification artifact works and fails correctly | partial | Criteria are defined; strengthened fail-closed falsification behavior still requires full runtime proof. |
+
+**Readiness determination:** Expansion is blocked; further foundation/control hardening is required before broader grouped or AI execution expansion.
+
+### 4) Next 24 Steps (Dependency-Valid, PQX-Executable)
+
+| ID | Prompt (Codex-ready) | Status | What It Does | Why It Matters | Strategy Alignment | Primary Trust Gain | Foundation Relation |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| RE18-01 | BUILD: Make `evaluation_control_decision` the sole admissible decision input for all enforcement entrypoints and remove runtime callers of legacy budget decision paths. | planned | Eliminates dual decision semantics at enforcement boundary. | Converts enforcement from mixed-mode to canonical fail-closed control authority. | control authority externalized; fail-closed. | policy enforcement | hardens the foundation |
+| RE18-02 | VALIDATE: Add exhaustive regression tests proving legacy enforcement path cannot be used by non-allowlisted callers and fails closed under malformed payloads. | planned | Verifies bypass closure is real under adversarial invocation patterns. | Prevents silent reintroduction of bypass behavior. | fail-closed; certification-gated. | safety | hardens the foundation |
+| RE18-03 | WIRE: Require PQX slice/sequence runners to consume a single normalized eval summary artifact contract before control decisions are emitted. | planned | Standardizes eval ingestion shape for control loop. | Removes shape drift between eval surfaces and control logic. | artifact-first; eval-mandatory. | measurability | builds the foundation |
+| RE18-04 | BUILD: Add deterministic failure-class-to-policy binding registry artifact and enforce lookup on every severity-qualified failure. | planned | Creates explicit, replayable mapping from failures to policy obligations. | Makes CL-01 binding non-optional and inspectable. | CL-01 failure binding. | trustworthiness | hardens the foundation |
+| RE18-05 | WIRE: Integrate failure-binding registry checks into preflight, transition, and promotion admission surfaces with fail-closed behavior on missing linkage. | planned | Extends CL-01 enforcement across all progression checkpoints. | Prevents advisory-only learning and admission drift. | hard gate rule; fail-closed progression. | policy enforcement | hardens the foundation |
+| RE18-06 | BUILD: Encode hard-gate pass-condition schema fields for all CL checks (1–8) in the certification gate artifact contract and validators. | planned | Makes certification criteria machine-checkable and complete. | Reduces false-positive gate pass risk. | certification-gated; no false completion. | certification rigor | builds the foundation |
+| RE18-07 | VALIDATE: Add falsification tests that intentionally omit each CL pass condition and assert hard-gate failure for every omission. | planned | Proves certification gate fails correctly for missing evidence. | Ensures proof-before-scale blocker is enforceable. | fail-closed; CL certification gate. | safety | hardens the foundation |
+| RE18-08 | BUILD: Consolidate control decision precedence rules into one runtime authority module consumed by preflight, PQX, queue, and promotion decisions. | planned | Unifies decision precedence and conflict resolution. | Eliminates cross-surface inconsistency risks. | deterministic control authority. | replayability | hardens the foundation |
+| RE18-09 | VALIDATE: Add cross-surface consistency suite asserting same inputs yield same decision across preflight, PQX, control, and promotion layers. | planned | Tests deterministic agreement across control surfaces. | Detects policy-consumption drift before release. | fail-closed; replayable. | measurability | hardens the foundation |
+| RE18-10 | BUILD: Implement mandatory recurrence-prevention closure artifact linking failure class, remediation asset, regression fixture, and policy update IDs. | planned | Converts recurrence prevention into a governed first-class artifact. | Closes CL-03 with explicit prevention lineage. | recurrence prevention enforcement. | drift resistance | builds the foundation |
+| RE18-11 | WIRE: Block continuation/promotion when recurrence-prevention closure artifact is missing for qualifying failures. | planned | Enforces prevention closure at admission boundaries. | Prevents repeated failure classes from progressing. | CL-03; fail-closed. | safety | hardens the foundation |
+| RE18-12 | BUILD: Activate longitudinal calibration runner that consumes delayed truth labels and produces calibration action artifacts with deterministic thresholds. | planned | Operationalizes CL-05 calibration into governed artifacts. | Enables long-horizon drift governance. | observe→learn→decide loop closure. | judgment quality | builds the foundation |
+| RE18-13 | WIRE: Bind calibration artifacts to lifecycle actions (freeze/revoke/reinstate) in judgment policy lifecycle module with mandatory control references. | planned | Makes calibration materially affect lifecycle state. | Prevents stale policies from remaining active. | CL-05; fail-closed lifecycle control. | policy enforcement | hardens the foundation |
+| RE18-14 | VALIDATE: Add bounded-window longitudinal simulations proving calibration thresholds trigger expected freeze/revoke outcomes. | planned | Produces proof that calibration influences decisions. | Converts lifecycle claims from design intent to evidence. | no false completion; certification-gated. | trustworthiness | hardens the foundation |
+| RE18-15 | BUILD: Create canonical `control_loop_closure_evidence_bundle` assembler that captures eval, control, enforcement, replay, and prevention links for each slice. | planned | Establishes one artifact spine for CL proof. | Supports deterministic audit and gate evaluation. | artifact-first; replayable. | replayability | builds the foundation |
+| RE18-16 | VALIDATE: Run governed 3-slice dominant-path fixture and emit evidence bundles proving policy-caused block/freeze/correct behavior without manual override. | planned | Produces direct hard-gate proof artifact set. | Required before any NX-04+ scale claims. | strategy thesis; proof-before-scale. | certification rigor | depends on the foundation |
+| RE18-17 | BUILD: Harden replay engine to assert full decision reconstruction (failure→eval→control→enforcement→promotion) from bundle evidence only. | planned | Makes replay integrity executable and testable end-to-end. | Closes decision lineage reconstruction gaps. | replay integrity; trace completeness. | replayability | hardens the foundation |
+| RE18-18 | VALIDATE: Add replay parity tests comparing live-run decisions to replayed decisions across 3-slice runs with strict equality checks. | planned | Verifies deterministic reproducibility of decisions. | Prevents non-deterministic progression behavior. | replayable; certification-gated. | measurability | hardens the foundation |
+| RE18-19 | BUILD: Introduce trace completeness auditor that fails when required lineage IDs are missing across eval/control/enforcement/certification artifacts. | planned | Enforces cross-artifact trace contracts. | Prevents partial lineage from passing governance gates. | trace completeness; fail-closed. | observability completeness | hardens the foundation |
+| RE18-20 | VALIDATE: Wire golden-path `artifact_release_readiness` gate to require successful trace completeness + replay parity + CL evidence bundle checks. | planned | Upgrades golden path from nominal success to trust-grade readiness. | Converts release readiness into hard proof-based admission. | golden-path first validation; certification-gated. | promotion safety | hardens the foundation |
+| RE18-21 | REVIEW: Produce checkpoint Claude review pack focused on CL closure, falsification results, and remaining bypass surfaces. | planned | Prepares independent architectural scrutiny at hardening checkpoint. | Required governance quality control before advancement. | checkpoint and review expectations. | trustworthiness | depends on the foundation |
+| RE18-22 | BUILD: Close promotion authority fragmentation by routing all promotion admissions through one canonical promotion gate facade with strict policy/eval/lineage prerequisites. | planned | Unifies promotion decision semantics. | Prevents inconsistent promotion behavior across modules. | certification-gated; control authority. | policy enforcement | depends on the foundation |
+| RE18-23 | VALIDATE: Execute changed-scope and gate-readiness verification scripts; persist signed run outputs as promotion-blocker evidence. | planned | Enforces execution discipline and evidence capture. | Detects drift/unplanned scope before certification claims. | drift correction; fail-closed progression. | safety | depends on the foundation |
+| RE18-24 | WIRE: Only after RE18-01..RE18-23 pass, enable NX-04 admission flag for limited grouped PQX canary with automatic rollback on gate regressions. | blocked by foundation gaps | Defines strictly bounded expansion trigger and rollback control. | Allows minimal expansion only after proven closure. | harden-before-expand; foundation-before-breadth. | promotion safety | blocked by foundation gaps |
+
+### 5) Recommended Next Move
+**Foundation Alignment Bundle**
+
+Reason: the current repo shows strong components but still partial/bypassable foundation layers; advancing to broader execution now would violate strategy hard-gate and no-false-completion rules.
+
+### 6) Recommended Next Hard Gate
+**Control Loop Closure Certification Gate (strengthened criteria) with mandatory pass on RE18-06, RE18-07, RE18-16, RE18-18, and RE18-20 evidence.**
+
+### 7) Hard-Gate Falsification Risks
+1. Gate artifact passes while one or more CL conditions are represented as optional or informational fields.
+2. Policy linkage exists in artifacts but is not consumed as a blocking input by progression decisions.
+3. Enforcement actions are emitted but do not alter continuation/promotion behavior.
+4. Recurrence-prevention artifacts exist without mandatory admission coupling.
+5. Replay reproduces artifact presence but not identical control outcomes.
+6. Trace IDs are locally valid but do not chain end-to-end across artifact classes.
+7. Calibration evidence is generated but lifecycle state transitions are not policy-bound.
+8. Golden-path readiness passes despite missing falsification coverage for malformed or absent evidence.
+
