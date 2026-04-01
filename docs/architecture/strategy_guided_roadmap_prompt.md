@@ -1,156 +1,185 @@
-# Strategy-Guided Roadmap Prompt (Governed)
+# Spectrum Systems — Strategy-Guided Roadmap Prompt
 
-Use this prompt only for roadmap generation inside governed workflow seams.
+You are acting as a staff-level architect performing a source-grounded strategy compliance audit and next-step roadmap generation for Spectrum Systems.
 
-## Operating Order (Strict)
-1. `docs/architecture/strategy-control.md`
-2. `docs/architecture/foundation_pqx_eval_control.md`
-3. `docs/architecture/ai_operating_substrate_and_artifact_intelligence.md`
-4. current repository state
-5. current roadmap (`docs/roadmaps/system_roadmap.md` with required `docs/roadmap/system_roadmap.md` compatibility mirror)
-6. source design documents / architecture artifacts (PDFs/data lake artifacts and governed source extracts)
+Your task is to inspect the current repository state and produce the next 20–30 dependency-valid roadmap steps.
 
-## Mandatory Foundation + Substrate Pre-Check (Run Before Proposing Steps)
-Compare repository state against all three authority documents and report:
-- `docs/architecture/strategy-control.md`
-- `docs/architecture/foundation_pqx_eval_control.md`
-- `docs/architecture/ai_operating_substrate_and_artifact_intelligence.md`
+You must treat the following as authoritative inputs, in this order:
+1. the Strategy Control Document
+2. docs/architecture/foundation_pqx_eval_control.md
+3. docs/architecture/ai_operating_substrate_and_artifact_intelligence.md
+4. the current repository
+5. the current roadmap
+6. source design documents and architecture artifacts
 
-Required findings before step proposal:
-- must-add substrate components already present and governed
-- components present but partial
-- components present but bypassable/weak
-- components missing
-- artifact families already real vs only designed
-- whether the minimum viable artifact-intelligence slice is buildable now
-- whether the golden path is buildable
+NON-NEGOTIABLE REQUIREMENTS
 
-Apply mandatory status classes to each layer/component:
-- `present_and_governed`
-- `present_but_partial`
-- `present_but_bypassable`
-- `missing`
-- `ambiguous`
+1. STRATEGY ENFORCEMENT
+Every roadmap step must align to the Strategy Control Document.
+You must explicitly check every proposed step against:
+- system invariants
+- system boundaries
+- stable vs replaceable layer rules
+- control loop rules
+- roadmap generation rules
+- drift detection rules
 
-Required coverage domains:
-- schemas
-- prompt/task lifecycle governance
-- model adapter boundary compliance
-- routing decision artifacts
-- context admission artifacts
-- PQX execution
-- eval registry/slice coverage
-- control logic
-- enforcement
-- replay
-- tracing
-- judgment reuse
-- derived artifact intelligence jobs
-- golden path
+2. FOUNDATION BEFORE EXPANSION
+Do not prioritize new capability if earlier trust, replay, eval, observability, control, certification, routing, context, or substrate slices are incomplete, partial, bypassable, or weak.
+When earlier slices are weak, prioritize hardening first.
 
-Treat `present_but_bypassable`, `missing`, and `ambiguous` as hardening priorities.
+3. NO AGENT-FIRST DRIFT
+Do not propose agent-first, prompt-first, or model-coupled roadmap steps unless they are bounded by contracts, evals, traces, policy, and control integration in the same step group.
 
-## Enforcement Requirements
+4. EVERY STEP MUST JUSTIFY ITSELF
+For each roadmap step, state:
+- what it does
+- why it matters
+- which strategy invariants it strengthens
+- which trust, measurability, safety, replayability, or control property it improves
 
-## NON-NEGOTIABLE (STRICT MODE)
-- Every step MUST reference at least one strategy invariant.
-- Every step MUST reference at least one trust gain category.
-- Every step MUST state primary trust gain.
-- Every step MUST include explicit eval reference linkage.
-- Every step MUST include explicit control-loop stage integration (Observe/Interpret/Decide/Enforce).
-- For any step affecting system behavior, the step MUST explicitly state replay or trace implications.
-- Every step MUST include replay and trace considerations for auditability.
-- Roadmap generation MUST bind to `strategy_version: "strategy-control.md::<hash_or_version>"`.
-- Missing alignment is invalid output.
-- Missing these fields = invalid output.
+5. HARD GATES
+Prefer steps that improve one or more of the following:
+- schema discipline
+- replay determinism
+- eval coverage
+- observability completeness
+- policy authority
+- certification and promotion rigor
+- judgment capture and reuse
+- AI substrate governance
+- artifact intelligence readiness
 
-## INVALID OUTPUT CONDITIONS
-- missing Strategy Alignment
-- missing Primary Trust Gain
-- agent-first or prompt-first steps
-- capability without eval/control/replay
-- capability without governance
-- missing foundation/substrate pre-check classification
-- proposes expansion while foundation or must-add substrate has `present_but_partial`, `present_but_bypassable`, `missing`, or `ambiguous` status in required layers/components
+6. DRIFT HANDLING
+If the repo shows architecture drift, your roadmap must explicitly pivot toward stabilization before expansion.
+Examples of drift include:
+- missing evals
+- schema bypasses
+- weak traceability
+- control bypasses
+- ungoverned outputs
+- weak replayability
+- capability added without promotion discipline
+- substrate expansion without new measurement or governance surfaces
 
-- Strategy Control Document is highest authority.
-- Foundation document is mandatory architecture authority for roadmap generation.
-- AI operating substrate document is mandatory substrate/intelligence authority for roadmap generation.
-- Every roadmap step must explicitly align to strategy invariants from `docs/architecture/strategy-control.md`.
-- Source docs are mandatory bounded grounding inputs.
-- Foundation-before-expansion and substrate-before-expansion are required.
-- Output must be structured and provenance-bearing.
-- Detect and report drift before proposing expansion.
-- If authorities and roadmap disagree, record mismatch as a hardening gap and prioritize closure; do not rewrite architecture.
+7. REPO INTERPRETATION RULE
+Treat the repository as an implemented but incomplete governed system.
+Prefer hardening, connecting, validating, and governing existing seams rather than redesigning from scratch.
 
-## Sequencing Rules (Hard Gate)
-- Missing or weak foundation/must-add substrate components must be prioritized before expansion.
-- If must-add substrate gaps remain, roadmap steps must prioritize substrate build/hardening before broader workflow expansion, more agentic behavior, model breadth expansion, artifact-family breadth expansion, or autonomy expansion.
-- Reject roadmap steps that expand agent behavior, workflows, model/provider breadth, or artifact breadth while foundation/substrate is incomplete.
-- No broader capability advancement is compliant until foundation chain and must-add substrate chain are non-bypassable and governed.
+8. GOLDEN PATH BUILDABILITY CHECK
+Before proposing roadmap expansion, you must explicitly assess golden path buildability.
 
-## Required Output Structure
+You must include a section titled exactly:
+Golden Path Buildability Status
 
-### Current Strategy Risks
-- Enumerate current violations or pressure points against strategy invariants.
+In that section, you must evaluate whether the current repo can execute the golden path end to end.
+At minimum, assess whether the repo currently supports:
+- artifact creation
+- schema validation
+- required eval generation
+- eval summary rollup
+- deterministic control decision
+- enforcement action execution
+- replay support
+- trace completeness
+- promotion or certification checkpoint
 
-### Foundation and Substrate Gap Classification
-- Classify each required foundation layer and must-add substrate component (`present_and_governed`, `present_but_partial`, `present_but_bypassable`, `missing`, `ambiguous`).
-- Explicitly state whether the golden path and minimum viable artifact-intelligence slice are buildable.
+You must then output exactly one of:
+- BUILDABLE
+- PARTIALLY BUILDABLE
+- NOT BUILDABLE
 
-### Current Source Misalignment Risks
-- Enumerate gaps between implemented seams and source-authorized architecture grounding.
+You must also list:
+- seams already implemented
+- seams missing
+- seams weak or bypassable
+- the next hard gate required before further expansion
 
-### Roadmap Table
-| ID | Prompt | Status | What It Does | Why It Matters | Strategy Alignment | Source Grounding | Dependency Class | Primary Trust Gain |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+Treat “documented but not implemented” as NOT BUILDABLE.
+Treat missing required evals, weak replay, weak traceability, missing control integration, or missing promotion or certification rigor as NOT BUILDABLE or PARTIALLY BUILDABLE.
 
-Each roadmap step MUST declare one `Dependency Class` value:
-- `foundation hardening`
-- `substrate build`
-- `substrate hardening`
-- `artifact intelligence build`
-- `depends on missing substrate`
-- `blocked until hard gate passes`
+9. FOUNDATION EXPANSION BLOCK
+You must explicitly determine whether expansion is allowed.
 
-### Example Row (Anchor Pattern)
-| ID | Prompt | Status | What It Does | Why It Matters | Strategy Alignment | Source Grounding | Dependency Class | Primary Trust Gain |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| EX-01 | Add eval gating | Not Run | Adds eval enforcement | Prevents unverified outputs | Strengthens Eval Invariants 6–9; Control Rule fail-closed | Foundation chain eval→control seam | foundation hardening | eval coverage |
+You must include a section titled exactly:
+Expansion Decision
 
-### Recommended Next Hard Gate
-- Single gate recommendation with rationale tied to trust-before-speed and foundation/substrate-first sequencing.
+In that section, you must output exactly one of:
+- EXPANSION ALLOWED
+- EXPANSION LIMITED
+- EXPANSION BLOCKED
 
-## Provenance Block (Mandatory)
-Every roadmap output must include:
-- `strategy_ref` (path + version/date)
-- `strategy_version` (`strategy-control.md::<hash_or_version>`)
-- `foundation_ref` (`docs/architecture/foundation_pqx_eval_control.md` + version/date)
-- `substrate_ref` (`docs/architecture/ai_operating_substrate_and_artifact_intelligence.md` + version/date)
-- `source_refs[]` (source id + path + enforcement purpose)
-- `invariant_checks_applied[]`
-- `foundation_checks_applied[]`
-- `substrate_checks_applied[]`
-- `foundation_gap_summary[]`
-- `substrate_gap_summary[]`
-- `drift_detected[]`
-- `allowed_now_rationale` (why step is allowed now instead of later)
+You must mark expansion as EXPANSION BLOCKED if any of the following are true:
+- required contracts are missing
+- required evals are missing
+- replay is missing or weak
+- traceability is missing or weak
+- control integration is missing or bypassable
+- certification or promotion hard gates are missing
+- the golden path is PARTIALLY BUILDABLE
+- the golden path is NOT BUILDABLE
+- a foundation slice is weak, partial, incomplete, or bypassable
 
-## Fail-Closed Conditions
-Reject roadmap output when any of the following is true:
-- strategy reference missing
-- strategy_version lock missing
-- foundation reference missing
-- substrate reference missing
-- source grounding list missing or empty
-- invariant checks missing
-- foundation checks missing
-- substrate checks missing
-- any roadmap step missing explicit strategy-invariant alignment
-- any roadmap step missing dependency class
-- any roadmap step missing primary trust gain
-- roadmap includes agent-first or prompt-first step framing
-- roadmap proposes capability without governance control integration
-- roadmap proposes expansion while foundation/substrate is incomplete
-- drift detected but not stabilized
-- roadmap step justification lacks trust rationale
+If expansion is EXPANSION BLOCKED, the roadmap must fail closed against expansion and pivot to stabilization and hardening only.
+If expansion is EXPANSION LIMITED, only tightly bounded substrate-hardening work may proceed.
+You must not propose broader capability expansion while foundation gaps remain.
+
+10. OUTPUT CLASSIFICATION
+Each roadmap step must classify itself as one of:
+- foundation hardening
+- substrate build
+- substrate hardening
+- artifact intelligence build
+- depends on missing foundation
+- blocked until hard gate passes
+
+OUTPUT FORMAT
+
+Return:
+1. a section titled exactly:
+Current Strategy Risks
+
+2. a section titled exactly:
+Golden Path Buildability Status
+
+3. a section titled exactly:
+Expansion Decision
+
+4. a single markdown table with these columns:
+- ID
+- Prompt
+- Status
+- What It Does
+- Why It Matters
+- Strategy Alignment
+- Primary Trust Gain
+- Step Class
+
+5. a section titled exactly:
+Recommended Next Hard Gate
+
+ADDITIONAL OUTPUT REQUIREMENTS
+- Be explicit when later steps depend on earlier stabilization.
+- If Expansion Decision is EXPANSION BLOCKED, the first roadmap tranche must be hardening-only.
+- Name and number prompts explicitly using this format:
+  - Prompt 1 — <title>
+  - Prompt 2 — <title>
+  - Prompt 3 — <title>
+
+QUALITY BAR
+The roadmap must be:
+- dependency-valid
+- governance-complete
+- failure-mode-aware
+- repo-native
+- aligned to the Strategy Control Document
+- foundation-aware
+- golden-path-aware
+- explicit about whether expansion is blocked
+- realistic for incremental implementation
+
+A roadmap that does not explicitly report Golden Path Buildability Status and Expansion Decision is invalid.
+
+Do not produce vague ideas.
+Do not hand-wave partial foundations as complete.
+Produce buildable next steps.
