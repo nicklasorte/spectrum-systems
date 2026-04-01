@@ -290,6 +290,8 @@ def build_impact_map(repo_root: Path, changed_contract_paths: list[str], changed
 
 
 def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str]:
+    tests_root = repo_root / "tests"
+    test_files = sorted(path for path in tests_root.rglob("test_*.py") if path.is_file()) if tests_root.is_dir() else []
     targets: set[str] = set()
     for rel_path in impacted_paths:
         candidate = Path(rel_path)
@@ -299,11 +301,17 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
 
         if rel_path.startswith("tests/helpers/") or rel_path.startswith("tests/fixtures/"):
             stem = candidate.stem
-            search = _run(["rg", "-l", stem, "tests"], cwd=repo_root)
-            if search.returncode == 0:
-                for line in search.stdout.splitlines():
-                    if line.startswith("tests/test_") and line.endswith(".py"):
-                        targets.add(line.strip())
+            if not stem:
+                continue
+            stem_needle = stem.lower()
+            for test_file in test_files:
+                rel_test = test_file.relative_to(repo_root).as_posix()
+                try:
+                    text = test_file.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    continue
+                if stem_needle in text.lower():
+                    targets.add(rel_test)
 
     return sorted(targets)
 

@@ -194,6 +194,51 @@ def test_masking_detection_labels_contract_masking() -> None:
     ]
 
 
+def test_resolve_test_targets_fixture_mapping_without_rg_dependency(tmp_path: Path) -> None:
+    tests_dir = tmp_path / "tests"
+    (tests_dir / "fixtures").mkdir(parents=True)
+    (tests_dir / "test_alpha.py").write_text(
+        "def test_uses_fixture_name():\n    assert 'fixture_alpha' is not None\n",
+        encoding="utf-8",
+    )
+    (tests_dir / "test_beta.py").write_text("def test_other():\n    assert True\n", encoding="utf-8")
+
+    targets = preflight.resolve_test_targets(tmp_path, ["tests/fixtures/fixture_alpha.json"])
+    assert targets == ["tests/test_alpha.py"]
+
+
+def test_resolve_test_targets_does_not_invoke_rg(monkeypatch, tmp_path: Path) -> None:
+    tests_dir = tmp_path / "tests"
+    (tests_dir / "helpers").mkdir(parents=True)
+    (tests_dir / "test_helper_usage.py").write_text(
+        "def test_helper_ref():\n    name = 'my_helper'\n    assert name\n",
+        encoding="utf-8",
+    )
+
+    called_commands: list[list[str]] = []
+    original_run = preflight._run
+
+    def _capture_run(command: list[str], cwd: Path):
+        called_commands.append(command)
+        return original_run(command, cwd)
+
+    monkeypatch.setattr(preflight, "_run", _capture_run)
+    targets = preflight.resolve_test_targets(tmp_path, ["tests/helpers/my_helper.py"])
+    assert targets == ["tests/test_helper_usage.py"]
+    assert not any(command and command[0] in {"rg", "ripgrep"} for command in called_commands)
+
+
+def test_resolve_test_targets_ignores_unreadable_test_files(tmp_path: Path) -> None:
+    tests_dir = tmp_path / "tests"
+    tests_dir.mkdir(parents=True)
+    unreadable = tests_dir / "test_unreadable.py"
+    unreadable.write_bytes(b"\xff\xfe\x00\x00")
+    (tests_dir / "test_readable.py").write_text("def test_ok():\n    marker = 'fixture_zeta'\n    assert marker\n", encoding="utf-8")
+
+    targets = preflight.resolve_test_targets(tmp_path, ["tests/fixtures/fixture_zeta.json"])
+    assert targets == ["tests/test_readable.py"]
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
 
