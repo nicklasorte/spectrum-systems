@@ -51,6 +51,12 @@ def handoff_to_pqx(*, cycle_id: str, request_path: str | Path, reports_root: Pat
         state_path=Path(request["state_path"]),
         runs_root=Path(request["runs_root"]),
         pqx_output_text=request["pqx_output_text"],
+        contract_preflight_result_artifact_path=(
+            Path(request["contract_preflight_result_artifact_path"])
+            if isinstance(request.get("contract_preflight_result_artifact_path"), str)
+            and request.get("contract_preflight_result_artifact_path", "").strip()
+            else None
+        ),
     )
 
     if result.get("status") != "complete":
