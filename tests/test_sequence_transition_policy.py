@@ -24,6 +24,10 @@ def _base_manifest(state: str) -> dict:
         "certification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json"),
         "decision_blocked": False,
         "control_allow_promotion": True,
+        "required_judgments": ["artifact_release_readiness"],
+        "judgment_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"),
+        "judgment_application_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_application_record.json"),
+        "judgment_eval_result_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_eval_result.json"),
         "control_loop_gate_proof": {
             "severity_linkage_complete": True,
             "deterministic_transition_consumption": True,
@@ -78,3 +82,11 @@ def test_promotion_blocks_when_failure_binding_proof_missing() -> None:
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "failure_binding_required_for_progression" in str(decision.reason)
+
+
+def test_promotion_blocks_when_required_judgment_artifact_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["judgment_eval_result_path"] = ""
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "judgment_eval_result_path" in str(decision.reason)

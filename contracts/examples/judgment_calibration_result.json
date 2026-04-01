@@ -1,8 +1,8 @@
 {
   "artifact_type": "judgment_calibration_result",
   "artifact_id": "judgment-calibration-cycle-0001",
-  "artifact_version": "1.1.0",
-  "schema_version": "1.1.0",
+  "artifact_version": "1.2.0",
+  "schema_version": "1.2.0",
   "standards_version": "1.1.0",
   "grouping_keys": [
     "judgment_type",
@@ -62,6 +62,39 @@
     "observation_count": 1,
     "aligned_count": 1,
     "misaligned_count": 0
+  },
+  "evidence_window": {
+    "window_type": "rolling_event_count",
+    "lookback_event_count": 30,
+    "observed_event_count": 1,
+    "window_start_observation_time": "2026-03-30T00:00:00Z",
+    "window_end_observation_time": "2026-03-30T00:00:00Z"
+  },
+  "policy_reference": {
+    "policy_id": "judgment-policy-artifact-release-readiness-v1",
+    "policy_version": "1.1.0",
+    "policy_source": "contracts/examples/judgment_policy.json"
+  },
+  "calibration_health": {
+    "status": "degraded",
+    "trend": "stable",
+    "threshold_comparison": {
+      "warn_if_expected_calibration_error_greater_than": 0.05,
+      "freeze_if_expected_calibration_error_greater_than": 0.1,
+      "max_expected_calibration_error": 0.05,
+      "breach_level": "warn"
+    }
+  },
+  "trace_linkage": {
+    "judgment_ids": [
+      "judgment-record-cycle-0001"
+    ],
+    "trace_ids": [
+      "cycle-0001"
+    ],
+    "deterministic_identity_refs": [
+      "judgment-record-cycle-0001:evaluation-control-decision-cycle-0001:cycle-0001:judgment-label-cycle-0001"
+    ]
   },
   "created_at": "2026-03-30T00:00:00Z"
 }

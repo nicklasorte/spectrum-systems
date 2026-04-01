@@ -28,6 +28,7 @@ class PromotionInputs:
     judgment_calibration_result: dict[str, Any] | None = None
     remediation_readiness_statuses: list[dict[str, Any]] = None
     control_ready: bool = False
+    calibration_required: bool = True
 
 
 def _artifact_identity(policy: dict[str, Any]) -> tuple[str, str]:
@@ -205,13 +206,33 @@ def evaluate_promotion_gates(inputs: PromotionInputs) -> dict[str, bool]:
     control_ready = bool(inputs.control_ready)
 
     calibration_healthy = True
+    calibration_evidence_present = True
+    calibration_lifecycle_block = False
     calibration = inputs.judgment_calibration_result
-    if isinstance(calibration, dict):
-        max_ece = 0.0
-        for row in calibration.get("group_metrics", []):
-            if isinstance(row, dict):
-                max_ece = max(max_ece, float(row.get("expected_calibration_error", 0.0)))
-        calibration_healthy = max_ece < 0.1
+    if not isinstance(calibration, dict):
+        calibration_evidence_present = False
+        if inputs.calibration_required:
+            raise JudgmentPolicyLifecycleError("promotion requires judgment_calibration_result")
+    else:
+        health = calibration.get("calibration_health")
+        if isinstance(health, dict):
+            status = str(health.get("status") or "").strip()
+            if status == "failing":
+                calibration_healthy = False
+                calibration_lifecycle_block = True
+            elif status == "degraded":
+                calibration_healthy = False
+            elif status == "healthy":
+                calibration_healthy = True
+            else:
+                raise JudgmentPolicyLifecycleError("judgment_calibration_result calibration_health.status is invalid")
+        else:
+            max_ece = 0.0
+            for row in calibration.get("group_metrics", []):
+                if isinstance(row, dict):
+                    max_ece = max(max_ece, float(row.get("expected_calibration_error", 0.0)))
+            calibration_healthy = max_ece < 0.1
+            calibration_lifecycle_block = max_ece >= 0.1
 
     gates = {
         "judgment_eval_healthy": eval_healthy,
@@ -219,7 +240,9 @@ def evaluate_promotion_gates(inputs: PromotionInputs) -> dict[str, bool]:
         "error_budget_healthy": error_budget_healthy,
         "critical_remediation_clear": critical_remediation_clear,
         "readiness_control_checks": control_ready,
+        "calibration_evidence_present": calibration_evidence_present,
         "calibration_within_bounds": calibration_healthy,
+        "calibration_lifecycle_block": calibration_lifecycle_block,
     }
     return gates
 
