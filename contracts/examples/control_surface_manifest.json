@@ -1,0 +1,49 @@
+{
+  "artifact_type": "control_surface_manifest",
+  "schema_version": "1.0.0",
+  "manifest_status": "gaps_detected",
+  "deterministic_build_identity": "csm-4fd6f5655dfcc7ac",
+  "surfaces": [
+    {
+      "surface_id": "contract_preflight_gate",
+      "surface_name": "Contract Preflight Governance Gate",
+      "surface_category": "governance_validation",
+      "owning_module": "scripts.run_contract_preflight",
+      "entrypoint_function": "main",
+      "decision_scope": "changed-contract impact classification and strategy gate decision",
+      "enforcement_scope": "pre-merge/preflight governance decision artifact",
+      "artifact_types_consumed": ["changed_paths", "example_registry", "schema_registry"],
+      "artifact_types_emitted": ["contract_preflight_result"],
+      "required_refs": ["contracts/examples", "contracts/schemas", "contracts/standards-manifest.json"],
+      "optional_refs": ["base_ref", "changed_paths", "head_ref"],
+      "fail_closed": true,
+      "promotion_blocking": false,
+      "certification_blocking": false,
+      "invariant_coverage": {
+        "invariants_applied": [],
+        "invariant_source_module": "",
+        "invariant_enforcement_mode": "none",
+        "invariant_blocking_effect": "none"
+      },
+      "test_coverage": {
+        "covering_test_files": ["tests/test_contract_preflight.py"],
+        "critical_test_names": [],
+        "coverage_status": "partially_covered"
+      }
+    }
+  ],
+  "gap_signals": {
+    "uncovered_surfaces": [],
+    "surfaces_missing_invariants": ["contract_preflight_gate"],
+    "surfaces_missing_required_refs": [],
+    "surfaces_missing_targeted_tests": [],
+    "contradictory_surface_metadata": []
+  },
+  "summary": {
+    "total_surfaces": 1,
+    "fully_covered_surfaces": 0,
+    "partially_covered_surfaces": 1,
+    "uncovered_surfaces_count": 0,
+    "blocking_gaps_present": false
+  }
+}
