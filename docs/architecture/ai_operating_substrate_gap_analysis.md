@@ -18,6 +18,7 @@ Repo reality checked against:
 - Eval registry baseline artifact exists as `eval_registry_snapshot`.
 - Judgment reuse primitives exist (`judgment_application_record`, `judgment_record`, `judgment_outcome_label`).
 - Override governance primitives exist (`hitl_override_decision`, `evaluation_override_authorization`).
+- Foundation-chain contracts for eval/control/enforcement/replay/trace/certification exist (`eval_result`, `eval_summary`, `evaluation_control_decision`, `evaluation_enforcement_action`, `replay_result`, `trace`, `done_certification_record`).
 
 ## 2) Partial components / weak seams
 - Prompt governance is present but task-level lifecycle governance appears implicit; no canonical `task_registry_entry` artifact found.
@@ -25,6 +26,7 @@ Repo reality checked against:
 - Context admission exists, but substrate-level source-admission lineage contract (`context_source_admission_record`) is absent as a dedicated artifact.
 - Eval registry exists as snapshot artifact, but per-entry governance artifact (`eval_registry_entry`) is not standardized.
 - Judgment artifacts exist, but explicit reuse efficacy reporting is not codified as a required derived artifact family.
+- Golden-path control-chain seams appear distributed across multiple modules/contracts and remain vulnerable to bypass if all governed runtime entrypoints do not hard-require the same chain.
 
 ## 3) Missing must-add components
 - Task lifecycle governance contract and runtime enforcement seam (`task_registry_entry` equivalent) are missing.
@@ -71,3 +73,33 @@ Narrow first wave:
 5. Roadmap/controller consumption seam that uses hotspot output as explicit prioritization signal.
 
 This MVP is dependency-valid, governance-first, and avoids broad autonomy or taxonomy overbuild.
+
+## Golden Path Buildability Status
+**PARTIALLY BUILDABLE**
+
+### Already implemented seams
+- Artifact creation and schema surfaces are present for core foundation chain artifacts (`ai_model_request`, `ai_model_response`, `eval_result`, `eval_summary`, `evaluation_control_decision`, `evaluation_enforcement_action`, `replay_result`, `trace`, `done_certification_record`).
+- Deterministic routing/context/eval/control concepts are present in existing contracts and runtime docs (`routing_decision`, `context_admission_decision`, `eval_registry_snapshot`, roadmap rows for context gate and adapter boundary).
+- Replay and trace contracts exist and are referenced as governed requirements in roadmap and strategy docs.
+
+### Missing seams
+- Substrate-required contracts are missing: `task_registry_entry`, `routing_decision_record`, `context_source_admission_record`, `eval_registry_entry`.
+- Derived artifact-intelligence job output contracts are missing: `override_hotspot_report`, `evidence_gap_hotspot_report`.
+- No single authoritative MVP substrate golden-path implementation artifact proving end-to-end execution from request through certification with the new substrate artifact set.
+
+### Bypassable or weak seams
+- Current naming/contract mismatch between existing artifacts (`routing_decision`, `context_admission_decision`, `eval_registry_snapshot`) and required substrate artifacts (`*_record`, `eval_registry_entry`) creates ambiguous enforcement seams.
+- Task lifecycle governance is prompt-anchored but lacks explicit task contract hard-binding, allowing potential governance drift.
+- Derived intelligence is not yet mandatory in planning/control loop, weakening recurrence-prevention leverage.
+
+### Must be fixed before further expansion
+1. Add and wire missing must-add substrate contracts.
+2. Enforce non-bypassable task→prompt→request lineage.
+3. Hard-bind eval registry entry coverage to execution control gates.
+4. Add one derived intelligence job/report and require its consumption in roadmap/control prioritization.
+5. Demonstrate full MVP golden-path run artifact bundle with replay + trace + certification linkage.
+
+## Expansion Decision
+**EXPANSION BLOCKED**
+
+Expansion is blocked because the current slice is only partially buildable and still has missing must-add substrate contracts, weak/bypassable seams, and absent derived artifact intelligence jobs. Roadmap sequencing must prioritize substrate stabilization and hardening before any broader AI expansion (workflow breadth, model breadth, artifact-family breadth, or autonomy increase).

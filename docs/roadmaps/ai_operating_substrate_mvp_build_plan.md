@@ -5,6 +5,10 @@ This plan defines only the first narrow 10-step dependency-valid build wave for 
 
 It does **not** implement the full taxonomy, broad autonomy, or broad model/workflow expansion.
 
+## Expansion posture
+- Current posture: **EXPANSION BLOCKED** until MVP substrate hard gates pass.
+- This plan is stabilization/hardening-first and intentionally avoids major capability breadth.
+
 | ID | Prompt | Status | What It Does | Why It Matters | Which artifact(s) it introduces | Trust / measurement / governance gain unlocked | Dependencies / hard gate |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AOS-MVP-01 | PLAN — Task lifecycle governance contract slice | Planned | Define and approve contract-first scope for task-level lifecycle governance and registry linkage. | Prevents ad hoc prompt-to-task execution paths. | plan artifact only | Governance scope lock and non-drift execution boundary. | Must complete before AOS-MVP-02..03. |
