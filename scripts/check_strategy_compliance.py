@@ -64,9 +64,44 @@ class StrategyComplianceChecker:
                 first_item = order_lines[0]
                 if "docs/architecture/strategy-control.md" not in first_item:
                     self.add_violation("block", "strategy_not_first_input", "Roadmap prompt must include strategy as the first input.", file_path)
+                if len(order_lines) < 2 or "docs/architecture/foundation_pqx_eval_control.md" not in order_lines[1]:
+                    self.add_violation(
+                        "block",
+                        "foundation_not_second_input",
+                        "Roadmap prompt must include foundation_pqx_eval_control.md as the second input.",
+                        file_path,
+                    )
 
             if "Every step MUST reference at least one strategy invariant" not in text:
                 self.add_violation("block", "missing_invariant_requirement", "Prompt must require invariant validation per step.", file_path)
+            if "Foundation document is mandatory architecture authority" not in text:
+                self.add_violation(
+                    "block",
+                    "missing_foundation_authority_requirement",
+                    "Prompt must require the foundation architecture document as mandatory authority.",
+                    file_path,
+                )
+            if "present_and_governed" not in text or "present_but_bypassable" not in text or "missing" not in text:
+                self.add_violation(
+                    "block",
+                    "missing_foundation_gap_classification",
+                    "Prompt must include foundation gap classification statuses.",
+                    file_path,
+                )
+            if "whether golden path is buildable" not in text:
+                self.add_violation(
+                    "block",
+                    "missing_golden_path_buildability_check",
+                    "Prompt must require explicit golden path buildability status.",
+                    file_path,
+                )
+            if "proposes expansion while foundation is incomplete" not in text:
+                self.add_violation(
+                    "block",
+                    "missing_foundation_expansion_block",
+                    "Prompt must fail closed when expansion is proposed while foundation is incomplete.",
+                    file_path,
+                )
 
             if "drift" not in text.lower():
                 self.add_violation("block", "missing_drift_rules", "Prompt must include drift detection rules.", file_path)

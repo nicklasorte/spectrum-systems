@@ -55,6 +55,15 @@ Spectrum Systems should expand only after trust closure is proven:
 - **Decide:** issue explicit control decisions from policy-governed artifacts.
 - **Enforce:** execute allow/warn/freeze/block/remediate actions with traceable artifacts.
 
+## Authoritative Input Stack for Roadmap Generation (Canonical Order)
+1. `docs/architecture/strategy-control.md`
+2. `docs/architecture/foundation_pqx_eval_control.md`
+3. current repository state
+4. `docs/roadmaps/system_roadmap.md`
+5. source design documents / architecture artifacts
+
+This order is mandatory across strategy, roadmap prompts, roadmap authority notes, and roadmap generation outputs.
+
 ## Control Loop Closure Gate
 Pre-expansion gate requirements:
 
@@ -98,38 +107,66 @@ Pre-expansion gate requirements:
 - **Proof artifacts:** outcome labels + calibration artifacts + freeze/revoke records.
 - **Blocks until passed:** confidence-grade N-slice and canary expansion.
 
+## Strategy-to-Roadmap Operating Loop (Mandatory)
+Roadmap generation MUST, in every generation cycle:
+1. inspect repository state,
+2. inspect roadmap state,
+3. inspect strategy control,
+4. inspect `foundation_pqx_eval_control.md`,
+5. detect gaps between repository reality and the required foundation chain,
+6. classify each foundation layer (`present_and_governed`, `present_but_partial`, `present_but_bypassable`, `missing`, `ambiguous`),
+7. prioritize foundation hardening before expansion,
+8. block expansion when required foundation layers are missing, partial, bypassable, or ambiguous,
+9. report whether the golden path is currently buildable.
+
+## Hard Foundation-First Gate Rule
+No roadmap may advance broader capability if required foundation layers are missing, partial, ambiguous, or bypassable.
+
+Expansion of agent behavior, workflows, or artifact breadth is non-compliant until foundation hardening closes those gaps and the chain is non-bypassable.
+
 ## Roadmap Generation Rules
 1. Resolve authority via `docs/roadmaps/roadmap_authority.md`.
-2. Update `docs/roadmaps/system_roadmap.md` as editorial source.
-3. Mirror parse-critical changes in `docs/roadmap/system_roadmap.md` until migration ends.
-4. New expansion steps must declare dependency on Control Loop Closure Gate completion.
-5. Every roadmap row must state trust gain (safer/measurable/trustworthy/replayable/policy/certification/recurrence prevention).
+2. Enforce canonical input stack order (strategy, foundation, repo, roadmap, source artifacts).
+3. Compare repository state against `docs/architecture/foundation_pqx_eval_control.md` before proposing steps.
+4. Update `docs/roadmaps/system_roadmap.md` as editorial source.
+5. Mirror parse-critical changes in `docs/roadmap/system_roadmap.md` until migration ends.
+6. Missing or weak foundation seams must be prioritized before expansion.
+7. Every roadmap row must state trust gain (safer/measurable/trustworthy/replayable/policy/certification/recurrence prevention).
 
 ## Drift Detection and Correction
 Drift indicators:
 - missing strategy/source linkage in progression artifacts,
 - policy/eval/certification bypass,
 - duplicate governance seams,
-- roadmap authority ambiguity.
+- roadmap authority ambiguity,
+- repository state diverges from required chain: `PQX -> output_artifact -> eval_result/eval_summary -> control_decision -> enforcement_action -> replay/trace`.
 
 Correction actions:
 - fail closed progression,
 - emit remediation artifacts,
 - require roadmap + mirror reconciliation in the same change set,
-- run changed-scope verification before commit.
+- run changed-scope verification before commit,
+- classify and prioritize foundation hardening gaps before any expansion.
 
 ## Review / Prompting Enforcement
 - One prompt, one primary type (`PLAN`, `BUILD`, `WIRE`, `VALIDATE`, `REVIEW`).
 - Multi-file governance changes require a plan in `docs/review-actions/` before implementation.
 - Review findings must feed prioritized fix bundles and recurrence prevention assets.
+- Foundation-vs-roadmap mismatch is recorded as a foundation gap and prioritized for closure; do not rewrite architecture to fit roadmap drift.
 
 ## Default Build Priorities
-1. Control Loop Closure Gate (CL-01..CL-05)
-2. Dominant sequential trust path and grouped PQX path
-3. Review/fix recurrence hardening
-4. Certification/audit/promotion closure
-5. Source authority runtime hardening
-6. Later AI execution expansion
+1. Artifact schemas
+2. Eval coverage
+3. Deterministic control
+4. Fail-closed enforcement
+5. Replay integrity
+6. Trace completeness
+7. Control Loop Closure Gate (CL-01..CL-05)
+8. Dominant sequential trust path and grouped PQX path
+9. Review/fix recurrence hardening
+10. Certification/audit/promotion closure
+11. Source authority runtime hardening
+12. Later AI execution expansion
 
 ## Definition of Success
-Success means Spectrum Systems can demonstrate, with governed artifacts, that failures are converted into enforced prevention and policy/control updates over time, with replayable certification-grade evidence and no authority ambiguity.
+Success means Spectrum Systems can demonstrate, with governed artifacts, that failures are converted into enforced prevention and policy/control updates over time, with replayable certification-grade evidence, foundation-first sequencing compliance, and no authority ambiguity.
