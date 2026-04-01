@@ -422,6 +422,25 @@ def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path
     assert result["contract_preflight_decision"] == "warn"
 
 
+def test_run_pqx_slice_blocks_when_contract_changes_lack_preflight_artifact(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        changed_contract_paths=["contracts/schemas/roadmap_row.schema.json"],
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
+    assert "required for governed contract/example changes" in result["reason"]
+
+
 def test_runtime_module_import_has_no_done_certification_cycle() -> None:
     runtime_module = importlib.import_module("spectrum_systems.modules.runtime")
     assert runtime_module is not None
