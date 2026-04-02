@@ -208,6 +208,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("pqx_triage_plan_record")
         validate_artifact(instance, "pqx_triage_plan_record")
 
+    def test_control_surface_gap_result_example_validates(self) -> None:
+        instance = load_example("control_surface_gap_result")
+        validate_artifact(instance, "control_surface_gap_result")
+
     def test_prompt_queue_sequence_run_example_validates(self) -> None:
         instance = load_example("prompt_queue_sequence_run")
         validate_artifact(instance, "prompt_queue_sequence_run")

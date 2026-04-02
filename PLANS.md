@@ -244,6 +244,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-030-CONTROL-SURFACE-ENFORCEMENT-2026-04-01.md | CON-030 — Control Surface Manifest Enforcement | Active |
 | docs/review-actions/PLAN-CON-030-PREFLIGHT-FIX-2026-04-01.md | CON-030 — Preflight BLOCK reconciliation | Active |
 | docs/review-actions/PLAN-CON-031-MANIFEST-RUNTIME-OBEDIENCE-PROOF-2026-04-01.md | CON-031 — Manifest-to-Runtime Obedience Proof | Active |
+| docs/review-actions/PLAN-CON-032-CONTROL-SURFACE-GAP-TO-PQX-2026-04-01.md | CON-032 — Control Surface Gap → PQX Triage Integration | Active |
 
 Update this table when plans are created or completed.
 

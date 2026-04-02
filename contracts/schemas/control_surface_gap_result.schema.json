@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_surface_gap_result.schema.json",
+  "title": "Control Surface Gap Result",
+  "description": "Deterministic fail-closed gap extraction result bridging control-surface failures into machine-readable PQX triage inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gap_result_id", "timestamp", "status", "gaps"],
+  "properties": {
+    "gap_result_id": {
+      "type": "string",
+      "pattern": "^GAP-[a-f0-9]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "gaps_detected"]
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gap_id",
+          "control_surface",
+          "gap_type",
+          "severity",
+          "description",
+          "source_artifact_refs",
+          "detected_by"
+        ],
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "pattern": "^GAP-[a-f0-9]{64}$"
+          },
+          "control_surface": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gap_type": {
+            "type": "string",
+            "enum": ["missing_test", "invariant_violation", "enforcement_missing", "obedience_missing"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["blocker", "high", "medium"]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_artifact_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "detected_by": {
+            "type": "string",
+            "enum": ["manifest", "enforcement", "obedience"]
+          }
+        }
+      }
+    }
+  }
+}

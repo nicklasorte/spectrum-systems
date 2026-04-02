@@ -17,6 +17,10 @@
     "recommended_repair_area",
     "report_paths",
     "generated_at",
+    "control_surface_gap_status",
+    "control_surface_gap_result_ref",
+    "pqx_gap_work_items_ref",
+    "control_surface_gap_blocking",
     "control_signal",
     "trace"
   ],
@@ -100,6 +104,32 @@
     "generated_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "control_surface_gap_status": {
+      "type": "string",
+      "enum": [
+        "not_run",
+        "ok",
+        "gaps_detected",
+        "conversion_failed"
+      ]
+    },
+    "control_surface_gap_result_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "pqx_gap_work_items_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "control_surface_gap_blocking": {
+      "type": "boolean"
     },
     "control_signal": {
       "type": "object",

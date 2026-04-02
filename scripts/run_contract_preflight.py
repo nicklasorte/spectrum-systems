@@ -25,6 +25,14 @@ from spectrum_systems.modules.runtime.control_surface_enforcement import (  # no
     ControlSurfaceEnforcementError,
     run_control_surface_enforcement,
 )
+from spectrum_systems.modules.runtime.control_surface_gap_extractor import (  # noqa: E402
+    ControlSurfaceGapExtractionError,
+    extract_control_surface_gaps,
+)
+from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (  # noqa: E402
+    ControlSurfaceGapToPQXError,
+    convert_gaps_to_pqx_work_items,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -48,6 +56,11 @@ _CONTROL_SURFACE_ENFORCEMENT_TARGETS = {
     "scripts/build_control_surface_manifest.py",
     "tests/test_control_surface_manifest.py",
 }
+_CONTROL_SURFACE_MANIFEST_PATH = REPO_ROOT / "outputs" / "control_surface_manifest" / "control_surface_manifest.json"
+_CONTROL_SURFACE_ENFORCEMENT_PATH = (
+    REPO_ROOT / "outputs" / "control_surface_enforcement" / "control_surface_enforcement_result.json"
+)
+_CONTROL_SURFACE_OBEDIENCE_PATH = REPO_ROOT / "outputs" / "control_surface_obedience" / "control_surface_obedience_result.json"
 
 
 @dataclass
@@ -531,6 +544,11 @@ def render_markdown(report: dict[str, Any]) -> str:
     if control_surface_enforcement:
         lines.append(f"- **control_surface_enforcement_status**: {control_surface_enforcement.get('enforcement_status')}")
         lines.append(f"- **control_surface_enforcement_blocking_reasons**: {len(control_surface_enforcement.get('blocking_reasons', []))}")
+    gap_result = report.get("control_surface_gap_result")
+    if gap_result:
+        lines.append(f"- **control_surface_gap_status**: {gap_result.get('status')}")
+        lines.append(f"- **control_surface_gap_count**: {len(gap_result.get('gaps', []))}")
+        lines.append(f"- **control_surface_gap_pqx_conversion_error**: {report.get('control_surface_gap_pqx_conversion_error') or 'none'}")
 
     lines.append("")
     if report.get("masked_failures"):
@@ -579,6 +597,81 @@ def evaluate_control_surface_enforcement(changed_paths: list[str]) -> dict[str, 
             "manifest_ref": str(manifest_path.as_posix()),
         }
     return result
+
+
+def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
+    if not path.is_file():
+        raise ControlSurfaceGapExtractionError(f"{label} file not found: {path}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ControlSurfaceGapExtractionError(f"{label} is not valid JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ControlSurfaceGapExtractionError(f"{label} must be a JSON object")
+    return payload
+
+
+def evaluate_control_surface_gap_bridge(output_dir: Path) -> dict[str, Any]:
+    if not (
+        _CONTROL_SURFACE_MANIFEST_PATH.is_file()
+        and _CONTROL_SURFACE_ENFORCEMENT_PATH.is_file()
+        and _CONTROL_SURFACE_OBEDIENCE_PATH.is_file()
+    ):
+        return {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        }
+
+    try:
+        manifest = _load_json_object(_CONTROL_SURFACE_MANIFEST_PATH, label="control_surface_manifest")
+        enforcement = _load_json_object(_CONTROL_SURFACE_ENFORCEMENT_PATH, label="control_surface_enforcement_result")
+        obedience = _load_json_object(_CONTROL_SURFACE_OBEDIENCE_PATH, label="control_surface_obedience_result")
+        gap_result = extract_control_surface_gaps(manifest, enforcement, obedience)
+    except ControlSurfaceGapExtractionError as exc:
+        return {
+            "status": "conversion_failed",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": str(exc),
+            "blocking": True,
+        }
+
+    gap_result_path = output_dir / "control_surface_gap_result.json"
+    gap_result_path.write_text(json.dumps(gap_result, indent=2) + "\n", encoding="utf-8")
+    conversion_error: str | None = None
+    pqx_work_items: list[dict[str, Any]] | None = None
+    pqx_work_items_path: str | None = None
+    try:
+        pqx_work_items = convert_gaps_to_pqx_work_items(gap_result)
+        pqx_path = output_dir / "control_surface_gap_pqx_work_items.json"
+        pqx_path.write_text(json.dumps(pqx_work_items, indent=2) + "\n", encoding="utf-8")
+        pqx_work_items_path = str(pqx_path)
+    except ControlSurfaceGapToPQXError as exc:
+        conversion_error = str(exc)
+
+    blocker_gaps = [
+        gap for gap in gap_result["gaps"] if isinstance(gap, dict) and gap.get("severity") == "blocker"
+    ]
+    conversion_failed = gap_result["status"] == "gaps_detected" and (conversion_error is not None or not pqx_work_items)
+    blocking = bool(blocker_gaps or conversion_failed)
+    status = "conversion_failed" if conversion_error else gap_result["status"]
+
+    return {
+        "status": status,
+        "gap_result": gap_result,
+        "gap_result_path": str(gap_result_path),
+        "pqx_work_items": pqx_work_items,
+        "pqx_work_items_path": pqx_work_items_path,
+        "conversion_error": conversion_error,
+        "blocking": blocking,
+    }
 
 
 def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
@@ -659,6 +752,10 @@ def build_preflight_result_artifact(
             "markdown_report_path": str(markdown_report_path),
         },
         "generated_at": _utc_now(),
+        "control_surface_gap_status": report.get("control_surface_gap_status", "not_run"),
+        "control_surface_gap_result_ref": report.get("control_surface_gap_result_ref"),
+        "pqx_gap_work_items_ref": report.get("pqx_gap_work_items_ref"),
+        "control_surface_gap_blocking": bool(report.get("control_surface_gap_blocking", False)),
         "control_signal": control_signal,
         "trace": {
             "producer": "scripts/run_contract_preflight.py",
@@ -680,6 +777,7 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
+    control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
     classified = classify_changed_contracts(detection.changed_paths)
     surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
 
@@ -721,6 +819,9 @@ def main() -> int:
             "skip_reason": None,
             "invariant_violations": ["changed-path detection failed before evaluation"],
             "control_surface_enforcement": None,
+            "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
+            "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
+            "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -745,6 +846,9 @@ def main() -> int:
             "skip_reason": "explicit no-op: changed paths have no applicable contract surface",
             "invariant_violations": [],
             "control_surface_enforcement": None,
+            "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
+            "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
+            "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
         }
     else:
         if changed_contract_paths:
@@ -820,6 +924,9 @@ def main() -> int:
             "skip_reason": None,
             "invariant_violations": [],
             "control_surface_enforcement": evaluate_control_surface_enforcement(surface_classification["required_paths"]),
+            "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
+            "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
+            "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -831,6 +938,19 @@ def main() -> int:
             )
             report["recommended_repair_areas"] = sorted(
                 set(report["recommended_repair_areas"] + ["control surface manifest required coverage mappings"])
+            )
+    report["control_surface_gap_status"] = control_surface_gap_bridge["status"]
+    report["control_surface_gap_result_ref"] = control_surface_gap_bridge["gap_result_path"]
+    report["pqx_gap_work_items_ref"] = control_surface_gap_bridge["pqx_work_items_path"]
+    report["control_surface_gap_blocking"] = control_surface_gap_bridge["blocking"]
+    if control_surface_gap_bridge["blocking"]:
+        report["status"] = "failed"
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["control surface gap to PQX triage bridge"])
+        )
+        if control_surface_gap_bridge["conversion_error"]:
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["CONTROL_SURFACE_GAP_TO_PQX_CONVERSION_FAILED"])
             )
 
     json_path = output_dir / "contract_preflight_report.json"
