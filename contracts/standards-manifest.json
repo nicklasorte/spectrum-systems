@@ -2494,7 +2494,7 @@
     },
     {
       "artifact_type": "trust_spine_evidence_cohesion_result",
-      "artifact_class": "governance",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
