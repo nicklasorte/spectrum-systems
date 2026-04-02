@@ -1,0 +1,78 @@
+{
+  "artifact_type": "control_surface_obedience_result",
+  "schema_version": "1.0.0",
+  "manifest_ref": "outputs/control_surface_manifest/control_surface_manifest.json",
+  "manifest_identity": "csm-0123456789abcdef",
+  "enforcement_result_ref": "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+  "enforcement_result_id": "cse-0123456789abcdef",
+  "evaluated_surfaces": [
+    "sequence_transition_promotion",
+    "done_certification_gate",
+    "trust_spine_invariant_validation"
+  ],
+  "surface_results": [
+    {
+      "surface_id": "sequence_transition_promotion",
+      "declared_in_manifest": true,
+      "required_by_enforcement": true,
+      "runtime_obeyed": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "outputs/control_surface_manifest/control_surface_manifest.json",
+        "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+        "outputs/trust_spine_invariant_result.json",
+        "outputs/done_certification/done_certification_record.json",
+        "outputs/promotion_decision.json"
+      ],
+      "missing_evidence": [],
+      "contradictions": []
+    },
+    {
+      "surface_id": "done_certification_gate",
+      "declared_in_manifest": true,
+      "required_by_enforcement": true,
+      "runtime_obeyed": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "outputs/control_surface_manifest/control_surface_manifest.json",
+        "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+        "outputs/trust_spine_invariant_result.json",
+        "outputs/done_certification/done_certification_record.json"
+      ],
+      "missing_evidence": [],
+      "contradictions": []
+    },
+    {
+      "surface_id": "trust_spine_invariant_validation",
+      "declared_in_manifest": true,
+      "required_by_enforcement": true,
+      "runtime_obeyed": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "outputs/control_surface_manifest/control_surface_manifest.json",
+        "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+        "outputs/trust_spine_invariant_result.json",
+        "outputs/done_certification/done_certification_record.json",
+        "outputs/promotion_decision.json"
+      ],
+      "missing_evidence": [],
+      "contradictions": []
+    }
+  ],
+  "missing_obedience_evidence": [],
+  "contradictory_obedience_evidence": [],
+  "blocking_reasons": [],
+  "overall_decision": "ALLOW",
+  "deterministic_obedience_id": "cso-0123456789abcdef",
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.control_surface_obedience",
+    "policy_ref": "CON-031.obedience_proof.v1",
+    "evidence_refs": {
+      "manifest_ref": "outputs/control_surface_manifest/control_surface_manifest.json",
+      "enforcement_result_ref": "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+      "invariant_result_ref": "outputs/trust_spine_invariant_result.json",
+      "done_certification_ref": "outputs/done_certification/done_certification_record.json",
+      "promotion_decision_ref": "outputs/promotion_decision.json"
+    }
+  }
+}

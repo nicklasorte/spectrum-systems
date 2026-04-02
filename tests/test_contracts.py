@@ -247,6 +247,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("contract_preflight_result_artifact")
         validate_artifact(instance, "contract_preflight_result_artifact")
 
+    def test_control_surface_obedience_result_example_validates(self) -> None:
+        instance = load_example("control_surface_obedience_result")
+        validate_artifact(instance, "control_surface_obedience_result")
+
     def test_execution_change_impact_artifact_example_validates(self) -> None:
         instance = load_example("execution_change_impact_artifact")
         validate_artifact(instance, "execution_change_impact_artifact")
