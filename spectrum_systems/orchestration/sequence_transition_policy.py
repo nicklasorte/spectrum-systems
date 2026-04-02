@@ -340,6 +340,31 @@ def _hard_gate_falsification_passes(manifest: dict[str, Any]) -> tuple[bool, str
     return True, None
 
 
+
+
+def _obedience_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    obedience_ref = manifest.get("control_surface_obedience_result_ref")
+    if (not isinstance(obedience_ref, str) or not obedience_ref.strip()) and isinstance(refs, dict):
+        obedience_ref = refs.get("control_surface_obedience_result_ref")
+    if not isinstance(obedience_ref, str) or not obedience_ref.strip():
+        return True, None
+    if not _path_exists(obedience_ref):
+        return False, "promotion blocked: control_surface_obedience_result_ref is unreadable"
+    try:
+        payload = json.loads(Path(obedience_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "promotion blocked: control_surface_obedience_result_ref is unreadable"
+    errors = sorted(
+        Draft202012Validator(load_schema("control_surface_obedience_result")).iter_errors(payload),
+        key=lambda err: str(list(err.absolute_path)),
+    )
+    if errors:
+        return False, "promotion blocked: control_surface_obedience_result failed schema validation"
+    if payload.get("overall_decision") == "BLOCK":
+        return False, "promotion blocked by control_surface_obedience_result overall_decision=BLOCK"
+    return True, None
+
 def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     policy = manifest.get("review_signal_policy")
     policy_dict = policy if isinstance(policy, dict) else {}
@@ -433,6 +458,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         review_signal_passed, review_signal_error = _review_signal_gate(manifest)
         if not review_signal_passed:
             return SequenceTransitionDecision(False, review_signal_error)
+        obedience_passed, obedience_error = _obedience_gate(manifest)
+        if not obedience_passed:
+            return SequenceTransitionDecision(False, obedience_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:

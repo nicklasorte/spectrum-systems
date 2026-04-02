@@ -281,3 +281,29 @@ def test_promotion_blocks_when_review_signal_gate_fails(tmp_path: Path) -> None:
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "gate_assessment=FAIL" in str(decision.reason)
+
+
+def test_promotion_blocks_when_obedience_result_blocks(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    obedience = json.loads((_REPO_ROOT / "contracts" / "examples" / "control_surface_obedience_result.json").read_text(encoding="utf-8"))
+    obedience["overall_decision"] = "BLOCK"
+    obedience["blocking_reasons"] = ["sequence_transition_promotion:promotion allowed despite failed done certification"]
+    obedience["missing_obedience_evidence"] = ["sequence_transition_promotion:promotion consumed_signals evidence missing"]
+    obedience["contradictory_obedience_evidence"] = []
+    path = tmp_path / "control_surface_obedience_result_block.json"
+    path.write_text(json.dumps(obedience), encoding="utf-8")
+    manifest["done_certification_input_refs"]["control_surface_obedience_result_ref"] = str(path)
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "control_surface_obedience_result" in str(decision.reason)
+
+
+def test_promotion_allows_when_obedience_result_allows(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    path = tmp_path / "control_surface_obedience_result_allow.json"
+    path.write_text((_REPO_ROOT / "contracts" / "examples" / "control_surface_obedience_result.json").read_text(encoding="utf-8"), encoding="utf-8")
+    manifest["done_certification_input_refs"]["control_surface_obedience_result_ref"] = str(path)
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is True

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_surface_obedience_result.schema.json",
+  "title": "Control Surface Obedience Result",
+  "description": "Deterministic fail-closed obedience proof artifact showing manifest-declared control surfaces are consumed and obeyed by runtime certification/promotion seams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "manifest_ref",
+    "manifest_identity",
+    "enforcement_result_ref",
+    "enforcement_result_id",
+    "evaluated_surfaces",
+    "surface_results",
+    "missing_obedience_evidence",
+    "contradictory_obedience_evidence",
+    "blocking_reasons",
+    "overall_decision",
+    "deterministic_obedience_id",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "control_surface_obedience_result"},
+    "schema_version": {"const": "1.0.0"},
+    "manifest_ref": {"type": "string", "minLength": 1},
+    "manifest_identity": {"type": "string", "pattern": "^csm-[a-f0-9]{16}$"},
+    "enforcement_result_ref": {"type": "string", "minLength": 1},
+    "enforcement_result_id": {"type": "string", "pattern": "^cse-[a-f0-9]{16}$"},
+    "evaluated_surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "surface_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "surface_id",
+          "declared_in_manifest",
+          "required_by_enforcement",
+          "runtime_obeyed",
+          "status",
+          "evidence_refs",
+          "missing_evidence",
+          "contradictions"
+        ],
+        "properties": {
+          "surface_id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "declared_in_manifest": {"type": "boolean"},
+          "required_by_enforcement": {"type": "boolean"},
+          "runtime_obeyed": {"type": "boolean"},
+          "status": {"type": "string", "enum": ["PASS", "BLOCK"]},
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "contradictions": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "missing_obedience_evidence": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "contradictory_obedience_evidence": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "overall_decision": {"type": "string", "enum": ["ALLOW", "BLOCK"]},
+    "deterministic_obedience_id": {"type": "string", "pattern": "^cso-[a-f0-9]{16}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "policy_ref", "evidence_refs"],
+      "properties": {
+        "producer": {"const": "spectrum_systems.modules.runtime.control_surface_obedience"},
+        "policy_ref": {"type": "string", "minLength": 1},
+        "evidence_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "manifest_ref",
+            "enforcement_result_ref",
+            "invariant_result_ref",
+            "done_certification_ref",
+            "promotion_decision_ref"
+          ],
+          "properties": {
+            "manifest_ref": {"type": "string", "minLength": 1},
+            "enforcement_result_ref": {"type": "string", "minLength": 1},
+            "invariant_result_ref": {"type": "string", "minLength": 1},
+            "done_certification_ref": {"type": "string", "minLength": 1},
+            "promotion_decision_ref": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"overall_decision": {"const": "ALLOW"}}, "required": ["overall_decision"]},
+      "then": {
+        "properties": {
+          "blocking_reasons": {"maxItems": 0},
+          "missing_obedience_evidence": {"maxItems": 0},
+          "contradictory_obedience_evidence": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"overall_decision": {"const": "BLOCK"}}, "required": ["overall_decision"]},
+      "then": {"properties": {"blocking_reasons": {"minItems": 1}}}
+    }
+  ]
+}
