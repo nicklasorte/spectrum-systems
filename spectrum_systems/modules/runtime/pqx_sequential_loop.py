@@ -8,6 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
 
+from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import REPO_ROOT
 from spectrum_systems.modules.runtime.codex_to_pqx_task_wrapper import run_wrapped_pqx_task
 from spectrum_systems.modules.runtime.control_loop import (
@@ -92,6 +93,7 @@ def run_pqx_sequential(
         "schema_version": "1.0.0",
         "trace_id": _deterministic_trace_id([dict(item) for item in slices], context),
         "slices": [],
+        "authority_evidence_refs": [],
         "final_status": "ALLOW",
         "blocking_reason": None,
     }
@@ -113,6 +115,8 @@ def run_pqx_sequential(
             slice_request.get("required_context") if isinstance(slice_request.get("required_context"), dict) else context,
             label=f"slice[{slice_id}].required_context",
         )
+        if not required_context.get("authority_evidence_ref") and execution_trace["authority_evidence_refs"]:
+            required_context["authority_evidence_ref"] = execution_trace["authority_evidence_refs"][-1]
         classification = _require_non_empty_string(
             required_context.get("classification"), label=f"slice[{slice_id}].required_context.classification"
         )
@@ -133,6 +137,7 @@ def run_pqx_sequential(
                     "slice_id": slice_id,
                     "input_ref": slice_request.get("input_ref"),
                     "output_ref": None,
+                    "slice_execution_record_ref": None,
                     "eval_result_ref": None,
                     "control_decision": None,
                     "enforcement_result": "BLOCK",
@@ -158,6 +163,7 @@ def run_pqx_sequential(
                     "slice_id": slice_id,
                     "input_ref": slice_request.get("input_ref"),
                     "output_ref": runner_result.get("result"),
+                    "slice_execution_record_ref": None,
                     "eval_result_ref": None,
                     "control_decision": None,
                     "enforcement_result": "BLOCK",
@@ -172,6 +178,11 @@ def run_pqx_sequential(
             runner_result.get("slice_execution_record"), label=f"slice[{slice_id}].slice_execution_record"
         )
         execution_record = _load_json_ref(record_ref)
+        try:
+            validate_artifact(execution_record, "pqx_slice_execution_record")
+        except Exception as exc:
+            raise PQXSequentialLoopError(f"invalid pqx_slice_execution_record for slice {slice_id}: {exc}") from exc
+        execution_record_ref = _repo_ref(record_ref)
         replay_ref = _require_non_empty_string(
             execution_record.get("replay_result_ref"), label=f"slice[{slice_id}] replay_result_ref"
         )
@@ -201,21 +212,27 @@ def run_pqx_sequential(
         input_ref = slice_request.get("input_ref") or f"codex_pqx_task_wrapper:{wrapper.get('wrapper_id', '')}"
 
         execution_trace["slices"].append(
-            {
-                "slice_id": slice_id,
-                "input_ref": input_ref,
-                "output_ref": output_ref,
-                "eval_result_ref": eval_ref,
-                "control_decision": decision_artifact.get("decision"),
-                "enforcement_result": enforcement_label,
-                "status": "completed" if enforcement_label == "ALLOW" else "stopped",
-            }
+                {
+                    "slice_id": slice_id,
+                    "input_ref": input_ref,
+                    "output_ref": output_ref,
+                    "slice_execution_record_ref": execution_record_ref,
+                    "eval_result_ref": eval_ref,
+                    "control_decision": decision_artifact.get("decision"),
+                    "enforcement_result": enforcement_label,
+                    "status": "completed" if enforcement_label == "ALLOW" else "stopped",
+                }
         )
 
         carry_context["artifact_refs"].append(output_ref)
+        carry_context["artifact_refs"].append(execution_record_ref)
         carry_context["artifact_refs"].append(eval_ref)
+        execution_trace["authority_evidence_refs"].append(execution_record_ref)
         slice_request["artifact_refs"] = list(carry_context["artifact_refs"])
         slice_request["context_bundle"] = deepcopy(carry_context["context_bundle"])
+        slice_request["authority_evidence_ref"] = execution_record_ref
+        if isinstance(slice_request.get("required_context"), dict):
+            slice_request["required_context"]["authority_evidence_ref"] = execution_record_ref
 
         if enforcement_label in {"BLOCK", "REQUIRE_REVIEW"}:
             execution_trace["final_status"] = enforcement_label

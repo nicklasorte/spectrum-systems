@@ -123,11 +123,14 @@ def test_three_slices_all_allow_completes(monkeypatch: pytest.MonkeyPatch) -> No
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_before_execution",
         lambda context: {"enforcement_result": {"final_status": "allow"}},
     )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
     trace = run_pqx_sequential([_slice("1"), _slice("2"), _slice("3")], _base_initial_context())
     assert trace["final_status"] == "ALLOW"
     assert len(trace["slices"]) == 3
     assert all(item["enforcement_result"] == "ALLOW" for item in trace["slices"])
+    assert len(trace["authority_evidence_refs"]) == 3
+    assert trace["slices"][0]["slice_execution_record_ref"] is not None
 
 
 def test_second_slice_block_stops(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -147,6 +150,7 @@ def test_second_slice_block_stops(monkeypatch: pytest.MonkeyPatch) -> None:
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
     )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
     calls = {"n": 0}
 
@@ -175,6 +179,7 @@ def test_second_slice_require_review_stops(monkeypatch: pytest.MonkeyPatch) -> N
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
     )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
     calls = {"n": 0}
     def _gate(_: dict[str, object]) -> dict[str, object]:
@@ -206,6 +211,7 @@ def test_deterministic_output(monkeypatch: pytest.MonkeyPatch) -> None:
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
     )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
     slices = [_slice("1")]
     ctx = _base_initial_context()
@@ -233,9 +239,76 @@ def test_artifact_refs_passed_and_wrapper_reused(monkeypatch: pytest.MonkeyPatch
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
     )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
     slice_payload = _slice("1")
     wrapper = slice_payload["wrapper"]
     trace = run_pqx_sequential([slice_payload], _base_initial_context())
     assert seen_wrappers[0] is wrapper
     assert trace["slices"][0]["eval_result_ref"].startswith("evaluation_control_decision:")
+    assert trace["authority_evidence_refs"][0].endswith("execution_record.json")
+
+
+def test_execution_record_schema_validation_and_preflight_compatible_ref(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[dict[str, object], str]] = []
+    required_contexts: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.run_wrapped_pqx_task",
+        lambda **kwargs: {
+            "status": "complete",
+            "result": "/repo/out.result.json",
+            "slice_execution_record": "/repo/step-1.pqx_slice_execution_record.json",
+        },
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop._load_json_ref",
+        lambda path: (
+            {
+                "artifact_type": "pqx_slice_execution_record",
+                "schema_version": "1.1.0",
+                "step_id": "B11",
+                "run_id": "run-1",
+                "trace_id": "trace-1",
+                "status": "completed",
+                "certification_status": "certified",
+                "replay_result_ref": "data/replay.json",
+            }
+            if "pqx_slice_execution_record" in path
+            else {
+                "artifact_type": "replay_result",
+                "replay_id": "r",
+                "replay_run_id": "rr",
+                "trace_id": "tt",
+                "timestamp": "2026-04-02T00:00:00Z",
+                "observability_metrics": {"metrics": {}},
+                "error_budget_status": {"objectives": []},
+                "drift_detected": False,
+                "consistency_status": "match",
+            }
+        ),
+    )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.build_trace_context_from_replay_artifact", lambda a: {"trace_id": "tt", "replay_id": "r", "replay_run_id": "rr"})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_control_loop", lambda a, t: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d1"}})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_before_execution", lambda c: {"enforcement_result": {"final_status": "allow"}})
+
+    def _record_required_context(**kwargs: object) -> _AllowContextResult:
+        required_contexts.append({"authority_evidence_ref": kwargs.get("authority_evidence_ref")})
+        return _AllowContextResult()
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context", _record_required_context)
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact",
+        lambda payload, schema: calls.append((payload, schema)),
+    )
+
+    slices = [_slice("1"), _slice("2")]
+    slices[1]["required_context"] = {
+        "classification": "governed_pqx_required",
+        "execution_context": "pqx_governed",
+    }
+    trace = run_pqx_sequential(slices, _base_initial_context())
+
+    assert trace["authority_evidence_refs"][0].endswith(".pqx_slice_execution_record.json")
+    assert required_contexts[1]["authority_evidence_ref"].endswith(".pqx_slice_execution_record.json")
+    assert any(schema == "pqx_slice_execution_record" for _, schema in calls)
