@@ -745,6 +745,75 @@ def _load_json_object_optional(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _resolve_explicit_authority_evidence_ref(repo_root: Path, provided_ref: str | None) -> dict[str, Any]:
+    if not isinstance(provided_ref, str) or not provided_ref.strip():
+        return {
+            "resolution_status": "not_provided",
+            "authority_state": "authority_unknown_pending_evidence",
+            "blocking_reasons": [],
+            "evidence_ref": None,
+            "evidence_kind": "unspecified",
+        }
+    ref = provided_ref.strip()
+    candidate = Path(ref)
+    resolved_path = candidate if candidate.is_absolute() else (repo_root / candidate)
+    payload = _load_json_object_optional(resolved_path)
+    if payload is None:
+        return {
+            "resolution_status": "invalid",
+            "authority_state": "authority_unknown_pending_evidence",
+            "blocking_reasons": ["INVALID_GOVERNED_PQX_AUTHORITY_EVIDENCE_REF"],
+            "evidence_ref": ref,
+            "evidence_kind": "unknown",
+        }
+
+    if payload.get("artifact_type") == "pqx_slice_execution_record":
+        if payload.get("status") != "completed" or payload.get("certification_status") != "certified":
+            return {
+                "resolution_status": "invalid",
+                "authority_state": "authority_unknown_pending_evidence",
+                "blocking_reasons": ["INVALID_GOVERNED_PQX_AUTHORITY_EVIDENCE_REF"],
+                "evidence_ref": ref,
+                "evidence_kind": "pqx_slice_execution_record",
+            }
+        return {
+            "resolution_status": "resolved",
+            "authority_state": "authoritative_governed_pqx",
+            "blocking_reasons": [],
+            "evidence_ref": str(candidate),
+            "evidence_kind": "pqx_slice_execution_record",
+        }
+
+    if payload.get("artifact_type") == "pqx_sequential_execution_trace":
+        refs = payload.get("authority_evidence_refs")
+        if not isinstance(refs, list) or not refs:
+            return {
+                "resolution_status": "invalid",
+                "authority_state": "authority_unknown_pending_evidence",
+                "blocking_reasons": ["INVALID_GOVERNED_PQX_AUTHORITY_EVIDENCE_REF"],
+                "evidence_ref": ref,
+                "evidence_kind": "pqx_sequential_execution_trace",
+            }
+        last_ref = refs[-1]
+        if not isinstance(last_ref, str) or not last_ref.strip():
+            return {
+                "resolution_status": "invalid",
+                "authority_state": "authority_unknown_pending_evidence",
+                "blocking_reasons": ["INVALID_GOVERNED_PQX_AUTHORITY_EVIDENCE_REF"],
+                "evidence_ref": ref,
+                "evidence_kind": "pqx_sequential_execution_trace",
+            }
+        return _resolve_explicit_authority_evidence_ref(repo_root, last_ref)
+
+    return {
+        "resolution_status": "invalid",
+        "authority_state": "authority_unknown_pending_evidence",
+        "blocking_reasons": ["INVALID_GOVERNED_PQX_AUTHORITY_EVIDENCE_REF"],
+        "evidence_ref": ref,
+        "evidence_kind": str(payload.get("artifact_type") or "unknown"),
+    }
+
+
 def resolve_governed_pqx_authority_evidence(repo_root: Path) -> dict[str, Any]:
     evidence_candidates = sorted(
         list((repo_root / "data" / "pqx_runs").rglob("*.pqx_slice_execution_record.json"))
@@ -893,6 +962,7 @@ def evaluate_trust_spine_cohesion(changed_paths: list[str], output_dir: Path) ->
 def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
     changed_path_detection = report.get("changed_path_detection", {})
     detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
+    preflight_mode = str(changed_path_detection.get("preflight_mode", "explicit_or_local_inspection"))
     degraded = detection_mode == "degraded_full_governed_scan"
     masking_detected = bool(report.get("masked_failures"))
     has_propagation_failures = bool(report.get("schema_example_failures") or report.get("producer_failures"))
@@ -902,6 +972,17 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
     pqx_execution_policy = report.get("pqx_execution_policy") or {}
     pqx_policy_blocking = str(pqx_execution_policy.get("status", "")).lower() == "block"
     pqx_policy_warning = str(pqx_execution_policy.get("status", "")).lower() == "warn"
+    inspection_only_commit_range = (
+        preflight_mode == "commit_range_inspection"
+        and str(pqx_execution_policy.get("execution_context", "unspecified")) == "unspecified"
+        and pqx_policy_warning
+    )
+    governed_commit_range_with_authority = (
+        preflight_mode == "commit_range_inspection"
+        and str(pqx_execution_policy.get("execution_context", "unspecified")) == "pqx_governed"
+        and str(pqx_execution_policy.get("status", "")).lower() == "allow"
+        and str(pqx_execution_policy.get("authority_state", "")) == "authoritative_governed_pqx"
+    )
     status = str(report.get("status", "failed"))
 
     if status == "skipped":
@@ -911,7 +992,13 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
-    if masking_detected or has_propagation_failures or invariant_violations or missing_required_surface or pqx_policy_blocking:
+    if (
+        masking_detected
+        or has_propagation_failures
+        or invariant_violations
+        or (missing_required_surface and not (inspection_only_commit_range or governed_commit_range_with_authority))
+        or pqx_policy_blocking
+    ):
         return {
             "strategy_gate_decision": "BLOCK",
             "rationale": "preflight failed on propagation/masking/invariant/required-surface/PQX-policy risk",
@@ -920,8 +1007,17 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
         }
     if pqx_policy_warning:
         return {
-            "strategy_gate_decision": "WARN",
-            "rationale": "preflight passed with unresolved governed PQX authority evidence in commit-range inspection mode",
+            "strategy_gate_decision": "ALLOW",
+            "rationale": "inspection-only commit-range mode accepted without governed execution assertion",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if governed_commit_range_with_authority and not (
+        masking_detected or has_propagation_failures or invariant_violations or pqx_policy_blocking or degraded
+    ):
+        return {
+            "strategy_gate_decision": "ALLOW",
+            "rationale": "commit-range inspection accepted with explicit governed PQX authority evidence",
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
@@ -1058,6 +1154,10 @@ def main() -> int:
     pqx_execution_policy: dict[str, Any] | None = None
     pqx_required_context_enforcement: dict[str, Any] | None = None
     wrapper_payload: dict[str, Any] | None = None
+    explicit_authority_resolution = _resolve_explicit_authority_evidence_ref(
+        REPO_ROOT,
+        getattr(args, "authority_evidence_ref", None),
+    )
     wrapper_path_value = getattr(args, "pqx_wrapper_path", None)
     if wrapper_path_value:
         wrapper_path = Path(wrapper_path_value)
@@ -1094,13 +1194,18 @@ def main() -> int:
         }
     detection_meta["pqx_execution_policy"] = pqx_execution_policy
     if pqx_required_context_enforcement is None and isinstance(pqx_execution_policy, dict):
+        authority_ref_for_enforcement = (
+            explicit_authority_resolution.get("evidence_ref")
+            if explicit_authority_resolution.get("resolution_status") == "resolved"
+            else getattr(args, "authority_evidence_ref", None)
+        )
         try:
             pqx_required_context_enforcement = enforce_pqx_required_context(
                 classification=str(pqx_execution_policy.get("classification", "exploration_only_or_non_governed")),
                 execution_context=getattr(args, "execution_context", "unspecified"),
                 changed_paths=detection.changed_paths,
                 pqx_task_wrapper=wrapper_payload,
-                authority_evidence_ref=getattr(args, "authority_evidence_ref", None),
+                authority_evidence_ref=authority_ref_for_enforcement,
                 preflight_mode=preflight_mode,
             ).to_dict()
         except PQXRequiredContextEnforcementError as exc:
@@ -1140,7 +1245,11 @@ def main() -> int:
         pqx_execution_policy["authority_resolution"] = "pending_execution_context"
         pqx_execution_policy["blocking_reasons"] = []
     if isinstance(pqx_execution_policy, dict) and pqx_execution_policy.get("status") == "pending_evidence":
-        authority_resolution = resolve_governed_pqx_authority_evidence(REPO_ROOT)
+        authority_resolution = (
+            explicit_authority_resolution
+            if explicit_authority_resolution.get("resolution_status") in {"resolved", "invalid"}
+            else resolve_governed_pqx_authority_evidence(REPO_ROOT)
+        )
         pqx_execution_policy["authority_evidence_resolution_status"] = authority_resolution["resolution_status"]
         pqx_execution_policy["authority_evidence_ref"] = authority_resolution["evidence_ref"]
         pqx_execution_policy["authority_evidence_kind"] = authority_resolution["evidence_kind"]
@@ -1357,6 +1466,10 @@ def main() -> int:
             set(report.get("recommended_repair_areas", []) + ["trust-spine evidence cohesion"])
         )
 
+    control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))
+    decision = str(control_signal.get("strategy_gate_decision", "BLOCK"))
+    report["status"] = "failed" if decision in {"BLOCK", "FREEZE"} else "passed"
+
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"
     json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
@@ -1385,7 +1498,7 @@ def main() -> int:
         )
     )
 
-    return 2 if report["status"] == "failed" else 0
+    return 2 if preflight_artifact["control_signal"]["strategy_gate_decision"] in {"BLOCK", "FREEZE"} else 0
 
 
 if __name__ == "__main__":

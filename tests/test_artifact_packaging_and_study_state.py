@@ -280,6 +280,30 @@ def test_package_artifacts_deterministic(tmp_path: Path) -> None:
         assert c1 == c2, f"Non-deterministic output in {filename}"
 
 
+def test_package_artifacts_deterministic_study_state_timestamp_from_inputs(tmp_path: Path) -> None:
+    extraction = dict(SAMPLE_EXTRACTION)
+    extraction["generated_at"] = "2026-04-02T00:00:00Z"
+    signals = dict(SAMPLE_SIGNALS)
+    signals["generated_at"] = "2099-01-01T00:00:00Z"
+
+    r1 = package_artifacts(
+        run_id="run-det-ts-1",
+        structured_extraction=extraction,
+        signals=signals,
+        artifacts_root=tmp_path / "run1",
+    )
+    r2 = package_artifacts(
+        run_id="run-det-ts-1",
+        structured_extraction=extraction,
+        signals=signals,
+        artifacts_root=tmp_path / "run2",
+    )
+    s1 = json.loads((Path(r1["package_dir"]) / "study_state.json").read_text(encoding="utf-8"))
+    s2 = json.loads((Path(r2["package_dir"]) / "study_state.json").read_text(encoding="utf-8"))
+    assert s1["generated_at"] == "2026-04-02T00:00:00Z"
+    assert s1["generated_at"] == s2["generated_at"]
+
+
 # ─── artifact_packager: validate_package ──────────────────────────────────────
 
 def test_validate_package_passes_after_package(tmp_path: Path) -> None:

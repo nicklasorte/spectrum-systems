@@ -261,6 +261,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-039-FIX-COMMIT-RANGE-PREFLIGHT-COMPAT-2026-04-02.md | CON-039-FIX — Commit-range preflight compatibility (enforcement-aware) | Active |
 | docs/review-actions/PLAN-CON-046-PQX-SEQUENTIAL-EXECUTION-LOOP-2026-04-02.md | CON-046 — PQX Sequential Execution Loop (Control-Loop Native MVP) | Active |
 | docs/review-actions/PLAN-CON-046-FIX-PQX-AUTHORITY-EVIDENCE-2026-04-02.md | CON-046-FIX — Emit PQX Authority Evidence for Preflight Compatibility | Active |
+| docs/review-actions/PLAN-CON-046-FIX2-DETERMINISTIC-PACKAGING-PREFLIGHT-BRIDGE-2026-04-02.md | CON-046-FIX2 — Deterministic study_state packaging + preflight authority bridge completion | Active |
 
 Update this table when plans are created or completed.
 
