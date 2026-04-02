@@ -1,6 +1,6 @@
 {
   "artifact_type": "contract_preflight_result_artifact",
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "preflight_status": "passed",
   "changed_contracts": [
     "contracts/schemas/roadmap_eligibility_artifact.schema.json"
@@ -35,6 +35,18 @@
   "control_surface_gap_result_ref": "outputs/contract_preflight/control_surface_gap_result.json",
   "pqx_gap_work_items_ref": "outputs/contract_preflight/control_surface_gap_pqx_work_items.json",
   "control_surface_gap_blocking": false,
+  "pqx_required_context_enforcement": {
+    "classification": "governed_pqx_required",
+    "execution_context": "pqx_governed",
+    "wrapper_present": true,
+    "wrapper_context_valid": true,
+    "authority_context_valid": true,
+    "authority_state": "authoritative_governed_pqx",
+    "requires_pqx_execution": true,
+    "enforcement_decision": "allow",
+    "status": "allow",
+    "blocking_reasons": []
+  },
   "control_signal": {
     "strategy_gate_decision": "ALLOW",
     "rationale": "preflight passed with clean detection and no masking risk",

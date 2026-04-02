@@ -94,6 +94,12 @@ def classify_changed_paths(changed_paths: Iterable[str]) -> dict[str, object]:
     }
 
 
+def is_governed_classification(classification: str) -> bool:
+    """Return whether a classification represents governed PQX-required posture."""
+
+    return classification == "governed_pqx_required"
+
+
 def evaluate_pqx_execution_policy(
     *,
     changed_paths: Iterable[str],
@@ -116,7 +122,7 @@ def evaluate_pqx_execution_policy(
 
     classification_result = classify_changed_paths(changed_paths)
     classification = str(classification_result["classification"])
-    governed = classification == "governed_pqx_required"
+    governed = is_governed_classification(classification)
 
     commit_range_mode = normalized_context == "unspecified" and str(changed_path_detection_mode or "") in {
         "base_head_diff",
