@@ -1,149 +1,178 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from copy import deepcopy
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
+from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.control_surface_gap_extractor import (
     ControlSurfaceGapExtractionError,
-    extract_control_surface_gaps,
+    extract_control_surface_gap_packet,
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_example(name: str) -> dict:
-    return json.loads((_REPO_ROOT / "contracts" / "examples" / f"{name}.json").read_text(encoding="utf-8"))
+    path = _REPO_ROOT / "contracts" / "examples" / f"{name}.json"
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _valid_inputs() -> tuple[dict, dict, dict]:
+def _valid_inputs() -> tuple[dict, dict, dict, dict, dict]:
     manifest = _load_example("control_surface_manifest")
-    manifest["manifest_status"] = "complete"
-    manifest["gap_signals"]["surfaces_missing_targeted_tests"] = []
-    manifest["summary"]["blocking_gaps_present"] = False
-    manifest["summary"]["partially_covered_surfaces"] = 0
-    manifest["summary"]["uncovered_surfaces_count"] = 0
-    base_surface = deepcopy(manifest["surfaces"][0])
-    for surface_id in ("trust_spine_invariant_validation", "done_certification_gate", "sequence_transition_promotion"):
-        cloned = deepcopy(base_surface)
-        cloned["surface_id"] = surface_id
-        cloned["surface_name"] = surface_id
-        manifest["surfaces"].append(cloned)
-    manifest["summary"]["total_surfaces"] = len(manifest["surfaces"])
-
     enforcement = _load_example("control_surface_enforcement_result")
-    enforcement["enforcement_status"] = "PASS"
-    enforcement["missing_required_surfaces"] = []
-    enforcement["surfaces_missing_invariants"] = []
-    enforcement["surfaces_missing_test_coverage"] = []
-    enforcement["blocking_reasons"] = []
-    enforcement["coverage_summary"]["blocking_gaps_present"] = False
-
     obedience = _load_example("control_surface_obedience_result")
-    obedience["overall_decision"] = "ALLOW"
-    obedience["missing_obedience_evidence"] = []
-    obedience["contradictory_obedience_evidence"] = []
-    obedience["blocking_reasons"] = []
-    for row in obedience["surface_results"]:
-        row["status"] = "PASS"
-        row["runtime_obeyed"] = True
-        row["missing_evidence"] = []
-        row["contradictions"] = []
-    return manifest, enforcement, obedience
+    trust_spine = _load_example("trust_spine_evidence_cohesion_result")
+    done_certification = _load_example("done_certification_record")
+    return manifest, enforcement, obedience, trust_spine, done_certification
 
 
-def test_missing_test_coverage_creates_gap() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
-    manifest["gap_signals"]["surfaces_missing_targeted_tests"] = ["contract_preflight_gate"]
+def _build_packet() -> dict:
+    manifest, enforcement, obedience, trust_spine, done_certification = _valid_inputs()
+    return extract_control_surface_gap_packet(
+        manifest=manifest,
+        enforcement_result=enforcement,
+        obedience_result=obedience,
+        trust_spine_result=trust_spine,
+        done_certification_record=done_certification,
+        generated_at="2026-04-02T00:00:00Z",
+        trace_id="trace-con-034-test",
+    )
 
-    result = extract_control_surface_gaps(manifest, enforcement, obedience)
-    assert result["status"] == "gaps_detected"
-    assert any(g["gap_type"] == "missing_test" and g["control_surface"] == "contract_preflight_gate" for g in result["gaps"])
+
+def test_happy_path_no_gaps() -> None:
+    packet = _build_packet()
+    assert packet["overall_decision"] == "ALLOW"
+    assert packet["gap_count"] == 0
+    assert packet["blocking_gap_count"] == 0
 
 
-def test_invariant_violation_creates_gap() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
+def test_enforcement_block_produces_blocking_gap() -> None:
+    manifest, enforcement, obedience, trust_spine, done_certification = _valid_inputs()
     enforcement["enforcement_status"] = "BLOCK"
     enforcement["surfaces_missing_invariants"] = ["contract_preflight_gate"]
-    enforcement["blocking_reasons"] = ["REQUIRED_SURFACES_INVARIANTS_MISSING"]
 
-    result = extract_control_surface_gaps(manifest, enforcement, obedience)
-    assert any(g["gap_type"] == "invariant_violation" for g in result["gaps"])
+    packet = extract_control_surface_gap_packet(
+        manifest=manifest,
+        enforcement_result=enforcement,
+        obedience_result=obedience,
+        trust_spine_result=trust_spine,
+        done_certification_record=done_certification,
+        generated_at="2026-04-02T00:00:00Z",
+        trace_id="trace-con-034-test",
+    )
+    categories = {gap["gap_category"] for gap in packet["gaps"]}
+    assert "enforcement_block" in categories
+    assert packet["overall_decision"] == "BLOCK"
 
 
-def test_obedience_failure_creates_blocker_gap() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
+def test_obedience_insufficient_evidence_produces_blocking_gap() -> None:
+    manifest, enforcement, obedience, trust_spine, done_certification = _valid_inputs()
     obedience["overall_decision"] = "BLOCK"
-    obedience["surface_results"][0]["surface_id"] = "contract_preflight_gate"
-    obedience["surface_results"][0]["status"] = "BLOCK"
-    obedience["surface_results"][0]["runtime_obeyed"] = False
-    obedience["blocking_reasons"] = ["contract_preflight_gate:blocked"]
+    obedience["missing_obedience_evidence"] = ["sequence_transition_promotion:missing signal"]
+    obedience["blocking_reasons"] = ["sequence_transition_promotion:missing signal"]
 
-    result = extract_control_surface_gaps(manifest, enforcement, obedience)
-    blocker_gaps = [g for g in result["gaps"] if g["severity"] == "blocker"]
-    assert blocker_gaps
-
-
-def test_deduplicates_identical_gaps() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
-    obedience["surface_results"].append(deepcopy(obedience["surface_results"][0]))
-    obedience["surface_results"][0]["surface_id"] = "contract_preflight_gate"
-    obedience["surface_results"][0]["status"] = "BLOCK"
-    obedience["surface_results"][0]["runtime_obeyed"] = False
-    obedience["surface_results"][-1]["surface_id"] = "contract_preflight_gate"
-    obedience["surface_results"][-1]["status"] = "BLOCK"
-    obedience["surface_results"][-1]["runtime_obeyed"] = False
-
-    result = extract_control_surface_gaps(manifest, enforcement, obedience)
-    matches = [g for g in result["gaps"] if g["gap_type"] == "obedience_missing" and g["control_surface"] == "contract_preflight_gate" and g["severity"] == "blocker"]
-    assert len(matches) == 1
+    packet = extract_control_surface_gap_packet(
+        manifest=manifest,
+        enforcement_result=enforcement,
+        obedience_result=obedience,
+        trust_spine_result=trust_spine,
+        done_certification_record=done_certification,
+        generated_at="2026-04-02T00:00:00Z",
+        trace_id="trace-con-034-test",
+    )
+    categories = {gap["gap_category"] for gap in packet["gaps"]}
+    assert "insufficient_runtime_evidence" in categories
+    assert "obedience_block" in categories
 
 
-def test_deterministic_ids() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
-    manifest["gap_signals"]["surfaces_missing_targeted_tests"] = ["contract_preflight_gate"]
+def test_trust_spine_contradiction_produces_blocking_gap() -> None:
+    manifest, enforcement, obedience, trust_spine, done_certification = _valid_inputs()
+    trust_spine["overall_decision"] = "BLOCK"
+    trust_spine["blocking_reasons"] = ["TRUST_SPINE_POLICY_AUTHORITY_CONTRADICTION"]
 
-    first = extract_control_surface_gaps(manifest, enforcement, obedience)
-    second = extract_control_surface_gaps(deepcopy(manifest), deepcopy(enforcement), deepcopy(obedience))
-    assert first["gap_result_id"] == second["gap_result_id"]
-    assert [g["gap_id"] for g in first["gaps"]] == [g["gap_id"] for g in second["gaps"]]
-
-
-def test_fail_closed_on_missing_control_surface_mapping() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
-    enforcement["missing_required_surfaces"] = ["nonexistent_surface"]
-    enforcement["enforcement_status"] = "BLOCK"
-
-    with pytest.raises(ControlSurfaceGapExtractionError, match="mapping missing"):
-        extract_control_surface_gaps(manifest, enforcement, obedience)
-
-
-def test_fail_closed_on_malformed_input() -> None:
-    manifest, enforcement, obedience = _valid_inputs()
-    manifest.pop("schema_version")
-
-    with pytest.raises(ControlSurfaceGapExtractionError, match="failed schema validation"):
-        extract_control_surface_gaps(manifest, enforcement, obedience)
+    packet = extract_control_surface_gap_packet(
+        manifest=manifest,
+        enforcement_result=enforcement,
+        obedience_result=obedience,
+        trust_spine_result=trust_spine,
+        done_certification_record=done_certification,
+        generated_at="2026-04-02T00:00:00Z",
+        trace_id="trace-con-034-test",
+    )
+    assert any(gap["gap_category"] == "trust_spine_contradiction" for gap in packet["gaps"])
+    assert packet["overall_decision"] == "BLOCK"
 
 
-def test_gap_extraction_cli_writes_expected_artifacts(tmp_path: Path) -> None:
+def test_malformed_input_fails_closed() -> None:
+    manifest, enforcement, obedience, trust_spine, done_certification = _valid_inputs()
+    enforcement["enforcement_status"] = "WARN"
+
+    with pytest.raises(ControlSurfaceGapExtractionError, match="schema validation"):
+        extract_control_surface_gap_packet(
+            manifest=manifest,
+            enforcement_result=enforcement,
+            obedience_result=obedience,
+            trust_spine_result=trust_spine,
+            done_certification_record=done_certification,
+            generated_at="2026-04-02T00:00:00Z",
+            trace_id="trace-con-034-test",
+        )
+
+
+def test_deterministic_output_identity_stable() -> None:
+    first = _build_packet()
+    second = _build_packet()
+    assert first["artifact_id"] == second["artifact_id"]
+    assert first["gaps"] == second["gaps"]
+
+
+def test_cli_writes_packet_and_exit_code() -> None:
+    output_path = _REPO_ROOT / "outputs" / "control_surface_gap_packet" / "pytest-control_surface_gap_packet.json"
+    if output_path.exists():
+        output_path.unlink()
+
     cmd = [
         sys.executable,
-        "scripts/run_control_surface_gap_extraction.py",
+        "scripts/build_control_surface_gap_packet.py",
         "--manifest",
         "contracts/examples/control_surface_manifest.json",
         "--enforcement",
         "contracts/examples/control_surface_enforcement_result.json",
         "--obedience",
         "contracts/examples/control_surface_obedience_result.json",
-        "--output-dir",
-        str(tmp_path / "gap_cli"),
+        "--trust-spine",
+        "contracts/examples/trust_spine_evidence_cohesion_result.json",
+        "--done-certification",
+        "contracts/examples/done_certification_record.json",
+        "--output",
+        str(output_path),
+        "--generated-at",
+        "2026-04-02T00:00:00Z",
+        "--trace-id",
+        "trace-con-034-cli",
     ]
     proc = subprocess.run(cmd, cwd=_REPO_ROOT, capture_output=True, text=True, check=False)
     assert proc.returncode == 0
-    assert (tmp_path / "gap_cli" / "control_surface_gap_result.json").is_file()
-    assert (tmp_path / "gap_cli" / "control_surface_gap_pqx_work_items.json").is_file()
+    assert output_path.is_file()
+
+
+def test_schema_and_example_validate() -> None:
+    schema = load_schema("control_surface_gap_packet")
+    example = _load_example("control_surface_gap_packet")
+
+    from jsonschema import Draft202012Validator, FormatChecker
+
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(example)
+
+
+def test_standards_manifest_registers_gap_packet_contract() -> None:
+    manifest = json.loads((_REPO_ROOT / "contracts" / "standards-manifest.json").read_text(encoding="utf-8"))
+    contracts = manifest.get("contracts", [])
+    match = [entry for entry in contracts if entry.get("artifact_type") == "control_surface_gap_packet"]
+    assert len(match) == 1
+    assert match[0]["example_path"] == "contracts/examples/control_surface_gap_packet.json"

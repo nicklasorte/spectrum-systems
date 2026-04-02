@@ -249,6 +249,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-033-TRUST-SPINE-EVIDENCE-COHESION-2026-04-02.md | CON-033 — Trust-spine evidence chain cohesion | Active |
 | docs/review-actions/PLAN-CON-033-FIX-PREFLIGHT-BLOCK-2026-04-02.md | CON-033-FIX — Reconcile exact contract preflight BLOCK | Active |
 | docs/review-actions/PLAN-CON-033-FIX-ARTIFACT-CLASS-GOVERNANCE-2026-04-02.md | CON-033-FIX-2 — Reconcile artifact_class enum drift | Active |
+| docs/review-actions/PLAN-CON-034-CONTROL-SURFACE-GAP-EXTRACTION-2026-04-02.md | CON-034 — Control Surface Gap Extraction | Active |
 
 Update this table when plans are created or completed.
 

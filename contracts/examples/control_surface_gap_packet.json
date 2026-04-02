@@ -1,0 +1,19 @@
+{
+  "artifact_type": "control_surface_gap_packet",
+  "artifact_id": "csgp-9c09fc85d64ea7d8fb695620",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-04-02T00:00:00Z",
+  "trace_id": "trace-con-034-example",
+  "policy_id": "CON-034.control_surface_gap_extraction.v1",
+  "governing_ref": "docs/roadmaps/system_roadmap.md#con-034",
+  "overall_decision": "ALLOW",
+  "summary": "No control-surface gaps detected.",
+  "evaluated_surfaces": [
+    "contract_preflight_gate"
+  ],
+  "gap_count": 0,
+  "blocking_gap_count": 0,
+  "gaps": [],
+  "evidence_refs": [],
+  "next_governance_actions": []
+}
