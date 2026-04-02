@@ -630,6 +630,14 @@ def run_pqx_slice(
     replay["original_run_id"] = run_id
     replay["replay_run_id"] = run_id
     replay["timestamp"] = iso_now(active_clock)
+    if isinstance(replay.get("observability_metrics"), dict):
+        replay["observability_metrics"].setdefault("trace_refs", {})["trace_id"] = trace_id
+    if isinstance(replay.get("error_budget_status"), dict):
+        replay["error_budget_status"].setdefault("trace_refs", {})["trace_id"] = trace_id
+        if isinstance(replay.get("observability_metrics"), dict):
+            replay["error_budget_status"]["observability_metrics_id"] = replay["observability_metrics"].get("artifact_id")
+    if isinstance(replay.get("alert_trigger"), dict):
+        replay["alert_trigger"].setdefault("trace_refs", {})["trace_id"] = trace_id
     replay_path = _write_json(step_dir / f"{run_id}.replay_result.json", replay)
 
     control = json.loads((REPO_ROOT / "contracts" / "examples" / "evaluation_control_decision.json").read_text(encoding="utf-8"))
