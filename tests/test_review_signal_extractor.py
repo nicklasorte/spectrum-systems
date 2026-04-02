@@ -10,6 +10,7 @@ from spectrum_systems.modules.runtime.review_signal_extractor import (
     ReviewSignalExtractionError,
     extract_review_signal,
 )
+from spectrum_systems.modules.runtime.review_eval_bridge import build_eval_result_from_review_signal
 
 
 def test_extract_review_signal_from_repo_markdown() -> None:
@@ -24,6 +25,14 @@ def test_extract_review_signal_is_deterministic() -> None:
     first = extract_review_signal("docs/reviews/2026-03-27-control-loop-trace-context-stabilization-checkpoint.md")
     second = extract_review_signal("docs/reviews/2026-03-27-control-loop-trace-context-stabilization-checkpoint.md")
     assert first == second
+
+
+def test_same_review_markdown_produces_deterministic_derived_eval_result() -> None:
+    first_signal = extract_review_signal("docs/reviews/2026-03-27-control-loop-trace-context-stabilization-checkpoint.md")
+    second_signal = extract_review_signal("docs/reviews/2026-03-27-control-loop-trace-context-stabilization-checkpoint.md")
+    first_eval = build_eval_result_from_review_signal(first_signal)
+    second_eval = build_eval_result_from_review_signal(second_signal)
+    assert first_eval == second_eval
 
 
 def test_malformed_review_fails_closed(tmp_path: Path) -> None:

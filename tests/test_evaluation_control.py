@@ -14,6 +14,7 @@ from spectrum_systems.modules.runtime.evaluation_control import (  # noqa: E402
     EvaluationControlError,
     build_evaluation_control_decision,
 )
+from spectrum_systems.modules.runtime.review_eval_bridge import build_eval_result_from_review_signal  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
     generate_failure_eval_case,
     register_failure_eval_case,
@@ -315,3 +316,42 @@ def test_malformed_threshold_payload_fails_closed_in_both_contexts() -> None:
             thresholds={"reliability_threshold": "low"},  # type: ignore[dict-item]
             threshold_context="comparative_analysis",
         )
+
+
+def test_review_eval_result_fail_blocks_control() -> None:
+    replay = _replay_result()
+    review_signal = copy.deepcopy(load_example("review_control_signal"))
+    review_signal["gate_assessment"] = "FAIL"
+    review_signal["critical_findings"] = ["review failure [eval_family:review_gate_alignment]"]
+    review_eval = build_eval_result_from_review_signal(review_signal)
+
+    decision = build_evaluation_control_decision(replay, review_eval_results=[review_eval])
+
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+    assert "trust_breach" in decision["triggered_signals"]
+
+
+def test_required_missing_review_eval_fails_closed() -> None:
+    replay = _replay_result()
+    decision = build_evaluation_control_decision(replay, review_signal_required=True)
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+    assert "missing_required_signal" in decision["triggered_signals"]
+
+
+def test_review_eval_pass_does_not_override_stronger_blocking_signal() -> None:
+    replay = _replay_result()
+    replay["consistency_status"] = "mismatch"
+    replay["drift_detected"] = True
+
+    review_signal = copy.deepcopy(load_example("review_control_signal"))
+    review_signal["gate_assessment"] = "PASS"
+    review_signal["scale_recommendation"] = "YES"
+    review_signal["critical_findings"] = []
+    review_eval = build_eval_result_from_review_signal(review_signal)
+
+    decision = build_evaluation_control_decision(replay, review_eval_results=[review_eval])
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+    assert "trust_breach" in decision["triggered_signals"]
