@@ -263,6 +263,11 @@ def test_resolve_test_targets_ignores_unreadable_test_files(tmp_path: Path) -> N
     assert targets == ["tests/test_readable.py"]
 
 
+def test_resolve_required_surface_tests_uses_trust_spine_cohesion_override() -> None:
+    targets = preflight.resolve_required_surface_tests(Path("."), ["scripts/run_trust_spine_evidence_cohesion.py"])
+    assert "tests/test_trust_spine_evidence_cohesion.py" in targets["scripts/run_trust_spine_evidence_cohesion.py"]
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
 
@@ -368,6 +373,75 @@ def test_preflight_blocks_when_gap_bridge_reports_blocking(monkeypatch, tmp_path
     assert artifact["preflight_status"] == "failed"
     assert artifact["control_surface_gap_status"] == "conversion_failed"
     assert artifact["control_surface_gap_blocking"] is True
+
+
+def test_preflight_blocks_when_trust_spine_cohesion_reports_block(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["scripts/run_contract_preflight.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_trust_spine_cohesion",
+        lambda *_args, **_kwargs: {
+            "artifact_type": "trust_spine_evidence_cohesion_result",
+            "overall_decision": "BLOCK",
+            "blocking_reasons": ["MISSING_REQUIRED_EVIDENCE:outputs/control_surface_manifest/control_surface_manifest.json"],
+            "artifact_path": str(output_dir / "trust_spine_evidence_cohesion_result.json"),
+        },
+    )
+    monkeypatch.setattr(
+        preflight,
+        "classify_evaluation_surfaces",
+        lambda *_args, **_kwargs: {
+            "required_paths": [],
+            "evaluation_mode": "no-op",
+            "evaluated_surfaces": [],
+            "path_classifications": [],
+        },
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda *_args, **_kwargs: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "failed"
+    assert "trust-spine evidence cohesion" in report["recommended_repair_areas"]
+
+
+def test_evaluate_trust_spine_cohesion_skips_when_required_artifacts_are_missing(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_MANIFEST_PATH", tmp_path / "missing_manifest.json")
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_ENFORCEMENT_PATH", tmp_path / "missing_enforcement.json")
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_OBEDIENCE_PATH", tmp_path / "missing_obedience.json")
+    monkeypatch.setattr(preflight, "_TRUST_SPINE_INVARIANT_PATH", tmp_path / "missing_invariant.json")
+    monkeypatch.setattr(preflight, "_DONE_CERTIFICATION_PATH", tmp_path / "missing_done.json")
+
+    result = preflight.evaluate_trust_spine_cohesion(["scripts/run_trust_spine_evidence_cohesion.py"], tmp_path)
+    assert result is None
 
 
 def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:

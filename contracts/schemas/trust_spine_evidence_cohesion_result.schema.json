@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trust_spine_evidence_cohesion_result.schema.json",
+  "title": "Trust Spine Evidence Cohesion Result",
+  "description": "Deterministic fail-closed cohesion proof for trust-spine evidence continuity across manifest, enforcement, obedience, invariant, certification, promotion, and preflight seams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "deterministic_cohesion_id",
+    "overall_decision",
+    "evaluated_surfaces",
+    "artifact_refs",
+    "contradiction_categories",
+    "blocking_reasons",
+    "missing_required_evidence_refs",
+    "mismatched_artifact_references",
+    "inconsistent_truth_context_fields",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "trust_spine_evidence_cohesion_result"},
+    "schema_version": {"const": "1.0.0"},
+    "deterministic_cohesion_id": {"type": "string", "pattern": "^tsec-[a-f0-9]{16}$"},
+    "overall_decision": {"type": "string", "enum": ["ALLOW", "BLOCK"]},
+    "evaluated_surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "artifact_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_ref",
+        "enforcement_result_ref",
+        "obedience_result_ref",
+        "invariant_result_ref",
+        "done_certification_ref"
+      ],
+      "properties": {
+        "manifest_ref": {"type": "string", "minLength": 1},
+        "enforcement_result_ref": {"type": "string", "minLength": 1},
+        "obedience_result_ref": {"type": "string", "minLength": 1},
+        "invariant_result_ref": {"type": "string", "minLength": 1},
+        "done_certification_ref": {"type": "string", "minLength": 1},
+        "promotion_decision_ref": {"type": "string", "minLength": 1},
+        "contract_preflight_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "contradiction_categories": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "surface_set_mismatch",
+          "policy_context_mismatch",
+          "enforcement_obedience_contradiction",
+          "invariant_certification_contradiction",
+          "promotion_certification_contradiction",
+          "missing_required_evidence",
+          "artifact_reference_mismatch"
+        ]
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "missing_required_evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "mismatched_artifact_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["chain_link", "expected_ref", "observed_ref"],
+        "properties": {
+          "chain_link": {"type": "string", "minLength": 1},
+          "expected_ref": {"type": "string", "minLength": 1},
+          "observed_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "inconsistent_truth_context_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "expected", "observed", "artifact"],
+        "properties": {
+          "field": {"type": "string", "minLength": 1},
+          "expected": {"type": "string", "minLength": 1},
+          "observed": {"type": "string", "minLength": 1},
+          "artifact": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "policy_ref"],
+      "properties": {
+        "producer": {"const": "spectrum_systems.modules.runtime.trust_spine_evidence_cohesion"},
+        "policy_ref": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"overall_decision": {"const": "ALLOW"}}, "required": ["overall_decision"]},
+      "then": {
+        "properties": {
+          "contradiction_categories": {"maxItems": 0},
+          "blocking_reasons": {"maxItems": 0},
+          "missing_required_evidence_refs": {"maxItems": 0},
+          "mismatched_artifact_references": {"maxItems": 0},
+          "inconsistent_truth_context_fields": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"overall_decision": {"const": "BLOCK"}}, "required": ["overall_decision"]},
+      "then": {"properties": {"blocking_reasons": {"minItems": 1}}}
+    }
+  ]
+}

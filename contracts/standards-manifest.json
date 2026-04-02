@@ -899,7 +899,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "fix_plan_artifact",
@@ -1678,7 +1678,7 @@
       "introduced_in": "1.0.86",
       "last_updated_in": "1.0.87",
       "example_path": "contracts/examples/pqx_n_slice_validation_record.json",
-      "notes": "B30 first 5–10 slice governed-run readiness validation artifact."
+      "notes": "B30 first 5\u201310 slice governed-run readiness validation artifact."
     },
     {
       "artifact_type": "pqx_review_result",
@@ -2491,6 +2491,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/transcript_intelligence_pack.json",
       "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
+    },
+    {
+      "artifact_type": "trust_spine_evidence_cohesion_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.18",
+      "last_updated_in": "1.3.18",
+      "example_path": "contracts/examples/trust_spine_evidence_cohesion_result.json",
+      "notes": "CON-033 deterministic fail-closed cohesion proof for trust-spine evidence continuity across manifest/enforcement/obedience/invariant/certification/promotion/preflight seams."
     },
     {
       "artifact_type": "viewpoint_pack",

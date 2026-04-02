@@ -105,6 +105,11 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
         if not isinstance(optional, str) or not optional.strip():
             raise DoneCertificationError(f"{optional_key} must be a non-empty string when provided")
         refs[optional_key] = optional
+    cohesion_ref = input_refs.get("trust_spine_evidence_cohesion_result_ref")
+    if cohesion_ref is not None:
+        if not isinstance(cohesion_ref, str) or not cohesion_ref.strip():
+            raise DoneCertificationError("trust_spine_evidence_cohesion_result_ref must be a non-empty string when provided")
+        refs["trust_spine_evidence_cohesion_result_ref"] = cohesion_ref
     return refs
 
 
@@ -244,6 +249,11 @@ def run_done_certification(input_refs: dict) -> dict:
         enforcement_result = _load_json(refs["enforcement_result_ref"], label="enforcement_result")
     if "eval_coverage_summary_ref" in refs:
         eval_coverage_summary = _load_json(refs["eval_coverage_summary_ref"], label="eval_coverage_summary")
+    trust_spine_cohesion_result: Dict[str, Any] | None = None
+    if "trust_spine_evidence_cohesion_result_ref" in refs:
+        trust_spine_cohesion_result = _load_json(
+            refs["trust_spine_evidence_cohesion_result_ref"], label="trust_spine_evidence_cohesion_result"
+        )
 
     failure_injection: Optional[Dict[str, Any]] = None
     if "failure_injection_ref" in refs:
@@ -258,6 +268,12 @@ def run_done_certification(input_refs: dict) -> dict:
         _validate_schema(enforcement_result, "enforcement_result", label="enforcement_result")
     if eval_coverage_summary is not None:
         _validate_schema(eval_coverage_summary, "eval_coverage_summary", label="eval_coverage_summary")
+    if trust_spine_cohesion_result is not None:
+        _validate_schema(
+            trust_spine_cohesion_result,
+            "trust_spine_evidence_cohesion_result",
+            label="trust_spine_evidence_cohesion_result",
+        )
     if failure_injection is not None:
         _validate_schema(failure_injection, "governed_failure_injection_summary", label="governed_failure_injection_summary")
 
@@ -457,6 +473,27 @@ def run_done_certification(input_refs: dict) -> dict:
     if not trace_linkage_pass:
         blocking_reasons.extend(trace_linkage_details)
 
+    cohesion_details: List[str] = []
+    cohesion_pass = True
+    if authority_path_mode == "active_runtime":
+        if trust_spine_cohesion_result is None:
+            cohesion_pass = False
+            cohesion_details.append("trust_spine_evidence_cohesion_result_ref is required on active_runtime path")
+        elif trust_spine_cohesion_result.get("overall_decision") != "ALLOW":
+            cohesion_pass = False
+            cohesion_details.extend(
+                [f"cohesion:{reason}" for reason in trust_spine_cohesion_result.get("blocking_reasons", []) if isinstance(reason, str)]
+            )
+    elif trust_spine_cohesion_result is not None and trust_spine_cohesion_result.get("overall_decision") == "BLOCK":
+        cohesion_pass = False
+        cohesion_details.extend(
+            [f"cohesion:{reason}" for reason in trust_spine_cohesion_result.get("blocking_reasons", []) if isinstance(reason, str)]
+        )
+    if not cohesion_pass and not cohesion_details:
+        cohesion_details.append("trust-spine evidence cohesion is blocking")
+    if not cohesion_pass:
+        blocking_reasons.extend(cohesion_details)
+
     final_status = "PASSED" if not blocking_reasons else "FAILED"
     system_response = "allow" if final_status == "PASSED" else "block"
 
@@ -516,6 +553,10 @@ def run_done_certification(input_refs: dict) -> dict:
                     *[f"missing_ref:{ref}" for ref in completeness_result.missing_refs],
                 ],
             },
+            "trust_spine_evidence_cohesion": {
+                "passed": cohesion_pass,
+                "details": cohesion_details,
+            },
         },
         "trust_spine_invariant_result": {
             "passed": trust_spine_result.passed,
@@ -532,6 +573,30 @@ def run_done_certification(input_refs: dict) -> dict:
             "authority_path_mode": completeness_result.authority_path_mode,
             "promotable": completeness_result.promotable,
             "certifiable": completeness_result.certifiable,
+        },
+        "trust_spine_evidence_cohesion_result": {
+            "passed": cohesion_pass,
+            "overall_decision": (
+                trust_spine_cohesion_result.get("overall_decision")
+                if isinstance(trust_spine_cohesion_result, dict)
+                else ("ALLOW" if cohesion_pass else "BLOCK")
+            ),
+            "deterministic_cohesion_id": (
+                trust_spine_cohesion_result.get("deterministic_cohesion_id")
+                if isinstance(trust_spine_cohesion_result, dict)
+                else ""
+            ),
+            "contradiction_categories": (
+                trust_spine_cohesion_result.get("contradiction_categories")
+                if isinstance(trust_spine_cohesion_result, dict)
+                else []
+            ),
+            "blocking_reasons": (
+                trust_spine_cohesion_result.get("blocking_reasons")
+                if isinstance(trust_spine_cohesion_result, dict)
+                else cohesion_details
+            ),
+            "evidence_ref": refs.get("trust_spine_evidence_cohesion_result_ref", ""),
         },
         "final_status": final_status,
         "system_response": system_response,

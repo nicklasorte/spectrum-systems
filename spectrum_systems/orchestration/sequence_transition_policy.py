@@ -365,6 +365,38 @@ def _obedience_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
         return False, "promotion blocked by control_surface_obedience_result overall_decision=BLOCK"
     return True, None
 
+
+def _cohesion_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    refs_dict = refs if isinstance(refs, dict) else {}
+    authority_mode = _authority_path_mode(manifest)
+    cohesion_ref = manifest.get("trust_spine_evidence_cohesion_result_ref")
+    if (not isinstance(cohesion_ref, str) or not cohesion_ref.strip()) and isinstance(refs_dict, dict):
+        cohesion_ref = refs_dict.get("trust_spine_evidence_cohesion_result_ref")
+
+    if authority_mode == "active_runtime":
+        if not isinstance(cohesion_ref, str) or not cohesion_ref.strip():
+            return False, "promotion requires done_certification_input_refs.trust_spine_evidence_cohesion_result_ref"
+    elif not isinstance(cohesion_ref, str) or not cohesion_ref.strip():
+        return True, None
+
+    if not _path_exists(cohesion_ref):
+        return False, "promotion blocked: trust_spine_evidence_cohesion_result_ref is unreadable"
+    try:
+        payload = json.loads(Path(cohesion_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "promotion blocked: trust_spine_evidence_cohesion_result_ref is unreadable"
+    errors = sorted(
+        Draft202012Validator(load_schema("trust_spine_evidence_cohesion_result")).iter_errors(payload),
+        key=lambda err: str(list(err.absolute_path)),
+    )
+    if errors:
+        return False, "promotion blocked: trust_spine_evidence_cohesion_result failed schema validation"
+    if payload.get("overall_decision") == "BLOCK":
+        return False, "promotion blocked by trust_spine_evidence_cohesion_result overall_decision=BLOCK"
+    return True, None
+
+
 def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     policy = manifest.get("review_signal_policy")
     policy_dict = policy if isinstance(policy, dict) else {}
@@ -461,6 +493,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         obedience_passed, obedience_error = _obedience_gate(manifest)
         if not obedience_passed:
             return SequenceTransitionDecision(False, obedience_error)
+        cohesion_passed, cohesion_error = _cohesion_gate(manifest)
+        if not cohesion_passed:
+            return SequenceTransitionDecision(False, cohesion_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:
