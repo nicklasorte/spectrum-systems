@@ -1,0 +1,40 @@
+{
+  "slices": [
+    {
+      "step_id": "AI-01",
+      "step_name": "AI request/response boundary",
+      "prompt": "Run governed sequence verification slice 1",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "PQX verification slice 1 allow.",
+      "changed_paths": [],
+      "authority_evidence_ref": "outputs/fixtures/seed_authority.pqx_slice_execution_record.json",
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_verification_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_verification_allow_{run_id}"
+    },
+    {
+      "step_id": "AI-02",
+      "step_name": "AI prompt evolution",
+      "prompt": "Run governed sequence verification slice 2",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "PQX verification slice 2 allow.",
+      "changed_paths": [],
+      "authority_evidence_ref": "outputs/fixtures/seed_authority.pqx_slice_execution_record.json",
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_verification_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_verification_allow_{run_id}"
+    },
+    {
+      "step_id": "TRUST-01",
+      "step_name": "Context admission gate",
+      "prompt": "Run governed sequence verification slice 3",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "This output should require review.",
+      "changed_paths": [],
+      "authority_evidence_ref": "outputs/fixtures/seed_authority.pqx_slice_execution_record.json",
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_verification_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_verification_review_{run_id}"
+    }
+  ]
+}
