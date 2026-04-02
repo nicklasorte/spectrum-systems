@@ -8,8 +8,8 @@
       "pqx_output_text": "PQX completed AI-01.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_allow.json",
-      "runs_root": "outputs/fixtures/pqx_runs_allow"
+      "state_path": "outputs/fixtures/pqx_state_allow_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_allow_{run_id}"
     }
   ]
 }

@@ -8,8 +8,8 @@
       "pqx_output_text": "This output should be blocked.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_block.json",
-      "runs_root": "outputs/fixtures/pqx_runs_block"
+      "state_path": "outputs/fixtures/pqx_state_block_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_block_{run_id}"
     }
   ]
 }

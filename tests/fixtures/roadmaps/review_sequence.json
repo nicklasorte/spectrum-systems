@@ -8,8 +8,8 @@
       "pqx_output_text": "This output should require review.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_review.json",
-      "runs_root": "outputs/fixtures/pqx_runs_review"
+      "state_path": "outputs/fixtures/pqx_state_review_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_review_{run_id}"
     }
   ]
 }

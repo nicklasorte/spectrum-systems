@@ -48,6 +48,18 @@ def test_run_pqx_slice_valid_run_emits_required_artifacts(tmp_path: Path) -> Non
     assert bundle["control_decision_ref"]
     assert bundle["certification_result_ref"]
 
+    replay = json.loads(Path(result["slice_execution_record"]).read_text(encoding="utf-8"))
+    replay_ref = replay["replay_result_ref"]
+    replay_payload = json.loads((Path.cwd() / replay_ref).read_text(encoding="utf-8"))
+    trace_id = replay_payload["trace_id"]
+    assert replay_payload["observability_metrics"]["trace_refs"]["trace_id"] == trace_id
+    assert replay_payload["error_budget_status"]["trace_refs"]["trace_id"] == trace_id
+    assert replay_payload["alert_trigger"]["trace_refs"]["trace_id"] == trace_id
+    assert (
+        replay_payload["error_budget_status"]["observability_metrics_id"]
+        == replay_payload["observability_metrics"]["artifact_id"]
+    )
+
 
 def test_run_pqx_slice_invalid_step_blocks_entrypoint(tmp_path: Path) -> None:
     result = run_pqx_slice(

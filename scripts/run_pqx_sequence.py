@@ -76,6 +76,13 @@ def _build_wrapped_slices(
     state_path: str,
     runs_root: str,
 ) -> list[dict[str, Any]]:
+    def _render_with_run_id(value: Any, *, label: str) -> str:
+        rendered = _require_non_empty_string({"value": value}, "value", label=label)
+        try:
+            return rendered.format(run_id=run_id)
+        except KeyError as exc:
+            raise PQXSequenceCLIError(f"{label} contains unsupported format key: {exc}") from exc
+
     wrapped: list[dict[str, Any]] = []
     for idx, row in enumerate(roadmap_slices):
         step_id = _require_non_empty_string(row, "step_id", label=f"roadmap.slices[{idx}]")
@@ -146,9 +153,18 @@ def _build_wrapped_slices(
                     "execution_context": execution_context,
                     "authority_evidence_ref": effective_authority,
                 },
-                "roadmap_path": str(row.get("slice_roadmap_path") or roadmap_path),
-                "state_path": str(row.get("state_path") or state_path),
-                "runs_root": str(row.get("runs_root") or runs_root),
+                "roadmap_path": _render_with_run_id(
+                    row.get("slice_roadmap_path") or roadmap_path,
+                    label=f"roadmap.slices[{idx}].slice_roadmap_path",
+                ),
+                "state_path": _render_with_run_id(
+                    row.get("state_path") or state_path,
+                    label=f"roadmap.slices[{idx}].state_path",
+                ),
+                "runs_root": _render_with_run_id(
+                    row.get("runs_root") or runs_root,
+                    label=f"roadmap.slices[{idx}].runs_root",
+                ),
                 "pqx_output_text": pqx_output_text,
                 "input_ref": str(row.get("input_ref") or f"roadmap:{step_id}"),
                 "changed_paths": changed_paths,
