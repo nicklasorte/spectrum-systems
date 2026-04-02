@@ -16,10 +16,15 @@
     "artifacts_emitted",
     "certification_status",
     "replay_result_ref",
-    "control_decision_ref"
+    "control_decision_ref",
+    "control_surface_gap_packet_ref",
+    "control_surface_gap_packet_consumed",
+    "prioritized_control_surface_gaps",
+    "pqx_gap_work_items",
+    "control_surface_gap_influence"
   ],
   "properties": {
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "artifact_type": {"type": "string", "const": "pqx_slice_execution_record"},
     "step_id": {"type": "string", "minLength": 1},
     "run_id": {"type": "string", "minLength": 1},
@@ -43,6 +48,58 @@
     },
     "certification_status": {"type": "string", "enum": ["certified", "blocked"]},
     "replay_result_ref": {"type": "string", "minLength": 1},
-    "control_decision_ref": {"type": "string", "minLength": 1}
+    "control_decision_ref": {"type": "string", "minLength": 1},
+    "control_surface_gap_packet_ref": {"type": ["string", "null"], "minLength": 1},
+    "control_surface_gap_packet_consumed": {"type": "boolean"},
+    "prioritized_control_surface_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gap_id", "surface_name", "severity", "blocking", "source_artifact_ref"],
+        "properties": {
+          "gap_id": {"type": "string", "minLength": 1},
+          "surface_name": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "minLength": 1},
+          "blocking": {"type": "boolean"},
+          "source_artifact_ref": {"type": "string"}
+        }
+      }
+    },
+    "pqx_gap_work_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_item_id", "gap_id", "surface_name", "required_action_type", "blocking"],
+        "properties": {
+          "work_item_id": {"type": "string", "minLength": 1},
+          "gap_id": {"type": "string", "minLength": 1},
+          "surface_name": {"type": "string", "minLength": 1},
+          "required_action_type": {"type": "string", "minLength": 1},
+          "blocking": {"type": "boolean"}
+        }
+      }
+    },
+    "control_surface_gap_influence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "influenced_execution_block",
+        "influenced_next_step_selection",
+        "influenced_priority_ordering",
+        "influenced_transition_decision",
+        "reason_codes",
+        "control_surface_blocking_reason_refs"
+      ],
+      "properties": {
+        "influenced_execution_block": {"type": "boolean"},
+        "influenced_next_step_selection": {"type": "boolean"},
+        "influenced_priority_ordering": {"type": "boolean"},
+        "influenced_transition_decision": {"type": "boolean"},
+        "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "control_surface_blocking_reason_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
   }
 }

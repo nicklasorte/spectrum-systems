@@ -35,5 +35,23 @@
     "fix_execution_report_count": 1
   },
   "last_updated": "2026-03-30T00:30:00Z",
-  "status_markdown": "# Cycle Status — cycle-0001\n- current_state: `fixes_in_progress`\n- next_action: `collect_fix_execution_reports`\n- blocked_reasons: none\n- blocking_issues_count: 0\n- last_updated: `2026-03-30T00:30:00Z`\n\n## Artifact refs\n- roadmap: `docs/roadmap/system_roadmap.md`\n- roadmap_reviews: 1\n- execution_reports: 1\n- implementation_reviews: 2\n- fix_roadmap: `runs/cycle-0001/fix_roadmap_artifact.json`\n- fix_execution_reports: 1\n- certification: `None`\n"
+  "status_markdown": "# Cycle Status \u2014 cycle-0001\n- current_state: `fixes_in_progress`\n- next_action: `collect_fix_execution_reports`\n- blocked_reasons: none\n- blocking_issues_count: 0\n- last_updated: `2026-03-30T00:30:00Z`\n\n## Artifact refs\n- roadmap: `docs/roadmap/system_roadmap.md`\n- roadmap_reviews: 1\n- execution_reports: 1\n- implementation_reviews: 2\n- fix_roadmap: `runs/cycle-0001/fix_roadmap_artifact.json`\n- fix_execution_reports: 1\n- certification: `None`\n",
+  "control_surface_gap_visibility_summary": {
+    "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+    "control_surface_gap_packet_consumed": true,
+    "prioritized_gap_count": 1,
+    "pqx_gap_work_item_count": 1,
+    "control_surface_gap_influence": {
+      "influenced_execution_block": false,
+      "influenced_next_step_selection": true,
+      "influenced_priority_ordering": false,
+      "influenced_transition_decision": true,
+      "reason_codes": [
+        "blocking_gap_work_items_present"
+      ],
+      "control_surface_blocking_reason_refs": [
+        "csg-aaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    }
+  }
 }

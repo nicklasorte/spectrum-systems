@@ -59,6 +59,73 @@ def test_valid_two_slice_continuation_persists_record(tmp_path: Path) -> None:
     assert continuation["prior_step_id"] == "PQX-QUEUE-01"
     assert continuation["next_step_id"] == "PQX-QUEUE-02"
     assert continuation["continuation_decision"] == "allow"
+    assert state["control_surface_gap_visibility"]["summary"]["control_surface_gap_packet_consumed"] is False
+
+
+def test_sequence_state_includes_control_surface_gap_visibility_when_slice_influences_progression(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        visibility = {
+            "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+            "control_surface_gap_packet_consumed": payload["slice_id"] == "PQX-QUEUE-02",
+            "prioritized_control_surface_gaps": [],
+            "pqx_gap_work_items": [],
+            "control_surface_gap_influence": {
+                "influenced_execution_block": False,
+                "influenced_next_step_selection": payload["slice_id"] == "PQX-QUEUE-02",
+                "influenced_priority_ordering": False,
+                "influenced_transition_decision": payload["slice_id"] == "PQX-QUEUE-02",
+                "reason_codes": ["blocking_gap_work_items_present"] if payload["slice_id"] == "PQX-QUEUE-02" else [],
+                "control_surface_blocking_reason_refs": [],
+            },
+        }
+        suffix = payload["slice_id"].lower()
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{suffix}.pqx_slice_execution_record.json",
+            "done_certification_record": f"{suffix}.done_certification_record.json",
+            "pqx_slice_audit_bundle": f"{suffix}.pqx_slice_audit_bundle.json",
+            "certification_complete": True,
+            "audit_complete": True,
+            "control_surface_gap_visibility": visibility,
+        }
+
+    state = execute_sequence_run(
+        slice_requests=_slice_requests(),
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-visibility-001",
+        run_id="run-visibility-001",
+        trace_id="trace-visibility-001",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-29T23:42:{i:02d}Z" for i in range(1, 30)]),
+    )
+    summary = state["control_surface_gap_visibility"]["summary"]
+    assert summary["control_surface_gap_packet_consumed"] is True
+    assert summary["control_surface_gap_influence"]["influenced_transition_decision"] is True
+    assert state["execution_history"][1]["control_surface_gap_visibility"]["control_surface_gap_packet_consumed"] is True
+
+
+def test_sequence_fail_closed_on_malformed_control_surface_gap_visibility(tmp_path: Path) -> None:
+    def _executor(_payload: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": "slice-1.pqx_slice_execution_record.json",
+            "done_certification_record": "slice-1.done_certification_record.json",
+            "pqx_slice_audit_bundle": "slice-1.pqx_slice_audit_bundle.json",
+            "certification_complete": True,
+            "audit_complete": True,
+            "control_surface_gap_visibility": {"control_surface_gap_packet_ref": "missing-required-fields"},
+        }
+
+    with pytest.raises(Exception, match="control_surface_gap_visibility missing required fields"):
+        execute_sequence_run(
+            slice_requests=_slice_requests()[:1],
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-run-visibility-malformed",
+            run_id="run-visibility-malformed",
+            trace_id="trace-visibility-malformed",
+            execute_slice=_executor,
+            clock=FixedClock([f"2026-03-29T23:43:{i:02d}Z" for i in range(1, 10)]),
+        )
 
 
 def test_slice_2_blocked_when_prior_audit_missing(tmp_path: Path) -> None:

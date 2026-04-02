@@ -49,7 +49,9 @@
     "remediation_blocked_missing_evidence_count": 1,
     "remediation_pending_review_count": 0,
     "reinstatement_ready_count": 0,
-    "frozen_or_blocked_unresolved_remediation_count": 1
+    "frozen_or_blocked_unresolved_remediation_count": 1,
+    "control_surface_visibility_consumed_cycle_count": 1,
+    "control_surface_influenced_block_cycle_count": 0
   },
   "cycle_status_refs": [
     "runs/cycle-0001/cycle_manifest.json",

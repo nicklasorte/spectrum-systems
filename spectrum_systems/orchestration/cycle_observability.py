@@ -279,6 +279,73 @@ def _required_refs(manifest: dict[str, Any]) -> dict[str, str | list[str] | None
     }
 
 
+def _default_control_surface_gap_visibility_summary() -> dict[str, Any]:
+    return {
+        "control_surface_gap_packet_ref": None,
+        "control_surface_gap_packet_consumed": False,
+        "prioritized_gap_count": 0,
+        "pqx_gap_work_item_count": 0,
+        "control_surface_gap_influence": {
+            "influenced_execution_block": False,
+            "influenced_next_step_selection": False,
+            "influenced_priority_ordering": False,
+            "influenced_transition_decision": False,
+            "reason_codes": [],
+            "control_surface_blocking_reason_refs": [],
+        },
+    }
+
+
+def _extract_control_surface_gap_visibility_summary(manifest: dict[str, Any]) -> dict[str, Any]:
+    execution_reports = manifest.get("execution_report_paths", [])
+    if not isinstance(execution_reports, list):
+        raise CycleObservabilityError("execution_report_paths must be a list")
+    latest_visibility = _default_control_surface_gap_visibility_summary()
+    for report_path in sorted(path for path in execution_reports if isinstance(path, str) and path.strip()):
+        report = _load_json(report_path)
+        _validate(report, "execution_report_artifact")
+        produced = report.get("produced_artifacts", [])
+        if not isinstance(produced, list):
+            raise CycleObservabilityError("execution_report_artifact produced_artifacts must be a list")
+        slice_records = sorted(
+            path
+            for path in produced
+            if isinstance(path, str) and path.endswith(".pqx_slice_execution_record.json")
+        )
+        for slice_path in slice_records:
+            slice_record = _load_json(slice_path)
+            _validate(slice_record, "pqx_slice_execution_record")
+            consumed = bool(slice_record.get("control_surface_gap_packet_consumed"))
+            if not consumed:
+                continue
+            influence = slice_record.get("control_surface_gap_influence")
+            if not isinstance(influence, dict):
+                raise CycleObservabilityError("pqx_slice_execution_record missing control_surface_gap_influence")
+            prioritized = slice_record.get("prioritized_control_surface_gaps")
+            work_items = slice_record.get("pqx_gap_work_items")
+            if not isinstance(prioritized, list) or not isinstance(work_items, list):
+                raise CycleObservabilityError(
+                    "pqx_slice_execution_record control-surface visibility fields must be list values"
+                )
+            latest_visibility = {
+                "control_surface_gap_packet_ref": slice_record.get("control_surface_gap_packet_ref"),
+                "control_surface_gap_packet_consumed": True,
+                "prioritized_gap_count": len(prioritized),
+                "pqx_gap_work_item_count": len(work_items),
+                "control_surface_gap_influence": {
+                    "influenced_execution_block": bool(influence.get("influenced_execution_block")),
+                    "influenced_next_step_selection": bool(influence.get("influenced_next_step_selection")),
+                    "influenced_priority_ordering": bool(influence.get("influenced_priority_ordering")),
+                    "influenced_transition_decision": bool(influence.get("influenced_transition_decision")),
+                    "reason_codes": sorted(str(v) for v in influence.get("reason_codes", []) if isinstance(v, str)),
+                    "control_surface_blocking_reason_refs": sorted(
+                        str(v) for v in influence.get("control_surface_blocking_reason_refs", []) if isinstance(v, str)
+                    ),
+                },
+            }
+    return latest_visibility
+
+
 def _build_phase_durations(manifest: dict[str, Any]) -> dict[str, Any]:
     started = _parse_iso8601(manifest.get("execution_started_at"))
     completed = _parse_iso8601(manifest.get("execution_completed_at"))
@@ -340,6 +407,7 @@ def build_cycle_status(manifest_path: str | Path) -> dict[str, Any]:
             "fix_execution_report_count": len(refs["fix_execution_report_refs"] or []),
         },
         "last_updated": updated_at,
+        "control_surface_gap_visibility_summary": _extract_control_surface_gap_visibility_summary(manifest),
         "status_markdown": render_cycle_status_markdown(
             cycle_id=cycle_id,
             current_state=current_state,
@@ -436,6 +504,8 @@ def build_cycle_backlog_snapshot(
     cert_fail = 0
     critical_findings = 0
     blocker_findings = 0
+    control_surface_visibility_consumed_cycles = 0
+    control_surface_influenced_block_cycles = 0
 
     active_cycles: list[str] = []
     blocked_cycles: list[str] = []
@@ -453,6 +523,12 @@ def build_cycle_backlog_snapshot(
         cycle_id = status["cycle_id"]
         state = status["current_state"]
         manifest = _load_json(path)
+        visibility = status.get("control_surface_gap_visibility_summary", _default_control_surface_gap_visibility_summary())
+        if visibility.get("control_surface_gap_packet_consumed"):
+            control_surface_visibility_consumed_cycles += 1
+        influence = visibility.get("control_surface_gap_influence", {})
+        if isinstance(influence, dict) and bool(influence.get("influenced_execution_block")):
+            control_surface_influenced_block_cycles += 1
 
         if state != "certified_done":
             active_cycles.append(cycle_id)
@@ -564,6 +640,8 @@ def build_cycle_backlog_snapshot(
             "remediation_pending_review_count": len(remediations_pending_review),
             "reinstatement_ready_count": len(reinstatement_ready_items),
             "frozen_or_blocked_unresolved_remediation_count": len(frozen_or_blocked_with_unresolved_remediation),
+            "control_surface_visibility_consumed_cycle_count": control_surface_visibility_consumed_cycles,
+            "control_surface_influenced_block_cycle_count": control_surface_influenced_block_cycles,
         },
         "cycle_status_refs": [str(path) for path in sorted(str(path) for path in manifest_paths)],
         "summary_markdown": render_backlog_markdown(

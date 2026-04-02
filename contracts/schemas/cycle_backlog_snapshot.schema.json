@@ -67,7 +67,9 @@
         "remediation_blocked_missing_evidence_count",
         "remediation_pending_review_count",
         "reinstatement_ready_count",
-        "frozen_or_blocked_unresolved_remediation_count"
+        "frozen_or_blocked_unresolved_remediation_count",
+        "control_surface_visibility_consumed_cycle_count",
+        "control_surface_influenced_block_cycle_count"
       ],
       "properties": {
         "count_by_state": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
@@ -83,7 +85,9 @@
         "remediation_blocked_missing_evidence_count": {"type": "integer", "minimum": 0},
         "remediation_pending_review_count": {"type": "integer", "minimum": 0},
         "reinstatement_ready_count": {"type": "integer", "minimum": 0},
-        "frozen_or_blocked_unresolved_remediation_count": {"type": "integer", "minimum": 0}
+        "frozen_or_blocked_unresolved_remediation_count": {"type": "integer", "minimum": 0},
+        "control_surface_visibility_consumed_cycle_count": {"type": "integer", "minimum": 0},
+        "control_surface_influenced_block_cycle_count": {"type": "integer", "minimum": 0}
       }
     },
     "cycle_status_refs": {
