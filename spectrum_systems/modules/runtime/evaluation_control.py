@@ -96,12 +96,22 @@ def _canonical_timestamp(value: Any) -> str:
 
 def _deterministic_decision_id(
     *,
-    eval_run_id: str,
+    decision: str,
+    system_response: str,
+    rationale_code: str,
     triggered_signals: List[str],
+    threshold_snapshot: Dict[str, float],
     schema_version: str,
 ) -> str:
-    signal_seed = ",".join(triggered_signals)
-    seed = f"{eval_run_id}|{signal_seed}|{schema_version}"
+    seed_payload = {
+        "decision": decision,
+        "system_response": system_response,
+        "rationale_code": rationale_code,
+        "triggered_signals": sorted(triggered_signals),
+        "threshold_snapshot": threshold_snapshot,
+        "schema_version": schema_version,
+    }
+    seed = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
     return f"ECD-{digest}"
 
@@ -581,8 +591,15 @@ def build_evaluation_control_decision(
         "artifact_type": "evaluation_control_decision",
         "schema_version": schema_version,
         "decision_id": _deterministic_decision_id(
-            eval_run_id=eval_summary["eval_run_id"],
+            decision=decision_label,
+            system_response=system_response,
+            rationale_code=rationale_code,
             triggered_signals=triggered_signals,
+            threshold_snapshot={
+                "reliability_threshold": t["reliability_threshold"],
+                "drift_threshold": t["drift_threshold"],
+                "trust_threshold": t["trust_threshold"],
+            },
             schema_version=schema_version,
         ),
         "eval_run_id": eval_summary["eval_run_id"],

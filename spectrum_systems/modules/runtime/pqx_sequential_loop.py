@@ -16,7 +16,10 @@ from spectrum_systems.modules.runtime.control_loop import (
     build_trace_context_from_replay_artifact,
     run_control_loop,
 )
-from spectrum_systems.modules.runtime.control_integration import enforce_control_before_execution
+from spectrum_systems.modules.runtime.enforcement_engine import (
+    EnforcementError,
+    enforce_control_decision,
+)
 from spectrum_systems.modules.runtime.pqx_required_context_enforcement import (
     enforce_pqx_required_context,
 )
@@ -289,13 +292,11 @@ def run_pqx_sequential(
         if not isinstance(decision_artifact, dict):
             raise PQXSequentialLoopError(f"control decision missing for slice {slice_id}")
 
-        integration_result = enforce_control_before_execution(
-            {
-                "artifact": replay_artifact,
-                "stage": stage,
-                "runtime_environment": runtime_environment,
-            }
-        )
+        try:
+            enforcement_result = enforce_control_decision(decision_artifact)
+        except EnforcementError as exc:
+            raise PQXSequentialLoopError(f"enforcement mapping failed for slice {slice_id}: {exc}") from exc
+        integration_result = {"enforcement_result": enforcement_result}
         enforcement_label = _map_enforcement_label(integration_result)
 
         control_decision_ref = _require_non_empty_string(
@@ -309,9 +310,6 @@ def run_pqx_sequential(
         output_ref = _repo_ref(_require_non_empty_string(runner_result.get("result"), label="runner result"))
         input_ref = slice_request.get("input_ref") or wrapper_ref
 
-        enforcement_result = integration_result.get("enforcement_result")
-        if not isinstance(enforcement_result, dict):
-            raise PQXSequentialLoopError(f"enforcement output invalid for slice {slice_id}: enforcement_result missing")
         enforcement_summary = {
             "final_status": _require_non_empty_string(
                 enforcement_result.get("final_status"), label=f"slice[{slice_id}].enforcement_result.final_status"

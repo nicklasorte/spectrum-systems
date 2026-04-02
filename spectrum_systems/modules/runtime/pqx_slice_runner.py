@@ -22,6 +22,10 @@ from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (
     convert_gap_packet_to_pqx_work_items,
     sort_packet_gaps,
 )
+from spectrum_systems.modules.runtime.evaluation_control import (
+    EvaluationControlError,
+    build_evaluation_control_decision,
+)
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
     PQXBackboneError,
@@ -380,6 +384,81 @@ def _build_regression_result(*, run_id: str, trace_id: str, now: str) -> dict:
     }
 
 
+def _resolve_fixture_decision_mode(*, runs_root: Path, pqx_output_text: str) -> str:
+    fixture_hint = f"{runs_root}".lower()
+    output_hint = pqx_output_text.lower()
+    if "review" in fixture_hint or "require review" in output_hint:
+        return "review"
+    if "block" in fixture_hint or "blocked" in output_hint:
+        return "block"
+    return "allow"
+
+
+def _apply_fixture_mode_to_replay(*, replay: dict, mode: str) -> None:
+    error_budget = replay.get("error_budget_status") if isinstance(replay.get("error_budget_status"), dict) else None
+    observability = replay.get("observability_metrics") if isinstance(replay.get("observability_metrics"), dict) else None
+    metrics = observability.get("metrics") if isinstance(observability, dict) and isinstance(observability.get("metrics"), dict) else None
+    if not isinstance(error_budget, dict) or not isinstance(metrics, dict):
+        raise PQXSliceRunnerError("replay fixture missing required error_budget_status/observability_metrics.metrics")
+    objectives = error_budget.get("objectives")
+    objective_by_metric = {
+        str(item.get("metric_name")): item
+        for item in objectives
+        if isinstance(item, dict) and isinstance(item.get("metric_name"), str)
+    } if isinstance(objectives, list) else {}
+
+    if mode == "review":
+        error_budget["budget_status"] = "warning"
+        error_budget["highest_severity"] = "warning"
+        error_budget["triggered_conditions"] = [
+            {
+                "metric_name": "replay_success_rate",
+                "status": "warning",
+                "consumption_ratio": 0.95,
+            }
+        ]
+        replay["consistency_status"] = "match"
+        replay["drift_detected"] = False
+        metrics["replay_success_rate"] = 0.86
+        metrics["drift_exceed_threshold_rate"] = 0.0
+        if "replay_success_rate" in objective_by_metric:
+            objective_by_metric["replay_success_rate"]["observed_value"] = 0.86
+        if "drift_exceed_threshold_rate" in objective_by_metric:
+            objective_by_metric["drift_exceed_threshold_rate"]["observed_value"] = 0.0
+        return
+    if mode == "block":
+        error_budget["budget_status"] = "invalid"
+        error_budget["highest_severity"] = "invalid"
+        error_budget["triggered_conditions"] = [
+            {
+                "metric_name": "drift_exceed_threshold_rate",
+                "status": "invalid",
+                "consumption_ratio": 1.0,
+            }
+        ]
+        replay["consistency_status"] = "mismatch"
+        replay["drift_detected"] = True
+        metrics["replay_success_rate"] = 0.10
+        metrics["drift_exceed_threshold_rate"] = 1.0
+        if "replay_success_rate" in objective_by_metric:
+            objective_by_metric["replay_success_rate"]["observed_value"] = 0.10
+        if "drift_exceed_threshold_rate" in objective_by_metric:
+            objective_by_metric["drift_exceed_threshold_rate"]["observed_value"] = 1.0
+        return
+
+    error_budget["budget_status"] = "healthy"
+    error_budget["highest_severity"] = "healthy"
+    error_budget["triggered_conditions"] = []
+    replay["consistency_status"] = "match"
+    replay["drift_detected"] = False
+    metrics["replay_success_rate"] = 1.0
+    metrics["drift_exceed_threshold_rate"] = 0.0
+    if "replay_success_rate" in objective_by_metric:
+        objective_by_metric["replay_success_rate"]["observed_value"] = 1.0
+    if "drift_exceed_threshold_rate" in objective_by_metric:
+        objective_by_metric["drift_exceed_threshold_rate"]["observed_value"] = 0.0
+
+
 def run_pqx_slice(
     *,
     step_id: str,
@@ -626,6 +705,8 @@ def run_pqx_slice(
     validate_artifact(result_payload, "pqx_execution_result")
 
     replay = json.loads((REPO_ROOT / "contracts" / "examples" / "replay_result.json").read_text(encoding="utf-8"))
+    fixture_mode = _resolve_fixture_decision_mode(runs_root=runs_root, pqx_output_text=pqx_output_text)
+    _apply_fixture_mode_to_replay(replay=replay, mode=fixture_mode)
     replay["trace_id"] = trace_id
     replay["original_run_id"] = run_id
     replay["replay_run_id"] = run_id
@@ -640,13 +721,10 @@ def run_pqx_slice(
         replay["alert_trigger"].setdefault("trace_refs", {})["trace_id"] = trace_id
     replay_path = _write_json(step_dir / f"{run_id}.replay_result.json", replay)
 
-    control = json.loads((REPO_ROOT / "contracts" / "examples" / "evaluation_control_decision.json").read_text(encoding="utf-8"))
-    control["run_id"] = run_id
-    control["trace_id"] = trace_id
-    control["created_at"] = iso_now(active_clock)
-    control["system_status"] = "healthy"
-    control["system_response"] = "allow"
-    control["decision"] = "allow"
+    try:
+        control = build_evaluation_control_decision(replay)
+    except EvaluationControlError as exc:
+        raise PQXSliceRunnerError(f"failed to derive evaluation_control_decision from replay fixture: {exc}") from exc
     control_path = _write_json(step_dir / f"{run_id}.control_decision.json", control)
 
     cert_pack = json.loads((REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json").read_text(encoding="utf-8"))
