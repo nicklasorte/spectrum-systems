@@ -74,9 +74,7 @@
       "prompt": "MVP 10-slice validation: chain step 6",
       "requested_at": "2026-04-02T00:00:00Z",
       "pqx_output_text": "MVP slice 6 allow.",
-      "dependencies": [
-        "CTRL-LOOP-01"
-      ],
+      "dependencies": [],
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
       "state_path": "outputs/fixtures/pqx_state_mvp_10_ctrl_seed_{run_id}.json",
@@ -130,10 +128,7 @@
       "prompt": "MVP 10-slice validation: terminal controlled stop",
       "requested_at": "2026-04-02T00:00:00Z",
       "pqx_output_text": "MVP terminal stop check.",
-      "dependencies": [
-        "GOV-10",
-        "CTRL-LOOP-01 foundation"
-      ],
+      "dependencies": [],
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
       "state_path": "outputs/fixtures/pqx_state_mvp_10_terminal_{run_id}.json",
