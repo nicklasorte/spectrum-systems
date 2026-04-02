@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -126,3 +128,22 @@ def test_fail_closed_on_malformed_input() -> None:
 
     with pytest.raises(ControlSurfaceGapExtractionError, match="failed schema validation"):
         extract_control_surface_gaps(manifest, enforcement, obedience)
+
+
+def test_gap_extraction_cli_writes_expected_artifacts(tmp_path: Path) -> None:
+    cmd = [
+        sys.executable,
+        "scripts/run_control_surface_gap_extraction.py",
+        "--manifest",
+        "contracts/examples/control_surface_manifest.json",
+        "--enforcement",
+        "contracts/examples/control_surface_enforcement_result.json",
+        "--obedience",
+        "contracts/examples/control_surface_obedience_result.json",
+        "--output-dir",
+        str(tmp_path / "gap_cli"),
+    ]
+    proc = subprocess.run(cmd, cwd=_REPO_ROOT, capture_output=True, text=True, check=False)
+    assert proc.returncode == 0
+    assert (tmp_path / "gap_cli" / "control_surface_gap_result.json").is_file()
+    assert (tmp_path / "gap_cli" / "control_surface_gap_pqx_work_items.json").is_file()

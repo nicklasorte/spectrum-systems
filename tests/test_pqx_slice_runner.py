@@ -187,6 +187,10 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "markdown_report_path": "outputs/contract_preflight/contract_preflight_report.md",
         },
         "generated_at": "2026-04-01T00:00:00Z",
+        "control_surface_gap_status": "not_run",
+        "control_surface_gap_result_ref": None,
+        "pqx_gap_work_items_ref": None,
+        "control_surface_gap_blocking": False,
         "control_signal": {
             "strategy_gate_decision": decision,
             "rationale": "test preflight mapping rationale",
