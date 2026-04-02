@@ -127,7 +127,7 @@
       "step_name": "Autonomous execution loop closed-loop extension",
       "prompt": "MVP 10-slice validation: terminal controlled stop",
       "requested_at": "2026-04-02T00:00:00Z",
-      "pqx_output_text": "MVP terminal stop check.",
+      "pqx_output_text": "MVP terminal stop check: require review due warning budget signal.",
       "dependencies": [],
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
