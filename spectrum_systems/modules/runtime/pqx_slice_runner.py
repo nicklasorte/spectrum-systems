@@ -57,6 +57,94 @@ def _write_json(path: Path, payload: dict) -> Path:
     return path
 
 
+def _build_control_surface_gap_influence(*, packet: dict, packet_ref: str, work_items: list[dict]) -> dict[str, object]:
+    if not isinstance(packet, dict):
+        raise PQXSliceRunnerError("control-surface visibility projection requires packet object")
+    if not isinstance(work_items, list):
+        raise PQXSliceRunnerError("control-surface visibility projection requires work_items list")
+    for index, item in enumerate(work_items):
+        if not isinstance(item, dict):
+            raise PQXSliceRunnerError(f"pqx_gap_work_items[{index}] must be an object")
+        for key in ("work_item_id", "gap_id", "surface_name", "required_action_type"):
+            value = item.get(key)
+            if not isinstance(value, str) or not value:
+                raise PQXSliceRunnerError(f"pqx_gap_work_items[{index}] missing required field: {key}")
+
+    if not isinstance(packet_ref, str) or not packet_ref:
+        raise PQXSliceRunnerError("control_surface_gap_packet_ref must be non-empty for visibility projection")
+    gaps = packet.get("gaps")
+    if not isinstance(gaps, list):
+        raise PQXSliceRunnerError("control_surface_gap_packet.gaps must be a list for visibility projection")
+
+    prioritized_gaps: list[dict[str, object]] = []
+    for index, gap in enumerate(gaps):
+        if not isinstance(gap, dict):
+            raise PQXSliceRunnerError(f"control_surface_gap_packet.gaps[{index}] must be an object")
+        required = ("gap_id", "surface_name", "severity")
+        missing = [field for field in required if not isinstance(gap.get(field), str) or not str(gap.get(field))]
+        if missing:
+            raise PQXSliceRunnerError(
+                f"control_surface_gap_packet.gaps[{index}] missing required visibility fields: {', '.join(missing)}"
+            )
+        prioritized_gaps.append(
+            {
+                "gap_id": str(gap["gap_id"]),
+                "surface_name": str(gap["surface_name"]),
+                "severity": str(gap["severity"]),
+                "blocking": bool(gap.get("blocking")),
+                "source_artifact_ref": str(gap.get("source_artifact_ref") or ""),
+            }
+        )
+    prioritized_gaps = sorted(
+        prioritized_gaps,
+        key=lambda entry: (
+            0 if entry["blocking"] else 1,
+            str(entry["surface_name"]),
+            str(entry["gap_id"]),
+        ),
+    )
+    projected_work_items = sorted(
+        [
+            {
+                "work_item_id": str(item["work_item_id"]),
+                "gap_id": str(item["gap_id"]),
+                "surface_name": str(item["surface_name"]),
+                "required_action_type": str(item["required_action_type"]),
+                "blocking": bool(item.get("blocking")),
+            }
+            for item in work_items
+        ],
+        key=lambda entry: (
+            0 if entry["blocking"] else 1,
+            str(entry["surface_name"]),
+            str(entry["gap_id"]),
+            str(entry["work_item_id"]),
+        ),
+    )
+    decision = str(packet.get("overall_decision") or "")
+    reason_codes = []
+    if decision == "BLOCK":
+        reason_codes.append("control_surface_gap_packet_block")
+    if any(item["blocking"] for item in projected_work_items):
+        reason_codes.append("blocking_gap_work_items_present")
+    return {
+        "control_surface_gap_packet_ref": packet_ref,
+        "control_surface_gap_packet_consumed": True,
+        "prioritized_control_surface_gaps": prioritized_gaps,
+        "pqx_gap_work_items": projected_work_items,
+        "control_surface_gap_influence": {
+            "influenced_execution_block": decision == "BLOCK",
+            "influenced_next_step_selection": len(projected_work_items) > 0,
+            "influenced_priority_ordering": len(prioritized_gaps) > 1,
+            "influenced_transition_decision": decision in {"BLOCK", "WARN"},
+            "reason_codes": sorted(set(reason_codes)),
+            "control_surface_blocking_reason_refs": [
+                str(entry["gap_id"]) for entry in prioritized_gaps if bool(entry["blocking"])
+            ],
+        },
+    }
+
+
 def _block_payload(*, step_id: str, run_id: str, reason: str, block_type: str = "INVALID_EXECUTION_ENTRYPOINT") -> dict:
     return {
         "status": "blocked",
@@ -413,18 +501,43 @@ def run_pqx_slice(
             block_type="CONTROL_SURFACE_GAP_PACKET_REQUIRED",
         )
 
-    context: dict[str, object] = {}
+    control_surface_visibility = {
+        "control_surface_gap_packet_ref": None,
+        "control_surface_gap_packet_consumed": False,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+            "influenced_execution_block": False,
+            "influenced_next_step_selection": False,
+            "influenced_priority_ordering": False,
+            "influenced_transition_decision": False,
+            "reason_codes": [],
+            "control_surface_blocking_reason_refs": [],
+        },
+    }
     if control_surface_gap_packet_ref:
         try:
             control_surface_gap_packet = load_control_surface_gap_packet(control_surface_gap_packet_ref)
-            context["control_surface_gap_packet"] = control_surface_gap_packet
-            context["prioritized_control_surface_gaps"] = sort_packet_gaps(control_surface_gap_packet["gaps"])
-            context["pqx_gap_work_items"] = convert_gap_packet_to_pqx_work_items(control_surface_gap_packet)
+            prioritized_gaps = sort_packet_gaps(control_surface_gap_packet["gaps"])
+            control_surface_gap_packet["gaps"] = prioritized_gaps
+            pqx_gap_work_items = convert_gap_packet_to_pqx_work_items(control_surface_gap_packet)
+            control_surface_visibility = _build_control_surface_gap_influence(
+                packet=control_surface_gap_packet,
+                packet_ref=control_surface_gap_packet_ref,
+                work_items=pqx_gap_work_items,
+            )
         except (ControlSurfaceGapPacketLoaderError, ControlSurfaceGapToPQXError, KeyError, TypeError, ValueError) as exc:
             return _block_payload(
                 step_id=normalized_step_id,
                 run_id=run_id,
                 reason=f"invalid control_surface_gap_packet: {exc}",
+                block_type="CONTROL_SURFACE_GAP_PACKET_INVALID",
+            )
+        except PQXSliceRunnerError as exc:
+            return _block_payload(
+                step_id=normalized_step_id,
+                run_id=run_id,
+                reason=f"invalid control_surface_gap_packet visibility: {exc}",
                 block_type="CONTROL_SURFACE_GAP_PACKET_INVALID",
             )
 
@@ -436,6 +549,7 @@ def run_pqx_slice(
                 "run_id": run_id,
                 "reason": "control_surface_gap_packet_block",
                 "blocking_gaps": control_surface_gap_packet["gaps"],
+                "control_surface_gap_visibility": control_surface_visibility,
             }
 
     try:
@@ -567,7 +681,7 @@ def run_pqx_slice(
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="failed certification", block_type="CERTIFICATION_BLOCKED")
 
     execution_record = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "artifact_type": "pqx_slice_execution_record",
         "step_id": normalized_step_id,
         "run_id": run_id,
@@ -591,6 +705,11 @@ def run_pqx_slice(
         "certification_status": "certified",
         "replay_result_ref": _relative(replay_path),
         "control_decision_ref": _relative(control_path),
+        "control_surface_gap_packet_ref": control_surface_visibility["control_surface_gap_packet_ref"],
+        "control_surface_gap_packet_consumed": control_surface_visibility["control_surface_gap_packet_consumed"],
+        "prioritized_control_surface_gaps": control_surface_visibility["prioritized_control_surface_gaps"],
+        "pqx_gap_work_items": control_surface_visibility["pqx_gap_work_items"],
+        "control_surface_gap_influence": control_surface_visibility["control_surface_gap_influence"],
     }
     if preflight_signal is not None:
         execution_record["decision_summary"]["control_decision"] = row_state["strategy_gate_decision"]
@@ -627,6 +746,7 @@ def run_pqx_slice(
         "done_certification_record": str(certification_path),
         "certification_status": "certified",
         "pqx_slice_audit_bundle": str(audit_bundle_path),
+        "control_surface_gap_visibility": control_surface_visibility,
     }
     if preflight_artifact is not None:
         response["contract_preflight_status"] = preflight_artifact.get("preflight_status")

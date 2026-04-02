@@ -638,3 +638,124 @@ def test_run_pqx_slice_accepts_valid_allow_control_surface_gap_packet(tmp_path: 
     )
 
     assert result["status"] == "complete"
+    visibility = result["control_surface_gap_visibility"]
+    assert visibility["control_surface_gap_packet_consumed"] is True
+    assert visibility["control_surface_gap_packet_ref"] == str(packet_path)
+    assert visibility["control_surface_gap_influence"]["influenced_next_step_selection"] is False
+
+    record = json.loads(Path(result["slice_execution_record"]).read_text(encoding="utf-8"))
+    assert record["control_surface_gap_packet_consumed"] is True
+    assert record["control_surface_gap_packet_ref"] == str(packet_path)
+
+
+def test_run_pqx_slice_fail_closed_when_packet_visibility_projection_malformed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet_path = tmp_path / "control-surface-gap-packet-allow.json"
+    packet_path.write_text(json.dumps(_gap_packet(overall_decision="ALLOW")), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_slice_runner.convert_gap_packet_to_pqx_work_items",
+        lambda _packet: [{"gap_id": "missing-required-fields"}],
+    )
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTROL_SURFACE_GAP_PACKET_INVALID"
+    assert "missing required field" in result["reason"]
+
+
+def test_run_pqx_slice_emits_deterministic_gap_and_work_item_ordering(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet = _gap_packet(overall_decision="ALLOW")
+    packet["overall_decision"] = "WARN"
+    packet["summary"] = "Detected non-blocking control-surface gaps."
+    packet["gap_count"] = 2
+    packet["gaps"] = [
+        {
+            "gap_id": "csg-bbbbbbbbbbbbbbbbbbbbbbbb",
+            "surface_name": "trust_spine_evidence_cohesion",
+            "gap_category": "insufficient_runtime_evidence",
+            "severity": "medium",
+            "blocking": False,
+            "observed_condition": "missing evidence",
+            "expected_condition": "evidence complete",
+            "evidence_ref": "contracts/examples/trust_spine_evidence_cohesion_result.json",
+            "source_artifact_type": "trust_spine_evidence_cohesion_result",
+            "source_artifact_ref": "contracts/examples/trust_spine_evidence_cohesion_result.json",
+            "suggested_action": "add_runtime_evidence",
+            "deterministic_identity": "csg-bbbbbbbbbbbbbbbbbbbbbbbb",
+        },
+        {
+            "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            "surface_name": "control_surface_manifest",
+            "gap_category": "missing_manifest_surface",
+            "severity": "critical",
+            "blocking": True,
+            "observed_condition": "surface missing",
+            "expected_condition": "surface declared",
+            "evidence_ref": "contracts/examples/control_surface_manifest.json",
+            "source_artifact_type": "control_surface_manifest",
+            "source_artifact_ref": "contracts/examples/control_surface_manifest.json",
+            "suggested_action": "fix_manifest_declaration",
+            "deterministic_identity": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+        },
+    ]
+    packet["blocking_gap_count"] = 1
+    packet["evidence_refs"] = sorted({entry["evidence_ref"] for entry in packet["gaps"]})
+    packet["next_governance_actions"] = sorted({entry["suggested_action"] for entry in packet["gaps"]})
+    packet_path = tmp_path / "control-surface-gap-packet-warn.json"
+    packet_path.write_text(json.dumps(packet), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"
+    visibility = result["control_surface_gap_visibility"]
+    assert [gap["gap_id"] for gap in visibility["prioritized_control_surface_gaps"]] == [
+        "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+        "csg-bbbbbbbbbbbbbbbbbbbbbbbb",
+    ]
+    assert [item["gap_id"] for item in visibility["pqx_gap_work_items"]] == [
+        "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+        "csg-bbbbbbbbbbbbbbbbbbbbbbbb",
+    ]
+
+
+def test_run_pqx_slice_regression_control_surface_influence_persisted_in_record(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet_path = tmp_path / "control-surface-gap-packet-block.json"
+    packet_path.write_text(json.dumps(_gap_packet(overall_decision="BLOCK")), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    visibility = result["control_surface_gap_visibility"]
+    assert visibility["control_surface_gap_influence"]["influenced_execution_block"] is True
+    assert "control_surface_gap_packet_block" in visibility["control_surface_gap_influence"]["reason_codes"]

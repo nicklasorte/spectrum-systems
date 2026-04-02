@@ -16,6 +16,7 @@
     "artifact_refs",
     "phase_metrics",
     "last_updated",
+    "control_surface_gap_visibility_summary",
     "status_markdown"
   ],
   "properties": {
@@ -101,6 +102,43 @@
       }
     },
     "last_updated": {"type": "string", "format": "date-time"},
+    "control_surface_gap_visibility_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "control_surface_gap_packet_ref",
+        "control_surface_gap_packet_consumed",
+        "prioritized_gap_count",
+        "pqx_gap_work_item_count",
+        "control_surface_gap_influence"
+      ],
+      "properties": {
+        "control_surface_gap_packet_ref": {"type": ["string", "null"], "minLength": 1},
+        "control_surface_gap_packet_consumed": {"type": "boolean"},
+        "prioritized_gap_count": {"type": "integer", "minimum": 0},
+        "pqx_gap_work_item_count": {"type": "integer", "minimum": 0},
+        "control_surface_gap_influence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "influenced_execution_block",
+            "influenced_next_step_selection",
+            "influenced_priority_ordering",
+            "influenced_transition_decision",
+            "reason_codes",
+            "control_surface_blocking_reason_refs"
+          ],
+          "properties": {
+            "influenced_execution_block": {"type": "boolean"},
+            "influenced_next_step_selection": {"type": "boolean"},
+            "influenced_priority_ordering": {"type": "boolean"},
+            "influenced_transition_decision": {"type": "boolean"},
+            "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+            "control_surface_blocking_reason_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+          }
+        }
+      }
+    },
     "status_markdown": {"type": "string", "minLength": 1}
   }
 }

@@ -29,6 +29,44 @@ class PQXSequenceRunnerError(ValueError):
 SliceExecutor = Callable[[dict], dict]
 
 
+def _default_control_surface_gap_visibility() -> dict:
+    return {
+        "control_surface_gap_packet_ref": None,
+        "control_surface_gap_packet_consumed": False,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+            "influenced_execution_block": False,
+            "influenced_next_step_selection": False,
+            "influenced_priority_ordering": False,
+            "influenced_transition_decision": False,
+            "reason_codes": [],
+            "control_surface_blocking_reason_refs": [],
+        },
+    }
+
+
+def _validate_control_surface_gap_visibility(visibility: dict) -> dict:
+    if not isinstance(visibility, dict):
+        raise PQXSequenceRunnerError("control_surface_gap_visibility must be an object")
+    required_top = (
+        "control_surface_gap_packet_ref",
+        "control_surface_gap_packet_consumed",
+        "prioritized_control_surface_gaps",
+        "pqx_gap_work_items",
+        "control_surface_gap_influence",
+    )
+    missing = [field for field in required_top if field not in visibility]
+    if missing:
+        raise PQXSequenceRunnerError(
+            f"control_surface_gap_visibility missing required fields: {', '.join(missing)}"
+        )
+    influence = visibility["control_surface_gap_influence"]
+    if not isinstance(influence, dict):
+        raise PQXSequenceRunnerError("control_surface_gap_visibility.control_surface_gap_influence must be an object")
+    return visibility
+
+
 def _validate_slice_requests(slice_requests: list[dict]) -> None:
     if not isinstance(slice_requests, list) or not slice_requests:
         raise PQXSequenceRunnerError("slice_requests must be a non-empty ordered list.")
@@ -58,7 +96,7 @@ def _validate_state_contract(state: dict) -> None:
 def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice_requests: list[dict], now: str) -> dict:
     requested = [entry["slice_id"] for entry in slice_requests]
     return {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "queue_run_id": queue_run_id,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -96,6 +134,10 @@ def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice
         "unresolved_fix_ids": [],
         "blocked_reason": None,
         "resume_token": f"resume:{queue_run_id}:0",
+        "control_surface_gap_visibility": {
+            "by_slice": {},
+            "summary": _default_control_surface_gap_visibility(),
+        },
     }
 
 
@@ -319,6 +361,7 @@ def execute_sequence_run(
                 "pqx_slice_audit_bundle": step_result.get("pqx_slice_audit_bundle"),
                 "certification_complete": step_result.get("certification_status") == "certified",
                 "audit_complete": bool(step_result.get("pqx_slice_audit_bundle")),
+                "control_surface_gap_visibility": step_result.get("control_surface_gap_visibility"),
             }
 
         executor = _default_executor
@@ -580,8 +623,33 @@ def execute_sequence_run(
             "certification_complete": bool(result.get("certification_complete") or result.get("done_certification_record")),
             "audit_complete": bool(result.get("audit_complete") or result.get("pqx_slice_audit_bundle")),
             "continuation_record_id": continuation_record_id,
+            "control_surface_gap_visibility": _default_control_surface_gap_visibility(),
         }
+        raw_visibility = result.get("control_surface_gap_visibility")
+        if raw_visibility is not None:
+            record["control_surface_gap_visibility"] = _validate_control_surface_gap_visibility(raw_visibility)
+        elif result.get("control_surface_gap_packet_ref") is not None:
+            raise PQXSequenceRunnerError(
+                "missing control_surface_gap_visibility for slice result carrying control_surface_gap_packet_ref"
+            )
         state["execution_history"].append(record)
+        state_visibility = state.get("control_surface_gap_visibility")
+        if not isinstance(state_visibility, dict):
+            raise PQXSequenceRunnerError("prompt_queue_sequence_run missing control_surface_gap_visibility projection")
+        by_slice = state_visibility.get("by_slice")
+        if not isinstance(by_slice, dict):
+            raise PQXSequenceRunnerError("prompt_queue_sequence_run control_surface_gap_visibility.by_slice must be object")
+        by_slice[next_slice_id] = record["control_surface_gap_visibility"]
+        consumed_entries = [
+            entry
+            for _, entry in sorted(by_slice.items(), key=lambda pair: pair[0])
+            if isinstance(entry, dict) and entry.get("control_surface_gap_packet_consumed") is True
+        ]
+        if consumed_entries:
+            summary = consumed_entries[-1]
+        else:
+            summary = _default_control_surface_gap_visibility()
+        state["control_surface_gap_visibility"] = {"by_slice": by_slice, "summary": summary}
         state["prior_slice_ref"] = execution_ref
 
         if execution_status == "success":

@@ -108,7 +108,7 @@
     {
       "artifact_type": "artifact_envelope",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
@@ -306,7 +306,7 @@
     {
       "artifact_type": "control_execution_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [],
       "introduced_in": "1.0.0",
@@ -395,13 +395,13 @@
     {
       "artifact_type": "cycle_backlog_snapshot",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.91",
-      "last_updated_in": "1.0.98",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/cycle_backlog_snapshot.json",
       "notes": "Deterministic multi-cycle backlog snapshot now includes remediation/reinstatement readiness queue visibility and fail-closed readiness counters."
     },
@@ -421,13 +421,13 @@
     {
       "artifact_type": "cycle_status_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.91",
-      "last_updated_in": "1.0.91",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/cycle_status_artifact.json",
       "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
     },
@@ -519,7 +519,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.84",
-      "last_updated_in": "1.0.84",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/drift_response_validation_result.json",
       "notes": "VAL-09 governed validation artifact proving progressive drift detection signal increase and deterministic threshold-triggered control responses with fail-closed insufficient-input handling."
     },
@@ -1341,7 +1341,7 @@
     {
       "artifact_type": "multi_pass_generation_record",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
@@ -1520,7 +1520,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.0.86",
-      "last_updated_in": "1.0.87",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/pqx_bundle_schedule_decision.json",
       "notes": "B27 queue-aware deterministic scheduler decision artifact."
     },
@@ -1748,13 +1748,13 @@
     {
       "artifact_type": "pqx_slice_execution_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.84",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/pqx_slice_execution_record.json",
       "notes": "G1 B11-B14 canonical deterministic single-slice execution artifact emitted by run_pqx_slice with mandatory certification and audit linkage."
     },
@@ -2129,13 +2129,13 @@
     {
       "artifact_type": "prompt_queue_sequence_run",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.89",
-      "last_updated_in": "1.0.87",
+      "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/prompt_queue_sequence_run.json",
       "notes": "G3/G4 B19-B26 multi-slice governance state including review checkpoints, sequence budget, chain/bundle certification, readiness gate, and bundle audit synthesis."
     },

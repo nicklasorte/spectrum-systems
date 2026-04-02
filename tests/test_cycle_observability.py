@@ -130,6 +130,7 @@ def test_cycle_status_artifact_generation_deterministic_for_healthy_cycle(tmp_pa
     assert first == second
     assert first["current_state"] == "execution_complete_unreviewed"
     assert first["phase_metrics"]["execution_seconds"] == 300.0
+    assert first["control_surface_gap_visibility_summary"]["control_surface_gap_packet_consumed"] is False
 
 
 def test_cycle_status_accepts_legacy_manifest_without_sequence_mode(tmp_path: Path) -> None:
@@ -204,6 +205,36 @@ def test_backlog_aggregation_across_multiple_cycles_and_metrics(tmp_path: Path) 
     assert snapshot["metrics"]["open_critical_findings"] == 1
     assert snapshot["metrics"]["certification_pass_count"] == 1
     assert snapshot["metrics"]["certification_fail_count"] == 1
+    assert snapshot["metrics"]["control_surface_visibility_consumed_cycle_count"] == 0
+    assert snapshot["metrics"]["control_surface_influenced_block_cycle_count"] == 0
+
+
+def test_cycle_status_includes_compact_control_surface_visibility_summary_when_slice_record_present(tmp_path: Path) -> None:
+    manifest = _base_manifest(cycle_id="cycle-visibility", state="execution_complete_unreviewed", updated_at="2026-03-30T08:00:00Z")
+    manifest["next_action"] = "request_implementation_reviews"
+    manifest["execution_started_at"] = "2026-03-30T07:00:00Z"
+    manifest["execution_completed_at"] = "2026-03-30T07:05:00Z"
+
+    slice_record = _example("pqx_slice_execution_record")
+    slice_record["control_surface_gap_packet_consumed"] = True
+    slice_record["control_surface_gap_packet_ref"] = "contracts/examples/control_surface_gap_packet.json"
+    slice_record_path = tmp_path / "run-1.pqx_slice_execution_record.json"
+    _write(slice_record_path, slice_record)
+
+    report = _example("execution_report_artifact")
+    report["produced_artifacts"] = [str(slice_record_path)]
+    report_path = tmp_path / "execution_report.json"
+    _write(report_path, report)
+    manifest["execution_report_paths"] = [str(report_path)]
+
+    path = tmp_path / "cycle_manifest.json"
+    _write(path, manifest)
+    status = build_cycle_status(path)
+
+    summary = status["control_surface_gap_visibility_summary"]
+    assert summary["control_surface_gap_packet_consumed"] is True
+    assert summary["prioritized_gap_count"] == len(slice_record["prioritized_control_surface_gaps"])
+    assert summary["control_surface_gap_influence"]["influenced_transition_decision"] is True
 
 
 def test_metrics_generation_is_deterministic_for_same_inputs(tmp_path: Path) -> None:

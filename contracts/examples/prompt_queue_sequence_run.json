@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "queue_run_id": "queue-run-pqx-001",
   "run_id": "run-pqx-batch-001",
   "trace_id": "trace-pqx-batch-001",
@@ -35,7 +35,41 @@
       "audit_bundle_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_audit_bundle.json",
       "certification_complete": true,
       "audit_complete": true,
-      "continuation_record_id": null
+      "continuation_record_id": null,
+      "control_surface_gap_visibility": {
+        "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+        "control_surface_gap_packet_consumed": true,
+        "prioritized_control_surface_gaps": [
+          {
+            "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            "surface_name": "control_surface_manifest",
+            "severity": "critical",
+            "blocking": true,
+            "source_artifact_ref": "contracts/examples/control_surface_manifest.json"
+          }
+        ],
+        "pqx_gap_work_items": [
+          {
+            "work_item_id": "PQX-WORK-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            "surface_name": "control_surface_manifest",
+            "required_action_type": "fix_manifest_declaration",
+            "blocking": true
+          }
+        ],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": true,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": true,
+          "reason_codes": [
+            "blocking_gap_work_items_present"
+          ],
+          "control_surface_blocking_reason_refs": [
+            "csg-aaaaaaaaaaaaaaaaaaaaaaaa"
+          ]
+        }
+      }
     }
   ],
   "blocked_reason": null,
@@ -97,5 +131,77 @@
   "bundle_certification_ref": null,
   "bundle_audit_status": "pending",
   "bundle_audit_ref": null,
-  "unresolved_fix_ids": []
+  "unresolved_fix_ids": [],
+  "control_surface_gap_visibility": {
+    "by_slice": {
+      "PQX-QUEUE-01": {
+        "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+        "control_surface_gap_packet_consumed": true,
+        "prioritized_control_surface_gaps": [
+          {
+            "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            "surface_name": "control_surface_manifest",
+            "severity": "critical",
+            "blocking": true,
+            "source_artifact_ref": "contracts/examples/control_surface_manifest.json"
+          }
+        ],
+        "pqx_gap_work_items": [
+          {
+            "work_item_id": "PQX-WORK-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            "surface_name": "control_surface_manifest",
+            "required_action_type": "fix_manifest_declaration",
+            "blocking": true
+          }
+        ],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": true,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": true,
+          "reason_codes": [
+            "blocking_gap_work_items_present"
+          ],
+          "control_surface_blocking_reason_refs": [
+            "csg-aaaaaaaaaaaaaaaaaaaaaaaa"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+      "control_surface_gap_packet_consumed": true,
+      "prioritized_control_surface_gaps": [
+        {
+          "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+          "surface_name": "control_surface_manifest",
+          "severity": "critical",
+          "blocking": true,
+          "source_artifact_ref": "contracts/examples/control_surface_manifest.json"
+        }
+      ],
+      "pqx_gap_work_items": [
+        {
+          "work_item_id": "PQX-WORK-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+          "surface_name": "control_surface_manifest",
+          "required_action_type": "fix_manifest_declaration",
+          "blocking": true
+        }
+      ],
+      "control_surface_gap_influence": {
+        "influenced_execution_block": false,
+        "influenced_next_step_selection": true,
+        "influenced_priority_ordering": false,
+        "influenced_transition_decision": true,
+        "reason_codes": [
+          "blocking_gap_work_items_present"
+        ],
+        "control_surface_blocking_reason_refs": [
+          "csg-aaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      }
+    }
+  }
 }
