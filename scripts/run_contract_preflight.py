@@ -80,8 +80,22 @@ _TRUST_SPINE_COHESION_TARGETS = {
     "tests/test_sequence_transition_policy.py",
     "tests/test_contract_preflight.py",
 }
+_CONTROL_SURFACE_GAP_PACKET_GOVERNANCE_PATHS = {
+    "spectrum_systems/modules/runtime/control_surface_gap_loader.py",
+    "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py",
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py",
+    "scripts/pqx_runner.py",
+}
+_CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
+    "tests/test_control_surface_gap_to_pqx.py",
+    "tests/test_pqx_slice_runner.py",
+]
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_trust_spine_evidence_cohesion.py": ["tests/test_trust_spine_evidence_cohesion.py"],
+    "spectrum_systems/modules/runtime/control_surface_gap_loader.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
+    "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
+    "scripts/pqx_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
 }
 
 
@@ -307,6 +321,12 @@ def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]
 
 
 def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
+    if path in _CONTROL_SURFACE_GAP_PACKET_GOVERNANCE_PATHS:
+        return (
+            True,
+            "control_surface_gap_packet_governance",
+            "control-surface gap packet governance seam changed",
+        )
     if path.startswith("spectrum_systems/modules/runtime/"):
         return True, "runtime_module", "runtime module changed"
     if path.startswith("spectrum_systems/orchestration/"):
@@ -471,6 +491,31 @@ def resolve_required_surface_tests(repo_root: Path, changed_paths: list[str]) ->
                     targets.add(rel_test)
         path_to_targets[rel_path] = sorted(targets)
     return path_to_targets
+
+
+def validate_control_surface_gap_packet_test_expectations(
+    *,
+    changed_paths: list[str],
+    resolved_targets_by_path: dict[str, list[str]],
+) -> list[dict[str, str]]:
+    expectation_failures: list[dict[str, str]] = []
+    required = set(_CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS)
+    for path in changed_paths:
+        if path not in _CONTROL_SURFACE_GAP_PACKET_GOVERNANCE_PATHS:
+            continue
+        resolved = set(resolved_targets_by_path.get(path, []))
+        missing = sorted(required - resolved)
+        if missing:
+            expectation_failures.append(
+                {
+                    "path": path,
+                    "reason": (
+                        "control_surface_gap_packet governance path requires deterministic tests: "
+                        + ", ".join(missing)
+                    ),
+                }
+            )
+    return expectation_failures
 
 
 def _schema_name_from_example(path: str) -> str:
@@ -956,6 +1001,12 @@ def main() -> int:
             for path, targets in forced_eval_targets_by_path.items()
             if not targets and path not in contract_surface_paths
         ]
+        missing_required_surface.extend(
+            validate_control_surface_gap_packet_test_expectations(
+                changed_paths=surface_classification["required_paths"],
+                resolved_targets_by_path=forced_eval_targets_by_path,
+            )
+        )
         forced_targets = sorted({target for targets in forced_eval_targets_by_path.values() for target in targets})
 
         producer_eval_targets = sorted(set(producer_targets + forced_targets))

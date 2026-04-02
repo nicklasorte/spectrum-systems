@@ -251,6 +251,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-033-FIX-ARTIFACT-CLASS-GOVERNANCE-2026-04-02.md | CON-033-FIX-2 — Reconcile artifact_class enum drift | Active |
 | docs/review-actions/PLAN-CON-034-CONTROL-SURFACE-GAP-EXTRACTION-2026-04-02.md | CON-034 — Control Surface Gap Extraction | Active |
 | docs/review-actions/PLAN-CON-035-GAP-PACKET-PQX-BRIDGE-2026-04-02.md | CON-035 — Control Surface Gap Packet → PQX Bridge (Governed Ingestion) | Active |
+| docs/review-actions/PLAN-CON-035-FIX-PREFLIGHT-GAP-PACKET-PQX-2026-04-02.md | CON-035-FIX — Preflight classification + required-test mapping alignment | Active |
 
 Update this table when plans are created or completed.
 
