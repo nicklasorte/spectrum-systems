@@ -19,7 +19,6 @@ Top-level keys:
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any, Dict, List
 import uuid
 
@@ -160,6 +159,16 @@ def _map_assumptions(signals: Dict[str, Any]) -> List[Dict[str, Any]]:
     return []
 
 
+def _deterministic_generated_at(structured_extraction: Dict[str, Any], signals: Dict[str, Any]) -> str:
+    for source in (structured_extraction, signals):
+        if isinstance(source, dict):
+            for field in ("generated_at", "timestamp", "created_at"):
+                value = source.get(field)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+    return "1970-01-01T00:00:00Z"
+
+
 def build_study_state(
     structured_extraction: Dict[str, Any],
     signals: Dict[str, Any],
@@ -192,7 +201,7 @@ def build_study_state(
 
     # Remaining fields are initialized empty and populated downstream.
     state["schema_version"] = SCHEMA_VERSION
-    state["generated_at"] = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
+    state["generated_at"] = _deterministic_generated_at(structured_extraction, signals)
 
     return state
 

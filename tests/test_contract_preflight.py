@@ -722,7 +722,7 @@ def test_main_commit_range_without_context_warns_without_naive_direct_run_block(
     assert report["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
     assert report["pqx_required_context_enforcement"]["requires_pqx_execution"] is True
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["control_signal"]["strategy_gate_decision"] == "WARN"
+    assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
     assert artifact["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
 
 
@@ -777,6 +777,206 @@ def test_main_commit_range_without_context_allows_when_authority_evidence_resolv
     assert report["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert artifact["pqx_required_context_enforcement"]["enforcement_decision"] == "allow"
+
+
+def test_resolve_explicit_authority_evidence_ref_accepts_sequential_trace(tmp_path: Path) -> None:
+    record_path = tmp_path / "run-1.pqx_slice_execution_record.json"
+    record_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pqx_slice_execution_record",
+                "status": "completed",
+                "certification_status": "certified",
+            }
+        ),
+        encoding="utf-8",
+    )
+    trace_path = tmp_path / "pqx_trace.json"
+    trace_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pqx_sequential_execution_trace",
+                "authority_evidence_refs": [str(record_path)],
+            }
+        ),
+        encoding="utf-8",
+    )
+    resolved = preflight._resolve_explicit_authority_evidence_ref(Path("."), str(trace_path))
+    assert resolved["resolution_status"] == "resolved"
+    assert resolved["evidence_kind"] == "pqx_slice_execution_record"
+
+
+def test_main_governed_context_with_trace_authority_ref_allows(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(
+        json.dumps(_governed_wrapper_payload(["contracts/schemas/roadmap_eligibility_artifact.schema.json"])),
+        encoding="utf-8",
+    )
+    repo_tmp_dir = preflight.REPO_ROOT / "outputs" / "test-preflight-authority"
+    repo_tmp_dir.mkdir(parents=True, exist_ok=True)
+    record_path = repo_tmp_dir / "run-1.pqx_slice_execution_record.json"
+    record_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pqx_slice_execution_record",
+                "status": "completed",
+                "certification_status": "certified",
+            }
+        ),
+        encoding="utf-8",
+    )
+    trace_path = repo_tmp_dir / "pqx_trace.json"
+    trace_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pqx_sequential_execution_trace",
+                "authority_evidence_refs": [str(record_path.relative_to(preflight.REPO_ROOT))],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": str(trace_path.relative_to(preflight.REPO_ROOT)),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="explicit_paths",
+            refs_attempted=[],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
+
+
+def test_main_governed_context_with_invalid_authority_ref_blocks(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(
+        json.dumps(_governed_wrapper_payload(["contracts/schemas/roadmap_eligibility_artifact.schema.json"])),
+        encoding="utf-8",
+    )
+    bad_path = tmp_path / "bad.json"
+    bad_path.write_text(json.dumps({"artifact_type": "unknown"}), encoding="utf-8")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": str(bad_path),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="explicit_paths",
+            refs_attempted=[],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 2
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["status"] == "block"
+
+
+def test_main_commit_range_governed_with_valid_authority_allows(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(
+        json.dumps(_governed_wrapper_payload(["contracts/schemas/roadmap_eligibility_artifact.schema.json"])),
+        encoding="utf-8",
+    )
+    repo_tmp_dir = preflight.REPO_ROOT / "outputs" / "test-preflight-authority-commit-range"
+    repo_tmp_dir.mkdir(parents=True, exist_ok=True)
+    record_path = repo_tmp_dir / "run-2.pqx_slice_execution_record.json"
+    record_path.write_text(
+        json.dumps({"artifact_type": "pqx_slice_execution_record", "status": "completed", "certification_status": "certified"}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": str(record_path.relative_to(preflight.REPO_ROOT)),
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
 
 
 def test_main_commit_range_with_explicit_direct_execution_blocks(tmp_path: Path, monkeypatch) -> None:
