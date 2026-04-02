@@ -14,6 +14,7 @@ from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
     _FAILURE_CLASS_PREVENTION_MAP,
     EvalCaseGenerationError,
+    generate_failure_derived_eval_cases_from_review_signal,
     generate_failure_eval_case,
     map_failure_class_to_prevention_rule,
     register_failure_eval_case,
@@ -191,3 +192,52 @@ def test_missing_prevention_mapping_blocks(monkeypatch: pytest.MonkeyPatch) -> N
             policy_id="failure-binding-policy-v1",
             trigger_condition="on_agent_failure_record",
         )
+
+
+def test_critical_review_findings_generate_failure_derived_eval_cases() -> None:
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "signal_id": "rcs-1111111111111111",
+        "review_id": "REV-TEST-001",
+        "review_type": "checkpoint_review",
+        "gate_assessment": "FAIL",
+        "scale_recommendation": "NO",
+        "critical_findings": [
+            "Missing fail-closed mapping [eval_family:review_gate_alignment]",
+            "Replay linkage weak [eval_family:review_signal_validity]",
+            "Missing  fail-closed mapping [eval_family:review_gate_alignment]",
+        ],
+        "confidence": 0.3,
+        "trace_linkage": {
+            "review_markdown_path": "docs/reviews/example.md",
+            "source_digest_sha256": "a" * 64,
+        },
+    }
+
+    cases = generate_failure_derived_eval_cases_from_review_signal(review_signal)
+    assert len(cases) == 2
+    assert all(case["artifact_type"] == "eval_case" for case in cases)
+    assert all(case["created_from"] == "failure_trace" for case in cases)
+    assert all(case["provenance"]["review_id"] == "REV-TEST-001" for case in cases)
+    assert all(case["provenance"]["review_control_signal_id"] == "rcs-1111111111111111" for case in cases)
+
+
+def test_ambiguous_review_finding_mapping_fails_closed() -> None:
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.0.0",
+        "signal_id": "rcs-2222222222222222",
+        "review_id": "REV-TEST-002",
+        "review_type": "checkpoint_review",
+        "gate_assessment": "FAIL",
+        "scale_recommendation": "NO",
+        "critical_findings": ["No explicit mapping family"],
+        "confidence": 0.2,
+        "trace_linkage": {
+            "review_markdown_path": "docs/reviews/example-2.md",
+            "source_digest_sha256": "b" * 64,
+        },
+    }
+    with pytest.raises(EvalCaseGenerationError, match="missing explicit \\[eval_family"):
+        generate_failure_derived_eval_cases_from_review_signal(review_signal)

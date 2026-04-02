@@ -22,6 +22,10 @@ from typing import Any, Dict, List, Optional, Literal
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.review_eval_bridge import (
+    ReviewEvalBridgeError,
+    build_eval_result_from_review_signal,
+)
 from spectrum_systems.modules.runtime.provenance_verification import (
     ProvenanceVerificationError,
     validate_required_identity,
@@ -373,6 +377,7 @@ def build_evaluation_control_decision(
     thresholds: Optional[Dict[str, float]] = None,
     failure_policy_binding: Optional[Dict[str, Any]] = None,
     review_control_signal: Optional[Dict[str, Any]] = None,
+    review_eval_results: Optional[List[Dict[str, Any]]] = None,
     review_signal_required: bool = False,
     threshold_context: ThresholdContext = "active_runtime",
 ) -> Dict[str, Any]:
@@ -522,7 +527,16 @@ def build_evaluation_control_decision(
             system_response=system_response,
             decision_label=decision_label,
         )
-    if review_signal_required and not isinstance(review_control_signal, dict):
+    resolved_review_eval_results: List[Dict[str, Any]] = []
+    if isinstance(review_eval_results, list):
+        resolved_review_eval_results.extend(review_eval_results)
+    if isinstance(review_control_signal, dict):
+        try:
+            resolved_review_eval_results.append(build_eval_result_from_review_signal(review_control_signal))
+        except ReviewEvalBridgeError as exc:
+            raise EvaluationControlError(f"review_control_signal->eval_result bridge failed: {exc}") from exc
+
+    if review_signal_required and not resolved_review_eval_results:
         triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
         system_status, system_response, decision_label, rationale_code = (
             "blocked",
@@ -530,35 +544,37 @@ def build_evaluation_control_decision(
             "deny",
             "deny_missing_required_signal",
         )
-    elif isinstance(review_control_signal, dict):
-        review_errors = _validate(review_control_signal, load_schema("review_control_signal"))
-        if review_errors:
-            raise EvaluationControlError("review_control_signal failed validation: " + "; ".join(review_errors))
-        gate_assessment = str(review_control_signal.get("gate_assessment") or "")
-        scale_recommendation = str(review_control_signal.get("scale_recommendation") or "")
-        if gate_assessment == "FAIL":
-            triggered_signals = list(dict.fromkeys([*triggered_signals, "trust_breach"]))
-            system_status, system_response, decision_label, rationale_code = (
-                "blocked",
-                "block",
-                "deny",
-                "deny_trust_breach",
-            )
-        elif gate_assessment == "CONDITIONAL" and decision_label != "deny":
-            system_status, system_response, decision_label, rationale_code = (
-                "warning",
-                "warn",
-                "require_review",
-                "require_review_warning_signal",
-            )
-        if scale_recommendation == "NO" and decision_label != "deny":
-            triggered_signals = list(dict.fromkeys([*triggered_signals, "stability_breach"]))
-            system_status, system_response, decision_label, rationale_code = (
-                "exhausted",
-                "freeze",
-                "deny",
-                "deny_stability_breach",
-            )
+    elif resolved_review_eval_results:
+        for review_eval in resolved_review_eval_results:
+            review_eval_errors = _validate(review_eval, load_schema("eval_result"))
+            if review_eval_errors:
+                raise EvaluationControlError("review-derived eval_result failed validation: " + "; ".join(review_eval_errors))
+            review_status = str(review_eval.get("result_status") or "")
+            failure_modes = {str(item) for item in (review_eval.get("failure_modes") or [])}
+            if review_status == "fail":
+                triggered_signals = list(dict.fromkeys([*triggered_signals, "trust_breach"]))
+                system_status, system_response, decision_label, rationale_code = (
+                    "blocked",
+                    "block",
+                    "deny",
+                    "deny_trust_breach",
+                )
+            elif review_status == "indeterminate" and decision_label != "deny":
+                triggered_signals = list(dict.fromkeys([*triggered_signals, "indeterminate_failure"]))
+                system_status, system_response, decision_label, rationale_code = (
+                    "warning",
+                    "warn",
+                    "require_review",
+                    "require_review_warning_signal",
+                )
+            if "review_scale_not_recommended" in failure_modes and decision_label != "deny":
+                triggered_signals = list(dict.fromkeys([*triggered_signals, "stability_breach"]))
+                system_status, system_response, decision_label, rationale_code = (
+                    "exhausted",
+                    "freeze",
+                    "deny",
+                    "deny_stability_breach",
+                )
 
     schema_version = "1.2.0"
     decision = {

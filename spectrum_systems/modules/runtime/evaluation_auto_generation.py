@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 
@@ -395,6 +397,117 @@ def generate_eval_case_from_failure(context: Dict[str, Any], integration_result:
         runtime_environment=str(context.get("runtime_environment") or "unknown"),
         execution_result=integration_result,
     )
+
+
+_REVIEW_FAMILY_PATTERN = re.compile(r"\[eval_family:([a-z0-9_\\-]+)\]", re.IGNORECASE)
+_SUPPORTED_REVIEW_EVAL_FAMILIES = frozenset(
+    {
+        "review_gate_alignment",
+        "review_scale_alignment",
+        "review_critical_findings_presence",
+        "review_signal_validity",
+    }
+)
+
+
+def _extract_review_eval_family(finding_text: str) -> str:
+    match = _REVIEW_FAMILY_PATTERN.search(finding_text)
+    if match is None:
+        raise EvalCaseGenerationError(
+            "critical finding is missing explicit [eval_family:<family>] mapping; fail-closed to avoid ambiguous mapping"
+        )
+    family = match.group(1).lower()
+    if family not in _SUPPORTED_REVIEW_EVAL_FAMILIES:
+        raise EvalCaseGenerationError(f"unsupported review eval family mapping: {family}")
+    return family
+
+
+def generate_failure_derived_eval_cases_from_review_signal(
+    review_control_signal: Dict[str, Any],
+) -> list[Dict[str, Any]]:
+    """Generate deterministic deduped eval_case artifacts from critical review findings."""
+    if not isinstance(review_control_signal, dict):
+        raise EvalCaseGenerationError("review_control_signal must be a dict")
+    signal_schema = load_schema("review_control_signal")
+    Draft202012Validator(signal_schema, format_checker=FormatChecker()).validate(review_control_signal)
+
+    gate_assessment = str(review_control_signal.get("gate_assessment") or "")
+    scale_recommendation = str(review_control_signal.get("scale_recommendation") or "")
+    critical_findings = [str(item).strip() for item in (review_control_signal.get("critical_findings") or []) if str(item).strip()]
+    should_generate = gate_assessment == "FAIL" or (
+        gate_assessment == "CONDITIONAL" and bool(critical_findings)
+    ) or (
+        scale_recommendation == "NO" and bool(critical_findings)
+    )
+    if not should_generate:
+        return []
+
+    unique_findings = sorted(dict.fromkeys(critical_findings))
+    artifacts: list[Dict[str, Any]] = []
+    seen_eval_case_ids: set[str] = set()
+    eval_case_schema = load_schema("eval_case")
+    validator = Draft202012Validator(eval_case_schema, format_checker=FormatChecker())
+
+    for index, finding in enumerate(unique_findings, start=1):
+        eval_family = _extract_review_eval_family(finding)
+        normalized_finding = " ".join(finding.split())
+        identity_payload = {
+            "signal_id": review_control_signal.get("signal_id"),
+            "review_id": review_control_signal.get("review_id"),
+            "eval_family": eval_family,
+            "finding": normalized_finding,
+        }
+        eval_case_id = deterministic_id(
+            prefix="ec",
+            namespace="review_failure_derived_eval_case",
+            payload=identity_payload,
+        )
+        if eval_case_id in seen_eval_case_ids:
+            continue
+        seen_eval_case_ids.add(eval_case_id)
+
+        eval_case = {
+            "artifact_type": "eval_case",
+            "schema_version": "1.0.0",
+            "run_id": deterministic_id(
+                prefix="run",
+                namespace="review_failure_derived_eval_case_run",
+                payload=identity_payload,
+            ),
+            "trace_id": str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"review-failure-derived::{review_control_signal.get('signal_id')}::{eval_case_id}",
+                )
+            ),
+            "eval_case_id": eval_case_id,
+            "input_artifact_refs": [
+                f"review_control_signal:{review_control_signal.get('signal_id')}",
+                f"review:{review_control_signal.get('review_id')}",
+            ],
+            "expected_output_spec": {
+                "must_fail_on_finding": normalized_finding,
+                "reason_code": f"review_failure_derived::{eval_family}",
+            },
+            "scoring_rubric": {
+                "status": "must_fail",
+                "requires_traceable_provenance": True,
+                "requires_reason_code": f"review_failure_derived::{eval_family}",
+            },
+            "evaluation_type": "deterministic",
+            "created_from": "failure_trace",
+            "slice_tags": ["review-eval-024", eval_family],
+            "provenance": {
+                "review_id": review_control_signal.get("review_id"),
+                "review_control_signal_id": review_control_signal.get("signal_id"),
+                "finding_id": f"finding-{index:03d}",
+                "finding_text_normalized": normalized_finding,
+                "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation",
+            },
+        }
+        validator.validate(eval_case)
+        artifacts.append(eval_case)
+    return artifacts
 
 
 
