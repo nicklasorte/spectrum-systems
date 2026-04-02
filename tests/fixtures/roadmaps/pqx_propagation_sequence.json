@@ -8,7 +8,7 @@
       "pqx_output_text": "Propagation slice 1 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_chain_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
     },
     {
@@ -19,7 +19,7 @@
       "pqx_output_text": "Propagation slice 2 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_chain_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
     },
     {
@@ -30,7 +30,7 @@
       "pqx_output_text": "Propagation slice 3 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_chain_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
     },
     {
@@ -41,7 +41,7 @@
       "pqx_output_text": "Propagation slice 4 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_chain_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
     },
     {
@@ -52,30 +52,30 @@
       "pqx_output_text": "Propagation slice 5 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_chain_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
-    },
-    {
-      "step_id": "CTRL-LOOP-01",
-      "step_name": "Autonomous execution loop closed-loop extension",
-      "prompt": "Propagation validation slice 6 terminal",
-      "requested_at": "2026-04-02T00:00:00Z",
-      "pqx_output_text": "This output should require review.",
-      "changed_paths": [],
-      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
-      "runs_root": "outputs/fixtures/pqx_runs_propagation_review_{run_id}"
     },
     {
       "step_id": "CTRL-LOOP-02",
       "step_name": "Judgment learning signal enforcement wiring",
-      "prompt": "Propagation validation slice 7 should not execute after terminal stop",
+      "prompt": "Propagation validation slice 6",
       "requested_at": "2026-04-02T00:00:00Z",
-      "pqx_output_text": "Propagation slice 7 allow if reached unexpectedly.",
+      "pqx_output_text": "Propagation slice 6 allow.",
       "changed_paths": [],
       "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
-      "state_path": "outputs/fixtures/pqx_state_propagation_{run_id}.json",
+      "state_path": "outputs/fixtures/pqx_state_propagation_seeded_{run_id}.json",
       "runs_root": "outputs/fixtures/pqx_runs_propagation_allow_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-03",
+      "step_name": "Remediation closure and reinstatement governance",
+      "prompt": "Propagation validation slice 7 terminal",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "This output should require review.",
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_propagation_seeded_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_propagation_review_{run_id}"
     }
   ]
 }
