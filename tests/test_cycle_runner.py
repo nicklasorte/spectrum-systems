@@ -158,6 +158,9 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
             "certification_pack_ref": "c",
             "error_budget_ref": "d",
             "policy_ref": str(allow_policy_path),
+            "trust_spine_evidence_cohesion_result_ref": str(
+                _REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"
+            ),
         },
         "required_judgments": [],
         "required_judgment_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],

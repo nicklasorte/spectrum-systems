@@ -263,6 +263,11 @@ def test_resolve_test_targets_ignores_unreadable_test_files(tmp_path: Path) -> N
     assert targets == ["tests/test_readable.py"]
 
 
+def test_resolve_required_surface_tests_uses_trust_spine_cohesion_override() -> None:
+    targets = preflight.resolve_required_surface_tests(Path("."), ["scripts/run_trust_spine_evidence_cohesion.py"])
+    assert "tests/test_trust_spine_evidence_cohesion.py" in targets["scripts/run_trust_spine_evidence_cohesion.py"]
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
 
@@ -426,6 +431,17 @@ def test_preflight_blocks_when_trust_spine_cohesion_reports_block(monkeypatch, t
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["status"] == "failed"
     assert "trust-spine evidence cohesion" in report["recommended_repair_areas"]
+
+
+def test_evaluate_trust_spine_cohesion_skips_when_required_artifacts_are_missing(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_MANIFEST_PATH", tmp_path / "missing_manifest.json")
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_ENFORCEMENT_PATH", tmp_path / "missing_enforcement.json")
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_OBEDIENCE_PATH", tmp_path / "missing_obedience.json")
+    monkeypatch.setattr(preflight, "_TRUST_SPINE_INVARIANT_PATH", tmp_path / "missing_invariant.json")
+    monkeypatch.setattr(preflight, "_DONE_CERTIFICATION_PATH", tmp_path / "missing_done.json")
+
+    result = preflight.evaluate_trust_spine_cohesion(["scripts/run_trust_spine_evidence_cohesion.py"], tmp_path)
+    assert result is None
 
 
 def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:

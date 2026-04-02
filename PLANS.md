@@ -247,6 +247,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-032-CONTROL-SURFACE-GAP-TO-PQX-2026-04-01.md | CON-032 — Control Surface Gap → PQX Triage Integration | Active |
 | docs/review-actions/PLAN-CON-032-FIX-RECONCILE-PREFLIGHT-BLOCK-2026-04-02.md | CON-032-FIX — Reconcile Preflight BLOCK | Active |
 | docs/review-actions/PLAN-CON-033-TRUST-SPINE-EVIDENCE-COHESION-2026-04-02.md | CON-033 — Trust-spine evidence chain cohesion | Active |
+| docs/review-actions/PLAN-CON-033-FIX-PREFLIGHT-BLOCK-2026-04-02.md | CON-033-FIX — Reconcile exact contract preflight BLOCK | Active |
 
 Update this table when plans are created or completed.
 
