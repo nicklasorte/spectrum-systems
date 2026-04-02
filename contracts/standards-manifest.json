@@ -197,7 +197,7 @@
     },
     {
       "artifact_type": "codex_pqx_task_wrapper",
-      "artifact_class": "execution",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
