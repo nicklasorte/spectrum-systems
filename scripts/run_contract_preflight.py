@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (  # noq
     ControlSurfaceGapToPQXError,
     convert_gaps_to_pqx_work_items,
 )
+from spectrum_systems.modules.runtime.pqx_execution_policy import (  # noqa: E402
+    PQXExecutionPolicyError,
+    evaluate_pqx_execution_policy,
+)
 from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # noqa: E402
     TrustSpineEvidenceCohesionError,
     evaluate_trust_spine_evidence_cohesion,
@@ -144,6 +148,14 @@ def _parse_args() -> argparse.Namespace:
         "--hardening-flow",
         action="store_true",
         help="Mark run as a hardening flow so unresolved downstream seam impact is frozen instead of directly allowed.",
+    )
+    parser.add_argument(
+        "--execution-context",
+        default="unspecified",
+        help=(
+            "Execution context for default PQX policy classification. "
+            "Use 'pqx_governed' for governed PQX runs; direct/exploration contexts are non-authoritative."
+        ),
     )
     return parser.parse_args()
 
@@ -620,6 +632,17 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **control_surface_gap_pqx_conversion_error**: {report.get('control_surface_gap_pqx_conversion_error') or 'none'}")
 
     lines.append("")
+    pqx_execution_policy = report.get("pqx_execution_policy")
+    if isinstance(pqx_execution_policy, dict):
+        lines.append("## Default PQX execution policy")
+        lines.append(f"- **classification**: `{pqx_execution_policy.get('classification', 'unknown')}`")
+        lines.append(f"- **execution_context**: `{pqx_execution_policy.get('execution_context', 'unknown')}`")
+        lines.append(f"- **policy_status**: `{pqx_execution_policy.get('status', 'unknown')}`")
+        lines.append(f"- **authority_state**: `{pqx_execution_policy.get('authority_state', 'unknown')}`")
+        blocking_reasons = pqx_execution_policy.get("blocking_reasons", [])
+        lines.append(f"- **blocking_reasons**: {', '.join(blocking_reasons) if blocking_reasons else 'none'}")
+        lines.append("")
+
     if report.get("masked_failures"):
         lines.append("## Masked downstream failures")
         for item in report["masked_failures"]:
@@ -803,6 +826,8 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
     impacted_downstream = bool(report.get("fixture_failures") or report.get("consumer_failures"))
     invariant_violations = bool(report.get("invariant_violations"))
     missing_required_surface = bool(report.get("missing_required_surface"))
+    pqx_execution_policy = report.get("pqx_execution_policy") or {}
+    pqx_policy_blocking = str(pqx_execution_policy.get("status", "")).lower() == "block"
     status = str(report.get("status", "failed"))
 
     if status == "skipped":
@@ -812,10 +837,10 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
-    if masking_detected or has_propagation_failures or invariant_violations or missing_required_surface:
+    if masking_detected or has_propagation_failures or invariant_violations or missing_required_surface or pqx_policy_blocking:
         return {
             "strategy_gate_decision": "BLOCK",
-            "rationale": "preflight failed on propagation/masking/invariant/required-surface risk",
+            "rationale": "preflight failed on propagation/masking/invariant/required-surface/PQX-policy risk",
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
@@ -915,6 +940,24 @@ def main() -> int:
         "evaluation_mode": surface_classification["evaluation_mode"],
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
     }
+    pqx_execution_policy: dict[str, Any] | None = None
+    try:
+        pqx_execution_policy = evaluate_pqx_execution_policy(
+            changed_paths=detection.changed_paths,
+            execution_context=getattr(args, "execution_context", "unspecified"),
+        ).to_dict()
+    except PQXExecutionPolicyError as exc:
+        pqx_execution_policy = {
+            "policy_version": "1.0.0",
+            "classification": "governed_pqx_required",
+            "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
+            "pqx_required": True,
+            "status": "block",
+            "authority_state": "non_authoritative_direct_run",
+            "blocking_reasons": ["MALFORMED_CHANGED_PATH_INPUT"],
+            "error": str(exc),
+        }
+    detection_meta["pqx_execution_policy"] = pqx_execution_policy
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
         report = {
@@ -944,6 +987,7 @@ def main() -> int:
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
+            "pqx_execution_policy": pqx_execution_policy,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -972,6 +1016,7 @@ def main() -> int:
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
+            "pqx_execution_policy": pqx_execution_policy,
         }
     else:
         if changed_contract_paths:
@@ -1057,6 +1102,7 @@ def main() -> int:
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
+            "pqx_execution_policy": pqx_execution_policy,
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -1082,6 +1128,14 @@ def main() -> int:
             report["invariant_violations"] = sorted(
                 set(report.get("invariant_violations", []) + ["CONTROL_SURFACE_GAP_TO_PQX_CONVERSION_FAILED"])
             )
+    if isinstance(pqx_execution_policy, dict) and str(pqx_execution_policy.get("status", "")).lower() == "block":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + list(pqx_execution_policy.get("blocking_reasons", [])))
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["default PQX execution policy enforcement"])
+        )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion
     report["trust_spine_evidence_cohesion_ref"] = (
