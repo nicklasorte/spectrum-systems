@@ -315,3 +315,4 @@ def test_cli_rejects_non_authoritative_direct_run_state(tmp_path: Path, monkeypa
 
     assert module.main() == 2
     assert "non_authoritative_direct_run is not allowed for CLI execution" in capsys.readouterr().err
+

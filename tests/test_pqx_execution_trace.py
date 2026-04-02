@@ -137,8 +137,8 @@ def _patch_allow_path(monkeypatch: pytest.MonkeyPatch, *, enforcement_status: st
         lambda *_: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d-1"}},
     )
     monkeypatch.setattr(
-        "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_before_execution",
-        lambda _: {"enforcement_result": {"final_status": enforcement_status, "rationale": enforcement_status}},
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision",
+        lambda _: {"final_status": enforcement_status, "rationale": enforcement_status},
     )
 
 

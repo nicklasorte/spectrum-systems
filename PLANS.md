@@ -263,6 +263,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-046-FIX-PQX-AUTHORITY-EVIDENCE-2026-04-02.md | CON-046-FIX — Emit PQX Authority Evidence for Preflight Compatibility | Active |
 | docs/review-actions/PLAN-CON-046-FIX2-DETERMINISTIC-PACKAGING-PREFLIGHT-BRIDGE-2026-04-02.md | CON-046-FIX2 — Deterministic study_state packaging + preflight authority bridge completion | Active |
 | docs/review-actions/PLAN-CON-047-AUTHORITATIVE-PQX-EXECUTION-TRACE-2026-04-02.md | CON-047 — Authoritative PQX Execution Trace Artifact | Active |
+| docs/review-actions/PLAN-CON-047-FIX-RUNTIME-SEAM-2026-04-02.md | CON-047-FIX — PQX runtime seam decision propagation + determinism fix | Active |
 
 Update this table when plans are created or completed.
 
