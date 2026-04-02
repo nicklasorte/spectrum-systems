@@ -4,8 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
+from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
+from spectrum_systems.modules.runtime.pqx_required_context_enforcement import (
+    PQXRequiredContextEnforcementError,
+    enforce_pqx_required_context,
+)
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 
 
@@ -85,6 +91,20 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Optional path to control_surface_gap_packet JSON consumed by PQX fail-closed gating.",
     )
+    parser.add_argument(
+        "--execution-context",
+        default="unspecified",
+        help="Execution context posture for governed PQX required-context enforcement.",
+    )
+    parser.add_argument(
+        "--pqx-wrapper-path",
+        type=Path,
+        help="Optional canonical codex_pqx_task_wrapper path required for governed execution contexts.",
+    )
+    parser.add_argument(
+        "--authority-evidence-ref",
+        help="Optional authority evidence ref for governed required-context enforcement.",
+    )
     return parser.parse_args()
 
 
@@ -93,6 +113,41 @@ def main() -> int:
     pqx_output_text = None
     if args.pqx_output_file:
         pqx_output_text = args.pqx_output_file.read_text(encoding="utf-8")
+    wrapper_payload = None
+    if args.pqx_wrapper_path:
+        try:
+            wrapper_payload = json.loads(args.pqx_wrapper_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print({"status": "blocked", "block_type": "PQX_REQUIRED_CONTEXT_BLOCKED", "reason": f"invalid pqx wrapper path: {exc}"})
+            return 2
+
+    required_context_changed_paths = list(args.changed_path) + list(args.changed_contract_path) + list(args.changed_example_path)
+    policy = evaluate_pqx_execution_policy(
+        changed_paths=required_context_changed_paths,
+        execution_context=args.execution_context,
+    ).to_dict()
+    try:
+        required_context = enforce_pqx_required_context(
+            classification=str(policy.get("classification", "exploration_only_or_non_governed")),
+            execution_context=args.execution_context,
+            changed_paths=required_context_changed_paths,
+            pqx_task_wrapper=wrapper_payload,
+            authority_evidence_ref=args.authority_evidence_ref,
+        ).to_dict()
+    except PQXRequiredContextEnforcementError as exc:
+        print({"status": "blocked", "block_type": "PQX_REQUIRED_CONTEXT_BLOCKED", "reason": str(exc)})
+        return 2
+    if str(required_context.get("status", "")).lower() == "block":
+        print(
+            {
+                "status": "blocked",
+                "block_type": "PQX_REQUIRED_CONTEXT_BLOCKED",
+                "reason": "pqx required context enforcement blocked execution",
+                "pqx_execution_policy": policy,
+                "pqx_required_context_enforcement": required_context,
+            }
+        )
+        return 2
 
     result = run_pqx_slice(
         step_id=args.step_id or "",

@@ -37,6 +37,10 @@ from spectrum_systems.modules.runtime.pqx_execution_policy import (  # noqa: E40
     PQXExecutionPolicyError,
     evaluate_pqx_execution_policy,
 )
+from spectrum_systems.modules.runtime.pqx_required_context_enforcement import (  # noqa: E402
+    PQXRequiredContextEnforcementError,
+    enforce_pqx_required_context,
+)
 from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # noqa: E402
     TrustSpineEvidenceCohesionError,
     evaluate_trust_spine_evidence_cohesion,
@@ -156,6 +160,16 @@ def _parse_args() -> argparse.Namespace:
             "Execution context for default PQX policy classification. "
             "Use 'pqx_governed' for governed PQX runs; direct/exploration contexts are non-authoritative."
         ),
+    )
+    parser.add_argument(
+        "--pqx-wrapper-path",
+        default=None,
+        help="Optional path to canonical codex_pqx_task_wrapper payload for governed PQX required-context enforcement.",
+    )
+    parser.add_argument(
+        "--authority-evidence-ref",
+        default=None,
+        help="Optional authority evidence ref used for governed required-context enforcement.",
     )
     return parser.parse_args()
 
@@ -648,6 +662,18 @@ def render_markdown(report: dict[str, Any]) -> str:
         blocking_reasons = pqx_execution_policy.get("blocking_reasons", [])
         lines.append(f"- **blocking_reasons**: {', '.join(blocking_reasons) if blocking_reasons else 'none'}")
         lines.append("")
+    required_context = report.get("pqx_required_context_enforcement")
+    if isinstance(required_context, dict):
+        lines.append("## PQX required context enforcement")
+        lines.append(f"- **classification**: `{required_context.get('classification', 'unknown')}`")
+        lines.append(f"- **execution_context**: `{required_context.get('execution_context', 'unknown')}`")
+        lines.append(f"- **wrapper_present**: `{required_context.get('wrapper_present', False)}`")
+        lines.append(f"- **wrapper_context_valid**: `{required_context.get('wrapper_context_valid', False)}`")
+        lines.append(f"- **authority_context_valid**: `{required_context.get('authority_context_valid', False)}`")
+        lines.append(f"- **enforcement_status**: `{required_context.get('status', 'unknown')}`")
+        reasons = required_context.get("blocking_reasons", [])
+        lines.append(f"- **blocking_reasons**: {', '.join(reasons) if reasons else 'none'}")
+        lines.append("")
 
     if report.get("masked_failures"):
         lines.append("## Masked downstream failures")
@@ -996,6 +1022,24 @@ def main() -> int:
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
     }
     pqx_execution_policy: dict[str, Any] | None = None
+    pqx_required_context_enforcement: dict[str, Any] | None = None
+    wrapper_payload: dict[str, Any] | None = None
+    wrapper_path_value = getattr(args, "pqx_wrapper_path", None)
+    if wrapper_path_value:
+        wrapper_path = Path(wrapper_path_value)
+        try:
+            wrapper_payload = json.loads(wrapper_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            pqx_required_context_enforcement = {
+                "classification": "governed_pqx_required",
+                "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
+                "wrapper_present": True,
+                "wrapper_context_valid": False,
+                "authority_context_valid": False,
+                "status": "block",
+                "blocking_reasons": ["MALFORMED_PQX_TASK_WRAPPER"],
+                "error": str(exc),
+            }
     try:
         pqx_execution_policy = evaluate_pqx_execution_policy(
             changed_paths=detection.changed_paths,
@@ -1015,6 +1059,39 @@ def main() -> int:
             "error": str(exc),
         }
     detection_meta["pqx_execution_policy"] = pqx_execution_policy
+    if pqx_required_context_enforcement is None and isinstance(pqx_execution_policy, dict):
+        try:
+            pqx_required_context_enforcement = enforce_pqx_required_context(
+                classification=str(pqx_execution_policy.get("classification", "exploration_only_or_non_governed")),
+                execution_context=getattr(args, "execution_context", "unspecified"),
+                changed_paths=detection.changed_paths,
+                pqx_task_wrapper=wrapper_payload,
+                authority_evidence_ref=getattr(args, "authority_evidence_ref", None),
+            ).to_dict()
+        except PQXRequiredContextEnforcementError as exc:
+            pqx_required_context_enforcement = {
+                "classification": str(pqx_execution_policy.get("classification", "governed_pqx_required")),
+                "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
+                "wrapper_present": bool(wrapper_payload is not None),
+                "wrapper_context_valid": False,
+                "authority_context_valid": False,
+                "status": "block",
+                "blocking_reasons": ["MALFORMED_REQUIRED_CONTEXT_INPUT"],
+                "error": str(exc),
+            }
+    detection_meta["pqx_required_context_enforcement"] = pqx_required_context_enforcement
+    if (
+        isinstance(pqx_required_context_enforcement, dict)
+        and str(pqx_required_context_enforcement.get("status", "")).lower() == "block"
+    ):
+        reasons = list(pqx_required_context_enforcement.get("blocking_reasons", []))
+        if isinstance(pqx_execution_policy, dict):
+            pqx_execution_policy["status"] = "block"
+            pqx_execution_policy["blocking_reasons"] = sorted(
+                set(list(pqx_execution_policy.get("blocking_reasons", [])) + reasons)
+            )
+            pqx_execution_policy["authority_resolution"] = "pqx_required_context_enforcement_block"
+            pqx_execution_policy["authority_state"] = "non_authoritative_direct_run"
     if isinstance(pqx_execution_policy, dict) and pqx_execution_policy.get("status") == "pending_evidence":
         authority_resolution = resolve_governed_pqx_authority_evidence(REPO_ROOT)
         pqx_execution_policy["authority_evidence_resolution_status"] = authority_resolution["resolution_status"]
@@ -1068,6 +1145,7 @@ def main() -> int:
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
+            "pqx_required_context_enforcement": pqx_required_context_enforcement,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1097,6 +1175,7 @@ def main() -> int:
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
+            "pqx_required_context_enforcement": pqx_required_context_enforcement,
         }
     else:
         if changed_contract_paths:
@@ -1183,6 +1262,7 @@ def main() -> int:
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
+            "pqx_required_context_enforcement": pqx_required_context_enforcement,
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
