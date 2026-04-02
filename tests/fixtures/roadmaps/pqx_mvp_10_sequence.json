@@ -1,0 +1,143 @@
+{
+  "slices": [
+    {
+      "step_id": "AI-01",
+      "step_name": "AI request/response boundary",
+      "prompt": "MVP 10-slice validation: chain start",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 1 allow.",
+      "dependencies": [],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_chain_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_chain_{run_id}"
+    },
+    {
+      "step_id": "AI-02",
+      "step_name": "Context bundle system",
+      "prompt": "MVP 10-slice validation: chain step 2",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 2 allow.",
+      "dependencies": [
+        "AI-01"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_chain_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_chain_{run_id}"
+    },
+    {
+      "step_id": "TRUST-01",
+      "step_name": "Context admission gate",
+      "prompt": "MVP 10-slice validation: chain step 3",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 3 allow.",
+      "dependencies": [
+        "AI-02"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_chain_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_chain_{run_id}"
+    },
+    {
+      "step_id": "SRE-03",
+      "step_name": "Replay engine",
+      "prompt": "MVP 10-slice validation: chain step 4",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 4 allow.",
+      "dependencies": [
+        "TRUST-01"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_chain_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_chain_{run_id}"
+    },
+    {
+      "step_id": "GOV-10",
+      "step_name": "Certification gate",
+      "prompt": "MVP 10-slice validation: chain step 5",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 5 allow.",
+      "dependencies": [
+        "SRE-03"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_chain_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_chain_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-02",
+      "step_name": "Judgment learning signal enforcement wiring",
+      "prompt": "MVP 10-slice validation: chain step 6",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 6 allow.",
+      "dependencies": [
+        "CTRL-LOOP-01"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_ctrl_seed_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_ctrl_chain_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-03",
+      "step_name": "Remediation closure and reinstatement governance",
+      "prompt": "MVP 10-slice validation: chain step 7",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 7 allow.",
+      "dependencies": [
+        "CTRL-LOOP-02"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_ctrl_seed_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_ctrl_chain_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-04",
+      "step_name": "Remediation/reinstatement readiness observability",
+      "prompt": "MVP 10-slice validation: chain step 8",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 8 allow.",
+      "dependencies": [
+        "CTRL-LOOP-03"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_ctrl_seed_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_ctrl_chain_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-05",
+      "step_name": "Judgment policy lifecycle governance",
+      "prompt": "MVP 10-slice validation: chain step 9",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP slice 9 allow.",
+      "dependencies": [
+        "CTRL-LOOP-04"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_ctrl_seed_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_ctrl_chain_{run_id}"
+    },
+    {
+      "step_id": "CTRL-LOOP-01",
+      "step_name": "Autonomous execution loop closed-loop extension",
+      "prompt": "MVP 10-slice validation: terminal controlled stop",
+      "requested_at": "2026-04-02T00:00:00Z",
+      "pqx_output_text": "MVP terminal stop check.",
+      "dependencies": [
+        "GOV-10",
+        "CTRL-LOOP-01 foundation"
+      ],
+      "changed_paths": [],
+      "slice_roadmap_path": "docs/roadmap/system_roadmap.md",
+      "state_path": "outputs/fixtures/pqx_state_mvp_10_terminal_{run_id}.json",
+      "runs_root": "outputs/fixtures/pqx_runs_mvp_10_terminal_{run_id}"
+    }
+  ]
+}
