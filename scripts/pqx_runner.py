@@ -80,6 +80,11 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Evaluation artifact ids supplied to execution change impact gate.",
     )
+    parser.add_argument(
+        "--control-surface-gap-packet",
+        type=Path,
+        help="Optional path to control_surface_gap_packet JSON consumed by PQX fail-closed gating.",
+    )
     return parser.parse_args()
 
 
@@ -103,6 +108,7 @@ def main() -> int:
         execution_change_baseline_ref=args.execution_change_baseline_ref,
         provided_reviews=args.provided_review,
         provided_eval_artifacts=args.provided_eval_artifact,
+        control_surface_gap_packet_ref=str(args.control_surface_gap_packet) if args.control_surface_gap_packet else None,
     )
 
     print(result)

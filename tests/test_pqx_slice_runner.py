@@ -509,3 +509,132 @@ def test_run_pqx_slice_blocks_on_preflight_warn_without_degraded_detection(tmp_p
 def test_runtime_module_import_has_no_done_certification_cycle() -> None:
     runtime_module = importlib.import_module("spectrum_systems.modules.runtime")
     assert runtime_module is not None
+
+
+def _gap_packet(*, overall_decision: str = "ALLOW") -> dict:
+    packet = {
+        "artifact_type": "control_surface_gap_packet",
+        "artifact_id": "csgp-aaaaaaaaaaaaaaaaaaaaaaaa",
+        "schema_version": "1.0.0",
+        "generated_at": "2026-04-02T00:00:00Z",
+        "trace_id": "trace:test:control-surface-gap",
+        "policy_id": "policy:control-surface-gap:v1",
+        "governing_ref": "contracts/standards-manifest.json",
+        "overall_decision": overall_decision,
+        "summary": "No control-surface gaps detected." if overall_decision == "ALLOW" else "Blocking gaps detected.",
+        "evaluated_surfaces": [
+            "control_surface_manifest",
+            "control_surface_enforcement",
+            "control_surface_obedience",
+        ],
+        "gap_count": 0,
+        "blocking_gap_count": 0,
+        "gaps": [],
+        "evidence_refs": [],
+        "next_governance_actions": [],
+    }
+    if overall_decision == "BLOCK":
+        packet["gaps"] = [
+            {
+                "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+                "surface_name": "control_surface_manifest",
+                "gap_category": "missing_manifest_surface",
+                "severity": "critical",
+                "blocking": True,
+                "observed_condition": "surface missing",
+                "expected_condition": "surface declared",
+                "evidence_ref": "contracts/examples/control_surface_manifest.json",
+                "source_artifact_type": "control_surface_manifest",
+                "source_artifact_ref": "contracts/examples/control_surface_manifest.json",
+                "suggested_action": "fix_manifest_declaration",
+                "deterministic_identity": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+            }
+        ]
+        packet["gap_count"] = 1
+        packet["blocking_gap_count"] = 1
+        packet["evidence_refs"] = ["contracts/examples/control_surface_manifest.json"]
+        packet["next_governance_actions"] = ["fix_manifest_declaration"]
+    return packet
+
+
+def test_run_pqx_slice_blocks_when_control_surface_packet_required_but_missing(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    preflight_path = tmp_path / "preflight-control-surface.json"
+    payload = _preflight_artifact(status="passed", decision="ALLOW")
+    payload["control_surface_gap_status"] = "gaps_detected"
+    preflight_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTROL_SURFACE_GAP_PACKET_REQUIRED"
+
+
+def test_run_pqx_slice_fail_closed_on_malformed_control_surface_packet(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet_path = tmp_path / "bad-control-surface-gap-packet.json"
+    packet_path.write_text("{ not-json", encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTROL_SURFACE_GAP_PACKET_INVALID"
+
+
+def test_run_pqx_slice_blocks_when_control_surface_gap_packet_decision_is_block(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet_path = tmp_path / "control-surface-gap-packet-block.json"
+    packet = _gap_packet(overall_decision="BLOCK")
+    packet_path.write_text(json.dumps(packet), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["reason"] == "control_surface_gap_packet_block"
+    assert result["blocking_gaps"] == packet["gaps"]
+
+
+def test_run_pqx_slice_accepts_valid_allow_control_surface_gap_packet(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    packet_path = tmp_path / "control-surface-gap-packet-allow.json"
+    packet_path.write_text(json.dumps(_gap_packet(overall_decision="ALLOW")), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        control_surface_gap_packet_ref=str(packet_path),
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"

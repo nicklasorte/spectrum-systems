@@ -13,6 +13,15 @@ from spectrum_systems.governance import (
     analyze_execution_change_impact,
     validate_manifest_completeness,
 )
+from spectrum_systems.modules.runtime.control_surface_gap_loader import (
+    ControlSurfaceGapPacketLoaderError,
+    load_control_surface_gap_packet,
+)
+from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (
+    ControlSurfaceGapToPQXError,
+    convert_gap_packet_to_pqx_work_items,
+    sort_packet_gaps,
+)
 from spectrum_systems.modules.pqx_backbone import (
     LEGACY_EXECUTION_ROADMAP_PATH,
     PQXBackboneError,
@@ -208,6 +217,32 @@ def _enforce_manifest_completeness_gate(*, manifest_path: Path) -> None:
     raise PQXSliceRunnerError(" | ".join(reason_parts))
 
 
+def _control_surface_artifacts_involved(
+    *,
+    changed_paths: Optional[list[str]],
+    changed_contract_paths: Optional[list[str]],
+    changed_example_paths: Optional[list[str]],
+    contract_preflight_artifact: Optional[dict],
+    control_surface_gap_packet_ref: Optional[str],
+) -> bool:
+    relevant_refs = [*(changed_paths or []), *(changed_contract_paths or []), *(changed_example_paths or [])]
+    if any("control_surface" in str(path) for path in relevant_refs):
+        return True
+    if control_surface_gap_packet_ref:
+        return True
+    if not isinstance(contract_preflight_artifact, dict):
+        return False
+    if contract_preflight_artifact.get("control_surface_gap_result_ref"):
+        return True
+    if contract_preflight_artifact.get("pqx_gap_work_items_ref"):
+        return True
+    if contract_preflight_artifact.get("control_surface_gap_status") not in {None, "not_run"}:
+        return True
+    if contract_preflight_artifact.get("control_surface_gap_blocking") is True:
+        return True
+    return False
+
+
 def _find_row(rows: list[RoadmapRow], step_id: str) -> RoadmapRow:
     row = next((entry for entry in rows if entry.step_id == step_id), None)
     if row is None:
@@ -277,6 +312,8 @@ def run_pqx_slice(
     provided_eval_artifacts: Optional[list[str]] = None,
     enforce_manifest_completeness: bool = False,
     contract_preflight_result_artifact_path: Optional[Path] = None,
+    control_surface_gap_packet_ref: Optional[str] = None,
+    require_control_surface_gap_packet_for_control_surfaces: bool = True,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -360,6 +397,46 @@ def run_pqx_slice(
         )
     if preflight_signal is not None:
         row_state["strategy_gate_decision"] = _normalize_strategy_decision(preflight_signal.get("strategy_gate_decision"))
+
+    control_surface_required = _control_surface_artifacts_involved(
+        changed_paths=changed_paths,
+        changed_contract_paths=changed_contract_paths,
+        changed_example_paths=changed_example_paths,
+        contract_preflight_artifact=preflight_artifact,
+        control_surface_gap_packet_ref=control_surface_gap_packet_ref,
+    )
+    if control_surface_required and require_control_surface_gap_packet_for_control_surfaces and not control_surface_gap_packet_ref:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason="control_surface_gap_packet is required when control-surface artifacts are involved",
+            block_type="CONTROL_SURFACE_GAP_PACKET_REQUIRED",
+        )
+
+    context: dict[str, object] = {}
+    if control_surface_gap_packet_ref:
+        try:
+            control_surface_gap_packet = load_control_surface_gap_packet(control_surface_gap_packet_ref)
+            context["control_surface_gap_packet"] = control_surface_gap_packet
+            context["prioritized_control_surface_gaps"] = sort_packet_gaps(control_surface_gap_packet["gaps"])
+            context["pqx_gap_work_items"] = convert_gap_packet_to_pqx_work_items(control_surface_gap_packet)
+        except (ControlSurfaceGapPacketLoaderError, ControlSurfaceGapToPQXError, KeyError, TypeError, ValueError) as exc:
+            return _block_payload(
+                step_id=normalized_step_id,
+                run_id=run_id,
+                reason=f"invalid control_surface_gap_packet: {exc}",
+                block_type="CONTROL_SURFACE_GAP_PACKET_INVALID",
+            )
+
+        if control_surface_gap_packet["overall_decision"] == "BLOCK":
+            return {
+                "status": "blocked",
+                "block_type": "CONTROL_SURFACE_GAP_PACKET_BLOCKED",
+                "step_id": normalized_step_id,
+                "run_id": run_id,
+                "reason": "control_surface_gap_packet_block",
+                "blocking_gaps": control_surface_gap_packet["gaps"],
+            }
 
     try:
         _enforce_contract_impact_gate(

@@ -695,3 +695,131 @@ def test_control_surface_enforcement_not_invoked_for_enforcement_only_paths() ->
     assert preflight.evaluate_control_surface_enforcement(
         ["spectrum_systems/modules/runtime/control_surface_enforcement.py"]
     ) is None
+
+
+def test_resolve_required_surface_tests_maps_con035_governance_paths() -> None:
+    targets = preflight.resolve_required_surface_tests(
+        Path("."),
+        [
+            "scripts/pqx_runner.py",
+            "spectrum_systems/modules/runtime/control_surface_gap_loader.py",
+        ],
+    )
+    for path in (
+        "scripts/pqx_runner.py",
+        "spectrum_systems/modules/runtime/control_surface_gap_loader.py",
+    ):
+        assert "tests/test_control_surface_gap_to_pqx.py" in targets[path]
+        assert "tests/test_pqx_slice_runner.py" in targets[path]
+
+
+def test_validate_control_surface_gap_packet_test_expectations_fail_closed() -> None:
+    failures = preflight.validate_control_surface_gap_packet_test_expectations(
+        changed_paths=["scripts/pqx_runner.py"],
+        resolved_targets_by_path={"scripts/pqx_runner.py": ["tests/test_pqx_slice_runner.py"]},
+    )
+    assert failures == [
+        {
+            "path": "scripts/pqx_runner.py",
+            "reason": (
+                "control_surface_gap_packet governance path requires deterministic tests: "
+                "tests/test_control_surface_gap_to_pqx.py"
+            ),
+        }
+    ]
+
+
+def test_main_contract_preflight_allows_con035_changed_paths_when_required_tests_present(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    changed_paths = [
+        "scripts/pqx_runner.py",
+        "spectrum_systems/modules/runtime/control_surface_gap_loader.py",
+        "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py",
+        "spectrum_systems/modules/runtime/pqx_slice_runner.py",
+    ]
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": changed_paths,
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda _output_dir: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths: None)
+
+    code = preflight.main()
+    assert code == 0
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["preflight_status"] == "passed"
+    assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
+
+
+def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missing(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    changed_paths = ["scripts/pqx_runner.py"]
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": changed_paths,
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "resolve_required_surface_tests",
+        lambda *_args, **_kwargs: {"scripts/pqx_runner.py": ["tests/test_pqx_slice_runner.py"]},
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda _output_dir: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths: None)
+
+    code = preflight.main()
+    assert code == 2
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["preflight_status"] == "failed"
+    assert artifact["control_signal"]["strategy_gate_decision"] == "BLOCK"
