@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_surface_gap_packet.schema.json",
+  "title": "Control Surface Gap Packet",
+  "description": "Deterministic fail-closed machine-readable control-surface gap packet for governance and downstream PQX consumption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "schema_version",
+    "generated_at",
+    "trace_id",
+    "policy_id",
+    "governing_ref",
+    "overall_decision",
+    "summary",
+    "evaluated_surfaces",
+    "gap_count",
+    "blocking_gap_count",
+    "gaps",
+    "evidence_refs",
+    "next_governance_actions"
+  ],
+  "properties": {
+    "artifact_type": {"const": "control_surface_gap_packet"},
+    "artifact_id": {"type": "string", "pattern": "^csgp-[a-f0-9]{24}$"},
+    "schema_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "policy_id": {"type": "string", "minLength": 1},
+    "governing_ref": {"type": "string", "minLength": 1},
+    "overall_decision": {"type": "string", "enum": ["ALLOW", "WARN", "BLOCK"]},
+    "summary": {"type": "string", "minLength": 1},
+    "evaluated_surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+    },
+    "gap_count": {"type": "integer", "minimum": 0},
+    "blocking_gap_count": {"type": "integer", "minimum": 0},
+    "gaps": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/gap"}
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "next_governance_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "add_test_coverage",
+          "add_invariant_coverage",
+          "add_runtime_evidence",
+          "fix_manifest_declaration",
+          "reconcile_certification_inputs",
+          "investigate_malformed_artifact",
+          "block_promotion"
+        ]
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gap_id",
+        "surface_name",
+        "gap_category",
+        "severity",
+        "blocking",
+        "observed_condition",
+        "expected_condition",
+        "evidence_ref",
+        "source_artifact_type",
+        "source_artifact_ref",
+        "suggested_action",
+        "deterministic_identity"
+      ],
+      "properties": {
+        "gap_id": {"type": "string", "pattern": "^csg-[a-f0-9]{24}$"},
+        "surface_name": {"type": "string", "minLength": 1},
+        "gap_category": {
+          "type": "string",
+          "enum": [
+            "missing_manifest_surface",
+            "missing_required_test_coverage",
+            "missing_required_invariant_coverage",
+            "enforcement_block",
+            "obedience_block",
+            "insufficient_runtime_evidence",
+            "trust_spine_contradiction",
+            "certification_alignment_gap",
+            "malformed_input_artifact"
+          ]
+        },
+        "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "blocking": {"type": "boolean"},
+        "observed_condition": {"type": "string", "minLength": 1},
+        "expected_condition": {"type": "string", "minLength": 1},
+        "evidence_ref": {"type": "string", "minLength": 1},
+        "source_artifact_type": {"type": "string", "minLength": 1},
+        "source_artifact_ref": {"type": "string", "minLength": 1},
+        "suggested_action": {
+          "type": "string",
+          "enum": [
+            "add_test_coverage",
+            "add_invariant_coverage",
+            "add_runtime_evidence",
+            "fix_manifest_declaration",
+            "reconcile_certification_inputs",
+            "investigate_malformed_artifact",
+            "block_promotion"
+          ]
+        },
+        "deterministic_identity": {"type": "string", "pattern": "^csg-[a-f0-9]{24}$"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"overall_decision": {"const": "ALLOW"}}, "required": ["overall_decision"]},
+      "then": {
+        "properties": {
+          "gap_count": {"const": 0},
+          "blocking_gap_count": {"const": 0},
+          "gaps": {"maxItems": 0},
+          "evidence_refs": {"maxItems": 0},
+          "next_governance_actions": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"overall_decision": {"const": "BLOCK"}}, "required": ["overall_decision"]},
+      "then": {
+        "properties": {
+          "blocking_gap_count": {"minimum": 1},
+          "gap_count": {"minimum": 1}
+        }
+      }
+    }
+  ]
+}
