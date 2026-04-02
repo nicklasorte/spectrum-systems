@@ -124,7 +124,7 @@ def test_three_slices_all_allow_completes(monkeypatch: pytest.MonkeyPatch) -> No
     )
     monkeypatch.setattr(
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision",
-        lambda decision: {"final_status": "allow", "rationale": "allow"},
+        lambda decision: {"final_status": "allow", "rationale_code": "allow_healthy_eval_summary"},
     )
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
 
@@ -160,7 +160,7 @@ def test_second_slice_block_stops(monkeypatch: pytest.MonkeyPatch) -> None:
     def _gate(_: dict[str, object]) -> dict[str, object]:
         calls["n"] += 1
         final = "deny" if calls["n"] == 2 else "allow"
-        return {"final_status": final, "rationale": final}
+        return {"final_status": final, "rationale_code": final}
 
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", _gate)
 
@@ -189,7 +189,7 @@ def test_second_slice_require_review_stops(monkeypatch: pytest.MonkeyPatch) -> N
     def _gate(_: dict[str, object]) -> dict[str, object]:
         calls["n"] += 1
         final = "require_review" if calls["n"] == 2 else "allow"
-        return {"final_status": final, "rationale": final}
+        return {"final_status": final, "rationale_code": final}
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", _gate)
 
     trace = run_pqx_sequential([_slice("1"), _slice("2"), _slice("3")], _base_initial_context())
@@ -211,7 +211,7 @@ def test_deterministic_output(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.build_trace_context_from_replay_artifact", lambda a: {"trace_id": "tt", "replay_id": "r", "replay_run_id": "rr"})
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_control_loop", lambda a, t: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d1"}})
-    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale": "allow"})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale_code": "allow_healthy_eval_summary"})
     monkeypatch.setattr(
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
@@ -239,7 +239,7 @@ def test_artifact_refs_passed_and_wrapper_reused(monkeypatch: pytest.MonkeyPatch
     )
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.build_trace_context_from_replay_artifact", lambda a: {"trace_id": "tt", "replay_id": "r", "replay_run_id": "rr"})
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_control_loop", lambda a, t: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d1"}})
-    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale": "allow"})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale_code": "allow_healthy_eval_summary"})
     monkeypatch.setattr(
         "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
         lambda **kwargs: _AllowContextResult(),
@@ -296,7 +296,7 @@ def test_execution_record_schema_validation_and_preflight_compatible_ref(monkeyp
     )
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.build_trace_context_from_replay_artifact", lambda a: {"trace_id": "tt", "replay_id": "r", "replay_run_id": "rr"})
     monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_control_loop", lambda a, t: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d1"}})
-    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale": "allow"})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale_code": "allow_healthy_eval_summary"})
 
     def _record_required_context(**kwargs: object) -> _AllowContextResult:
         required_contexts.append({"authority_evidence_ref": kwargs.get("authority_evidence_ref")})

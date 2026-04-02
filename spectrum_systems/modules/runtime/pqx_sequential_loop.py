@@ -315,7 +315,7 @@ def run_pqx_sequential(
                 enforcement_result.get("final_status"), label=f"slice[{slice_id}].enforcement_result.final_status"
             ),
             "rationale": _require_non_empty_string(
-                enforcement_result.get("rationale") or enforcement_label,
+                enforcement_result.get("rationale_code") or enforcement_label,
                 label=f"slice[{slice_id}].enforcement_result.rationale",
             ),
         }
