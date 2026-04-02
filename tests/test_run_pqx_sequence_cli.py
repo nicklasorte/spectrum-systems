@@ -277,3 +277,41 @@ def test_cli_deterministic_output_behavior_for_identical_inputs(tmp_path: Path, 
     assert module.main() == 0
 
     assert json.loads(output_a.read_text(encoding="utf-8")) == json.loads(output_b.read_text(encoding="utf-8"))
+
+
+def test_cli_defaults_execution_context_to_pqx_governed_when_omitted() -> None:
+    module = _load_cli_module()
+    args = module.argparse.Namespace(execution_context=None)
+    assert module._resolve_execution_context(args) == "pqx_governed"
+
+
+def test_cli_rejects_non_authoritative_direct_run_state(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    module = _load_cli_module()
+    roadmap_path = tmp_path / "roadmap.json"
+    output_path = tmp_path / "trace.json"
+    roadmap_path.write_text(json.dumps({"slices": [_roadmap_slice()]}), encoding="utf-8")
+
+    wrapper = _wrapper()
+    wrapper["governance"]["authority_state"] = "non_authoritative_direct_run"
+    monkeypatch.setattr(module, "build_codex_pqx_task_wrapper", lambda _: type("R", (), {"wrapper": wrapper})())
+    monkeypatch.setattr(
+        module,
+        "parse_args",
+        lambda: module.argparse.Namespace(
+            roadmap=roadmap_path,
+            output=output_path,
+            run_id="run-1",
+            execution_context=None,
+            authority_evidence_ref="data/pqx_runs/auth.pqx_slice_execution_record.json",
+            contract_preflight_result_artifact_path=None,
+            initial_context=None,
+            stage="sequence_execution",
+            runtime_environment="cli",
+            roadmap_path="docs/roadmaps/system_roadmap.md",
+            state_path="data/pqx_state.json",
+            runs_root="data/pqx_runs",
+        ),
+    )
+
+    assert module.main() == 2
+    assert "non_authoritative_direct_run is not allowed for CLI execution" in capsys.readouterr().err

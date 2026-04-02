@@ -125,6 +125,12 @@ def _build_wrapped_slices(
         if not isinstance(classification, str) or not classification.strip():
             raise PQXSequenceCLIError(f"wrapper build failed for slice {step_id}: governance.classification missing")
 
+        authority_state = governance.get("authority_state") if isinstance(governance, Mapping) else None
+        if authority_state == "non_authoritative_direct_run":
+            raise PQXSequenceCLIError(
+                f"wrapper build failed for slice {step_id}: non_authoritative_direct_run is not allowed for CLI execution"
+            )
+
         effective_authority = governance.get("authority_evidence_ref") if isinstance(governance, Mapping) else None
         if bool(governance.get("pqx_required")) and (not isinstance(effective_authority, str) or not effective_authority.strip()):
             raise PQXSequenceCLIError(
@@ -157,7 +163,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--roadmap", type=Path, required=True, help="Path to ordered roadmap slices JSON")
     parser.add_argument("--output", type=Path, required=True, help="Path to write authoritative sequential trace JSON")
     parser.add_argument("--run-id", required=True, help="Stable run identifier")
-    parser.add_argument("--execution-context", default="pqx_governed", help="Execution context forwarded to wrapper builder")
+    parser.add_argument(
+        "--execution-context",
+        default=None,
+        help="Execution context forwarded to wrapper builder (defaults to pqx_governed for CLI)",
+    )
     parser.add_argument("--authority-evidence-ref", help="Authority evidence ref required for governed wrapper inputs")
     parser.add_argument("--contract-preflight-result-artifact-path", help="Optional contract preflight artifact path")
     parser.add_argument("--initial-context", type=Path, help="Optional initial context JSON override")
@@ -167,6 +177,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--state-path", default="data/pqx_state.json", help="PQX state path forwarded to slice runner")
     parser.add_argument("--runs-root", default="data/pqx_runs", help="PQX runs root forwarded to slice runner")
     return parser.parse_args()
+
+
+def _resolve_execution_context(args: argparse.Namespace) -> str:
+    raw = args.execution_context
+    if raw is None:
+        return "pqx_governed"
+    normalized = str(raw).strip()
+    if not normalized:
+        return "pqx_governed"
+    return normalized
 
 
 def _load_initial_context(args: argparse.Namespace, first_slice: dict[str, Any]) -> dict[str, Any]:
@@ -196,10 +216,12 @@ def main() -> int:
         roadmap_payload = _load_json(args.roadmap)
         roadmap_slices = _normalize_roadmap_slices(roadmap_payload)
 
+        execution_context = _resolve_execution_context(args)
+
         wrapped_slices = _build_wrapped_slices(
             roadmap_slices,
             run_id=args.run_id,
-            execution_context=args.execution_context,
+            execution_context=execution_context,
             authority_evidence_ref=args.authority_evidence_ref,
             contract_preflight_result_artifact_path=args.contract_preflight_result_artifact_path,
             roadmap_path=args.roadmap_path,
