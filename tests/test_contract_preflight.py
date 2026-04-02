@@ -316,6 +316,58 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
     preflight_artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert preflight_artifact["artifact_type"] == "contract_preflight_result_artifact"
     assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "WARN"
+    assert preflight_artifact["control_surface_gap_status"] == "not_run"
+    assert preflight_artifact["control_surface_gap_blocking"] is False
+
+
+def test_preflight_blocks_when_gap_bridge_reports_blocking(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="explicit_paths",
+            refs_attempted=[],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda *_args, **_kwargs: {
+            "status": "conversion_failed",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": "failed conversion",
+            "blocking": True,
+        },
+    )
+
+    code = preflight.main()
+    assert code == 2
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["preflight_status"] == "failed"
+    assert artifact["control_surface_gap_status"] == "conversion_failed"
+    assert artifact["control_surface_gap_blocking"] is True
 
 
 def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:

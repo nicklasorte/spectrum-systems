@@ -1,0 +1,40 @@
+{
+  "gap_result_id": "GAP-a76da3b9fa43da7f480ef5d5f29295fd0b53ab57d3be298fd8ec6ba90f2928d8",
+  "timestamp": "2026-04-01T00:00:00Z",
+  "status": "gaps_detected",
+  "gaps": [
+    {
+      "gap_id": "GAP-bbf4842f3f74ab9db2fe24f12f48e92026b113b976ce5f03295f5adf1a46f5f2",
+      "control_surface": "contract_preflight_gate",
+      "gap_type": "missing_test",
+      "severity": "medium",
+      "description": "Manifest reports missing targeted tests for control surface contract_preflight_gate.",
+      "source_artifact_refs": [
+        "outputs/control_surface_manifest/control_surface_manifest.json"
+      ],
+      "detected_by": "manifest"
+    },
+    {
+      "gap_id": "GAP-7475ebbe967f50bf75fa2e44e9cd8afd3356a6187673d2e1f1dbbf42c58ec7d1",
+      "control_surface": "trust_spine_invariant_validation",
+      "gap_type": "invariant_violation",
+      "severity": "high",
+      "description": "Enforcement reports missing invariant coverage for trust_spine_invariant_validation.",
+      "source_artifact_refs": [
+        "outputs/control_surface_enforcement/control_surface_enforcement_result.json"
+      ],
+      "detected_by": "enforcement"
+    },
+    {
+      "gap_id": "GAP-9835793e7b090f7c4d5712c62a16439af5cddcc6791635262e3ee72f4ec70eb2",
+      "control_surface": "sequence_transition_promotion",
+      "gap_type": "obedience_missing",
+      "severity": "blocker",
+      "description": "Obedience result blocked on sequence_transition_promotion.",
+      "source_artifact_refs": [
+        "outputs/control_surface_obedience/control_surface_obedience_result.json"
+      ],
+      "detected_by": "obedience"
+    }
+  ]
+}
