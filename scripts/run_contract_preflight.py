@@ -639,6 +639,12 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **execution_context**: `{pqx_execution_policy.get('execution_context', 'unknown')}`")
         lines.append(f"- **policy_status**: `{pqx_execution_policy.get('status', 'unknown')}`")
         lines.append(f"- **authority_state**: `{pqx_execution_policy.get('authority_state', 'unknown')}`")
+        lines.append(f"- **authority_resolution**: `{pqx_execution_policy.get('authority_resolution', 'unknown')}`")
+        lines.append(
+            f"- **authority_evidence_resolution_status**: `{pqx_execution_policy.get('authority_evidence_resolution_status', 'not_applicable')}`"
+        )
+        evidence_ref = pqx_execution_policy.get("authority_evidence_ref")
+        lines.append(f"- **authority_evidence_ref**: `{evidence_ref}`" if evidence_ref else "- **authority_evidence_ref**: _none_")
         blocking_reasons = pqx_execution_policy.get("blocking_reasons", [])
         lines.append(f"- **blocking_reasons**: {', '.join(blocking_reasons) if blocking_reasons else 'none'}")
         lines.append("")
@@ -701,6 +707,47 @@ def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ControlSurfaceGapExtractionError(f"{label} must be a JSON object")
     return payload
+
+
+def _load_json_object_optional(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def resolve_governed_pqx_authority_evidence(repo_root: Path) -> dict[str, Any]:
+    evidence_candidates = sorted(
+        list((repo_root / "data" / "pqx_runs").rglob("*.pqx_slice_execution_record.json"))
+        + list((repo_root / "outputs").rglob("*pqx_slice_execution_record*.json"))
+    )
+    for path in evidence_candidates:
+        payload = _load_json_object_optional(path)
+        if not payload:
+            continue
+        if payload.get("artifact_type") != "pqx_slice_execution_record":
+            continue
+        if payload.get("status") != "completed":
+            continue
+        if payload.get("certification_status") != "certified":
+            continue
+        return {
+            "resolution_status": "resolved",
+            "authority_state": "authoritative_governed_pqx",
+            "blocking_reasons": [],
+            "evidence_ref": str(path),
+            "evidence_kind": "pqx_slice_execution_record",
+        }
+    return {
+        "resolution_status": "missing",
+        "authority_state": "authority_unknown_pending_evidence",
+        "blocking_reasons": ["MISSING_GOVERNED_PQX_AUTHORITY_EVIDENCE"],
+        "evidence_ref": None,
+        "evidence_kind": "pqx_slice_execution_record",
+    }
 
 
 def evaluate_control_surface_gap_bridge(output_dir: Path) -> dict[str, Any]:
@@ -945,6 +992,7 @@ def main() -> int:
         pqx_execution_policy = evaluate_pqx_execution_policy(
             changed_paths=detection.changed_paths,
             execution_context=getattr(args, "execution_context", "unspecified"),
+            changed_path_detection_mode=detection.changed_path_detection_mode,
         ).to_dict()
     except PQXExecutionPolicyError as exc:
         pqx_execution_policy = {
@@ -954,10 +1002,26 @@ def main() -> int:
             "pqx_required": True,
             "status": "block",
             "authority_state": "non_authoritative_direct_run",
+            "authority_resolution": "malformed_changed_path_input",
             "blocking_reasons": ["MALFORMED_CHANGED_PATH_INPUT"],
             "error": str(exc),
         }
     detection_meta["pqx_execution_policy"] = pqx_execution_policy
+    if isinstance(pqx_execution_policy, dict) and pqx_execution_policy.get("status") == "pending_evidence":
+        authority_resolution = resolve_governed_pqx_authority_evidence(REPO_ROOT)
+        pqx_execution_policy["authority_evidence_resolution_status"] = authority_resolution["resolution_status"]
+        pqx_execution_policy["authority_evidence_ref"] = authority_resolution["evidence_ref"]
+        pqx_execution_policy["authority_evidence_kind"] = authority_resolution["evidence_kind"]
+        if authority_resolution["resolution_status"] == "resolved":
+            pqx_execution_policy["status"] = "allow"
+            pqx_execution_policy["authority_state"] = "authoritative_governed_pqx"
+            pqx_execution_policy["authority_resolution"] = "resolved_from_repo_evidence"
+            pqx_execution_policy["blocking_reasons"] = []
+        else:
+            pqx_execution_policy["status"] = "block"
+            pqx_execution_policy["authority_state"] = "authority_unknown_pending_evidence"
+            pqx_execution_policy["authority_resolution"] = "missing_repo_evidence"
+            pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
         report = {

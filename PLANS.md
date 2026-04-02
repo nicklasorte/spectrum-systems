@@ -254,6 +254,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-035-GAP-PACKET-PQX-BRIDGE-2026-04-02.md | CON-035 — Control Surface Gap Packet → PQX Bridge (Governed Ingestion) | Active |
 | docs/review-actions/PLAN-CON-035-FIX-PREFLIGHT-GAP-PACKET-PQX-2026-04-02.md | CON-035-FIX — Preflight classification + required-test mapping alignment | Active |
 | docs/review-actions/PLAN-CON-037-DEFAULT-PQX-EXECUTION-POLICY-2026-04-02.md | CON-037 — Default PQX Execution Policy for Governed Work | Active |
+| docs/review-actions/PLAN-CON-037-FIX-CI-PREFLIGHT-COMPAT-2026-04-02.md | CON-037 FIX — Default PQX Execution Policy CI/Preflight Compatibility Hardening | Active |
 
 Update this table when plans are created or completed.
 

@@ -47,6 +47,7 @@ class PQXExecutionPolicyDecision:
     pqx_required: bool
     status: str
     authority_state: str
+    authority_resolution: str
     blocking_reasons: tuple[str, ...]
 
     def to_dict(self) -> dict[str, object]:
@@ -57,6 +58,7 @@ class PQXExecutionPolicyDecision:
             "pqx_required": self.pqx_required,
             "status": self.status,
             "authority_state": self.authority_state,
+            "authority_resolution": self.authority_resolution,
             "blocking_reasons": list(self.blocking_reasons),
         }
 
@@ -96,6 +98,7 @@ def evaluate_pqx_execution_policy(
     *,
     changed_paths: Iterable[str],
     execution_context: str | None,
+    changed_path_detection_mode: str | None = None,
     policy_version: str = "1.0.0",
 ) -> PQXExecutionPolicyDecision:
     normalized_context = str(execution_context or "unspecified").strip() or "unspecified"
@@ -107,6 +110,7 @@ def evaluate_pqx_execution_policy(
             pqx_required=True,
             status="block",
             authority_state="non_authoritative_direct_run",
+            authority_resolution="invalid_execution_context",
             blocking_reasons=("INVALID_EXECUTION_CONTEXT",),
         )
 
@@ -114,7 +118,25 @@ def evaluate_pqx_execution_policy(
     classification = str(classification_result["classification"])
     governed = classification == "governed_pqx_required"
 
+    commit_range_mode = normalized_context == "unspecified" and str(changed_path_detection_mode or "") in {
+        "base_head_diff",
+        "base_to_current_head_fallback",
+        "github_pr_sha_pair",
+        "github_push_sha_pair",
+    }
+
     if governed and normalized_context != "pqx_governed":
+        if commit_range_mode:
+            return PQXExecutionPolicyDecision(
+                policy_version=policy_version,
+                classification=classification,
+                execution_context=normalized_context,
+                pqx_required=True,
+                status="pending_evidence",
+                authority_state="authority_unknown_pending_evidence",
+                authority_resolution="pending_governed_pqx_evidence",
+                blocking_reasons=("PENDING_GOVERNED_PQX_AUTHORITY_EVIDENCE",),
+            )
         return PQXExecutionPolicyDecision(
             policy_version=policy_version,
             classification=classification,
@@ -122,6 +144,7 @@ def evaluate_pqx_execution_policy(
             pqx_required=True,
             status="block",
             authority_state="non_authoritative_direct_run",
+            authority_resolution="explicit_non_pqx_context",
             blocking_reasons=("GOVERNED_CHANGES_REQUIRE_PQX_CONTEXT",),
         )
 
@@ -133,6 +156,7 @@ def evaluate_pqx_execution_policy(
             pqx_required=True,
             status="allow",
             authority_state="authoritative_governed_pqx",
+            authority_resolution="explicit_pqx_context",
             blocking_reasons=(),
         )
 
@@ -144,5 +168,6 @@ def evaluate_pqx_execution_policy(
         pqx_required=False,
         status="allow",
         authority_state=authority_state,
+        authority_resolution="explicit_pqx_context" if normalized_context == "pqx_governed" else "non_governed_surface",
         blocking_reasons=(),
     )

@@ -148,6 +148,18 @@ def test_pqx_policy_allows_governed_changes_with_explicit_pqx_context() -> None:
     assert as_dict["authority_state"] == "authoritative_governed_pqx"
 
 
+def test_pqx_policy_commit_range_without_context_is_pending_evidence() -> None:
+    decision = evaluate_pqx_execution_policy(
+        changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+        execution_context=None,
+        changed_path_detection_mode="base_head_diff",
+    )
+    as_dict = decision.to_dict()
+    assert as_dict["status"] == "pending_evidence"
+    assert as_dict["authority_state"] == "authority_unknown_pending_evidence"
+    assert as_dict["blocking_reasons"] == ["PENDING_GOVERNED_PQX_AUTHORITY_EVIDENCE"]
+
+
 def test_detect_changed_paths_uses_base_head_when_available(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: (["contracts/schemas/a.schema.json"], None))
 
@@ -596,6 +608,110 @@ def test_main_blocks_governed_changes_without_pqx_context(tmp_path: Path, monkey
     assert report["pqx_execution_policy"]["status"] == "block"
     assert report["pqx_execution_policy"]["authority_state"] == "non_authoritative_direct_run"
     assert "GOVERNED_CHANGES_REQUIRE_PQX_CONTEXT" in report["invariant_violations"]
+
+
+def test_main_commit_range_without_context_fails_closed_on_missing_authority_evidence(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "resolve_governed_pqx_authority_evidence",
+        lambda *_args, **_kwargs: {
+            "resolution_status": "missing",
+            "authority_state": "authority_unknown_pending_evidence",
+            "blocking_reasons": ["MISSING_GOVERNED_PQX_AUTHORITY_EVIDENCE"],
+            "evidence_ref": None,
+            "evidence_kind": "pqx_slice_execution_record",
+        },
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["pqx_execution_policy"]["authority_state"] == "authority_unknown_pending_evidence"
+    assert report["pqx_execution_policy"]["authority_resolution"] == "missing_repo_evidence"
+    assert "MISSING_GOVERNED_PQX_AUTHORITY_EVIDENCE" in report["invariant_violations"]
+
+
+def test_main_commit_range_without_context_allows_when_authority_evidence_resolves(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "resolve_governed_pqx_authority_evidence",
+        lambda *_args, **_kwargs: {
+            "resolution_status": "resolved",
+            "authority_state": "authoritative_governed_pqx",
+            "blocking_reasons": [],
+            "evidence_ref": "data/pqx_runs/AI-01/pqx-slice-20260402T000000Z.pqx_slice_execution_record.json",
+            "evidence_kind": "pqx_slice_execution_record",
+        },
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["pqx_execution_policy"]["authority_state"] == "authoritative_governed_pqx"
+    assert report["pqx_execution_policy"]["authority_resolution"] == "resolved_from_repo_evidence"
+    assert report["pqx_execution_policy"]["authority_evidence_resolution_status"] == "resolved"
 
 
 def test_main_required_surface_without_eval_target_fails_closed(tmp_path: Path, monkeypatch) -> None:
