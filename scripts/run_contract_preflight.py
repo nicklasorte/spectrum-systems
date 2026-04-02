@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (  # noq
     ControlSurfaceGapToPQXError,
     convert_gaps_to_pqx_work_items,
 )
+from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # noqa: E402
+    TrustSpineEvidenceCohesionError,
+    evaluate_trust_spine_evidence_cohesion,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -61,6 +65,21 @@ _CONTROL_SURFACE_ENFORCEMENT_PATH = (
     REPO_ROOT / "outputs" / "control_surface_enforcement" / "control_surface_enforcement_result.json"
 )
 _CONTROL_SURFACE_OBEDIENCE_PATH = REPO_ROOT / "outputs" / "control_surface_obedience" / "control_surface_obedience_result.json"
+_TRUST_SPINE_INVARIANT_PATH = REPO_ROOT / "outputs" / "trust_spine_invariants" / "trust_spine_invariant_result.json"
+_DONE_CERTIFICATION_PATH = REPO_ROOT / "outputs" / "done_certification" / "done_certification_record.json"
+_TRUST_SPINE_COHESION_TARGETS = {
+    "contracts/schemas/trust_spine_evidence_cohesion_result.schema.json",
+    "contracts/examples/trust_spine_evidence_cohesion_result.json",
+    "spectrum_systems/modules/runtime/trust_spine_evidence_cohesion.py",
+    "scripts/run_trust_spine_evidence_cohesion.py",
+    "spectrum_systems/modules/governance/done_certification.py",
+    "spectrum_systems/orchestration/sequence_transition_policy.py",
+    "scripts/run_contract_preflight.py",
+    "tests/test_trust_spine_evidence_cohesion.py",
+    "tests/test_done_certification.py",
+    "tests/test_sequence_transition_policy.py",
+    "tests/test_contract_preflight.py",
+}
 
 
 @dataclass
@@ -674,6 +693,62 @@ def evaluate_control_surface_gap_bridge(output_dir: Path) -> dict[str, Any]:
     }
 
 
+def _should_run_trust_spine_cohesion(changed_paths: list[str]) -> bool:
+    return any(path in _TRUST_SPINE_COHESION_TARGETS for path in changed_paths)
+
+
+def evaluate_trust_spine_cohesion(changed_paths: list[str], output_dir: Path) -> dict[str, Any] | None:
+    if not _should_run_trust_spine_cohesion(changed_paths):
+        return None
+
+    required_paths = [
+        _CONTROL_SURFACE_MANIFEST_PATH,
+        _CONTROL_SURFACE_ENFORCEMENT_PATH,
+        _CONTROL_SURFACE_OBEDIENCE_PATH,
+        _TRUST_SPINE_INVARIANT_PATH,
+        _DONE_CERTIFICATION_PATH,
+    ]
+    missing = [str(path) for path in required_paths if not path.is_file()]
+    if missing:
+        return {
+            "artifact_type": "trust_spine_evidence_cohesion_result",
+            "overall_decision": "BLOCK",
+            "blocking_reasons": ["MISSING_REQUIRED_EVIDENCE:" + item for item in missing],
+            "error": "required trust-spine evidence artifacts missing",
+        }
+
+    try:
+        result = evaluate_trust_spine_evidence_cohesion(
+            artifacts={
+                "manifest": _load_json_object(_CONTROL_SURFACE_MANIFEST_PATH, label="control_surface_manifest"),
+                "enforcement_result": _load_json_object(_CONTROL_SURFACE_ENFORCEMENT_PATH, label="control_surface_enforcement_result"),
+                "obedience_result": _load_json_object(_CONTROL_SURFACE_OBEDIENCE_PATH, label="control_surface_obedience_result"),
+                "invariant_result": _load_json_object(_TRUST_SPINE_INVARIANT_PATH, label="trust_spine_invariant_result"),
+                "done_certification_record": _load_json_object(_DONE_CERTIFICATION_PATH, label="done_certification_record"),
+            },
+            refs={
+                "manifest_ref": str(_CONTROL_SURFACE_MANIFEST_PATH),
+                "enforcement_result_ref": str(_CONTROL_SURFACE_ENFORCEMENT_PATH),
+                "obedience_result_ref": str(_CONTROL_SURFACE_OBEDIENCE_PATH),
+                "invariant_result_ref": str(_TRUST_SPINE_INVARIANT_PATH),
+                "done_certification_ref": str(_DONE_CERTIFICATION_PATH),
+            },
+        )
+        Draft202012Validator(load_schema("trust_spine_evidence_cohesion_result"), format_checker=FormatChecker()).validate(result)
+    except (TrustSpineEvidenceCohesionError, ControlSurfaceGapExtractionError) as exc:
+        return {
+            "artifact_type": "trust_spine_evidence_cohesion_result",
+            "overall_decision": "BLOCK",
+            "blocking_reasons": ["TRUST_SPINE_COHESION_INPUT_INVALID"],
+            "error": str(exc),
+        }
+
+    cohesion_path = output_dir / "trust_spine_evidence_cohesion_result.json"
+    cohesion_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    result["artifact_path"] = str(cohesion_path)
+    return result
+
+
 def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
     changed_path_detection = report.get("changed_path_detection", {})
     detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
@@ -778,6 +853,7 @@ def main() -> int:
 
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
     control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
+    trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
     classified = classify_changed_contracts(detection.changed_paths)
     surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
 
@@ -822,6 +898,7 @@ def main() -> int:
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
+            "trust_spine_evidence_cohesion": trust_spine_cohesion,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -849,6 +926,7 @@ def main() -> int:
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
+            "trust_spine_evidence_cohesion": trust_spine_cohesion,
         }
     else:
         if changed_contract_paths:
@@ -927,6 +1005,7 @@ def main() -> int:
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],
+            "trust_spine_evidence_cohesion": trust_spine_cohesion,
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -952,6 +1031,19 @@ def main() -> int:
             report["invariant_violations"] = sorted(
                 set(report.get("invariant_violations", []) + ["CONTROL_SURFACE_GAP_TO_PQX_CONVERSION_FAILED"])
             )
+    cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
+    report["trust_spine_evidence_cohesion"] = trust_spine_cohesion
+    report["trust_spine_evidence_cohesion_ref"] = (
+        trust_spine_cohesion.get("artifact_path") if isinstance(trust_spine_cohesion, dict) else None
+    )
+    if cohesion_decision == "BLOCK":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + (trust_spine_cohesion.get("blocking_reasons") or []))
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["trust-spine evidence cohesion"])
+        )
 
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"

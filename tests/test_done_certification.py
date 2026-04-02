@@ -152,6 +152,38 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
                 "coverage_gaps": [],
             },
         ),
+        "trust_spine_evidence_cohesion_result_ref": _write_json(
+            tmp_path / "trust_spine_evidence_cohesion_result.json",
+            {
+                "artifact_type": "trust_spine_evidence_cohesion_result",
+                "schema_version": "1.0.0",
+                "deterministic_cohesion_id": "tsec-aaaaaaaaaaaaaaaa",
+                "overall_decision": "ALLOW",
+                "evaluated_surfaces": [
+                    "control_surface_manifest",
+                    "control_surface_enforcement_result",
+                    "control_surface_obedience_result",
+                    "trust_spine_invariant_result",
+                    "done_certification_record",
+                ],
+                "artifact_refs": {
+                    "manifest_ref": "outputs/control_surface_manifest/control_surface_manifest.json",
+                    "enforcement_result_ref": "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+                    "obedience_result_ref": "outputs/control_surface_obedience/control_surface_obedience_result.json",
+                    "invariant_result_ref": "outputs/trust_spine_invariants/trust_spine_invariant_result.json",
+                    "done_certification_ref": "outputs/done_certification/done_certification_record.json",
+                },
+                "contradiction_categories": [],
+                "blocking_reasons": [],
+                "missing_required_evidence_refs": [],
+                "mismatched_artifact_references": [],
+                "inconsistent_truth_context_fields": [],
+                "trace": {
+                    "producer": "spectrum_systems.modules.runtime.trust_spine_evidence_cohesion",
+                    "policy_ref": "CON-033.trust_spine_evidence_cohesion.v1",
+                },
+            },
+        ),
         "failure_injection_ref": _write_json(tmp_path / "failure_injection.json", failure_injection),
     }
 
@@ -166,7 +198,9 @@ def test_certification_pass(tmp_path: Path) -> None:
     assert first["blocking_reasons"] == []
     assert first["trust_spine_invariant_result"]["passed"] is True
     assert first["trust_spine_evidence_completeness_result"]["passed"] is True
+    assert first["trust_spine_evidence_cohesion_result"]["passed"] is True
     assert first["check_results"]["trust_spine_evidence_completeness"]["passed"] is True
+    assert first["check_results"]["trust_spine_evidence_cohesion"]["passed"] is True
     assert first == second
 
 
@@ -223,6 +257,20 @@ def test_done_certification_legacy_mode_is_non_certifiable_when_incomplete(tmp_p
     assert result["final_status"] == "PASSED"
     assert result["trust_spine_evidence_completeness_result"]["authority_path_mode"] == "legacy_compatibility"
     assert result["trust_spine_evidence_completeness_result"]["certifiable"] is False
+
+
+def test_done_certification_blocks_when_cohesion_result_blocks(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    cohesion = json.loads(Path(refs["trust_spine_evidence_cohesion_result_ref"]).read_text(encoding="utf-8"))
+    cohesion["overall_decision"] = "BLOCK"
+    cohesion["contradiction_categories"] = ["promotion_certification_contradiction"]
+    cohesion["blocking_reasons"] = ["PROMOTION_CERTIFICATION_CONTRADICTION:promotion_allowed_with_failed_done_certification"]
+    Path(refs["trust_spine_evidence_cohesion_result_ref"]).write_text(json.dumps(cohesion), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert result["trust_spine_evidence_cohesion_result"]["overall_decision"] == "BLOCK"
+    assert result["check_results"]["trust_spine_evidence_cohesion"]["passed"] is False
 
 
 def test_replay_failure_blocks(tmp_path: Path) -> None:

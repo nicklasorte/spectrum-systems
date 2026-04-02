@@ -8,7 +8,8 @@
     "error_budget_ref": "outputs/error_budget/error_budget_status.json",
     "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json",
     "enforcement_result_ref": "outputs/enforcement/enforcement_result.json",
-    "eval_coverage_summary_ref": "outputs/evaluation/eval_coverage_summary.json"
+    "eval_coverage_summary_ref": "outputs/evaluation/eval_coverage_summary.json",
+    "trust_spine_evidence_cohesion_result_ref": "outputs/trust_spine_evidence_cohesion/trust_spine_evidence_cohesion_result.json"
   },
   "check_results": {
     "replay": {
@@ -44,6 +45,10 @@
       "details": []
     },
     "trust_spine_evidence_completeness": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_evidence_cohesion": {
       "passed": true,
       "details": []
     }
@@ -89,6 +94,14 @@
     "authority_path_mode": "active_runtime",
     "promotable": false,
     "certifiable": true
+  },
+  "trust_spine_evidence_cohesion_result": {
+    "passed": true,
+    "overall_decision": "ALLOW",
+    "deterministic_cohesion_id": "tsec-0123456789abcdef",
+    "contradiction_categories": [],
+    "blocking_reasons": [],
+    "evidence_ref": "outputs/trust_spine_evidence_cohesion/trust_spine_evidence_cohesion_result.json"
   },
   "final_status": "PASSED",
   "system_response": "allow",

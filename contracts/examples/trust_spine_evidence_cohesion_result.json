@@ -1,0 +1,29 @@
+{
+  "artifact_type": "trust_spine_evidence_cohesion_result",
+  "schema_version": "1.0.0",
+  "deterministic_cohesion_id": "tsec-0123456789abcdef",
+  "overall_decision": "ALLOW",
+  "evaluated_surfaces": [
+    "control_surface_manifest",
+    "control_surface_enforcement_result",
+    "control_surface_obedience_result",
+    "trust_spine_invariant_result",
+    "done_certification_record"
+  ],
+  "artifact_refs": {
+    "manifest_ref": "outputs/control_surface_manifest/control_surface_manifest.json",
+    "enforcement_result_ref": "outputs/control_surface_enforcement/control_surface_enforcement_result.json",
+    "obedience_result_ref": "outputs/control_surface_obedience/control_surface_obedience_result.json",
+    "invariant_result_ref": "outputs/trust_spine_invariants/trust_spine_invariant_result.json",
+    "done_certification_ref": "outputs/done_certification/done_certification_record.json"
+  },
+  "contradiction_categories": [],
+  "blocking_reasons": [],
+  "missing_required_evidence_refs": [],
+  "mismatched_artifact_references": [],
+  "inconsistent_truth_context_fields": [],
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.trust_spine_evidence_cohesion",
+    "policy_ref": "CON-033.trust_spine_evidence_cohesion.v1"
+  }
+}

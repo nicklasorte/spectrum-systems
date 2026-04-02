@@ -13,6 +13,7 @@
     "check_results",
     "trust_spine_invariant_result",
     "trust_spine_evidence_completeness_result",
+    "trust_spine_evidence_cohesion_result",
     "final_status",
     "system_response",
     "blocking_reasons",
@@ -40,13 +41,14 @@
         "failure_injection_ref": {"type": "string", "minLength": 1},
         "policy_ref": {"type": "string", "minLength": 1},
         "enforcement_result_ref": {"type": "string", "minLength": 1},
-        "eval_coverage_summary_ref": {"type": "string", "minLength": 1}
+        "eval_coverage_summary_ref": {"type": "string", "minLength": 1},
+        "trust_spine_evidence_cohesion_result_ref": {"type": "string", "minLength": 1}
       }
     },
     "check_results": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants", "trust_spine_evidence_completeness"],
+      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants", "trust_spine_evidence_completeness", "trust_spine_evidence_cohesion"],
       "properties": {
         "replay": {"$ref": "#/$defs/check_result"},
         "regression": {"$ref": "#/$defs/check_result"},
@@ -56,7 +58,8 @@
         "control_consistency": {"$ref": "#/$defs/check_result"},
         "trace_linkage": {"$ref": "#/$defs/check_result"},
         "trust_spine_invariants": {"$ref": "#/$defs/check_result"},
-        "trust_spine_evidence_completeness": {"$ref": "#/$defs/check_result"}
+        "trust_spine_evidence_completeness": {"$ref": "#/$defs/check_result"},
+        "trust_spine_evidence_cohesion": {"$ref": "#/$defs/check_result"}
       }
     },
     "trust_spine_invariant_result": {
@@ -122,6 +125,33 @@
         "authority_path_mode": {"type": "string", "minLength": 1},
         "promotable": {"type": "boolean"},
         "certifiable": {"type": "boolean"}
+      }
+    },
+    "trust_spine_evidence_cohesion_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "overall_decision",
+        "deterministic_cohesion_id",
+        "contradiction_categories",
+        "blocking_reasons",
+        "evidence_ref"
+      ],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "overall_decision": {"type": "string", "enum": ["ALLOW", "BLOCK"]},
+        "deterministic_cohesion_id": {"type": "string"},
+        "contradiction_categories": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "evidence_ref": {"type": "string"}
       }
     },
     "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},

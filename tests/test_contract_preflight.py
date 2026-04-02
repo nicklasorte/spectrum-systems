@@ -370,6 +370,64 @@ def test_preflight_blocks_when_gap_bridge_reports_blocking(monkeypatch, tmp_path
     assert artifact["control_surface_gap_blocking"] is True
 
 
+def test_preflight_blocks_when_trust_spine_cohesion_reports_block(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["scripts/run_contract_preflight.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_trust_spine_cohesion",
+        lambda *_args, **_kwargs: {
+            "artifact_type": "trust_spine_evidence_cohesion_result",
+            "overall_decision": "BLOCK",
+            "blocking_reasons": ["MISSING_REQUIRED_EVIDENCE:outputs/control_surface_manifest/control_surface_manifest.json"],
+            "artifact_path": str(output_dir / "trust_spine_evidence_cohesion_result.json"),
+        },
+    )
+    monkeypatch.setattr(
+        preflight,
+        "classify_evaluation_surfaces",
+        lambda *_args, **_kwargs: {
+            "required_paths": [],
+            "evaluation_mode": "no-op",
+            "evaluated_surfaces": [],
+            "path_classifications": [],
+        },
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda *_args, **_kwargs: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "failed"
+    assert "trust-spine evidence cohesion" in report["recommended_repair_areas"]
+
+
 def test_map_preflight_control_signal_freezes_in_hardening_on_unrepaired_downstream() -> None:
     report = {
         "status": "failed",
