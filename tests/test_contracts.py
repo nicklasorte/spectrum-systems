@@ -261,6 +261,13 @@ class ContractSchemaTests(unittest.TestCase):
         required_context = instance["pqx_required_context_enforcement"]
         assert required_context["status"] in {"allow", "block"}
         assert isinstance(required_context["blocking_reasons"], list)
+        assert required_context["authority_state"] in {
+            "authoritative_governed_pqx",
+            "non_authoritative_direct_run",
+            "unknown_pending_execution",
+        }
+        assert isinstance(required_context["requires_pqx_execution"], bool)
+        assert required_context["enforcement_decision"] in {"allow", "block"}
 
     def test_control_surface_obedience_result_example_validates(self) -> None:
         instance = load_example("control_surface_obedience_result")

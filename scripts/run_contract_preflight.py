@@ -971,12 +971,15 @@ def build_preflight_result_artifact(
             "wrapper_present": False,
             "wrapper_context_valid": True,
             "authority_context_valid": True,
+            "authority_state": "non_authoritative_direct_run",
+            "requires_pqx_execution": False,
+            "enforcement_decision": "allow",
             "status": "allow",
             "blocking_reasons": [],
         }
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "preflight_status": report.get("status", "failed"),
         "changed_contracts": report.get("changed_contracts", []),
         "impacted_producers": report.get("impact", {}).get("producers", []),
@@ -999,6 +1002,9 @@ def build_preflight_result_artifact(
             "wrapper_present": bool(required_context.get("wrapper_present", False)),
             "wrapper_context_valid": bool(required_context.get("wrapper_context_valid", False)),
             "authority_context_valid": bool(required_context.get("authority_context_valid", False)),
+            "authority_state": str(required_context.get("authority_state", "non_authoritative_direct_run")),
+            "requires_pqx_execution": bool(required_context.get("requires_pqx_execution", False)),
+            "enforcement_decision": str(required_context.get("enforcement_decision", required_context.get("status", "block"))),
             "status": str(required_context.get("status", "block")),
             "blocking_reasons": sorted({str(reason) for reason in required_context.get("blocking_reasons", []) if str(reason)}),
         },
@@ -1041,6 +1047,14 @@ def main() -> int:
         "evaluation_mode": surface_classification["evaluation_mode"],
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
     }
+    preflight_mode = (
+        "commit_range_inspection"
+        if not list(getattr(args, "changed_path", []) or [])
+        and bool(getattr(args, "base_ref", None))
+        and bool(getattr(args, "head_ref", None))
+        else "explicit_or_local_inspection"
+    )
+    detection_meta["preflight_mode"] = preflight_mode
     pqx_execution_policy: dict[str, Any] | None = None
     pqx_required_context_enforcement: dict[str, Any] | None = None
     wrapper_payload: dict[str, Any] | None = None
@@ -1087,6 +1101,7 @@ def main() -> int:
                 changed_paths=detection.changed_paths,
                 pqx_task_wrapper=wrapper_payload,
                 authority_evidence_ref=getattr(args, "authority_evidence_ref", None),
+                preflight_mode=preflight_mode,
             ).to_dict()
         except PQXRequiredContextEnforcementError as exc:
             pqx_required_context_enforcement = {
@@ -1112,6 +1127,18 @@ def main() -> int:
             )
             pqx_execution_policy["authority_resolution"] = "pqx_required_context_enforcement_block"
             pqx_execution_policy["authority_state"] = "non_authoritative_direct_run"
+    if (
+        preflight_mode == "commit_range_inspection"
+        and isinstance(pqx_execution_policy, dict)
+        and isinstance(pqx_required_context_enforcement, dict)
+        and str(pqx_required_context_enforcement.get("status", "")).lower() == "allow"
+        and str(pqx_execution_policy.get("classification", "")) == "governed_pqx_required"
+        and str(getattr(args, "execution_context", "unspecified") or "unspecified").strip() == "unspecified"
+    ):
+        pqx_execution_policy["status"] = "warn"
+        pqx_execution_policy["authority_state"] = "unknown_pending_execution"
+        pqx_execution_policy["authority_resolution"] = "pending_execution_context"
+        pqx_execution_policy["blocking_reasons"] = []
     if isinstance(pqx_execution_policy, dict) and pqx_execution_policy.get("status") == "pending_evidence":
         authority_resolution = resolve_governed_pqx_authority_evidence(REPO_ROOT)
         pqx_execution_policy["authority_evidence_resolution_status"] = authority_resolution["resolution_status"]

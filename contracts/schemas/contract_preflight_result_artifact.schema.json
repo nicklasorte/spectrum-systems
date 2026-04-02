@@ -31,7 +31,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "preflight_status": {
       "type": "string",
@@ -141,6 +141,9 @@
         "wrapper_present",
         "wrapper_context_valid",
         "authority_context_valid",
+        "authority_state",
+        "requires_pqx_execution",
+        "enforcement_decision",
         "status",
         "blocking_reasons"
       ],
@@ -164,6 +167,24 @@
         },
         "authority_context_valid": {
           "type": "boolean"
+        },
+        "authority_state": {
+          "type": "string",
+          "enum": [
+            "authoritative_governed_pqx",
+            "non_authoritative_direct_run",
+            "unknown_pending_execution"
+          ]
+        },
+        "requires_pqx_execution": {
+          "type": "boolean"
+        },
+        "enforcement_decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block"
+          ]
         },
         "status": {
           "type": "string",

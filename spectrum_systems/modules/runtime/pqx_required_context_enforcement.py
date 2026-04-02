@@ -19,6 +19,9 @@ class PQXRequiredContextEnforcementResult:
     wrapper_present: bool
     wrapper_context_valid: bool
     authority_context_valid: bool
+    authority_state: str
+    requires_pqx_execution: bool
+    enforcement_decision: str
     status: str
     blocking_reasons: tuple[str, ...]
 
@@ -29,6 +32,9 @@ class PQXRequiredContextEnforcementResult:
             "wrapper_present": self.wrapper_present,
             "wrapper_context_valid": self.wrapper_context_valid,
             "authority_context_valid": self.authority_context_valid,
+            "authority_state": self.authority_state,
+            "requires_pqx_execution": self.requires_pqx_execution,
+            "enforcement_decision": self.enforcement_decision,
             "status": self.status,
             "blocking_reasons": list(self.blocking_reasons),
         }
@@ -68,10 +74,12 @@ def enforce_pqx_required_context(
     changed_paths: Sequence[str] | None = None,
     pqx_task_wrapper: Mapping[str, Any] | None = None,
     authority_evidence_ref: str | None = None,
+    preflight_mode: str = "execution_admission",
 ) -> PQXRequiredContextEnforcementResult:
     """Enforce governed wrapper/context posture without inferring from prose or ambient state."""
 
     normalized_context = str(execution_context or "unspecified").strip() or "unspecified"
+    inspection_mode = preflight_mode == "commit_range_inspection"
     wrapper = _normalize_wrapper_payload(pqx_task_wrapper)
 
     normalized_authority_ref = _normalize_evidence_ref(authority_evidence_ref)
@@ -84,6 +92,7 @@ def enforce_pqx_required_context(
     blocking_reasons: list[str] = []
     wrapper_context_valid = False
     authority_context_valid = False
+    requires_pqx_execution = governed
 
     if wrapper is not None:
         try:
@@ -94,45 +103,55 @@ def enforce_pqx_required_context(
 
     if governed:
         if normalized_context != "pqx_governed":
-            blocking_reasons.append("GOVERNED_REQUIRES_PQX_GOVERNED_CONTEXT")
-
-        if wrapper is None:
-            blocking_reasons.append("GOVERNED_REQUIRES_PQX_TASK_WRAPPER")
-        elif wrapper_context_valid:
-            governance = wrapper.get("governance")
-            execution_intent = wrapper.get("execution_intent")
-            if not isinstance(governance, Mapping):
-                blocking_reasons.append("MALFORMED_PQX_TASK_WRAPPER")
+            if inspection_mode and normalized_context == "unspecified":
+                pass
             else:
-                if governance.get("pqx_required") is not True:
-                    blocking_reasons.append("WRAPPER_GOVERNANCE_PQX_REQUIRED_FALSE")
-                if governance.get("classification") != "governed_pqx_required":
-                    blocking_reasons.append("WRAPPER_CLASSIFICATION_MISMATCH")
-                if governance.get("authority_state") != "authoritative_governed_pqx":
-                    blocking_reasons.append("WRAPPER_AUTHORITY_STATE_MISMATCH")
+                blocking_reasons.append("GOVERNED_REQUIRES_PQX_GOVERNED_CONTEXT")
 
-            if not isinstance(execution_intent, Mapping):
-                blocking_reasons.append("MALFORMED_PQX_TASK_WRAPPER")
-            else:
-                if execution_intent.get("mode") != "governed":
-                    blocking_reasons.append("WRAPPER_MODE_MISMATCH")
-                if execution_intent.get("execution_context") != "pqx_governed":
-                    blocking_reasons.append("WRAPPER_EXECUTION_CONTEXT_MISMATCH")
-
-            if changed_paths is not None:
-                wrapper_changed = wrapper.get("changed_paths")
-                if not isinstance(wrapper_changed, list):
-                    blocking_reasons.append("WRAPPER_CHANGED_PATHS_MISSING")
+        if normalized_context == "pqx_governed":
+            if wrapper is None:
+                blocking_reasons.append("GOVERNED_REQUIRES_PQX_TASK_WRAPPER")
+            elif wrapper_context_valid:
+                governance = wrapper.get("governance")
+                execution_intent = wrapper.get("execution_intent")
+                if not isinstance(governance, Mapping):
+                    blocking_reasons.append("MALFORMED_PQX_TASK_WRAPPER")
                 else:
-                    provided_set = {str(path) for path in changed_paths}
-                    wrapper_set = {str(path) for path in wrapper_changed}
-                    if not provided_set.issubset(wrapper_set):
-                        blocking_reasons.append("WRAPPER_CHANGED_PATHS_MISMATCH")
+                    if governance.get("pqx_required") is not True:
+                        blocking_reasons.append("WRAPPER_GOVERNANCE_PQX_REQUIRED_FALSE")
+                    if governance.get("classification") != "governed_pqx_required":
+                        blocking_reasons.append("WRAPPER_CLASSIFICATION_MISMATCH")
+                    if governance.get("authority_state") != "authoritative_governed_pqx":
+                        blocking_reasons.append("WRAPPER_AUTHORITY_STATE_MISMATCH")
 
-        if not _is_well_formed_governed_evidence_ref(normalized_authority_ref):
-            blocking_reasons.append("MALFORMED_OR_MISSING_GOVERNED_AUTHORITY_EVIDENCE_REF")
-        else:
+                if not isinstance(execution_intent, Mapping):
+                    blocking_reasons.append("MALFORMED_PQX_TASK_WRAPPER")
+                else:
+                    if execution_intent.get("mode") != "governed":
+                        blocking_reasons.append("WRAPPER_MODE_MISMATCH")
+                    if execution_intent.get("execution_context") != "pqx_governed":
+                        blocking_reasons.append("WRAPPER_EXECUTION_CONTEXT_MISMATCH")
+
+                if changed_paths is not None:
+                    wrapper_changed = wrapper.get("changed_paths")
+                    if not isinstance(wrapper_changed, list):
+                        blocking_reasons.append("WRAPPER_CHANGED_PATHS_MISSING")
+                    else:
+                        provided_set = {str(path) for path in changed_paths}
+                        wrapper_set = {str(path) for path in wrapper_changed}
+                        if not provided_set.issubset(wrapper_set):
+                            blocking_reasons.append("WRAPPER_CHANGED_PATHS_MISMATCH")
+
+        if normalized_authority_ref is not None and _is_well_formed_governed_evidence_ref(normalized_authority_ref):
             authority_context_valid = True
+
+        if normalized_context == "pqx_governed":
+            if not _is_well_formed_governed_evidence_ref(normalized_authority_ref):
+                blocking_reasons.append("MALFORMED_OR_MISSING_GOVERNED_AUTHORITY_EVIDENCE_REF")
+            else:
+                authority_context_valid = True
+        elif normalized_authority_ref is not None and not _is_well_formed_governed_evidence_ref(normalized_authority_ref):
+            blocking_reasons.append("MALFORMED_OR_MISSING_GOVERNED_AUTHORITY_EVIDENCE_REF")
 
     else:
         authority_context_valid = True
@@ -145,12 +164,24 @@ def enforce_pqx_required_context(
     if status == "allow" and wrapper is None:
         wrapper_context_valid = not governed
 
+    authority_state = "non_authoritative_direct_run"
+    if governed:
+        if normalized_context == "pqx_governed":
+            authority_state = "authoritative_governed_pqx"
+        elif inspection_mode and normalized_context == "unspecified":
+            authority_state = "unknown_pending_execution"
+        else:
+            authority_state = "non_authoritative_direct_run"
+
     return PQXRequiredContextEnforcementResult(
         classification=classification,
         execution_context=normalized_context,
         wrapper_present=wrapper is not None,
         wrapper_context_valid=wrapper_context_valid,
         authority_context_valid=authority_context_valid,
+        authority_state=authority_state,
+        requires_pqx_execution=requires_pqx_execution,
+        enforcement_decision=status,
         status=status,
         blocking_reasons=tuple(sorted(set(blocking_reasons))),
     )

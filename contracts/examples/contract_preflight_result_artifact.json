@@ -1,6 +1,6 @@
 {
   "artifact_type": "contract_preflight_result_artifact",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "preflight_status": "passed",
   "changed_contracts": [
     "contracts/schemas/roadmap_eligibility_artifact.schema.json"
@@ -41,6 +41,9 @@
     "wrapper_present": true,
     "wrapper_context_valid": true,
     "authority_context_valid": true,
+    "authority_state": "authoritative_governed_pqx",
+    "requires_pqx_execution": true,
+    "enforcement_decision": "allow",
     "status": "allow",
     "blocking_reasons": []
   },

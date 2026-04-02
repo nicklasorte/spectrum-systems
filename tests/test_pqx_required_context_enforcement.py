@@ -62,6 +62,9 @@ def test_governed_wrapped_task_with_valid_context_allows() -> None:
     assert result["wrapper_present"] is True
     assert result["wrapper_context_valid"] is True
     assert result["authority_context_valid"] is True
+    assert result["authority_state"] == "authoritative_governed_pqx"
+    assert result["requires_pqx_execution"] is True
+    assert result["enforcement_decision"] == "allow"
 
 
 def test_governed_missing_wrapper_blocks_fail_closed() -> None:
@@ -107,3 +110,28 @@ def test_exploration_only_non_authoritative_without_wrapper_allowed() -> None:
     assert result["status"] == "allow"
     assert result["wrapper_present"] is False
     assert result["authority_context_valid"] is True
+    assert result["requires_pqx_execution"] is False
+
+
+def test_governed_commit_range_without_context_allows_pending_execution() -> None:
+    result = enforce_pqx_required_context(
+        classification="governed_pqx_required",
+        execution_context="unspecified",
+        changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+        preflight_mode="commit_range_inspection",
+    ).to_dict()
+    assert result["status"] == "allow"
+    assert result["authority_state"] == "unknown_pending_execution"
+    assert result["requires_pqx_execution"] is True
+    assert result["blocking_reasons"] == []
+
+
+def test_governed_commit_range_with_explicit_direct_context_blocks() -> None:
+    result = enforce_pqx_required_context(
+        classification="governed_pqx_required",
+        execution_context="direct",
+        changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+        preflight_mode="commit_range_inspection",
+    ).to_dict()
+    assert result["status"] == "block"
+    assert "GOVERNED_REQUIRES_PQX_GOVERNED_CONTEXT" in result["blocking_reasons"]

@@ -160,7 +160,7 @@ def _execution_impact_artifact(*, blocking: bool, indeterminate: bool, safe_to_e
 def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = False, degraded: bool = False) -> dict:
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "preflight_status": status,
         "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
         "impacted_producers": [
@@ -197,6 +197,9 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "wrapper_present": True,
             "wrapper_context_valid": True,
             "authority_context_valid": True,
+            "authority_state": "authoritative_governed_pqx",
+            "requires_pqx_execution": True,
+            "enforcement_decision": "allow",
             "status": "allow",
             "blocking_reasons": [],
         },

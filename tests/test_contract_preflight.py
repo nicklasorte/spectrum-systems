@@ -716,12 +716,14 @@ def test_main_commit_range_without_context_warns_without_naive_direct_run_block(
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
 
     code = preflight.main()
-    assert code == 2
+    assert code == 0
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["pqx_required_context_enforcement"]["status"] == "block"
-    assert "GOVERNED_REQUIRES_PQX_TASK_WRAPPER" in report["invariant_violations"]
+    assert report["pqx_required_context_enforcement"]["status"] == "allow"
+    assert report["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
+    assert report["pqx_required_context_enforcement"]["requires_pqx_execution"] is True
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["control_signal"]["strategy_gate_decision"] == "BLOCK"
+    assert artifact["control_signal"]["strategy_gate_decision"] == "WARN"
+    assert artifact["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
 
 
 def test_main_commit_range_without_context_allows_when_authority_evidence_resolves(tmp_path: Path, monkeypatch) -> None:
@@ -769,10 +771,53 @@ def test_main_commit_range_without_context_allows_when_authority_evidence_resolv
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
 
     code = preflight.main()
-    assert code == 2
+    assert code == 0
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["pqx_required_context_enforcement"]["status"] == "block"
-    assert "GOVERNED_REQUIRES_PQX_TASK_WRAPPER" in report["invariant_violations"]
+    assert report["pqx_required_context_enforcement"]["status"] == "allow"
+    assert report["pqx_required_context_enforcement"]["authority_state"] == "unknown_pending_execution"
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["enforcement_decision"] == "allow"
+
+
+def test_main_commit_range_with_explicit_direct_execution_blocks(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "direct",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 2
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["enforcement_decision"] == "block"
+    assert artifact["pqx_required_context_enforcement"]["authority_state"] == "non_authoritative_direct_run"
 
 
 def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeypatch) -> None:
@@ -810,7 +855,7 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["pqx_required_context_enforcement"]["status"] == "allow"
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["schema_version"] == "1.1.0"
+    assert artifact["schema_version"] == "1.2.0"
     assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 

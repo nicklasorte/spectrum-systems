@@ -258,6 +258,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-038-CODEX-TO-PQX-TASK-WRAPPER-2026-04-02.md | CON-038 — Codex-to-PQX Task Wrapper | Active |
 | docs/review-actions/PLAN-CON-039-PQX-REQUIRED-CONTEXT-ENFORCEMENT-2026-04-02.md | CON-039 — PQX Required Context Enforcement | Active |
 | docs/review-actions/PLAN-CON-039-FIX-SCHEMA-BACKED-PREFLIGHT-REQUIRED-CONTEXT-2026-04-02.md | CON-039-FIX — Schema-backed preflight required-context artifact completion | Active |
+| docs/review-actions/PLAN-CON-039-FIX-COMMIT-RANGE-PREFLIGHT-COMPAT-2026-04-02.md | CON-039-FIX — Commit-range preflight compatibility (enforcement-aware) | Active |
 
 Update this table when plans are created or completed.
 
