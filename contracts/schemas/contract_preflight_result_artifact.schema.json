@@ -21,6 +21,7 @@
     "control_surface_gap_result_ref",
     "pqx_gap_work_items_ref",
     "control_surface_gap_blocking",
+    "pqx_required_context_enforcement",
     "control_signal",
     "trace"
   ],
@@ -30,7 +31,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "preflight_status": {
       "type": "string",
@@ -130,6 +131,56 @@
     },
     "control_surface_gap_blocking": {
       "type": "boolean"
+    },
+    "pqx_required_context_enforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "execution_context",
+        "wrapper_present",
+        "wrapper_context_valid",
+        "authority_context_valid",
+        "status",
+        "blocking_reasons"
+      ],
+      "properties": {
+        "classification": {
+          "type": "string",
+          "enum": [
+            "governed_pqx_required",
+            "exploration_only_or_non_governed"
+          ]
+        },
+        "execution_context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wrapper_present": {
+          "type": "boolean"
+        },
+        "wrapper_context_valid": {
+          "type": "boolean"
+        },
+        "authority_context_valid": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block"
+          ]
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
     },
     "control_signal": {
       "type": "object",

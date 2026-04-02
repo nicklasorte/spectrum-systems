@@ -963,9 +963,20 @@ def build_preflight_result_artifact(
 ) -> dict[str, Any]:
     detection = report.get("changed_path_detection", {})
     control_signal = map_preflight_control_signal(report=report, hardening_flow=hardening_flow)
+    required_context = report.get("pqx_required_context_enforcement")
+    if not isinstance(required_context, dict):
+        required_context = {
+            "classification": "exploration_only_or_non_governed",
+            "execution_context": "unspecified",
+            "wrapper_present": False,
+            "wrapper_context_valid": True,
+            "authority_context_valid": True,
+            "status": "allow",
+            "blocking_reasons": [],
+        }
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "preflight_status": report.get("status", "failed"),
         "changed_contracts": report.get("changed_contracts", []),
         "impacted_producers": report.get("impact", {}).get("producers", []),
@@ -982,6 +993,15 @@ def build_preflight_result_artifact(
         "control_surface_gap_result_ref": report.get("control_surface_gap_result_ref"),
         "pqx_gap_work_items_ref": report.get("pqx_gap_work_items_ref"),
         "control_surface_gap_blocking": bool(report.get("control_surface_gap_blocking", False)),
+        "pqx_required_context_enforcement": {
+            "classification": str(required_context.get("classification", "exploration_only_or_non_governed")),
+            "execution_context": str(required_context.get("execution_context", "unspecified")),
+            "wrapper_present": bool(required_context.get("wrapper_present", False)),
+            "wrapper_context_valid": bool(required_context.get("wrapper_context_valid", False)),
+            "authority_context_valid": bool(required_context.get("authority_context_valid", False)),
+            "status": str(required_context.get("status", "block")),
+            "blocking_reasons": sorted({str(reason) for reason in required_context.get("blocking_reasons", []) if str(reason)}),
+        },
         "control_signal": control_signal,
         "trace": {
             "producer": "scripts/run_contract_preflight.py",

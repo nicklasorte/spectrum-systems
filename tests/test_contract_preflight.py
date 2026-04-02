@@ -633,6 +633,9 @@ def test_main_irrelevant_changed_file_reports_explicit_no_op(tmp_path: Path, mon
     assert report["changed_path_detection"]["evaluation_mode"] == "no-op"
     assert report["skip_reason"] == "explicit no-op: changed paths have no applicable contract surface"
     assert report["pqx_execution_policy"]["authority_state"] == "non_authoritative_direct_run"
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
+    assert artifact["pqx_required_context_enforcement"]["classification"] == "exploration_only_or_non_governed"
 
 
 def test_main_blocks_governed_changes_without_pqx_context(tmp_path: Path, monkeypatch) -> None:
@@ -663,6 +666,9 @@ def test_main_blocks_governed_changes_without_pqx_context(tmp_path: Path, monkey
     assert report["pqx_execution_policy"]["status"] == "block"
     assert report["pqx_execution_policy"]["authority_state"] == "non_authoritative_direct_run"
     assert "GOVERNED_CHANGES_REQUIRE_PQX_CONTEXT" in report["invariant_violations"]
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pqx_required_context_enforcement"]["status"] == "block"
+    assert "GOVERNED_REQUIRES_PQX_GOVERNED_CONTEXT" in artifact["pqx_required_context_enforcement"]["blocking_reasons"]
 
 
 def test_main_commit_range_without_context_warns_without_naive_direct_run_block(tmp_path: Path, monkeypatch) -> None:
@@ -803,6 +809,55 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     assert code == 0
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["pqx_required_context_enforcement"]["status"] == "allow"
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["schema_version"] == "1.1.0"
+    assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
+
+
+def test_main_ci_style_base_head_with_wrapper_records_allow_state(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    changed = ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    wrapper_path.write_text(json.dumps(_governed_wrapper_payload(changed)), encoding="utf-8")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=changed,
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
+    assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 
 def test_main_explicit_changed_paths_without_context_blocks_as_non_pqx_direct(tmp_path: Path, monkeypatch) -> None:

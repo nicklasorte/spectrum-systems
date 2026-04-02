@@ -258,6 +258,9 @@ class ContractSchemaTests(unittest.TestCase):
     def test_contract_preflight_result_artifact_example_validates(self) -> None:
         instance = load_example("contract_preflight_result_artifact")
         validate_artifact(instance, "contract_preflight_result_artifact")
+        required_context = instance["pqx_required_context_enforcement"]
+        assert required_context["status"] in {"allow", "block"}
+        assert isinstance(required_context["blocking_reasons"], list)
 
     def test_control_surface_obedience_result_example_validates(self) -> None:
         instance = load_example("control_surface_obedience_result")
