@@ -216,6 +216,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("control_surface_gap_packet")
         validate_artifact(instance, "control_surface_gap_packet")
 
+    def test_codex_pqx_task_wrapper_example_validates(self) -> None:
+        instance = load_example("codex_pqx_task_wrapper")
+        validate_artifact(instance, "codex_pqx_task_wrapper")
+
     def test_prompt_queue_sequence_run_example_validates(self) -> None:
         instance = load_example("prompt_queue_sequence_run")
         validate_artifact(instance, "prompt_queue_sequence_run")

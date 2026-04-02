@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "codex_pqx_task_wrapper",
+  "wrapper_id": "codex-pqx-2ea4ad6d1535e24d",
+  "task_identity": {
+    "task_id": "con-038-example",
+    "run_id": "con-038-example",
+    "step_id": "AI-01",
+    "step_name": "Implement governed wrapper seam"
+  },
+  "task_source": {
+    "source_type": "codex_prompt",
+    "prompt": "Implement CON-038 deterministic wrapper layer"
+  },
+  "execution_intent": {
+    "execution_context": "pqx_governed",
+    "mode": "governed"
+  },
+  "governance": {
+    "classification": "governed_pqx_required",
+    "pqx_required": true,
+    "authority_state": "authoritative_governed_pqx",
+    "authority_resolution": "explicit_pqx_context",
+    "authority_evidence_ref": "data/pqx_runs/AI-01/pqx-slice-20260402T000000Z.pqx_slice_execution_record.json",
+    "contract_preflight_result_artifact_path": "outputs/contract_preflight/contract_preflight_result_artifact.json"
+  },
+  "changed_paths": [
+    "contracts/schemas/pqx_execution_request.schema.json",
+    "spectrum_systems/modules/runtime/pqx_slice_runner.py"
+  ],
+  "metadata": {
+    "requested_at": "2026-04-02T00:00:00Z",
+    "dependencies": [
+      "AI-00"
+    ],
+    "policy_version": "1.0.0",
+    "authority_notes": "governed wrapper example"
+  },
+  "pqx_execution_request": {
+    "schema_version": "1.1.0",
+    "run_id": "con-038-example",
+    "step_id": "AI-01",
+    "step_name": "Implement governed wrapper seam",
+    "dependencies": [
+      "AI-00"
+    ],
+    "requested_at": "2026-04-02T00:00:00Z",
+    "prompt": "Implement CON-038 deterministic wrapper layer",
+    "roadmap_version": "docs/roadmaps/system_roadmap.md",
+    "row_snapshot": {
+      "row_index": 0,
+      "step_id": "AI-01",
+      "step_name": "Implement governed wrapper seam",
+      "dependencies": [
+        "AI-00"
+      ],
+      "status": "ready"
+    }
+  }
+}
