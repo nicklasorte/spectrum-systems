@@ -423,7 +423,7 @@ def build_evaluation_control_decision(
         }
         source_artifact_id = str(signal_artifact.get("intelligence_id") or "unknown")
         created_at = _canonical_timestamp(eval_summary.get("created_at"))
-        signal_type = "failure_eval_case"
+        signal_type = "cross_run_intelligence"
     elif artifact_type == "eval_summary":
         raise EvaluationControlError(
             "RUNTIME_REPLAY_BOUNDARY_VIOLATION: eval_summary is not permitted in runtime seams; replay_result is required"
