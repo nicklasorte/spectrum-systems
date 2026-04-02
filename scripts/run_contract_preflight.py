@@ -875,6 +875,7 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
     missing_required_surface = bool(report.get("missing_required_surface"))
     pqx_execution_policy = report.get("pqx_execution_policy") or {}
     pqx_policy_blocking = str(pqx_execution_policy.get("status", "")).lower() == "block"
+    pqx_policy_warning = str(pqx_execution_policy.get("status", "")).lower() == "warn"
     status = str(report.get("status", "failed"))
 
     if status == "skipped":
@@ -888,6 +889,13 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
         return {
             "strategy_gate_decision": "BLOCK",
             "rationale": "preflight failed on propagation/masking/invariant/required-surface/PQX-policy risk",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
+    if pqx_policy_warning:
+        return {
+            "strategy_gate_decision": "WARN",
+            "rationale": "preflight passed with unresolved governed PQX authority evidence in commit-range inspection mode",
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
@@ -1018,9 +1026,17 @@ def main() -> int:
             pqx_execution_policy["authority_resolution"] = "resolved_from_repo_evidence"
             pqx_execution_policy["blocking_reasons"] = []
         else:
-            pqx_execution_policy["status"] = "block"
+            commit_range_mode = detection.changed_path_detection_mode in {
+                "base_head_diff",
+                "base_to_current_head_fallback",
+                "github_pr_sha_pair",
+                "github_push_sha_pair",
+            }
+            pqx_execution_policy["status"] = "warn" if commit_range_mode else "block"
             pqx_execution_policy["authority_state"] = "authority_unknown_pending_evidence"
-            pqx_execution_policy["authority_resolution"] = "missing_repo_evidence"
+            pqx_execution_policy["authority_resolution"] = (
+                "inspection_context_without_pqx_evidence" if commit_range_mode else "missing_repo_evidence"
+            )
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
