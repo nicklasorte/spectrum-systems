@@ -128,7 +128,7 @@ def test_three_slices_all_allow_completes(monkeypatch: pytest.MonkeyPatch) -> No
     trace = run_pqx_sequential([_slice("1"), _slice("2"), _slice("3")], _base_initial_context())
     assert trace["final_status"] == "ALLOW"
     assert len(trace["slices"]) == 3
-    assert all(item["enforcement_result"] == "ALLOW" for item in trace["slices"])
+    assert all(item["final_slice_status"] == "ALLOW" for item in trace["slices"])
     assert len(trace["authority_evidence_refs"]) == 3
     assert trace["slices"][0]["slice_execution_record_ref"] is not None
 
@@ -164,7 +164,8 @@ def test_second_slice_block_stops(monkeypatch: pytest.MonkeyPatch) -> None:
     trace = run_pqx_sequential([_slice("1"), _slice("2"), _slice("3")], _base_initial_context())
     assert trace["final_status"] == "BLOCK"
     assert len(trace["slices"]) == 2
-    assert trace["slices"][-1]["enforcement_result"] == "BLOCK"
+    assert trace["slices"][-1]["final_slice_status"] == "BLOCK"
+    assert trace["stopping_slice_id"] == "2"
 
 
 def test_second_slice_require_review_stops(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -191,6 +192,7 @@ def test_second_slice_require_review_stops(monkeypatch: pytest.MonkeyPatch) -> N
     trace = run_pqx_sequential([_slice("1"), _slice("2"), _slice("3")], _base_initial_context())
     assert trace["final_status"] == "REQUIRE_REVIEW"
     assert len(trace["slices"]) == 2
+    assert trace["stopping_slice_id"] == "2"
 
 
 def test_missing_context_fail_closed() -> None:
@@ -246,6 +248,7 @@ def test_artifact_refs_passed_and_wrapper_reused(monkeypatch: pytest.MonkeyPatch
     trace = run_pqx_sequential([slice_payload], _base_initial_context())
     assert seen_wrappers[0] is wrapper
     assert trace["slices"][0]["eval_result_ref"].startswith("evaluation_control_decision:")
+    assert trace["slices"][0]["wrapper_ref"].startswith("codex_pqx_task_wrapper:")
     assert trace["authority_evidence_refs"][0].endswith("execution_record.json")
 
 
