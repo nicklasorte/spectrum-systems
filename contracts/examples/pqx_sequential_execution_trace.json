@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "pqx_sequential_execution_trace",
+  "trace_id": "pqx-seq-8a2be4dd89f1cc7e",
+  "run_id": "run-20260402-con-047",
+  "ordered_slice_ids": [
+    "AI-01",
+    "AI-02"
+  ],
+  "slices": [
+    {
+      "slice_id": "AI-01",
+      "input_ref": "input:AI-01",
+      "wrapper_ref": "codex_pqx_task_wrapper:wrap-ai-01",
+      "pqx_execution_artifact_ref": "data/pqx_runs/AI-01.result.json",
+      "slice_execution_record_ref": "data/pqx_runs/AI-01.pqx_slice_execution_record.json",
+      "eval_result_ref": "evaluation_control_decision:decision-ai-01",
+      "control_decision_ref": "evaluation_control_decision:decision-ai-01",
+      "control_decision_summary": {
+        "decision": "allow",
+        "decision_id": "decision-ai-01"
+      },
+      "enforcement_result": {
+        "final_status": "allow",
+        "rationale": "allow"
+      },
+      "final_slice_status": "ALLOW",
+      "status": "completed"
+    },
+    {
+      "slice_id": "AI-02",
+      "input_ref": "input:AI-02",
+      "wrapper_ref": "codex_pqx_task_wrapper:wrap-ai-02",
+      "pqx_execution_artifact_ref": "data/pqx_runs/AI-02.result.json",
+      "slice_execution_record_ref": "data/pqx_runs/AI-02.pqx_slice_execution_record.json",
+      "eval_result_ref": "evaluation_control_decision:decision-ai-02",
+      "control_decision_ref": "evaluation_control_decision:decision-ai-02",
+      "control_decision_summary": {
+        "decision": "require_review",
+        "decision_id": "decision-ai-02"
+      },
+      "enforcement_result": {
+        "final_status": "require_review",
+        "rationale": "requires human review"
+      },
+      "final_slice_status": "REQUIRE_REVIEW",
+      "status": "stopped"
+    }
+  ],
+  "authority_evidence_refs": [
+    "data/pqx_runs/AI-01.pqx_slice_execution_record.json",
+    "data/pqx_runs/AI-02.pqx_slice_execution_record.json"
+  ],
+  "final_status": "REQUIRE_REVIEW",
+  "blocking_reason": "requires human review",
+  "stopping_slice_id": "AI-02"
+}

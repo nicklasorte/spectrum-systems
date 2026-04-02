@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_sequential_execution_trace.schema.json",
+  "title": "PQX Sequential Execution Trace",
+  "description": "Canonical deterministic fail-closed authoritative trace artifact for a single sequential PQX run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "trace_id",
+    "run_id",
+    "ordered_slice_ids",
+    "slices",
+    "authority_evidence_refs",
+    "final_status",
+    "blocking_reason",
+    "stopping_slice_id"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_type": {"type": "string", "const": "pqx_sequential_execution_trace"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "ordered_slice_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "slices": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/slice_trace"},
+      "minItems": 1
+    },
+    "authority_evidence_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "final_status": {"type": "string", "enum": ["ALLOW", "BLOCK", "REQUIRE_REVIEW"]},
+    "blocking_reason": {"type": ["string", "null"], "minLength": 1},
+    "stopping_slice_id": {"type": ["string", "null"], "minLength": 1}
+  },
+  "$defs": {
+    "enforcement_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["final_status", "rationale"],
+      "properties": {
+        "final_status": {"type": "string", "enum": ["allow", "deny", "require_review", "block"]},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "slice_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slice_id",
+        "input_ref",
+        "wrapper_ref",
+        "pqx_execution_artifact_ref",
+        "slice_execution_record_ref",
+        "eval_result_ref",
+        "control_decision_ref",
+        "control_decision_summary",
+        "enforcement_result",
+        "final_slice_status",
+        "status"
+      ],
+      "properties": {
+        "slice_id": {"type": "string", "minLength": 1},
+        "input_ref": {"type": ["string", "null"], "minLength": 1},
+        "wrapper_ref": {"type": ["string", "null"], "minLength": 1},
+        "pqx_execution_artifact_ref": {"type": ["string", "null"], "minLength": 1},
+        "slice_execution_record_ref": {"type": ["string", "null"], "minLength": 1},
+        "eval_result_ref": {"type": ["string", "null"], "minLength": 1},
+        "control_decision_ref": {"type": ["string", "null"], "minLength": 1},
+        "control_decision_summary": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["decision", "decision_id"],
+          "properties": {
+            "decision": {"type": "string", "minLength": 1},
+            "decision_id": {"type": "string", "minLength": 1}
+          }
+        },
+        "enforcement_result": {"$ref": "#/$defs/enforcement_result"},
+        "final_slice_status": {"type": "string", "enum": ["ALLOW", "BLOCK", "REQUIRE_REVIEW"]},
+        "status": {"type": "string", "enum": ["completed", "stopped", "blocked"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"final_status": {"const": "ALLOW"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "blocking_reason": {"type": "null"},
+          "stopping_slice_id": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "final_status": {"enum": ["BLOCK", "REQUIRE_REVIEW"]}
+        },
+        "required": ["final_status"]
+      },
+      "then": {
+        "properties": {
+          "blocking_reason": {"type": "string", "minLength": 1},
+          "stopping_slice_id": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
+}

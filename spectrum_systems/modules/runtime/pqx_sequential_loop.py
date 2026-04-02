@@ -1,4 +1,4 @@
-"""Deterministic sequential PQX loop orchestration (CON-046)."""
+"""Deterministic sequential PQX loop orchestration (CON-046/CON-047)."""
 
 from __future__ import annotations
 
@@ -73,6 +73,72 @@ def _map_enforcement_label(integration_result: dict[str, Any]) -> str:
     return normalized
 
 
+def _derive_run_id(*, context: dict[str, Any], slices: list[dict[str, Any]], trace_id: str) -> str:
+    raw = context.get("run_id")
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip()
+    for slice_payload in slices:
+        wrapper = slice_payload.get("wrapper")
+        if isinstance(wrapper, Mapping):
+            identity = wrapper.get("task_identity")
+            if isinstance(identity, Mapping):
+                run_id = identity.get("run_id")
+                if isinstance(run_id, str) and run_id.strip():
+                    return run_id.strip()
+    return trace_id
+
+
+def _validate_trace_invariants(trace: dict[str, Any]) -> None:
+    slices = trace.get("slices")
+    if not isinstance(slices, list) or not slices:
+        raise PQXSequentialLoopError("trace invariant failed: slices must be non-empty")
+
+    for row in slices:
+        if not isinstance(row, dict):
+            raise PQXSequentialLoopError("trace invariant failed: slice row must be object")
+        status = row.get("status")
+        slice_id = row.get("slice_id")
+        if status in {"completed", "stopped"}:
+            required_refs = (
+                "wrapper_ref",
+                "pqx_execution_artifact_ref",
+                "slice_execution_record_ref",
+                "eval_result_ref",
+                "control_decision_ref",
+            )
+            for key in required_refs:
+                value = row.get(key)
+                if not isinstance(value, str) or not value.strip():
+                    raise PQXSequentialLoopError(
+                        f"trace invariant failed: required ref '{key}' missing for slice {slice_id}"
+                    )
+        if status == "completed":
+            if row.get("final_slice_status") != "ALLOW":
+                raise PQXSequentialLoopError(
+                    f"trace invariant failed: completed slice {slice_id} must have final_slice_status ALLOW"
+                )
+
+    final_status = trace.get("final_status")
+    terminal_slice = slices[-1]
+    terminal_status = terminal_slice.get("final_slice_status")
+    if final_status == "ALLOW":
+        if any(row.get("final_slice_status") != "ALLOW" for row in slices):
+            raise PQXSequentialLoopError("trace invariant failed: final_status ALLOW contradicts per-slice outcomes")
+        if trace.get("blocking_reason") is not None or trace.get("stopping_slice_id") is not None:
+            raise PQXSequentialLoopError(
+                "trace invariant failed: ALLOW final_status must not include blocking_reason or stopping_slice_id"
+            )
+    elif final_status in {"BLOCK", "REQUIRE_REVIEW"}:
+        if terminal_status != final_status:
+            raise PQXSequentialLoopError("trace invariant failed: final_status contradicts terminal per-slice outcome")
+        if not isinstance(trace.get("blocking_reason"), str) or not str(trace.get("blocking_reason")).strip():
+            raise PQXSequentialLoopError("trace invariant failed: blocking_reason required for blocked/review-stopped run")
+        if trace.get("stopping_slice_id") != terminal_slice.get("slice_id"):
+            raise PQXSequentialLoopError("trace invariant failed: stopping_slice_id must identify terminal slice")
+    else:
+        raise PQXSequentialLoopError("trace invariant failed: unsupported final_status")
+
+
 def run_pqx_sequential(
     slices: list,
     initial_context: dict,
@@ -88,14 +154,19 @@ def run_pqx_sequential(
         context.get("runtime_environment"), label="initial_context.runtime_environment"
     )
 
+    normalized_slices = [dict(item) for item in slices]
+    trace_id = _deterministic_trace_id(normalized_slices, context)
     execution_trace: dict[str, Any] = {
         "artifact_type": "pqx_sequential_execution_trace",
         "schema_version": "1.0.0",
-        "trace_id": _deterministic_trace_id([dict(item) for item in slices], context),
+        "trace_id": trace_id,
+        "run_id": _derive_run_id(context=context, slices=normalized_slices, trace_id=trace_id),
+        "ordered_slice_ids": [],
         "slices": [],
         "authority_evidence_refs": [],
         "final_status": "ALLOW",
         "blocking_reason": None,
+        "stopping_slice_id": None,
     }
 
     carry_context = {
@@ -106,10 +177,14 @@ def run_pqx_sequential(
     for raw_slice in slices:
         slice_request = _require_mapping(raw_slice, label="slice")
         slice_id = _require_non_empty_string(slice_request.get("slice_id"), label="slice.slice_id")
+        execution_trace["ordered_slice_ids"].append(slice_id)
+
         raw_wrapper = slice_request.get("wrapper")
         if not isinstance(raw_wrapper, Mapping):
             raise PQXSequentialLoopError(f"slice[{slice_id}].wrapper must be an object")
         wrapper = raw_wrapper
+        wrapper_id = _require_non_empty_string(wrapper.get("wrapper_id"), label=f"slice[{slice_id}].wrapper.wrapper_id")
+        wrapper_ref = f"codex_pqx_task_wrapper:{wrapper_id}"
 
         required_context = _require_mapping(
             slice_request.get("required_context") if isinstance(slice_request.get("required_context"), dict) else context,
@@ -132,20 +207,28 @@ def run_pqx_sequential(
             authority_evidence_ref=required_context.get("authority_evidence_ref"),
         )
         if context_enforcement.status != "allow":
+            reason = ",".join(context_enforcement.blocking_reasons)
             execution_trace["slices"].append(
                 {
                     "slice_id": slice_id,
                     "input_ref": slice_request.get("input_ref"),
-                    "output_ref": None,
+                    "wrapper_ref": wrapper_ref,
+                    "pqx_execution_artifact_ref": None,
                     "slice_execution_record_ref": None,
                     "eval_result_ref": None,
-                    "control_decision": None,
-                    "enforcement_result": "BLOCK",
+                    "control_decision_ref": None,
+                    "control_decision_summary": None,
+                    "enforcement_result": {
+                        "final_status": "block",
+                        "rationale": reason,
+                    },
+                    "final_slice_status": "BLOCK",
                     "status": "blocked",
                 }
             )
             execution_trace["final_status"] = "BLOCK"
-            execution_trace["blocking_reason"] = ",".join(context_enforcement.blocking_reasons)
+            execution_trace["blocking_reason"] = reason
+            execution_trace["stopping_slice_id"] = slice_id
             break
 
         runner_result = run_wrapped_pqx_task(
@@ -158,20 +241,28 @@ def run_pqx_sequential(
             ),
         )
         if runner_result.get("status") != "complete":
+            reason = str(runner_result.get("reason") or "pqx slice execution failed")
             execution_trace["slices"].append(
                 {
                     "slice_id": slice_id,
                     "input_ref": slice_request.get("input_ref"),
-                    "output_ref": runner_result.get("result"),
+                    "wrapper_ref": wrapper_ref,
+                    "pqx_execution_artifact_ref": None,
                     "slice_execution_record_ref": None,
                     "eval_result_ref": None,
-                    "control_decision": None,
-                    "enforcement_result": "BLOCK",
+                    "control_decision_ref": None,
+                    "control_decision_summary": None,
+                    "enforcement_result": {
+                        "final_status": "block",
+                        "rationale": reason,
+                    },
+                    "final_slice_status": "BLOCK",
                     "status": "blocked",
                 }
             )
             execution_trace["final_status"] = "BLOCK"
-            execution_trace["blocking_reason"] = str(runner_result.get("reason") or "pqx slice execution failed")
+            execution_trace["blocking_reason"] = reason
+            execution_trace["stopping_slice_id"] = slice_id
             break
 
         record_ref = _require_non_empty_string(
@@ -207,21 +298,49 @@ def run_pqx_sequential(
         )
         enforcement_label = _map_enforcement_label(integration_result)
 
-        eval_ref = f"evaluation_control_decision:{decision_artifact.get('decision_id', '')}"
+        control_decision_ref = _require_non_empty_string(
+            execution_record.get("control_decision_ref") or f"evaluation_control_decision:{decision_artifact.get('decision_id', '')}",
+            label=f"slice[{slice_id}].control_decision_ref",
+        )
+        eval_ref = _require_non_empty_string(
+            f"evaluation_control_decision:{decision_artifact.get('decision_id', '')}",
+            label=f"slice[{slice_id}].eval_result_ref",
+        )
         output_ref = _repo_ref(_require_non_empty_string(runner_result.get("result"), label="runner result"))
-        input_ref = slice_request.get("input_ref") or f"codex_pqx_task_wrapper:{wrapper.get('wrapper_id', '')}"
+        input_ref = slice_request.get("input_ref") or wrapper_ref
+
+        enforcement_result = integration_result.get("enforcement_result")
+        if not isinstance(enforcement_result, dict):
+            raise PQXSequentialLoopError(f"enforcement output invalid for slice {slice_id}: enforcement_result missing")
+        enforcement_summary = {
+            "final_status": _require_non_empty_string(
+                enforcement_result.get("final_status"), label=f"slice[{slice_id}].enforcement_result.final_status"
+            ),
+            "rationale": _require_non_empty_string(
+                enforcement_result.get("rationale") or enforcement_label,
+                label=f"slice[{slice_id}].enforcement_result.rationale",
+            ),
+        }
 
         execution_trace["slices"].append(
-                {
-                    "slice_id": slice_id,
-                    "input_ref": input_ref,
-                    "output_ref": output_ref,
-                    "slice_execution_record_ref": execution_record_ref,
-                    "eval_result_ref": eval_ref,
-                    "control_decision": decision_artifact.get("decision"),
-                    "enforcement_result": enforcement_label,
-                    "status": "completed" if enforcement_label == "ALLOW" else "stopped",
-                }
+            {
+                "slice_id": slice_id,
+                "input_ref": input_ref,
+                "wrapper_ref": wrapper_ref,
+                "pqx_execution_artifact_ref": output_ref,
+                "slice_execution_record_ref": execution_record_ref,
+                "eval_result_ref": eval_ref,
+                "control_decision_ref": control_decision_ref,
+                "control_decision_summary": {
+                    "decision": _require_non_empty_string(decision_artifact.get("decision"), label=f"slice[{slice_id}].decision"),
+                    "decision_id": _require_non_empty_string(
+                        decision_artifact.get("decision_id"), label=f"slice[{slice_id}].decision_id"
+                    ),
+                },
+                "enforcement_result": enforcement_summary,
+                "final_slice_status": enforcement_label,
+                "status": "completed" if enforcement_label == "ALLOW" else "stopped",
+            }
         )
 
         carry_context["artifact_refs"].append(output_ref)
@@ -236,12 +355,15 @@ def run_pqx_sequential(
 
         if enforcement_label in {"BLOCK", "REQUIRE_REVIEW"}:
             execution_trace["final_status"] = enforcement_label
-            execution_trace["blocking_reason"] = str(
-                (integration_result.get("enforcement_result") or {}).get("rationale")
-                or (integration_result.get("enforcement_result") or {}).get("final_status")
-                or enforcement_label
-            )
+            execution_trace["blocking_reason"] = enforcement_summary["rationale"]
+            execution_trace["stopping_slice_id"] = slice_id
             break
+
+    _validate_trace_invariants(execution_trace)
+    try:
+        validate_artifact(execution_trace, "pqx_sequential_execution_trace")
+    except Exception as exc:
+        raise PQXSequentialLoopError(f"pqx_sequential_execution_trace validation failed: {exc}") from exc
 
     return execution_trace
 
