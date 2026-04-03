@@ -1,0 +1,103 @@
+{
+  "report_id": "MVPR-12AB34CD56EF",
+  "schema_version": "1.0.0",
+  "scenario_description": "Bounded five-cycle governed run using one baseline success, one review-trigger stop, one program-alignment block, one noisy blocked failure, and one successful continuation scenario.",
+  "runs_executed": [
+    {
+      "cycle_index": 1,
+      "scenario_id": "SCN-HAPPY_PATH_BOUNDED",
+      "run_id": "RMB-1111AAAABBBB",
+      "stop_reason": "max_batches_reached",
+      "status": "success",
+      "next_batch_id": "BATCH-J",
+      "blockers": [],
+      "required_reviews": [],
+      "artifact_refs": {
+        "build_summary": "build_summary:BSR-1111AAAABBBB",
+        "next_step_recommendation": "next_step_recommendation:NSR-1111AAAABBBB",
+        "trace_navigation": "trace_navigation:CSIV-1111AAAABBBB",
+        "core_system_integration_validation": "core_system_integration_validation:CSIV-1111AAAABBBB",
+        "adaptive_execution_observability": "adaptive_execution_observability:AEO-1111AAAABBBB",
+        "adaptive_execution_trend_report": "adaptive_execution_trend_report:AET-1111AAAABBBB",
+        "adaptive_execution_policy_review": "adaptive_execution_policy_review:AEPR-1111AAAABBBB"
+      }
+    },
+    {
+      "cycle_index": 2,
+      "scenario_id": "SCN-MISSING_REQUIRED_REVIEW",
+      "run_id": "RMB-2222AAAABBBB",
+      "stop_reason": "missing_required_signal",
+      "status": "blocked",
+      "next_batch_id": "BATCH-J",
+      "blockers": [
+        "PROP_REVIEW_EVAL_NOT_INGESTED"
+      ],
+      "required_reviews": [
+        "review_blocker_assessment"
+      ],
+      "artifact_refs": {
+        "build_summary": "build_summary:BSR-2222AAAABBBB",
+        "next_step_recommendation": "next_step_recommendation:NSR-2222AAAABBBB",
+        "trace_navigation": "trace_navigation:CSIV-2222AAAABBBB",
+        "core_system_integration_validation": "core_system_integration_validation:CSIV-2222AAAABBBB",
+        "adaptive_execution_observability": "adaptive_execution_observability:AEO-2222AAAABBBB",
+        "adaptive_execution_trend_report": "adaptive_execution_trend_report:AET-2222AAAABBBB",
+        "adaptive_execution_policy_review": "adaptive_execution_policy_review:AEPR-2222AAAABBBB"
+      }
+    },
+    {
+      "cycle_index": 3,
+      "scenario_id": "SCN-PROGRAM_MISALIGNMENT",
+      "run_id": "RMB-3333AAAABBBB",
+      "stop_reason": "max_batches_reached",
+      "status": "blocked",
+      "next_batch_id": "BATCH-J",
+      "blockers": [
+        "PROP_PROGRAM_NOT_CONSTRAINT_ALIGNED"
+      ],
+      "required_reviews": [],
+      "artifact_refs": {
+        "build_summary": "build_summary:BSR-3333AAAABBBB",
+        "next_step_recommendation": "next_step_recommendation:NSR-3333AAAABBBB",
+        "trace_navigation": "trace_navigation:CSIV-3333AAAABBBB",
+        "core_system_integration_validation": "core_system_integration_validation:CSIV-3333AAAABBBB",
+        "adaptive_execution_observability": "adaptive_execution_observability:AEO-3333AAAABBBB",
+        "adaptive_execution_trend_report": "adaptive_execution_trend_report:AET-3333AAAABBBB",
+        "adaptive_execution_policy_review": "adaptive_execution_policy_review:AEPR-3333AAAABBBB"
+      }
+    }
+  ],
+  "success_cases": [
+    "SCN-HAPPY_PATH_BOUNDED"
+  ],
+  "failure_cases": [
+    "SCN-MISSING_REQUIRED_REVIEW",
+    "SCN-PROGRAM_MISALIGNMENT"
+  ],
+  "stop_behavior_analysis": "System stops safely at review and alignment boundaries and avoids unsafe continuation when blocker signals are present.",
+  "decision_quality_analysis": "Next-step recommendations prioritize constrained continuation when safe and escalate review actions when blocker evidence exists.",
+  "explanation_quality_analysis": "Each run provides root-cause and next-action context that can be interpreted quickly from build summary and recommendation artifacts.",
+  "efficiency_metrics": {
+    "total_cycles": 3,
+    "successful_cycles": 1,
+    "blocked_cycles": 2,
+    "success_rate": 0.3333,
+    "average_useful_batches_per_run": 0.6667,
+    "wasted_cycle_count": 0
+  },
+  "major_strengths": [
+    "Safe stop behavior at review and contract boundaries.",
+    "Deterministic trace-linked recommendation generation."
+  ],
+  "major_weaknesses": [
+    "Review blockers can still require operator synthesis across artifacts.",
+    "Program alignment failures reduce throughput in bounded windows."
+  ],
+  "recommended_next_batches": [
+    "BATCH-U",
+    "BATCH-Y",
+    "BATCH-Z"
+  ],
+  "created_at": "2026-04-03T23:59:00Z",
+  "trace_id": "trace-batch-mvp-example"
+}

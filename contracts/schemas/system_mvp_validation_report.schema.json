@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/system_mvp_validation_report.schema.json",
+  "title": "system_mvp_validation_report",
+  "description": "Deterministic end-to-end MVP validation report proving governed multi-cycle system behavior across success, review-trigger, and blocked scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "schema_version",
+    "scenario_description",
+    "runs_executed",
+    "success_cases",
+    "failure_cases",
+    "stop_behavior_analysis",
+    "decision_quality_analysis",
+    "explanation_quality_analysis",
+    "efficiency_metrics",
+    "major_strengths",
+    "major_weaknesses",
+    "recommended_next_batches",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "pattern": "^MVPR-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "scenario_description": {
+      "type": "string",
+      "minLength": 20
+    },
+    "runs_executed": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cycle_index",
+          "scenario_id",
+          "run_id",
+          "stop_reason",
+          "status",
+          "next_batch_id",
+          "blockers",
+          "required_reviews",
+          "artifact_refs"
+        ],
+        "properties": {
+          "cycle_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "scenario_id": {
+            "type": "string",
+            "pattern": "^SCN-[A-Z0-9_]+$"
+          },
+          "run_id": {
+            "type": "string",
+            "pattern": "^RMB-[A-F0-9]{12}$"
+          },
+          "stop_reason": {
+            "type": "string",
+            "minLength": 3
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "blocked"]
+          },
+          "next_batch_id": {
+            "type": ["string", "null"],
+            "pattern": "^BATCH-[A-Z0-9]+$"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3
+            },
+            "uniqueItems": true
+          },
+          "required_reviews": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3
+            },
+            "uniqueItems": true
+          },
+          "artifact_refs": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "build_summary",
+              "next_step_recommendation",
+              "trace_navigation",
+              "core_system_integration_validation",
+              "adaptive_execution_observability",
+              "adaptive_execution_trend_report",
+              "adaptive_execution_policy_review"
+            ],
+            "properties": {
+              "build_summary": {"type": "string", "pattern": "^build_summary:BSR-[A-F0-9]{12}$"},
+              "next_step_recommendation": {
+                "type": "string",
+                "pattern": "^next_step_recommendation:NSR-[A-F0-9]{12}$"
+              },
+              "trace_navigation": {
+                "type": "string",
+                "pattern": "^trace_navigation:[A-Za-z0-9._:-]+$"
+              },
+              "core_system_integration_validation": {
+                "type": "string",
+                "pattern": "^core_system_integration_validation:CSIV-[A-F0-9]{12}$"
+              },
+              "adaptive_execution_observability": {
+                "type": "string",
+                "pattern": "^adaptive_execution_observability:AEO-[A-F0-9]{12}$"
+              },
+              "adaptive_execution_trend_report": {
+                "type": "string",
+                "pattern": "^adaptive_execution_trend_report:AET-[A-F0-9]{12}$"
+              },
+              "adaptive_execution_policy_review": {
+                "type": "string",
+                "pattern": "^adaptive_execution_policy_review:AEPR-[A-F0-9]{12}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "success_cases": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+      "uniqueItems": true
+    },
+    "failure_cases": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+      "uniqueItems": true
+    },
+    "stop_behavior_analysis": {
+      "type": "string",
+      "minLength": 20
+    },
+    "decision_quality_analysis": {
+      "type": "string",
+      "minLength": 20
+    },
+    "explanation_quality_analysis": {
+      "type": "string",
+      "minLength": 20
+    },
+    "efficiency_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_cycles",
+        "successful_cycles",
+        "blocked_cycles",
+        "success_rate",
+        "average_useful_batches_per_run",
+        "wasted_cycle_count"
+      ],
+      "properties": {
+        "total_cycles": {"type": "integer", "minimum": 3},
+        "successful_cycles": {"type": "integer", "minimum": 0},
+        "blocked_cycles": {"type": "integer", "minimum": 0},
+        "success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "average_useful_batches_per_run": {"type": "number", "minimum": 0},
+        "wasted_cycle_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "major_strengths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 8}
+    },
+    "major_weaknesses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 8}
+    },
+    "recommended_next_batches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^BATCH-[A-Z0-9]+$"},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}
