@@ -33,6 +33,9 @@ def test_process_flow_doc_contains_required_sections_and_weak_points() -> None:
     assert "## Current Weak Points" in doc
     assert "Roadmap Selection" in doc
     assert "Control Authorization" in doc
+    assert "Authorized Batch Execution (PQX)" in doc
+    assert "Roadmap Progress Update (roadmap_progress_update)" in doc
+    assert "Next Candidate Selection" in doc
     assert "missing eval coverage" in doc
 
 

@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_progress_update.schema.json",
+  "title": "Roadmap Progress Update",
+  "description": "Deterministic governed artifact describing one authorized roadmap batch execution outcome and resulting roadmap status transition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "progress_update_id",
+    "schema_version",
+    "roadmap_id",
+    "batch_id",
+    "previous_batch_status",
+    "new_batch_status",
+    "execution_status",
+    "pqx_execution_refs",
+    "selected_batch_id",
+    "authorization_id",
+    "executed_at",
+    "reason_codes",
+    "blocking_conditions",
+    "next_candidate_batch_id",
+    "roadmap_input_hash",
+    "execution_result_hash",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "progress_update_id": {
+      "type": "string",
+      "pattern": "^RPU-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "previous_batch_status": {
+      "type": "string",
+      "enum": ["not_started", "running", "completed", "blocked"]
+    },
+    "new_batch_status": {
+      "type": "string",
+      "enum": ["not_started", "running", "completed", "blocked"]
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["succeeded", "blocked", "failed", "not_executed"]
+    },
+    "pqx_execution_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "selected_batch_id": {
+      "type": "string",
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^REA-[A-F0-9]{12}$"
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "PQX_EXECUTION_SUCCEEDED",
+          "PQX_EXECUTION_BLOCKED",
+          "PQX_EXECUTION_FAILED",
+          "AUTHORIZATION_DENIED_EXECUTION"
+        ]
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_candidate_batch_id": {
+      "type": ["string", "null"],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "roadmap_input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "execution_result_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "succeeded"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "new_batch_status": {
+            "const": "completed"
+          },
+          "reason_codes": {
+            "contains": {
+              "const": "PQX_EXECUTION_SUCCEEDED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "blocked"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "new_batch_status": {
+            "const": "blocked"
+          },
+          "reason_codes": {
+            "contains": {
+              "const": "PQX_EXECUTION_BLOCKED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "new_batch_status": {
+            "const": "blocked"
+          },
+          "reason_codes": {
+            "contains": {
+              "const": "PQX_EXECUTION_FAILED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "not_executed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "contains": {
+              "const": "AUTHORIZATION_DENIED_EXECUTION"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

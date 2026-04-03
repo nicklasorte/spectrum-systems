@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.28",
+  "artifact_version": "1.3.29",
   "schema_version": "1.0.0",
-  "standards_version": "1.3.28",
-  "record_id": "REC-STD-2026-04-03-RDX-003",
-  "run_id": "run-20260403T193000Z",
-  "created_at": "2026-04-03T13:30:00Z",
+  "standards_version": "1.3.29",
+  "record_id": "REC-STD-2026-04-03-RDX-004",
+  "run_id": "run-20260403T150000Z",
+  "created_at": "2026-04-03T15:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.28",
+  "source_repo_version": "1.3.29",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2417,6 +2417,19 @@
       "last_updated_in": "1.3.28",
       "example_path": "contracts/examples/roadmap_execution_authorization.json",
       "notes": "RDX-003 deterministic control authorization gate artifact between roadmap selection and downstream PQX execution."
+    },
+    {
+      "artifact_type": "roadmap_progress_update",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.29",
+      "last_updated_in": "1.3.29",
+      "example_path": "contracts/examples/roadmap_progress_update.json",
+      "notes": "RDX-004 deterministic one-authorized-batch execution outcome and roadmap state transition artifact emitted after PQX execution boundary."
     },
     {
       "artifact_type": "routing_decision",

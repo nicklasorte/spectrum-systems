@@ -13,7 +13,11 @@ Roadmap Selection
   ↓
 Control Authorization
   ↓
-PQX Batch Execution
+Authorized Batch Execution (PQX)
+  ↓
+Roadmap Progress Update (roadmap_progress_update)
+  ↓
+Next Candidate Selection
   ↓
 Artifacts Produced
   ↓
@@ -43,9 +47,15 @@ Roadmap Selection (roadmap_selection_result)
 Control Authorization (roadmap_execution_authorization)
   - control decision allow|warn|freeze|block gates execution
   ↓
-PQX Execution
+Authorized Batch Execution (PQX)
   - slice execution: PQX-QUEUE-01, PQX-QUEUE-02, PQX-QUEUE-03
   - per-slice enforcement: enabled
+  ↓
+Roadmap Progress Update (roadmap_progress_update)
+  - selected batch only state mutation
+  - deterministic status transition + trace linkage
+  ↓
+Next Candidate Selection
   ↓
 Artifacts
   - execution record
