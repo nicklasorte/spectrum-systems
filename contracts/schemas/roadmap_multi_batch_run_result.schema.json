@@ -16,11 +16,14 @@
     "stop_reason",
     "stop_reason_codes",
     "max_batches_per_run",
+    "resolved_max_batches_per_run",
     "batches_executed_count",
     "final_roadmap_status_ref",
     "loop_validation_refs",
     "progress_update_refs",
     "authorization_refs",
+    "continuation_decision_sequence",
+    "execution_efficiency_report",
     "executed_at",
     "input_hash",
     "trace_id",
@@ -33,7 +36,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "roadmap_id": {
       "type": "string",
@@ -82,7 +85,11 @@
         "invalid_roadmap_state",
         "invalid_progress_state",
         "contract_precondition_failed",
-        "no_eligible_batch"
+        "no_eligible_batch",
+        "diminishing_returns_detected",
+        "repeated_failure_pattern",
+        "unresolved_blocker_persists",
+        "risk_accumulation_threshold_exceeded"
       ]
     },
     "stop_reason_codes": {
@@ -103,12 +110,21 @@
           "invalid_roadmap_state",
           "invalid_progress_state",
           "contract_precondition_failed",
-          "no_eligible_batch"
+          "no_eligible_batch",
+          "diminishing_returns_detected",
+          "repeated_failure_pattern",
+          "unresolved_blocker_persists",
+          "risk_accumulation_threshold_exceeded"
         ]
       },
       "uniqueItems": true
     },
     "max_batches_per_run": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "resolved_max_batches_per_run": {
       "type": "integer",
       "minimum": 1,
       "maximum": 10
@@ -140,6 +156,77 @@
       "items": {
         "type": "string",
         "pattern": "^REA-[A-F0-9]{12}$"
+      }
+    },
+    "continuation_decision_sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "decision",
+          "reason_code"
+        ],
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "continue",
+              "stop"
+            ]
+          },
+          "reason_code": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "execution_efficiency_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "batches_executed_per_run",
+        "useful_batches",
+        "early_stops",
+        "average_progress_per_run",
+        "chain_context_refs",
+        "adaptive_factors"
+      ],
+      "properties": {
+        "batches_executed_per_run": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "useful_batches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "early_stops": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "average_progress_per_run": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "chain_context_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "adaptive_factors": {
+          "type": "object",
+          "additionalProperties": true
+        }
       }
     },
     "executed_at": {

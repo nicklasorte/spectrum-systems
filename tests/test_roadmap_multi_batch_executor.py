@@ -9,7 +9,10 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.contracts import load_example  # noqa: E402
 import spectrum_systems.modules.runtime.roadmap_multi_batch_executor as multi_batch  # noqa: E402
-from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run  # noqa: E402
+from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import (  # noqa: E402
+    execute_bounded_roadmap_run,
+    should_continue_execution,
+)
 
 
 def _roadmap() -> dict:
@@ -21,7 +24,7 @@ def _roadmap() -> dict:
     return artifact
 
 
-def _selection_signals(*, include_j_signal: bool = True) -> dict:
+def _selection_signals(*, include_j_signal: bool = True, risk_level: str = "medium", program_phase: str = "build") -> dict:
     signals = ["roadmap_authority_resolved", "executor_ingestion_valid"]
     if include_j_signal:
         signals.append("state_binding_complete")
@@ -29,6 +32,8 @@ def _selection_signals(*, include_j_signal: bool = True) -> dict:
         "signals": signals,
         "hard_gates": {"BATCH-G": "pass"},
         "control_loop": {"eval_present": True, "trace_present": True, "schema_valid": True},
+        "risk_level": risk_level,
+        "program_phase": program_phase,
     }
 
 
@@ -82,6 +87,33 @@ def test_positive_bounded_run_executes_two_and_stops_at_max(tmp_path: Path) -> N
     assert result["completed_batch_ids"] == ["BATCH-I", "BATCH-J"]
     assert result["batches_executed_count"] == 2
     assert result["stop_reason"] == "max_batches_reached"
+    assert result["execution_efficiency_report"]["batches_executed_per_run"] == 2
+
+
+def test_adaptive_policy_resolves_cap_from_risk_and_phase(tmp_path: Path) -> None:
+    result = execute_bounded_roadmap_run(
+        _roadmap(),
+        _selection_signals(risk_level="low", program_phase="build"),
+        _authorization_signals(),
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        execution_policy={
+            "max_batches_per_run": {
+                "min_cap": 1,
+                "max_cap": 4,
+                "risk_caps": {"low": 4, "medium": 2, "high": 1},
+                "program_phase_caps": {"build": 3, "stabilization": 2},
+            }
+        },
+        evaluated_at="2026-04-03T20:00:00Z",
+        executed_at="2026-04-03T20:01:00Z",
+        validated_at="2026-04-03T20:02:00Z",
+        run_executed_at="2026-04-03T20:03:00Z",
+        pqx_execute_fn=_pqx_success,
+    )["run_result"]
+
+    assert result["resolved_max_batches_per_run"] == 3
+    assert result["execution_efficiency_report"]["adaptive_factors"]["mode"] == "adaptive"
 
 
 def test_hard_gate_stops_after_completed_batch(tmp_path: Path) -> None:
@@ -191,6 +223,24 @@ def test_missing_signal_later_batch_stops_before_execution(tmp_path: Path) -> No
 
     assert result["completed_batch_ids"] == ["BATCH-I"]
     assert result["stop_reason"] == "missing_required_signal"
+
+
+def test_should_continue_execution_supports_early_stop_reason_codes() -> None:
+    decision = should_continue_execution(
+        last_batch_result={"control_decision": "allow", "replay_integrity": "ready", "execution_status": "succeeded"},
+        control_decision="allow",
+        context_risk_signals={"risk_level": "medium"},
+        program_alignment={"safety_critical": True},
+        replay_integrity="ready",
+        continuation_state={
+            "consecutive_non_progress": 2,
+            "repeated_failure_reason_count": 0,
+            "unresolved_blocker_streak": 0,
+            "risk_accumulation": 0,
+            "risk_accumulation_stop_threshold": 6,
+        },
+    )
+    assert decision == {"continue": False, "reason_code": "diminishing_returns_detected"}
 
 
 def test_determinism_same_inputs_identical_run_result(tmp_path: Path) -> None:
