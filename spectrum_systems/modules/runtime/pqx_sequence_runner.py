@@ -368,7 +368,7 @@ def _build_tpa_slice_artifact(
         raise PQXSequenceRunnerError("TPA artifact requested for non-TPA slice id")
     artifact = {
         "artifact_type": "tpa_slice_artifact",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "artifact_id": f"tpa:{run_id}:{slice_id}",
         "run_id": run_id,
         "trace_id": trace_id,
@@ -1041,6 +1041,14 @@ def execute_sequence_run(
                 plan_payload = request.get("tpa_plan")
                 if not isinstance(plan_payload, dict):
                     raise PQXSequenceRunnerError(f"TPA plan slice {next_slice_id} missing request.tpa_plan artifact payload")
+                if not str(plan_payload.get("context_bundle_ref") or "").startswith("context_bundle_v2:"):
+                    raise PQXSequenceRunnerError("TPA plan must reference context_bundle_v2 via context_bundle_ref")
+                if not plan_payload.get("modules_affected"):
+                    raise PQXSequenceRunnerError("TPA plan must declare modules_affected from governed context")
+                if not str(plan_payload.get("improvement_objective") or "").strip():
+                    raise PQXSequenceRunnerError("TPA plan must declare improvement_objective")
+                if not str(plan_payload.get("context_rationale") or "").strip():
+                    raise PQXSequenceRunnerError("TPA plan must declare context_rationale")
                 artifacts["plan"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
@@ -1067,6 +1075,20 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA build small guardrail failed: unnecessary_indirection detected")
                 if int(build_payload.get("new_layers", 0)) > 0:
                     raise PQXSequenceRunnerError("TPA build small guardrail failed: new_layers must be 0")
+                if build_payload.get("context_bundle_ref") != plan_fields.get("context_bundle_ref"):
+                    raise PQXSequenceRunnerError("TPA build must use same context_bundle_ref as TPA plan")
+                if bool(build_payload.get("speculative_expansion_detected")):
+                    raise PQXSequenceRunnerError("TPA build must not perform speculative expansion beyond required scope")
+                if not bool(build_payload.get("existing_abstractions_satisfied")):
+                    raise PQXSequenceRunnerError("TPA build must confirm existing abstractions are reused when available")
+                plan_failure_patterns = set(plan_fields.get("prior_failure_pattern_refs", []))
+                avoided_patterns = set(build_payload.get("known_failure_patterns_avoided", []))
+                if not plan_failure_patterns.issubset(avoided_patterns):
+                    raise PQXSequenceRunnerError("TPA build must avoid prior failure patterns declared in plan context")
+                planned_modules = set(plan_fields.get("modules_affected", []))
+                reused_modules = set(build_payload.get("reused_module_refs", []))
+                if planned_modules and not planned_modules.intersection(reused_modules):
+                    raise PQXSequenceRunnerError("TPA build must reuse modules surfaced by plan context")
                 artifacts["build"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
@@ -1086,6 +1108,14 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA simplify must not change behavior")
                 if int(simplify_payload.get("new_layers_introduced", 0)) > 0:
                     raise PQXSequenceRunnerError("TPA simplify must not introduce new abstraction layers")
+                if simplify_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
+                    raise PQXSequenceRunnerError("TPA simplify must use same context_bundle_ref as TPA plan")
+                if int(simplify_payload.get("redundant_code_paths_removed", 0)) <= 0 and not simplify_payload.get(
+                    "duplicate_logic_collapsed"
+                ):
+                    raise PQXSequenceRunnerError("TPA simplify must remove redundancy using context-informed simplification")
+                if not simplify_payload.get("pattern_consistency_refs"):
+                    raise PQXSequenceRunnerError("TPA simplify must declare pattern consistency references")
                 artifacts["simplify"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
@@ -1112,6 +1142,19 @@ def execute_sequence_run(
                 )
                 if gate_payload.get("selected_pass") != deterministic_selected:
                     raise PQXSequenceRunnerError("TPA gate selected_pass mismatch with deterministic control decision")
+                if gate_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
+                    raise PQXSequenceRunnerError("TPA gate must use same context_bundle_ref as plan/build/simplify")
+                if gate_payload.get("unaddressed_failure_pattern_refs"):
+                    raise PQXSequenceRunnerError("TPA gate must block when context indicates unaddressed repeated failure patterns")
+                planned_failure_patterns = set(artifacts["plan"]["artifact"].get("prior_failure_pattern_refs", []))
+                addressed_failure_patterns = set(gate_payload.get("addressed_failure_pattern_refs", []))
+                if not planned_failure_patterns.issubset(addressed_failure_patterns):
+                    raise PQXSequenceRunnerError("TPA gate must enforce mitigation of all planned prior failure patterns")
+                plan_risks = artifacts["plan"]["artifact"].get("known_risk_refs", [])
+                if plan_risks and bool(gate_payload.get("high_risk_unmitigated")):
+                    raise PQXSequenceRunnerError("TPA gate must freeze/block when high-risk context lacks mitigation")
+                if plan_risks and not gate_payload.get("risk_mitigation_refs"):
+                    raise PQXSequenceRunnerError("TPA gate must include risk mitigation refs for known risks")
                 artifacts["gate"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
