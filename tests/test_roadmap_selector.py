@@ -122,12 +122,10 @@ def test_validate_batch_readiness_fail_closed_on_ambiguous_state() -> None:
     assert "AMBIGUOUS_STATE" in readiness["readiness_reason_codes"]
 
 
-def test_example_cases_validate_against_schema() -> None:
+def test_example_validates_against_schema() -> None:
     payload = load_example("roadmap_selection_result")
     validator = Draft202012Validator(load_schema("roadmap_selection_result"), format_checker=FormatChecker())
-
-    for _, case in payload.items():
-        validator.validate(case)
+    validator.validate(payload)
 
 
 def test_generated_result_validates_against_schema() -> None:
