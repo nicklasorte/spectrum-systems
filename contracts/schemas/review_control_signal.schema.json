@@ -18,26 +18,27 @@
     "trace_linkage"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "review_control_signal" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
-    "signal_id": { "type": "string", "pattern": "^rcs-[a-f0-9]{16}$" },
-    "review_id": { "type": "string", "minLength": 1 },
-    "review_type": { "type": "string", "minLength": 1 },
-    "gate_assessment": { "type": "string", "enum": ["PASS", "FAIL", "CONDITIONAL"] },
-    "scale_recommendation": { "type": "string", "enum": ["YES", "NO"] },
+    "artifact_type": {"type": "string", "const": "review_control_signal"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
+    "signal_id": {"type": "string", "pattern": "^rcs-[a-f0-9]{16}$"},
+    "review_id": {"type": "string", "minLength": 1},
+    "review_type": {"type": "string", "enum": ["surgical", "failure", "batch_architecture", "hard_gate", "strategic"]},
+    "gate_assessment": {"type": "string", "enum": ["PASS", "FAIL", "CONDITIONAL"]},
+    "scale_recommendation": {"type": "string", "enum": ["YES", "NO"]},
     "critical_findings": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
     },
-    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
     "trace_linkage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["review_markdown_path", "source_digest_sha256"],
+      "required": ["review_markdown_path", "source_digest_sha256", "review_artifact_path"],
       "properties": {
-        "review_markdown_path": { "type": "string", "minLength": 1 },
-        "source_digest_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        "review_markdown_path": {"type": "string", "minLength": 1},
+        "source_digest_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "review_artifact_path": {"type": "string", "minLength": 1}
       }
     }
   }

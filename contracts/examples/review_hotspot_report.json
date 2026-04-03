@@ -1,0 +1,13 @@
+{
+  "artifact_type": "review_hotspot_report",
+  "schema_version": "1.0.0",
+  "report_id": "rhr-001",
+  "trace_id": "trace-review-batch-r",
+  "hotspots": [
+    {
+      "normalized_finding_key": "missing_fail_closed_mapping",
+      "occurrence_count": 3,
+      "highest_severity": "critical"
+    }
+  ]
+}

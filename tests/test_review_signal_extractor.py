@@ -40,3 +40,20 @@ def test_malformed_review_fails_closed(tmp_path: Path) -> None:
     path.write_text("# no frontmatter\n", encoding="utf-8")
     with pytest.raises(ReviewSignalExtractionError):
         extract_review_signal(path)
+
+
+def test_unknown_review_type_fails_closed(tmp_path: Path) -> None:
+    path = tmp_path / "bad-review-type.md"
+    path.write_text(
+        "---\n"
+        "module: runtime\n"
+        "review_type: unknown_type\n"
+        "review_date: 2026-04-03\n"
+        "reviewer: test\n"
+        "decision: PASS\n"
+        "status: final\n"
+        "---\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ReviewSignalExtractionError, match="review_type"):
+        extract_review_signal(path)

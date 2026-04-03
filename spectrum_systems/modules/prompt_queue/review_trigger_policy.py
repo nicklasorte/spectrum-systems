@@ -17,9 +17,66 @@ from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 from spectrum_systems.modules.prompt_queue.review_trigger_artifact_io import validate_review_trigger_artifact
 
 
+_SENSITIVE_SCOPE_MARKERS = (
+    "control_loop",
+    "evaluation_control",
+    "certification",
+    "pqx",
+    "replay",
+    "determinism",
+    "roadmap",
+    "contracts/schemas",
+)
+
+
 @dataclass(frozen=True)
 class ReviewTriggerPolicyConfig:
-    generator_version: str = "prompt_queue_review_trigger_policy.v1"
+    generator_version: str = "prompt_queue_review_trigger_policy.v2"
+
+
+def _contains_sensitive_scope(work_item: dict) -> bool:
+    scope_paths = [str(p).lower() for p in (work_item.get("scope_paths") or [])]
+    return any(marker in path for marker in _SENSITIVE_SCOPE_MARKERS for path in scope_paths)
+
+
+def _derive_review_type(work_item: dict, post_execution_decision_artifact: dict, loop_control_decision_artifact: dict | None) -> str:
+    prompt_id = str(work_item.get("prompt_id") or "").lower()
+    title = str(work_item.get("title") or "").lower()
+    post_reason = str(post_execution_decision_artifact.get("decision_reason_code") or "").lower()
+    loop_reason = str((loop_control_decision_artifact or {}).get("reason_code") or "").lower()
+
+    if _contains_sensitive_scope(work_item):
+        return "surgical"
+    if "hard_gate" in prompt_id or "hard gate" in title or "major_capability" in post_reason or "promotion" in title:
+        return "hard_gate"
+    if "strategic" in prompt_id or "program" in prompt_id or "roadmap" in title:
+        return "strategic"
+    if "fail" in post_reason or "blocked" in post_reason or "limit_exceeded" in loop_reason:
+        return "failure"
+    if work_item.get("parent_work_item_id") is None:
+        return "batch_architecture"
+    return "failure"
+
+
+def _build_review_request(*, work_item: dict, post_execution_decision_artifact: dict, generated_at: str) -> dict:
+    review_type = _derive_review_type(work_item, post_execution_decision_artifact, None)
+    return {
+        "review_id": f"rr-{work_item.get('work_item_id', 'unknown')}-{generated_at}",
+        "review_type": review_type,
+        "scope_refs": sorted(dict.fromkeys(work_item.get("scope_paths") or [])),
+        "triggering_event": str(post_execution_decision_artifact.get("decision_reason_code") or "review_required"),
+        "required": True,
+        "blocking": True,
+        "related_batch_id": str(work_item.get("parent_work_item_id") or work_item.get("work_item_id") or ""),
+        "slice_id": str(work_item.get("work_item_id") or ""),
+        "program_id": str(work_item.get("prompt_id") or ""),
+        "created_at": generated_at,
+        "trace_id": f"trace::{work_item.get('work_item_id', 'unknown')}",
+        "source_refs": [
+            str(work_item.get("post_execution_decision_artifact_path") or ""),
+            str(work_item.get("execution_result_artifact_path") or ""),
+        ],
+    }
 
 
 def evaluate_review_trigger_policy(
@@ -46,6 +103,7 @@ def evaluate_review_trigger_policy(
         blocking_conditions.append("work_item failed schema validation")
         return _build_artifact(
             work_item=work_item,
+            post_execution_decision_artifact=post_execution_decision_artifact,
             post_execution_decision_artifact_path=post_execution_decision_artifact_path,
             loop_control_decision_artifact_path=loop_control_decision_artifact_path,
             execution_result_artifact_path=execution_result_artifact_path,
@@ -64,6 +122,7 @@ def evaluate_review_trigger_policy(
         blocking_conditions.append("post-execution decision artifact failed schema validation")
         return _build_artifact(
             work_item=work_item,
+            post_execution_decision_artifact=post_execution_decision_artifact,
             post_execution_decision_artifact_path=post_execution_decision_artifact_path,
             loop_control_decision_artifact_path=loop_control_decision_artifact_path,
             execution_result_artifact_path=execution_result_artifact_path,
@@ -83,6 +142,7 @@ def evaluate_review_trigger_policy(
             blocking_conditions.append("loop-control decision artifact failed schema validation")
             return _build_artifact(
                 work_item=work_item,
+                post_execution_decision_artifact=post_execution_decision_artifact,
                 post_execution_decision_artifact_path=post_execution_decision_artifact_path,
                 loop_control_decision_artifact_path=loop_control_decision_artifact_path,
                 execution_result_artifact_path=execution_result_artifact_path,
@@ -122,6 +182,7 @@ def evaluate_review_trigger_policy(
     if blocking_conditions:
         return _build_artifact(
             work_item=work_item,
+            post_execution_decision_artifact=post_execution_decision_artifact,
             post_execution_decision_artifact_path=post_execution_decision_artifact_path,
             loop_control_decision_artifact_path=loop_control_decision_artifact_path,
             execution_result_artifact_path=execution_result_artifact_path,
@@ -155,6 +216,7 @@ def evaluate_review_trigger_policy(
 
     return _build_artifact(
         work_item=work_item,
+        post_execution_decision_artifact=post_execution_decision_artifact,
         post_execution_decision_artifact_path=post_execution_decision_artifact_path,
         loop_control_decision_artifact_path=loop_control_decision_artifact_path,
         execution_result_artifact_path=execution_result_artifact_path,
@@ -171,6 +233,7 @@ def evaluate_review_trigger_policy(
 def _build_artifact(
     *,
     work_item: dict,
+    post_execution_decision_artifact: dict,
     post_execution_decision_artifact_path: str,
     loop_control_decision_artifact_path: str | None,
     execution_result_artifact_path: str,
@@ -183,6 +246,11 @@ def _build_artifact(
     clock,
 ) -> dict:
     generated_at = iso_now(clock)
+    review_request = _build_review_request(
+        work_item=work_item,
+        post_execution_decision_artifact=post_execution_decision_artifact,
+        generated_at=generated_at,
+    ) if trigger_status == "review_triggered" else None
     artifact = {
         "review_trigger_artifact_id": f"review-trigger-{work_item.get('work_item_id', 'unknown')}-{generated_at}",
         "work_item_id": work_item.get("work_item_id"),
@@ -198,6 +266,7 @@ def _build_artifact(
         "source_queue_state_path": source_queue_state_path,
         "warnings": warnings,
         "blocking_conditions": blocking_conditions,
+        "review_request": review_request,
     }
     validate_review_trigger_artifact(artifact)
     return artifact

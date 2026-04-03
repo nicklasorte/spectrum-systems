@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
 from typing import Any, Dict, Iterable, List
 
@@ -55,7 +56,7 @@ def canonicalize_review_signal(review_signal: Dict[str, Any]) -> Dict[str, Any]:
     critical_findings = sorted({str(item).strip() for item in review_signal.get("critical_findings") or [] if str(item).strip()})
     normalized = {
         "artifact_type": "review_control_signal",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "signal_id": str(review_signal.get("signal_id") or ""),
         "review_id": str(review_signal.get("review_id") or ""),
         "review_type": str(review_signal.get("review_type") or ""),
@@ -66,6 +67,7 @@ def canonicalize_review_signal(review_signal: Dict[str, Any]) -> Dict[str, Any]:
         "trace_linkage": {
             "review_markdown_path": str(review_signal["trace_linkage"]["review_markdown_path"]),
             "source_digest_sha256": str(review_signal["trace_linkage"]["source_digest_sha256"]),
+            "review_artifact_path": str(review_signal["trace_linkage"]["review_artifact_path"]),
         },
     }
     _validate(normalized, "review_control_signal")
@@ -116,6 +118,7 @@ def build_eval_result_from_review_signal(review_signal: Dict[str, Any]) -> Dict[
         "provenance_refs": [
             f"review_control_signal:{normalized['signal_id']}",
             f"review:{normalized['review_id']}",
+            f"review_type:{normalized['review_type']}",
             f"review_source_digest:{normalized['trace_linkage']['source_digest_sha256']}",
             f"review_signal_digest:{hashlib.sha256(_canonical_payload(normalized).encode('utf-8')).hexdigest()}",
             f"review_finding_count:{finding_count}",
@@ -123,6 +126,13 @@ def build_eval_result_from_review_signal(review_signal: Dict[str, Any]) -> Dict[
     }
     _validate(eval_result, "eval_result")
     return eval_result
+
+
+def _parse_ref(provenance_refs: list[str], prefix: str) -> str:
+    for ref in provenance_refs:
+        if ref.startswith(prefix):
+            return ref.split(":", 1)[1]
+    return ""
 
 
 def summarize_review_eval_results(results: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
@@ -172,9 +182,83 @@ def summarize_review_eval_results(results: Iterable[Dict[str, Any]]) -> Dict[str
     return summary
 
 
+def build_review_failure_summary(results: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+    materialized = [dict(item) for item in results]
+    if not materialized:
+        raise ReviewEvalBridgeError("results must not be empty")
+    for item in materialized:
+        _validate(item, "eval_result")
+    trace_id = str(materialized[0]["trace_id"])
+    if any(str(item["trace_id"]) != trace_id for item in materialized):
+        raise ReviewEvalBridgeError("review eval results must share trace_id")
+
+    module_counts: dict[str, int] = {}
+    critical_count = 0
+    failed = 0
+    for item in materialized:
+        if item["result_status"] == "fail":
+            failed += 1
+        count_text = _parse_ref(item.get("provenance_refs") or [], "review_finding_count:")
+        if count_text.isdigit():
+            critical_count += int(count_text)
+        module = _parse_ref(item.get("provenance_refs") or [], "review_type:") or "unknown"
+        if item["result_status"] == "fail":
+            module_counts[module] = module_counts.get(module, 0) + 1
+
+    artifact = {
+        "artifact_type": "review_failure_summary",
+        "schema_version": "1.0.0",
+        "summary_id": deterministic_id(prefix="rfs", namespace="review_failure_summary", payload=materialized),
+        "trace_id": trace_id,
+        "total_reviews": len(materialized),
+        "failed_reviews": failed,
+        "fail_rate": failed / len(materialized),
+        "critical_finding_count": critical_count,
+        "module_fail_counts": [
+            {"module": module, "failed_reviews": module_counts[module]} for module in sorted(module_counts)
+        ],
+    }
+    _validate(artifact, "review_failure_summary")
+    return artifact
+
+
+def _normalize_finding_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+
+
+def build_review_hotspot_report(review_signals: Iterable[Dict[str, Any]], *, trace_id: str) -> Dict[str, Any]:
+    counts: dict[str, int] = {}
+    for signal in review_signals:
+        normalized = canonicalize_review_signal(signal)
+        for finding in normalized["critical_findings"]:
+            key = _normalize_finding_key(finding)
+            if not key:
+                continue
+            counts[key] = counts.get(key, 0) + 1
+    hotspots = [
+        {
+            "normalized_finding_key": key,
+            "occurrence_count": counts[key],
+            "highest_severity": "critical" if counts[key] >= 3 else "high" if counts[key] == 2 else "medium",
+        }
+        for key in sorted(counts)
+    ]
+    artifact = {
+        "artifact_type": "review_hotspot_report",
+        "schema_version": "1.0.0",
+        "report_id": deterministic_id(prefix="rhr", namespace="review_hotspot_report", payload=hotspots),
+        "trace_id": trace_id,
+        "hotspots": hotspots,
+    }
+    _validate(artifact, "review_hotspot_report")
+    return artifact
+
+
 __all__ = [
     "ReviewEvalBridgeError",
     "build_eval_result_from_review_signal",
+    "build_review_failure_summary",
+    "build_review_hotspot_report",
     "canonicalize_review_signal",
     "summarize_review_eval_results",
 ]

@@ -1,0 +1,14 @@
+{
+  "artifact_type": "review_failure_summary",
+  "schema_version": "1.0.0",
+  "summary_id": "rfs-001",
+  "trace_id": "trace-review-batch-r",
+  "total_reviews": 4,
+  "failed_reviews": 2,
+  "fail_rate": 0.5,
+  "critical_finding_count": 3,
+  "module_fail_counts": [
+    {"module": "runtime", "failed_reviews": 1},
+    {"module": "prompt_queue", "failed_reviews": 1}
+  ]
+}

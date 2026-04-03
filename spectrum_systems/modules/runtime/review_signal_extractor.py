@@ -27,8 +27,26 @@ _REQUIRED_FRONTMATTER = (
     "decision",
     "status",
 )
+_ALLOWED_REVIEW_TYPES = {"surgical", "failure", "batch_architecture", "hard_gate", "strategic"}
 _SECTION_SPLIT = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 _METADATA_TABLE_ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$")
+
+
+def _normalize_review_type(value: str) -> str:
+    raw = value.strip().lower()
+    if raw in _ALLOWED_REVIEW_TYPES:
+        return raw
+    if any(token in raw for token in ("control", "certification", "replay", "pqx")):
+        return "surgical"
+    if "hard" in raw and "gate" in raw:
+        return "hard_gate"
+    if "architect" in raw or "batch" in raw or "checkpoint" in raw:
+        return "batch_architecture"
+    if "strateg" in raw or "program" in raw:
+        return "strategic"
+    if "fail" in raw or "incident" in raw:
+        return "failure"
+    raise ReviewSignalExtractionError("review_type must be one of surgical|failure|batch_architecture|hard_gate|strategic")
 
 
 def _parse_frontmatter(markdown_text: str) -> dict[str, str]:
@@ -51,6 +69,7 @@ def _parse_frontmatter(markdown_text: str) -> dict[str, str]:
     for field in _REQUIRED_FRONTMATTER:
         if not values.get(field):
             raise ReviewSignalExtractionError(f"missing required frontmatter field: {field}")
+    values["review_type"] = _normalize_review_type(values.get("review_type", ""))
     return values
 
 
@@ -69,7 +88,7 @@ def _parse_metadata_table(markdown_text: str) -> dict[str, str]:
         raise ReviewSignalExtractionError("missing YAML frontmatter block")
     mapped = {
         "module": "spectrum-systems",
-        "review_type": values.get("review type", "repo_review"),
+        "review_type": values.get("review type", ""),
         "review_date": values.get("review date", ""),
         "reviewer": values.get("reviewer", ""),
         "decision": values.get("verdict", values.get("decision", "")).upper(),
@@ -79,6 +98,7 @@ def _parse_metadata_table(markdown_text: str) -> dict[str, str]:
     for field in _REQUIRED_FRONTMATTER:
         if not mapped.get(field):
             raise ReviewSignalExtractionError(f"missing required review metadata field: {field}")
+    mapped["review_type"] = _normalize_review_type(mapped["review_type"])
     return mapped
 
 
@@ -143,7 +163,9 @@ def extract_review_signal(review_markdown_path: str | Path) -> dict[str, Any]:
     markdown_text = review_path.read_text(encoding="utf-8")
     try:
         frontmatter = _parse_frontmatter(markdown_text)
-    except ReviewSignalExtractionError:
+    except ReviewSignalExtractionError as exc:
+        if "missing YAML frontmatter block" not in str(exc):
+            raise
         frontmatter = _parse_metadata_table(markdown_text)
     sections = _sections(markdown_text)
     critical_findings = _extract_critical_findings(sections.get("critical findings", ""))
@@ -168,7 +190,7 @@ def extract_review_signal(review_markdown_path: str | Path) -> dict[str, Any]:
     artifact_id = deterministic_id(prefix="rcs", namespace="review_control_signal", payload=payload_seed)
     signal = {
         "artifact_type": "review_control_signal",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "signal_id": artifact_id,
         "review_id": review_id,
         "review_type": frontmatter["review_type"],
@@ -179,6 +201,7 @@ def extract_review_signal(review_markdown_path: str | Path) -> dict[str, Any]:
         "trace_linkage": {
             "review_markdown_path": review_path.as_posix(),
             "source_digest_sha256": payload_digest,
+            "review_artifact_path": review_path.as_posix().replace(".md", ".json"),
         },
     }
     validator = Draft202012Validator(load_schema("review_control_signal"))
