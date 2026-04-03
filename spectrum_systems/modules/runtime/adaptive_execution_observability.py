@@ -381,8 +381,253 @@ def build_adaptive_execution_trend_report(
     return report
 
 
+def _dominant_distribution_entries(distribution: dict[str, Any], *, limit: int = 3) -> list[dict[str, Any]]:
+    normalized: list[tuple[str, float]] = []
+    for key, value in distribution.items():
+        if isinstance(key, str):
+            normalized.append((key, _to_float(value)))
+    ranked = sorted(normalized, key=lambda item: (-item[1], item[0]))
+    return [{"name": item[0], "share": _round4(item[1])} for item in ranked[:limit]]
+
+
+def build_adaptive_execution_policy_review(
+    run_results: list[dict[str, Any]],
+    *,
+    observability: dict[str, Any],
+    trend_report: dict[str, Any],
+    trace_id: str,
+    created_at: str | None = None,
+) -> dict[str, Any]:
+    """Build deterministic evidence-backed policy review and prior-vs-tuned comparison."""
+    if not isinstance(trace_id, str) or not trace_id.strip():
+        raise AdaptiveExecutionObservabilityError("trace_id is required")
+    _validate_schema(observability, "adaptive_execution_observability")
+    _validate_schema(trend_report, "adaptive_execution_trend_report")
+
+    sorted_runs = sorted(
+        [dict(item) for item in run_results if isinstance(item, dict)],
+        key=lambda run: str(run.get("run_id") or ""),
+    )
+    stop_distribution = dict(observability.get("stop_reason_distribution") or {})
+    continuation_distribution = dict(observability.get("continuation_decision_distribution") or {})
+    risk_distribution = dict(observability.get("risk_level_distribution") or {})
+    guardrail_checks = trend_report.get("guardrail_checks")
+    guardrails = guardrail_checks if isinstance(guardrail_checks, list) else []
+
+    dominant_stop_patterns = _dominant_distribution_entries(stop_distribution, limit=4)
+    dominant_failure_modes = [
+        entry
+        for entry in dominant_stop_patterns
+        if entry["name"]
+        in {
+            "risk_accumulation_threshold_exceeded",
+            "repeated_failure_pattern",
+            "diminishing_returns_detected",
+            "execution_blocked",
+            "replay_not_ready",
+            "unresolved_blocker_persists",
+        }
+    ]
+    if not dominant_failure_modes:
+        dominant_failure_modes = [{"name": "none_dominant", "share": 0.0}]
+
+    early_stop_rate = _to_float(observability.get("early_stop_rate"))
+    useful_per_run = _to_float(observability.get("average_useful_batches_per_run"))
+    resolved_cap = _to_float(observability.get("average_resolved_max_batches_per_run"))
+    cap_gap = _round4(max(0.0, resolved_cap - useful_per_run))
+    continue_rate = _to_float(continuation_distribution.get("continue"))
+    high_risk_share = _to_float(risk_distribution.get("high"))
+    low_risk_share = _to_float(risk_distribution.get("low"))
+    replay_integrity_rate = _to_float(observability.get("replay_integrity_rate"))
+
+    triggered_guardrails = sorted(
+        str(check.get("check_id"))
+        for check in guardrails
+        if isinstance(check, dict) and str(check.get("status")) == "triggered"
+    )
+
+    recommended_policy_changes: list[dict[str, Any]] = []
+    tuned_policy = {
+        "risk_accumulation_stop_threshold": 6,
+        "consecutive_non_progress_stop_threshold": 2,
+        "repeated_failure_reason_stop_threshold": 2,
+        "unresolved_blocker_stop_threshold": 2,
+        "replay_integrity_stop_threshold": 0.95,
+        "enable_low_risk_bonus_batch": False,
+    }
+
+    if early_stop_rate >= 0.5 or "risk_triggered_stops_rising" in triggered_guardrails:
+        tuned_policy["risk_accumulation_stop_threshold"] = 5
+        recommended_policy_changes.append(
+            {
+                "change_id": "tighten_risk_accumulation_cap",
+                "rule_target": "risk_accumulation_stop_threshold",
+                "from_value": 6,
+                "to_value": 5,
+                "reason": "High early-stop/risk-triggered stop share indicates accumulating risk should halt continuation earlier.",
+            }
+        )
+
+    if cap_gap >= 1.0 or "resolved_cap_without_useful_work" in triggered_guardrails:
+        tuned_policy["consecutive_non_progress_stop_threshold"] = 1
+        recommended_policy_changes.append(
+            {
+                "change_id": "stop_earlier_on_non_progress",
+                "rule_target": "consecutive_non_progress_stop_threshold",
+                "from_value": 2,
+                "to_value": 1,
+                "reason": "Large useful-work vs cap gap indicates unproductive continuation; stop after one non-progress event.",
+            }
+        )
+
+    if replay_integrity_rate < 1.0 or "replay_integrity_degradation" in triggered_guardrails:
+        tuned_policy["repeated_failure_reason_stop_threshold"] = 1
+        recommended_policy_changes.append(
+            {
+                "change_id": "tighten_after_replay_drift",
+                "rule_target": "repeated_failure_reason_stop_threshold",
+                "from_value": 2,
+                "to_value": 1,
+                "reason": "Replay integrity drift requires stricter repeated-failure continuation limits to preserve determinism.",
+            }
+        )
+
+    if useful_per_run >= 1.6 and low_risk_share >= 0.4 and high_risk_share <= 0.25 and early_stop_rate <= 0.4:
+        tuned_policy["enable_low_risk_bonus_batch"] = True
+        recommended_policy_changes.append(
+            {
+                "change_id": "allow_one_bonus_batch_when_low_risk",
+                "rule_target": "enable_low_risk_bonus_batch",
+                "from_value": False,
+                "to_value": True,
+                "reason": "Useful throughput is strong and risk remains low, so one bounded extra attempt is justified.",
+            }
+        )
+
+    rejected_policy_changes = [
+        {
+            "change_id": "raise_global_max_cap_to_6",
+            "status": "rejected",
+            "reason": "conflicts_with_fail_closed_posture",
+        },
+        {
+            "change_id": "probabilistic_continuation_exploration",
+            "status": "rejected",
+            "reason": "non_deterministic_not_allowed",
+        },
+        {
+            "change_id": "disable_risk_stop_reasons",
+            "status": "rejected",
+            "reason": "weakens_authority_boundaries",
+        },
+    ]
+
+    baseline_unproductive = _round4(_safe_rate(max(0.0, resolved_cap - useful_per_run), max(resolved_cap, 1.0)))
+    tuned_unproductive = baseline_unproductive
+    tuned_useful = useful_per_run
+    tuned_risk_exposure = _round4(high_risk_share + (continue_rate * 0.5))
+    if tuned_policy["consecutive_non_progress_stop_threshold"] == 1:
+        tuned_unproductive = _round4(max(0.0, tuned_unproductive - 0.15))
+        tuned_risk_exposure = _round4(max(0.0, tuned_risk_exposure - 0.06))
+    if tuned_policy["risk_accumulation_stop_threshold"] == 5:
+        tuned_risk_exposure = _round4(max(0.0, tuned_risk_exposure - 0.08))
+    if tuned_policy["enable_low_risk_bonus_batch"]:
+        tuned_useful = _round4(tuned_useful + 0.2)
+        tuned_unproductive = _round4(max(0.0, tuned_unproductive - 0.03))
+
+    operator_tuning_signals = [
+        (
+            "policy_tuned_due_to_high_early_stop_rate"
+            if early_stop_rate >= 0.5
+            else "policy_hold_or_partial_tune_based_on_early_stop_rate"
+        ),
+        (
+            "cap_held_conservative_due_to_risk_triggers"
+            if "risk_triggered_stops_rising" in triggered_guardrails
+            else "cap_expansion_not_auto_enabled_without_low_risk_evidence"
+        ),
+        (
+            "continuation_stricter_due_to_useful_work_gap"
+            if cap_gap >= 1.0
+            else "continuation_strictness_unchanged_for_useful_work_gap"
+        ),
+    ]
+
+    created_timestamp = created_at or _resolve_created_at(sorted_runs, None)
+    seed = {
+        "trace_id": trace_id.strip(),
+        "created_at": created_timestamp,
+        "observability_id": observability["observability_id"],
+        "trend_report_id": trend_report["trend_report_id"],
+        "recommended_count": len(recommended_policy_changes),
+    }
+    review = {
+        "review_id": f"AEPR-{_hash(seed)[:12].upper()}",
+        "schema_version": "1.0.0",
+        "created_at": created_timestamp,
+        "trace_id": trace_id.strip(),
+        "policy_inputs_reviewed": {
+            "runs_observed": int(observability.get("runs_observed") or 0),
+            "observability_ref": f"adaptive_execution_observability:{observability['observability_id']}",
+            "trend_report_ref": f"adaptive_execution_trend_report:{trend_report['trend_report_id']}",
+            "latest_run_ref": f"roadmap_multi_batch_run_result:{str(sorted_runs[-1].get('run_id') if sorted_runs else 'none')}",
+        },
+        "signals_used": {
+            "early_stop_rate": early_stop_rate,
+            "average_useful_batches_per_run": useful_per_run,
+            "average_resolved_max_batches_per_run": resolved_cap,
+            "useful_work_vs_cap_gap": cap_gap,
+            "risk_level_distribution": risk_distribution,
+            "continuation_decision_distribution": continuation_distribution,
+            "dominant_guardrail_triggers": triggered_guardrails,
+        },
+        "dominant_failure_modes": dominant_failure_modes,
+        "dominant_stop_patterns": dominant_stop_patterns,
+        "recommended_policy_changes": recommended_policy_changes,
+        "rejected_policy_changes": rejected_policy_changes,
+        "policy_comparison": {
+            "prior_policy": {
+                "risk_accumulation_stop_threshold": 6,
+                "consecutive_non_progress_stop_threshold": 2,
+                "repeated_failure_reason_stop_threshold": 2,
+                "enable_low_risk_bonus_batch": False,
+                "estimated_unproductive_continuation_rate": baseline_unproductive,
+                "estimated_useful_batches_per_run": useful_per_run,
+                "estimated_risk_exposure_index": _round4(high_risk_share + (continue_rate * 0.5)),
+            },
+            "tuned_policy": {
+                **tuned_policy,
+                "estimated_unproductive_continuation_rate": tuned_unproductive,
+                "estimated_useful_batches_per_run": tuned_useful,
+                "estimated_risk_exposure_index": tuned_risk_exposure,
+            },
+            "determinism_preserved": True,
+            "fail_closed_preserved": True,
+        },
+        "expected_effect": {
+            "useful_work": "improve_or_hold",
+            "risk_posture": "equal_or_safer",
+            "continuation_behavior": "stricter_when_low_value_or_risk_rises",
+        },
+        "operator_tuning_signals": operator_tuning_signals,
+        "source_refs": sorted(
+            set(
+                list(observability.get("source_refs", []))
+                + list(trend_report.get("source_refs", []))
+                + [
+                    f"adaptive_execution_observability:{observability['observability_id']}",
+                    f"adaptive_execution_trend_report:{trend_report['trend_report_id']}",
+                ]
+            )
+        ),
+    }
+    _validate_schema(review, "adaptive_execution_policy_review")
+    return review
+
+
 __all__ = [
     "AdaptiveExecutionObservabilityError",
     "build_adaptive_execution_observability",
     "build_adaptive_execution_trend_report",
+    "build_adaptive_execution_policy_review",
 ]

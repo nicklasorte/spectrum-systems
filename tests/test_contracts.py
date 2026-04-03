@@ -258,6 +258,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("pqx_slice_continuation_record")
         validate_artifact(instance, "pqx_slice_continuation_record")
 
+    def test_adaptive_execution_policy_review_example_validates(self) -> None:
+        instance = load_example("adaptive_execution_policy_review")
+        validate_artifact(instance, "adaptive_execution_policy_review")
+
 
     def test_context_pipeline_contract_examples_validate(self) -> None:
         for name in ("context_bundle_v2", "build_report", "next_slice_handoff"):

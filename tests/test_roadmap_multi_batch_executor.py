@@ -280,3 +280,52 @@ def test_no_reprioritization_and_never_exceeds_max(tmp_path: Path) -> None:
     assert result["attempted_batch_ids"] == ["BATCH-I"]
     assert result["batches_executed_count"] == 1
     assert result["max_batches_per_run"] == 1
+
+
+def test_tuned_non_progress_threshold_stops_earlier(tmp_path: Path) -> None:
+    decision = should_continue_execution(
+        last_batch_result={"control_decision": "allow", "replay_integrity": "ready", "execution_status": "succeeded"},
+        control_decision="allow",
+        context_risk_signals={"risk_level": "medium"},
+        program_alignment={"safety_critical": True},
+        replay_integrity="ready",
+        continuation_state={
+            "consecutive_non_progress": 1,
+            "consecutive_non_progress_stop_threshold": 1,
+            "repeated_failure_reason_count": 0,
+            "repeated_failure_reason_stop_threshold": 2,
+            "unresolved_blocker_streak": 0,
+            "unresolved_blocker_stop_threshold": 2,
+            "risk_accumulation": 0,
+            "risk_accumulation_stop_threshold": 6,
+        },
+    )
+    assert decision == {"continue": False, "reason_code": "diminishing_returns_detected"}
+
+
+def test_low_risk_bonus_batch_applies_when_enabled(tmp_path: Path) -> None:
+    result = execute_bounded_roadmap_run(
+        _roadmap(),
+        _selection_signals(risk_level="low", program_phase="build"),
+        _authorization_signals(),
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        execution_policy={
+            "max_batches_per_run": {
+                "min_cap": 1,
+                "max_cap": 4,
+                "risk_caps": {"low": 2, "medium": 2, "high": 1},
+                "program_phase_caps": {"build": 2},
+                "enable_low_risk_bonus_batch": True,
+            }
+        },
+        evaluated_at="2026-04-03T20:00:00Z",
+        executed_at="2026-04-03T20:01:00Z",
+        validated_at="2026-04-03T20:02:00Z",
+        run_executed_at="2026-04-03T20:03:00Z",
+        pqx_execute_fn=_pqx_success,
+    )["run_result"]
+
+    assert result["attempted_batch_ids"] == ["BATCH-I", "BATCH-J"]
+    assert result["resolved_max_batches_per_run"] == 3
+    assert "low_risk_bonus_batch" in result["execution_efficiency_report"]["adaptive_factors"]["resolved_from"]

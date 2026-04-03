@@ -123,6 +123,10 @@ def _normalize_policy(execution_policy: dict[str, Any] | None) -> dict[str, Any]
             "recent_failure_penalty": int(adaptive_policy.get("recent_failure_penalty", 1)),
             "warning_cap": int(adaptive_policy.get("warning_cap", 2)),
             "risk_accumulation_stop_threshold": int(adaptive_policy.get("risk_accumulation_stop_threshold", 6)),
+            "consecutive_non_progress_stop_threshold": int(adaptive_policy.get("consecutive_non_progress_stop_threshold", 2)),
+            "repeated_failure_reason_stop_threshold": int(adaptive_policy.get("repeated_failure_reason_stop_threshold", 2)),
+            "unresolved_blocker_stop_threshold": int(adaptive_policy.get("unresolved_blocker_stop_threshold", 2)),
+            "enable_low_risk_bonus_batch": bool(adaptive_policy.get("enable_low_risk_bonus_batch", False)),
         }
     else:
         adaptive_policy = {
@@ -133,6 +137,10 @@ def _normalize_policy(execution_policy: dict[str, Any] | None) -> dict[str, Any]
             "recent_failure_penalty": 0,
             "warning_cap": static_cap,
             "risk_accumulation_stop_threshold": 6,
+            "consecutive_non_progress_stop_threshold": 2,
+            "repeated_failure_reason_stop_threshold": 2,
+            "unresolved_blocker_stop_threshold": 2,
+            "enable_low_risk_bonus_batch": False,
         }
 
     return {
@@ -205,12 +213,19 @@ def _resolve_max_batches_for_state(
         resolved = 1
         reasons.append("control_condition")
 
+    low_risk_bonus_enabled = bool(adaptive.get("enable_low_risk_bonus_batch", False))
+    useful_batches = int(continuation_state.get("useful_batches_so_far", 0))
+    if low_risk_bonus_enabled and risk_level == "low" and recent_failures == 0 and useful_batches >= 1:
+        resolved = min(adaptive["max_cap"], resolved + 1)
+        reasons.append("low_risk_bonus_batch")
+
     resolved = max(adaptive["min_cap"], min(adaptive["max_cap"], resolved))
     return resolved, {
         "mode": "adaptive",
         "risk_level": risk_level,
         "program_phase": phase,
         "recent_failures": recent_failures,
+        "low_risk_bonus_batch_enabled": low_risk_bonus_enabled,
         "resolved_from": reasons,
     }
 
@@ -233,13 +248,16 @@ def should_continue_execution(
     if replay_integrity != "ready":
         return {"continue": False, "reason_code": STOP_REASON_REPLAY_NOT_READY}
 
-    if int(continuation_state.get("consecutive_non_progress", 0)) >= 2:
+    non_progress_threshold = int(continuation_state.get("consecutive_non_progress_stop_threshold", 2))
+    if int(continuation_state.get("consecutive_non_progress", 0)) >= non_progress_threshold:
         return {"continue": False, "reason_code": STOP_REASON_DIMINISHING_RETURNS}
 
-    if int(continuation_state.get("repeated_failure_reason_count", 0)) >= 2:
+    repeated_failure_threshold = int(continuation_state.get("repeated_failure_reason_stop_threshold", 2))
+    if int(continuation_state.get("repeated_failure_reason_count", 0)) >= repeated_failure_threshold:
         return {"continue": False, "reason_code": STOP_REASON_REPEATED_FAILURE_PATTERN}
 
-    if int(continuation_state.get("unresolved_blocker_streak", 0)) >= 2:
+    unresolved_blocker_threshold = int(continuation_state.get("unresolved_blocker_stop_threshold", 2))
+    if int(continuation_state.get("unresolved_blocker_streak", 0)) >= unresolved_blocker_threshold:
         return {"continue": False, "reason_code": STOP_REASON_UNRESOLVED_BLOCKER_PERSISTS}
 
     risk_accumulation = int(continuation_state.get("risk_accumulation", 0))
@@ -320,6 +338,10 @@ def execute_bounded_roadmap_run(
         "unresolved_blocker_streak": 0,
         "risk_accumulation": 0,
         "risk_accumulation_stop_threshold": int(policy["adaptive_policy"]["risk_accumulation_stop_threshold"]),
+        "consecutive_non_progress_stop_threshold": int(policy["adaptive_policy"]["consecutive_non_progress_stop_threshold"]),
+        "repeated_failure_reason_stop_threshold": int(policy["adaptive_policy"]["repeated_failure_reason_stop_threshold"]),
+        "unresolved_blocker_stop_threshold": int(policy["adaptive_policy"]["unresolved_blocker_stop_threshold"]),
+        "useful_batches_so_far": 0,
     }
 
     current_roadmap = copy.deepcopy(roadmap_artifact)
@@ -440,6 +462,7 @@ def execute_bounded_roadmap_run(
             continuation_state["recent_failures"] = 0
             continuation_state["consecutive_non_progress"] = 0
             continuation_state["unresolved_blocker_streak"] = 0
+            continuation_state["useful_batches_so_far"] = int(continuation_state["useful_batches_so_far"]) + 1
         elif execution_status == "blocked":
             blocked_batch_id = selected_batch_id if isinstance(selected_batch_id, str) else None
             failure_reason_for_tracking = str(progress.get("stop_reason") or STOP_REASON_EXECUTION_BLOCKED)

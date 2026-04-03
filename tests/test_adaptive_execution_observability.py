@@ -5,6 +5,7 @@ import copy
 from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_observability,
+    build_adaptive_execution_policy_review,
     build_adaptive_execution_trend_report,
 )
 
@@ -98,3 +99,41 @@ def test_trend_report_contract_and_authority_boundary_intact() -> None:
     validate_artifact(report, "adaptive_execution_trend_report")
     assert observability["control_boundary_integrity_status"] in {"bounded", "watch", "violated"}
     assert report["observability_ref"].startswith("adaptive_execution_observability:AEO-")
+
+
+def test_policy_review_records_recommended_and_rejected_changes_deterministically() -> None:
+    runs = [
+        _run("RMB-CCCCCC000001", stop_reason="risk_accumulation_threshold_exceeded", early_stop=1, useful=0, attempted=2, risk_level="high"),
+        _run("RMB-CCCCCC000002", stop_reason="risk_accumulation_threshold_exceeded", early_stop=1, useful=0, attempted=2, risk_level="high"),
+        _run("RMB-CCCCCC000003", stop_reason="diminishing_returns_detected", early_stop=1, useful=0, attempted=2, risk_level="medium"),
+    ]
+    observability = build_adaptive_execution_observability(
+        runs,
+        trace_id="trace-batch-w-review",
+        created_at="2026-04-03T23:59:00Z",
+    )
+    report = build_adaptive_execution_trend_report(
+        runs,
+        observability=observability,
+        trace_id="trace-batch-w-review",
+        created_at="2026-04-03T23:59:00Z",
+    )
+    review = build_adaptive_execution_policy_review(
+        runs,
+        observability=observability,
+        trend_report=report,
+        trace_id="trace-batch-w-review",
+        created_at="2026-04-03T23:59:00Z",
+    )
+    validate_artifact(review, "adaptive_execution_policy_review")
+    recommended = {item["change_id"] for item in review["recommended_policy_changes"]}
+    assert "tighten_risk_accumulation_cap" in recommended
+    assert "stop_earlier_on_non_progress" in recommended
+    rejected = {item["change_id"] for item in review["rejected_policy_changes"]}
+    assert rejected == {
+        "raise_global_max_cap_to_6",
+        "probabilistic_continuation_exploration",
+        "disable_risk_stop_reasons",
+    }
+    assert review["policy_comparison"]["determinism_preserved"] is True
+    assert review["policy_comparison"]["fail_closed_preserved"] is True

@@ -1,0 +1,111 @@
+{
+  "review_id": "AEPR-916E3CC7FEA2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-03T23:59:00Z",
+  "trace_id": "trace-batch-w-policy-review",
+  "policy_inputs_reviewed": {
+    "runs_observed": 3,
+    "observability_ref": "adaptive_execution_observability:AEO-8F3AB7C8D912",
+    "trend_report_ref": "adaptive_execution_trend_report:AET-7B27B5FA21E2",
+    "latest_run_ref": "roadmap_multi_batch_run_result:RMB-A0D4ED2F1188"
+  },
+  "signals_used": {
+    "early_stop_rate": 0.3333,
+    "average_useful_batches_per_run": 1.6667,
+    "average_resolved_max_batches_per_run": 2.3333,
+    "useful_work_vs_cap_gap": 0.6666,
+    "risk_level_distribution": {
+      "high": 0.3333,
+      "low": 0.3333,
+      "medium": 0.3333
+    },
+    "continuation_decision_distribution": {
+      "continue": 0.75,
+      "stop": 0.25
+    },
+    "dominant_guardrail_triggers": []
+  },
+  "dominant_failure_modes": [
+    {
+      "name": "none_dominant",
+      "share": 0.0
+    }
+  ],
+  "dominant_stop_patterns": [
+    {
+      "name": "max_batches_reached",
+      "share": 0.6667
+    },
+    {
+      "name": "risk_accumulation_threshold_exceeded",
+      "share": 0.3333
+    }
+  ],
+  "recommended_policy_changes": [
+    {
+      "change_id": "allow_one_bonus_batch_when_low_risk",
+      "rule_target": "enable_low_risk_bonus_batch",
+      "from_value": false,
+      "to_value": true,
+      "reason": "Useful throughput is strong and risk remains low, so one bounded extra attempt is justified."
+    }
+  ],
+  "rejected_policy_changes": [
+    {
+      "change_id": "raise_global_max_cap_to_6",
+      "status": "rejected",
+      "reason": "conflicts_with_fail_closed_posture"
+    },
+    {
+      "change_id": "probabilistic_continuation_exploration",
+      "status": "rejected",
+      "reason": "non_deterministic_not_allowed"
+    },
+    {
+      "change_id": "disable_risk_stop_reasons",
+      "status": "rejected",
+      "reason": "weakens_authority_boundaries"
+    }
+  ],
+  "policy_comparison": {
+    "prior_policy": {
+      "risk_accumulation_stop_threshold": 6,
+      "consecutive_non_progress_stop_threshold": 2,
+      "repeated_failure_reason_stop_threshold": 2,
+      "enable_low_risk_bonus_batch": false,
+      "estimated_unproductive_continuation_rate": 0.2857,
+      "estimated_useful_batches_per_run": 1.6667,
+      "estimated_risk_exposure_index": 0.7083
+    },
+    "tuned_policy": {
+      "risk_accumulation_stop_threshold": 6,
+      "consecutive_non_progress_stop_threshold": 2,
+      "repeated_failure_reason_stop_threshold": 2,
+      "unresolved_blocker_stop_threshold": 2,
+      "replay_integrity_stop_threshold": 0.95,
+      "enable_low_risk_bonus_batch": true,
+      "estimated_unproductive_continuation_rate": 0.2557,
+      "estimated_useful_batches_per_run": 1.8667,
+      "estimated_risk_exposure_index": 0.7083
+    },
+    "determinism_preserved": true,
+    "fail_closed_preserved": true
+  },
+  "expected_effect": {
+    "useful_work": "improve_or_hold",
+    "risk_posture": "equal_or_safer",
+    "continuation_behavior": "stricter_when_low_value_or_risk_rises"
+  },
+  "operator_tuning_signals": [
+    "policy_hold_or_partial_tune_based_on_early_stop_rate",
+    "cap_expansion_not_auto_enabled_without_low_risk_evidence",
+    "continuation_strictness_unchanged_for_useful_work_gap"
+  ],
+  "source_refs": [
+    "adaptive_execution_observability:AEO-8F3AB7C8D912",
+    "adaptive_execution_trend_report:AET-7B27B5FA21E2",
+    "roadmap_multi_batch_run_result:RMB-4A5A83BE3001",
+    "roadmap_multi_batch_run_result:RMB-9BC904AD7722",
+    "roadmap_multi_batch_run_result:RMB-A0D4ED2F1188"
+  ]
+}

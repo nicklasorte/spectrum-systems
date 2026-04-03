@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/adaptive_execution_policy_review.schema.json",
+  "title": "Adaptive Execution Policy Review",
+  "description": "Deterministic evidence-backed policy tuning review artifact derived from adaptive execution observability and guardrail trend outputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_id",
+    "schema_version",
+    "created_at",
+    "trace_id",
+    "policy_inputs_reviewed",
+    "signals_used",
+    "dominant_failure_modes",
+    "dominant_stop_patterns",
+    "recommended_policy_changes",
+    "rejected_policy_changes",
+    "policy_comparison",
+    "expected_effect",
+    "operator_tuning_signals",
+    "source_refs"
+  ],
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "pattern": "^AEPR-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "policy_inputs_reviewed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runs_observed",
+        "observability_ref",
+        "trend_report_ref",
+        "latest_run_ref"
+      ],
+      "properties": {
+        "runs_observed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observability_ref": {
+          "type": "string",
+          "pattern": "^adaptive_execution_observability:AEO-[A-F0-9]{12}$"
+        },
+        "trend_report_ref": {
+          "type": "string",
+          "pattern": "^adaptive_execution_trend_report:AET-[A-F0-9]{12}$"
+        },
+        "latest_run_ref": {
+          "type": "string",
+          "pattern": "^roadmap_multi_batch_run_result:(RMB-[A-F0-9]{12}|none)$"
+        }
+      }
+    },
+    "signals_used": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "early_stop_rate",
+        "average_useful_batches_per_run",
+        "average_resolved_max_batches_per_run",
+        "useful_work_vs_cap_gap",
+        "risk_level_distribution",
+        "continuation_decision_distribution",
+        "dominant_guardrail_triggers"
+      ],
+      "properties": {
+        "early_stop_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "average_useful_batches_per_run": {
+          "type": "number",
+          "minimum": 0
+        },
+        "average_resolved_max_batches_per_run": {
+          "type": "number",
+          "minimum": 0
+        },
+        "useful_work_vs_cap_gap": {
+          "type": "number",
+          "minimum": 0
+        },
+        "risk_level_distribution": {
+          "$ref": "#/$defs/distribution"
+        },
+        "continuation_decision_distribution": {
+          "$ref": "#/$defs/distribution"
+        },
+        "dominant_guardrail_triggers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "dominant_failure_modes": {
+      "$ref": "#/$defs/namedShares"
+    },
+    "dominant_stop_patterns": {
+      "$ref": "#/$defs/namedShares"
+    },
+    "recommended_policy_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "change_id",
+          "rule_target",
+          "from_value",
+          "to_value",
+          "reason"
+        ],
+        "properties": {
+          "change_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from_value": {},
+          "to_value": {},
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "rejected_policy_changes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "change_id",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "change_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "const": "rejected"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "policy_comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prior_policy",
+        "tuned_policy",
+        "determinism_preserved",
+        "fail_closed_preserved"
+      ],
+      "properties": {
+        "prior_policy": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tuned_policy": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "determinism_preserved": {
+          "type": "boolean"
+        },
+        "fail_closed_preserved": {
+          "type": "boolean"
+        }
+      }
+    },
+    "expected_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "useful_work",
+        "risk_posture",
+        "continuation_behavior"
+      ],
+      "properties": {
+        "useful_work": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk_posture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "continuation_behavior": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "operator_tuning_signals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "distribution": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "namedShares": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "share"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    }
+  }
+}
