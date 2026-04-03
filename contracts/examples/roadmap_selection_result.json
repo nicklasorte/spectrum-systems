@@ -7,5 +7,7 @@
   ],
   "blocking_conditions": [],
   "evaluated_at": "2026-04-03T13:00:00Z",
-  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "stop_reason": null,
+  "stop_reason_codes": []
 }

@@ -81,7 +81,7 @@ def test_positive_bounded_run_executes_two_and_stops_at_max(tmp_path: Path) -> N
     assert result["attempted_batch_ids"] == ["BATCH-I", "BATCH-J"]
     assert result["completed_batch_ids"] == ["BATCH-I", "BATCH-J"]
     assert result["batches_executed_count"] == 2
-    assert result["stop_reason"] == "MAX_BATCHES_REACHED"
+    assert result["stop_reason"] == "max_batches_reached"
 
 
 def test_hard_gate_stops_after_completed_batch(tmp_path: Path) -> None:
@@ -106,7 +106,7 @@ def test_hard_gate_stops_after_completed_batch(tmp_path: Path) -> None:
 
     assert result["attempted_batch_ids"] == ["BATCH-I"]
     assert result["completed_batch_ids"] == ["BATCH-I"]
-    assert result["stop_reason"] == "HARD_GATE_STOP"
+    assert result["stop_reason"] == "hard_gate_stop"
 
 
 def test_freeze_or_block_stops_without_third_attempt(tmp_path: Path, monkeypatch) -> None:
@@ -138,7 +138,7 @@ def test_freeze_or_block_stops_without_third_attempt(tmp_path: Path, monkeypatch
         pqx_execute_fn=_pqx_success,
     )["run_result"]
 
-    assert result["stop_reason"] == "CONTROL_FREEZE"
+    assert result["stop_reason"] == "authorization_freeze"
     assert result["attempted_batch_ids"] == ["BATCH-I", "BATCH-J"]
 
 
@@ -171,7 +171,7 @@ def test_execution_failure_stops_immediately(tmp_path: Path) -> None:
     )["run_result"]
 
     assert result["completed_batch_ids"] == ["BATCH-I"]
-    assert result["stop_reason"] == "PQX_EXECUTION_BLOCKED"
+    assert result["stop_reason"] == "execution_blocked"
 
 
 def test_missing_signal_later_batch_stops_before_execution(tmp_path: Path) -> None:
@@ -190,7 +190,7 @@ def test_missing_signal_later_batch_stops_before_execution(tmp_path: Path) -> No
     )["run_result"]
 
     assert result["completed_batch_ids"] == ["BATCH-I"]
-    assert result["stop_reason"] == "CONTROL_BLOCK"
+    assert result["stop_reason"] == "missing_required_signal"
 
 
 def test_determinism_same_inputs_identical_run_result(tmp_path: Path) -> None:

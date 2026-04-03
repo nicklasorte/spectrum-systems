@@ -113,6 +113,7 @@ def test_positive_path_executes_once_updates_completed_and_emits_artifact(tmp_pa
     assert result["pqx_called"] is True
     assert result["roadmap"]["batches"][8]["status"] == "completed"
     assert result["progress_update"]["execution_status"] == "succeeded"
+    assert result["progress_update"]["stop_reason"] is None
     assert result["progress_update"]["new_batch_status"] == "completed"
     assert result["progress_update"]["next_candidate_batch_id"] == "BATCH-J"
 
@@ -140,6 +141,7 @@ def test_blocked_authorization_does_not_call_pqx_or_mutate_roadmap(tmp_path: Pat
     assert result["pqx_called"] is False
     assert result["roadmap"] == before
     assert result["progress_update"]["execution_status"] == "not_executed"
+    assert result["progress_update"]["stop_reason"] == "authorization_block"
     assert result["progress_update"]["reason_codes"] == ["AUTHORIZATION_DENIED_EXECUTION"]
 
 
@@ -159,6 +161,7 @@ def test_execution_failure_blocks_selected_batch_only(tmp_path: Path) -> None:
     assert statuses["BATCH-I"] == "blocked"
     assert statuses["BATCH-J"] == "not_started"
     assert result["progress_update"]["execution_status"] == "blocked"
+    assert result["progress_update"]["stop_reason"] == "execution_blocked"
     assert "pqx gate blocked" in result["progress_update"]["blocking_conditions"]
 
 

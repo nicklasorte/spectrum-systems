@@ -1,6 +1,6 @@
 {
   "authorization_id": "REA-0A1B2C3D4E5F",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "roadmap_id": "RDX-CANVAS-2026-04-03",
   "selected_batch_id": "BATCH-I",
   "selected_batch_title": "Control Authorization for Roadmap-Selected Batch",
@@ -20,5 +20,7 @@
     "contracts/examples/roadmap_artifact.json",
     "contracts/examples/roadmap_selection_result.json",
     "contracts/examples/done_certification_record.json"
-  ]
+  ],
+  "stop_reason": null,
+  "stop_reason_codes": []
 }

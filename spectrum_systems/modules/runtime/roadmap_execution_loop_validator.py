@@ -15,6 +15,11 @@ from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.roadmap_authorizer import authorize_selected_batch
 from spectrum_systems.modules.runtime.roadmap_executor import execute_authorized_batch
 from spectrum_systems.modules.runtime.roadmap_selector import build_roadmap_selection_result
+from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
+    STOP_REASON_INVALID_PROGRESS_STATE,
+    STOP_REASON_LOOP_VALIDATION_FAILED,
+    STOP_REASON_REPLAY_NOT_READY,
+)
 
 
 class RoadmapExecutionLoopValidationError(ValueError):
@@ -256,6 +261,14 @@ def validate_single_batch_execution_loop(
     replay_ready = "REPLAY_CHAIN_INCOMPLETE" not in reason_codes
     determinism_status = "deterministic" if deterministic else "non_deterministic"
     loop_status = "passed" if stage_consistency == "consistent" and replay_ready and deterministic else "failed_closed"
+    stop_reason: str | None = None
+    if loop_status != "passed":
+        if not replay_ready:
+            stop_reason = STOP_REASON_REPLAY_NOT_READY
+        elif "PROGRESS_WITHOUT_EXECUTION" in reason_codes:
+            stop_reason = STOP_REASON_INVALID_PROGRESS_STATE
+        else:
+            stop_reason = STOP_REASON_LOOP_VALIDATION_FAILED
 
     selected_batch_status = _resolve_selected_batch_status(roadmap_after, selected_batch_id if isinstance(selected_batch_id, str) else None)
 
@@ -285,7 +298,7 @@ def validate_single_batch_execution_loop(
 
     validation_artifact = {
         "validation_id": _validation_id(validation_seed),
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "selected_batch_id": selected_batch_id if isinstance(selected_batch_id, str) else None,
         "authorization_id": authorization_result["authorization_id"],
@@ -297,6 +310,8 @@ def validate_single_batch_execution_loop(
         "stage_consistency": stage_consistency,
         "determinism_status": determinism_status,
         "replay_ready": replay_ready,
+        "stop_reason": stop_reason,
+        "stop_reason_codes": [stop_reason] if isinstance(stop_reason, str) else [],
         "reason_codes": sorted(reason_codes),
         "blocking_conditions": sorted(blocking_conditions),
         "validated_at": timestamp,

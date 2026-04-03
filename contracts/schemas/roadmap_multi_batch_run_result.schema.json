@@ -33,7 +33,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "roadmap_id": {
       "type": "string",
@@ -54,29 +54,35 @@
       }
     },
     "blocked_batch_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^BATCH-[A-Z]$"
     },
     "frozen_batch_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^BATCH-[A-Z]$"
     },
     "stop_reason": {
       "type": "string",
       "enum": [
-        "MAX_BATCHES_REACHED",
-        "CONTROL_FREEZE",
-        "CONTROL_BLOCK",
-        "AUTHORIZATION_INVALID",
-        "AUTHORIZATION_WARN_STOP",
-        "PQX_EXECUTION_FAILURE",
-        "PQX_EXECUTION_BLOCKED",
-        "REPLAY_NOT_READY",
-        "LOOP_VALIDATION_FAILURE",
-        "INVALID_ROADMAP_STATE",
-        "INVALID_PROGRESS_STATE",
-        "CONTRACT_PRECONDITION_FAILURE",
-        "HARD_GATE_STOP"
+        "max_batches_reached",
+        "hard_gate_stop",
+        "authorization_block",
+        "authorization_freeze",
+        "missing_required_signal",
+        "execution_blocked",
+        "execution_failed",
+        "loop_validation_failed",
+        "replay_not_ready",
+        "invalid_roadmap_state",
+        "invalid_progress_state",
+        "contract_precondition_failed",
+        "no_eligible_batch"
       ]
     },
     "stop_reason_codes": {
@@ -84,7 +90,21 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "minLength": 1
+        "enum": [
+          "max_batches_reached",
+          "hard_gate_stop",
+          "authorization_block",
+          "authorization_freeze",
+          "missing_required_signal",
+          "execution_blocked",
+          "execution_failed",
+          "loop_validation_failed",
+          "replay_not_ready",
+          "invalid_roadmap_state",
+          "invalid_progress_state",
+          "contract_precondition_failed",
+          "no_eligible_batch"
+        ]
       },
       "uniqueItems": true
     },

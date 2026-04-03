@@ -52,6 +52,8 @@ def test_correct_next_batch_selected_and_ready_true() -> None:
     result = build_roadmap_selection_result(roadmap, signals, evaluated_at="2026-04-03T13:00:00Z")
     assert result["selected_batch_id"] == "BATCH-I"
     assert result["ready_to_run"] is True
+    assert result["stop_reason"] is None
+    assert result["stop_reason_codes"] == []
     assert result["reason_codes"] == ["READY_TO_RUN"]
     assert result["blocking_conditions"] == []
 
@@ -63,6 +65,7 @@ def test_missing_signal_blocks_readiness() -> None:
     assert select_next_batch(roadmap, signals) is None
     result = build_roadmap_selection_result(roadmap, signals, evaluated_at="2026-04-03T13:00:00Z")
     assert result["ready_to_run"] is False
+    assert result["stop_reason"] == "missing_required_signal"
     assert "REQUIRED_SIGNAL_MISSING" in result["reason_codes"]
     assert any("missing required signals" in row for row in result["blocking_conditions"])
 
@@ -79,6 +82,7 @@ def test_dependency_incomplete_not_ready() -> None:
 
     result = build_roadmap_selection_result(roadmap, signals, evaluated_at="2026-04-03T13:00:00Z")
     assert result["ready_to_run"] is False
+    assert result["stop_reason"] == "no_eligible_batch"
     assert result["reason_codes"] == ["NO_ELIGIBLE_BATCH"]
 
 
@@ -91,6 +95,7 @@ def test_no_eligible_batch_returns_explicit_state() -> None:
     result = build_roadmap_selection_result(roadmap, _signals(), evaluated_at="2026-04-03T13:00:00Z")
     assert result["selected_batch_id"] is None
     assert result["ready_to_run"] is False
+    assert result["stop_reason"] == "no_eligible_batch"
     assert result["reason_codes"] == ["NO_ELIGIBLE_BATCH"]
 
 

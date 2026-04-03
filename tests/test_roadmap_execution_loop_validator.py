@@ -93,6 +93,7 @@ def test_positive_end_to_end_loop_passes_and_emits_progress(tmp_path: Path) -> N
     assert loop["execution_occurred"] is True
     assert loop["selected_batch_id"] == "BATCH-I"
     assert loop["selected_batch_status"] == "completed"
+    assert loop["stop_reason"] is None
     assert loop["reason_codes"] == ["LOOP_VALIDATION_PASSED"]
     assert result["progress_update"]["execution_status"] == "succeeded"
 
@@ -113,6 +114,7 @@ def test_authorization_denied_path_has_no_execution_or_progress(tmp_path: Path) 
     assert loop["execution_occurred"] is False
     assert loop["control_decision"] == "block"
     assert loop["progress_update_id"] is None
+    assert loop["stop_reason"] is None
     assert loop["reason_codes"] == ["LOOP_VALIDATION_DENIED_PATH"]
     assert result["progress_update"] is None
 
@@ -134,6 +136,7 @@ def test_blocked_execution_path_is_valid_governed_outcome(tmp_path: Path) -> Non
     assert loop["loop_status"] == "passed"
     assert loop["execution_occurred"] is True
     assert loop["selected_batch_status"] == "blocked"
+    assert loop["stop_reason"] is None
     assert result["progress_update"]["new_batch_status"] == "blocked"
 
 
@@ -160,6 +163,7 @@ def test_stage_mismatch_fails_closed(tmp_path: Path, monkeypatch) -> None:
     )
     loop = result["loop_validation"]
     assert loop["loop_status"] == "failed_closed"
+    assert loop["stop_reason"] == "loop_validation_failed"
     assert "SELECTION_AUTHORIZATION_MISMATCH" in loop["reason_codes"]
 
 
@@ -179,6 +183,7 @@ def test_replay_chain_missing_required_artifact_fails_closed(tmp_path: Path) -> 
     loop = result["loop_validation"]
     assert loop["replay_ready"] is False
     assert loop["loop_status"] == "failed_closed"
+    assert loop["stop_reason"] == "replay_not_ready"
     assert "REPLAY_CHAIN_INCOMPLETE" in loop["reason_codes"]
 
 

@@ -1,6 +1,6 @@
 {
   "validation_id": "RLV-1234567890AB",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "roadmap_id": "RDX-CANVAS-2026-04-03",
   "selected_batch_id": "BATCH-I",
   "authorization_id": "REA-0A1B2C3D4E5F",
@@ -25,5 +25,7 @@
     "authorization_result": "contracts/examples/roadmap_execution_authorization.json",
     "pqx_result": "runs/pqx/queue-batch-i/pqx_sequence_run.json",
     "progress_update": "contracts/examples/roadmap_progress_update.json"
-  }
+  },
+  "stop_reason": null,
+  "stop_reason_codes": []
 }

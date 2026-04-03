@@ -16,6 +16,20 @@ from spectrum_systems.modules.runtime.roadmap_execution_loop_validator import (
     RoadmapExecutionLoopValidationError,
     validate_single_batch_execution_loop,
 )
+from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
+    STOP_REASON_AUTHORIZATION_BLOCK,
+    STOP_REASON_AUTHORIZATION_FREEZE,
+    STOP_REASON_CONTRACT_PRECONDITION_FAILED,
+    STOP_REASON_EXECUTION_BLOCKED,
+    STOP_REASON_EXECUTION_FAILED,
+    STOP_REASON_HARD_GATE_STOP,
+    STOP_REASON_INVALID_PROGRESS_STATE,
+    STOP_REASON_INVALID_ROADMAP_STATE,
+    STOP_REASON_LOOP_VALIDATION_FAILED,
+    STOP_REASON_MAX_BATCHES_REACHED,
+    STOP_REASON_NO_ELIGIBLE_BATCH,
+    STOP_REASON_REPLAY_NOT_READY,
+)
 
 
 class RoadmapMultiBatchExecutionError(ValueError):
@@ -124,8 +138,8 @@ def execute_bounded_roadmap_run(
 
     blocked_batch_id: str | None = None
     frozen_batch_id: str | None = None
-    stop_reason = "MAX_BATCHES_REACHED"
-    stop_reason_codes: list[str] = ["MAX_BATCHES_REACHED"]
+    stop_reason = STOP_REASON_MAX_BATCHES_REACHED
+    stop_reason_codes: list[str] = [STOP_REASON_MAX_BATCHES_REACHED]
 
     current_roadmap = copy.deepcopy(roadmap_artifact)
 
@@ -143,8 +157,8 @@ def execute_bounded_roadmap_run(
                 pqx_execute_fn=pqx_execute_fn,
             )
         except RoadmapExecutionLoopValidationError as exc:
-            stop_reason = "CONTRACT_PRECONDITION_FAILURE"
-            stop_reason_codes = ["CONTRACT_PRECONDITION_FAILURE", str(exc)]
+            stop_reason = STOP_REASON_CONTRACT_PRECONDITION_FAILED
+            stop_reason_codes = [STOP_REASON_CONTRACT_PRECONDITION_FAILED]
             break
 
         selection = loop_result["selection_result"]
@@ -165,74 +179,81 @@ def execute_bounded_roadmap_run(
         control_decision = authorization.get("control_decision")
         if control_decision == "freeze":
             frozen_batch_id = selected_batch_id if isinstance(selected_batch_id, str) else None
-            stop_reason = "CONTROL_FREEZE"
-            stop_reason_codes = ["CONTROL_FREEZE"]
+            stop_reason = STOP_REASON_AUTHORIZATION_FREEZE
+            stop_reason_codes = [STOP_REASON_AUTHORIZATION_FREEZE]
             break
         if control_decision == "block":
             blocked_batch_id = selected_batch_id if isinstance(selected_batch_id, str) else None
-            stop_reason = "CONTROL_BLOCK"
-            stop_reason_codes = ["CONTROL_BLOCK"]
+            stop_reason = str(authorization.get("stop_reason") or STOP_REASON_AUTHORIZATION_BLOCK)
+            stop_reason_codes = [stop_reason]
             break
         if control_decision == "warn" and not policy["allow_warn_execution"]:
-            stop_reason = "AUTHORIZATION_INVALID"
-            stop_reason_codes = ["WARN_DISALLOWED_BY_POLICY"]
+            stop_reason = STOP_REASON_AUTHORIZATION_BLOCK
+            stop_reason_codes = [STOP_REASON_AUTHORIZATION_BLOCK]
             break
         if control_decision == "warn" and policy["stop_on_warn"]:
-            stop_reason = "AUTHORIZATION_WARN_STOP"
-            stop_reason_codes = ["STOP_ON_WARN_POLICY"]
+            stop_reason = STOP_REASON_AUTHORIZATION_BLOCK
+            stop_reason_codes = [STOP_REASON_AUTHORIZATION_BLOCK]
             break
 
         if loop_validation.get("loop_status") != "passed":
-            stop_reason = "LOOP_VALIDATION_FAILURE"
-            stop_reason_codes = sorted(set(["LOOP_VALIDATION_FAILURE"] + list(loop_validation.get("reason_codes", []))))
+            stop_reason = str(loop_validation.get("stop_reason") or STOP_REASON_LOOP_VALIDATION_FAILED)
+            stop_reason_codes = [stop_reason]
             break
         if loop_validation.get("replay_ready") is not True:
-            stop_reason = "REPLAY_NOT_READY"
-            stop_reason_codes = ["REPLAY_NOT_READY"]
+            stop_reason = STOP_REASON_REPLAY_NOT_READY
+            stop_reason_codes = [STOP_REASON_REPLAY_NOT_READY]
             break
 
         if not isinstance(progress, dict):
-            stop_reason = "INVALID_PROGRESS_STATE"
-            stop_reason_codes = ["MISSING_PROGRESS_UPDATE"]
+            stop_reason = STOP_REASON_INVALID_PROGRESS_STATE
+            stop_reason_codes = [STOP_REASON_INVALID_PROGRESS_STATE]
             break
 
         execution_status = progress.get("execution_status")
         if execution_status == "succeeded":
             if not isinstance(selected_batch_id, str):
-                stop_reason = "INVALID_ROADMAP_STATE"
-                stop_reason_codes = ["MISSING_SELECTED_BATCH_ID"]
+                stop_reason = STOP_REASON_INVALID_ROADMAP_STATE
+                stop_reason_codes = [STOP_REASON_INVALID_ROADMAP_STATE]
                 break
             completed_batch_ids.append(selected_batch_id)
         elif execution_status == "blocked":
             blocked_batch_id = selected_batch_id if isinstance(selected_batch_id, str) else None
-            stop_reason = "PQX_EXECUTION_BLOCKED"
-            stop_reason_codes = ["PQX_EXECUTION_BLOCKED"]
+            stop_reason = str(progress.get("stop_reason") or STOP_REASON_EXECUTION_BLOCKED)
+            stop_reason_codes = [stop_reason]
             break
         elif execution_status in {"failed", "not_executed"}:
-            stop_reason = "PQX_EXECUTION_FAILURE"
-            stop_reason_codes = ["PQX_EXECUTION_FAILURE"]
+            if execution_status == "not_executed":
+                stop_reason = str(progress.get("stop_reason") or STOP_REASON_AUTHORIZATION_BLOCK)
+            else:
+                stop_reason = str(progress.get("stop_reason") or STOP_REASON_EXECUTION_FAILED)
+            stop_reason_codes = [stop_reason]
             break
         else:
-            stop_reason = "INVALID_PROGRESS_STATE"
-            stop_reason_codes = ["UNKNOWN_EXECUTION_STATUS"]
+            stop_reason = STOP_REASON_INVALID_PROGRESS_STATE
+            stop_reason_codes = [STOP_REASON_INVALID_PROGRESS_STATE]
             break
 
         if isinstance(selected_batch_id, str):
             selected_batch = _resolve_batch(updated_roadmap, selected_batch_id)
             if selected_batch is None:
-                stop_reason = "INVALID_ROADMAP_STATE"
-                stop_reason_codes = ["SELECTED_BATCH_NOT_FOUND_AFTER_UPDATE"]
+                stop_reason = STOP_REASON_INVALID_ROADMAP_STATE
+                stop_reason_codes = [STOP_REASON_INVALID_ROADMAP_STATE]
                 break
             if policy["stop_on_hard_gate"] and bool(selected_batch.get("hard_gate_after", False)):
-                stop_reason = "HARD_GATE_STOP"
-                stop_reason_codes = ["HARD_GATE_AFTER_COMPLETED_BATCH"]
+                stop_reason = STOP_REASON_HARD_GATE_STOP
+                stop_reason_codes = [STOP_REASON_HARD_GATE_STOP]
                 current_roadmap = updated_roadmap
                 break
+        elif selection.get("stop_reason") == STOP_REASON_NO_ELIGIBLE_BATCH:
+            stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
+            stop_reason_codes = [STOP_REASON_NO_ELIGIBLE_BATCH]
+            break
 
         current_roadmap = updated_roadmap
     else:
-        stop_reason = "MAX_BATCHES_REACHED"
-        stop_reason_codes = ["MAX_BATCHES_REACHED"]
+        stop_reason = STOP_REASON_MAX_BATCHES_REACHED
+        stop_reason_codes = [STOP_REASON_MAX_BATCHES_REACHED]
 
     seed = {
         "roadmap_id": roadmap_artifact["roadmap_id"],
@@ -246,7 +267,7 @@ def execute_bounded_roadmap_run(
 
     result = {
         "run_id": _run_id(seed),
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "attempted_batch_ids": attempted_batch_ids,
         "completed_batch_ids": completed_batch_ids,
