@@ -62,6 +62,7 @@ def test_friction_classification_and_backlog_priority_are_traceable() -> None:
     assert summary["artifact_index"]["next_step_recommendation"] == f"next_step_recommendation:{recommendation['recommendation_id']}"
     assert summary["failure_surface"]["source_refs"]
     assert recommendation["next_step"]["required_artifacts"]
+    assert recommendation["candidate_evaluation"]["candidates"]
 
 
 def test_subset_execution_runs_only_requested_scenarios() -> None:
