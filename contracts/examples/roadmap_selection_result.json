@@ -1,0 +1,39 @@
+{
+  "valid_next_batch_case": {
+    "roadmap_id": "RDX-CANVAS-2026-04-03",
+    "selected_batch_id": "BATCH-I",
+    "ready_to_run": true,
+    "reason_codes": [
+      "READY_TO_RUN"
+    ],
+    "blocking_conditions": [],
+    "evaluated_at": "2026-04-03T13:00:00Z",
+    "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "blocked_case": {
+    "roadmap_id": "RDX-CANVAS-2026-04-03",
+    "selected_batch_id": null,
+    "ready_to_run": false,
+    "reason_codes": [
+      "REQUIRED_SIGNAL_MISSING"
+    ],
+    "blocking_conditions": [
+      "missing required signals: executor_ingestion_valid"
+    ],
+    "evaluated_at": "2026-04-03T13:00:00Z",
+    "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "no_eligible_batch_case": {
+    "roadmap_id": "RDX-CANVAS-2026-04-03",
+    "selected_batch_id": null,
+    "ready_to_run": false,
+    "reason_codes": [
+      "NO_ELIGIBLE_BATCH"
+    ],
+    "blocking_conditions": [
+      "no not_started batch has all dependencies completed"
+    ],
+    "evaluated_at": "2026-04-03T13:00:00Z",
+    "input_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  }
+}
