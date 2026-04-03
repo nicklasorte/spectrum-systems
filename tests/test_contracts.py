@@ -143,6 +143,13 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+
+
+    def test_program_layer_contract_examples_validate(self) -> None:
+        for name in ("program_artifact", "program_progress"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_enforcement_result_example_validates(self) -> None:
         instance = load_example("enforcement_result")
         validate_artifact(instance, "enforcement_result")

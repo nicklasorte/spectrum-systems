@@ -1,0 +1,55 @@
+{
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "schema_version": "1.0.0",
+  "title": "Roadmap Execution Integrity",
+  "goal": "Constrain MAP and RDX output so execution advances only declared roadmap goals and trust hardening order.",
+  "batches": [
+    "BATCH-D",
+    "BATCH-E",
+    "BATCH-F",
+    "BATCH-G"
+  ],
+  "success_criteria": [
+    "All roadmap steps emitted for execution map to declared program targets.",
+    "Program violations are surfaced as deterministic freeze/block signals.",
+    "Batch completion and remaining scope are deterministically measurable."
+  ],
+  "blocking_conditions": [],
+  "allowed_targets": [
+    "contracts",
+    "roadmap",
+    "eval-control"
+  ],
+  "disallowed_targets": [
+    "unscoped-expansion"
+  ],
+  "priority_rules": [
+    {
+      "category": "hardening",
+      "target": "*",
+      "priority": 1
+    },
+    {
+      "category": "consolidation",
+      "target": "*",
+      "priority": 2
+    },
+    {
+      "category": "build",
+      "target": "roadmap",
+      "priority": 3
+    },
+    {
+      "category": "defer",
+      "target": "*",
+      "priority": 4
+    }
+  ],
+  "status": "active",
+  "created_at": "2026-04-03T00:00:00Z",
+  "trace_id": "trace-prg-batch-p-001",
+  "source_refs": [
+    "docs/roadmaps/system_roadmap.md",
+    "docs/architecture/foundation_pqx_eval_control.md"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_progress.schema.json",
+  "title": "Program Progress",
+  "description": "Deterministic progress state for a governed program across declared batches.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "program_id",
+    "schema_version",
+    "completed_batches",
+    "remaining_batches",
+    "progress_percentage",
+    "blocking_conditions",
+    "readiness_state",
+    "trace_id"
+  ],
+  "properties": {
+    "program_id": {
+      "type": "string",
+      "pattern": "^PRG-[A-Z0-9-]+$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "completed_batches": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^BATCH-[A-M]$"
+      }
+    },
+    "remaining_batches": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^BATCH-[A-M]$"
+      }
+    },
+    "progress_percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "readiness_state": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "blocked",
+        "ready_for_closeout"
+      ]
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

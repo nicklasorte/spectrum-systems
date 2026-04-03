@@ -10,6 +10,7 @@ from typing import Any, Dict
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.program_layer import ProgramLayerError, resolve_program_for_batch
 
 
 class RoadmapEligibilityError(ValueError):
@@ -201,7 +202,45 @@ def _strategy_status(step: Dict[str, Any], *, steps: list[Dict[str, Any]]) -> Di
     }
 
 
-def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, Any]:
+
+
+def _evaluate_program_alignment(
+    *,
+    steps: list[Dict[str, Any]],
+    blocked_steps: list[Dict[str, Any]],
+    program_artifact: Dict[str, Any] | None,
+) -> tuple[str, bool, str]:
+    if program_artifact is None:
+        return ("not_evaluated", False, "no_program_artifact")
+
+    declared_program_id = str(program_artifact.get("program_id") or "").strip()
+    if not declared_program_id:
+        raise RoadmapEligibilityError("program_artifact.program_id is required when program_artifact is provided")
+
+    step_program_mismatches: list[str] = []
+    for step in steps:
+        batch_id = str(step.get("batch_id") or "").strip().upper()
+        if not batch_id:
+            continue
+        try:
+            owner = resolve_program_for_batch(batch_id)
+        except ProgramLayerError as exc:
+            raise RoadmapEligibilityError(f"invalid batch_id for program alignment: {exc}") from exc
+        if owner != declared_program_id:
+            step_program_mismatches.append(str(step["step_id"]))
+
+    has_strategy_gate_block = any("strategy_gate_block" in item.get("blocked_reasons", []) for item in blocked_steps)
+    if step_program_mismatches:
+        return ("violated", True, "block")
+    if has_strategy_gate_block:
+        return ("degraded", True, "freeze")
+    return ("aligned", False, "none")
+
+def build_roadmap_eligibility(
+    governed_roadmap_path: str | Path,
+    *,
+    program_artifact: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
     roadmap = _load_json(governed_roadmap_path)
     _validate_schema(roadmap, "governed_roadmap_artifact")
 
@@ -279,13 +318,22 @@ def build_roadmap_eligibility(governed_roadmap_path: str | Path) -> Dict[str, An
         "roadmap_digest": roadmap_digest,
     }
 
+    program_alignment_status, program_violation, program_enforcement_action = _evaluate_program_alignment(
+        steps=steps,
+        blocked_steps=blocked_steps,
+        program_artifact=program_artifact,
+    )
+
     candidate = {
         "artifact_type": "roadmap_eligibility_artifact",
-        "schema_version": "1.0.0",
-        "artifact_version": "1.0.0",
+        "schema_version": "1.2.0",
+        "artifact_version": "1.2.0",
         "roadmap_ref": str(roadmap["roadmap_ref"]),
         "evaluated_at": str(roadmap["generated_at"]),
         "identity_basis": identity_basis,
+        "program_alignment_status": program_alignment_status,
+        "program_violation": program_violation,
+        "program_enforcement_action": program_enforcement_action,
         "eligible_step_ids": sorted(eligible_step_ids),
         "recommended_next_step_ids": recommended_next_step_ids,
         "blocked_steps": sorted(blocked_steps, key=lambda item: item["step_id"]),

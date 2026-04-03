@@ -118,6 +118,8 @@ def test_ready_step_marked_eligible(tmp_path: Path) -> None:
     assert artifact["eligible_step_ids"] == ["STEP-002"]
     statuses = {item["roadmap_row_id"]: item for item in artifact["strategy_status_artifacts"]}
     assert statuses["STEP-002"]["strategy_gate_decision"] == "allow"
+    assert artifact["program_alignment_status"] == "not_evaluated"
+    assert artifact["program_violation"] is False
 
 
 def test_completed_steps_not_recommended(tmp_path: Path) -> None:
@@ -227,3 +229,29 @@ def test_scale_no_signal_blocks_expansion_steps(tmp_path: Path) -> None:
     blocked = {item["step_id"]: item for item in artifact["blocked_steps"]}
     assert "STEP-003" in blocked
     assert any(reason.startswith("review_scale_no:") for reason in blocked["STEP-003"]["unmet_review_requirements"])
+
+
+def test_program_violation_blocks_on_batch_program_mismatch(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][1]["batch_id"] = "BATCH-D"
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(
+        path,
+        program_artifact={"program_id": "PRG-FOUNDATION-GOVERNANCE"},
+    )
+    assert artifact["program_alignment_status"] == "violated"
+    assert artifact["program_violation"] is True
+    assert artifact["program_enforcement_action"] == "block"
+
+
+def test_program_alignment_aligned_when_batch_ownership_matches(tmp_path: Path) -> None:
+    roadmap = _base_roadmap()
+    roadmap["steps"][1]["batch_id"] = "BATCH-D"
+    path = _write_roadmap(tmp_path, roadmap)
+    artifact = build_roadmap_eligibility(
+        path,
+        program_artifact={"program_id": "PRG-ROADMAP-EXECUTION"},
+    )
+    assert artifact["program_alignment_status"] == "aligned"
+    assert artifact["program_violation"] is False
+    assert artifact["program_enforcement_action"] == "none"

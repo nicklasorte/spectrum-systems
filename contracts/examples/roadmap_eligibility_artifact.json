@@ -1,7 +1,7 @@
 {
   "artifact_type": "roadmap_eligibility_artifact",
-  "schema_version": "1.0.0",
-  "artifact_version": "1.0.0",
+  "schema_version": "1.2.0",
+  "artifact_version": "1.2.0",
   "roadmap_ref": "docs/roadmaps/system_roadmap.md",
   "evaluated_at": "2026-03-30T00:00:00Z",
   "identity_basis": {
@@ -82,5 +82,8 @@
       "block": 0
     }
   },
-  "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1"
+  "artifact_id": "c1bfd40c7ea68193b177e33a01da488ff42d8d59cd6ab745ee019ec83afe83a1",
+  "program_alignment_status": "aligned",
+  "program_violation": false,
+  "program_enforcement_action": "none"
 }
