@@ -1,0 +1,187 @@
+{
+  "validation_id": "PQX-002-10-slice-governed-batch-validation",
+  "input": {
+    "roadmap_fixture": "tests/fixtures/roadmaps/pqx_mvp_10_sequence.json",
+    "run_command": "python scripts/run_pqx_sequence.py --roadmap tests/fixtures/roadmaps/pqx_mvp_10_sequence.json --output <trace> --run-id pqx002-admitted-10 --authority-evidence-ref data/pqx_runs/auth.pqx_slice_execution_record.json",
+    "admission_mode": "fail_closed_required_context_enforcement"
+  },
+  "runs": {
+    "run_a": {
+      "batch_result": {
+        "overall_batch_status": "completed",
+        "per_slice_statuses": [
+          {
+            "slice_id": "AI-01",
+            "status": "completed"
+          },
+          {
+            "slice_id": "AI-02",
+            "status": "completed"
+          },
+          {
+            "slice_id": "TRUST-01",
+            "status": "completed"
+          },
+          {
+            "slice_id": "SRE-03",
+            "status": "completed"
+          },
+          {
+            "slice_id": "GOV-10",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-02",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-03",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-04",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-05",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-01",
+            "status": "completed"
+          }
+        ],
+        "stopping_condition": null,
+        "completed_step_ids": [
+          "AI-01",
+          "AI-02",
+          "TRUST-01",
+          "SRE-03",
+          "GOV-10",
+          "CTRL-LOOP-02",
+          "CTRL-LOOP-03",
+          "CTRL-LOOP-04",
+          "CTRL-LOOP-05",
+          "CTRL-LOOP-01"
+        ]
+      },
+      "trace_summary": {
+        "trace_id": "pqx-seq-55944bd849c399c5",
+        "final_status": "ALLOW",
+        "ordered_slice_ids": [
+          "AI-01",
+          "AI-02",
+          "TRUST-01",
+          "SRE-03",
+          "GOV-10",
+          "CTRL-LOOP-02",
+          "CTRL-LOOP-03",
+          "CTRL-LOOP-04",
+          "CTRL-LOOP-05",
+          "CTRL-LOOP-01"
+        ]
+      },
+      "checks": {
+        "dependency_order_valid": true,
+        "dependency_order_violations": [],
+        "no_premature_complete": true,
+        "premature_complete_violations": []
+      }
+    },
+    "run_b": {
+      "batch_result": {
+        "overall_batch_status": "completed",
+        "per_slice_statuses": [
+          {
+            "slice_id": "AI-01",
+            "status": "completed"
+          },
+          {
+            "slice_id": "AI-02",
+            "status": "completed"
+          },
+          {
+            "slice_id": "TRUST-01",
+            "status": "completed"
+          },
+          {
+            "slice_id": "SRE-03",
+            "status": "completed"
+          },
+          {
+            "slice_id": "GOV-10",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-02",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-03",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-04",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-05",
+            "status": "completed"
+          },
+          {
+            "slice_id": "CTRL-LOOP-01",
+            "status": "completed"
+          }
+        ],
+        "stopping_condition": null,
+        "completed_step_ids": [
+          "AI-01",
+          "AI-02",
+          "TRUST-01",
+          "SRE-03",
+          "GOV-10",
+          "CTRL-LOOP-02",
+          "CTRL-LOOP-03",
+          "CTRL-LOOP-04",
+          "CTRL-LOOP-05",
+          "CTRL-LOOP-01"
+        ]
+      },
+      "trace_summary": {
+        "trace_id": "pqx-seq-55944bd849c399c5",
+        "final_status": "ALLOW",
+        "ordered_slice_ids": [
+          "AI-01",
+          "AI-02",
+          "TRUST-01",
+          "SRE-03",
+          "GOV-10",
+          "CTRL-LOOP-02",
+          "CTRL-LOOP-03",
+          "CTRL-LOOP-04",
+          "CTRL-LOOP-05",
+          "CTRL-LOOP-01"
+        ]
+      },
+      "checks": {
+        "dependency_order_valid": true,
+        "dependency_order_violations": [],
+        "no_premature_complete": true,
+        "premature_complete_violations": []
+      }
+    }
+  },
+  "determinism_comparison": {
+    "completed_step_ids_identical": true,
+    "final_batch_outcome_identical": true,
+    "divergence_detected": false,
+    "divergences": []
+  },
+  "validation_criteria": {
+    "all_slices_execute_in_dependency_order": true,
+    "terminal_condition_observed": true,
+    "no_slice_prematurely_marked_complete": true,
+    "completed_steps_identical_across_runs": true,
+    "final_batch_outcome_identical_across_runs": true
+  }
+}
