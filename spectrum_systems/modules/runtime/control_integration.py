@@ -41,8 +41,8 @@ Public surface
 
 from __future__ import annotations
 
+import hashlib
 import logging
-import uuid
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from spectrum_systems.modules.runtime.control_executor import (
@@ -65,6 +65,7 @@ from spectrum_systems.modules.runtime.evaluation_auto_generation import (
     EvalCaseGenerationError,
     generate_failure_eval_case,
 )
+from spectrum_systems.utils.deterministic_id import canonical_json
 
 logger = logging.getLogger(__name__)
 
@@ -88,10 +89,15 @@ def _validate_context(context: Dict[str, Any]) -> List[str]:
 
 
 def _normalize_context(context: Dict[str, Any]) -> Dict[str, Any]:
-    """Return a copy of *context* with ``execution_id`` guaranteed present."""
+    """Return a copy of *context* with deterministic ``execution_id`` guaranteed present."""
     ctx = dict(context)
     if not ctx.get("execution_id"):
-        ctx["execution_id"] = str(uuid.uuid4())
+        execution_identity = {
+            "artifact": ctx.get("artifact"),
+            "stage": ctx.get("stage"),
+            "runtime_environment": ctx.get("runtime_environment"),
+        }
+        ctx["execution_id"] = hashlib.sha256(canonical_json(execution_identity).encode("utf-8")).hexdigest()
     return ctx
 
 

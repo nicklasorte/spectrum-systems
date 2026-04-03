@@ -40,9 +40,9 @@ summarize_validator_execution(res)  – operator-readable summary string
 
 from __future__ import annotations
 
+import hashlib
 import traceback
-import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from jsonschema import Draft202012Validator
@@ -61,6 +61,7 @@ from spectrum_systems.modules.runtime.trace_engine import (
     start_trace,
     validate_trace_context,
 )
+from spectrum_systems.utils.deterministic_id import canonical_json
 
 # ---------------------------------------------------------------------------
 # Types
@@ -109,6 +110,18 @@ GOVERNED_EVENT_TYPES = frozenset({
     EVENT_VALIDATOR_EXECUTION_COMPLETE,
     EVENT_VALIDATOR_EXECUTION_ARTIFACT_ATTACHED,
 })
+
+def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
+    digest = hashlib.sha256(canonical_json(seed_payload).encode("utf-8")).hexdigest()
+    offset_seconds = int(digest[:8], 16) % (365 * 24 * 60 * 60)
+    base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    return (base + timedelta(seconds=offset_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _deterministic_execution_id(seed_payload: Dict[str, Any]) -> str:
+    return hashlib.sha256(canonical_json(seed_payload).encode("utf-8")).hexdigest()
+
+
 
 # ---------------------------------------------------------------------------
 # Built-in validator callables
@@ -595,8 +608,7 @@ def run_validators(
     else:
         overall_status = "pass"
 
-    result: ValidatorExecutionResult = {
-        "execution_id": str(uuid.uuid4()),
+    result_identity = {
         "validators_requested": validators_requested,
         "validators_run": validators_run,
         "validators_passed": validators_passed,
@@ -604,7 +616,19 @@ def run_validators(
         "validator_results": validator_results,
         "overall_status": overall_status,
         "failure_reason_codes": list(dict.fromkeys(all_reason_codes)),
-        "evaluated_at": datetime.now(tz=timezone.utc).isoformat(),
+        "trace_id": trace_id,
+    }
+    execution_id = _deterministic_execution_id(result_identity)
+    result: ValidatorExecutionResult = {
+        "execution_id": execution_id,
+        "validators_requested": validators_requested,
+        "validators_run": validators_run,
+        "validators_passed": validators_passed,
+        "validators_failed": validators_failed,
+        "validator_results": validator_results,
+        "overall_status": overall_status,
+        "failure_reason_codes": list(dict.fromkeys(all_reason_codes)),
+        "evaluated_at": _deterministic_timestamp({"execution_id": execution_id, "trace_id": trace_id}),
         "schema_version": SCHEMA_VERSION,
     }
 

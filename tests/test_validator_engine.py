@@ -384,7 +384,6 @@ def test_repeated_runs_produce_deterministic_results():
     validators = list(CANONICAL_VALIDATOR_ORDER)
     first = run_validators(validators, ctx)
     second = run_validators(validators, ctx)
-    # execution_id is UUID-random; compare everything else
     assert first["overall_status"] == second["overall_status"]
     assert first["validators_run"] == second["validators_run"]
     assert first["validators_passed"] == second["validators_passed"]
@@ -492,10 +491,36 @@ def test_list_registered_validators_order():
     assert canonical_in_list == CANONICAL_VALIDATOR_ORDER
 
 
-def test_execution_id_is_unique_across_runs():
-    result1 = run_validators(["validate_schema_conformance"], _ctx())
-    result2 = run_validators(["validate_schema_conformance"], _ctx())
-    assert result1["execution_id"] != result2["execution_id"]
+def test_execution_id_is_deterministic_across_identical_runs():
+    ctx = _ctx(trace_id="trace-deterministic-001")
+    result1 = run_validators(["validate_schema_conformance"], ctx)
+    result2 = run_validators(["validate_schema_conformance"], ctx)
+    assert result1["execution_id"] == result2["execution_id"]
+
+
+def test_five_identical_runs_have_determinism_pass_rate_one() -> None:
+    ctx = _ctx(trace_id="trace-deterministic-005")
+    runs = [run_validators(["validate_schema_conformance"], ctx) for _ in range(5)]
+
+    hashes = [r["execution_id"] for r in runs]
+    fingerprints = [
+        {
+            "overall_status": r["overall_status"],
+            "validators_run": r["validators_run"],
+            "validators_failed": r["validators_failed"],
+            "failure_reason_codes": r["failure_reason_codes"],
+            "evaluated_at": r["evaluated_at"],
+        }
+        for r in runs
+    ]
+
+    baseline_output = runs[0]
+    determinism_pass_rate = sum(1 for run in runs if run == baseline_output) / len(runs)
+
+    assert len(set(hashes)) == 1
+    assert len({str(f) for f in fingerprints}) == 1
+    assert all(run == baseline_output for run in runs)
+    assert determinism_pass_rate == 1.0
 
 
 def test_event_vocabulary_consistent():
