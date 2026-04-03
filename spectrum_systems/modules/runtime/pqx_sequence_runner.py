@@ -31,6 +31,7 @@ class PQXSequenceRunnerError(ValueError):
 
 
 SliceExecutor = Callable[[dict], dict]
+_TPA_PHASE_BY_SUFFIX = {"P": "plan", "B": "build", "S": "simplify", "G": "gate"}
 
 
 def _default_control_surface_gap_visibility() -> dict:
@@ -88,9 +89,42 @@ def _validate_slice_requests(slice_requests: list[dict]) -> None:
         if slice_id in seen:
             raise PQXSequenceRunnerError(f"duplicate slice_id not allowed: {slice_id}")
         seen.add(slice_id)
+    _validate_tpa_grouping(slice_requests)
+
+
+def _parse_tpa_slice_id(slice_id: str) -> tuple[str, str | None]:
+    parts = slice_id.split("-")
+    if len(parts) == 3 and parts[0] == "AI" and parts[1].isdigit() and parts[2] in _TPA_PHASE_BY_SUFFIX:
+        return f"AI-{parts[1]}", _TPA_PHASE_BY_SUFFIX[parts[2]]
+    return slice_id, None
+
+
+def _validate_tpa_grouping(slice_requests: list[dict]) -> None:
+    grouped: dict[str, dict[str, int]] = {}
+    for index, request in enumerate(slice_requests):
+        step_id, phase = _parse_tpa_slice_id(request["slice_id"])
+        if phase is None:
+            continue
+        grouped.setdefault(step_id, {})[phase] = index
+
+    required_order = ("plan", "build", "simplify", "gate")
+    for step_id, phase_positions in grouped.items():
+        missing = [phase for phase in required_order if phase not in phase_positions]
+        if missing:
+            raise PQXSequenceRunnerError(
+                f"TPA slice group for {step_id} missing required phases: {', '.join(missing)}"
+            )
+        order = [phase_positions[phase] for phase in required_order]
+        if order != sorted(order):
+            raise PQXSequenceRunnerError(
+                f"TPA slice group for {step_id} must be ordered plan->build->simplify->gate"
+            )
 
 
 def _canonical_step_id(slice_id: str) -> str:
+    tpa_step_id, tpa_phase = _parse_tpa_slice_id(slice_id)
+    if tpa_phase is not None:
+        return tpa_step_id
     if slice_id.startswith("fix-step:"):
         return slice_id
     if slice_id.startswith("AI-"):
@@ -317,11 +351,60 @@ def _build_batch_result(state: dict) -> dict:
     }
 
 
+def _build_tpa_slice_artifact(
+    *,
+    run_id: str,
+    trace_id: str,
+    slice_id: str,
+    produced_at: str,
+    artifact_payload: dict[str, Any],
+) -> dict[str, Any]:
+    step_id, phase = _parse_tpa_slice_id(slice_id)
+    if phase is None:
+        raise PQXSequenceRunnerError("TPA artifact requested for non-TPA slice id")
+    artifact = {
+        "artifact_type": "tpa_slice_artifact",
+        "schema_version": "1.0.0",
+        "artifact_id": f"tpa:{run_id}:{slice_id}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "slice_id": slice_id,
+        "step_id": step_id,
+        "phase": phase,
+        "produced_at": produced_at,
+        "artifact": artifact_payload,
+    }
+    try:
+        validate_artifact(artifact, "tpa_slice_artifact")
+    except Exception as exc:
+        raise PQXSequenceRunnerError(f"invalid TPA {phase} artifact for {slice_id}: {exc}") from exc
+    return artifact
+
+
+def _deterministic_gate_selection(*, run_id: str, step_id: str, build_artifact_id: str, simplify_artifact_id: str) -> str:
+    hash_payload = {
+        "run_id": run_id,
+        "step_id": step_id,
+        "build_artifact_id": build_artifact_id,
+        "simplify_artifact_id": simplify_artifact_id,
+    }
+    digest = _canonical_hash(hash_payload)
+    return "pass_1_build" if int(digest[-1], 16) % 2 == 0 else "pass_2_simplify"
+
+
 def _persist_with_batch_result(state: dict, state_path: Path) -> dict:
     persisted = _persist_and_reload_exact(state, state_path)
     result = deepcopy(persisted)
     result["batch_result"] = _build_batch_result(persisted)
     return result
+
+
+def _attach_tpa_outputs(result: dict[str, Any], tpa_artifacts_by_step: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    if not tpa_artifacts_by_step:
+        return result
+    enriched = deepcopy(result)
+    enriched["tpa_artifacts"] = deepcopy(tpa_artifacts_by_step)
+    return enriched
 
 
 def _validate_state_contract(state: dict) -> None:
@@ -672,6 +755,7 @@ def execute_sequence_run(
     budget_thresholds = sequence_budget_thresholds or {"max_failed_slices": 1, "max_cumulative_severity": 5}
     canary = canary_control or {"status": "not_applicable", "frozen_slice_ids": []}
     executed_this_call = 0
+    tpa_artifacts_by_step: dict[str, dict[str, Any]] = {}
     while True:
         _verify_continuity(state, slice_requests)
         next_slice_id = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
@@ -738,7 +822,7 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError(str(exc)) from exc
             result = deepcopy(persisted)
             result["batch_result"] = _build_batch_result(persisted)
-            return result
+            return _attach_tpa_outputs(result, tpa_artifacts_by_step)
 
         if max_slices is not None and executed_this_call >= max_slices:
             state["status"] = "running"
@@ -874,6 +958,111 @@ def execute_sequence_run(
         execution_status = result.get("execution_status")
         if execution_status not in {"success", "failed", "blocked", "review_required"}:
             raise PQXSequenceRunnerError("slice executor must return execution_status of success/failed/blocked/review_required")
+        step_id, tpa_phase = _parse_tpa_slice_id(next_slice_id)
+        if tpa_phase is not None and execution_status != "success":
+            raise PQXSequenceRunnerError(f"TPA slice {next_slice_id} must succeed; fail-closed on {execution_status}")
+
+        if tpa_phase is not None:
+            artifacts = tpa_artifacts_by_step.setdefault(step_id, {})
+            if tpa_phase == "plan":
+                plan_payload = request.get("tpa_plan")
+                if not isinstance(plan_payload, dict):
+                    raise PQXSequenceRunnerError(f"TPA plan slice {next_slice_id} missing request.tpa_plan artifact payload")
+                artifacts["plan"] = _build_tpa_slice_artifact(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    slice_id=next_slice_id,
+                    produced_at=iso_now(clock),
+                    artifact_payload=plan_payload,
+                )
+            elif tpa_phase == "build":
+                if "plan" not in artifacts:
+                    raise PQXSequenceRunnerError(f"TPA build slice {next_slice_id} requires completed plan artifact")
+                build_payload = result.get("tpa_build")
+                if not isinstance(build_payload, dict):
+                    raise PQXSequenceRunnerError(f"TPA build slice {next_slice_id} missing result.tpa_build artifact payload")
+                plan_fields = artifacts["plan"]["artifact"]
+                planned_files = set(plan_fields["files_touched"])
+                build_files = set(build_payload.get("files_touched", []))
+                if not build_files.issubset(planned_files):
+                    raise PQXSequenceRunnerError("TPA build scope exceeds declared plan files_touched")
+                if not bool(build_payload.get("plan_scope_match")):
+                    raise PQXSequenceRunnerError("TPA build must declare plan_scope_match=true")
+                if build_payload.get("unused_helpers"):
+                    raise PQXSequenceRunnerError("TPA build small guardrail failed: unused_helpers detected")
+                if build_payload.get("unnecessary_indirection"):
+                    raise PQXSequenceRunnerError("TPA build small guardrail failed: unnecessary_indirection detected")
+                if int(build_payload.get("new_layers", 0)) > 0:
+                    raise PQXSequenceRunnerError("TPA build small guardrail failed: new_layers must be 0")
+                artifacts["build"] = _build_tpa_slice_artifact(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    slice_id=next_slice_id,
+                    produced_at=iso_now(clock),
+                    artifact_payload=build_payload,
+                )
+            elif tpa_phase == "simplify":
+                if "build" not in artifacts:
+                    raise PQXSequenceRunnerError(f"TPA simplify slice {next_slice_id} requires completed build artifact")
+                simplify_payload = result.get("tpa_simplify")
+                if not isinstance(simplify_payload, dict):
+                    raise PQXSequenceRunnerError(
+                        f"TPA simplify slice {next_slice_id} missing result.tpa_simplify artifact payload"
+                    )
+                if bool(simplify_payload.get("behavior_changed")):
+                    raise PQXSequenceRunnerError("TPA simplify must not change behavior")
+                if int(simplify_payload.get("new_layers_introduced", 0)) > 0:
+                    raise PQXSequenceRunnerError("TPA simplify must not introduce new abstraction layers")
+                artifacts["simplify"] = _build_tpa_slice_artifact(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    slice_id=next_slice_id,
+                    produced_at=iso_now(clock),
+                    artifact_payload=simplify_payload,
+                )
+            elif tpa_phase == "gate":
+                if "build" not in artifacts or "simplify" not in artifacts:
+                    raise PQXSequenceRunnerError(f"TPA gate slice {next_slice_id} requires build and simplify artifacts")
+                gate_payload = result.get("tpa_gate")
+                if not isinstance(gate_payload, dict):
+                    raise PQXSequenceRunnerError(f"TPA gate slice {next_slice_id} missing result.tpa_gate artifact payload")
+                if not all(
+                    bool(gate_payload.get(key))
+                    for key in ("behavioral_equivalence", "contract_valid", "tests_valid")
+                ):
+                    raise PQXSequenceRunnerError("TPA gate must prove behavioral equivalence, contract validity, and test validity")
+                deterministic_selected = _deterministic_gate_selection(
+                    run_id=run_id,
+                    step_id=step_id,
+                    build_artifact_id=artifacts["build"]["artifact_id"],
+                    simplify_artifact_id=artifacts["simplify"]["artifact_id"],
+                )
+                if gate_payload.get("selected_pass") != deterministic_selected:
+                    raise PQXSequenceRunnerError("TPA gate selected_pass mismatch with deterministic control decision")
+                artifacts["gate"] = _build_tpa_slice_artifact(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    slice_id=next_slice_id,
+                    produced_at=iso_now(clock),
+                    artifact_payload=gate_payload,
+                )
+                artifacts["determinism_comparison_artifact"] = {
+                    "artifact_type": "tpa_determinism_comparison",
+                    "run_id": run_id,
+                    "trace_id": request["trace_id"],
+                    "step_id": step_id,
+                    "selected_pass": deterministic_selected,
+                    "phase_order": ["plan", "build", "simplify", "gate"],
+                    "selection_hash": _canonical_hash(
+                        {
+                            "run_id": run_id,
+                            "step_id": step_id,
+                            "selected_pass": deterministic_selected,
+                            "build_artifact_id": artifacts["build"]["artifact_id"],
+                            "simplify_artifact_id": artifacts["simplify"]["artifact_id"],
+                        }
+                    ),
+                }
 
         completed_at = iso_now(clock)
         continuation_record_id = None

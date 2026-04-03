@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_slice_artifact.schema.json",
+  "title": "TPA Slice Artifact",
+  "description": "Deterministic artifact for governed TPA Plan/Build/Simplify/Gate slices executed within PQX.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "run_id",
+    "trace_id",
+    "slice_id",
+    "step_id",
+    "phase",
+    "produced_at",
+    "artifact"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_slice_artifact"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "slice_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "phase": {"type": "string", "enum": ["plan", "build", "simplify", "gate"]},
+    "produced_at": {"type": "string", "format": "date-time"},
+    "artifact": {
+      "oneOf": [
+        {"$ref": "#/$defs/plan_artifact"},
+        {"$ref": "#/$defs/build_artifact"},
+        {"$ref": "#/$defs/simplify_artifact"},
+        {"$ref": "#/$defs/gate_artifact"}
+      ]
+    }
+  },
+  "$defs": {
+    "non_empty": {"type": "string", "minLength": 1},
+    "plan_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_kind", "files_touched", "seams_reused", "abstraction_intent", "constraints_acknowledged"],
+      "properties": {
+        "artifact_kind": {"type": "string", "const": "plan"},
+        "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "seams_reused": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "abstraction_intent": {"type": "string", "enum": ["reuse_existing", "minimal_extension"]},
+        "constraints_acknowledged": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["build_small", "no_redesign"],
+          "properties": {
+            "build_small": {"type": "boolean", "const": true},
+            "no_redesign": {"type": "boolean", "const": true}
+          }
+        }
+      }
+    },
+    "build_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_kind", "files_touched", "new_layers", "unused_helpers", "unnecessary_indirection", "plan_scope_match", "abstraction_justifications"],
+      "properties": {
+        "artifact_kind": {"type": "string", "const": "build"},
+        "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "new_layers": {"type": "integer", "minimum": 0},
+        "unused_helpers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "unnecessary_indirection": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "plan_scope_match": {"type": "boolean"},
+        "abstraction_justifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["abstraction", "justification"],
+            "properties": {
+              "abstraction": {"$ref": "#/$defs/non_empty"},
+              "justification": {"$ref": "#/$defs/non_empty"}
+            }
+          }
+        }
+      }
+    },
+    "simplify_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_kind", "source_build_artifact_id", "actions", "behavior_changed", "new_layers_introduced"],
+      "properties": {
+        "artifact_kind": {"type": "string", "const": "simplify"},
+        "source_build_artifact_id": {"$ref": "#/$defs/non_empty"},
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["dedupe_logic", "reduce_nesting", "rename_for_clarity", "delete_unnecessary_code"]
+          }
+        },
+        "behavior_changed": {"type": "boolean"},
+        "new_layers_introduced": {"type": "integer", "minimum": 0}
+      }
+    },
+    "gate_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_kind", "build_artifact_id", "simplify_artifact_id", "behavioral_equivalence", "contract_valid", "tests_valid", "selected_pass", "selection_reason"],
+      "properties": {
+        "artifact_kind": {"type": "string", "const": "gate"},
+        "build_artifact_id": {"$ref": "#/$defs/non_empty"},
+        "simplify_artifact_id": {"$ref": "#/$defs/non_empty"},
+        "behavioral_equivalence": {"type": "boolean"},
+        "contract_valid": {"type": "boolean"},
+        "tests_valid": {"type": "boolean"},
+        "selected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
+        "selection_reason": {"$ref": "#/$defs/non_empty"}
+      }
+    }
+  }
+}
