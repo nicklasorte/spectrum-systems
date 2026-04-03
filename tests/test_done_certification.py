@@ -69,7 +69,8 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
     replay["consistency_status"] = "match"
     replay["drift_detected"] = False
     replay["failure_reason"] = None
-    trace_id = replay["trace_id"]
+    trace_id = "6d4fcac1-1af6-4fca-9e35-6e7d0fa7d4aa"
+    replay["trace_id"] = trace_id
     run_id = replay["replay_run_id"]
 
     regression = _regression_result_pass()
@@ -107,12 +108,26 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
         result["trace_refs"]["primary"] = trace_id
         result["trace_refs"]["related"] = []
 
+    repo_review_snapshot = _load_example("repo_review_snapshot")
+    repo_review_snapshot["trace_linkage"]["trace_id"] = trace_id
+    repo_review_snapshot["findings_summary"] = {
+        "redundancy_findings": 0,
+        "drift_findings": 0,
+        "eval_coverage_gaps": 0,
+        "control_bypass_findings": 0,
+    }
+    repo_health_eval_summary = _load_example("eval_summary")
+    repo_health_eval_summary["trace_id"] = trace_id
+    repo_health_eval_summary["system_status"] = "healthy"
+
     return {
         "replay_result_ref": _write_json(tmp_path / "replay.json", replay),
         "regression_result_ref": _write_json(tmp_path / "regression.json", regression),
         "certification_pack_ref": _write_json(tmp_path / "certification_pack.json", certification_pack),
         "error_budget_ref": _write_json(tmp_path / "error_budget.json", error_budget),
         "policy_ref": _write_json(tmp_path / "policy.json", control_decision),
+        "repo_review_snapshot_ref": _write_json(tmp_path / "repo_review_snapshot.json", repo_review_snapshot),
+        "repo_health_eval_summary_ref": _write_json(tmp_path / "repo_health_eval_summary.json", repo_health_eval_summary),
         "enforcement_result_ref": _write_json(
             tmp_path / "enforcement.json",
             {
@@ -201,7 +216,59 @@ def test_certification_pass(tmp_path: Path) -> None:
     assert first["trust_spine_evidence_cohesion_result"]["passed"] is True
     assert first["check_results"]["trust_spine_evidence_completeness"]["passed"] is True
     assert first["check_results"]["trust_spine_evidence_cohesion"]["passed"] is True
+    assert first["check_results"]["system_readiness"]["passed"] is True
     assert first == second
+
+
+def test_certification_warn_when_minor_degradation_and_policy_permits(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    review = json.loads(Path(refs["repo_review_snapshot_ref"]).read_text(encoding="utf-8"))
+    review["findings_summary"]["redundancy_findings"] = 1
+    Path(refs["repo_review_snapshot_ref"]).write_text(json.dumps(review), encoding="utf-8")
+    control = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control["system_response"] = "warn"
+    control["decision"] = "require_review"
+    Path(refs["policy_ref"]).write_text(json.dumps(control), encoding="utf-8")
+
+    result = run_done_certification(
+            {
+                **refs,
+                "certification_policy": {
+                    "allow_warn_as_pass": True,
+                    "allow_warn_promotion": True,
+                    "require_system_readiness": True,
+                },
+            }
+        )
+    assert result["final_status"] == "WARNED"
+    assert result["system_response"] == "warn"
+
+
+def test_certification_freeze_when_drift_high(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    review = json.loads(Path(refs["repo_review_snapshot_ref"]).read_text(encoding="utf-8"))
+    review["findings_summary"]["drift_findings"] = 2
+    Path(refs["repo_review_snapshot_ref"]).write_text(json.dumps(review), encoding="utf-8")
+
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FROZEN"
+    assert result["system_response"] == "freeze"
+
+
+def test_certification_fails_when_repo_review_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("repo_review_snapshot_ref")
+    result = run_done_certification({**refs, "certification_policy": {"require_system_readiness": True}})
+    assert result["final_status"] == "FAILED"
+    assert "repo_review_snapshot_ref is required for system readiness certification" in result["blocking_reasons"]
+
+
+def test_certification_fails_when_eval_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("repo_health_eval_summary_ref")
+    result = run_done_certification({**refs, "certification_policy": {"require_system_readiness": True}})
+    assert result["final_status"] == "FAILED"
+    assert "repo_health_eval_summary_ref is required for system readiness certification" in result["blocking_reasons"]
 
 
 def test_trust_spine_threshold_context_mismatch_blocks(tmp_path: Path) -> None:

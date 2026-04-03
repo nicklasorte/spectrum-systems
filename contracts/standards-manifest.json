@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.17",
+  "artifact_version": "1.3.18",
   "schema_version": "1.0.0",
-  "standards_version": "1.3.17",
+  "standards_version": "1.3.18",
   "record_id": "REC-STD-2026-04-03-TPA-001",
   "run_id": "run-20260403T120000Z",
   "created_at": "2026-04-03T12:00:00Z",
@@ -474,15 +474,15 @@
     {
       "artifact_type": "done_certification_record",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.66",
-      "last_updated_in": "1.3.14",
+      "last_updated_in": "1.3.18",
       "example_path": "contracts/examples/done_certification_record.json",
-      "notes": "DONE-01 authority-path trust-spine evidence completeness hardening adds deterministic machine-readable completeness result output and fail-closed blocking reason codes for incomplete active authority evidence."
+      "notes": "DONE-01 system-readiness enforcement requires repo_review_snapshot + repo_health_eval_summary inputs and emits deterministic PASSED/WARNED/FROZEN/FAILED readiness outcomes for promotion authority gating."
     },
     {
       "artifact_type": "drift_detection_result",
@@ -925,7 +925,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "fix_plan_artifact",
@@ -1704,7 +1704,7 @@
       "introduced_in": "1.0.86",
       "last_updated_in": "1.0.87",
       "example_path": "contracts/examples/pqx_n_slice_validation_record.json",
-      "notes": "B30 first 5\u201310 slice governed-run readiness validation artifact."
+      "notes": "B30 first 5–10 slice governed-run readiness validation artifact."
     },
     {
       "artifact_type": "pqx_review_result",
@@ -2529,7 +2529,7 @@
       "introduced_in": "1.3.25",
       "last_updated_in": "1.3.25",
       "example_path": "contracts/examples/tpa_slice_artifact.json",
-      "notes": "TPA-001..005 governed Plan\u2192Build\u2192Simplify\u2192Gate artifact emitted in-sequence by PQX with fail-closed gate selection semantics."
+      "notes": "TPA-001..005 governed Plan→Build→Simplify→Gate artifact emitted in-sequence by PQX with fail-closed gate selection semantics."
     },
     {
       "artifact_type": "transcript_intelligence_pack",

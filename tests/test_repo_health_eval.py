@@ -108,3 +108,15 @@ def test_repo_health_severe_review_risk_path_blocks() -> None:
     decision = build_repo_health_control_decision(snapshot=snapshot, eval_summary=artifacts["eval_summary"])
     assert decision["decision"] == "deny"
     assert decision["system_response"] == "block"
+
+
+def test_repo_health_eval_summary_degraded_for_minor_drift() -> None:
+    snapshot = _snapshot()
+    snapshot["findings_summary"] = {
+        "redundancy_findings": 1,
+        "drift_findings": 0,
+        "eval_coverage_gaps": 1,
+        "control_bypass_findings": 0,
+    }
+    artifacts = build_repo_health_eval(snapshot)
+    assert artifacts["eval_summary"]["system_status"] == "degraded"

@@ -125,11 +125,18 @@ def _write_certification_pack(
     decision: str = "pass",
     certification_status: str = "certified",
     trace_id: str = "trace-healthy-001",
+    allow_warn_promotion: bool = False,
 ) -> Path:
     payload = _load_json(_DONE_CERTIFICATION_RECORD)
     payload["final_status"] = "PASSED" if decision == "pass" and certification_status == "certified" else "FAILED"
     payload["system_response"] = "allow" if payload["final_status"] == "PASSED" else "block"
     payload["blocking_reasons"] = [] if payload["final_status"] == "PASSED" else ["done gate failed"]
+    payload["warnings"] = []
+    payload["certification_policy"] = {
+        "allow_warn_as_pass": allow_warn_promotion,
+        "allow_warn_promotion": allow_warn_promotion,
+        "require_system_readiness": False,
+    }
     payload["trace_id"] = trace_id
     out = tmp_path / f"cert-{decision}-{certification_status}.json"
     out.write_text(json.dumps(payload), encoding="utf-8")
@@ -509,6 +516,50 @@ def test_promotion_warn_with_certified_pass_preserves_warn(tmp_path: Path):
     assert action["certification_gate"]["block_reason"] is None
 
 
+def test_promotion_warned_certification_requires_policy_permit(tmp_path: Path):
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = "WARNED"
+    payload["system_response"] = "warn"
+    payload["blocking_reasons"] = []
+    payload["warnings"] = ["minor degradation"]
+    payload["certification_policy"] = {
+        "allow_warn_as_pass": True,
+        "allow_warn_promotion": False,
+        "require_system_readiness": False,
+    }
+    payload["trace_id"] = "trace-warning-001"
+    certification_path = _write_certification_payload(tmp_path, "warned-cert-no-policy.json", payload)
+
+    action = run_enforcement_bridge(
+        _WARN,
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
+    )
+    assert action["action_type"] == "block"
+    assert action["allowed_to_proceed"] is False
+
+
+def test_promotion_warned_certification_allows_when_policy_permits(tmp_path: Path):
+    payload = _load_json(_DONE_CERTIFICATION_RECORD)
+    payload["final_status"] = "WARNED"
+    payload["system_response"] = "warn"
+    payload["blocking_reasons"] = []
+    payload["warnings"] = ["minor degradation"]
+    payload["certification_policy"] = {
+        "allow_warn_as_pass": True,
+        "allow_warn_promotion": True,
+        "require_system_readiness": False,
+    }
+    payload["trace_id"] = "trace-warning-001"
+    certification_path = _write_certification_payload(tmp_path, "warned-cert-policy.json", payload)
+
+    action = run_enforcement_bridge(
+        _WARN,
+        context={"enforcement_scope": "promotion", "done_certification_path": str(certification_path)},
+    )
+    assert action["action_type"] == "warn"
+    assert action["allowed_to_proceed"] is True
+
+
 def test_promotion_uncertified_fail_blocks(tmp_path: Path):
     certification_path = _write_certification_pack(tmp_path, decision="fail", certification_status="uncertified")
     action = run_enforcement_bridge(
@@ -651,7 +702,7 @@ def test_promotion_enum_violation_blocks_as_malformed(tmp_path: Path):
     assert action["certification_gate"]["certification_status"] == "malformed"
     assert action["certification_gate"]["certification_decision"] == "malformed"
     assert "failed schema validation" in str(action["certification_gate"]["block_reason"])
-    assert "'p4ss' is not one of ['PASSED', 'FAILED']" in str(action["certification_gate"]["block_reason"])
+    assert "'p4ss' is not one of ['PASSED', 'WARNED', 'FROZEN', 'FAILED']" in str(action["certification_gate"]["block_reason"])
 
 
 def test_promotion_additional_properties_violation_blocks(tmp_path: Path):

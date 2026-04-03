@@ -248,6 +248,12 @@ def _evaluate_certification_gate(
     if final_status == "PASSED":
         gate["certification_decision"] = "pass"
         gate["certification_status"] = "certified"
+    elif final_status == "WARNED":
+        gate["certification_decision"] = "pass"
+        gate["certification_status"] = "certified"
+    elif final_status == "FROZEN":
+        gate["certification_decision"] = "fail"
+        gate["certification_status"] = "uncertified"
     elif final_status == "FAILED":
         gate["certification_decision"] = "fail"
         gate["certification_status"] = "uncertified"
@@ -255,22 +261,33 @@ def _evaluate_certification_gate(
         gate["certification_decision"] = "malformed"
         gate["certification_status"] = "malformed"
         gate["block_reason"] = (
-            "done_certification_record has invalid final_status; expected PASSED|FAILED."
+            "done_certification_record has invalid final_status; expected PASSED|WARNED|FROZEN|FAILED."
         )
         gate["gate_passed"] = False
         return gate
 
-    if final_status != "PASSED":
+    if final_status in {"FAILED", "FROZEN"}:
         gate["block_reason"] = (
-            "done_certification_record must have final_status='PASSED' for promotion."
+            "done_certification_record must have final_status='PASSED' (or WARNED with policy permit) for promotion."
         )
         gate["gate_passed"] = False
         return gate
 
-    if system_response != "allow":
+    allow_warn_promotion = False
+    certification_policy = artifact.get("certification_policy")
+    if isinstance(certification_policy, dict):
+        allow_warn_promotion = bool(certification_policy.get("allow_warn_promotion", False))
+
+    if system_response not in {"allow", "warn"}:
         gate["block_reason"] = (
-            "done_certification_record must have system_response='allow' "
+            "done_certification_record must have system_response='allow' or 'warn' "
             "for promotion."
+        )
+        gate["gate_passed"] = False
+        return gate
+    if final_status == "WARNED" and (system_response != "warn" or not allow_warn_promotion):
+        gate["block_reason"] = (
+            "done_certification_record WARNED status requires certification_policy.allow_warn_promotion=true for promotion."
         )
         gate["gate_passed"] = False
         return gate
@@ -283,7 +300,19 @@ def _evaluate_certification_gate(
         gate["gate_passed"] = False
         return gate
 
-    for check_name in ("replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency"):
+    for check_name in (
+        "replay",
+        "regression",
+        "contracts",
+        "reliability",
+        "fail_closed",
+        "control_consistency",
+        "trace_linkage",
+        "trust_spine_invariants",
+        "trust_spine_evidence_completeness",
+        "trust_spine_evidence_cohesion",
+        "system_readiness",
+    ):
         check_entry = check_results.get(check_name)
         if not isinstance(check_entry, dict):
             gate["certification_decision"] = "malformed"
