@@ -1,0 +1,323 @@
+{
+  "artifact_type": "mvp_hardening_report",
+  "runs_executed": 5,
+  "determinism_pass_rate": 0.2,
+  "decision_sequence_consistency": {
+    "consistent": false,
+    "reference_sequence": [
+      {
+        "step": 1,
+        "decision": "continue",
+        "reason_code": "continue_initial",
+        "enforcement": "blocked"
+      }
+    ],
+    "run_sequences": [
+      [
+        {
+          "step": 1,
+          "decision": "continue",
+          "reason_code": "continue_initial",
+          "enforcement": "blocked"
+        }
+      ],
+      [
+        {
+          "step": 1,
+          "decision": "continue",
+          "reason_code": "continue_initial",
+          "enforcement": "blocked"
+        }
+      ],
+      [
+        {
+          "step": 1,
+          "decision": "continue",
+          "reason_code": "continue_initial",
+          "enforcement": "blocked"
+        }
+      ],
+      [
+        {
+          "step": 1,
+          "decision": "continue",
+          "reason_code": "continue_initial",
+          "enforcement": "blocked"
+        }
+      ],
+      [
+        {
+          "step": 1,
+          "decision": "continue",
+          "reason_code": "continue_initial",
+          "enforcement": "blocked"
+        }
+      ]
+    ]
+  },
+  "failure_case_results": {
+    "A_missing_artifact": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "control_loop_error"
+      ],
+      "blocked_or_freeze": true,
+      "error": "artifact must be a dict"
+    },
+    "B_missing_eval": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "control_loop_error"
+      ],
+      "blocked_or_freeze": true,
+      "error": "artifact must be a dict"
+    },
+    "C_indeterminate_eval": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "budget_invalid",
+        "deny_budget_invalid",
+        "indeterminate_failure",
+        "trust_breach"
+      ],
+      "blocked_or_freeze": true,
+      "error": null
+    },
+    "D_schema_violation": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "control_loop_error"
+      ],
+      "blocked_or_freeze": true,
+      "error": "artifact missing required trace linkage field: trace_id"
+    },
+    "E_replay_mismatch": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "budget_warning",
+        "deny_trust_breach",
+        "trust_breach"
+      ],
+      "blocked_or_freeze": true,
+      "error": null
+    },
+    "F_trace_missing": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "control_loop_error"
+      ],
+      "blocked_or_freeze": true,
+      "error": "artifact missing required trace linkage field: trace_id"
+    },
+    "G_conflicting_signals": {
+      "actual_status": "blocked",
+      "actual_response": "block",
+      "actual_decision": "deny",
+      "reasons": [
+        "control_loop_error"
+      ],
+      "blocked_or_freeze": true,
+      "error": "replay_result failed validation: False was expected"
+    }
+  },
+  "replay_integrity_results": {
+    "decision_replay": {
+      "valid_case_match": true,
+      "valid_case_response": "allow",
+      "valid_case_reasons": [
+        "allow_healthy_eval_summary"
+      ],
+      "mismatch_triggers_freeze_or_block": true,
+      "mismatch_case_response": "block",
+      "mismatch_case_reasons": [
+        "budget_warning",
+        "deny_trust_breach",
+        "trust_breach"
+      ]
+    },
+    "execution_replay": {
+      "match": false,
+      "mismatch_freeze_or_block": true
+    }
+  },
+  "trace_integrity_results": {
+    "run_trace_checks": [
+      {
+        "run_index": 1,
+        "trace_id_present": true,
+        "sequence_has_reason_codes": true
+      },
+      {
+        "run_index": 2,
+        "trace_id_present": true,
+        "sequence_has_reason_codes": true
+      },
+      {
+        "run_index": 3,
+        "trace_id_present": true,
+        "sequence_has_reason_codes": true
+      },
+      {
+        "run_index": 4,
+        "trace_id_present": true,
+        "sequence_has_reason_codes": true
+      },
+      {
+        "run_index": 5,
+        "trace_id_present": true,
+        "sequence_has_reason_codes": true
+      }
+    ],
+    "all_run_traces_present": true,
+    "missing_trace_blocks": true
+  },
+  "remediation_quality_assessment": {
+    "remediation_plan_structured": true,
+    "remediation_plan_deterministic": false,
+    "remediation_plan_relevant": true
+  },
+  "operator_clarity_assessment": {
+    "build_summary_readable": true,
+    "next_step_actionable": true
+  },
+  "detected_failure_modes": [
+    "budget_invalid",
+    "budget_warning",
+    "control_loop_error",
+    "deny_budget_invalid",
+    "deny_trust_breach",
+    "indeterminate_failure",
+    "trust_breach"
+  ],
+  "drift_signals": [
+    "execution_replay_mismatch"
+  ],
+  "pass_fail": false,
+  "blocking_issues": [
+    "determinism_deviation_detected"
+  ],
+  "created_at": "2026-04-03T00:00:00Z",
+  "trace_id": "trace-batch-mvp-harden-001",
+  "evidence": {
+    "determinism_runs": [
+      {
+        "run_index": 1,
+        "execution_fingerprint": "636a9b28896488836f2dac6266b133ebecab7a1695433aab8e426f665ecbed93",
+        "control_decision_sequence": [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial",
+            "enforcement": "blocked"
+          }
+        ],
+        "output_artifact_hashes": {
+          "roadmap_multi_batch_run_result": "a4c9565eee8052a69fdd7d66816434959d7485896b2743ef4ad02462b3a82c3f",
+          "build_summary": "8dacdc7afc28f231d71987370b769dc514f58234f6a92a7dbfd7d2eb1e3a11e9",
+          "next_step_recommendation": "bb5d8a432aa4d02803871e9ff24324e85394782bc27d40d21cfdcbb32aa81f5e",
+          "core_system_integration_validation": "dfcce346aa4ba16d9cc104e135704b7c497ce273e4b44419964232a87e07defd"
+        },
+        "eval_summary_rollup": "cbac1eaf7d00fe73714a64678ca843c6ad04d86c64953fcde571d90f1e6bb9d1",
+        "trace_id": "trace-batch-mvp-harden-001"
+      },
+      {
+        "run_index": 2,
+        "execution_fingerprint": "08712cac58f0434e940d442fd8b6f6ed9a279e2677f482f967cff8e3874d2212",
+        "control_decision_sequence": [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial",
+            "enforcement": "blocked"
+          }
+        ],
+        "output_artifact_hashes": {
+          "roadmap_multi_batch_run_result": "099e3b7fb3aebcf9ac56c8a4c1970aeb299d45424333c8f6c3b6f4552b30ef4c",
+          "build_summary": "478b164435335c03089a46fca873ffec83f1bdb6b63e412080ff8ef19025a994",
+          "next_step_recommendation": "6a29dfe6837dcf10e3aa51621cd8a8f82ab1a2af075526265ed8adc718a36032",
+          "core_system_integration_validation": "b352ff4fee054c474c89c3b7ebff533eb5f777a4d527e88d12959f608c74c3a3"
+        },
+        "eval_summary_rollup": "cbac1eaf7d00fe73714a64678ca843c6ad04d86c64953fcde571d90f1e6bb9d1",
+        "trace_id": "trace-batch-mvp-harden-001"
+      },
+      {
+        "run_index": 3,
+        "execution_fingerprint": "3bfcd02f0f091e3c6e4c4c8002bfa58ec0a0b9c1df7d83a337d882a6781cd313",
+        "control_decision_sequence": [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial",
+            "enforcement": "blocked"
+          }
+        ],
+        "output_artifact_hashes": {
+          "roadmap_multi_batch_run_result": "ccfcda4bb1578cf550d51eb3be02627ce2fc2a3527a37bfc4b08f726f01572cc",
+          "build_summary": "50da7dd4b3468fff43f30b7bec0d53b7529e643a22e8b803a0dc799e06d10fc8",
+          "next_step_recommendation": "7f9ed2ba35b3cd028d153d8818ff7407774819fe10648c050f2aac48170787dc",
+          "core_system_integration_validation": "92578f77c01c1b90b70bc768440f128728b13a16a1ae136d57ee6e78df307fcb"
+        },
+        "eval_summary_rollup": "cbac1eaf7d00fe73714a64678ca843c6ad04d86c64953fcde571d90f1e6bb9d1",
+        "trace_id": "trace-batch-mvp-harden-001"
+      },
+      {
+        "run_index": 4,
+        "execution_fingerprint": "e4b194bce3ebb2546b35581f02c0ed0b2faca1363a271b90318eb762bddb14a1",
+        "control_decision_sequence": [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial",
+            "enforcement": "blocked"
+          }
+        ],
+        "output_artifact_hashes": {
+          "roadmap_multi_batch_run_result": "a58ca3b215f06b8b5e583f4f7b5df3b7a0230dd6a9bf318fab208d11a136fc49",
+          "build_summary": "b06442469fe1cdf158ba5fdb493fc7707edfee44d7ce61e50e5a8923c04de222",
+          "next_step_recommendation": "f193cab1da70d8eb77be43ca4f5620eb9f294d7b7ff08cbb891e38a6e2004f97",
+          "core_system_integration_validation": "30b0e88ef6cf86d41f69f435533850c340b9b7671e2726aa0f626c3fd69ebc3a"
+        },
+        "eval_summary_rollup": "cbac1eaf7d00fe73714a64678ca843c6ad04d86c64953fcde571d90f1e6bb9d1",
+        "trace_id": "trace-batch-mvp-harden-001"
+      },
+      {
+        "run_index": 5,
+        "execution_fingerprint": "a1fffe13ea993c451cb1a991fdc58d4b9cdb9b867895d8faba47792212fec575",
+        "control_decision_sequence": [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial",
+            "enforcement": "blocked"
+          }
+        ],
+        "output_artifact_hashes": {
+          "roadmap_multi_batch_run_result": "6f6bad749d2e453194ae248ae384946fe8cc1e6b4b7586420e5615e00c07fff1",
+          "build_summary": "f77da30383a7694d558d63f314684773b4b999af5e799281aae87e7403e2c6bd",
+          "next_step_recommendation": "c4c1ecb1bfd24ef8e5f2198e6fed7b6a50a545dc5998f54123b729261740081a",
+          "core_system_integration_validation": "f0aafb7fc74bba8d333fa1e0119731939fea4e2d7267934d2d11a41d7025181b"
+        },
+        "eval_summary_rollup": "cbac1eaf7d00fe73714a64678ca843c6ad04d86c64953fcde571d90f1e6bb9d1",
+        "trace_id": "trace-batch-mvp-harden-001"
+      }
+    ],
+    "failure_pattern_consistency": {
+      "normalized_key_consistent": true,
+      "normalized_key": "budget_warning|deny_trust_breach|trust_breach",
+      "eval_generation_behavior_consistent": true,
+      "remediation_mapping_consistent": true
+    }
+  }
+}
