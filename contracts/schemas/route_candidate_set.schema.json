@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/route_candidate_set.schema.json",
+  "title": "Route Candidate Set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_set_id",
+    "task_type",
+    "candidates"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "route_candidate_set"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "candidate_set_id": {
+      "type": "string",
+      "pattern": "^rcs-[a-f0-9]{16}$"
+    },
+    "task_type": {
+      "type": "string"
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_key",
+          "model_id",
+          "estimated_cost",
+          "estimated_latency_ms"
+        ],
+        "properties": {
+          "route_key": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "estimated_cost": {
+            "type": "number",
+            "minimum": 0
+          },
+          "estimated_latency_ms": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

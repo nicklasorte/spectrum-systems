@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/improvement_recommendation_record.schema.json",
+  "title": "Improvement Recommendation Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "recommendation_id",
+    "source_signal_ids",
+    "recommendation",
+    "target_area"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "improvement_recommendation_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "recommendation_id": {
+      "type": "string",
+      "pattern": "^irr-[a-f0-9]{16}$"
+    },
+    "source_signal_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_area": {
+      "type": "string"
+    }
+  }
+}

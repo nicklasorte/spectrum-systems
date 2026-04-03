@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trust_posture_snapshot.schema.json",
+  "title": "Trust Posture Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "snapshot_id",
+    "signals",
+    "posture",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "trust_posture_snapshot"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "pattern": "^tps-[a-f0-9]{16}$"
+    },
+    "signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "posture": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "watch",
+        "degraded"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

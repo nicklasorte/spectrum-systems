@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/model_route_comparison_record.schema.json",
+  "title": "Model Route Comparison Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "comparison_id",
+    "route_key",
+    "champion_model_id",
+    "challenger_model_id",
+    "winner"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "model_route_comparison_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "comparison_id": {
+      "type": "string",
+      "pattern": "^mrc-[a-f0-9]{16}$"
+    },
+    "route_key": {
+      "type": "string"
+    },
+    "champion_model_id": {
+      "type": "string"
+    },
+    "challenger_model_id": {
+      "type": "string"
+    },
+    "winner": {
+      "type": "string",
+      "enum": [
+        "champion",
+        "challenger",
+        "tie"
+      ]
+    },
+    "metrics": {
+      "type": "object"
+    }
+  }
+}

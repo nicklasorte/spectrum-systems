@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/drift_signal_record.schema.json",
+  "title": "Drift Signal Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "signal_type",
+    "artifact_family",
+    "severity",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "drift_signal_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "signal_id": {
+      "type": "string",
+      "pattern": "^dsr-[a-f0-9]{16}$"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "distribution",
+        "quality",
+        "coverage"
+      ]
+    },
+    "artifact_family": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

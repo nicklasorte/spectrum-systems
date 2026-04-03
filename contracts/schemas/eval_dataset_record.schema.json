@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_dataset_record.schema.json",
+  "title": "Eval Dataset Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "dataset_id",
+    "dataset_version",
+    "records",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "eval_dataset_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "slice_id",
+          "input_ref",
+          "expected_ref"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "slice_id": {
+            "type": "string"
+          },
+          "input_ref": {
+            "type": "string"
+          },
+          "expected_ref": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_source_admission_record.schema.json",
+  "title": "Context Source Admission Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "source_id",
+    "decision",
+    "reason"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "context_source_admission_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^csar-[a-f0-9]{16}$"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "admit",
+        "exclude"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trace_diff_report.schema.json",
+  "title": "Trace Diff Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "diff_id",
+    "left_run_id",
+    "right_run_id",
+    "diffs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "trace_diff_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "diff_id": {
+      "type": "string",
+      "pattern": "^tdr-[a-f0-9]{16}$"
+    },
+    "left_run_id": {
+      "type": "string"
+    },
+    "right_run_id": {
+      "type": "string"
+    },
+    "diffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "left",
+          "right"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "left": {},
+          "right": {}
+        }
+      }
+    }
+  }
+}

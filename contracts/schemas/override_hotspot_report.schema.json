@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/override_hotspot_report.schema.json",
+  "title": "Override Hotspot Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "hotspots"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "override_hotspot_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^ohr-[a-f0-9]{16}$"
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "count"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

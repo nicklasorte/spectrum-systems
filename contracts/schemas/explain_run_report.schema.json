@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/explain_run_report.schema.json",
+  "title": "Explain Run Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "run_id",
+    "failure_summary",
+    "hotspots"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "explain_run_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^exr-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "failure_summary": {
+      "type": "string"
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

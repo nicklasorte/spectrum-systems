@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evidence_gap_hotspot_report.schema.json",
+  "title": "Evidence Gap Hotspot Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "hotspots"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "evidence_gap_hotspot_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^egh-[a-f0-9]{16}$"
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_family",
+          "missing_evidence_count"
+        ],
+        "properties": {
+          "artifact_family": {
+            "type": "string"
+          },
+          "missing_evidence_count": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

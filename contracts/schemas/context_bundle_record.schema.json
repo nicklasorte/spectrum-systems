@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_bundle_record.schema.json",
+  "title": "Context Bundle Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "recipe_id",
+    "inputs",
+    "resolved_sources",
+    "missing_required_sources"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "context_bundle_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^cbr-[a-f0-9]{16}$"
+    },
+    "recipe_id": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "resolved_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_required_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

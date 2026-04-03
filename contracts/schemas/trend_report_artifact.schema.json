@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trend_report_artifact.schema.json",
+  "title": "Trend Report Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trend_id",
+    "window",
+    "series"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "trend_report_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trend_id": {
+      "type": "string",
+      "pattern": "^tra-[a-f0-9]{16}$"
+    },
+    "window": {
+      "type": "string"
+    },
+    "series": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bucket",
+          "value"
+        ],
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

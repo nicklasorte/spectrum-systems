@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_regression_report.schema.json",
+  "title": "Eval Regression Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "baseline_run_id",
+    "candidate_run_id",
+    "regressed_case_ids",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "eval_regression_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^err-[a-f0-9]{16}$"
+    },
+    "baseline_run_id": {
+      "type": "string"
+    },
+    "candidate_run_id": {
+      "type": "string"
+    },
+    "regressed_case_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "regression_detected"
+      ]
+    }
+  }
+}

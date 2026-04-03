@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/routing_decision_record.schema.json",
+  "title": "Routing Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "policy_id",
+    "policy_version",
+    "selected_route",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "routing_decision_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^rdr-[a-f0-9]{16}$"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "selected_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_key",
+        "model_id"
+      ],
+      "properties": {
+        "route_key": {
+          "type": "string"
+        },
+        "model_id": {
+          "type": "string"
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "run_id"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
