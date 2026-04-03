@@ -29,7 +29,7 @@
   "contracts": [
     {
       "artifact_type": "adaptive_execution_observability",
-      "artifact_class": "observability",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -42,7 +42,7 @@
     },
     {
       "artifact_type": "adaptive_execution_trend_report",
-      "artifact_class": "observability",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
