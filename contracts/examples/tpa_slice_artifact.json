@@ -1,6 +1,6 @@
 {
   "artifact_type": "tpa_slice_artifact",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_id": "tpa:run-001:AI-01-P",
   "run_id": "run-001",
   "trace_id": "trace-001",
@@ -17,6 +17,18 @@
       "pqx_sequence_runner.execute_sequence_run"
     ],
     "abstraction_intent": "reuse_existing",
+    "context_bundle_ref": "context_bundle_v2:ctx2-1111111111111111",
+    "known_risk_refs": [
+      "risk_register:risk-42"
+    ],
+    "prior_failure_pattern_refs": [
+      "failure_pattern:repeat-unused-helper"
+    ],
+    "modules_affected": [
+      "spectrum_systems/modules/runtime/pqx_sequence_runner.py"
+    ],
+    "improvement_objective": "Integrate governed context into TPA planning and enforce known risk handling.",
+    "context_rationale": "Recent review/eval failures show recurring risk and must be addressed in this slice.",
     "constraints_acknowledged": {
       "build_small": true,
       "no_redesign": true

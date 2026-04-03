@@ -19,7 +19,7 @@
   ],
   "properties": {
     "artifact_type": {"type": "string", "const": "tpa_slice_artifact"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "artifact_id": {"type": "string", "minLength": 1},
     "run_id": {"type": "string", "minLength": 1},
     "trace_id": {"type": "string", "minLength": 1},
@@ -41,12 +41,30 @@
     "plan_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_kind", "files_touched", "seams_reused", "abstraction_intent", "constraints_acknowledged"],
+      "required": [
+        "artifact_kind",
+        "files_touched",
+        "seams_reused",
+        "abstraction_intent",
+        "constraints_acknowledged",
+        "context_bundle_ref",
+        "known_risk_refs",
+        "prior_failure_pattern_refs",
+        "modules_affected",
+        "improvement_objective",
+        "context_rationale"
+      ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "plan"},
         "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "seams_reused": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "abstraction_intent": {"type": "string", "enum": ["reuse_existing", "minimal_extension"]},
+        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
+        "known_risk_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "prior_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "modules_affected": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "improvement_objective": {"$ref": "#/$defs/non_empty"},
+        "context_rationale": {"$ref": "#/$defs/non_empty"},
         "constraints_acknowledged": {
           "type": "object",
           "additionalProperties": false,
@@ -61,7 +79,20 @@
     "build_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_kind", "files_touched", "new_layers", "unused_helpers", "unnecessary_indirection", "plan_scope_match", "abstraction_justifications"],
+      "required": [
+        "artifact_kind",
+        "files_touched",
+        "new_layers",
+        "unused_helpers",
+        "unnecessary_indirection",
+        "plan_scope_match",
+        "abstraction_justifications",
+        "context_bundle_ref",
+        "known_failure_patterns_avoided",
+        "existing_abstractions_satisfied",
+        "speculative_expansion_detected",
+        "reused_module_refs"
+      ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "build"},
         "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
@@ -80,13 +111,32 @@
               "justification": {"$ref": "#/$defs/non_empty"}
             }
           }
-        }
+        },
+        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
+        "known_failure_patterns_avoided": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/non_empty"},
+          "uniqueItems": true
+        },
+        "existing_abstractions_satisfied": {"type": "boolean"},
+        "speculative_expansion_detected": {"type": "boolean"},
+        "reused_module_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
       }
     },
     "simplify_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_kind", "source_build_artifact_id", "actions", "behavior_changed", "new_layers_introduced"],
+      "required": [
+        "artifact_kind",
+        "source_build_artifact_id",
+        "actions",
+        "behavior_changed",
+        "new_layers_introduced",
+        "context_bundle_ref",
+        "redundant_code_paths_removed",
+        "duplicate_logic_collapsed",
+        "pattern_consistency_refs"
+      ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "simplify"},
         "source_build_artifact_id": {"$ref": "#/$defs/non_empty"},
@@ -98,13 +148,33 @@
           }
         },
         "behavior_changed": {"type": "boolean"},
-        "new_layers_introduced": {"type": "integer", "minimum": 0}
+        "new_layers_introduced": {"type": "integer", "minimum": 0},
+        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
+        "redundant_code_paths_removed": {"type": "integer", "minimum": 0},
+        "duplicate_logic_collapsed": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "pattern_consistency_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
       }
     },
     "gate_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_kind", "build_artifact_id", "simplify_artifact_id", "behavioral_equivalence", "contract_valid", "tests_valid", "selected_pass", "selection_reason"],
+      "required": [
+        "artifact_kind",
+        "build_artifact_id",
+        "simplify_artifact_id",
+        "behavioral_equivalence",
+        "contract_valid",
+        "tests_valid",
+        "selected_pass",
+        "selection_reason",
+        "context_bundle_ref",
+        "review_signal_refs",
+        "eval_signal_refs",
+        "addressed_failure_pattern_refs",
+        "unaddressed_failure_pattern_refs",
+        "high_risk_unmitigated",
+        "risk_mitigation_refs"
+      ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "gate"},
         "build_artifact_id": {"$ref": "#/$defs/non_empty"},
@@ -113,7 +183,14 @@
         "contract_valid": {"type": "boolean"},
         "tests_valid": {"type": "boolean"},
         "selected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
-        "selection_reason": {"$ref": "#/$defs/non_empty"}
+        "selection_reason": {"$ref": "#/$defs/non_empty"},
+        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
+        "review_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "eval_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "addressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "unaddressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "high_risk_unmitigated": {"type": "boolean"},
+        "risk_mitigation_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
       }
     }
   }

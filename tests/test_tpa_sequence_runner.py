@@ -32,6 +32,12 @@ def _tpa_slice_requests() -> list[dict]:
                 "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
                 "seams_reused": ["pqx_sequence_runner.execute_sequence_run"],
                 "abstraction_intent": "reuse_existing",
+                "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+                "known_risk_refs": ["risk_register:risk-high-1"],
+                "prior_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+                "modules_affected": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+                "improvement_objective": "Prevent known context-linked failures while keeping TPA bounded.",
+                "context_rationale": "Recent failures and review/eval signals show repeated helper/indirection regressions.",
                 "constraints_acknowledged": {"build_small": True, "no_redesign": True},
             },
         },
@@ -60,6 +66,11 @@ def _executor(payload: dict) -> dict:
             "unnecessary_indirection": [],
             "plan_scope_match": True,
             "abstraction_justifications": [],
+            "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+            "known_failure_patterns_avoided": ["failure_pattern:unused-helper-regression"],
+            "existing_abstractions_satisfied": True,
+            "speculative_expansion_detected": False,
+            "reused_module_refs": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
         }
     elif slice_id.endswith("-S"):
         result["tpa_simplify"] = {
@@ -68,6 +79,10 @@ def _executor(payload: dict) -> dict:
             "actions": ["reduce_nesting", "rename_for_clarity"],
             "behavior_changed": False,
             "new_layers_introduced": 0,
+            "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+            "redundant_code_paths_removed": 1,
+            "duplicate_logic_collapsed": [],
+            "pattern_consistency_refs": ["pattern:pqx-tpa-runtime-style"],
         }
     elif slice_id.endswith("-G"):
         selected = _deterministic_gate_selection(
@@ -85,6 +100,13 @@ def _executor(payload: dict) -> dict:
             "tests_valid": True,
             "selected_pass": selected,
             "selection_reason": "equivalence proven and deterministic control selected pass",
+            "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+            "review_signal_refs": ["review_artifact:rvw-001"],
+            "eval_signal_refs": ["eval_result:ev-001"],
+            "addressed_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+            "unaddressed_failure_pattern_refs": [],
+            "high_risk_unmitigated": False,
+            "risk_mitigation_refs": ["mitigation:risk-high-1-covered"],
         }
     return result
 
@@ -157,4 +179,62 @@ def test_tpa_gate_fails_on_nondeterministic_selection(tmp_path: Path) -> None:
             trace_id="trace-tpa-batch-003",
             execute_slice=_bad_gate_executor,
             clock=FixedClock([f"2026-04-03T00:20:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_tpa_build_fails_when_prior_failure_patterns_not_avoided(tmp_path: Path) -> None:
+    def _bad_build_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-B"):
+            response["tpa_build"]["known_failure_patterns_avoided"] = []
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="prior failure patterns"):
+        execute_sequence_run(
+            slice_requests=_tpa_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-tpa-004",
+            run_id="run-tpa-004",
+            trace_id="trace-tpa-batch-004",
+            execute_slice=_bad_build_executor,
+            clock=FixedClock([f"2026-04-03T00:30:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_tpa_gate_blocks_unaddressed_failure_patterns(tmp_path: Path) -> None:
+    def _bad_gate_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["unaddressed_failure_pattern_refs"] = ["failure_pattern:unused-helper-regression"]
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="unaddressed repeated failure patterns"):
+        execute_sequence_run(
+            slice_requests=_tpa_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-tpa-005",
+            run_id="run-tpa-005",
+            trace_id="trace-tpa-batch-005",
+            execute_slice=_bad_gate_executor,
+            clock=FixedClock([f"2026-04-03T00:40:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_tpa_gate_blocks_high_risk_without_mitigation(tmp_path: Path) -> None:
+    def _bad_gate_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["high_risk_unmitigated"] = True
+            response["tpa_gate"]["risk_mitigation_refs"] = []
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="high-risk context lacks mitigation"):
+        execute_sequence_run(
+            slice_requests=_tpa_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-tpa-006",
+            run_id="run-tpa-006",
+            trace_id="trace-tpa-batch-006",
+            execute_slice=_bad_gate_executor,
+            clock=FixedClock([f"2026-04-03T00:50:{i:02d}Z" for i in range(1, 40)]),
         )
