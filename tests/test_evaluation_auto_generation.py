@@ -14,8 +14,13 @@ from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
     _FAILURE_CLASS_PREVENTION_MAP,
     EvalCaseGenerationError,
+    build_failure_pattern_record,
+    build_failure_learning_bundle,
+    enforce_failure_pattern_eval_gate,
+    generate_eval_case_from_failure_pattern,
     generate_failure_derived_eval_cases_from_review_signal,
     generate_failure_eval_case,
+    normalize_failure_pattern,
     map_failure_class_to_prevention_rule,
     register_failure_eval_case,
     build_review_eval_generation_report,
@@ -288,3 +293,119 @@ def test_review_eval_generation_report_deterministic() -> None:
     )
     assert report == second
     assert report["high_priority_eval_count"] == 1
+
+
+def test_failure_pattern_normalization_is_deterministic() -> None:
+    kwargs = {
+        "stop_reason": "missing_required_signal",
+        "root_cause_chain": [
+            {"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"},
+            {"step": "control_gate", "reason": "control_block"},
+        ],
+        "blocking_conditions": ["PROP_REVIEW_EVAL_NOT_INGESTED", "AUTH_REVIEW_REQUIRED"],
+    }
+    first = normalize_failure_pattern(**kwargs)
+    second = normalize_failure_pattern(**kwargs)
+    assert first == second
+
+
+def test_failure_pattern_record_reuses_prior_record_and_increments_count() -> None:
+    seed = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-1",
+        related_artifacts=["core_system_integration_validation:CSI-001"],
+        observed_at="2026-04-01T00:00:00Z",
+    )
+    second = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-2",
+        related_artifacts=["remediation_plan:RMP-001"],
+        prior_record=seed,
+        observed_at="2026-04-02T00:00:00Z",
+    )
+    assert second["pattern_id"] == seed["pattern_id"]
+    assert second["occurrence_count"] == 2
+    assert second["first_seen"] == "2026-04-01T00:00:00Z"
+    assert second["last_seen"] == "2026-04-02T00:00:00Z"
+    assert second["trace_ids"] == ["trace-1", "trace-2"]
+
+
+def test_failure_pattern_eval_generation_honors_threshold_and_dedupes() -> None:
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-1",
+        observed_at="2026-04-01T00:00:00Z",
+    )
+    assert generate_eval_case_from_failure_pattern(failure_pattern_record=pattern, threshold=2) is None
+
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-2",
+        prior_record=pattern,
+        observed_at="2026-04-02T00:00:00Z",
+    )
+    generated = generate_eval_case_from_failure_pattern(failure_pattern_record=pattern, threshold=2)
+    assert generated is not None
+    assert generated["created_from"] == "failure_trace"
+
+    duplicate = generate_eval_case_from_failure_pattern(
+        failure_pattern_record=pattern,
+        threshold=2,
+        existing_eval_case_ids=[generated["eval_case_id"]],
+    )
+    assert duplicate is None
+
+
+def test_failure_learning_bundle_links_remediation_and_required_eval_set() -> None:
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-1",
+        observed_at="2026-04-01T00:00:00Z",
+    )
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-2",
+        prior_record=pattern,
+        observed_at="2026-04-02T00:00:00Z",
+    )
+    bundle = build_failure_learning_bundle(
+        failure_pattern_record=pattern,
+        remediation_plan={"plan_id": "RMP-LEARN-001"},
+        threshold=2,
+    )
+    assert bundle["failure_pattern_record_ref"].startswith("failure_pattern_record:")
+    assert bundle["remediation_plan_ref"] == "remediation_plan:RMP-LEARN-001"
+    assert len(bundle["required_eval_case_ids"]) == 1
+
+
+def test_failure_pattern_eval_gate_freezes_when_threshold_violated() -> None:
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-1",
+        observed_at="2026-04-01T00:00:00Z",
+    )
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-2",
+        prior_record=pattern,
+        observed_at="2026-04-02T00:00:00Z",
+    )
+    decision = enforce_failure_pattern_eval_gate(failure_pattern_record=pattern, threshold=2)
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "freeze"

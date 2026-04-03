@@ -323,4 +323,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-RDX-006A-2026-04-03.md | RDX-006A (BATCH-M) — Multi-Batch Stop-Reason Taxonomy Alignment + Boundary-Audit Closure | Active |
 | docs/review-actions/PLAN-BATCH-Z-2026-04-03.md | BATCH-Z — Final Consolidation and Cross-Layer Validation | Active |
 | docs/review-actions/PLAN-BATCH-RM-2026-04-03.md | BATCH-RM — Remediation Automation Layer | Active |
+| docs/review-actions/PLAN-BATCH-L-2026-04-03.md | BATCH-L — Failure Learning Loop | Active |
 | docs/review-actions/PLAN-BATCH-U-2026-04-03.md | BATCH-U — Operator / Usability Layer | Active |
