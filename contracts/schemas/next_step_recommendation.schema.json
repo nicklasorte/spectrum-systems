@@ -13,13 +13,15 @@
     "blockers",
     "required_reviews",
     "risk_summary",
+    "next_step",
+    "artifact_refs",
     "trace_id",
     "created_at",
     "source_refs"
   ],
   "properties": {
     "recommendation_id": {"type": "string", "pattern": "^NSR-[A-F0-9]{12}$"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "next_batch_id": {"type": ["string", "null"], "pattern": "^BATCH-[A-Z]$"},
     "why": {
       "type": "array",
@@ -46,6 +48,52 @@
         "signals": {
           "type": "array",
           "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
+      }
+    },
+    "next_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "why_now", "blocked_by", "watchouts", "required_artifacts"],
+      "properties": {
+        "action": {"type": "string", "minLength": 3},
+        "why_now": {"type": "string", "minLength": 3},
+        "blocked_by": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "watchouts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "required_artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
+      }
+    },
+    "artifact_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_multi_batch_run_result",
+        "core_system_integration_validation",
+        "trace_id",
+        "replay_refs"
+      ],
+      "properties": {
+        "roadmap_multi_batch_run_result": {"type": "string", "minLength": 3},
+        "core_system_integration_validation": {"type": "string", "minLength": 3},
+        "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+        "replay_refs": {
+          "type": "array",
           "items": {"type": "string", "minLength": 3},
           "uniqueItems": true
         }

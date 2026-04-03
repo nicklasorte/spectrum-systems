@@ -116,6 +116,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
+    assert first["build_summary"]["run_outcome"]["status"] == "success"
+    assert first["build_summary"]["artifact_index"]["next_step_recommendation"].startswith("next_step_recommendation:NSR-")
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -136,12 +138,19 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
 
     summary = result["build_summary"]
     assert summary["failure_surface"]["stop_reason"] == "max_batches_reached"
-    assert "integration_blockers:PROP_REVIEW_EVAL_NOT_INGESTED" == summary["failure_surface"]["root_cause"]
-    assert "resolve blocking conditions" in summary["failure_surface"]["next_action"]
+    assert "blocking_condition:PROP_REVIEW_EVAL_NOT_INGESTED" in summary["failure_surface"]["root_cause"]
+    assert "resolve blocker PROP_REVIEW_EVAL_NOT_INGESTED" in summary["failure_surface"]["next_action"]
+    assert summary["failure_surface"]["blocker_refs"] == ["PROP_REVIEW_EVAL_NOT_INGESTED"]
+    assert any(ref.startswith("core_system_integration_validation:") for ref in summary["failure_surface"]["source_refs"])
+    assert summary["run_outcome"]["status"] == "blocked"
 
     recommendation = result["next_step_recommendation"]
     assert "PROP_REVIEW_EVAL_NOT_INGESTED" in recommendation["blockers"]
     assert "cross_layer_propagation_review" in recommendation["required_reviews"]
+    assert recommendation["next_step"]["action"] == summary["failure_surface"]["next_action"]
+    assert recommendation["next_step"]["blocked_by"] == summary["failure_surface"]["blocker_refs"]
+    assert any(item.startswith("primary_blocker=PROP_REVIEW_EVAL_NOT_INGESTED") for item in recommendation["next_step"]["watchouts"])
+    assert recommendation["artifact_refs"]["trace_id"] == recommendation["trace_id"]
 
 
 def test_authority_boundary_breaks_raise_risk_level() -> None:
@@ -163,3 +172,6 @@ def test_authority_boundary_breaks_raise_risk_level() -> None:
     assert result["core_system_integration_validation"]["authority_boundary_status"] == "violated"
     assert result["next_step_recommendation"]["risk_summary"]["level"] == "high"
     assert "control_authority_review" in result["next_step_recommendation"]["required_reviews"]
+    assert any(
+        "control_authority_review" in item for item in result["next_step_recommendation"]["next_step"]["watchouts"]
+    )

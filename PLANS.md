@@ -90,6 +90,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | Plan file | Item | Status |
+| docs/review-actions/PLAN-BATCH-Y1-2026-04-03.md | BATCH-Y1 — Operator Clarity Polish | Active |
 | docs/review-actions/PLAN-BATCH-Y-2026-04-03.md | BATCH-Y — Real-Use Shakeout + Friction Harvest | Active |
 | --- | --- | --- |
 | docs/review-actions/PLAN-BATCH-PA-2026-04-03.md | BATCH-PA — Narrow Fix: Program Layer Contract Preflight Block Closure | Active |

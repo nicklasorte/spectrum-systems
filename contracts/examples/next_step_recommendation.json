@@ -1,6 +1,6 @@
 {
   "recommendation_id": "NSR-7D568E86D860",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "next_batch_id": "BATCH-B",
   "why": [
     "bounded run completed one batch without authority violations",
@@ -14,6 +14,27 @@
       "determinism_status=deterministic",
       "authority_boundary_status=bounded",
       "replay_status=replayable"
+    ]
+  },
+  "next_step": {
+    "action": "execute next governed cycle for BATCH-B",
+    "why_now": "bounded run completed with no blockers and an eligible next batch exists",
+    "blocked_by": [],
+    "watchouts": [
+      "maintain fail-closed authority boundaries",
+      "verify replay status remains replayable before execution"
+    ],
+    "required_artifacts": [
+      "core_system_integration_validation:CSIV-EXAMPLE001",
+      "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+    ]
+  },
+  "artifact_refs": {
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+    "core_system_integration_validation": "core_system_integration_validation:CSIV-EXAMPLE001",
+    "trace_id": "trace-batch-u-example",
+    "replay_refs": [
+      "roadmap_execution_loop_validation:RLV-EXAMPLE001"
     ]
   },
   "trace_id": "trace-batch-u-example",

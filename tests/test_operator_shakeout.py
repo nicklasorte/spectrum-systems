@@ -56,6 +56,13 @@ def test_friction_classification_and_backlog_priority_are_traceable() -> None:
         for ref in item["source_friction_refs"]:
             assert ref in friction["scenarios_exercised"]
 
+    noisy = next(item for item in result["scenario_results"] if item["scenario_id"] == "SCN-NOISY_FAILURE_SURFACE")
+    summary = noisy["artifacts"]["build_summary"]
+    recommendation = noisy["artifacts"]["next_step_recommendation"]
+    assert summary["artifact_index"]["next_step_recommendation"] == f"next_step_recommendation:{recommendation['recommendation_id']}"
+    assert summary["failure_surface"]["source_refs"]
+    assert recommendation["next_step"]["required_artifacts"]
+
 
 def test_subset_execution_runs_only_requested_scenarios() -> None:
     result = run_operator_shakeout(
