@@ -783,3 +783,97 @@ def test_run_pqx_slice_regression_control_surface_influence_persisted_in_record(
     visibility = result["control_surface_gap_visibility"]
     assert visibility["control_surface_gap_influence"]["influenced_execution_block"] is True
     assert "control_surface_gap_packet_block" in visibility["control_surface_gap_influence"]["reason_codes"]
+
+
+def test_run_pqx_slice_fixture_decision_mode_is_explicit_and_text_path_do_not_drive_control(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs-containing-block-keyword",
+        pqx_output_text="this text says block and review but must not control",
+        fixture_decision_mode="allow",
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "complete"
+    record = json.loads(Path(result["slice_execution_record"]).read_text(encoding="utf-8"))
+    replay_payload = json.loads((Path.cwd() / record["replay_result_ref"]).read_text(encoding="utf-8"))
+    assert replay_payload["error_budget_status"]["budget_status"] == "healthy"
+
+
+def test_run_pqx_slice_fixture_decision_mode_explicit_variants(tmp_path: Path) -> None:
+    for mode, expected_status, expected_budget in (
+        ("allow", "complete", "healthy"),
+        ("review", "complete", "warning"),
+        ("block", "blocked", "invalid"),
+    ):
+        state_path = tmp_path / f"pqx_state-{mode}.json"
+        state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+        result = run_pqx_slice(
+            step_id="AI-01",
+            roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+            state_path=state_path,
+            runs_root=tmp_path / f"runs-{mode}",
+            pqx_output_text="deterministic",
+            fixture_decision_mode=mode,
+            clock=FixedClock(),
+        )
+        assert result["status"] == expected_status
+        step_dir = tmp_path / f"runs-{mode}" / "AI-01"
+        replay_paths = sorted(step_dir.glob("*.replay_result.json"))
+        assert replay_paths
+        replay_payload = json.loads(replay_paths[0].read_text(encoding="utf-8"))
+        assert replay_payload["error_budget_status"]["budget_status"] == expected_budget
+
+
+def test_run_pqx_slice_invalid_fixture_decision_mode_fails_closed(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="deterministic",
+        fixture_decision_mode="unknown-mode",
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "FIXTURE_DECISION_MODE_INVALID"
+
+
+def test_run_pqx_slice_does_not_mark_row_complete_pre_enforcement_and_allows_rerun(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    first = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="first",
+        fixture_decision_mode="allow",
+        clock=FixedClock(),
+    )
+    state_after_first = json.loads(state_path.read_text(encoding="utf-8"))
+    row = next(item for item in state_after_first["rows"] if item["step_id"] == "AI-01")
+    assert row["status"] == "running"
+
+    second = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="second",
+        fixture_decision_mode="allow",
+        clock=FixedClock(),
+    )
+
+    assert first["status"] == "complete"
+    assert second["status"] == "complete"

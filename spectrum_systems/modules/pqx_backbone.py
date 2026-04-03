@@ -300,6 +300,21 @@ def resolve_executable_row(
     }
 
 
+
+
+def mark_row_complete(*, state_path: Path, step_id: str, clock=utc_now) -> dict:
+    """Persist authoritative row completion only after control/enforcement ALLOW."""
+
+    if not isinstance(step_id, str) or not step_id.strip():
+        raise PQXBackboneError("step_id is required for completion transition")
+    state = load_state(state_path)
+    row_state = _ensure_row_state(state, step_id.strip())
+    row_state["status"] = "complete"
+    row_state["dependencies_satisfied"] = True
+    row_state["last_run"] = iso_now(clock)
+    save_state(state, state_path)
+    return row_state
+
 def _write_artifact(payload: dict, schema_name: str, path: Path) -> Path:
     _validate_with_schema(payload, schema_name)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -318,9 +333,12 @@ def run_pqx_backbone(
 ) -> dict:
     """Deprecated legacy entrypoint; routes to canonical runtime.pqx_slice_runner.run_pqx_slice."""
 
-    from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
+    from spectrum_systems.modules.runtime.pqx_slice_runner import (
+        confirm_slice_completion_after_enforcement_allow,
+        run_pqx_slice,
+    )
 
-    return run_pqx_slice(
+    result = run_pqx_slice(
         step_id=selected_step_id or "",
         roadmap_path=roadmap_path or LEGACY_EXECUTION_ROADMAP_PATH,
         state_path=state_path,
@@ -328,6 +346,16 @@ def run_pqx_backbone(
         clock=clock,
         pqx_output_text=pqx_output_text,
     )
+    if result.get("status") != "complete":
+        return result
+    confirmation = confirm_slice_completion_after_enforcement_allow(
+        slice_result=result,
+        state_path=state_path,
+        step_id=str(result.get("step_id") or selected_step_id or ""),
+    )
+    if confirmation.get("status") != "complete":
+        return confirmation
+    return result
 
 
 def schedule_next_bundle(

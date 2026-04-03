@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from spectrum_systems.contracts import validate_artifact
-from spectrum_systems.modules.pqx_backbone import REPO_ROOT
+from spectrum_systems.modules.pqx_backbone import REPO_ROOT, mark_row_complete
 from spectrum_systems.modules.runtime.codex_to_pqx_task_wrapper import run_wrapped_pqx_task
 from spectrum_systems.modules.runtime.control_loop import (
     ControlLoopError,
@@ -76,7 +76,7 @@ def _map_enforcement_label(integration_result: dict[str, Any]) -> str:
     return normalized
 
 
-def _derive_run_id(*, context: dict[str, Any], slices: list[dict[str, Any]], trace_id: str) -> str:
+def _derive_run_id(*, context: dict[str, Any], slices: list[dict[str, Any]]) -> str:
     raw = context.get("run_id")
     if isinstance(raw, str) and raw.strip():
         return raw.strip()
@@ -88,7 +88,7 @@ def _derive_run_id(*, context: dict[str, Any], slices: list[dict[str, Any]], tra
                 run_id = identity.get("run_id")
                 if isinstance(run_id, str) and run_id.strip():
                     return run_id.strip()
-    return trace_id
+    raise PQXSequentialLoopError("run_id is required in initial_context.run_id or slice.wrapper.task_identity.run_id")
 
 
 def _validate_trace_invariants(trace: dict[str, Any]) -> None:
@@ -115,6 +115,13 @@ def _validate_trace_invariants(trace: dict[str, Any]) -> None:
                     raise PQXSequentialLoopError(
                         f"trace invariant failed: required ref '{key}' missing for slice {slice_id}"
                     )
+        if status == "blocked":
+            wrapper_ref = row.get("wrapper_ref")
+            if not isinstance(wrapper_ref, str) or not wrapper_ref.strip():
+                raise PQXSequentialLoopError(
+                    f"trace invariant failed: blocked slice {slice_id} requires wrapper_ref evidence"
+                )
+
         if status == "completed":
             if row.get("final_slice_status") != "ALLOW":
                 raise PQXSequentialLoopError(
@@ -163,7 +170,7 @@ def run_pqx_sequential(
         "artifact_type": "pqx_sequential_execution_trace",
         "schema_version": "1.0.0",
         "trace_id": trace_id,
-        "run_id": _derive_run_id(context=context, slices=normalized_slices, trace_id=trace_id),
+        "run_id": _derive_run_id(context=context, slices=normalized_slices),
         "ordered_slice_ids": [],
         "slices": [],
         "authority_evidence_refs": [],
@@ -210,7 +217,7 @@ def run_pqx_sequential(
             authority_evidence_ref=required_context.get("authority_evidence_ref"),
         )
         if context_enforcement.status != "allow":
-            reason = ",".join(context_enforcement.blocking_reasons)
+            reason = ",".join(context_enforcement.blocking_reasons) or "context_enforcement_blocked"
             execution_trace["slices"].append(
                 {
                     "slice_id": slice_id,
@@ -223,7 +230,7 @@ def run_pqx_sequential(
                     "control_decision_summary": None,
                     "enforcement_result": {
                         "final_status": "block",
-                        "rationale": reason,
+                        "rationale": "context_enforcement",
                     },
                     "final_slice_status": "BLOCK",
                     "status": "blocked",
@@ -243,7 +250,7 @@ def run_pqx_sequential(
                 slice_request.get("pqx_output_text"), label=f"slice[{slice_id}].pqx_output_text"
             ),
         )
-        if runner_result.get("status") != "complete":
+        if runner_result.get("status") not in {"complete", "executed_pending_enforcement"}:
             reason = str(runner_result.get("reason") or "pqx slice execution failed")
             execution_trace["slices"].append(
                 {
@@ -257,7 +264,7 @@ def run_pqx_sequential(
                     "control_decision_summary": None,
                     "enforcement_result": {
                         "final_status": "block",
-                        "rationale": reason,
+                        "rationale": "slice_execution_failure",
                     },
                     "final_slice_status": "BLOCK",
                     "status": "blocked",
@@ -350,6 +357,18 @@ def run_pqx_sequential(
         slice_request["authority_evidence_ref"] = execution_record_ref
         if isinstance(slice_request.get("required_context"), dict):
             slice_request["required_context"]["authority_evidence_ref"] = execution_record_ref
+
+        if enforcement_label == "ALLOW":
+            task_identity = wrapper.get("task_identity") if isinstance(wrapper, Mapping) else None
+            task_step_id = task_identity.get("step_id") if isinstance(task_identity, Mapping) else None
+            mark_row_complete(
+                state_path=Path(
+                    _require_non_empty_string(
+                        slice_request.get("state_path"), label=f"slice[{slice_id}].state_path"
+                    )
+                ),
+                step_id=task_step_id or slice_id,
+            )
 
         if enforcement_label in {"BLOCK", "REQUIRE_REVIEW"}:
             execution_trace["final_status"] = enforcement_label

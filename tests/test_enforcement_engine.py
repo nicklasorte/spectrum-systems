@@ -180,3 +180,23 @@ def test_no_non_test_callers_of_legacy_enforcement_path() -> None:
             "spectrum_systems/modules/runtime/evaluation_enforcement_bridge.py",
         ]
     )
+
+
+def test_timestamp_override_supports_stable_enforcement_result_content() -> None:
+    decision = _decision("allow")
+    first = enforce_control_decision(decision, timestamp="2026-04-03T00:00:00Z")
+    second = enforce_control_decision(copy.deepcopy(decision), timestamp="2026-04-03T00:00:00Z")
+
+    assert first == second
+    assert first["timestamp"] == "2026-04-03T00:00:00Z"
+
+
+def test_live_mode_still_emits_timestamp_when_override_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(enforcement_engine, "_now_iso", lambda: "2026-04-03T00:00:30Z")
+    result = enforce_control_decision(_decision("allow"))
+    assert result["timestamp"] == "2026-04-03T00:00:30Z"
+
+
+def test_invalid_timestamp_override_fails_closed() -> None:
+    with pytest.raises(EnforcementError, match="timestamp override"):
+        enforce_control_decision(_decision("allow"), timestamp="")

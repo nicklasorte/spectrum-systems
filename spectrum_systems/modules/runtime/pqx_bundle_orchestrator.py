@@ -44,7 +44,10 @@ from spectrum_systems.modules.runtime.pqx_triage_planner import (
     build_triage_plan_record,
 )
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
-from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
+from spectrum_systems.modules.runtime.pqx_slice_runner import (
+    confirm_slice_completion_after_enforcement_allow,
+    run_pqx_slice,
+)
 from spectrum_systems.modules.runtime.pqx_judgment import build_pqx_judgment_record
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
 
@@ -563,6 +566,17 @@ def execute_bundle_run(
             )
             if slice_result.get("status") != "complete":
                 return {"execution_status": "failed", "error": slice_result.get("reason") or slice_result.get("block_type", "blocked")}
+            completion_confirmation = confirm_slice_completion_after_enforcement_allow(
+                slice_result=slice_result,
+                state_path=Path(bundle_state_path).parent / "pqx_state.json",
+                step_id=canonical_step_id,
+            )
+            if completion_confirmation.get("status") != "complete":
+                return {
+                    "execution_status": "failed",
+                    "error": completion_confirmation.get("reason")
+                    or completion_confirmation.get("block_type", "post_enforcement_blocked"),
+                }
             return {"execution_status": "success", **payload}
         executor = _default_executor
     else:

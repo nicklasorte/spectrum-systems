@@ -33,11 +33,16 @@ from spectrum_systems.modules.pqx_backbone import (
     RoadmapRow,
     iso_now,
     load_state,
+    mark_row_complete,
     parse_system_roadmap,
     resolve_executable_row,
     resolve_roadmap_authority,
     save_state,
     utc_now,
+)
+from spectrum_systems.modules.runtime.enforcement_engine import (
+    EnforcementError,
+    enforce_control_decision,
 )
 
 
@@ -157,6 +162,88 @@ def _block_payload(*, step_id: str, run_id: str, reason: str, block_type: str = 
         "run_id": run_id,
         "reason": reason,
     }
+
+
+def _resolve_repo_ref_path(path_ref: str) -> Path:
+    path = Path(path_ref)
+    return path if path.is_absolute() else (REPO_ROOT / path)
+
+
+def confirm_slice_completion_after_enforcement_allow(
+    *,
+    slice_result: dict,
+    state_path: Path,
+    step_id: str,
+    timestamp_override: str | None = None,
+) -> dict:
+    """Authorize final completion only after enforcement confirms ALLOW."""
+
+    if not isinstance(slice_result, dict):
+        raise PQXSliceRunnerError("slice_result must be an object")
+    if slice_result.get("status") != "complete":
+        return slice_result
+
+    run_id = str(slice_result.get("run_id") or "unknown-run")
+    normalized_step_id = str(slice_result.get("step_id") or step_id or "")
+    if not normalized_step_id:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason="step_id is required for post-enforcement completion confirmation",
+            block_type="POST_ENFORCEMENT_INVALID",
+        )
+
+    record_ref = slice_result.get("slice_execution_record")
+    if not isinstance(record_ref, str) or not record_ref:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason="slice_execution_record ref is required for post-enforcement completion confirmation",
+            block_type="POST_ENFORCEMENT_INVALID",
+        )
+
+    try:
+        execution_record = json.loads(_resolve_repo_ref_path(record_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=f"invalid slice_execution_record for post-enforcement completion confirmation: {exc}",
+            block_type="POST_ENFORCEMENT_INVALID",
+        )
+
+    control_ref = execution_record.get("control_decision_ref")
+    if not isinstance(control_ref, str) or not control_ref:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason="control_decision_ref missing in slice_execution_record",
+            block_type="POST_ENFORCEMENT_INVALID",
+        )
+
+    try:
+        decision_artifact = json.loads(_resolve_repo_ref_path(control_ref).read_text(encoding="utf-8"))
+        enforcement_result = enforce_control_decision(decision_artifact, timestamp=timestamp_override)
+    except (OSError, json.JSONDecodeError, EnforcementError) as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=f"post-enforcement completion confirmation failed closed: {exc}",
+            block_type="POST_ENFORCEMENT_INVALID",
+        )
+
+    final_status = str(enforcement_result.get("final_status") or "")
+    rationale_code = str(enforcement_result.get("rationale_code") or final_status or "enforcement_blocked")
+    if final_status != "allow":
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=rationale_code,
+            block_type="POST_ENFORCEMENT_BLOCKED",
+        )
+
+    mark_row_complete(state_path=state_path, step_id=normalized_step_id)
+    return {"status": "complete", "enforcement_result": enforcement_result}
 
 
 def _enforce_contract_impact_gate(
@@ -384,14 +471,13 @@ def _build_regression_result(*, run_id: str, trace_id: str, now: str) -> dict:
     }
 
 
-def _resolve_fixture_decision_mode(*, runs_root: Path, pqx_output_text: str) -> str:
-    fixture_hint = f"{runs_root}".lower()
-    output_hint = pqx_output_text.lower()
-    if "review" in fixture_hint or "require review" in output_hint:
-        return "review"
-    if "block" in fixture_hint or "blocked" in output_hint:
-        return "block"
-    return "allow"
+def _resolve_fixture_decision_mode(mode: str | None) -> str:
+    normalized = str(mode or "").strip().lower()
+    if normalized in {"allow", "review", "block"}:
+        return normalized
+    raise PQXSliceRunnerError(
+        "fixture_decision_mode must be one of: allow, review, block"
+    )
 
 
 def _apply_fixture_mode_to_replay(*, replay: dict, mode: str) -> None:
@@ -481,6 +567,7 @@ def run_pqx_slice(
     contract_preflight_result_artifact_path: Optional[Path] = None,
     control_surface_gap_packet_ref: Optional[str] = None,
     require_control_surface_gap_packet_for_control_surfaces: bool = True,
+    fixture_decision_mode: str = "allow",
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -705,7 +792,15 @@ def run_pqx_slice(
     validate_artifact(result_payload, "pqx_execution_result")
 
     replay = json.loads((REPO_ROOT / "contracts" / "examples" / "replay_result.json").read_text(encoding="utf-8"))
-    fixture_mode = _resolve_fixture_decision_mode(runs_root=runs_root, pqx_output_text=pqx_output_text)
+    try:
+        fixture_mode = _resolve_fixture_decision_mode(fixture_decision_mode)
+    except PQXSliceRunnerError as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=str(exc),
+            block_type="FIXTURE_DECISION_MODE_INVALID",
+        )
     _apply_fixture_mode_to_replay(replay=replay, mode=fixture_mode)
     replay["trace_id"] = trace_id
     replay["original_run_id"] = run_id
@@ -816,7 +911,7 @@ def run_pqx_slice(
     }
     audit_bundle_path = _write_json(step_dir / f"{run_id}.pqx_slice_audit_bundle.json", audit_bundle)
 
-    row_state["status"] = "complete"
+    row_state["status"] = "running"
     row_state["dependencies_satisfied"] = True
     row_state["last_run"] = iso_now(active_clock)
     save_state(state, state_path)
