@@ -81,6 +81,17 @@ def test_full_integration_path_is_deterministic_and_replayable() -> None:
     assert first["determinism_status"] == "deterministic"
     assert first["replay_status"] == "replayable"
     assert first["blocking_conditions"] == []
+    assert first["trace_navigation"]["trace_id"] == first["trace_id"]
+    assert first["trace_navigation"]["execution_path"][0] == first["source_refs"]["program_artifact"]
+    assert first["trace_navigation"]["execution_path"][-1] == first["source_refs"]["certification_pack"]
+    assert first["trace_navigation"]["layer_transitions"] == ["PRG->RVW", "RVW->CTX", "CTX->TPA", "TPA->RDX", "RDX->CONTROL", "CONTROL->CERT"]
+    assert first["trace_navigation"] == second["trace_navigation"]
+    for key in ("replay_from_context", "replay_from_plan", "replay_from_execution", "replay_from_failure"):
+        entry = first["trace_navigation"]["replay_entry_points"][key]
+        assert entry["required_artifacts"]
+        assert first["trace_id"] in entry["trace_refs"]
+    assert sorted(first["upstream_refs"]) == sorted(set(first["source_refs"].values()))
+    assert first["related_artifacts"] == sorted(set(first["source_refs"].values()))
 
 
 def test_failure_probe_program_allows_but_control_blocks_stays_fail_closed() -> None:
@@ -104,6 +115,8 @@ def test_failure_probe_replay_chain_incomplete_fails_closed() -> None:
     artifact = validate_core_system_integration(**kwargs)
     assert artifact["replay_status"] == "not_replayable"
     assert "REPLAY_CHAIN_INCOMPLETE" in artifact["blocking_conditions"]
+    assert artifact["trace_navigation"]["replay_ready"] is False
+    assert "missing:certification_pack" in artifact["trace_navigation"]["execution_path"]
 
 
 def test_failure_probe_review_authorization_path_is_rejected() -> None:

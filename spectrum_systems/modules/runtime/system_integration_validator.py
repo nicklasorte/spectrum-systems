@@ -78,6 +78,77 @@ def _normalize_source_refs(source_refs: dict[str, str]) -> dict[str, str]:
     return normalized
 
 
+def _trace_navigation(
+    *,
+    trace_id: str,
+    source_refs: dict[str, str],
+    blocking_conditions: list[str],
+    replay_ready: bool,
+) -> dict[str, Any]:
+    ordered_artifacts = [
+        source_refs.get("program_artifact", "missing:program_artifact"),
+        source_refs.get("review_control_signal", "missing:review_control_signal"),
+        source_refs.get("context_bundle_v2", "missing:context_bundle_v2"),
+        source_refs.get("tpa_gate", "missing:tpa_gate"),
+        source_refs.get("roadmap_execution_loop_validation", "missing:roadmap_execution_loop_validation"),
+        source_refs.get("roadmap_multi_batch_run_result", "missing:roadmap_multi_batch_run_result"),
+        source_refs.get("control_decision", "missing:control_decision"),
+        source_refs.get("certification_pack", "missing:certification_pack"),
+    ]
+    decision_points = [
+        "PRG:program_artifact_constraints",
+        "RVW:review_gate_assessment",
+        "CTX:context_validation",
+        "TPA:tpa_gate_decision",
+        "RDX:bounded_execution_outcome",
+        "CONTROL:control_decision",
+        "CERT:certification_status",
+    ]
+    layer_transitions = [
+        "PRG->RVW",
+        "RVW->CTX",
+        "CTX->TPA",
+        "TPA->RDX",
+        "RDX->CONTROL",
+        "CONTROL->CERT",
+    ]
+    replay_entry_points = {
+        "replay_from_context": {
+            "required_artifacts": [source_refs.get("context_bundle_v2", "missing:context_bundle_v2"), source_refs.get("tpa_gate", "missing:tpa_gate")],
+            "trace_refs": [trace_id, source_refs.get("context_bundle_v2", "missing:context_bundle_v2")],
+        },
+        "replay_from_plan": {
+            "required_artifacts": [
+                source_refs.get("program_artifact", "missing:program_artifact"),
+                source_refs.get("review_control_signal", "missing:review_control_signal"),
+                source_refs.get("roadmap_execution_loop_validation", "missing:roadmap_execution_loop_validation"),
+            ],
+            "trace_refs": [trace_id, source_refs.get("roadmap_execution_loop_validation", "missing:roadmap_execution_loop_validation")],
+        },
+        "replay_from_execution": {
+            "required_artifacts": [
+                source_refs.get("roadmap_multi_batch_run_result", "missing:roadmap_multi_batch_run_result"),
+                source_refs.get("control_decision", "missing:control_decision"),
+                source_refs.get("certification_pack", "missing:certification_pack"),
+            ],
+            "trace_refs": [trace_id, source_refs.get("roadmap_multi_batch_run_result", "missing:roadmap_multi_batch_run_result")],
+        },
+        "replay_from_failure": {
+            "required_artifacts": sorted(set(blocking_conditions + [source_refs.get("control_decision", "missing:control_decision")])),
+            "trace_refs": [trace_id, source_refs.get("control_decision", "missing:control_decision")],
+        },
+    }
+    return {
+        "trace_id": trace_id,
+        "execution_path": ordered_artifacts,
+        "decision_points": decision_points,
+        "influencing_artifacts": sorted(set(ordered_artifacts + [source_refs.get("eval_result", "missing:eval_result")])),
+        "layer_transitions": layer_transitions,
+        "replay_entry_points": replay_entry_points,
+        "replay_ready": replay_ready,
+    }
+
+
 def validate_core_system_integration(
     *,
     program_artifact: dict[str, Any],
@@ -237,9 +308,17 @@ def validate_core_system_integration(
     determinism_status = "deterministic" if "DETERMINISM_LOOP_NON_DETERMINISTIC" not in blocking_conditions else "non_deterministic"
     replay_status = "replayable" if replay_ready else "not_replayable"
 
+    normalized_source_refs = _normalize_source_refs(source_refs)
+    trace_navigation = _trace_navigation(
+        trace_id=trace_id,
+        source_refs=normalized_source_refs,
+        blocking_conditions=blocking_conditions,
+        replay_ready=replay_ready,
+    )
+
     artifact = {
         "validation_id": f"CSIV-{_hash({**validation_scope, 'trace_id': trace_id, 'fingerprint': deterministic_fingerprint})[:12].upper()}",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "exercised_layers": exercised_layers,
         "validation_scope": {
             "batch_id": str(validation_scope.get("batch_id") or ""),
@@ -253,9 +332,13 @@ def validate_core_system_integration(
         "blocking_conditions": blocking_conditions,
         "deterministic_outcome": "deterministic" if not blocking_conditions else "failed_closed",
         "replayability_fingerprint": deterministic_fingerprint,
+        "trace_navigation": trace_navigation,
+        "upstream_refs": sorted(set(normalized_source_refs.values())),
+        "downstream_refs": [f"core_system_integration_validation:CSIV-{_hash({**validation_scope, 'trace_id': trace_id, 'fingerprint': deterministic_fingerprint})[:12].upper()}"],
+        "related_artifacts": sorted(set(normalized_source_refs.values())),
         "created_at": created_at or _utc_now(),
         "trace_id": trace_id,
-        "source_refs": _normalize_source_refs(source_refs),
+        "source_refs": normalized_source_refs,
     }
     _validate_schema(artifact, "core_system_integration_validation")
     return artifact

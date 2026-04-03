@@ -16,13 +16,16 @@
     "watch_next",
     "artifact_index",
     "failure_surface",
+    "trace_navigation",
+    "replay_entry_points",
+    "quick_links",
     "trace_id",
     "created_at",
     "source_refs"
   ],
   "properties": {
     "summary_id": {"type": "string", "pattern": "^BSR-[A-F0-9]{12}$"},
-    "schema_version": {"type": "string", "const": "1.1.0"},
+    "schema_version": {"type": "string", "const": "1.2.0"},
     "run_id": {"type": "string", "minLength": 1},
     "what_ran": {
       "type": "array",
@@ -64,7 +67,10 @@
         "core_system_integration_validation",
         "next_step_recommendation",
         "trace_id",
-        "replay_refs"
+        "replay_refs",
+        "upstream_refs",
+        "downstream_refs",
+        "related_artifacts"
       ],
       "properties": {
         "roadmap_multi_batch_run_result": {"type": "string", "minLength": 3},
@@ -75,16 +81,47 @@
           "type": "array",
           "items": {"type": "string", "minLength": 3},
           "uniqueItems": true
+        },
+        "upstream_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "downstream_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "related_artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
         }
       }
     },
     "failure_surface": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["stop_reason", "root_cause", "next_action", "blocker_refs", "source_refs"],
+      "required": ["stop_reason", "root_cause", "root_cause_chain", "next_action", "blocker_refs", "source_refs"],
       "properties": {
         "stop_reason": {"type": "string", "minLength": 3},
         "root_cause": {"type": "string", "minLength": 3},
+        "root_cause_chain": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["step", "reason"],
+            "properties": {
+              "step": {"type": "string", "minLength": 3},
+              "reason": {"type": "string", "minLength": 3}
+            }
+          }
+        },
         "next_action": {"type": "string", "minLength": 3},
         "blocker_refs": {
           "type": "array",
@@ -99,6 +136,55 @@
         }
       }
     },
+    "trace_navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "execution_path",
+        "decision_points",
+        "influencing_artifacts",
+        "layer_transitions",
+        "replay_entry_points",
+        "replay_ready"
+      ],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "execution_path": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+        "decision_points": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
+        "influencing_artifacts": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
+        "layer_transitions": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[A-Z]+->[A-Z]+$"}, "uniqueItems": true},
+        "replay_entry_points": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["replay_from_context", "replay_from_plan", "replay_from_execution", "replay_from_failure"],
+          "properties": {
+            "replay_from_context": {"$ref": "#/$defs/replay_entry_point"},
+            "replay_from_plan": {"$ref": "#/$defs/replay_entry_point"},
+            "replay_from_execution": {"$ref": "#/$defs/replay_entry_point"},
+            "replay_from_failure": {"$ref": "#/$defs/replay_entry_point"}
+          }
+        },
+        "replay_ready": {"type": "boolean"}
+      }
+    },
+    "replay_entry_points": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replay_from_context", "replay_from_plan", "replay_from_execution", "replay_from_failure"],
+      "properties": {
+        "replay_from_context": {"$ref": "#/$defs/replay_entry_point"},
+        "replay_from_plan": {"$ref": "#/$defs/replay_entry_point"},
+        "replay_from_execution": {"$ref": "#/$defs/replay_entry_point"},
+        "replay_from_failure": {"$ref": "#/$defs/replay_entry_point"}
+      }
+    },
+    "quick_links": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
     "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
     "created_at": {"type": "string", "format": "date-time"},
     "source_refs": {
@@ -106,6 +192,27 @@
       "minItems": 1,
       "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "replay_entry_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_artifacts", "trace_refs"],
+      "properties": {
+        "required_artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
+      }
     }
   }
 }

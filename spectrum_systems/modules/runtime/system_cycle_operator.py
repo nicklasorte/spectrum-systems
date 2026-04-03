@@ -67,6 +67,21 @@ def _root_cause(stop_reason: str, blocking_conditions: list[str]) -> str:
     return f"execution_stop_reason:{stop_reason}"
 
 
+def _root_cause_chain(stop_reason: str, blocking_conditions: list[str]) -> list[dict[str, str]]:
+    if not blocking_conditions:
+        return [
+            {"step": "bounded_execution", "reason": stop_reason},
+            {"step": "integration_validation", "reason": "no_blocking_conditions"},
+            {"step": "control_outcome", "reason": "proceed_or_continue"},
+        ]
+    primary = blocking_conditions[0]
+    return [
+        {"step": "review_or_input_condition", "reason": primary},
+        {"step": "evaluation_or_propagation_gap", "reason": "eval_or_propagation_missing"},
+        {"step": "control_gate", "reason": "control_block"},
+    ]
+
+
 def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
     if blocking_conditions:
         return f"resolve blocker {blocking_conditions[0]} and rerun bounded governed cycle"
@@ -111,6 +126,60 @@ def _candidate_required_artifacts(run_id: str, validation_id: str, replay_refs: 
     if blocker:
         artifacts.add(f"blocking_condition:{blocker}")
     return sorted(artifacts)
+
+
+def _replay_entry_points(
+    *,
+    trace_id: str,
+    run_id: str,
+    validation_id: str,
+    blocker_refs: list[str],
+    trace_navigation: dict[str, Any],
+) -> dict[str, dict[str, list[str]]]:
+    trace_nav_ref = f"trace_navigation:{validation_id}"
+    execution_ref = f"roadmap_multi_batch_run_result:{run_id}"
+    validation_ref = f"core_system_integration_validation:{validation_id}"
+    return {
+        "replay_from_context": {
+            "required_artifacts": sorted(
+                set(
+                    [
+                        validation_ref,
+                        trace_navigation["execution_path"][2],
+                        trace_navigation["execution_path"][3],
+                    ]
+                )
+            ),
+            "trace_refs": [trace_id, trace_nav_ref],
+        },
+        "replay_from_plan": {
+            "required_artifacts": sorted(
+                set(
+                    [
+                        validation_ref,
+                        trace_navigation["execution_path"][0],
+                        trace_navigation["execution_path"][1],
+                    ]
+                )
+            ),
+            "trace_refs": [trace_id, trace_nav_ref],
+        },
+        "replay_from_execution": {
+            "required_artifacts": sorted(
+                set(
+                    [
+                        execution_ref,
+                        validation_ref,
+                    ]
+                )
+            ),
+            "trace_refs": [trace_id, execution_ref],
+        },
+        "replay_from_failure": {
+            "required_artifacts": sorted(set([validation_ref] + blocker_refs)),
+            "trace_refs": [trace_id, validation_ref],
+        },
+    }
 
 
 def _generate_candidates(
@@ -338,6 +407,15 @@ def run_system_cycle(
 
     blocking_conditions = [str(item) for item in integration.get("blocking_conditions", [])]
     replay_refs = sorted(set(str(item) for item in run_result.get("loop_validation_refs", [])))
+    trace_navigation = dict(integration.get("trace_navigation") or {})
+    validation_id = str(integration["validation_id"])
+    replay_entry_points = _replay_entry_points(
+        trace_id=integration["trace_id"],
+        run_id=str(run_result["run_id"]),
+        validation_id=validation_id,
+        blocker_refs=blocking_conditions,
+        trace_navigation=trace_navigation,
+    )
     next_batch_id = _next_not_started_batch_id(updated_roadmap)
     required_reviews = _required_reviews(blocking_conditions)
     why = [
@@ -387,7 +465,7 @@ def run_system_cycle(
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "next_batch_id": next_batch_id,
         "why": sorted(set(why)),
         "blockers": sorted(set(blocking_conditions)),
@@ -429,17 +507,36 @@ def run_system_cycle(
         },
         "artifact_refs": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
-            "core_system_integration_validation": f"core_system_integration_validation:{integration['validation_id']}",
+            "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
             "trace_id": integration["trace_id"],
             "replay_refs": replay_refs,
+            "upstream_refs": sorted(set(integration.get("upstream_refs", []))),
+            "downstream_refs": [f"build_summary:BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}"],
+            "related_artifacts": sorted(
+                set(
+                    [
+                        f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                        f"core_system_integration_validation:{validation_id}",
+                    ]
+                    + replay_refs
+                    + list(integration.get("related_artifacts", []))
+                )
+            ),
         },
+        "trace_navigation": trace_navigation,
+        "replay_entry_points": replay_entry_points,
+        "quick_links": [
+            f"view trace -> trace_navigation:{validation_id}",
+            "replay this step -> replay_from_execution",
+            "inspect failure chain -> replay_from_failure",
+        ],
         "trace_id": integration["trace_id"],
         "created_at": timestamp,
         "source_refs": sorted(
             set(
                 [
                     f"roadmap_multi_batch_run_result:{run_result['run_id']}",
-                    f"core_system_integration_validation:{integration['validation_id']}",
+                    f"core_system_integration_validation:{validation_id}",
                 ]
                 + list(source_refs or [])
             )
@@ -452,7 +549,7 @@ def run_system_cycle(
     failure_next_action = _next_action(stop_reason, blocking_conditions)
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "run_id": run_result["run_id"],
         "what_ran": [
             "roadmap selection",
@@ -476,24 +573,45 @@ def run_system_cycle(
         ],
         "artifact_index": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
-            "core_system_integration_validation": f"core_system_integration_validation:{integration['validation_id']}",
+            "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
             "next_step_recommendation": f"next_step_recommendation:{recommendation['recommendation_id']}",
             "trace_id": integration["trace_id"],
             "replay_refs": replay_refs,
+            "upstream_refs": sorted(set(integration.get("upstream_refs", []))),
+            "downstream_refs": [f"next_step_recommendation:{recommendation['recommendation_id']}"],
+            "related_artifacts": sorted(
+                set(
+                    [
+                        f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                        f"core_system_integration_validation:{validation_id}",
+                        f"next_step_recommendation:{recommendation['recommendation_id']}",
+                    ]
+                    + replay_refs
+                    + list(integration.get("related_artifacts", []))
+                )
+            ),
         },
         "failure_surface": {
             "stop_reason": stop_reason,
             "root_cause": failure_root_cause,
+            "root_cause_chain": _root_cause_chain(stop_reason, blocking_conditions),
             "next_action": failure_next_action,
             "blocker_refs": sorted(set(blocking_conditions)),
             "source_refs": sorted(
                 {
-                    f"core_system_integration_validation:{integration['validation_id']}",
+                    f"core_system_integration_validation:{validation_id}",
                     f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                 }
                 | set(replay_refs)
             ),
         },
+        "trace_navigation": trace_navigation,
+        "replay_entry_points": replay_entry_points,
+        "quick_links": [
+            f"view trace -> trace_navigation:{validation_id}",
+            "replay this step -> replay_from_execution",
+            "inspect failure chain -> replay_from_failure",
+        ],
         "trace_id": integration["trace_id"],
         "created_at": timestamp,
         "source_refs": sorted(
