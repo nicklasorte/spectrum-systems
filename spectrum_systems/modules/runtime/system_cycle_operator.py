@@ -11,6 +11,10 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.adaptive_execution_observability import (
+    build_adaptive_execution_observability,
+    build_adaptive_execution_trend_report,
+)
 from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run
 from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration
 
@@ -463,16 +467,52 @@ def run_system_cycle(
         for item in ranked_candidates[1:]
     ]
 
+    adaptive_inputs = integration_inputs.get("adaptive_observability_run_results")
+    adaptive_run_results = [dict(item) for item in adaptive_inputs] if isinstance(adaptive_inputs, list) else []
+    adaptive_run_results.append(dict(run_result))
+    adaptive_observability = build_adaptive_execution_observability(
+        adaptive_run_results,
+        trace_id=integration["trace_id"],
+        source_refs=[
+            f"roadmap_multi_batch_run_result:{str(item.get('run_id') or 'unknown')}" for item in adaptive_run_results
+        ],
+        created_at=timestamp,
+    )
+    adaptive_trend_report = build_adaptive_execution_trend_report(
+        adaptive_run_results,
+        observability=adaptive_observability,
+        trace_id=integration["trace_id"],
+        created_at=timestamp,
+    )
+    adaptive_observability_ref = f"adaptive_execution_observability:{adaptive_observability['observability_id']}"
+    adaptive_trend_ref = f"adaptive_execution_trend_report:{adaptive_trend_report['trend_report_id']}"
+
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
         "schema_version": "1.3.0",
         "next_batch_id": next_batch_id,
-        "why": sorted(set(why)),
+        "why": sorted(
+            set(
+                why
+                + [
+                    f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
+                    f"adaptive_useful_batches_per_run={adaptive_observability['average_useful_batches_per_run']}",
+                ]
+            )
+        ),
         "blockers": sorted(set(blocking_conditions)),
         "required_reviews": required_reviews,
         "risk_summary": {
             "level": risk_level,
-            "signals": sorted(set(risk_signals)),
+            "signals": sorted(
+                set(
+                    risk_signals
+                    + [
+                        f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
+                        f"adaptive_safety_trend={adaptive_trend_report['safety_trend']}",
+                    ]
+                )
+            ),
         },
         "next_step": {
             "action": selected_candidate["action"],
@@ -517,6 +557,8 @@ def run_system_cycle(
                     [
                         f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                         f"core_system_integration_validation:{validation_id}",
+                        adaptive_observability_ref,
+                        adaptive_trend_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -537,6 +579,8 @@ def run_system_cycle(
                 [
                     f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                     f"core_system_integration_validation:{validation_id}",
+                    adaptive_observability_ref,
+                    adaptive_trend_ref,
                 ]
                 + list(source_refs or [])
             )
@@ -570,6 +614,9 @@ def run_system_cycle(
         "watch_next": [
             f"next_batch_id={next_batch_id or 'none'}",
             f"next_action={failure_next_action}",
+            f"adaptive_safety_trend={adaptive_trend_report['safety_trend']}",
+            f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
+            f"adaptive_tuning_warranted={str(adaptive_trend_report['tuning_warranted']).lower()}",
         ],
         "artifact_index": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
@@ -585,6 +632,8 @@ def run_system_cycle(
                         f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                         f"core_system_integration_validation:{validation_id}",
                         f"next_step_recommendation:{recommendation['recommendation_id']}",
+                        adaptive_observability_ref,
+                        adaptive_trend_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -619,6 +668,8 @@ def run_system_cycle(
                 f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                 f"core_system_integration_validation:{integration['validation_id']}",
                 f"next_step_recommendation:{recommendation['recommendation_id']}",
+                adaptive_observability_ref,
+                adaptive_trend_ref,
             }
         ),
     }
@@ -627,6 +678,8 @@ def run_system_cycle(
     return {
         "updated_roadmap": updated_roadmap,
         "roadmap_multi_batch_run_result": run_result,
+        "adaptive_execution_observability": adaptive_observability,
+        "adaptive_execution_trend_report": adaptive_trend_report,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
         "build_summary": summary,

@@ -1,0 +1,78 @@
+{
+  "trend_report_id": "AET-7B27B5FA21E2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-03T23:59:00Z",
+  "trace_id": "trace-batch-x1-observability",
+  "observability_ref": "adaptive_execution_observability:AEO-8F3AB7C8D912",
+  "runs_observed": 3,
+  "autonomy_effectiveness": "stable",
+  "safety_trend": "safer",
+  "guardrail_status": "within_guardrails",
+  "guardrail_checks": [
+    {
+      "check_id": "early_stop_rate_high",
+      "status": "ok",
+      "threshold": 0.6,
+      "observed": 0.3333,
+      "direction": "lower_is_better",
+      "message": "Early-stop frequency should remain bounded to preserve throughput and trust."
+    },
+    {
+      "check_id": "useful_batches_stagnant_or_degrading",
+      "status": "ok",
+      "threshold": 1.0,
+      "observed": 1.6667,
+      "direction": "higher_is_better",
+      "message": "Useful batch output should improve or hold steady as caps adapt."
+    },
+    {
+      "check_id": "risk_triggered_stops_rising",
+      "status": "ok",
+      "threshold": 0.4,
+      "observed": 0.3333,
+      "direction": "lower_is_better",
+      "message": "Risk-triggered stops should not dominate bounded adaptive execution."
+    },
+    {
+      "check_id": "resolved_cap_without_useful_work",
+      "status": "ok",
+      "threshold": 1.5,
+      "observed": 0.6666,
+      "direction": "lower_is_better",
+      "message": "Cap increases must correspond to useful work, not speculative churn."
+    },
+    {
+      "check_id": "replay_integrity_degradation",
+      "status": "ok",
+      "threshold": 0.95,
+      "observed": 1.0,
+      "direction": "higher_is_better",
+      "message": "Replay integrity must remain high for safe deterministic tuning."
+    },
+    {
+      "check_id": "unsafe_continuation_aggressiveness",
+      "status": "ok",
+      "threshold": 0.85,
+      "observed": 0.75,
+      "direction": "lower_is_better",
+      "message": "Continuation rate should stay bounded by risk-aware policy guardrails."
+    }
+  ],
+  "trend_signals": {
+    "early_stop_rate_trend": "stable",
+    "useful_batches_per_run_trend": "stable",
+    "risk_stop_share": 0.3333,
+    "resolved_cap_efficiency_gap": 0.6666
+  },
+  "tuning_warranted": false,
+  "watch_next": [
+    "monitor_guardrail_drift",
+    "confirm_cap_policy_continues_to_match_useful_output"
+  ],
+  "source_refs": [
+    "adaptive_execution_observability:AEO-8F3AB7C8D912",
+    "roadmap_multi_batch_run_result:RMB-4A5A83BE3001",
+    "roadmap_multi_batch_run_result:RMB-9BC904AD7722",
+    "roadmap_multi_batch_run_result:RMB-A0D4ED2F1188"
+  ]
+}

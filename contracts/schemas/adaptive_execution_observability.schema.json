@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/adaptive_execution_observability.schema.json",
+  "title": "Adaptive Execution Observability",
+  "description": "Deterministic governed cross-run observability artifact for bounded adaptive roadmap execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observability_id",
+    "schema_version",
+    "created_at",
+    "trace_id",
+    "source_refs",
+    "runs_observed",
+    "average_resolved_max_batches_per_run",
+    "average_batches_executed_per_run",
+    "average_useful_batches_per_run",
+    "early_stop_rate",
+    "stop_reason_distribution",
+    "continuation_decision_distribution",
+    "risk_level_distribution",
+    "replay_integrity_rate",
+    "determinism_integrity_rate",
+    "control_boundary_integrity_status"
+  ],
+  "properties": {
+    "observability_id": {
+      "type": "string",
+      "pattern": "^AEO-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "runs_observed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "average_resolved_max_batches_per_run": {
+      "type": "number",
+      "minimum": 0
+    },
+    "average_batches_executed_per_run": {
+      "type": "number",
+      "minimum": 0
+    },
+    "average_useful_batches_per_run": {
+      "type": "number",
+      "minimum": 0
+    },
+    "early_stop_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "stop_reason_distribution": {
+      "$ref": "#/$defs/distribution"
+    },
+    "continuation_decision_distribution": {
+      "$ref": "#/$defs/distribution"
+    },
+    "risk_level_distribution": {
+      "$ref": "#/$defs/distribution"
+    },
+    "replay_integrity_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "determinism_integrity_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "control_boundary_integrity_status": {
+      "type": "string",
+      "enum": [
+        "bounded",
+        "watch",
+        "violated"
+      ]
+    }
+  },
+  "$defs": {
+    "distribution": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    }
+  }
+}

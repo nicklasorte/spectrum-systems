@@ -127,6 +127,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["trace_navigation"] == first["core_system_integration_validation"]["trace_navigation"]
     assert len(first["build_summary"]["quick_links"]) == 3
     assert len(first["next_step_recommendation"]["quick_links"]) == 3
+    assert first["adaptive_execution_observability"]["schema_version"] == "1.0.0"
+    assert first["adaptive_execution_trend_report"]["schema_version"] == "1.0.0"
+    assert any(item.startswith("adaptive_guardrail_status=") for item in first["next_step_recommendation"]["why"])
+    assert any(item.startswith("adaptive_safety_trend=") for item in first["build_summary"]["watch_next"])
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -172,10 +176,12 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
         assert summary["trace_id"] in summary["replay_entry_points"][key]["trace_refs"]
     assert recommendation["artifact_refs"]["upstream_refs"]
     assert recommendation["artifact_refs"]["downstream_refs"]
-    assert recommendation["artifact_refs"]["related_artifacts"]
+    assert any(item.startswith("adaptive_execution_observability:AEO-") for item in recommendation["artifact_refs"]["related_artifacts"])
+    assert any(item.startswith("adaptive_execution_trend_report:AET-") for item in recommendation["artifact_refs"]["related_artifacts"])
     assert summary["artifact_index"]["upstream_refs"]
     assert summary["artifact_index"]["downstream_refs"]
-    assert summary["artifact_index"]["related_artifacts"]
+    assert any(item.startswith("adaptive_execution_observability:AEO-") for item in summary["artifact_index"]["related_artifacts"])
+    assert any(item.startswith("adaptive_execution_trend_report:AET-") for item in summary["artifact_index"]["related_artifacts"])
 
 
 def test_candidate_ranking_is_deterministic_and_sorted() -> None:
