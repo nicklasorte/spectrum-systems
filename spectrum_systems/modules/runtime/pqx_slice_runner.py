@@ -384,14 +384,13 @@ def _build_regression_result(*, run_id: str, trace_id: str, now: str) -> dict:
     }
 
 
-def _resolve_fixture_decision_mode(*, runs_root: Path, pqx_output_text: str) -> str:
-    fixture_hint = f"{runs_root}".lower()
-    output_hint = pqx_output_text.lower()
-    if "review" in fixture_hint or "require review" in output_hint:
-        return "review"
-    if "block" in fixture_hint or "blocked" in output_hint:
-        return "block"
-    return "allow"
+def _resolve_fixture_decision_mode(mode: str | None) -> str:
+    normalized = str(mode or "").strip().lower()
+    if normalized in {"allow", "review", "block"}:
+        return normalized
+    raise PQXSliceRunnerError(
+        "fixture_decision_mode must be one of: allow, review, block"
+    )
 
 
 def _apply_fixture_mode_to_replay(*, replay: dict, mode: str) -> None:
@@ -481,6 +480,7 @@ def run_pqx_slice(
     contract_preflight_result_artifact_path: Optional[Path] = None,
     control_surface_gap_packet_ref: Optional[str] = None,
     require_control_surface_gap_packet_for_control_surfaces: bool = True,
+    fixture_decision_mode: str = "allow",
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -705,7 +705,15 @@ def run_pqx_slice(
     validate_artifact(result_payload, "pqx_execution_result")
 
     replay = json.loads((REPO_ROOT / "contracts" / "examples" / "replay_result.json").read_text(encoding="utf-8"))
-    fixture_mode = _resolve_fixture_decision_mode(runs_root=runs_root, pqx_output_text=pqx_output_text)
+    try:
+        fixture_mode = _resolve_fixture_decision_mode(fixture_decision_mode)
+    except PQXSliceRunnerError as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=str(exc),
+            block_type="FIXTURE_DECISION_MODE_INVALID",
+        )
     _apply_fixture_mode_to_replay(replay=replay, mode=fixture_mode)
     replay["trace_id"] = trace_id
     replay["original_run_id"] = run_id
@@ -816,7 +824,7 @@ def run_pqx_slice(
     }
     audit_bundle_path = _write_json(step_dir / f"{run_id}.pqx_slice_audit_bundle.json", audit_bundle)
 
-    row_state["status"] = "complete"
+    row_state["status"] = "running"
     row_state["dependencies_satisfied"] = True
     row_state["last_run"] = iso_now(active_clock)
     save_state(state, state_path)

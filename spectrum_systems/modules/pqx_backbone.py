@@ -300,6 +300,21 @@ def resolve_executable_row(
     }
 
 
+
+
+def mark_row_complete(*, state_path: Path, step_id: str, clock=utc_now) -> dict:
+    """Persist authoritative row completion only after control/enforcement ALLOW."""
+
+    if not isinstance(step_id, str) or not step_id.strip():
+        raise PQXBackboneError("step_id is required for completion transition")
+    state = load_state(state_path)
+    row_state = _ensure_row_state(state, step_id.strip())
+    row_state["status"] = "complete"
+    row_state["dependencies_satisfied"] = True
+    row_state["last_run"] = iso_now(clock)
+    save_state(state, state_path)
+    return row_state
+
 def _write_artifact(payload: dict, schema_name: str, path: Path) -> Path:
     _validate_with_schema(payload, schema_name)
     path.parent.mkdir(parents=True, exist_ok=True)

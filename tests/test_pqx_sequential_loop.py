@@ -359,3 +359,153 @@ def test_decision_id_stable_for_identical_allow_fixture_content() -> None:
     assert decision_a["decision"] == "allow"
     assert decision_b["decision"] == "allow"
     assert decision_a["decision_id"] == decision_b["decision_id"]
+
+
+def test_trace_invariant_blocked_slice_requires_wrapper_ref() -> None:
+    with pytest.raises(PQXSequentialLoopError, match="requires wrapper_ref evidence"):
+        from spectrum_systems.modules.runtime.pqx_sequential_loop import _validate_trace_invariants
+
+        _validate_trace_invariants(
+            {
+                "artifact_type": "pqx_sequential_execution_trace",
+                "schema_version": "1.0.0",
+                "trace_id": "trace-1",
+                "run_id": "run-1",
+                "ordered_slice_ids": ["1"],
+                "slices": [
+                    {
+                        "slice_id": "1",
+                        "input_ref": "input:1",
+                        "wrapper_ref": None,
+                        "pqx_execution_artifact_ref": None,
+                        "slice_execution_record_ref": None,
+                        "eval_result_ref": None,
+                        "control_decision_ref": None,
+                        "control_decision_summary": None,
+                        "enforcement_result": {"final_status": "block", "rationale": "context_enforcement"},
+                        "final_slice_status": "BLOCK",
+                        "status": "blocked",
+                    }
+                ],
+                "authority_evidence_refs": [],
+                "final_status": "BLOCK",
+                "blocking_reason": "context enforcement blocked",
+                "stopping_slice_id": "1",
+            }
+        )
+
+
+def test_trace_invariant_blocked_slice_with_wrapper_ref_passes_minimal_gate() -> None:
+    from spectrum_systems.modules.runtime.pqx_sequential_loop import _validate_trace_invariants
+
+    _validate_trace_invariants(
+        {
+            "artifact_type": "pqx_sequential_execution_trace",
+            "schema_version": "1.0.0",
+            "trace_id": "trace-1",
+            "run_id": "run-1",
+            "ordered_slice_ids": ["1"],
+            "slices": [
+                {
+                    "slice_id": "1",
+                    "input_ref": "input:1",
+                    "wrapper_ref": "codex_pqx_task_wrapper:wrap-1",
+                    "pqx_execution_artifact_ref": None,
+                    "slice_execution_record_ref": None,
+                    "eval_result_ref": None,
+                    "control_decision_ref": None,
+                    "control_decision_summary": None,
+                    "enforcement_result": {"final_status": "block", "rationale": "context_enforcement"},
+                    "final_slice_status": "BLOCK",
+                    "status": "blocked",
+                }
+            ],
+            "authority_evidence_refs": [],
+            "final_status": "BLOCK",
+            "blocking_reason": "context enforcement blocked",
+            "stopping_slice_id": "1",
+        }
+    )
+
+
+def test_context_enforcement_block_records_typed_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _BlockedContextResult:
+        status = "block"
+        blocking_reasons = ("missing_authority",)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
+        lambda **kwargs: _BlockedContextResult(),
+    )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
+
+    trace = run_pqx_sequential([_slice("1")], _base_initial_context())
+    assert trace["final_status"] == "BLOCK"
+    assert trace["slices"][0]["enforcement_result"]["rationale"] == "context_enforcement"
+    assert trace["slices"][0]["wrapper_ref"].startswith("codex_pqx_task_wrapper:")
+
+
+def test_missing_run_id_fails_closed_when_context_and_wrapper_lack_run_id() -> None:
+    bad_context = _base_initial_context()
+    bad_context.pop("run_id", None)
+    s = _slice("1")
+    s["wrapper"]["task_identity"]["run_id"] = ""
+
+    with pytest.raises(PQXSequentialLoopError, match="run_id is required"):
+        run_pqx_sequential([s], bad_context)
+
+
+def test_run_id_prefers_initial_context_when_present(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_wrapped_pqx_task", lambda **kwargs: {"status": "blocked", "reason": "stop"})
+    context = _base_initial_context()
+    context["run_id"] = "context-run-id"
+    trace = run_pqx_sequential([_slice("1")], context)
+    assert trace["run_id"] == "context-run-id"
+
+
+def test_allow_completion_calls_state_layer_transition_and_block_review_do_not(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.run_wrapped_pqx_task",
+        lambda **kwargs: {"status": "complete", "result": "/repo/out.result.json", "slice_execution_record": "/repo/execution_record.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop._load_json_ref",
+        lambda path: {"replay_result_ref": "data/replay.json"} if "execution_record" in path else {"artifact_type": "replay_result", "replay_id": "r", "replay_run_id": "rr", "trace_id": "tt", "timestamp": "2026-04-02T00:00:00Z", "observability_metrics": {"metrics": {}}, "error_budget_status": {"objectives": []}, "drift_detected": False, "consistency_status": "match"},
+    )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.build_trace_context_from_replay_artifact", lambda a: {"trace_id": "tt", "replay_id": "r", "replay_run_id": "rr"})
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_control_loop", lambda a, t: {"evaluation_control_decision": {"decision": "allow", "decision_id": "d1"}})
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_pqx_required_context",
+        lambda **kwargs: _AllowContextResult(),
+    )
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.validate_artifact", lambda payload, schema: None)
+
+    calls: list[tuple[Path, str]] = []
+
+    def _capture_complete(*, state_path: Path, step_id: str, clock=object()) -> dict[str, object]:
+        calls.append((state_path, step_id))
+        return {"status": "complete"}
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.mark_row_complete", _capture_complete)
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "allow", "rationale_code": "allow"})
+    run_pqx_sequential([_slice("1")], _base_initial_context())
+    assert len(calls) == 1
+
+    calls.clear()
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "deny", "rationale_code": "deny"})
+    run_pqx_sequential([_slice("1")], _base_initial_context())
+    assert calls == []
+
+    calls.clear()
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.enforce_control_decision", lambda decision: {"final_status": "require_review", "rationale_code": "require_review"})
+    run_pqx_sequential([_slice("1")], _base_initial_context())
+    assert calls == []
+
+
+def test_run_id_uses_wrapper_when_context_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("spectrum_systems.modules.runtime.pqx_sequential_loop.run_wrapped_pqx_task", lambda **kwargs: {"status": "blocked", "reason": "stop"})
+    context = _base_initial_context()
+    context.pop("run_id", None)
+    trace = run_pqx_sequential([_slice("1")], context)
+    assert trace["run_id"] == "run-1"

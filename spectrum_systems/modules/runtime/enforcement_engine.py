@@ -73,7 +73,7 @@ def _deterministic_id(prefix: str, payload: Dict[str, Any]) -> str:
     return f"{prefix}-{digest}"
 
 
-def enforce_control_decision(decision_artifact: dict) -> dict:
+def enforce_control_decision(decision_artifact: dict, *, timestamp: str | None = None) -> dict:
     """Map ``evaluation_control_decision`` to deterministic ``enforcement_result``.
 
     Fail-closed behavior:
@@ -127,11 +127,14 @@ def enforce_control_decision(decision_artifact: dict) -> dict:
         "enforcement_path": "baf_single_path",
     }
 
+    if timestamp is not None and (not isinstance(timestamp, str) or not timestamp.strip()):
+        raise EnforcementError("timestamp override must be a non-empty string when provided")
+
     result = {
         "artifact_type": "enforcement_result",
         "schema_version": "1.1.0",
         "enforcement_result_id": _deterministic_id("ENF", deterministic_identity_payload),
-        "timestamp": _now_iso(),
+        "timestamp": timestamp.strip() if isinstance(timestamp, str) else _now_iso(),
         "trace_id": trace_id,
         "run_id": run_id,
         "input_decision_reference": source_decision_id,
