@@ -2313,7 +2313,7 @@
     },
     {
       "artifact_type": "review_eval_generation_report",
-      "artifact_class": "observability",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -2326,7 +2326,7 @@
     },
     {
       "artifact_type": "review_failure_summary",
-      "artifact_class": "observability",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -2339,7 +2339,7 @@
     },
     {
       "artifact_type": "review_hotspot_report",
-      "artifact_class": "observability",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
