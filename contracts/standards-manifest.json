@@ -28,6 +28,32 @@
   ],
   "contracts": [
     {
+      "artifact_type": "adaptive_execution_observability",
+      "artifact_class": "observability",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.37",
+      "last_updated_in": "1.3.37",
+      "example_path": "contracts/examples/adaptive_execution_observability.json",
+      "notes": "BATCH-X1 deterministic cross-run bounded adaptive execution observability metrics for safe tuning and drift visibility."
+    },
+    {
+      "artifact_type": "adaptive_execution_trend_report",
+      "artifact_class": "observability",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.37",
+      "last_updated_in": "1.3.37",
+      "example_path": "contracts/examples/adaptive_execution_trend_report.json",
+      "notes": "BATCH-X1 deterministic guardrail and trend report for bounded adaptive execution operator tuning decisions."
+    },
+    {
       "artifact_type": "agent_execution_trace",
       "artifact_class": "coordination",
       "schema_version": "1.11.0",
