@@ -114,7 +114,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
-    assert first["next_step_recommendation"]["schema_version"] == "1.2.0"
+    assert first["next_step_recommendation"]["schema_version"] == "1.3.0"
+    assert first["build_summary"]["schema_version"] == "1.2.0"
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
     assert first["build_summary"]["run_outcome"]["status"] == "success"
@@ -122,6 +123,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     candidate_eval = first["next_step_recommendation"]["candidate_evaluation"]
     assert candidate_eval["ranking_policy"].startswith("program_alignment>")
     assert candidate_eval["candidates"][0]["candidate_id"] == "NSC-EXECUTE-NEXT-BATCH"
+    assert first["next_step_recommendation"]["trace_navigation"] == first["core_system_integration_validation"]["trace_navigation"]
+    assert first["build_summary"]["trace_navigation"] == first["core_system_integration_validation"]["trace_navigation"]
+    assert len(first["build_summary"]["quick_links"]) == 3
+    assert len(first["next_step_recommendation"]["quick_links"]) == 3
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -143,6 +148,11 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
     summary = result["build_summary"]
     assert summary["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert "blocking_condition:PROP_REVIEW_EVAL_NOT_INGESTED" in summary["failure_surface"]["root_cause"]
+    assert summary["failure_surface"]["root_cause_chain"] == [
+        {"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"},
+        {"step": "evaluation_or_propagation_gap", "reason": "eval_or_propagation_missing"},
+        {"step": "control_gate", "reason": "control_block"},
+    ]
     assert "resolve blocker PROP_REVIEW_EVAL_NOT_INGESTED" in summary["failure_surface"]["next_action"]
     assert summary["failure_surface"]["blocker_refs"] == ["PROP_REVIEW_EVAL_NOT_INGESTED"]
     assert any(ref.startswith("core_system_integration_validation:") for ref in summary["failure_surface"]["source_refs"])
@@ -156,6 +166,16 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
     assert any(item.startswith("primary_blocker=PROP_REVIEW_EVAL_NOT_INGESTED") for item in recommendation["next_step"]["watchouts"])
     assert recommendation["artifact_refs"]["trace_id"] == recommendation["trace_id"]
     assert recommendation["candidate_evaluation"]["why_not_selected"]
+    for key in ("replay_from_context", "replay_from_plan", "replay_from_execution", "replay_from_failure"):
+        assert recommendation["replay_entry_points"][key]["required_artifacts"]
+        assert recommendation["trace_id"] in recommendation["replay_entry_points"][key]["trace_refs"]
+        assert summary["trace_id"] in summary["replay_entry_points"][key]["trace_refs"]
+    assert recommendation["artifact_refs"]["upstream_refs"]
+    assert recommendation["artifact_refs"]["downstream_refs"]
+    assert recommendation["artifact_refs"]["related_artifacts"]
+    assert summary["artifact_index"]["upstream_refs"]
+    assert summary["artifact_index"]["downstream_refs"]
+    assert summary["artifact_index"]["related_artifacts"]
 
 
 def test_candidate_ranking_is_deterministic_and_sorted() -> None:

@@ -1,6 +1,6 @@
 {
   "validation_id": "CSIV-7FA245E0AA72",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "exercised_layers": [
     "PRG",
     "RVW",
@@ -36,5 +36,115 @@
     "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-001",
     "control_decision": "control_execution_result:ctrl-001",
     "certification_pack": "control_loop_certification_pack:cert-001"
-  }
+  },
+  "trace_navigation": {
+    "trace_id": "trace-batch-z-001",
+    "execution_path": [
+      "program_artifact:PRG-QUALITY-CERTIFICATION",
+      "review_control_signal:rcs-001",
+      "context_bundle_v2:ctx2-001",
+      "tpa_gate:AI-01-G",
+      "roadmap_execution_loop_validation:RLV-001",
+      "roadmap_multi_batch_run_result:RMB-001",
+      "control_execution_result:ctrl-001",
+      "control_loop_certification_pack:cert-001"
+    ],
+    "decision_points": [
+      "PRG:program_artifact_constraints",
+      "RVW:review_gate_assessment",
+      "CTX:context_validation",
+      "TPA:tpa_gate_decision",
+      "RDX:bounded_execution_outcome",
+      "CONTROL:control_decision",
+      "CERT:certification_status"
+    ],
+    "influencing_artifacts": [
+      "context_bundle_v2:ctx2-001",
+      "control_execution_result:ctrl-001",
+      "control_loop_certification_pack:cert-001",
+      "eval_result:run-001",
+      "program_artifact:PRG-QUALITY-CERTIFICATION",
+      "review_control_signal:rcs-001",
+      "roadmap_execution_loop_validation:RLV-001",
+      "roadmap_multi_batch_run_result:RMB-001",
+      "tpa_gate:AI-01-G"
+    ],
+    "layer_transitions": [
+      "PRG->RVW",
+      "RVW->CTX",
+      "CTX->TPA",
+      "TPA->RDX",
+      "RDX->CONTROL",
+      "CONTROL->CERT"
+    ],
+    "replay_entry_points": {
+      "replay_from_context": {
+        "required_artifacts": [
+          "context_bundle_v2:ctx2-001",
+          "tpa_gate:AI-01-G"
+        ],
+        "trace_refs": [
+          "trace-batch-z-001",
+          "context_bundle_v2:ctx2-001"
+        ]
+      },
+      "replay_from_plan": {
+        "required_artifacts": [
+          "program_artifact:PRG-QUALITY-CERTIFICATION",
+          "review_control_signal:rcs-001",
+          "roadmap_execution_loop_validation:RLV-001"
+        ],
+        "trace_refs": [
+          "trace-batch-z-001",
+          "roadmap_execution_loop_validation:RLV-001"
+        ]
+      },
+      "replay_from_execution": {
+        "required_artifacts": [
+          "roadmap_multi_batch_run_result:RMB-001",
+          "control_execution_result:ctrl-001",
+          "control_loop_certification_pack:cert-001"
+        ],
+        "trace_refs": [
+          "trace-batch-z-001",
+          "roadmap_multi_batch_run_result:RMB-001"
+        ]
+      },
+      "replay_from_failure": {
+        "required_artifacts": [
+          "control_execution_result:ctrl-001"
+        ],
+        "trace_refs": [
+          "trace-batch-z-001",
+          "control_execution_result:ctrl-001"
+        ]
+      }
+    },
+    "replay_ready": true
+  },
+  "upstream_refs": [
+    "context_bundle_v2:ctx2-001",
+    "control_execution_result:ctrl-001",
+    "control_loop_certification_pack:cert-001",
+    "eval_result:run-001",
+    "program_artifact:PRG-QUALITY-CERTIFICATION",
+    "review_control_signal:rcs-001",
+    "roadmap_execution_loop_validation:RLV-001",
+    "roadmap_multi_batch_run_result:RMB-001",
+    "tpa_gate:AI-01-G"
+  ],
+  "downstream_refs": [
+    "core_system_integration_validation:CSIV-7FA245E0AA72"
+  ],
+  "related_artifacts": [
+    "context_bundle_v2:ctx2-001",
+    "control_execution_result:ctrl-001",
+    "control_loop_certification_pack:cert-001",
+    "eval_result:run-001",
+    "program_artifact:PRG-QUALITY-CERTIFICATION",
+    "review_control_signal:rcs-001",
+    "roadmap_execution_loop_validation:RLV-001",
+    "roadmap_multi_batch_run_result:RMB-001",
+    "tpa_gate:AI-01-G"
+  ]
 }
