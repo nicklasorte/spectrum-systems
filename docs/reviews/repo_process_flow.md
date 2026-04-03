@@ -1,33 +1,67 @@
 # Repo Process Flow
 
 ## Basic flow
-Review Snapshot
+Program Direction (PRG)
   ↓
-Repo Health Eval
+Review Triggering + Artifacts (RVW/RPT)
   ↓
-Eval Summary
+Review → Eval → Control
   ↓
-Control Decision
+Context Selection / Ranking / Injection (CTX)
   ↓
-Roadmap Selection
+TPA Plan → Build → Simplify → Gate
   ↓
-Control Authorization
+Roadmap Selection + Authorization (MAP/RDX)
   ↓
-Authorized Batch Execution (PQX)
+Bounded Batch Execution + Progress
   ↓
-Roadmap Progress Update (roadmap_progress_update)
+Certification + Stop Conditions
   ↓
-Loop Validation (roadmap_execution_loop_validation)
-  ↓
-Stop-or-Continue Decision (bounded by max_batches_per_run + hard-stop conditions)
-  ↓
-Next Candidate Selection (if allowed, within run limit)
-  ↓
-Artifacts Produced
-  ↓
-Replay + Determinism
+Replay + Determinism Proof
 
 ## Expanded flow
+Program Direction Layer (program_artifact)
+  - constraint propagation to roadmap execution targets
+  - no override of control freeze/block authority
+  ↓
+Review Triggering + Artifact Layer (review_artifact / review_control_signal)
+  - review produces evidence + findings only
+  - review cannot directly authorize execution
+  ↓
+Review → Eval Bridge (review_eval_bridge)
+  - deterministic translation of review signal to eval_result
+  ↓
+Control Layer
+  - allow / warn / freeze / block => warn
+  - hard-stop control outcomes remain authoritative
+  ↓
+Context Layer (context_bundle_v2)
+  - deterministic selection + ranking
+  - context remains advisory (cannot alter control authority)
+  ↓
+TPA Layer (plan/build/simplify/gate)
+  - constrained by context + review/eval risk references
+  - gate does not replace control; gate only verifies local build discipline
+  ↓
+Roadmap Generation + Selection (MAP)
+  - deterministic next-batch proposal only
+  - program constraints applied before selection output is finalized
+  ↓
+Roadmap Execution (RDX + PQX)
+  - bounded batch execution under control authorization
+  - single-batch loop validation + multi-batch stop-reason enforcement
+  ↓
+Progress + Certification
+  - roadmap_progress_update + control_loop_certification_pack
+  ↓
+Stop-or-Continue Decision
+  - stop immediately on freeze/block/failure/missing-signal/replay/hard-gate/max-limit conditions
+  - no silent continuation beyond bounded execution policy
+  ↓
+Replay + Determinism
+  - replay chain complete only with program/review/context/tpa/roadmap/control/cert refs
+
+### Compatibility details (current run snapshot)
 Review Snapshot (repo_review_snapshot)
   ↓
 Eval Runner (repo_health_eval)
@@ -36,9 +70,6 @@ Eval Runner (repo_health_eval)
   - readiness score: 0.9333333333333333
   ↓
 Eval Summary
-  ↓
-Control Loop
-  - allow / warn / freeze / block => warn
   ↓
 Roadmap Generator
   - build targets: MAP-004-roadmap-integration, MAP-DOC-flow-generation
