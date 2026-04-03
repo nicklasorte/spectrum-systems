@@ -123,6 +123,7 @@ def test_review_required_with_permitted_loop_control_triggers_and_spawns_review_
     assert child["status"] == WorkItemStatus.REVIEW_QUEUED.value
     assert child["work_item_id"] == "wi-parent.repair.1.review.1"
     assert final_trigger["spawned_review_work_item_id"] == child["work_item_id"]
+    assert final_trigger["review_request"]["review_type"] == "failure"
 
 
 def test_complete_maps_to_no_review_needed_without_child_creation():

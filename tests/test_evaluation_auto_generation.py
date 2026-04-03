@@ -18,6 +18,7 @@ from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noq
     generate_failure_eval_case,
     map_failure_class_to_prevention_rule,
     register_failure_eval_case,
+    build_review_eval_generation_report,
 )
 
 
@@ -197,10 +198,10 @@ def test_missing_prevention_mapping_blocks(monkeypatch: pytest.MonkeyPatch) -> N
 def test_critical_review_findings_generate_failure_derived_eval_cases() -> None:
     review_signal = {
         "artifact_type": "review_control_signal",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "signal_id": "rcs-1111111111111111",
         "review_id": "REV-TEST-001",
-        "review_type": "checkpoint_review",
+        "review_type": "failure",
         "gate_assessment": "FAIL",
         "scale_recommendation": "NO",
         "critical_findings": [
@@ -212,6 +213,7 @@ def test_critical_review_findings_generate_failure_derived_eval_cases() -> None:
         "trace_linkage": {
             "review_markdown_path": "docs/reviews/example.md",
             "source_digest_sha256": "a" * 64,
+            "review_artifact_path": "artifacts/reviews/example.json",
         },
     }
 
@@ -226,10 +228,10 @@ def test_critical_review_findings_generate_failure_derived_eval_cases() -> None:
 def test_ambiguous_review_finding_mapping_fails_closed() -> None:
     review_signal = {
         "artifact_type": "review_control_signal",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "signal_id": "rcs-2222222222222222",
         "review_id": "REV-TEST-002",
-        "review_type": "checkpoint_review",
+        "review_type": "failure",
         "gate_assessment": "FAIL",
         "scale_recommendation": "NO",
         "critical_findings": ["No explicit mapping family"],
@@ -237,7 +239,52 @@ def test_ambiguous_review_finding_mapping_fails_closed() -> None:
         "trace_linkage": {
             "review_markdown_path": "docs/reviews/example-2.md",
             "source_digest_sha256": "b" * 64,
+            "review_artifact_path": "artifacts/reviews/example-2.json",
         },
     }
     with pytest.raises(EvalCaseGenerationError, match="missing explicit \\[eval_family"):
         generate_failure_derived_eval_cases_from_review_signal(review_signal)
+
+
+def test_repeated_review_failures_mark_high_priority_deterministically() -> None:
+    review_signal = {
+        "artifact_type": "review_control_signal",
+        "schema_version": "1.1.0",
+        "signal_id": "rcs-3333333333333333",
+        "review_id": "REV-TEST-003",
+        "review_type": "failure",
+        "gate_assessment": "FAIL",
+        "scale_recommendation": "NO",
+        "critical_findings": [
+            "Missing fail-closed mapping [eval_family:review_gate_alignment]",
+        ],
+        "confidence": 0.2,
+        "trace_linkage": {
+            "review_markdown_path": "docs/reviews/example-3.md",
+            "source_digest_sha256": "c" * 64,
+            "review_artifact_path": "artifacts/reviews/review-artifact-3.json",
+        },
+    }
+    baseline = generate_failure_derived_eval_cases_from_review_signal(review_signal)
+    dedupe_key = baseline[0]["provenance"]["dedupe_key"]
+    cases = generate_failure_derived_eval_cases_from_review_signal(
+        review_signal,
+        prior_recurrence_counts={dedupe_key: 2},
+    )
+    assert cases
+    assert cases[0]["provenance"]["high_priority"] is True
+
+
+def test_review_eval_generation_report_deterministic() -> None:
+    report = build_review_eval_generation_report(
+        generated_eval_cases=[{"eval_case_id": "ec-1"}, {"eval_case_id": "ec-2"}],
+        recurrence_counts={"rfd-a": 1, "rfd-b": 3},
+        trace_id="trace-review",
+    )
+    second = build_review_eval_generation_report(
+        generated_eval_cases=[{"eval_case_id": "ec-1"}, {"eval_case_id": "ec-2"}],
+        recurrence_counts={"rfd-a": 1, "rfd-b": 3},
+        trace_id="trace-review",
+    )
+    assert report == second
+    assert report["high_priority_eval_count"] == 1

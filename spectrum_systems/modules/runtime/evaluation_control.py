@@ -389,6 +389,7 @@ def build_evaluation_control_decision(
     review_control_signal: Optional[Dict[str, Any]] = None,
     review_eval_results: Optional[List[Dict[str, Any]]] = None,
     review_signal_required: bool = False,
+    required_review_types: Optional[List[str]] = None,
     threshold_context: ThresholdContext = "active_runtime",
 ) -> Dict[str, Any]:
     """Build a deterministic evaluation_control_decision from governed signal artifacts."""
@@ -546,6 +547,9 @@ def build_evaluation_control_decision(
         except ReviewEvalBridgeError as exc:
             raise EvaluationControlError(f"review_control_signal->eval_result bridge failed: {exc}") from exc
 
+    required_type_set = set(required_review_types or [])
+    observed_review_types: set[str] = set()
+
     if review_signal_required and not resolved_review_eval_results:
         triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
         system_status, system_response, decision_label, rationale_code = (
@@ -561,6 +565,9 @@ def build_evaluation_control_decision(
                 raise EvaluationControlError("review-derived eval_result failed validation: " + "; ".join(review_eval_errors))
             review_status = str(review_eval.get("result_status") or "")
             failure_modes = {str(item) for item in (review_eval.get("failure_modes") or [])}
+            for ref in (review_eval.get("provenance_refs") or []):
+                if isinstance(ref, str) and ref.startswith("review_type:"):
+                    observed_review_types.add(ref.split(":", 1)[1])
             if review_status == "fail":
                 triggered_signals = list(dict.fromkeys([*triggered_signals, "trust_breach"]))
                 system_status, system_response, decision_label, rationale_code = (
@@ -585,6 +592,15 @@ def build_evaluation_control_decision(
                     "deny",
                     "deny_stability_breach",
                 )
+
+    if required_type_set and not required_type_set.issubset(observed_review_types):
+        triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
+        system_status, system_response, decision_label, rationale_code = (
+            "blocked",
+            "block",
+            "deny",
+            "deny_missing_required_signal",
+        )
 
     schema_version = "1.2.0"
     decision = {

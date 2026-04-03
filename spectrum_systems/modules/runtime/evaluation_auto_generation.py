@@ -422,8 +422,36 @@ def _extract_review_eval_family(finding_text: str) -> str:
     return family
 
 
+
+
+def build_review_eval_generation_report(*, generated_eval_cases: list[Dict[str, Any]], recurrence_counts: Dict[str, int], trace_id: str, high_priority_threshold: int = 3) -> Dict[str, Any]:
+    if not isinstance(trace_id, str) or not trace_id:
+        raise EvalCaseGenerationError("trace_id must be non-empty")
+    records = []
+    for key in sorted(recurrence_counts):
+        count = int(recurrence_counts[key])
+        records.append({
+            "dedupe_key": key,
+            "recurrence_count": count,
+            "high_priority": count >= high_priority_threshold,
+        })
+    artifact = {
+        "artifact_type": "review_eval_generation_report",
+        "schema_version": "1.0.0",
+        "report_id": deterministic_id(prefix="regr", namespace="review_eval_generation_report", payload={"trace_id": trace_id, "records": records}),
+        "trace_id": trace_id,
+        "generated_eval_count": len(generated_eval_cases),
+        "high_priority_eval_count": sum(1 for item in records if item["high_priority"]),
+        "recurrence_records": records,
+    }
+    Draft202012Validator(load_schema("review_eval_generation_report"), format_checker=FormatChecker()).validate(artifact)
+    return artifact
+
 def generate_failure_derived_eval_cases_from_review_signal(
     review_control_signal: Dict[str, Any],
+    *,
+    prior_recurrence_counts: Optional[Dict[str, int]] = None,
+    high_priority_threshold: int = 3,
 ) -> list[Dict[str, Any]]:
     """Generate deterministic deduped eval_case artifacts from critical review findings."""
     if not isinstance(review_control_signal, dict):
@@ -447,6 +475,7 @@ def generate_failure_derived_eval_cases_from_review_signal(
     seen_eval_case_ids: set[str] = set()
     eval_case_schema = load_schema("eval_case")
     validator = Draft202012Validator(eval_case_schema, format_checker=FormatChecker())
+    recurrence = dict(prior_recurrence_counts or {})
 
     for index, finding in enumerate(unique_findings, start=1):
         eval_family = _extract_review_eval_family(finding)
@@ -457,11 +486,18 @@ def generate_failure_derived_eval_cases_from_review_signal(
             "eval_family": eval_family,
             "finding": normalized_finding,
         }
+        dedupe_key = deterministic_id(
+            prefix="rfd",
+            namespace="review_failure_dedupe_key",
+            payload=identity_payload,
+        )
         eval_case_id = deterministic_id(
             prefix="ec",
             namespace="review_failure_derived_eval_case",
             payload=identity_payload,
         )
+        recurrence_count = int(recurrence.get(dedupe_key, 0)) + 1
+        recurrence[dedupe_key] = recurrence_count
         if eval_case_id in seen_eval_case_ids:
             continue
         seen_eval_case_ids.add(eval_case_id)
@@ -496,13 +532,16 @@ def generate_failure_derived_eval_cases_from_review_signal(
             },
             "evaluation_type": "deterministic",
             "created_from": "failure_trace",
-            "slice_tags": ["review-eval-024", eval_family],
+            "slice_tags": ["review-eval-024", eval_family, "high-priority" if recurrence_count >= high_priority_threshold else "standard-priority"],
             "provenance": {
                 "review_id": review_control_signal.get("review_id"),
                 "review_control_signal_id": review_control_signal.get("signal_id"),
                 "finding_id": f"finding-{index:03d}",
                 "finding_text_normalized": normalized_finding,
                 "generated_by_module": "spectrum_systems.modules.runtime.evaluation_auto_generation",
+                "dedupe_key": dedupe_key,
+                "recurrence_count": recurrence_count,
+                "high_priority": recurrence_count >= high_priority_threshold,
             },
         }
         validator.validate(eval_case)

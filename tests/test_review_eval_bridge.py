@@ -14,6 +14,8 @@ from spectrum_systems.modules.runtime.review_eval_bridge import (  # noqa: E402
     ReviewEvalBridgeError,
     build_eval_result_from_review_signal,
     canonicalize_review_signal,
+    build_review_failure_summary,
+    build_review_hotspot_report,
 )
 
 
@@ -54,3 +56,21 @@ def test_fail_review_maps_to_failed_eval_result() -> None:
     assert "review_gate_failed" in eval_result["failure_modes"]
     assert "review_scale_not_recommended" in eval_result["failure_modes"]
     assert any(ref.startswith("review_control_signal:") for ref in eval_result["provenance_refs"])
+
+
+def test_review_failure_summary_is_deterministic() -> None:
+    signal = _review_signal()
+    signal["gate_assessment"] = "FAIL"
+    signal["scale_recommendation"] = "NO"
+    result = build_eval_result_from_review_signal(signal)
+    first = build_review_failure_summary([result])
+    second = build_review_failure_summary([result])
+    assert first == second
+
+
+def test_review_hotspot_report_is_deterministic() -> None:
+    signal = _review_signal()
+    signal["critical_findings"] = ["Missing fail closed mapping", "Replay lineage missing"]
+    first = build_review_hotspot_report([signal], trace_id="trace-a")
+    second = build_review_hotspot_report([signal], trace_id="trace-a")
+    assert first == second

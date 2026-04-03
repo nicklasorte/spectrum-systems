@@ -166,6 +166,17 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("prompt_queue_repair_prompt")
         validate_artifact(instance, "prompt_queue_repair_prompt")
 
+
+    def test_review_governance_observability_contract_examples_validate(self) -> None:
+        for name in (
+            "review_request",
+            "review_failure_summary",
+            "review_hotspot_report",
+            "review_eval_generation_report",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_prompt_queue_review_trigger_example_validates(self) -> None:
         instance = load_example("prompt_queue_review_trigger")
         validate_artifact(instance, "prompt_queue_review_trigger")

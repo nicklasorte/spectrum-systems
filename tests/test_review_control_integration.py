@@ -19,7 +19,7 @@ def test_fail_review_blocks_control_decision(tmp_path: Path) -> None:
     review_path.write_text(
         "---\n"
         "module: runtime\n"
-        "review_type: checkpoint_review\n"
+        "review_type: failure\n"
         "review_date: 2026-04-01\n"
         "reviewer: test\n"
         "decision: FAIL\n"

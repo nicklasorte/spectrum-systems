@@ -1,0 +1,15 @@
+{
+  "artifact_type": "review_eval_generation_report",
+  "schema_version": "1.0.0",
+  "report_id": "regr-001",
+  "trace_id": "trace-review-batch-r",
+  "generated_eval_count": 3,
+  "high_priority_eval_count": 1,
+  "recurrence_records": [
+    {
+      "dedupe_key": "rfd-abc123",
+      "recurrence_count": 3,
+      "high_priority": true
+    }
+  ]
+}
