@@ -303,3 +303,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-CONVERGENCE-024-TRUST-SPINE-HARDENING-2026-04-01.md | CONVERGENCE-024 — Trust-spine hardening convergence fix | Active |
 
 | docs/review-actions/PLAN-CON-027-THRESHOLD-POLICY-SEMANTICS-UNIFICATION-2026-04-01.md | CON-027 — Threshold & Policy Semantics Unification | Active |
+
+| docs/review-actions/PLAN-MAP-003-MAP-004-MAP-DOC-2026-04-03.md | MAP-003/MAP-004/MAP-DOC — review-gated PQX + roadmap derivation + process-flow doc | Active |

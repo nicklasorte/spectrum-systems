@@ -7,6 +7,11 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.contracts import load_example
+from spectrum_systems.modules.runtime.repo_health_eval import (
+    build_repo_health_control_decision,
+    build_repo_health_eval,
+)
 from spectrum_systems.modules.runtime.pqx_sequence_runner import (
     PQXSequenceRunnerError,
     execute_bundle_sequence_run,
@@ -31,6 +36,14 @@ def _slice_requests() -> list[dict]:
         {"slice_id": "PQX-QUEUE-02", "trace_id": "trace-02"},
         {"slice_id": "PQX-QUEUE-03", "trace_id": "trace-03"},
     ]
+
+
+def _review_gate_artifacts(control_response: str = "allow") -> tuple[dict, dict, dict]:
+    snapshot = json.loads(json.dumps(load_example("repo_review_snapshot")))
+    eval_artifacts = build_repo_health_eval(snapshot)
+    decision = build_repo_health_control_decision(snapshot=snapshot, eval_summary=eval_artifacts["eval_summary"])
+    decision["system_response"] = control_response
+    return snapshot, eval_artifacts, decision
 
 
 def _canonical_hash(payload: object) -> str:
@@ -128,6 +141,72 @@ def test_missing_required_identity_fails_closed(tmp_path: Path) -> None:
             run_id="",
             trace_id="trace-batch-001",
         )
+
+
+def test_review_gate_requires_snapshot_when_enabled(tmp_path: Path) -> None:
+    with pytest.raises(PQXSequenceRunnerError, match="repo_review_snapshot"):
+        execute_sequence_run(
+            slice_requests=_slice_requests()[:1],
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-run-map-001",
+            run_id="run-map-001",
+            trace_id="trace-map-001",
+            review_gate_required=True,
+            review_snapshot=None,
+            review_eval_artifacts={"eval_summary": load_example("eval_summary")},
+            review_control_decision={"system_response": "allow"},
+        )
+
+
+def test_review_gate_warn_allows_progress_with_degraded_marker(tmp_path: Path) -> None:
+    snapshot, eval_artifacts, decision = _review_gate_artifacts(control_response="warn")
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:1],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-map-002",
+        run_id="run-map-002",
+        trace_id="trace-map-002",
+        review_gate_required=True,
+        review_snapshot=snapshot,
+        review_eval_artifacts=eval_artifacts,
+        review_control_decision=decision,
+    )
+    assert state["status"] == "completed"
+    assert state["blocked_reason"] == "degraded review gate state: warn"
+
+
+def test_review_gate_freeze_blocks_progression(tmp_path: Path) -> None:
+    snapshot, eval_artifacts, decision = _review_gate_artifacts(control_response="freeze")
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-map-003",
+        run_id="run-map-003",
+        trace_id="trace-map-003",
+        review_gate_required=True,
+        review_snapshot=snapshot,
+        review_eval_artifacts=eval_artifacts,
+        review_control_decision=decision,
+    )
+    assert state["status"] == "blocked"
+    assert state["termination_reason"] == "BLOCKED_PRIOR_SLICE_NOT_GOVERNED"
+
+
+def test_review_gate_block_fails_closed(tmp_path: Path) -> None:
+    snapshot, eval_artifacts, decision = _review_gate_artifacts(control_response="block")
+    state = execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-map-004",
+        run_id="run-map-004",
+        trace_id="trace-map-004",
+        review_gate_required=True,
+        review_snapshot=snapshot,
+        review_eval_artifacts=eval_artifacts,
+        review_control_decision=decision,
+    )
+    assert state["status"] == "blocked"
+    assert state["termination_reason"] == "BLOCKED_PRIOR_SLICE_NOT_GOVERNED"
 
 
 def test_parent_child_continuity_mismatch_fails_closed(tmp_path: Path) -> None:
