@@ -1,0 +1,25 @@
+{
+  "artifact_type": "tpa_slice_artifact",
+  "schema_version": "1.0.0",
+  "artifact_id": "tpa:run-001:AI-01-P",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "slice_id": "AI-01-P",
+  "step_id": "AI-01",
+  "phase": "plan",
+  "produced_at": "2026-04-03T00:00:00Z",
+  "artifact": {
+    "artifact_kind": "plan",
+    "files_touched": [
+      "spectrum_systems/modules/runtime/pqx_sequence_runner.py"
+    ],
+    "seams_reused": [
+      "pqx_sequence_runner.execute_sequence_run"
+    ],
+    "abstraction_intent": "reuse_existing",
+    "constraints_acknowledged": {
+      "build_small": true,
+      "no_redesign": true
+    }
+  }
+}
