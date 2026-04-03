@@ -1,0 +1,25 @@
+{
+  "artifact_type": "failure_pattern_record",
+  "schema_version": "1.0.0",
+  "pattern_id": "fpr-9ff8b3f9f8c5",
+  "normalized_failure_key": "7c1da35f5f7d44ec9db8a6212adf75fa2a16e80f83d5312a5a6f2cbeca1f1ef0",
+  "occurrence_count": 3,
+  "first_seen": "2026-04-01T10:10:10Z",
+  "last_seen": "2026-04-03T12:34:56Z",
+  "associated_stop_reasons": [
+    "missing_required_signal"
+  ],
+  "associated_root_causes": [
+    "review_or_input_condition:PROP_REVIEW_EVAL_NOT_INGESTED",
+    "evaluation_or_propagation_gap:eval_or_propagation_missing"
+  ],
+  "related_artifacts": [
+    "core_system_integration_validation:CSI-001",
+    "remediation_plan:RMP-000000000001"
+  ],
+  "trace_ids": [
+    "trace-001",
+    "trace-002",
+    "trace-003"
+  ]
+}

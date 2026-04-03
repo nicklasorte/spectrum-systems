@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_pattern_record.schema.json",
+  "title": "Failure Pattern Record",
+  "description": "Deterministic record of recurring failure signatures used to derive prevention evals.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "pattern_id",
+    "normalized_failure_key",
+    "occurrence_count",
+    "first_seen",
+    "last_seen",
+    "associated_stop_reasons",
+    "associated_root_causes",
+    "related_artifacts",
+    "trace_ids"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "failure_pattern_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "pattern_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "normalized_failure_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "occurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "associated_stop_reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "associated_root_causes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "related_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "trace_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

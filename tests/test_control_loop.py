@@ -20,6 +20,8 @@ from spectrum_systems.modules.runtime.control_loop import (  # noqa: E402
     run_judgment_learning_control_loop,
 )
 from spectrum_systems.modules.runtime.evaluation_auto_generation import (  # noqa: E402
+    build_failure_pattern_record,
+    enforce_failure_pattern_eval_gate,
     generate_failure_eval_case,
     register_failure_eval_case,
 )
@@ -266,6 +268,31 @@ def test_repeat_failure_changes_control_decision() -> None:
     registry[failure_eval["eval_case_id"]]["recurrence_count"] = 3
     decision = run_control_loop(failure_eval, trace_context)["evaluation_control_decision"]
     assert decision["decision"] == "deny"
+    assert decision["system_response"] == "block"
+
+
+def test_failure_pattern_gate_violation_blocks_future_failure_eval_run() -> None:
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-pattern-1",
+        observed_at="2026-04-01T00:00:00Z",
+    )
+    pattern = build_failure_pattern_record(
+        stop_reason="missing_required_signal",
+        root_cause_chain=[{"step": "review_or_input_condition", "reason": "PROP_REVIEW_EVAL_NOT_INGESTED"}],
+        blocking_conditions=["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        trace_id="trace-pattern-2",
+        prior_record=pattern,
+        observed_at="2026-04-02T00:00:00Z",
+    )
+    gate = enforce_failure_pattern_eval_gate(failure_pattern_record=pattern, threshold=2)
+    assert gate["decision"] == "deny"
+
+    failure_eval, registry, trace_context = _failure_eval_case()
+    registry[failure_eval["eval_case_id"]]["recurrence_count"] = pattern["occurrence_count"]
+    decision = run_control_loop(failure_eval, trace_context)["evaluation_control_decision"]
     assert decision["system_response"] == "block"
 
 

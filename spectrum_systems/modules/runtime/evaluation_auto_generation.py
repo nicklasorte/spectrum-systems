@@ -54,6 +54,97 @@ def _validate_failure_eval_case(artifact: Dict[str, Any]) -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(artifact)
 
 
+def _validate_failure_pattern_record(artifact: Dict[str, Any]) -> None:
+    schema = load_schema("failure_pattern_record")
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(artifact)
+
+
+def _canonical_list(values: Any) -> list[str]:
+    if values is None:
+        return []
+    if isinstance(values, str):
+        values = [values]
+    if not isinstance(values, list):
+        raise EvalCaseGenerationError("list-like input must be a list or string")
+    normalized = [str(item).strip() for item in values if str(item).strip()]
+    return sorted(dict.fromkeys(normalized))
+
+
+def normalize_failure_pattern(
+    *,
+    stop_reason: str,
+    root_cause_chain: list[dict[str, Any]],
+    blocking_conditions: list[str],
+) -> str:
+    """Build a stable deterministic failure-pattern key."""
+    resolved_stop = _string(stop_reason, field="stop_reason")
+    if not isinstance(root_cause_chain, list):
+        raise EvalCaseGenerationError("root_cause_chain must be a list")
+    if not isinstance(blocking_conditions, list):
+        raise EvalCaseGenerationError("blocking_conditions must be a list")
+    normalized_chain = []
+    for item in root_cause_chain:
+        if not isinstance(item, dict):
+            raise EvalCaseGenerationError("root_cause_chain entries must be objects")
+        step = str(item.get("step") or "").strip() or "unknown_step"
+        reason = str(item.get("reason") or "").strip() or "unknown_reason"
+        normalized_chain.append({"step": step, "reason": reason})
+    normalized_chain = sorted(normalized_chain, key=lambda item: (item["step"], item["reason"]))
+    payload = {
+        "stop_reason": resolved_stop,
+        "root_cause_chain": normalized_chain,
+        "blocking_conditions": _canonical_list(blocking_conditions),
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def build_failure_pattern_record(
+    *,
+    stop_reason: str,
+    root_cause_chain: list[dict[str, Any]],
+    blocking_conditions: list[str],
+    trace_id: str,
+    related_artifacts: Optional[list[str]] = None,
+    prior_record: Optional[dict[str, Any]] = None,
+    observed_at: Optional[str] = None,
+) -> dict[str, Any]:
+    normalized_key = normalize_failure_pattern(
+        stop_reason=stop_reason,
+        root_cause_chain=root_cause_chain,
+        blocking_conditions=blocking_conditions,
+    )
+    timestamp = _string(observed_at or "1970-01-01T00:00:00Z", field="observed_at")
+    prior = prior_record if isinstance(prior_record, dict) else {}
+    occurrence_count = int(prior.get("occurrence_count", 0)) + 1
+    trace_ids = _canonical_list(list(prior.get("trace_ids") or []) + [trace_id])
+    stop_reasons = _canonical_list(list(prior.get("associated_stop_reasons") or []) + [stop_reason])
+    root_causes = _canonical_list(
+        list(prior.get("associated_root_causes") or [])
+        + [f"{str(item.get('step') or '').strip()}:{str(item.get('reason') or '').strip()}" for item in root_cause_chain if isinstance(item, dict)]
+    )
+    related = _canonical_list(list(prior.get("related_artifacts") or []) + list(related_artifacts or []))
+    record = {
+        "artifact_type": "failure_pattern_record",
+        "schema_version": "1.0.0",
+        "pattern_id": deterministic_id(
+            prefix="fpr",
+            namespace="batch_l_failure_pattern_record",
+            payload={"normalized_failure_key": normalized_key},
+        ),
+        "normalized_failure_key": normalized_key,
+        "occurrence_count": occurrence_count,
+        "first_seen": str(prior.get("first_seen") or timestamp),
+        "last_seen": timestamp,
+        "associated_stop_reasons": stop_reasons,
+        "associated_root_causes": root_causes or ["unknown_step:unknown_reason"],
+        "related_artifacts": related,
+        "trace_ids": trace_ids,
+    }
+    _validate_failure_pattern_record(record)
+    return record
+
+
 def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
     canonical = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -547,6 +638,148 @@ def generate_failure_derived_eval_cases_from_review_signal(
         validator.validate(eval_case)
         artifacts.append(eval_case)
     return artifacts
+
+
+def generate_eval_case_from_failure_pattern(
+    *,
+    failure_pattern_record: dict[str, Any],
+    threshold: int = 3,
+    existing_eval_case_ids: Optional[list[str]] = None,
+) -> Optional[dict[str, Any]]:
+    """Generate deterministic eval_case when a failure pattern recurrence threshold is met."""
+    if not isinstance(threshold, int) or threshold <= 0:
+        raise EvalCaseGenerationError("threshold must be a positive integer")
+    if not isinstance(failure_pattern_record, dict):
+        raise EvalCaseGenerationError("failure_pattern_record must be an object")
+    _validate_failure_pattern_record(failure_pattern_record)
+
+    occurrence_count = int(failure_pattern_record.get("occurrence_count", 0))
+    if occurrence_count < threshold:
+        return None
+
+    pattern_id = _string(failure_pattern_record.get("pattern_id"), field="failure_pattern_record.pattern_id")
+    normalized_key = _string(
+        failure_pattern_record.get("normalized_failure_key"),
+        field="failure_pattern_record.normalized_failure_key",
+    )
+    identity_payload = {
+        "pattern_id": pattern_id,
+        "normalized_failure_key": normalized_key,
+        "threshold": threshold,
+    }
+    eval_case_id = deterministic_id(
+        prefix="ec",
+        namespace="batch_l_failure_pattern_eval_case",
+        payload=identity_payload,
+    )
+    if eval_case_id in set(existing_eval_case_ids or []):
+        return None
+
+    first_trace = _string(failure_pattern_record.get("trace_ids")[0], field="failure_pattern_record.trace_ids[0]")
+    eval_case = {
+        "artifact_type": "eval_case",
+        "schema_version": "1.0.0",
+        "run_id": deterministic_id(prefix="run", namespace="batch_l_failure_pattern_eval_run", payload=identity_payload),
+        "trace_id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"failure-pattern-eval::{pattern_id}::{threshold}")),
+        "eval_case_id": eval_case_id,
+        "input_artifact_refs": [f"failure_pattern_record:{pattern_id}"],
+        "expected_output_spec": {
+            "pass_condition": "future_runs_must_not_repeat_normalized_failure_key",
+            "normalized_failure_key": normalized_key,
+            "max_allowed_recurrence_count": threshold - 1,
+            "anchor_trace_id": first_trace,
+        },
+        "scoring_rubric": {
+            "metric": "failure_pattern_recurrence_count",
+            "pass_if_lte": threshold - 1,
+            "fail_if_gte": threshold,
+            "failure_action": "freeze_or_block",
+        },
+        "evaluation_type": "deterministic",
+        "created_from": "failure_trace",
+        "slice_tags": ["batch_l_failure_learning", "recurrence_prevention"],
+        "risk_class": "high",
+        "priority": "p0",
+        "provenance": {
+            "source_failure_pattern_record": pattern_id,
+            "source_normalized_failure_key": normalized_key,
+            "source_failure_pattern_ref": f"failure_pattern_record:{pattern_id}",
+            "provenance_refs": [
+                f"failure_pattern_record:{pattern_id}",
+                f"trace:{first_trace}",
+            ],
+        },
+    }
+    Draft202012Validator(load_schema("eval_case"), format_checker=FormatChecker()).validate(eval_case)
+    return eval_case
+
+
+def build_failure_learning_bundle(
+    *,
+    failure_pattern_record: dict[str, Any],
+    remediation_plan: dict[str, Any],
+    threshold: int = 3,
+    existing_eval_case_ids: Optional[list[str]] = None,
+) -> dict[str, Any]:
+    """Link failure pattern, remediation, and generated eval into one deterministic enforcement bundle."""
+    if not isinstance(remediation_plan, dict):
+        raise EvalCaseGenerationError("remediation_plan must be an object")
+    pattern_id = _string(failure_pattern_record.get("pattern_id"), field="failure_pattern_record.pattern_id")
+    remediation_id = _string(
+        remediation_plan.get("plan_id") or remediation_plan.get("remediation_id"),
+        field="remediation_plan.plan_id",
+    )
+    generated_eval_case = generate_eval_case_from_failure_pattern(
+        failure_pattern_record=failure_pattern_record,
+        threshold=threshold,
+        existing_eval_case_ids=existing_eval_case_ids,
+    )
+    required_eval_set = [generated_eval_case["eval_case_id"]] if generated_eval_case else []
+    return {
+        "bundle_id": deterministic_id(
+            prefix="flb",
+            namespace="batch_l_failure_learning_bundle",
+            payload={
+                "pattern_id": pattern_id,
+                "remediation_id": remediation_id,
+                "threshold": threshold,
+            },
+        ),
+        "failure_pattern_record_ref": f"failure_pattern_record:{pattern_id}",
+        "remediation_plan_ref": f"remediation_plan:{remediation_id}",
+        "generated_eval_case": generated_eval_case,
+        "required_eval_case_ids": required_eval_set,
+        "control_loop_integration": {
+            "mode": "required_eval_set_gate",
+            "on_violation": "freeze_or_block",
+            "threshold": threshold,
+        },
+    }
+
+
+def enforce_failure_pattern_eval_gate(
+    *,
+    failure_pattern_record: dict[str, Any],
+    threshold: int = 3,
+) -> dict[str, Any]:
+    """Deterministic gate decision for future runs based on repeated failure recurrence."""
+    _validate_failure_pattern_record(failure_pattern_record)
+    if not isinstance(threshold, int) or threshold <= 0:
+        raise EvalCaseGenerationError("threshold must be a positive integer")
+    recurrence = int(failure_pattern_record.get("occurrence_count", 0))
+    violated = recurrence >= threshold
+    return {
+        "decision": "deny" if violated else "allow",
+        "system_response": "freeze" if violated else "allow",
+        "reason": (
+            "failure_pattern_recurrence_threshold_reached"
+            if violated
+            else "failure_pattern_recurrence_within_threshold"
+        ),
+        "required_eval_set_active": violated,
+        "recurrence_count": recurrence,
+        "threshold": threshold,
+    }
 
 
 
