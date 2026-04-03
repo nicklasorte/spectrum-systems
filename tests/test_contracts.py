@@ -276,6 +276,11 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("roadmap_multi_batch_run_result")
         validate_artifact(instance, "roadmap_multi_batch_run_result")
 
+    def test_operator_shakeout_contract_examples_validate(self) -> None:
+        for name in ("operator_friction_report", "operator_backlog_handoff"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_pqx_chain_and_bundle_contract_examples_validate(self) -> None:
         for name in (
             "pqx_chain_certification_record",

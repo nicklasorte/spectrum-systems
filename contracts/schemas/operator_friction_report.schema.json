@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/operator_friction_report.schema.json",
+  "title": "operator_friction_report",
+  "description": "Deterministic operator shakeout report capturing friction discovered across governed system-cycle scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "schema_version",
+    "scenarios_exercised",
+    "friction_items",
+    "created_at",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "report_id": {"type": "string", "pattern": "^OFR-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "scenarios_exercised": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+      "uniqueItems": true
+    },
+    "friction_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scenario_id",
+          "friction_type",
+          "severity",
+          "artifact_refs",
+          "stop_reason",
+          "blockers",
+          "outcome_understandable",
+          "next_action_obvious",
+          "manual_interpretation_required",
+          "root_cause_hypothesis",
+          "suggested_fix_type",
+          "trace_id"
+        ],
+        "properties": {
+          "scenario_id": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+          "friction_type": {
+            "type": "string",
+            "enum": [
+              "unclear next-step recommendation",
+              "noisy summary artifact",
+              "insufficient root-cause visibility",
+              "too much manual artifact hunting",
+              "weak failure explanation",
+              "weak prioritization",
+              "operator command ergonomics",
+              "trace/replay discoverability",
+              "review/context surfacing quality"
+            ]
+          },
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+          "artifact_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 3},
+            "uniqueItems": true
+          },
+          "stop_reason": {"type": "string", "minLength": 3},
+          "blockers": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 3},
+            "uniqueItems": true
+          },
+          "outcome_understandable": {"type": "boolean"},
+          "next_action_obvious": {"type": "boolean"},
+          "manual_interpretation_required": {"type": "boolean"},
+          "root_cause_hypothesis": {"type": "string", "minLength": 10},
+          "suggested_fix_type": {
+            "type": "string",
+            "enum": ["runtime", "contract", "documentation", "tests", "operator_cli"]
+          },
+          "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    }
+  }
+}

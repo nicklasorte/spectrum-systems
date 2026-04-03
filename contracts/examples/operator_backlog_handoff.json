@@ -1,0 +1,45 @@
+{
+  "handoff_id": "OBH-98FE76DC54BA",
+  "schema_version": "1.0.0",
+  "prioritized_items": [
+    {
+      "rank": 1,
+      "title": "Explicit stop-condition remediation checklist",
+      "why_it_matters": "Operators lose time mapping blockers to required evidence and reviewers after blocked runs.",
+      "affected_layer": "BATCH-U",
+      "expected_trust_gain": "high",
+      "expected_usability_gain": "high",
+      "operator_time_saved_minutes": 15,
+      "suggested_batch_grouping": "BATCH-Y1",
+      "source_friction_refs": [
+        "SCN-MISSING_REQUIRED_REVIEW",
+        "SCN-NOISY_FAILURE_SURFACE"
+      ]
+    }
+  ],
+  "grouped_candidates": [
+    {
+      "friction_type": "review/context surfacing quality",
+      "scenario_refs": [
+        "SCN-MISSING_REQUIRED_REVIEW"
+      ],
+      "suggested_fix_type": "documentation"
+    }
+  ],
+  "dependency_notes": [
+    "Keep BATCH-Z fail-closed invariants unchanged while improving operator-facing guidance."
+  ],
+  "trust_gain": {
+    "score": 78,
+    "justification": "Top items make blocked outcomes explainable and trace-linked from one artifact view."
+  },
+  "operator_time_saved": {
+    "minutes_per_cycle": 18,
+    "justification": "Checklist + stronger summary fields reduce manual artifact triage per cycle."
+  },
+  "created_at": "2026-04-03T23:59:00Z",
+  "trace_id": "trace-batch-y-example",
+  "source_refs": [
+    "operator_friction_report:OFR-12AB34CD56EF"
+  ]
+}
