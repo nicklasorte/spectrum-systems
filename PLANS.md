@@ -272,6 +272,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-RDX-002A-2026-04-03.md | RDX-002A — BATCH-M Follow-Up: Contract Preflight Repair | Active |
 | docs/review-actions/PLAN-RDX-003-2026-04-03.md | RDX-003 — BATCH-M: Control Authorization for Roadmap-Selected Batch | Active |
 | docs/review-actions/PLAN-RDX-004-2026-04-03.md | RDX-004 — BATCH-M: Authorized Batch Execution + Roadmap Progress Update | Active |
+| docs/review-actions/PLAN-RDX-005-2026-04-03.md | RDX-005 — BATCH-M: End-to-End Roadmap Execution Loop Validation | Active |
 
 Update this table when plans are created or completed.
 

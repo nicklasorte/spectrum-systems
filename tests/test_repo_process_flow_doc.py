@@ -35,7 +35,8 @@ def test_process_flow_doc_contains_required_sections_and_weak_points() -> None:
     assert "Control Authorization" in doc
     assert "Authorized Batch Execution (PQX)" in doc
     assert "Roadmap Progress Update (roadmap_progress_update)" in doc
-    assert "Next Candidate Selection" in doc
+    assert "Loop Validation (roadmap_execution_loop_validation)" in doc
+    assert "Next Candidate Selection (not executed)" in doc
     assert "missing eval coverage" in doc
 
 
