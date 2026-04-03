@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_execution_loop_validation.schema.json",
+  "title": "Roadmap Execution Loop Validation",
+  "description": "Deterministic governed validation artifact proving one full roadmap execution loop for exactly one selected batch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_id",
+    "schema_version",
+    "roadmap_id",
+    "selected_batch_id",
+    "authorization_id",
+    "progress_update_id",
+    "loop_status",
+    "selected_batch_status",
+    "control_decision",
+    "execution_occurred",
+    "stage_consistency",
+    "determinism_status",
+    "replay_ready",
+    "reason_codes",
+    "blocking_conditions",
+    "validated_at",
+    "input_hash",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "validation_id": {
+      "type": "string",
+      "pattern": "^RLV-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "selected_batch_id": {
+      "type": ["string", "null"],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^REA-[A-F0-9]{12}$"
+    },
+    "progress_update_id": {
+      "type": ["string", "null"],
+      "pattern": "^RPU-[A-F0-9]{12}$"
+    },
+    "loop_status": {
+      "type": "string",
+      "enum": ["passed", "failed_closed"]
+    },
+    "selected_batch_status": {
+      "type": "string",
+      "enum": ["none", "not_started", "running", "completed", "blocked"]
+    },
+    "control_decision": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "execution_occurred": {
+      "type": "boolean"
+    },
+    "stage_consistency": {
+      "type": "string",
+      "enum": ["consistent", "inconsistent"]
+    },
+    "determinism_status": {
+      "type": "string",
+      "enum": ["deterministic", "non_deterministic"]
+    },
+    "replay_ready": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "LOOP_VALIDATION_PASSED",
+          "LOOP_VALIDATION_DENIED_PATH",
+          "SELECTION_AUTHORIZATION_MISMATCH",
+          "AUTHORIZATION_EXECUTION_MISMATCH",
+          "PROGRESS_WITHOUT_EXECUTION",
+          "INCONSISTENT_BATCH_IDENTITY",
+          "ROADMAP_STATUS_TRANSITION_MISMATCH",
+          "REPLAY_CHAIN_INCOMPLETE",
+          "NON_DETERMINISTIC_LOOP_RESULT",
+          "MULTI_BATCH_EXECUTION_DETECTED"
+        ]
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "source_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_artifact",
+        "selection_result",
+        "authorization_result",
+        "pqx_result",
+        "progress_update"
+      ],
+      "properties": {
+        "roadmap_artifact": {"type": "string", "minLength": 1},
+        "selection_result": {"type": "string", "minLength": 1},
+        "authorization_result": {"type": "string", "minLength": 1},
+        "pqx_result": {"type": ["string", "null"], "minLength": 1},
+        "progress_update": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_occurred": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "progress_update_id": {"type": "string"},
+          "selected_batch_status": {"enum": ["completed", "blocked"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_occurred": {"const": false}
+        }
+      },
+      "then": {
+        "properties": {
+          "progress_update_id": {"type": "null"},
+          "source_refs": {
+            "properties": {
+              "pqx_result": {"type": "null"},
+              "progress_update": {"type": "null"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "loop_status": {"const": "passed"}
+        }
+      },
+      "then": {
+        "properties": {
+          "stage_consistency": {"const": "consistent"},
+          "determinism_status": {"const": "deterministic"},
+          "replay_ready": {"const": true}
+        }
+      }
+    }
+  ]
+}

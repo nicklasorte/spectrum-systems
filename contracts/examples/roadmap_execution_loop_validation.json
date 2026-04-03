@@ -1,0 +1,29 @@
+{
+  "validation_id": "RLV-1234567890AB",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "selected_batch_id": "BATCH-I",
+  "authorization_id": "REA-0A1B2C3D4E5F",
+  "progress_update_id": "RPU-1234567890AB",
+  "loop_status": "passed",
+  "selected_batch_status": "completed",
+  "control_decision": "allow",
+  "execution_occurred": true,
+  "stage_consistency": "consistent",
+  "determinism_status": "deterministic",
+  "replay_ready": true,
+  "reason_codes": [
+    "LOOP_VALIDATION_PASSED"
+  ],
+  "blocking_conditions": [],
+  "validated_at": "2026-04-03T18:00:00Z",
+  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "trace_id": "trace-rdx-005-loop-001",
+  "source_refs": {
+    "roadmap_artifact": "contracts/examples/roadmap_artifact.json",
+    "selection_result": "contracts/examples/roadmap_selection_result.json",
+    "authorization_result": "contracts/examples/roadmap_execution_authorization.json",
+    "pqx_result": "runs/pqx/queue-batch-i/pqx_sequence_run.json",
+    "progress_update": "contracts/examples/roadmap_progress_update.json"
+  }
+}

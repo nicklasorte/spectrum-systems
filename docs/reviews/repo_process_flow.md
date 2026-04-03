@@ -17,7 +17,9 @@ Authorized Batch Execution (PQX)
   ↓
 Roadmap Progress Update (roadmap_progress_update)
   ↓
-Next Candidate Selection
+Loop Validation (roadmap_execution_loop_validation)
+  ↓
+Next Candidate Selection (not executed)
   ↓
 Artifacts Produced
   ↓
@@ -55,7 +57,11 @@ Roadmap Progress Update (roadmap_progress_update)
   - selected batch only state mutation
   - deterministic status transition + trace linkage
   ↓
-Next Candidate Selection
+Loop Validation (roadmap_execution_loop_validation)
+  - stage consistency, replay readiness, determinism checks
+  - single-batch guarantee enforcement
+  ↓
+Next Candidate Selection (not executed)
   ↓
 Artifacts
   - execution record
@@ -65,6 +71,8 @@ Artifacts
 Replay + Determinism Check
 
 ## Current Weak Points
+- loop validation is deterministic only when evaluated_at/executed_at/validated_at timestamps are fixed by caller
+- replay chain fails closed when any required stage ref is missing
 - eval signal present: repo_redundancy_density_high
 - high redundancy across inspected files
 
