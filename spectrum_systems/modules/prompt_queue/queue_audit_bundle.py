@@ -82,17 +82,21 @@ def _parse_refs(input_refs: dict[str, Any]) -> dict[str, Any]:
 
 
 def _validate_replay_artifact(payload: dict[str, Any], *, label: str) -> str:
+    replay_error: ArtifactValidationError | None = None
     try:
         validate_replay_record(payload)
         return "record"
-    except ArtifactValidationError:
-        pass
+    except ArtifactValidationError as exc:
+        replay_error = exc
 
     try:
         validate_resume_checkpoint(payload)
         return "checkpoint"
     except ArtifactValidationError as exc:
-        raise QueueAuditBundleError(f"{label} is neither replay_record nor resume_checkpoint: {exc}") from exc
+        replay_msg = str(replay_error) if replay_error is not None else "replay_record validation failed"
+        raise QueueAuditBundleError(
+            f"{label} is neither canonical replay_record nor resume_checkpoint: replay_record_error={replay_msg}; checkpoint_error={exc}"
+        ) from exc
 
 
 def _trace_matches(value: Any, *, trace_id: str, queue_id: str) -> bool:

@@ -157,6 +157,9 @@ def _replay_record(queue_id: str = "queue-cert-001") -> dict:
             "decision_match": True,
             "state_match": True,
             "transition_match": True,
+            "termination_reason_match": True,
+            "decision_sequence_match": True,
+            "final_outcome_match": True,
         },
         "parity_status": "match",
         "mismatch_summary": None,
@@ -230,6 +233,18 @@ def test_replay_resume_inconsistency_fails(tmp_path: Path) -> None:
     artifact = run_queue_certification(refs)
     assert artifact["certification_status"] == "failed"
     assert "replay_parity_mismatch" in artifact["blocking_reasons"]
+
+
+def test_replay_determinism_boolean_mismatch_fails(tmp_path: Path) -> None:
+    refs = _input_refs(tmp_path)
+    replay_path = Path(refs["replay_record_ref"])
+    replay = json.loads(replay_path.read_text(encoding="utf-8"))
+    replay["replay_result_summary"]["decision_sequence_match"] = False
+    replay_path.write_text(json.dumps(replay), encoding="utf-8")
+
+    artifact = run_queue_certification(refs)
+    assert artifact["certification_status"] == "failed"
+    assert "replay_decision_sequence_mismatch" in artifact["blocking_reasons"]
 
 
 def test_observability_mismatch_fails(tmp_path: Path) -> None:

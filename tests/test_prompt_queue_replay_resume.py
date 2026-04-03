@@ -223,6 +223,9 @@ def test_replay_parity_match(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
     replay_record = replay_queue_from_checkpoint(checkpoint)
     assert replay_record["parity_status"] == "match"
     assert replay_record["mismatch_summary"] is None
+    assert replay_record["replay_result_summary"]["termination_reason_match"] is True
+    assert replay_record["replay_result_summary"]["decision_sequence_match"] is True
+    assert replay_record["replay_result_summary"]["final_outcome_match"] is True
 
 
 def test_replay_detects_mismatch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -256,3 +259,4 @@ def test_replay_detects_mismatch(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     replay_record = replay_queue_from_checkpoint(checkpoint)
     assert replay_record["parity_status"] == "mismatch"
     assert replay_record["mismatch_summary"]
+    assert replay_record["replay_result_summary"]["decision_match"] is False

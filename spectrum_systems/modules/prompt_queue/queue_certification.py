@@ -343,6 +343,28 @@ def run_queue_certification(input_refs: dict) -> dict:
                 "replay_trace_id_continuity_mismatch",
                 blocking_reasons=blocking_reasons,
             )
+        replay_summary = replay_record.get("replay_result_summary")
+        if not isinstance(replay_summary, dict):
+            _push_reason(
+                checks,
+                "replay_integrity",
+                "missing_replay_result_summary",
+                blocking_reasons=blocking_reasons,
+            )
+        else:
+            for field, reason in (
+                ("termination_reason_match", "replay_termination_reason_mismatch"),
+                ("decision_sequence_match", "replay_decision_sequence_mismatch"),
+                ("final_outcome_match", "replay_final_outcome_mismatch"),
+            ):
+                value = replay_summary.get(field)
+                if value is not True:
+                    _push_reason(
+                        checks,
+                        "replay_integrity",
+                        reason,
+                        blocking_reasons=blocking_reasons,
+                    )
 
     certification_status = "passed" if not blocking_reasons else "failed"
     system_response = "allow" if certification_status == "passed" else "block"
