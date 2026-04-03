@@ -6,7 +6,7 @@ import hashlib
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import LEGACY_EXECUTION_ROADMAP_PATH, parse_system_roadmap
@@ -168,6 +168,112 @@ def _admit_slice_batch(
     }
 
 
+def _canonical_hash(payload: Any) -> str:
+    try:
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    except TypeError as exc:
+        raise PQXSequenceRunnerError(f"payload must be JSON-serializable for deterministic hashing: {exc}") from exc
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _build_admission_preflight_artifact(
+    *,
+    queue_run_id: str,
+    run_id: str,
+    trace_id: str,
+    slice_requests: list[dict],
+    already_completed_slice_ids: list[str],
+    enforce_dependencies: bool,
+) -> dict[str, Any]:
+    admission = _admit_slice_batch(
+        slice_requests=slice_requests,
+        already_completed_slice_ids=already_completed_slice_ids,
+        enforce_dependencies=enforce_dependencies,
+    )
+    admitted_snapshot = {
+        "slice_requests": deepcopy(slice_requests),
+        "admitted_slice_ids": admission["admitted_slice_ids"],
+        "admitted_canonical_step_ids": admission["admitted_canonical_step_ids"],
+        "enforce_dependencies": enforce_dependencies,
+    }
+    admitted_hash = _canonical_hash(admitted_snapshot)
+    admission_id = f"pqx-admission-{admitted_hash[:16]}"
+    return {
+        "artifact_type": "pqx_admission_preflight_artifact",
+        "schema_version": "1.0.0",
+        "admission_id": admission_id,
+        "queue_run_id": queue_run_id,
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "admission_status": "admitted",
+        "admitted_input_hash": admitted_hash,
+        "admitted_input_snapshot": admitted_snapshot,
+        "admission_result": admission,
+    }
+
+
+def _build_replayable_run_snapshot(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "admitted_input_hash": state.get("admitted_input_hash"),
+        "admitted_input_snapshot": deepcopy(state.get("admitted_input_snapshot")),
+        "execution_history": deepcopy(state.get("execution_history", [])),
+        "completed_slice_ids": list(state.get("completed_slice_ids", [])),
+        "failed_slice_ids": list(state.get("failed_slice_ids", [])),
+        "status": state.get("status"),
+        "termination_reason": state.get("termination_reason"),
+        "blocked_reason": state.get("blocked_reason"),
+    }
+
+
+def _build_run_fingerprint(state: dict[str, Any]) -> dict[str, Any]:
+    decision_sequence = [
+        {"slice_id": row.get("slice_id"), "status": row.get("status"), "error": row.get("error")}
+        for row in state.get("execution_history", [])
+        if isinstance(row, dict)
+    ]
+    payload = {
+        "requested_slice_ids": list(state.get("requested_slice_ids", [])),
+        "completed_slice_ids": list(state.get("completed_slice_ids", [])),
+        "failed_slice_ids": list(state.get("failed_slice_ids", [])),
+        "decision_sequence": decision_sequence,
+        "stopping_slice_id": next((row.get("slice_id") for row in state.get("execution_history", []) if row.get("status") == "failed"), None),
+        "termination_reason": state.get("termination_reason"),
+        "final_status": state.get("status"),
+    }
+    return {
+        "fingerprint_hash": _canonical_hash(payload),
+        "decision_sequence": decision_sequence,
+        "stopping_slice_id": payload["stopping_slice_id"],
+    }
+
+
+def _validate_trace_completeness(state: dict[str, Any]) -> None:
+    for row in state.get("execution_history", []):
+        if not isinstance(row, dict):
+            raise PQXSequenceRunnerError("execution_history rows must be objects")
+        if not isinstance(row.get("execution_ref"), str) or not row["execution_ref"]:
+            raise PQXSequenceRunnerError("trace completeness failed: execution_ref required")
+        if row.get("status") not in {"success", "failed"}:
+            raise PQXSequenceRunnerError("trace completeness failed: unsupported execution_history status")
+        required_keys = (
+            "slice_execution_record_ref",
+            "certification_ref",
+            "audit_bundle_ref",
+            "control_surface_gap_visibility",
+            "started_at",
+            "completed_at",
+        )
+        for key in required_keys:
+            if key not in row:
+                raise PQXSequenceRunnerError(f"trace completeness failed: slice missing required key {key}")
+
+
+def _set_termination_reason(state: dict[str, Any], reason: str) -> None:
+    state["termination_reason"] = reason
+    state["run_fingerprint"] = _build_run_fingerprint(state)
+    state["replayable_run_snapshot"] = _build_replayable_run_snapshot(state)
+
+
 def _build_batch_result(state: dict) -> dict:
     history_by_slice = {row.get("slice_id"): row for row in state.get("execution_history", []) if isinstance(row, dict)}
     requested = list(state.get("requested_slice_ids", []))
@@ -204,6 +310,10 @@ def _build_batch_result(state: dict) -> dict:
         "stopping_slice_id": stopping_slice_id,
         "completed_step_ids": list(state.get("completed_slice_ids", [])),
         "pending_step_ids": [row["slice_id"] for row in ordered_statuses if row["status"] == "pending"],
+        "termination_reason": state.get("termination_reason"),
+        "decision_sequence": deepcopy(state.get("run_fingerprint", {}).get("decision_sequence", [])),
+        "final_outcome": state.get("status"),
+        "run_fingerprint_hash": state.get("run_fingerprint", {}).get("fingerprint_hash"),
     }
 
 
@@ -224,7 +334,7 @@ def _validate_state_contract(state: dict) -> None:
 def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice_requests: list[dict], now: str) -> dict:
     requested = [entry["slice_id"] for entry in slice_requests]
     return {
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "queue_run_id": queue_run_id,
         "run_id": run_id,
         "trace_id": trace_id,
@@ -260,6 +370,12 @@ def _build_initial_state(*, queue_run_id: str, run_id: str, trace_id: str, slice
         "bundle_audit_status": "pending",
         "bundle_audit_ref": None,
         "unresolved_fix_ids": [],
+        "termination_reason": "not_terminated",
+        "admission_preflight_artifact": None,
+        "admitted_input_snapshot": None,
+        "admitted_input_hash": None,
+        "run_fingerprint": {"fingerprint_hash": None, "decision_sequence": [], "stopping_slice_id": None},
+        "replayable_run_snapshot": None,
         "blocked_reason": None,
         "resume_token": f"resume:{queue_run_id}:0",
         "control_surface_gap_visibility": {
@@ -417,6 +533,7 @@ def _apply_continuation_block(*, state: dict, queue_run_id: str, next_slice_id: 
     state["next_slice_ref"] = next_slice_id
     state["updated_at"] = now
     state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
+    _set_termination_reason(state, f"BLOCKED_{block_type}")
 
 
 def execute_sequence_run(
@@ -518,11 +635,22 @@ def execute_sequence_run(
             now=now,
         )
 
-    _admit_slice_batch(
+    admission_artifact = _build_admission_preflight_artifact(
+        queue_run_id=queue_run_id,
+        run_id=run_id,
+        trace_id=trace_id,
         slice_requests=slice_requests,
         already_completed_slice_ids=state["completed_slice_ids"],
         enforce_dependencies=enforce_dependency_admission,
     )
+    if state.get("admission_preflight_artifact") is None:
+        state["admission_preflight_artifact"] = admission_artifact
+        state["admitted_input_snapshot"] = admission_artifact["admitted_input_snapshot"]
+        state["admitted_input_hash"] = admission_artifact["admitted_input_hash"]
+    else:
+        if state.get("admitted_input_hash") != admission_artifact["admitted_input_hash"]:
+            raise PQXSequenceRunnerError("resume admitted_input_hash mismatch; fail-closed")
+    _set_termination_reason(state, state.get("termination_reason") or "not_terminated")
 
     _verify_continuity(state, slice_requests)
     state = _persist_and_reload_exact(state, state_path)
@@ -562,6 +690,7 @@ def execute_sequence_run(
                     state["status"] = "blocked"
                     state["chain_certification_status"] = "blocked"
                     state["blocked_reason"] = "chain certification blocked: reviews/fixes/certification incomplete"
+                    _set_termination_reason(state, "BLOCKED_CHAIN_CERTIFICATION")
                     return _persist_with_batch_result(state, state_path)
                 chain_ref = f"{queue_run_id}:chain-3"
                 if chain_ref not in state["chain_certification_refs"]:
@@ -573,6 +702,7 @@ def execute_sequence_run(
                 state["status"] = "blocked"
                 state["bundle_certification_status"] = "failed"
                 state["blocked_reason"] = "bundle readiness unresolved"
+                _set_termination_reason(state, "BLOCKED_BUNDLE_READINESS")
                 return _persist_with_batch_result(state, state_path)
             state["bundle_certification_status"] = "certified"
             state["bundle_certification_ref"] = f"{queue_run_id}:bundle-cert"
@@ -581,6 +711,7 @@ def execute_sequence_run(
                 state["status"] = "blocked"
                 state["bundle_audit_status"] = "missing"
                 state["blocked_reason"] = "missing bundle audit artifacts"
+                _set_termination_reason(state, "BLOCKED_MISSING_BUNDLE_AUDIT_ARTIFACTS")
                 return _persist_with_batch_result(state, state_path)
             state["bundle_audit_status"] = "synthesized"
             state["bundle_audit_ref"] = f"{queue_run_id}:bundle-audit"
@@ -591,6 +722,8 @@ def execute_sequence_run(
             state["blocked_continuation_context"] = None
             state["updated_at"] = iso_now(clock)
             state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
+            _set_termination_reason(state, "COMPLETED_ALL_SLICES")
+            _validate_trace_completeness(state)
             persisted = _persist_and_reload_exact(state, state_path)
             if bundle_state is not None and bundle_state["active_bundle_id"] not in bundle_state["completed_bundle_ids"]:
                 try:
@@ -614,6 +747,7 @@ def execute_sequence_run(
             state["blocked_reason"] = None
             state["blocked_continuation_context"] = None
             state["updated_at"] = iso_now(clock)
+            _set_termination_reason(state, "PAUSED_MAX_SLICES")
             return _persist_with_batch_result(state, state_path)
 
         already_completed = next_slice_id in state["completed_slice_ids"]
@@ -641,6 +775,7 @@ def execute_sequence_run(
         if not state["bundle_readiness_decision"]["ready"]:
             state["status"] = "blocked"
             state["blocked_reason"] = "bundle readiness gate blocked"
+            _set_termination_reason(state, "BLOCKED_BUNDLE_READINESS_GATE")
             return _persist_with_batch_result(state, state_path)
         if current_index > 0:
             prior_slice_id = requested_ids[current_index - 1]
@@ -820,6 +955,7 @@ def execute_sequence_run(
                     state["review_checkpoint_status"]["slice_1_optional_review"] = "blocked"
                     state["status"] = "blocked"
                     state["blocked_reason"] = "optional slice-1 review contains blocking findings"
+                    _set_termination_reason(state, "BLOCKED_SLICE1_OPTIONAL_REVIEW")
                     return _persist_with_batch_result(state, state_path)
                 else:
                     state["review_checkpoint_status"]["slice_1_optional_review"] = "satisfied"
@@ -831,6 +967,7 @@ def execute_sequence_run(
                     state["status"] = "blocked"
                     state["chain_certification_status"] = "blocked"
                     state["blocked_reason"] = "missing required review after slice 2"
+                    _set_termination_reason(state, "BLOCKED_MISSING_REVIEW_SLICE_2")
                     return _persist_with_batch_result(state, state_path)
                 if review.get("has_blocking_findings"):
                     state["review_checkpoint_status"]["slice_2_required_review"] = "blocked"
@@ -839,6 +976,7 @@ def execute_sequence_run(
                     state["blocked_reason"] = "blocking findings after slice 2 review"
                     state["unresolved_fix_ids"].extend(review.get("pending_fix_ids", []))
                     state["bundle_readiness_decision"] = {"ready": False, "reason": "blocking findings unresolved"}
+                    _set_termination_reason(state, "BLOCKED_REVIEW_FINDINGS_SLICE_2")
                     return _persist_with_batch_result(state, state_path)
                 state["review_checkpoint_status"]["slice_2_required_review"] = "satisfied"
                 state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
@@ -849,6 +987,7 @@ def execute_sequence_run(
                     state["status"] = "blocked"
                     state["chain_certification_status"] = "blocked"
                     state["blocked_reason"] = "missing strict review after slice 3"
+                    _set_termination_reason(state, "BLOCKED_MISSING_REVIEW_SLICE_3")
                     return _persist_with_batch_result(state, state_path)
                 if review.get("overall_disposition") != "approved" or review.get("has_blocking_findings"):
                     state["review_checkpoint_status"]["slice_3_strict_review"] = "blocked"
@@ -857,6 +996,7 @@ def execute_sequence_run(
                     state["blocked_reason"] = "strict slice-3 review did not pass"
                     state["unresolved_fix_ids"].extend(review.get("pending_fix_ids", []))
                     state["bundle_readiness_decision"] = {"ready": False, "reason": "blocking findings unresolved"}
+                    _set_termination_reason(state, "BLOCKED_REVIEW_FINDINGS_SLICE_3")
                     return _persist_with_batch_result(state, state_path)
                 state["review_checkpoint_status"]["slice_3_strict_review"] = "satisfied"
                 state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
@@ -865,12 +1005,15 @@ def execute_sequence_run(
             if execution_status == "review_required":
                 state["status"] = "blocked"
                 state["blocked_reason"] = result.get("error") or "slice_requires_review"
+                _set_termination_reason(state, "STOPPED_REVIEW_REQUIRED")
             elif execution_status == "blocked":
                 state["status"] = "blocked"
                 state["blocked_reason"] = result.get("error") or "slice_execution_blocked"
+                _set_termination_reason(state, "STOPPED_BLOCKED")
             else:
                 state["status"] = "failed"
                 state["blocked_reason"] = result.get("error") or "slice_execution_failed"
+                _set_termination_reason(state, "STOPPED_FAILED")
             if bundle_state is not None:
                 try:
                     bundle_state = bundle_block_step(
@@ -913,12 +1056,16 @@ def execute_sequence_run(
         if budget["threshold_breached"]:
             state["status"] = "blocked"
             state["blocked_reason"] = "sequence failure budget exceeded"
+            _set_termination_reason(state, "BLOCKED_SEQUENCE_BUDGET_EXCEEDED")
             return _persist_with_batch_result(state, state_path)
 
         state["current_slice_id"] = None
         state["next_slice_ref"] = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
         state["updated_at"] = completed_at
         state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
+        if execution_status == "success":
+            _set_termination_reason(state, "not_terminated")
+        _validate_trace_completeness(state)
         state = _persist_and_reload_exact(state, state_path)
         executed_this_call += 1
 
@@ -972,6 +1119,10 @@ def verify_two_slice_replay(
         and baseline["audit_complete_by_slice"] == replay["audit_complete_by_slice"]
         and baseline.get("chain_certification_status") == replay.get("chain_certification_status")
         and baseline.get("bundle_certification_status") == replay.get("bundle_certification_status")
+        and baseline.get("termination_reason") == replay.get("termination_reason")
+        and baseline.get("run_fingerprint", {}).get("decision_sequence")
+        == replay.get("run_fingerprint", {}).get("decision_sequence")
+        and baseline.get("status") == replay.get("status")
     )
     replay_id = "queue-replay-" + hashlib.sha256(
         f"{queue_run_id}:{run_id}:{trace_id}:{baseline['resume_token']}:{replay['resume_token']}".encode("utf-8")
@@ -989,6 +1140,10 @@ def verify_two_slice_replay(
             "decision_match": baseline["continuation_records"] == replay["continuation_records"],
             "state_match": baseline["completed_slice_ids"] == replay["completed_slice_ids"],
             "transition_match": _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"]),
+            "termination_reason_match": baseline.get("termination_reason") == replay.get("termination_reason"),
+            "decision_sequence_match": baseline.get("run_fingerprint", {}).get("decision_sequence")
+            == replay.get("run_fingerprint", {}).get("decision_sequence"),
+            "final_outcome_match": baseline.get("status") == replay.get("status"),
         },
         "parity_status": "match" if parity else "mismatch",
         "mismatch_summary": None if parity else "two-slice replay parity mismatch",

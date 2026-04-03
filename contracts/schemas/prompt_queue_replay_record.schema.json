@@ -42,7 +42,10 @@
         "replayed_step_id",
         "decision_match",
         "state_match",
-        "transition_match"
+        "transition_match",
+        "termination_reason_match",
+        "decision_sequence_match",
+        "final_outcome_match"
       ],
       "properties": {
         "replayed_step_id": {
@@ -56,6 +59,15 @@
           "type": "boolean"
         },
         "transition_match": {
+          "type": "boolean"
+        },
+        "termination_reason_match": {
+          "type": "boolean"
+        },
+        "decision_sequence_match": {
+          "type": "boolean"
+        },
+        "final_outcome_match": {
           "type": "boolean"
         }
       }

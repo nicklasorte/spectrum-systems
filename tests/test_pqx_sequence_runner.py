@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,6 +33,10 @@ def _slice_requests() -> list[dict]:
     ]
 
 
+def _canonical_hash(payload: object) -> str:
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
 def test_happy_path_runs_three_slices_in_order_and_persists(tmp_path: Path) -> None:
     state_path = tmp_path / "sequence.json"
     checkpoints: list[dict] = []
@@ -62,6 +67,11 @@ def test_happy_path_runs_three_slices_in_order_and_persists(tmp_path: Path) -> N
     )
 
     assert state["status"] == "completed"
+    assert state["termination_reason"] == "COMPLETED_ALL_SLICES"
+    assert state["admission_preflight_artifact"]["admission_status"] == "admitted"
+    assert state["admitted_input_hash"] == state["admission_preflight_artifact"]["admitted_input_hash"]
+    assert isinstance(state["run_fingerprint"]["fingerprint_hash"], str)
+    assert state["replayable_run_snapshot"]["status"] == "completed"
     assert state["completed_slice_ids"] == ["PQX-QUEUE-01", "PQX-QUEUE-02", "PQX-QUEUE-03"]
     assert [row["slice_id"] for row in state["execution_history"]] == ["PQX-QUEUE-01", "PQX-QUEUE-02", "PQX-QUEUE-03"]
     assert len(checkpoints) == 3
@@ -342,6 +352,15 @@ def test_slice_2_blocked_on_continuation_state_mismatch(tmp_path: Path) -> None:
             "created_at": "2026-03-29T23:20:59Z",
         }
     ]
+    tampered["admitted_input_snapshot"] = {
+        "slice_requests": _slice_requests()[:2],
+        "admitted_slice_ids": ["PQX-QUEUE-01", "PQX-QUEUE-02"],
+        "admitted_canonical_step_ids": ["AI-01", "AI-02"],
+        "enforce_dependencies": True,
+    }
+    tampered["admitted_input_hash"] = _canonical_hash(tampered["admitted_input_snapshot"])
+    tampered["admission_preflight_artifact"]["admitted_input_snapshot"] = tampered["admitted_input_snapshot"]
+    tampered["admission_preflight_artifact"]["admitted_input_hash"] = tampered["admitted_input_hash"]
     state_path.write_text(json.dumps(tampered, indent=2) + "\n", encoding="utf-8")
 
     blocked = execute_sequence_run(
@@ -416,6 +435,9 @@ def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> N
         clock=FixedClock(["2026-03-29T23:32:01Z"]),
     )
     assert record["parity_status"] == "match"
+    assert record["replay_result_summary"]["termination_reason_match"] is True
+    assert record["replay_result_summary"]["decision_sequence_match"] is True
+    assert record["replay_result_summary"]["final_outcome_match"] is True
 
     tampered = json.loads(state_2.read_text(encoding="utf-8"))
     tampered["execution_history"][1]["audit_complete"] = False
@@ -484,8 +506,10 @@ def test_batch_stops_on_block_and_preserves_prior_completion(tmp_path: Path) -> 
     assert state["status"] == "blocked"
     assert state["completed_slice_ids"] == ["AI-01"]
     assert state["failed_slice_ids"] == ["AI-02"]
+    assert state["termination_reason"] == "STOPPED_BLOCKED"
     assert state["batch_result"]["stopping_slice_id"] == "AI-02"
     assert state["batch_result"]["pending_step_ids"] == ["TRUST-01"]
+    assert state["batch_result"]["termination_reason"] == "STOPPED_BLOCKED"
 
 
 def test_batch_stops_on_review_without_marking_slice_complete(tmp_path: Path) -> None:
@@ -518,6 +542,7 @@ def test_batch_stops_on_review_without_marking_slice_complete(tmp_path: Path) ->
     assert state["status"] == "blocked"
     assert state["completed_slice_ids"] == ["AI-01"]
     assert state["failed_slice_ids"] == ["AI-02"]
+    assert state["termination_reason"] == "STOPPED_REVIEW_REQUIRED"
     assert state["batch_result"]["completed_step_ids"] == ["AI-01"]
     assert state["batch_result"]["per_slice_statuses"][1] == {"slice_id": "AI-02", "status": "require_review"}
 
@@ -553,6 +578,8 @@ def test_deterministic_batch_result_same_admitted_input(tmp_path: Path) -> None:
         clock=FixedClock([f"2026-03-30T00:31:{i:02d}Z" for i in range(1, 25)]),
     )
     assert first["batch_result"] == second["batch_result"]
+    assert first["run_fingerprint"]["fingerprint_hash"] == second["run_fingerprint"]["fingerprint_hash"]
+    assert first["termination_reason"] == second["termination_reason"] == "COMPLETED_ALL_SLICES"
 
 
 def test_incidental_text_and_path_naming_do_not_change_batch_decisions(tmp_path: Path) -> None:

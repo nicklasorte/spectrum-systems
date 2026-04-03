@@ -40,12 +40,18 @@
     "bundle_audit_status",
     "bundle_audit_ref",
     "unresolved_fix_ids",
-    "control_surface_gap_visibility"
+    "control_surface_gap_visibility",
+    "termination_reason",
+    "admission_preflight_artifact",
+    "admitted_input_snapshot",
+    "admitted_input_hash",
+    "run_fingerprint",
+    "replayable_run_snapshot"
   ],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.4.0"
+      "const": "1.5.0"
     },
     "queue_run_id": {
       "type": "string",
@@ -308,7 +314,10 @@
     "control_surface_gap_visibility": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["by_slice", "summary"],
+      "required": [
+        "by_slice",
+        "summary"
+      ],
       "properties": {
         "by_slice": {
           "type": "object",
@@ -320,6 +329,94 @@
           "$ref": "#/$defs/control_surface_gap_visibility"
         }
       }
+    },
+    "termination_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "admission_preflight_artifact": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "admitted_input_snapshot": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "admitted_input_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "run_fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fingerprint_hash",
+        "decision_sequence",
+        "stopping_slice_id"
+      ],
+      "properties": {
+        "fingerprint_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "decision_sequence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slice_id",
+              "status",
+              "error"
+            ],
+            "properties": {
+              "slice_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "stopping_slice_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "replayable_run_snapshot": {
+      "type": [
+        "object",
+        "null"
+      ]
     }
   },
   "$defs": {
@@ -458,13 +555,32 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["gap_id", "surface_name", "severity", "blocking", "source_artifact_ref"],
+            "required": [
+              "gap_id",
+              "surface_name",
+              "severity",
+              "blocking",
+              "source_artifact_ref"
+            ],
             "properties": {
-              "gap_id": {"type": "string", "minLength": 1},
-              "surface_name": {"type": "string", "minLength": 1},
-              "severity": {"type": "string", "minLength": 1},
-              "blocking": {"type": "boolean"},
-              "source_artifact_ref": {"type": "string"}
+              "gap_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "surface_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "severity": {
+                "type": "string",
+                "minLength": 1
+              },
+              "blocking": {
+                "type": "boolean"
+              },
+              "source_artifact_ref": {
+                "type": "string"
+              }
             }
           }
         },
@@ -473,13 +589,33 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["work_item_id", "gap_id", "surface_name", "required_action_type", "blocking"],
+            "required": [
+              "work_item_id",
+              "gap_id",
+              "surface_name",
+              "required_action_type",
+              "blocking"
+            ],
             "properties": {
-              "work_item_id": {"type": "string", "minLength": 1},
-              "gap_id": {"type": "string", "minLength": 1},
-              "surface_name": {"type": "string", "minLength": 1},
-              "required_action_type": {"type": "string", "minLength": 1},
-              "blocking": {"type": "boolean"}
+              "work_item_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "gap_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "surface_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "required_action_type": {
+                "type": "string",
+                "minLength": 1
+              },
+              "blocking": {
+                "type": "boolean"
+              }
             }
           }
         },
@@ -495,12 +631,32 @@
             "control_surface_blocking_reason_refs"
           ],
           "properties": {
-            "influenced_execution_block": {"type": "boolean"},
-            "influenced_next_step_selection": {"type": "boolean"},
-            "influenced_priority_ordering": {"type": "boolean"},
-            "influenced_transition_decision": {"type": "boolean"},
-            "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}},
-            "control_surface_blocking_reason_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+            "influenced_execution_block": {
+              "type": "boolean"
+            },
+            "influenced_next_step_selection": {
+              "type": "boolean"
+            },
+            "influenced_priority_ordering": {
+              "type": "boolean"
+            },
+            "influenced_transition_decision": {
+              "type": "boolean"
+            },
+            "reason_codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "control_surface_blocking_reason_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
           }
         }
       }
