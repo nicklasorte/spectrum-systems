@@ -4,6 +4,7 @@ import copy
 from pathlib import Path
 
 from spectrum_systems.contracts import load_example, validate_artifact
+from spectrum_systems.modules.runtime import system_cycle_operator as sco
 from spectrum_systems.modules.runtime.system_cycle_operator import run_system_cycle
 
 
@@ -114,7 +115,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
-    assert first["next_step_recommendation"]["schema_version"] == "1.3.0"
+    assert first["next_step_recommendation"]["schema_version"] == "1.4.0"
     assert first["build_summary"]["schema_version"] == "1.2.0"
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
@@ -133,6 +134,11 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert any(item.startswith("adaptive_guardrail_status=") for item in first["next_step_recommendation"]["why"])
     assert any(item.startswith("adaptive_safety_trend=") for item in first["build_summary"]["watch_next"])
     assert any(item.startswith("adaptive_policy_tuning_signal=") for item in first["build_summary"]["watch_next"])
+    remediation = first["next_step_recommendation"]["remediation_plan"]
+    assert first["next_step_recommendation"]["remediation_plan_ref"] == f"remediation_plan:{remediation['plan_id']}"
+    assert first["next_step_recommendation"]["remediation_steps"] == remediation["remediation_steps"]
+    assert remediation["trace_id"] == first["next_step_recommendation"]["trace_id"]
+    assert remediation["required_artifacts"]
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -279,3 +285,36 @@ def test_authority_boundary_breaks_raise_risk_level() -> None:
     assert any(
         "control_authority_review" in item for item in result["next_step_recommendation"]["next_step"]["watchouts"]
     )
+
+
+def test_remediation_steps_are_deterministic_and_stop_reason_mapped() -> None:
+    kwargs = {
+        "stop_reason": "missing_required_signal",
+        "root_cause_chain": [{"step": "bounded_execution", "reason": "missing_required_signal"}],
+        "blocking_conditions": ["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        "required_reviews": ["cross_layer_propagation_review"],
+        "required_artifacts": ["roadmap_multi_batch_run_result:RMB-EXAMPLE0001"],
+        "review_control_signal": {"signal_id": "rcs-1"},
+        "trace_id": "trace-batch-u-test",
+    }
+    first = sco._build_remediation_steps(**kwargs)
+    second = sco._build_remediation_steps(**kwargs)
+    assert first == second
+    actions = [item["action"] for item in first]
+    assert actions[0] == "confirm_root_cause_chain"
+    assert any(action.startswith("run_required_review:cross_layer_propagation_review") for action in actions)
+    assert any(action.startswith("fix_missing_artifact_or_signal:") for action in actions)
+    assert actions[-1] == "rerun_bounded_batch_cycle"
+
+
+def test_repeated_failure_pattern_reuses_known_playbook_step() -> None:
+    steps = sco._build_remediation_steps(
+        stop_reason="repeated_failure_pattern",
+        root_cause_chain=[{"step": "bounded_execution", "reason": "repeated_failure_pattern"}],
+        blocking_conditions=[],
+        required_reviews=[],
+        required_artifacts=["roadmap_multi_batch_run_result:RMB-EXAMPLE0001"],
+        review_control_signal={"signal_id": "rcs-1"},
+        trace_id="trace-batch-u-test",
+    )
+    assert any(step["action"] == "reuse_known_repeated_failure_playbook" for step in steps)

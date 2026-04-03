@@ -111,6 +111,142 @@ def _watchouts(stop_reason: str, blocking_conditions: list[str], required_review
     return watchouts
 
 
+def _resolve_remediation_risk_level(stop_reason: str, blocking_conditions: list[str], required_reviews: list[str]) -> str:
+    if blocking_conditions or required_reviews:
+        return "high"
+    if stop_reason == "max_batches_reached":
+        return "low"
+    return "medium"
+
+
+def _build_remediation_steps(
+    *,
+    stop_reason: str,
+    root_cause_chain: list[dict[str, str]],
+    blocking_conditions: list[str],
+    required_reviews: list[str],
+    required_artifacts: list[str],
+    review_control_signal: dict[str, Any],
+    trace_id: str,
+) -> list[dict[str, Any]]:
+    steps: list[dict[str, Any]] = []
+    normalized_chain = [item for item in root_cause_chain if isinstance(item, dict)]
+    primary_chain_reason = str(normalized_chain[0].get("reason") if normalized_chain else stop_reason)
+    repeated_pattern = stop_reason == "repeated_failure_pattern"
+
+    steps.append(
+        {
+            "step_id": "RMS-01",
+            "action": "confirm_root_cause_chain",
+            "why": f"stopped_at={stop_reason}; primary_chain_reason={primary_chain_reason}",
+            "required_artifacts": sorted(set(required_artifacts + [f"trace:{trace_id}"])),
+            "trace_refs": [trace_id, f"stop_reason:{stop_reason}"],
+        }
+    )
+
+    if required_reviews:
+        steps.append(
+            {
+                "step_id": "RMS-02",
+                "action": f"run_required_review:{required_reviews[0]}",
+                "why": f"required_reviews={','.join(required_reviews)}",
+                "required_artifacts": sorted(set(required_artifacts + [f"review_control_signal:{review_control_signal.get('signal_id', 'missing')}"])),
+                "trace_refs": [trace_id, f"review:{required_reviews[0]}"],
+            }
+        )
+
+    if stop_reason == "contract_precondition_failed":
+        steps.append(
+            {
+                "step_id": "RMS-03",
+                "action": "update_contract_or_input_schema",
+                "why": "stop_reason indicates contract precondition mismatch",
+                "required_artifacts": sorted(set(required_artifacts + ["contracts/schemas/*"])),
+                "trace_refs": [trace_id, "contract:precondition_failed"],
+            }
+        )
+    elif stop_reason in {"missing_required_signal", "replay_not_ready"} or blocking_conditions:
+        missing_target = blocking_conditions[0] if blocking_conditions else stop_reason
+        steps.append(
+            {
+                "step_id": "RMS-03",
+                "action": f"fix_missing_artifact_or_signal:{missing_target}",
+                "why": f"bounded run cannot continue until {missing_target} is satisfied",
+                "required_artifacts": sorted(set(required_artifacts + [f"blocking_condition:{missing_target}"])),
+                "trace_refs": [trace_id, f"missing:{missing_target}"],
+            }
+        )
+
+    if repeated_pattern:
+        steps.append(
+            {
+                "step_id": "RMS-04",
+                "action": "reuse_known_repeated_failure_playbook",
+                "why": "repeated_failure_pattern matched deterministic remediation template",
+                "required_artifacts": sorted(set(required_artifacts + ["known_failure_pattern:repeated_failure_pattern"])),
+                "trace_refs": [trace_id, "pattern:repeated_failure_pattern"],
+            }
+        )
+
+    steps.append(
+        {
+            "step_id": "RMS-05",
+            "action": "rerun_bounded_batch_cycle",
+            "why": "verify remediation resolves stop condition without bypassing governance",
+            "required_artifacts": sorted(set(required_artifacts)),
+            "trace_refs": [trace_id, "rerun:bounded_cycle"],
+        }
+    )
+    return steps[:5]
+
+
+def _build_remediation_plan(
+    *,
+    run_result: dict[str, Any],
+    stop_reason: str,
+    root_cause: str,
+    root_cause_chain: list[dict[str, str]],
+    blocking_conditions: list[str],
+    required_reviews: list[str],
+    integration: dict[str, Any],
+    timestamp: str,
+    required_artifacts: list[str],
+    review_control_signal: dict[str, Any],
+) -> dict[str, Any]:
+    trace_id = str(integration["trace_id"])
+    step_payload = {
+        "stop_reason": stop_reason,
+        "root_cause_chain": root_cause_chain,
+        "blocking_conditions": blocking_conditions,
+        "required_reviews": required_reviews,
+        "trace_id": trace_id,
+    }
+    remediation_steps = _build_remediation_steps(
+        stop_reason=stop_reason,
+        root_cause_chain=root_cause_chain,
+        blocking_conditions=blocking_conditions,
+        required_reviews=required_reviews,
+        required_artifacts=required_artifacts,
+        review_control_signal=review_control_signal,
+        trace_id=trace_id,
+    )
+    expected_outcome = (
+        "restore bounded continuation readiness"
+        if stop_reason != "max_batches_reached"
+        else "continue deterministic roadmap progression in next governed cycle"
+    )
+    return {
+        "plan_id": f"RMP-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': trace_id, 'stop_reason': stop_reason, 'steps': step_payload})[:12].upper()}",
+        "root_cause": root_cause,
+        "remediation_steps": remediation_steps,
+        "required_artifacts": sorted(set(required_artifacts)),
+        "expected_outcome": expected_outcome,
+        "risk_level": _resolve_remediation_risk_level(stop_reason, blocking_conditions, required_reviews),
+        "created_at": timestamp,
+        "trace_id": trace_id,
+    }
+
+
 def _candidate_action(candidate_type: str, *, next_batch_id: str | None, blocker: str | None, review: str | None) -> str:
     if candidate_type == "execute_next_batch":
         return f"execute next governed cycle for {next_batch_id}" if next_batch_id else "refresh roadmap eligibility before execution"
@@ -496,9 +632,27 @@ def run_system_cycle(
     adaptive_trend_ref = f"adaptive_execution_trend_report:{adaptive_trend_report['trend_report_id']}"
     adaptive_policy_review_ref = f"adaptive_execution_policy_review:{adaptive_policy_review['review_id']}"
 
+    stop_reason = str(run_result["stop_reason"])
+    failure_root_cause = _root_cause(stop_reason, blocking_conditions)
+    failure_root_cause_chain = _root_cause_chain(stop_reason, blocking_conditions)
+    failure_next_action = _next_action(stop_reason, blocking_conditions)
+    remediation_plan = _build_remediation_plan(
+        run_result=run_result,
+        stop_reason=stop_reason,
+        root_cause=failure_root_cause,
+        root_cause_chain=failure_root_cause_chain,
+        blocking_conditions=blocking_conditions,
+        required_reviews=required_reviews,
+        integration=integration,
+        timestamp=timestamp,
+        required_artifacts=selected_candidate["required_artifacts"],
+        review_control_signal=dict(integration_inputs.get("review_control_signal") or {}),
+    )
+    remediation_plan_ref = f"remediation_plan:{remediation_plan['plan_id']}"
+
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "next_batch_id": next_batch_id,
         "why": sorted(
             set(
@@ -543,6 +697,9 @@ def run_system_cycle(
             ),
             "required_artifacts": selected_candidate["required_artifacts"],
         },
+        "remediation_plan_ref": remediation_plan_ref,
+        "remediation_steps": remediation_plan["remediation_steps"],
+        "remediation_plan": remediation_plan,
         "candidate_evaluation": {
             "ranking_policy": "program_alignment>unblock_potential>risk_reduction>dependency_readiness>review_readiness",
             "candidates": [
@@ -570,6 +727,7 @@ def run_system_cycle(
                         adaptive_observability_ref,
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
+                        remediation_plan_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -592,6 +750,7 @@ def run_system_cycle(
                     f"core_system_integration_validation:{validation_id}",
                     adaptive_observability_ref,
                     adaptive_trend_ref,
+                    remediation_plan_ref,
                 ]
                 + list(source_refs or [])
             )
@@ -599,9 +758,6 @@ def run_system_cycle(
     }
     _validate_schema(recommendation, "next_step_recommendation")
 
-    stop_reason = str(run_result["stop_reason"])
-    failure_root_cause = _root_cause(stop_reason, blocking_conditions)
-    failure_next_action = _next_action(stop_reason, blocking_conditions)
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
         "schema_version": "1.2.0",
@@ -647,6 +803,7 @@ def run_system_cycle(
                         adaptive_observability_ref,
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
+                        remediation_plan_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -656,7 +813,7 @@ def run_system_cycle(
         "failure_surface": {
             "stop_reason": stop_reason,
             "root_cause": failure_root_cause,
-            "root_cause_chain": _root_cause_chain(stop_reason, blocking_conditions),
+            "root_cause_chain": failure_root_cause_chain,
             "next_action": failure_next_action,
             "blocker_refs": sorted(set(blocking_conditions)),
             "source_refs": sorted(
@@ -681,6 +838,7 @@ def run_system_cycle(
                 f"roadmap_multi_batch_run_result:{run_result['run_id']}",
                 f"core_system_integration_validation:{integration['validation_id']}",
                 f"next_step_recommendation:{recommendation['recommendation_id']}",
+                remediation_plan_ref,
                 adaptive_observability_ref,
                 adaptive_trend_ref,
                 adaptive_policy_review_ref,
