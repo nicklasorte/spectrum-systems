@@ -98,7 +98,12 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
         if not isinstance(optional_value, str) or not optional_value.strip():
             raise DoneCertificationError("failure_injection_ref must be a non-empty string when provided")
         refs["failure_injection_ref"] = optional_value
-    for optional_key in ("enforcement_result_ref", "eval_coverage_summary_ref"):
+    for optional_key in (
+        "enforcement_result_ref",
+        "eval_coverage_summary_ref",
+        "repo_review_snapshot_ref",
+        "repo_health_eval_summary_ref",
+    ):
         optional = input_refs.get(optional_key)
         if optional is None:
             continue
@@ -121,6 +126,19 @@ def _identity_policy(input_refs: Dict[str, Any]) -> Dict[str, bool]:
         raise DoneCertificationError("identity_policy must be an object when provided")
     allow_cross_run = bool(policy.get("allow_cross_run_reference", False))
     return {"allow_cross_run_reference": allow_cross_run}
+
+
+def _certification_policy(input_refs: Dict[str, Any]) -> Dict[str, bool]:
+    policy = input_refs.get("certification_policy")
+    if policy is None:
+        return {"allow_warn_as_pass": True, "allow_warn_promotion": False, "require_system_readiness": False}
+    if not isinstance(policy, dict):
+        raise DoneCertificationError("certification_policy must be an object when provided")
+    return {
+        "allow_warn_as_pass": bool(policy.get("allow_warn_as_pass", True)),
+        "allow_warn_promotion": bool(policy.get("allow_warn_promotion", False)),
+        "require_system_readiness": bool(policy.get("require_system_readiness", False)),
+    }
 
 
 def _normalize_trace(value: Any) -> str:
@@ -237,12 +255,19 @@ def run_done_certification(input_refs: dict) -> dict:
             else "reduced_depth_non_authority"
         )
     identity_policy = _identity_policy(input_refs)
+    certification_policy = _certification_policy(input_refs)
 
     replay = _load_json(refs["replay_result_ref"], label="replay_result")
     regression = _load_json(refs["regression_result_ref"], label="regression_result")
     certification_pack = _load_json(refs["certification_pack_ref"], label="control_loop_certification_pack")
     error_budget = _load_json(refs["error_budget_ref"], label="error_budget_status")
     control_decision = _load_json(refs["policy_ref"], label="evaluation_control_decision")
+    repo_review_snapshot: Dict[str, Any] | None = None
+    repo_health_eval_summary: Dict[str, Any] | None = None
+    if "repo_review_snapshot_ref" in refs:
+        repo_review_snapshot = _load_json(refs["repo_review_snapshot_ref"], label="repo_review_snapshot")
+    if "repo_health_eval_summary_ref" in refs:
+        repo_health_eval_summary = _load_json(refs["repo_health_eval_summary_ref"], label="repo_health_eval_summary")
     enforcement_result: Dict[str, Any] | None = None
     eval_coverage_summary: Dict[str, Any] | None = None
     if "enforcement_result_ref" in refs:
@@ -264,6 +289,10 @@ def run_done_certification(input_refs: dict) -> dict:
     _validate_schema(certification_pack, "control_loop_certification_pack", label="control_loop_certification_pack")
     _validate_schema(error_budget, "error_budget_status", label="error_budget_status")
     _validate_schema(control_decision, "evaluation_control_decision", label="evaluation_control_decision")
+    if repo_review_snapshot is not None:
+        _validate_schema(repo_review_snapshot, "repo_review_snapshot", label="repo_review_snapshot")
+    if repo_health_eval_summary is not None:
+        _validate_schema(repo_health_eval_summary, "eval_summary", label="repo_health_eval_summary")
     if enforcement_result is not None:
         _validate_schema(enforcement_result, "enforcement_result", label="enforcement_result")
     if eval_coverage_summary is not None:
@@ -315,6 +344,7 @@ def run_done_certification(input_refs: dict) -> dict:
         raise DoneCertificationError(str(exc)) from exc
 
     blocking_reasons: List[str] = []
+    readiness_warnings: List[str] = []
 
     replay_pass = True
     replay_details: List[str] = []
@@ -450,7 +480,18 @@ def run_done_certification(input_refs: dict) -> dict:
             target_surface="certification",
         )
         if not trust_spine_result.passed:
-            blocking_reasons.extend(trust_spine_result.violations)
+            downgraded: List[str] = []
+            for violation in trust_spine_result.violations:
+                if (
+                    isinstance(violation, str)
+                    and violation == "policy_authority_consistency: blocking control decision cannot map to permissive enforcement"
+                    and str(control_decision.get("system_response") or "").strip().lower() == "warn"
+                ):
+                    downgraded.append(f"warning:{violation}")
+                    continue
+                blocking_reasons.append(violation)
+            if downgraded:
+                readiness_warnings.extend(downgraded)
     else:
         trust_spine_result = validate_trust_spine_invariants(
             replay_result=replay,
@@ -494,8 +535,87 @@ def run_done_certification(input_refs: dict) -> dict:
     if not cohesion_pass:
         blocking_reasons.extend(cohesion_details)
 
-    final_status = "PASSED" if not blocking_reasons else "FAILED"
-    system_response = "allow" if final_status == "PASSED" else "block"
+    readiness_details: List[str] = []
+    readiness_pass = True
+    readiness_response = "allow"
+    control_response = str(control_decision.get("system_response") or "").strip().lower()
+    if control_response not in {"allow", "warn", "freeze", "block"}:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("control decision system_response must be one of allow|warn|freeze|block")
+    require_system_readiness = certification_policy["require_system_readiness"]
+    if repo_review_snapshot is None and require_system_readiness:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("repo_review_snapshot_ref is required for system readiness certification")
+        findings_summary: Dict[str, Any] = {}
+    elif repo_review_snapshot is None:
+        findings_summary = {}
+    else:
+        findings_summary = repo_review_snapshot.get("findings_summary") or {}
+    drift_findings = int(findings_summary.get("drift_findings", 0))
+    redundancy_findings = int(findings_summary.get("redundancy_findings", 0))
+    eval_coverage_gaps = int(findings_summary.get("eval_coverage_gaps", 0))
+    control_bypass_findings = int(findings_summary.get("control_bypass_findings", 0))
+    if repo_health_eval_summary is None and require_system_readiness:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("repo_health_eval_summary_ref is required for system readiness certification")
+        eval_system_status = ""
+    elif repo_health_eval_summary is None:
+        eval_system_status = ""
+    else:
+        eval_system_status = str(repo_health_eval_summary.get("system_status") or "").strip().lower()
+
+    if control_response == "block":
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("control decision is block")
+    if control_bypass_findings > 0:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("control bypass findings exceed block threshold")
+    if eval_system_status == "failing":
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("repo health eval indicates failing status")
+    if eval_coverage_gaps > 0:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("eval coverage gaps exceed block threshold")
+
+    if readiness_pass:
+        if control_response == "freeze" or drift_findings >= 2 or redundancy_findings >= 2:
+            readiness_response = "freeze"
+            readiness_details.append("system-level drift/redundancy risk requires freeze")
+        elif control_response == "warn" or drift_findings == 1 or redundancy_findings == 1 or eval_system_status == "degraded":
+            readiness_response = "warn"
+            readiness_warnings.append("minor degradation detected but acceptable under policy")
+        else:
+            readiness_response = "allow"
+
+    if readiness_response == "warn" and control_response == "warn" and not certification_policy["allow_warn_as_pass"]:
+        readiness_pass = False
+        readiness_response = "block"
+        readiness_details.append("control decision warn requires certification_policy.allow_warn_as_pass=true")
+
+    if not readiness_pass:
+        blocking_reasons.extend(readiness_details)
+
+    if blocking_reasons:
+        final_status = "FAILED"
+        system_response = "block"
+    elif readiness_response == "freeze":
+        final_status = "FROZEN"
+        system_response = "freeze"
+        if not blocking_reasons:
+            blocking_reasons.extend(readiness_details or ["system-level risk freeze"])
+    elif readiness_response == "warn":
+        final_status = "WARNED"
+        system_response = "warn"
+    else:
+        final_status = "PASSED"
+        system_response = "allow"
 
     deterministic_context = {
         "input_refs": refs,
@@ -557,6 +677,10 @@ def run_done_certification(input_refs: dict) -> dict:
                 "passed": cohesion_pass,
                 "details": cohesion_details,
             },
+            "system_readiness": {
+                "passed": readiness_pass and readiness_response in {"allow", "warn"},
+                "details": readiness_details,
+            },
         },
         "trust_spine_invariant_result": {
             "passed": trust_spine_result.passed,
@@ -601,6 +725,8 @@ def run_done_certification(input_refs: dict) -> dict:
         "final_status": final_status,
         "system_response": system_response,
         "blocking_reasons": blocking_reasons,
+        "warnings": readiness_warnings,
+        "certification_policy": certification_policy,
         "trace_id": trace_id,
     }
 

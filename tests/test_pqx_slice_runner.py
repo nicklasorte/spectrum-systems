@@ -830,6 +830,25 @@ def test_run_pqx_slice_fixture_decision_mode_explicit_variants(tmp_path: Path) -
         assert replay_payload["error_budget_status"]["budget_status"] == expected_budget
 
 
+def test_run_pqx_slice_fixture_review_blocks_when_strict_system_readiness_opt_in_enabled(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state-review-strict.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs-review-strict",
+        pqx_output_text="deterministic",
+        fixture_decision_mode="review",
+        require_system_readiness_for_certification=True,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CERTIFICATION_BLOCKED"
+
+
 def test_run_pqx_slice_invalid_fixture_decision_mode_fails_closed(tmp_path: Path) -> None:
     state_path = tmp_path / "pqx_state.json"
     state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")

@@ -6,6 +6,8 @@
     "regression_result_ref": "outputs/regression/regression_result.json",
     "certification_pack_ref": "outputs/control_loop_certification/control_loop_certification_pack.json",
     "error_budget_ref": "outputs/error_budget/error_budget_status.json",
+    "repo_review_snapshot_ref": "outputs/review/repo_review_snapshot.json",
+    "repo_health_eval_summary_ref": "outputs/evaluation/repo_health_eval_summary.json",
     "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json",
     "enforcement_result_ref": "outputs/enforcement/enforcement_result.json",
     "eval_coverage_summary_ref": "outputs/evaluation/eval_coverage_summary.json",
@@ -49,6 +51,10 @@
       "details": []
     },
     "trust_spine_evidence_cohesion": {
+      "passed": true,
+      "details": []
+    },
+    "system_readiness": {
       "passed": true,
       "details": []
     }
@@ -106,6 +112,12 @@
   "final_status": "PASSED",
   "system_response": "allow",
   "blocking_reasons": [],
+  "warnings": [],
+  "certification_policy": {
+    "allow_warn_as_pass": true,
+    "allow_warn_promotion": false,
+    "require_system_readiness": false
+  },
   "trace_id": "trace-example-001",
   "run_id": "run-example-001"
 }

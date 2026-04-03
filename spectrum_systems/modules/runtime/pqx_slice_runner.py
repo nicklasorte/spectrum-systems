@@ -568,6 +568,7 @@ def run_pqx_slice(
     control_surface_gap_packet_ref: Optional[str] = None,
     require_control_surface_gap_packet_for_control_surfaces: bool = True,
     fixture_decision_mode: str = "allow",
+    require_system_readiness_for_certification: bool = False,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -851,6 +852,9 @@ def run_pqx_slice(
                 "certification_pack_ref": str(cert_pack_path),
                 "error_budget_ref": str(error_budget_path),
                 "policy_ref": str(control_path),
+                "certification_policy": {
+                    "require_system_readiness": require_system_readiness_for_certification,
+                },
             }
         )
     except DoneCertificationError as exc:
@@ -858,7 +862,11 @@ def run_pqx_slice(
 
     certification_path = _write_json(step_dir / f"{run_id}.done_certification_record.json", certification)
 
-    if enforce_certification and certification.get("final_status") != "PASSED":
+    allowed_fixture_statuses: set[str] = {"PASSED"}
+    if fixture_mode == "review" and not require_system_readiness_for_certification:
+        allowed_fixture_statuses.add("WARNED")
+
+    if enforce_certification and certification.get("final_status") not in allowed_fixture_statuses:
         return _block_payload(step_id=normalized_step_id, run_id=run_id, reason="failed certification", block_type="CERTIFICATION_BLOCKED")
 
     execution_record = {

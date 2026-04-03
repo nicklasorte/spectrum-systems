@@ -17,6 +17,8 @@
     "final_status",
     "system_response",
     "blocking_reasons",
+    "warnings",
+    "certification_policy",
     "trace_id"
   ],
   "properties": {
@@ -38,6 +40,8 @@
         "regression_result_ref": {"type": "string", "minLength": 1},
         "certification_pack_ref": {"type": "string", "minLength": 1},
         "error_budget_ref": {"type": "string", "minLength": 1},
+        "repo_review_snapshot_ref": {"type": "string", "minLength": 1},
+        "repo_health_eval_summary_ref": {"type": "string", "minLength": 1},
         "failure_injection_ref": {"type": "string", "minLength": 1},
         "policy_ref": {"type": "string", "minLength": 1},
         "enforcement_result_ref": {"type": "string", "minLength": 1},
@@ -48,7 +52,7 @@
     "check_results": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants", "trust_spine_evidence_completeness", "trust_spine_evidence_cohesion"],
+      "required": ["replay", "regression", "contracts", "reliability", "fail_closed", "control_consistency", "trace_linkage", "trust_spine_invariants", "trust_spine_evidence_completeness", "trust_spine_evidence_cohesion", "system_readiness"],
       "properties": {
         "replay": {"$ref": "#/$defs/check_result"},
         "regression": {"$ref": "#/$defs/check_result"},
@@ -59,7 +63,8 @@
         "trace_linkage": {"$ref": "#/$defs/check_result"},
         "trust_spine_invariants": {"$ref": "#/$defs/check_result"},
         "trust_spine_evidence_completeness": {"$ref": "#/$defs/check_result"},
-        "trust_spine_evidence_cohesion": {"$ref": "#/$defs/check_result"}
+        "trust_spine_evidence_cohesion": {"$ref": "#/$defs/check_result"},
+        "system_readiness": {"$ref": "#/$defs/check_result"}
       }
     },
     "trust_spine_invariant_result": {
@@ -154,11 +159,25 @@
         "evidence_ref": {"type": "string"}
       }
     },
-    "final_status": {"type": "string", "enum": ["PASSED", "FAILED"]},
-    "system_response": {"type": "string", "enum": ["allow", "block"]},
+    "final_status": {"type": "string", "enum": ["PASSED", "WARNED", "FROZEN", "FAILED"]},
+    "system_response": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
     "blocking_reasons": {
       "type": "array",
       "items": {"type": "string", "minLength": 1}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "certification_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allow_warn_as_pass", "allow_warn_promotion", "require_system_readiness"],
+      "properties": {
+        "allow_warn_as_pass": {"type": "boolean"},
+        "allow_warn_promotion": {"type": "boolean"},
+        "require_system_readiness": {"type": "boolean"}
+      }
     },
     "trace_id": {"type": "string", "minLength": 1}
   },
@@ -183,6 +202,24 @@
         "properties": {
           "system_response": {"const": "allow"},
           "blocking_reasons": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"final_status": {"const": "WARNED"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "system_response": {"const": "warn"},
+          "blocking_reasons": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"final_status": {"const": "FROZEN"}}, "required": ["final_status"]},
+      "then": {
+        "properties": {
+          "system_response": {"const": "freeze"},
+          "blocking_reasons": {"minItems": 1}
         }
       }
     },
