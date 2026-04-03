@@ -10,6 +10,10 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
+    STOP_REASON_MISSING_REQUIRED_SIGNAL,
+    STOP_REASON_NO_ELIGIBLE_BATCH,
+)
 
 
 class RoadmapSelectionError(ValueError):
@@ -249,6 +253,8 @@ def build_roadmap_selection_result(
             blockers = readiness["blocking_conditions"]
             break
 
+    stop_reason: str | None = None
+
     if batch_id is not None:
         ready_to_run = True
         reasons = [_REASON_READY]
@@ -257,17 +263,26 @@ def build_roadmap_selection_result(
         ready_to_run = False
         reasons = [_REASON_NO_ELIGIBLE]
         blockers = ["no not_started batch has all dependencies completed"]
+        stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
     else:
         ready_to_run = False
         if not reasons:
             reasons = [_REASON_AMBIGUOUS]
             blockers = ["dependency-eligible batch failed readiness with no reason codes"]
+            stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
+        elif _REASON_SIGNAL_MISSING in reasons:
+            stop_reason = STOP_REASON_MISSING_REQUIRED_SIGNAL
+        else:
+            stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
 
     timestamp = evaluated_at or _utc_now()
+    stop_reason_codes = [stop_reason] if isinstance(stop_reason, str) else []
     result = {
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "selected_batch_id": batch_id,
         "ready_to_run": ready_to_run,
+        "stop_reason": stop_reason,
+        "stop_reason_codes": stop_reason_codes,
         "reason_codes": reasons,
         "blocking_conditions": blockers,
         "evaluated_at": timestamp,

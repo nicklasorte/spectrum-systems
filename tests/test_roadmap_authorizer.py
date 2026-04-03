@@ -67,6 +67,7 @@ def test_allow_path_authorizes_selected_batch() -> None:
     result = authorize_selected_batch(_roadmap(), _selection(), _auth_signals(), evaluated_at="2026-04-03T13:30:00Z")
     assert result["control_decision"] == "allow"
     assert result["authorized_to_run"] is True
+    assert result["stop_reason"] is None
     assert result["reason_codes"] == ["AUTHORIZED"]
 
 
@@ -78,6 +79,7 @@ def test_warn_path_is_deterministic_and_authorized() -> None:
     assert first == second
     assert first["control_decision"] == "warn"
     assert first["authorized_to_run"] is True
+    assert first["stop_reason"] is None
     assert "AUTHORIZED_WITH_WARNINGS" in first["reason_codes"]
 
 
@@ -87,6 +89,7 @@ def test_freeze_on_replay_mismatch() -> None:
     result = authorize_selected_batch(_roadmap(), _selection(), signals, evaluated_at="2026-04-03T13:30:00Z")
     assert result["control_decision"] == "freeze"
     assert result["authorized_to_run"] is False
+    assert result["stop_reason"] == "authorization_freeze"
     assert "REPLAY_MISMATCH" in result["reason_codes"]
 
 
@@ -97,8 +100,9 @@ def test_block_on_missing_required_signal_or_invalid_selection() -> None:
     result = authorize_selected_batch(_roadmap(), selection, signals, evaluated_at="2026-04-03T13:30:00Z")
     assert result["control_decision"] == "block"
     assert result["authorized_to_run"] is False
+    assert result["stop_reason"] == "missing_required_signal"
     assert "MISSING_REQUIRED_SIGNAL" in result["reason_codes"]
-    assert "BATCH_NOT_READY" in result["reason_codes"]
+    assert "INVALID_SELECTION_RESULT" in result["reason_codes"]
 
 
 def test_block_on_unmet_hard_gate_invalid_roadmap_and_cert_required() -> None:
@@ -112,6 +116,7 @@ def test_block_on_unmet_hard_gate_invalid_roadmap_and_cert_required() -> None:
     result = authorize_selected_batch(roadmap, _selection(), signals, evaluated_at="2026-04-03T13:30:00Z")
     assert result["control_decision"] == "block"
     assert result["authorized_to_run"] is False
+    assert result["stop_reason"] == "authorization_block"
     assert "HARD_GATE_UNMET" in result["reason_codes"]
     assert "CERTIFICATION_REQUIRED" in result["reason_codes"]
     assert "INVALID_ROADMAP_ARTIFACT" in result["reason_codes"]

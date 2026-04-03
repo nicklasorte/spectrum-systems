@@ -13,6 +13,12 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
+from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
+    STOP_REASON_AUTHORIZATION_BLOCK,
+    STOP_REASON_AUTHORIZATION_FREEZE,
+    STOP_REASON_EXECUTION_BLOCKED,
+    STOP_REASON_EXECUTION_FAILED,
+)
 
 
 class RoadmapExecutorError(ValueError):
@@ -218,11 +224,16 @@ def execute_authorized_batch(
     blocking_conditions: list[str]
     execution_status: str
     pqx_result_summary: dict[str, Any]
+    stop_reason: str | None = None
 
     if not execution_allowed:
         execution_status = "not_executed"
         reason_codes = ["AUTHORIZATION_DENIED_EXECUTION"]
         blocking_conditions = sorted(set(str(row) for row in roadmap_execution_authorization.get("blocking_conditions", [])))
+        if control_decision == "freeze":
+            stop_reason = STOP_REASON_AUTHORIZATION_FREEZE
+        else:
+            stop_reason = STOP_REASON_AUTHORIZATION_BLOCK
         pqx_result_summary = {
             "status": "not_executed",
             "control_decision": control_decision,
@@ -257,6 +268,10 @@ def execute_authorized_batch(
             raise RoadmapExecutorError("PQX execution seam must return an object")
 
         execution_status, reason_codes, blocking_conditions = _map_pqx_status_to_execution_status(pqx_result)
+        if execution_status == "blocked":
+            stop_reason = STOP_REASON_EXECUTION_BLOCKED
+        elif execution_status == "failed":
+            stop_reason = STOP_REASON_EXECUTION_FAILED
         pqx_refs = _collect_pqx_refs(pqx_result)
         pqx_result_summary = {
             "status": pqx_result.get("status"),
@@ -299,7 +314,7 @@ def execute_authorized_batch(
     }
     progress_update = {
         "progress_update_id": _progress_update_id(progress_seed),
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "batch_id": selected_batch_id,
         "previous_batch_status": previous_status,
@@ -310,6 +325,8 @@ def execute_authorized_batch(
         "authorization_id": roadmap_execution_authorization["authorization_id"],
         "executed_at": timestamp,
         "reason_codes": sorted(set(reason_codes)),
+        "stop_reason": stop_reason,
+        "stop_reason_codes": [stop_reason] if isinstance(stop_reason, str) else [],
         "blocking_conditions": sorted(set(blocking_conditions)),
         "next_candidate_batch_id": next_candidate_batch_id,
         "roadmap_input_hash": input_hash,

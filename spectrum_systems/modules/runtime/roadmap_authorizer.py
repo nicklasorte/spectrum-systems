@@ -11,6 +11,11 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
+    STOP_REASON_AUTHORIZATION_BLOCK,
+    STOP_REASON_AUTHORIZATION_FREEZE,
+    STOP_REASON_MISSING_REQUIRED_SIGNAL,
+)
 
 
 class RoadmapAuthorizationError(ValueError):
@@ -242,12 +247,18 @@ def authorize_selected_batch(
     )
     has_freeze = bool(reasons.intersection({_REASON_REPLAY_MISMATCH, _REASON_FREEZE, _REASON_AMBIGUOUS}))
 
+    stop_reason: str | None = None
     if has_block:
         decision = "block"
         authorized_to_run = False
+        if _REASON_MISSING_SIGNAL in reasons:
+            stop_reason = STOP_REASON_MISSING_REQUIRED_SIGNAL
+        else:
+            stop_reason = STOP_REASON_AUTHORIZATION_BLOCK
     elif has_freeze:
         decision = "freeze"
         authorized_to_run = False
+        stop_reason = STOP_REASON_AUTHORIZATION_FREEZE
     elif warnings:
         decision = "warn"
         authorized_to_run = True
@@ -294,6 +305,8 @@ def authorize_selected_batch(
         "reason_codes": sorted(reasons),
         "blocking_conditions": sorted(blockers),
         "required_followups": sorted(followups),
+        "stop_reason": stop_reason,
+        "stop_reason_codes": [stop_reason] if isinstance(stop_reason, str) else [],
         "evaluated_at": timestamp,
         "input_hash": input_hash,
         "trace_id": trace_id,
@@ -301,7 +314,7 @@ def authorize_selected_batch(
 
     result = {
         "authorization_id": _deterministic_authorization_id(artifact_seed),
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "roadmap_id": normalized_roadmap_id,
         "selected_batch_id": selected_batch_id if isinstance(selected_batch_id, str) else None,
         "selected_batch_title": selected_batch_title if isinstance(selected_batch_title, str) else None,
@@ -310,6 +323,8 @@ def authorize_selected_batch(
         "reason_codes": sorted(reasons),
         "blocking_conditions": sorted(blockers),
         "required_followups": sorted(followups),
+        "stop_reason": stop_reason,
+        "stop_reason_codes": [stop_reason] if isinstance(stop_reason, str) else [],
         "evaluated_at": timestamp,
         "input_hash": input_hash,
         "trace_id": trace_id or "trace-missing",

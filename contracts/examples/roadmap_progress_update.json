@@ -1,6 +1,6 @@
 {
   "progress_update_id": "RPU-1234567890AB",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "roadmap_id": "RDX-CANVAS-2026-04-03",
   "batch_id": "BATCH-K",
   "previous_batch_status": "running",
@@ -25,5 +25,7 @@
     "contracts/examples/roadmap_artifact.json",
     "contracts/examples/roadmap_selection_result.json",
     "contracts/examples/roadmap_execution_authorization.json"
-  ]
+  ],
+  "stop_reason": null,
+  "stop_reason_codes": []
 }

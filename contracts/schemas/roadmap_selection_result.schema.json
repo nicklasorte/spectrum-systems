@@ -9,6 +9,8 @@
     "roadmap_id",
     "selected_batch_id",
     "ready_to_run",
+    "stop_reason",
+    "stop_reason_codes",
     "reason_codes",
     "blocking_conditions",
     "evaluated_at",
@@ -20,7 +22,10 @@
       "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
     },
     "selected_batch_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "pattern": "^BATCH-[A-Z]$"
     },
     "ready_to_run": {
@@ -60,6 +65,50 @@
     "input_hash": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "stop_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "max_batches_reached",
+        "hard_gate_stop",
+        "authorization_block",
+        "authorization_freeze",
+        "missing_required_signal",
+        "execution_blocked",
+        "execution_failed",
+        "loop_validation_failed",
+        "replay_not_ready",
+        "invalid_roadmap_state",
+        "invalid_progress_state",
+        "contract_precondition_failed",
+        "no_eligible_batch",
+        null
+      ]
+    },
+    "stop_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "max_batches_reached",
+          "hard_gate_stop",
+          "authorization_block",
+          "authorization_freeze",
+          "missing_required_signal",
+          "execution_blocked",
+          "execution_failed",
+          "loop_validation_failed",
+          "replay_not_ready",
+          "invalid_roadmap_state",
+          "invalid_progress_state",
+          "contract_precondition_failed",
+          "no_eligible_batch"
+        ]
+      },
+      "uniqueItems": true
     }
   },
   "allOf": [
@@ -87,6 +136,13 @@
           },
           "blocking_conditions": {
             "maxItems": 0
+          },
+          "stop_reason": {
+            "type": "null"
+          },
+          "stop_reason_codes": {
+            "type": "array",
+            "maxItems": 0
           }
         }
       }
@@ -107,6 +163,47 @@
                 "const": "READY_TO_RUN"
               }
             }
+          },
+          "stop_reason": {
+            "type": "string",
+            "enum": [
+              "max_batches_reached",
+              "hard_gate_stop",
+              "authorization_block",
+              "authorization_freeze",
+              "missing_required_signal",
+              "execution_blocked",
+              "execution_failed",
+              "loop_validation_failed",
+              "replay_not_ready",
+              "invalid_roadmap_state",
+              "invalid_progress_state",
+              "contract_precondition_failed",
+              "no_eligible_batch"
+            ]
+          },
+          "stop_reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "max_batches_reached",
+                "hard_gate_stop",
+                "authorization_block",
+                "authorization_freeze",
+                "missing_required_signal",
+                "execution_blocked",
+                "execution_failed",
+                "loop_validation_failed",
+                "replay_not_ready",
+                "invalid_roadmap_state",
+                "invalid_progress_state",
+                "contract_precondition_failed",
+                "no_eligible_batch"
+              ]
+            },
+            "uniqueItems": true
           }
         }
       }
