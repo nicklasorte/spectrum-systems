@@ -266,6 +266,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CON-047-FIX-RUNTIME-SEAM-2026-04-02.md | CON-047-FIX — PQX runtime seam decision propagation + determinism fix | Active |
 
 | docs/review-actions/PLAN-TPA-001-2026-04-03.md | TPA-001–TPA-005 — PQX two-pass governed construction integration | Active |
+| docs/review-actions/PLAN-MAP-001-MAP-002-2026-04-03.md | MAP-001 + MAP-002 — Review artifact foundation and review→eval→control wiring | Active |
 
 Update this table when plans are created or completed.
 

@@ -1,0 +1,32 @@
+{
+  "artifact_type": "repo_review_snapshot",
+  "schema_version": "1.0.0",
+  "snapshot_id": "rrs-4ab67e20cd3f45aa",
+  "review_id": "REV-MAP-FOUNDATION-2026-04-03",
+  "process_snapshot_review_ref": "docs/reviews/2026-04-03-process-snapshot-review.md",
+  "foundation_build_guidance_ref": "docs/reviews/2026-04-03-foundation-build-guidance.md",
+  "roadmap_handoff_ref": "docs/reviews/2026-04-03-roadmap-handoff.md",
+  "review_markdown_path": "docs/reviews/2026-04-03-map-foundation-review.md",
+  "commit_hash": "7e5d4a9c1324d5e94af07f6c25f5d6d1b3741d50",
+  "branch": "feature/map-foundation",
+  "timestamp": "2026-04-03T00:00:00Z",
+  "inspected_files": [
+    "contracts/schemas/repo_review_snapshot.schema.json",
+    "spectrum_systems/modules/runtime/repo_health_eval.py",
+    "tests/test_repo_health_eval.py"
+  ],
+  "confidence": 0.91,
+  "findings_summary": {
+    "redundancy_findings": 1,
+    "drift_findings": 0,
+    "eval_coverage_gaps": 0,
+    "control_bypass_findings": 0
+  },
+  "trace_linkage": {
+    "trace_id": "6d4fcac1-1af6-4fca-9e35-6e7d0fa7d4aa",
+    "lineage_refs": [
+      "review_artifact:REV-MAP-FOUNDATION-2026-04-03",
+      "markdown:docs/reviews/2026-04-03-map-foundation-review.md"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repo_review_snapshot.schema.json",
+  "title": "Repo Review Snapshot",
+  "description": "Governed deterministic snapshot artifact that binds repository review outputs to traceable metadata for downstream eval/control consumption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "snapshot_id",
+    "review_id",
+    "process_snapshot_review_ref",
+    "foundation_build_guidance_ref",
+    "roadmap_handoff_ref",
+    "review_markdown_path",
+    "commit_hash",
+    "branch",
+    "timestamp",
+    "inspected_files",
+    "confidence",
+    "findings_summary",
+    "trace_linkage"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "repo_review_snapshot"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "snapshot_id": {"type": "string", "pattern": "^rrs-[a-f0-9]{16}$"},
+    "review_id": {"type": "string", "minLength": 1},
+    "process_snapshot_review_ref": {"type": "string", "minLength": 1},
+    "foundation_build_guidance_ref": {"type": "string", "minLength": 1},
+    "roadmap_handoff_ref": {"type": "string", "minLength": 1},
+    "review_markdown_path": {"type": "string", "minLength": 1},
+    "commit_hash": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+    "branch": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "inspected_files": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "findings_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "redundancy_findings",
+        "drift_findings",
+        "eval_coverage_gaps",
+        "control_bypass_findings"
+      ],
+      "properties": {
+        "redundancy_findings": {"type": "integer", "minimum": 0},
+        "drift_findings": {"type": "integer", "minimum": 0},
+        "eval_coverage_gaps": {"type": "integer", "minimum": 0},
+        "control_bypass_findings": {"type": "integer", "minimum": 0}
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "lineage_refs"],
+      "properties": {
+        "trace_id": {"type": "string", "format": "uuid"},
+        "lineage_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
