@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_execution_authorization.schema.json",
+  "title": "Roadmap Execution Authorization",
+  "description": "Deterministic control authorization artifact that decides whether a roadmap-selected batch may execute.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "authorization_id",
+    "schema_version",
+    "roadmap_id",
+    "selected_batch_id",
+    "selected_batch_title",
+    "control_decision",
+    "authorized_to_run",
+    "reason_codes",
+    "blocking_conditions",
+    "required_followups",
+    "evaluated_at",
+    "input_hash",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^REA-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "selected_batch_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "selected_batch_title": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "control_decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "authorized_to_run": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "AUTHORIZED",
+          "AUTHORIZED_WITH_WARNINGS",
+          "NO_SELECTED_BATCH",
+          "BATCH_NOT_READY",
+          "MISSING_REQUIRED_SIGNAL",
+          "HARD_GATE_UNMET",
+          "CERTIFICATION_REQUIRED",
+          "REVIEW_REQUIRED",
+          "EVAL_REQUIRED",
+          "INVALID_ROADMAP_ARTIFACT",
+          "INVALID_SELECTION_RESULT",
+          "MISSING_TRACE_LINKAGE",
+          "REPLAY_MISMATCH",
+          "CONTROL_FREEZE_CONDITION",
+          "CONTROL_BLOCK_CONDITION",
+          "AMBIGUOUS_INPUT"
+        ]
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_followups": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "none",
+          "refresh_roadmap_selection",
+          "provide_missing_signal",
+          "resolve_hard_gate",
+          "complete_certification",
+          "complete_review",
+          "complete_eval",
+          "repair_trace_linkage",
+          "resolve_replay_mismatch",
+          "repair_invalid_artifact"
+        ]
+      }
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "control_decision": {
+            "const": "allow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authorized_to_run": {
+            "const": true
+          },
+          "reason_codes": {
+            "contains": {
+              "const": "AUTHORIZED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "control_decision": {
+            "const": "warn"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authorized_to_run": {
+            "const": true
+          },
+          "reason_codes": {
+            "contains": {
+              "const": "AUTHORIZED_WITH_WARNINGS"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "control_decision": {
+            "enum": [
+              "freeze",
+              "block"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authorized_to_run": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}
