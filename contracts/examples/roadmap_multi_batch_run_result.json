@@ -1,0 +1,41 @@
+{
+  "run_id": "RMB-1234567890AB",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "attempted_batch_ids": [
+    "BATCH-I",
+    "BATCH-J"
+  ],
+  "completed_batch_ids": [
+    "BATCH-I",
+    "BATCH-J"
+  ],
+  "blocked_batch_id": null,
+  "frozen_batch_id": null,
+  "stop_reason": "MAX_BATCHES_REACHED",
+  "stop_reason_codes": [
+    "MAX_BATCHES_REACHED"
+  ],
+  "max_batches_per_run": 2,
+  "batches_executed_count": 2,
+  "final_roadmap_status_ref": "roadmap_artifact:inline:RDX-CANVAS-2026-04-03",
+  "loop_validation_refs": [
+    "RLV-1234567890AB",
+    "RLV-ABCDEF123456"
+  ],
+  "progress_update_refs": [
+    "RPU-1234567890AB",
+    "RPU-ABCDEF123456"
+  ],
+  "authorization_refs": [
+    "REA-1234567890AB",
+    "REA-ABCDEF123456"
+  ],
+  "executed_at": "2026-04-03T20:00:00Z",
+  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "trace_id": "trace-rdx-006-run-001",
+  "source_refs": [
+    "contracts/examples/roadmap_artifact.json",
+    "contracts/examples/roadmap_execution_loop_validation.json"
+  ]
+}
