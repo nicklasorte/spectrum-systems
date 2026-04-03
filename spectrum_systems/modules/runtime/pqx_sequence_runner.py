@@ -28,6 +28,7 @@ from spectrum_systems.modules.runtime.pqx_bundle_state import (
     mark_step_complete,
     save_bundle_state,
 )
+from spectrum_systems.utils.deterministic_id import canonical_json
 
 
 class PQXSequenceRunnerError(ValueError):
@@ -208,7 +209,7 @@ def _admit_slice_batch(
 
 def _canonical_hash(payload: Any) -> str:
     try:
-        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        encoded = canonical_json(payload)
     except TypeError as exc:
         raise PQXSequenceRunnerError(f"payload must be JSON-serializable for deterministic hashing: {exc}") from exc
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()

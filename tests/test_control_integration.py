@@ -223,3 +223,9 @@ def test_require_review_is_blocked_for_publication_and_decision() -> None:
     assert result["decision_blocked"] is True
     assert result["human_review_required"] is True
     assert result["escalation_triggered"] is False
+
+
+def test_execution_id_is_deterministic_for_identical_context() -> None:
+    first = enforce_control_before_execution(_ctx())
+    second = enforce_control_before_execution(_ctx())
+    assert first["execution_id"] == second["execution_id"]
