@@ -1,0 +1,29 @@
+{
+  "progress_update_id": "RPU-1234567890AB",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "batch_id": "BATCH-K",
+  "previous_batch_status": "running",
+  "new_batch_status": "completed",
+  "execution_status": "succeeded",
+  "pqx_execution_refs": [
+    "exec:queue-batch-k:RDX-004:1",
+    "runs/queue-batch-k/RDX-004.pqx_slice_execution_record.json"
+  ],
+  "selected_batch_id": "BATCH-K",
+  "authorization_id": "REA-0A1B2C3D4E5F",
+  "executed_at": "2026-04-03T15:00:00Z",
+  "reason_codes": [
+    "PQX_EXECUTION_SUCCEEDED"
+  ],
+  "blocking_conditions": [],
+  "next_candidate_batch_id": "BATCH-L",
+  "roadmap_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "execution_result_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "trace_id": "trace-rdx-004-exec-001",
+  "source_refs": [
+    "contracts/examples/roadmap_artifact.json",
+    "contracts/examples/roadmap_selection_result.json",
+    "contracts/examples/roadmap_execution_authorization.json"
+  ]
+}
