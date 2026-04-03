@@ -1,0 +1,25 @@
+{
+  "recommendation_id": "NSR-7D568E86D860",
+  "schema_version": "1.0.0",
+  "next_batch_id": "BATCH-B",
+  "why": [
+    "bounded run completed one batch without authority violations",
+    "integration validation is deterministic and replayable"
+  ],
+  "blockers": [],
+  "required_reviews": [],
+  "risk_summary": {
+    "level": "low",
+    "signals": [
+      "determinism_status=deterministic",
+      "authority_boundary_status=bounded",
+      "replay_status=replayable"
+    ]
+  },
+  "trace_id": "trace-batch-u-example",
+  "created_at": "2026-04-03T23:45:00Z",
+  "source_refs": [
+    "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+    "core_system_integration_validation:CSIV-EXAMPLE001"
+  ]
+}

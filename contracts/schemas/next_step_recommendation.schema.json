@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_step_recommendation.schema.json",
+  "title": "next_step_recommendation",
+  "description": "Deterministic operator artifact recommending the next bounded roadmap step based on execution and integration validation outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recommendation_id",
+    "schema_version",
+    "next_batch_id",
+    "why",
+    "blockers",
+    "required_reviews",
+    "risk_summary",
+    "trace_id",
+    "created_at",
+    "source_refs"
+  ],
+  "properties": {
+    "recommendation_id": {"type": "string", "pattern": "^NSR-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "next_batch_id": {"type": ["string", "null"], "pattern": "^BATCH-[A-Z]$"},
+    "why": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "required_reviews": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "risk_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "signals"],
+      "properties": {
+        "level": {"type": "string", "enum": ["low", "medium", "high"]},
+        "signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
+      }
+    },
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}
