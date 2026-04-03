@@ -91,6 +91,187 @@ def _watchouts(stop_reason: str, blocking_conditions: list[str], required_review
     return watchouts
 
 
+def _candidate_action(candidate_type: str, *, next_batch_id: str | None, blocker: str | None, review: str | None) -> str:
+    if candidate_type == "execute_next_batch":
+        return f"execute next governed cycle for {next_batch_id}" if next_batch_id else "refresh roadmap eligibility before execution"
+    if candidate_type == "resolve_blocker":
+        return f"resolve blocker {blocker} and rerun bounded governed cycle"
+    if candidate_type == "complete_review":
+        return f"complete required review {review} before next execution"
+    if candidate_type == "stabilize_repeated_risk":
+        return "stabilize repeated risk pattern before continuing roadmap execution"
+    return "inspect governed artifacts and remediate before rerun"
+
+
+def _candidate_required_artifacts(run_id: str, validation_id: str, replay_refs: list[str], *, blocker: str | None) -> list[str]:
+    artifacts = {
+        f"roadmap_multi_batch_run_result:{run_id}",
+        f"core_system_integration_validation:{validation_id}",
+    } | set(replay_refs)
+    if blocker:
+        artifacts.add(f"blocking_condition:{blocker}")
+    return sorted(artifacts)
+
+
+def _generate_candidates(
+    *,
+    next_batch_id: str | None,
+    run_result: dict[str, Any],
+    integration: dict[str, Any],
+    required_reviews: list[str],
+    blocking_conditions: list[str],
+    replay_refs: list[str],
+    program_artifact: dict[str, Any],
+    context_bundle: dict[str, Any],
+    review_control_signal: dict[str, Any],
+    control_decision: dict[str, Any],
+) -> list[dict[str, Any]]:
+    run_id = str(run_result["run_id"])
+    validation_id = str(integration["validation_id"])
+    deterministic_outcome = str(integration.get("deterministic_outcome", "blocked"))
+    authority_status = str(integration.get("authority_boundary_status", "violated"))
+    control_state = str(control_decision.get("decision") or run_result.get("stop_reason") or "unknown")
+    program_priority = str(program_artifact.get("priority") or "roadmap_progression")
+    context_risks = [str(item) for item in (context_bundle.get("risks") or []) if str(item).strip()]
+    gate_assessment = str(review_control_signal.get("gate_assessment") or "UNKNOWN")
+
+    candidates: list[dict[str, Any]] = []
+
+    candidates.append(
+        {
+            "candidate_id": "NSC-EXECUTE-NEXT-BATCH",
+            "action": _candidate_action("execute_next_batch", next_batch_id=next_batch_id, blocker=None, review=None),
+            "required_artifacts": _candidate_required_artifacts(run_id, validation_id, replay_refs, blocker=None),
+            "blockers": sorted(set(blocking_conditions + (["no_eligible_batch"] if next_batch_id is None else []))),
+            "risk_profile": {
+                "level": "high" if blocking_conditions else ("medium" if next_batch_id is None else "low"),
+                "signals": sorted(
+                    set(
+                        [
+                            f"deterministic_outcome={deterministic_outcome}",
+                            f"authority_boundary_status={authority_status}",
+                            f"control_state={control_state}",
+                        ]
+                        + [f"context_risk={risk}" for risk in context_risks]
+                    )
+                ),
+            },
+            "alignment_with_program": {
+                "priority": program_priority,
+                "justification": "Advances roadmap progression when eligible and unblocked.",
+            },
+        }
+    )
+
+    for blocker in sorted(set(blocking_conditions)):
+        candidates.append(
+            {
+                "candidate_id": f"NSC-RESOLVE-{blocker}",
+                "action": _candidate_action("resolve_blocker", next_batch_id=None, blocker=blocker, review=None),
+                "required_artifacts": _candidate_required_artifacts(run_id, validation_id, replay_refs, blocker=blocker),
+                "blockers": [blocker],
+                "risk_profile": {
+                    "level": "high",
+                    "signals": [f"blocking_condition={blocker}", f"control_state={control_state}"],
+                },
+                "alignment_with_program": {
+                    "priority": "risk_reduction",
+                    "justification": "Unblocks deterministic continuation by removing a current hard blocker.",
+                },
+            }
+        )
+
+    for review in sorted(set(required_reviews)):
+        candidates.append(
+            {
+                "candidate_id": f"NSC-REVIEW-{review}",
+                "action": _candidate_action("complete_review", next_batch_id=None, blocker=None, review=review),
+                "required_artifacts": _candidate_required_artifacts(run_id, validation_id, replay_refs, blocker=None),
+                "blockers": [] if review in required_reviews else [f"review_not_required:{review}"],
+                "risk_profile": {
+                    "level": "medium",
+                    "signals": [f"required_review={review}", f"gate_assessment={gate_assessment}"],
+                },
+                "alignment_with_program": {
+                    "priority": "review_readiness",
+                    "justification": "Satisfies mandatory review requirements before execution.",
+                },
+            }
+        )
+
+    repeated_risk = any(code.startswith("PROP_") for code in blocking_conditions) or bool(
+        integration.get("repeated_failure_patterns")
+    )
+    if repeated_risk:
+        candidates.append(
+            {
+                "candidate_id": "NSC-STABILIZE-REPEATED-RISK",
+                "action": _candidate_action("stabilize_repeated_risk", next_batch_id=None, blocker=None, review=None),
+                "required_artifacts": _candidate_required_artifacts(run_id, validation_id, replay_refs, blocker=None),
+                "blockers": sorted(set(blocking_conditions)),
+                "risk_profile": {
+                    "level": "high",
+                    "signals": sorted(set(["repeated_failure_pattern_detected"] + [f"blocker={b}" for b in blocking_conditions])),
+                },
+                "alignment_with_program": {
+                    "priority": "risk_reduction",
+                    "justification": "Addresses recurring failure patterns before roadmap expansion.",
+                },
+            }
+        )
+
+    return candidates[:8]
+
+
+def _score_candidate(candidate: dict[str, Any], *, next_batch_id: str | None, required_reviews: list[str]) -> dict[str, int]:
+    blockers = [str(item) for item in candidate.get("blockers", [])]
+    risk_level = str(candidate.get("risk_profile", {}).get("level", "medium"))
+    priority = str(candidate.get("alignment_with_program", {}).get("priority", ""))
+    action = str(candidate.get("action", ""))
+
+    has_active_blockers = bool(blockers)
+    program_alignment = 5 if "roadmap_progression" in priority else (4 if "risk_reduction" in priority else 3)
+    if next_batch_id is None and "execute next governed cycle" in action:
+        program_alignment = 1
+    if has_active_blockers and "execute next governed cycle" in action:
+        program_alignment = 1
+
+    unblock_potential = 5 if action.startswith("resolve blocker ") else (2 if blockers else 1)
+    risk_reduction = 5 if "risk_reduction" in priority else (4 if risk_level == "high" else 2)
+    dependency_readiness = 5 if not blockers else 1
+    review_readiness = 5 if "complete required review" in action and required_reviews else (3 if not required_reviews else 2)
+    return {
+        "program_alignment": program_alignment,
+        "unblock_potential": unblock_potential,
+        "risk_reduction": risk_reduction,
+        "dependency_readiness": dependency_readiness,
+        "review_readiness": review_readiness,
+    }
+
+
+def _rank_candidates(
+    candidates: list[dict[str, Any]], *, next_batch_id: str | None, required_reviews: list[str]
+) -> list[dict[str, Any]]:
+    ranked: list[dict[str, Any]] = []
+    for candidate in candidates:
+        factors = _score_candidate(candidate, next_batch_id=next_batch_id, required_reviews=required_reviews)
+        total = (
+            factors["program_alignment"] * 100
+            + factors["unblock_potential"] * 10
+            + factors["risk_reduction"] * 5
+            + factors["dependency_readiness"] * 3
+            + factors["review_readiness"]
+        )
+        ranked.append(
+            {
+                "candidate": candidate,
+                "score": total,
+                "ranking_factors": factors,
+            }
+        )
+    return sorted(ranked, key=lambda item: (-item["score"], item["candidate"]["candidate_id"]))
+
+
 def run_system_cycle(
     *,
     roadmap_artifact: dict[str, Any],
@@ -176,9 +357,37 @@ def run_system_cycle(
     ]
     risk_level = "high" if blocking_conditions else ("medium" if run_result["stop_reason"] != "max_batches_reached" else "low")
 
+    candidates = _generate_candidates(
+        next_batch_id=next_batch_id,
+        run_result=run_result,
+        integration=integration,
+        required_reviews=required_reviews,
+        blocking_conditions=blocking_conditions,
+        replay_refs=replay_refs,
+        program_artifact=dict(integration_inputs.get("program_artifact") or {}),
+        context_bundle=dict(integration_inputs.get("context_bundle") or {}),
+        review_control_signal=dict(integration_inputs.get("review_control_signal") or {}),
+        control_decision=dict(integration_inputs.get("control_decision") or {}),
+    )
+    ranked_candidates = _rank_candidates(candidates, next_batch_id=next_batch_id, required_reviews=required_reviews)
+    selected_candidate = ranked_candidates[0]["candidate"]
+    selected_factors = ranked_candidates[0]["ranking_factors"]
+    why_not_selected = [
+        {
+            "candidate_id": item["candidate"]["candidate_id"],
+            "reason": (
+                "lower_priority"
+                if item["score"] < ranked_candidates[0]["score"]
+                else "tie_broken_by_candidate_id"
+            ),
+            "score": item["score"],
+        }
+        for item in ranked_candidates[1:]
+    ]
+
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "next_batch_id": next_batch_id,
         "why": sorted(set(why)),
         "blockers": sorted(set(blocking_conditions)),
@@ -188,17 +397,35 @@ def run_system_cycle(
             "signals": sorted(set(risk_signals)),
         },
         "next_step": {
-            "action": _next_action(str(run_result["stop_reason"]), blocking_conditions),
-            "why_now": sorted(set(why))[0],
-            "blocked_by": sorted(set(blocking_conditions)),
-            "watchouts": _watchouts(str(run_result["stop_reason"]), blocking_conditions, required_reviews),
-            "required_artifacts": sorted(
-                {
-                    f"core_system_integration_validation:{integration['validation_id']}",
-                    f"roadmap_multi_batch_run_result:{run_result['run_id']}",
-                }
-                | set(replay_refs)
+            "action": selected_candidate["action"],
+            "why_now": (
+                f"selected {selected_candidate['candidate_id']} via deterministic ranking: "
+                f"program_alignment={selected_factors['program_alignment']}, "
+                f"unblock_potential={selected_factors['unblock_potential']}, "
+                f"risk_reduction={selected_factors['risk_reduction']}, "
+                f"dependency_readiness={selected_factors['dependency_readiness']}, "
+                f"review_readiness={selected_factors['review_readiness']}"
             ),
+            "blocked_by": selected_candidate["blockers"],
+            "watchouts": sorted(
+                set(
+                    _watchouts(str(run_result["stop_reason"]), blocking_conditions, required_reviews)
+                    + [f"control_state={integration_inputs.get('control_decision', {}).get('decision', 'unknown')}"]
+                )
+            ),
+            "required_artifacts": selected_candidate["required_artifacts"],
+        },
+        "candidate_evaluation": {
+            "ranking_policy": "program_alignment>unblock_potential>risk_reduction>dependency_readiness>review_readiness",
+            "candidates": [
+                {
+                    **item["candidate"],
+                    "score": item["score"],
+                    "ranking_factors": item["ranking_factors"],
+                }
+                for item in ranked_candidates
+            ],
+            "why_not_selected": why_not_selected,
         },
         "artifact_refs": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",

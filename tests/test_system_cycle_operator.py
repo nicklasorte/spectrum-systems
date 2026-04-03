@@ -114,10 +114,14 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
+    assert first["next_step_recommendation"]["schema_version"] == "1.2.0"
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
     assert first["build_summary"]["run_outcome"]["status"] == "success"
     assert first["build_summary"]["artifact_index"]["next_step_recommendation"].startswith("next_step_recommendation:NSR-")
+    candidate_eval = first["next_step_recommendation"]["candidate_evaluation"]
+    assert candidate_eval["ranking_policy"].startswith("program_alignment>")
+    assert candidate_eval["candidates"][0]["candidate_id"] == "NSC-EXECUTE-NEXT-BATCH"
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -147,10 +151,80 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
     recommendation = result["next_step_recommendation"]
     assert "PROP_REVIEW_EVAL_NOT_INGESTED" in recommendation["blockers"]
     assert "cross_layer_propagation_review" in recommendation["required_reviews"]
-    assert recommendation["next_step"]["action"] == summary["failure_surface"]["next_action"]
+    assert recommendation["next_step"]["action"].startswith("resolve blocker PROP_REVIEW_EVAL_NOT_INGESTED")
     assert recommendation["next_step"]["blocked_by"] == summary["failure_surface"]["blocker_refs"]
     assert any(item.startswith("primary_blocker=PROP_REVIEW_EVAL_NOT_INGESTED") for item in recommendation["next_step"]["watchouts"])
     assert recommendation["artifact_refs"]["trace_id"] == recommendation["trace_id"]
+    assert recommendation["candidate_evaluation"]["why_not_selected"]
+
+
+def test_candidate_ranking_is_deterministic_and_sorted() -> None:
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    candidates = result["next_step_recommendation"]["candidate_evaluation"]["candidates"]
+    scores = [item["score"] for item in candidates]
+    assert scores == sorted(scores, reverse=True)
+    assert candidates[0]["candidate_id"] == "NSC-EXECUTE-NEXT-BATCH"
+    assert result["next_step_recommendation"]["next_step"]["action"] == candidates[0]["action"]
+
+
+def test_blocked_candidates_prioritize_unblock_path() -> None:
+    integration_inputs = copy.deepcopy(_integration_inputs())
+    integration_inputs["control_decision"]["review_eval_ingested"] = False
+
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    selected = result["next_step_recommendation"]["candidate_evaluation"]["candidates"][0]
+    assert selected["candidate_id"] == "NSC-RESOLVE-PROP_REVIEW_EVAL_NOT_INGESTED"
+    assert result["next_step_recommendation"]["next_step"]["blocked_by"] == ["PROP_REVIEW_EVAL_NOT_INGESTED"]
+
+
+def test_candidate_generation_consumes_prg_ctx_rvw_signals() -> None:
+    integration_inputs = copy.deepcopy(_integration_inputs())
+    integration_inputs["program_artifact"]["priority"] = "risk_reduction"
+    integration_inputs["context_bundle"]["risks"] = ["replay_drift"]
+    integration_inputs["control_decision"]["review_eval_ingested"] = False
+
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    execute_candidate = next(
+        item
+        for item in result["next_step_recommendation"]["candidate_evaluation"]["candidates"]
+        if item["candidate_id"] == "NSC-EXECUTE-NEXT-BATCH"
+    )
+    assert execute_candidate["alignment_with_program"]["priority"] == "risk_reduction"
+    assert "context_risk=replay_drift" in execute_candidate["risk_profile"]["signals"]
+    assert "cross_layer_propagation_review" in result["next_step_recommendation"]["required_reviews"]
 
 
 def test_authority_boundary_breaks_raise_risk_level() -> None:

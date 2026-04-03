@@ -1,6 +1,6 @@
 {
   "recommendation_id": "NSR-7D568E86D860",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "next_batch_id": "BATCH-B",
   "why": [
     "bounded run completed one batch without authority violations",
@@ -18,16 +18,53 @@
   },
   "next_step": {
     "action": "execute next governed cycle for BATCH-B",
-    "why_now": "bounded run completed with no blockers and an eligible next batch exists",
+    "why_now": "selected NSC-EXECUTE-NEXT-BATCH via deterministic ranking: program_alignment=5, unblock_potential=1, risk_reduction=2, dependency_readiness=5, review_readiness=3",
     "blocked_by": [],
     "watchouts": [
-      "maintain fail-closed authority boundaries",
-      "verify replay status remains replayable before execution"
+      "control_state=allow",
+      "do_not_bypass_fail_closed_authority_boundaries",
+      "stop_reason=max_batches_reached"
     ],
     "required_artifacts": [
       "core_system_integration_validation:CSIV-EXAMPLE001",
       "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
     ]
+  },
+  "candidate_evaluation": {
+    "ranking_policy": "program_alignment>unblock_potential>risk_reduction>dependency_readiness>review_readiness",
+    "candidates": [
+      {
+        "candidate_id": "NSC-EXECUTE-NEXT-BATCH",
+        "action": "execute next governed cycle for BATCH-B",
+        "required_artifacts": [
+          "core_system_integration_validation:CSIV-EXAMPLE001",
+          "roadmap_execution_loop_validation:RLV-EXAMPLE001",
+          "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+        ],
+        "blockers": [],
+        "risk_profile": {
+          "level": "low",
+          "signals": [
+            "authority_boundary_status=bounded",
+            "control_state=allow",
+            "deterministic_outcome=ready"
+          ]
+        },
+        "alignment_with_program": {
+          "priority": "roadmap_progression",
+          "justification": "Advances roadmap progression when eligible and unblocked."
+        },
+        "score": 531,
+        "ranking_factors": {
+          "program_alignment": 5,
+          "unblock_potential": 1,
+          "risk_reduction": 2,
+          "dependency_readiness": 5,
+          "review_readiness": 3
+        }
+      }
+    ],
+    "why_not_selected": []
   },
   "artifact_refs": {
     "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
