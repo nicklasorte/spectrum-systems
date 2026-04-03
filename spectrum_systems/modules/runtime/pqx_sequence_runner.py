@@ -11,6 +11,10 @@ from typing import Any, Callable
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import LEGACY_EXECUTION_ROADMAP_PATH, parse_system_roadmap
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
+from spectrum_systems.modules.runtime.repo_review_snapshot_store import (
+    RepoReviewSnapshotStoreError,
+    validate_repo_review_snapshot,
+)
 from spectrum_systems.modules.runtime.pqx_slice_runner import (
     confirm_slice_completion_after_enforcement_allow,
     run_pqx_slice,
@@ -619,6 +623,38 @@ def _apply_continuation_block(*, state: dict, queue_run_id: str, next_slice_id: 
     _set_termination_reason(state, f"BLOCKED_{block_type}")
 
 
+def _resolve_review_gate_response(
+    *,
+    review_gate_required: bool,
+    review_snapshot: dict[str, Any] | None,
+    review_eval_artifacts: dict[str, Any] | None,
+    review_control_decision: dict[str, Any] | None,
+) -> str:
+    if not review_gate_required:
+        return "allow"
+    if review_snapshot is None:
+        raise PQXSequenceRunnerError("review gate requires repo_review_snapshot artifact")
+    try:
+        validate_repo_review_snapshot(review_snapshot)
+    except RepoReviewSnapshotStoreError as exc:
+        raise PQXSequenceRunnerError(str(exc)) from exc
+    if not isinstance(review_eval_artifacts, dict):
+        raise PQXSequenceRunnerError("review gate requires repo_health_eval artifacts")
+    eval_summary = review_eval_artifacts.get("eval_summary")
+    if not isinstance(eval_summary, dict):
+        raise PQXSequenceRunnerError("review gate requires eval_summary in repo_health_eval artifacts")
+    try:
+        validate_artifact(eval_summary, "eval_summary")
+    except Exception as exc:
+        raise PQXSequenceRunnerError(f"review gate eval_summary invalid: {exc}") from exc
+    if not isinstance(review_control_decision, dict):
+        raise PQXSequenceRunnerError("review gate requires evaluation_control_decision artifact")
+    response = str(review_control_decision.get("system_response") or "").strip()
+    if response not in {"allow", "warn", "freeze", "block"}:
+        raise PQXSequenceRunnerError("review gate system_response must be allow|warn|freeze|block")
+    return response
+
+
 def execute_sequence_run(
     *,
     slice_requests: list[dict],
@@ -640,6 +676,10 @@ def execute_sequence_run(
     sequence_budget_thresholds: dict | None = None,
     canary_control: dict | None = None,
     enforce_dependency_admission: bool = True,
+    review_gate_required: bool = False,
+    review_snapshot: dict[str, Any] | None = None,
+    review_eval_artifacts: dict[str, Any] | None = None,
+    review_control_decision: dict[str, Any] | None = None,
 ) -> dict:
     """Run a narrow deterministic sequential PQX batch (2–3 slices) with persistent resumable state."""
 
@@ -756,6 +796,12 @@ def execute_sequence_run(
     canary = canary_control or {"status": "not_applicable", "frozen_slice_ids": []}
     executed_this_call = 0
     tpa_artifacts_by_step: dict[str, dict[str, Any]] = {}
+    review_gate_response = _resolve_review_gate_response(
+        review_gate_required=review_gate_required,
+        review_snapshot=review_snapshot,
+        review_eval_artifacts=review_eval_artifacts,
+        review_control_decision=review_control_decision,
+    )
     while True:
         _verify_continuity(state, slice_requests)
         next_slice_id = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
@@ -802,7 +848,10 @@ def execute_sequence_run(
             state["status"] = "completed"
             state["current_slice_id"] = None
             state["next_slice_ref"] = None
-            state["blocked_reason"] = None
+            if review_gate_required and review_gate_response == "warn":
+                state["blocked_reason"] = "degraded review gate state: warn"
+            else:
+                state["blocked_reason"] = None
             state["blocked_continuation_context"] = None
             state["updated_at"] = iso_now(clock)
             state["resume_token"] = f"resume:{queue_run_id}:{len(state['completed_slice_ids'])}"
@@ -833,6 +882,30 @@ def execute_sequence_run(
             state["updated_at"] = iso_now(clock)
             _set_termination_reason(state, "PAUSED_MAX_SLICES")
             return _persist_with_batch_result(state, state_path)
+
+        if review_gate_required:
+            if review_gate_response == "warn":
+                state["blocked_reason"] = "degraded review gate state: warn"
+            elif review_gate_response == "freeze":
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="PRIOR_SLICE_NOT_GOVERNED",
+                    reason="review gate system_response=freeze; progression halted",
+                    now=iso_now(clock),
+                )
+                return _persist_with_batch_result(state, state_path)
+            elif review_gate_response == "block":
+                _apply_continuation_block(
+                    state=state,
+                    queue_run_id=queue_run_id,
+                    next_slice_id=next_slice_id,
+                    block_type="PRIOR_SLICE_NOT_GOVERNED",
+                    reason="review gate system_response=block; progression denied",
+                    now=iso_now(clock),
+                )
+                return _persist_with_batch_result(state, state_path)
 
         already_completed = next_slice_id in state["completed_slice_ids"]
         if already_completed and not rerun_completed:

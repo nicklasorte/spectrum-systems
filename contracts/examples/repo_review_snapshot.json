@@ -28,5 +28,33 @@
       "review_artifact:REV-MAP-FOUNDATION-2026-04-03",
       "markdown:docs/reviews/2026-04-03-map-foundation-review.md"
     ]
+  },
+  "roadmap_handoff": {
+    "build_candidates": [
+      "MAP-004-roadmap-integration",
+      "MAP-DOC-flow-generation"
+    ],
+    "hardening_targets": [
+      "MAP-003-review-gate-enforcement"
+    ],
+    "merge_consolidation_targets": [
+      "control-loop-review-gating-path-consolidation"
+    ],
+    "defer_targets": [
+      "new-module-expansion-outside-map-scope"
+    ],
+    "sequencing_constraints": [
+      {
+        "before": "MAP-003-review-gate-enforcement",
+        "after": "MAP-004-roadmap-integration",
+        "reason": "hardening before expansion"
+      },
+      {
+        "before": "control-loop-review-gating-path-consolidation",
+        "after": "MAP-DOC-flow-generation",
+        "reason": "consolidation before invention"
+      }
+    ],
+    "next_hard_gate": "REVIEW_GATED_PQX_EXECUTION_READY"
   }
 }

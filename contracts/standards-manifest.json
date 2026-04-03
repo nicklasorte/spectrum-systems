@@ -2606,7 +2606,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.17",
-      "last_updated_in": "1.3.17",
+      "last_updated_in": "1.3.18",
       "example_path": "contracts/examples/repo_review_snapshot.json",
       "notes": "MAP-001 governed repository review snapshot binding review markdown and handoff artifacts to deterministic eval/control inputs."
     }
