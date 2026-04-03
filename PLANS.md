@@ -270,6 +270,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-RDX-001-2026-04-03.md | RDX-001 — BATCH-M: Roadmap Artifact Foundation | Active |
 | docs/review-actions/PLAN-RDX-002-2026-04-03.md | RDX-002 — BATCH-M: Roadmap Selection + Readiness Validation | Active |
 | docs/review-actions/PLAN-RDX-002A-2026-04-03.md | RDX-002A — BATCH-M Follow-Up: Contract Preflight Repair | Active |
+| docs/review-actions/PLAN-RDX-003-2026-04-03.md | RDX-003 — BATCH-M: Control Authorization for Roadmap-Selected Batch | Active |
 
 Update this table when plans are created or completed.
 

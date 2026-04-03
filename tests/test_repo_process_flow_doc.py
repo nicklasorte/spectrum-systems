@@ -31,6 +31,8 @@ def test_process_flow_doc_contains_required_sections_and_weak_points() -> None:
     assert "## Basic flow" in doc
     assert "## Expanded flow" in doc
     assert "## Current Weak Points" in doc
+    assert "Roadmap Selection" in doc
+    assert "Control Authorization" in doc
     assert "missing eval coverage" in doc
 
 

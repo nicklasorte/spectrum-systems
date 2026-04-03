@@ -9,7 +9,9 @@ Eval Summary
   ↓
 Control Decision
   ↓
-Roadmap Generation
+Roadmap Selection
+  ↓
+Control Authorization
   ↓
 PQX Batch Execution
   ↓
@@ -34,6 +36,12 @@ Roadmap Generator
   - build targets: MAP-004-roadmap-integration, MAP-DOC-flow-generation
   - hardening targets: MAP-003-review-gate-enforcement
   - sequencing constraints: 2
+  ↓
+Roadmap Selection (roadmap_selection_result)
+  - deterministic next-batch proposal only
+  ↓
+Control Authorization (roadmap_execution_authorization)
+  - control decision allow|warn|freeze|block gates execution
   ↓
 PQX Execution
   - slice execution: PQX-QUEUE-01, PQX-QUEUE-02, PQX-QUEUE-03
