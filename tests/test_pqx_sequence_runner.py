@@ -435,14 +435,18 @@ def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> N
         clock=FixedClock(["2026-03-29T23:32:01Z"]),
     )
     assert record["parity_status"] == "match"
+    assert record["mismatch_details"]["decision_sequence_mismatch"] is False
     assert record["replay_result_summary"]["termination_reason_match"] is True
     assert record["replay_result_summary"]["decision_sequence_match"] is True
     assert record["replay_result_summary"]["final_outcome_match"] is True
 
     tampered = json.loads(state_2.read_text(encoding="utf-8"))
-    tampered["execution_history"][1]["audit_complete"] = False
+    tampered["termination_reason"] = "STOPPED_FAILED"
+    tampered["run_fingerprint"]["decision_sequence"][1]["status"] = "failed"
+    tampered["status"] = "failed"
+    tampered["admitted_input_hash"] = "tampered-hash"
     state_2.write_text(json.dumps(tampered, indent=2) + "\n", encoding="utf-8")
-    with pytest.raises(PQXSequenceRunnerError, match="failed closed"):
+    with pytest.raises(PQXSequenceRunnerError, match="decision_sequence_mismatch") as exc_info:
         verify_two_slice_replay(
             baseline_state_path=state_1,
             replay_state_path=state_2,
@@ -451,6 +455,46 @@ def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> N
             run_id="run-rp-1",
             trace_id="trace-rp-1",
             clock=FixedClock(["2026-03-29T23:32:02Z"]),
+        )
+    assert "final_outcome_mismatch" in str(exc_info.value)
+    assert "admitted_input_hash_mismatch" in str(exc_info.value)
+
+
+def test_two_slice_replay_fails_closed_when_identity_linkage_diverges(tmp_path: Path) -> None:
+    state_1 = tmp_path / "baseline.json"
+    state_2 = tmp_path / "replay.json"
+
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_1,
+        queue_run_id="queue-run-id-check",
+        run_id="run-id-check",
+        trace_id="trace-id-check",
+        execute_slice=lambda _: {"execution_status": "success", "done_certification_record": "cert", "pqx_slice_audit_bundle": "audit"},
+        clock=FixedClock([f"2026-03-30T01:05:{i:02d}Z" for i in range(1, 24)]),
+    )
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_2,
+        queue_run_id="queue-run-id-check",
+        run_id="run-id-check",
+        trace_id="trace-id-check",
+        execute_slice=lambda _: {"execution_status": "success", "done_certification_record": "cert", "pqx_slice_audit_bundle": "audit"},
+        clock=FixedClock([f"2026-03-30T01:06:{i:02d}Z" for i in range(1, 24)]),
+    )
+    tampered = json.loads(state_2.read_text(encoding="utf-8"))
+    tampered["trace_id"] = "trace-id-check-mismatch"
+    state_2.write_text(json.dumps(tampered, indent=2) + "\n", encoding="utf-8")
+
+    with pytest.raises(PQXSequenceRunnerError, match="identity mismatch for trace_id"):
+        verify_two_slice_replay(
+            baseline_state_path=state_1,
+            replay_state_path=state_2,
+            output_path=tmp_path / "replay_record_mismatch.json",
+            queue_run_id="queue-run-id-check",
+            run_id="run-id-check",
+            trace_id="trace-id-check",
+            clock=FixedClock(["2026-03-30T01:07:01Z"]),
         )
 
 
@@ -578,6 +622,9 @@ def test_deterministic_batch_result_same_admitted_input(tmp_path: Path) -> None:
         clock=FixedClock([f"2026-03-30T00:31:{i:02d}Z" for i in range(1, 25)]),
     )
     assert first["batch_result"] == second["batch_result"]
+    assert first["batch_result"]["completed_step_ids"] == second["batch_result"]["completed_step_ids"]
+    assert first["batch_result"]["decision_sequence"] == second["batch_result"]["decision_sequence"]
+    assert first["batch_result"]["final_outcome"] == second["batch_result"]["final_outcome"]
     assert first["run_fingerprint"]["fingerprint_hash"] == second["run_fingerprint"]["fingerprint_hash"]
     assert first["termination_reason"] == second["termination_reason"] == "COMPLETED_ALL_SLICES"
 

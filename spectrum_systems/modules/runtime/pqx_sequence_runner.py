@@ -1111,18 +1111,62 @@ def verify_two_slice_replay(
         ]
         return [{k: row.get(k) for k in keys} for row in rows]
 
+    if baseline.get("queue_run_id") != queue_run_id or replay.get("queue_run_id") != queue_run_id:
+        raise PQXSequenceRunnerError("two-slice replay identity mismatch for queue_run_id")
+    if baseline.get("run_id") != run_id or replay.get("run_id") != run_id:
+        raise PQXSequenceRunnerError("two-slice replay identity mismatch for run_id")
+    if baseline.get("trace_id") != trace_id or replay.get("trace_id") != trace_id:
+        raise PQXSequenceRunnerError("two-slice replay identity mismatch for trace_id")
+
+    normalized_baseline_continuations = _normalize_continuations(baseline["continuation_records"])
+    normalized_replay_continuations = _normalize_continuations(replay["continuation_records"])
+    normalized_baseline_history = _normalize_history(baseline["execution_history"])
+    normalized_replay_history = _normalize_history(replay["execution_history"])
+    decision_sequence_match = baseline.get("run_fingerprint", {}).get("decision_sequence") == replay.get("run_fingerprint", {}).get(
+        "decision_sequence"
+    )
+    termination_reason_match = baseline.get("termination_reason") == replay.get("termination_reason")
+    final_outcome_match = baseline.get("status") == replay.get("status")
+    completed_step_ids_match = baseline["completed_slice_ids"] == replay["completed_slice_ids"]
+    baseline_history_trace_ids = [
+        record.get("trace_id")
+        for record in baseline.get("execution_history", [])
+        if isinstance(record, dict)
+    ]
+    replay_history_trace_ids = [
+        record.get("trace_id")
+        for record in replay.get("execution_history", [])
+        if isinstance(record, dict)
+    ]
+    trace_linkage_match = baseline_history_trace_ids == replay_history_trace_ids
+    admitted_input_hash_match = baseline.get("admitted_input_hash") == replay.get("admitted_input_hash")
+    mismatch_details = {
+        "termination_reason_mismatch": not termination_reason_match,
+        "decision_sequence_mismatch": not decision_sequence_match,
+        "final_outcome_mismatch": not final_outcome_match,
+        "admitted_input_hash_mismatch": not admitted_input_hash_match,
+        "completed_step_ids_mismatch": not completed_step_ids_match,
+        "trace_linkage_mismatch": not trace_linkage_match,
+    }
+    mismatch_order = [
+        "termination_reason_mismatch",
+        "decision_sequence_mismatch",
+        "final_outcome_mismatch",
+        "admitted_input_hash_mismatch",
+        "completed_step_ids_mismatch",
+        "trace_linkage_mismatch",
+    ]
+    active_mismatches = [field for field in mismatch_order if mismatch_details[field]]
+
     parity = (
-        baseline["completed_slice_ids"] == replay["completed_slice_ids"]
-        and _normalize_continuations(baseline["continuation_records"]) == _normalize_continuations(replay["continuation_records"])
-        and _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"])
+        not active_mismatches
+        and normalized_baseline_continuations == normalized_replay_continuations
+        and normalized_baseline_history == normalized_replay_history
         and baseline["certification_complete_by_slice"] == replay["certification_complete_by_slice"]
         and baseline["audit_complete_by_slice"] == replay["audit_complete_by_slice"]
         and baseline.get("chain_certification_status") == replay.get("chain_certification_status")
         and baseline.get("bundle_certification_status") == replay.get("bundle_certification_status")
-        and baseline.get("termination_reason") == replay.get("termination_reason")
-        and baseline.get("run_fingerprint", {}).get("decision_sequence")
-        == replay.get("run_fingerprint", {}).get("decision_sequence")
-        and baseline.get("status") == replay.get("status")
+        and baseline.get("run_fingerprint", {}).get("fingerprint_hash") == replay.get("run_fingerprint", {}).get("fingerprint_hash")
     )
     replay_id = "queue-replay-" + hashlib.sha256(
         f"{queue_run_id}:{run_id}:{trace_id}:{baseline['resume_token']}:{replay['resume_token']}".encode("utf-8")
@@ -1137,16 +1181,15 @@ def verify_two_slice_replay(
         ],
         "replay_result_summary": {
             "replayed_step_id": "step-002",
-            "decision_match": baseline["continuation_records"] == replay["continuation_records"],
-            "state_match": baseline["completed_slice_ids"] == replay["completed_slice_ids"],
-            "transition_match": _normalize_history(baseline["execution_history"]) == _normalize_history(replay["execution_history"]),
-            "termination_reason_match": baseline.get("termination_reason") == replay.get("termination_reason"),
-            "decision_sequence_match": baseline.get("run_fingerprint", {}).get("decision_sequence")
-            == replay.get("run_fingerprint", {}).get("decision_sequence"),
-            "final_outcome_match": baseline.get("status") == replay.get("status"),
+            "decision_match": normalized_baseline_continuations == normalized_replay_continuations,
+            "state_match": completed_step_ids_match,
+            "transition_match": normalized_baseline_history == normalized_replay_history,
+            "termination_reason_match": termination_reason_match,
+            "decision_sequence_match": decision_sequence_match,
+            "final_outcome_match": final_outcome_match,
         },
         "parity_status": "match" if parity else "mismatch",
-        "mismatch_summary": None if parity else "two-slice replay parity mismatch",
+        "mismatch_summary": None if parity else "; ".join(active_mismatches),
         "trace_id": trace_id,
         "timestamp": iso_now(clock),
     }
@@ -1163,8 +1206,22 @@ def verify_two_slice_replay(
     Path(replay_state_path).write_text(json.dumps(replay, indent=2) + "\n", encoding="utf-8")
 
     if not parity:
-        raise PQXSequenceRunnerError("two-slice replay verification failed closed")
-    return record
+        raise PQXSequenceRunnerError(
+            "two-slice replay verification failed closed: "
+            + json.dumps(
+                {
+                    "parity_status": "mismatch",
+                    "mismatch_details": mismatch_details,
+                    "mismatch_summary": record["mismatch_summary"],
+                },
+                sort_keys=True,
+            )
+        )
+    return {
+        **record,
+        "mismatch_details": mismatch_details,
+        "mismatch_summary_human": "match" if parity else f"mismatch: {record['mismatch_summary']}",
+    }
 
 
 def execute_bundle_sequence_run(
