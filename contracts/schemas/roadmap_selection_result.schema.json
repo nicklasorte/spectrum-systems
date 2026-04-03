@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_selection_result.schema.json",
+  "title": "Roadmap Selection Result",
+  "description": "Deterministic fail-closed selection output defining the next allowed roadmap batch and readiness posture.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roadmap_id",
+    "selected_batch_id",
+    "ready_to_run",
+    "reason_codes",
+    "blocking_conditions",
+    "evaluated_at",
+    "input_hash"
+  ],
+  "properties": {
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "selected_batch_id": {
+      "type": ["string", "null"],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "ready_to_run": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "READY_TO_RUN",
+          "NO_ELIGIBLE_BATCH",
+          "DEPENDENCY_INCOMPLETE",
+          "REQUIRED_SIGNAL_MISSING",
+          "HARD_GATE_VIOLATED",
+          "CONTROL_LOOP_EVAL_MISSING",
+          "CONTROL_LOOP_TRACE_MISSING",
+          "CONTROL_LOOP_SCHEMA_INVALID",
+          "AMBIGUOUS_STATE",
+          "INVALID_ROADMAP_STRUCTURE"
+        ]
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "ready_to_run": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "selected_batch_id": {
+            "type": "string",
+            "pattern": "^BATCH-[A-Z]$"
+          },
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "const": "READY_TO_RUN"
+            }
+          },
+          "blocking_conditions": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ready_to_run": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "not": {
+              "contains": {
+                "const": "READY_TO_RUN"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
