@@ -1,0 +1,236 @@
+"""Operator-focused one-cycle orchestration for bounded roadmap execution and usability artifacts (BATCH-U)."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Callable
+
+from jsonschema import Draft202012Validator, FormatChecker
+
+from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run
+from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration
+
+
+class SystemCycleOperatorError(ValueError):
+    """Raised when a system cycle cannot be produced deterministically."""
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _canonical_hash(payload: Any) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _validate_schema(instance: dict[str, Any], schema_name: str) -> None:
+    validator = Draft202012Validator(load_schema(schema_name), format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.absolute_path))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise SystemCycleOperatorError(f"{schema_name} validation failed: {details}")
+
+
+def _next_not_started_batch_id(roadmap_artifact: dict[str, Any]) -> str | None:
+    for batch in roadmap_artifact.get("batches", []):
+        if isinstance(batch, dict) and batch.get("status") == "not_started":
+            batch_id = batch.get("batch_id")
+            if isinstance(batch_id, str):
+                return batch_id
+    return None
+
+
+def _required_reviews(blocking_conditions: list[str]) -> list[str]:
+    reviews: set[str] = set()
+    for code in blocking_conditions:
+        if code.startswith("AUTH_"):
+            reviews.add("control_authority_review")
+        if code.startswith("PROP_"):
+            reviews.add("cross_layer_propagation_review")
+        if code.startswith("REPLAY_"):
+            reviews.add("replay_chain_review")
+        if code.startswith("CERTIFICATION_"):
+            reviews.add("certification_gate_review")
+        if code.startswith("DETERMINISM_"):
+            reviews.add("determinism_review")
+    return sorted(reviews)
+
+
+def _root_cause(stop_reason: str, blocking_conditions: list[str]) -> str:
+    if blocking_conditions:
+        return f"integration_blockers:{blocking_conditions[0]}"
+    return f"execution_stop_reason:{stop_reason}"
+
+
+def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
+    if blocking_conditions:
+        return "resolve blocking conditions and rerun bounded governed cycle"
+    if stop_reason == "max_batches_reached":
+        return "run next governed cycle to continue roadmap progression"
+    if stop_reason in {"authorization_block", "missing_required_signal", "authorization_freeze"}:
+        return "satisfy authorization constraints before rerun"
+    if stop_reason == "no_eligible_batch":
+        return "refresh roadmap and signal readiness before rerun"
+    return "inspect run artifacts and remediate before rerun"
+
+
+def run_system_cycle(
+    *,
+    roadmap_artifact: dict[str, Any],
+    selection_signals: dict[str, Any],
+    authorization_signals: dict[str, Any],
+    integration_inputs: dict[str, Any],
+    pqx_state_path: Path,
+    pqx_runs_root: Path,
+    execution_policy: dict[str, Any] | None = None,
+    source_refs: list[str] | None = None,
+    created_at: str | None = None,
+    pqx_execute_fn: Callable[..., dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Run one full bounded system cycle and emit operator-focused summary artifacts."""
+    timestamp = created_at or _utc_now()
+
+    multi_batch = execute_bounded_roadmap_run(
+        roadmap_artifact,
+        selection_signals,
+        authorization_signals,
+        pqx_state_path=pqx_state_path,
+        pqx_runs_root=pqx_runs_root,
+        execution_policy=execution_policy,
+        evaluated_at=timestamp,
+        executed_at=timestamp,
+        validated_at=timestamp,
+        run_executed_at=timestamp,
+        source_refs=source_refs,
+        pqx_execute_fn=pqx_execute_fn,
+    )
+    run_result = multi_batch["run_result"]
+    updated_roadmap = multi_batch["roadmap"]
+
+    if not isinstance(integration_inputs, dict):
+        raise SystemCycleOperatorError("integration_inputs must be an object")
+
+    roadmap_loop_validation = dict(integration_inputs.get("roadmap_loop_validation") or {})
+    if "validation_id" not in roadmap_loop_validation and run_result.get("loop_validation_refs"):
+        roadmap_loop_validation["validation_id"] = str(run_result["loop_validation_refs"][-1])
+    if "determinism_status" not in roadmap_loop_validation:
+        roadmap_loop_validation["determinism_status"] = "deterministic"
+
+    roadmap_multi_batch_result = dict(run_result)
+    overrides = integration_inputs.get("roadmap_multi_batch_result_overrides")
+    if isinstance(overrides, dict):
+        roadmap_multi_batch_result.update(overrides)
+    roadmap_multi_batch_result.setdefault("program_constraints_applied", True)
+
+    integration = validate_core_system_integration(
+        program_artifact=dict(integration_inputs.get("program_artifact") or {}),
+        review_control_signal=dict(integration_inputs.get("review_control_signal") or {}),
+        eval_result=dict(integration_inputs.get("eval_result") or {}),
+        context_bundle=dict(integration_inputs.get("context_bundle") or {}),
+        tpa_gate=dict(integration_inputs.get("tpa_gate") or {}),
+        roadmap_loop_validation=roadmap_loop_validation,
+        roadmap_multi_batch_result=roadmap_multi_batch_result,
+        control_decision=dict(integration_inputs.get("control_decision") or {}),
+        certification_pack=dict(integration_inputs.get("certification_pack") or {}),
+        validation_scope=dict(integration_inputs.get("validation_scope") or {}),
+        trace_id=str(integration_inputs.get("trace_id") or authorization_signals.get("trace_id") or ""),
+        source_refs=dict(integration_inputs.get("source_refs") or {}),
+        created_at=timestamp,
+    )
+
+    blocking_conditions = [str(item) for item in integration.get("blocking_conditions", [])]
+    next_batch_id = _next_not_started_batch_id(updated_roadmap)
+    why = [
+        f"bounded_stop_reason={run_result['stop_reason']}",
+        f"integration_outcome={integration['deterministic_outcome']}",
+        f"authority_boundary_status={integration['authority_boundary_status']}",
+    ]
+    if next_batch_id is not None:
+        why.append(f"next_eligible_candidate={next_batch_id}")
+    else:
+        why.append("no_remaining_not_started_batch")
+
+    risk_signals = [
+        f"determinism_status={integration['determinism_status']}",
+        f"replay_status={integration['replay_status']}",
+        f"blocking_conditions={len(blocking_conditions)}",
+    ]
+    risk_level = "high" if blocking_conditions else ("medium" if run_result["stop_reason"] != "max_batches_reached" else "low")
+
+    recommendation = {
+        "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
+        "schema_version": "1.0.0",
+        "next_batch_id": next_batch_id,
+        "why": sorted(set(why)),
+        "blockers": sorted(set(blocking_conditions)),
+        "required_reviews": _required_reviews(blocking_conditions),
+        "risk_summary": {
+            "level": risk_level,
+            "signals": sorted(set(risk_signals)),
+        },
+        "trace_id": integration["trace_id"],
+        "created_at": timestamp,
+        "source_refs": sorted(
+            set(
+                [
+                    f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                    f"core_system_integration_validation:{integration['validation_id']}",
+                ]
+                + list(source_refs or [])
+            )
+        ),
+    }
+    _validate_schema(recommendation, "next_step_recommendation")
+
+    stop_reason = str(run_result["stop_reason"])
+    summary = {
+        "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
+        "schema_version": "1.0.0",
+        "run_id": run_result["run_id"],
+        "what_ran": [
+            "roadmap selection",
+            "control authorization",
+            "bounded execution (RDX-006)",
+            "integration validation (BATCH-Z)",
+        ],
+        "what_changed": [
+            f"attempted_batches={','.join(run_result['attempted_batch_ids']) or 'none'}",
+            f"completed_batches={','.join(run_result['completed_batch_ids']) or 'none'}",
+        ],
+        "what_failed": sorted(set(blocking_conditions + ([stop_reason] if stop_reason != "max_batches_reached" else []))),
+        "watch_next": [
+            f"next_batch_id={next_batch_id or 'none'}",
+            f"required_reviews={','.join(recommendation['required_reviews']) or 'none'}",
+        ],
+        "failure_surface": {
+            "stop_reason": stop_reason,
+            "root_cause": _root_cause(stop_reason, blocking_conditions),
+            "next_action": _next_action(stop_reason, blocking_conditions),
+        },
+        "trace_id": integration["trace_id"],
+        "created_at": timestamp,
+        "source_refs": sorted(
+            {
+                f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                f"core_system_integration_validation:{integration['validation_id']}",
+                f"next_step_recommendation:{recommendation['recommendation_id']}",
+            }
+        ),
+    }
+    _validate_schema(summary, "build_summary")
+
+    return {
+        "updated_roadmap": updated_roadmap,
+        "roadmap_multi_batch_run_result": run_result,
+        "core_system_integration_validation": integration,
+        "next_step_recommendation": recommendation,
+        "build_summary": summary,
+    }
+
+
+__all__ = ["SystemCycleOperatorError", "run_system_cycle"]

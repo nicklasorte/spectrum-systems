@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.34",
-  "schema_version": "1.0.0",
-  "standards_version": "1.3.34",
+  "artifact_version": "1.3.35",
+  "schema_version": "1.3.35",
+  "standards_version": "1.3.35",
   "record_id": "REC-STD-2026-04-03-BATCH-O",
   "run_id": "run-20260403T230000Z",
   "created_at": "2026-04-03T23:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.33",
+  "source_repo_version": "1.3.35",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -194,6 +194,19 @@
       "last_updated_in": "1.3.33",
       "example_path": "contracts/examples/build_report.json",
       "notes": "BATCH-O governed build report artifact for deterministic context selection inputs."
+    },
+    {
+      "artifact_type": "build_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.35",
+      "last_updated_in": "1.3.35",
+      "example_path": "contracts/examples/build_summary.json",
+      "notes": "BATCH-U operator usability artifact summarizing bounded run execution, deltas, failures, and next-watch guidance with explicit failure surface."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1455,6 +1468,19 @@
       "last_updated_in": "1.3.1",
       "example_path": null,
       "notes": "Versioned policy contract governing allowed lifecycle states, required evidence, drift blocking behavior, and deterministic state-to-action mappings for next-step decisions."
+    },
+    {
+      "artifact_type": "next_step_recommendation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.35",
+      "last_updated_in": "1.3.35",
+      "example_path": "contracts/examples/next_step_recommendation.json",
+      "notes": "BATCH-U operator artifact recommending next batch with rationale, blockers, required reviews, and risk summary from governed run signals."
     },
     {
       "artifact_type": "observability_metrics",
