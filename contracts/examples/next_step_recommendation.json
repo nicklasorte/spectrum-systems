@@ -1,6 +1,6 @@
 {
   "recommendation_id": "NSR-7D568E86D860",
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "next_batch_id": "BATCH-B",
   "why": [
     "bounded run completed one batch without authority violations",
@@ -94,6 +94,7 @@
       "core_system_integration_validation:CSIV-EXAMPLE001",
       "eval_result:run-eval-001",
       "program_artifact:PRG-QUALITY-CERTIFICATION",
+      "remediation_plan:RMP-2A4C6E8F0B12",
       "review_control_signal:rcs-001",
       "roadmap_execution_loop_validation:RLV-EXAMPLE001",
       "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
@@ -103,8 +104,9 @@
   "trace_id": "trace-batch-u-example",
   "created_at": "2026-04-03T23:45:00Z",
   "source_refs": [
-    "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
-    "core_system_integration_validation:CSIV-EXAMPLE001"
+    "core_system_integration_validation:CSIV-EXAMPLE001",
+    "remediation_plan:RMP-2A4C6E8F0B12",
+    "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
   ],
   "trace_navigation": {
     "trace_id": "trace-batch-u-example",
@@ -238,5 +240,74 @@
     "view trace -> trace_navigation:CSIV-EXAMPLE001",
     "replay this step -> replay_from_execution",
     "inspect failure chain -> replay_from_failure"
-  ]
+  ],
+  "remediation_plan_ref": "remediation_plan:RMP-2A4C6E8F0B12",
+  "remediation_steps": [
+    {
+      "step_id": "RMS-01",
+      "action": "confirm_root_cause_chain",
+      "why": "stopped_at=max_batches_reached; primary_chain_reason=max_batches_reached",
+      "required_artifacts": [
+        "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+        "trace:trace-batch-u-example"
+      ],
+      "trace_refs": [
+        "trace-batch-u-example",
+        "stop_reason:max_batches_reached"
+      ]
+    },
+    {
+      "step_id": "RMS-05",
+      "action": "rerun_bounded_batch_cycle",
+      "why": "verify remediation resolves stop condition without bypassing governance",
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-EXAMPLE001",
+        "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+      ],
+      "trace_refs": [
+        "trace-batch-u-example",
+        "rerun:bounded_cycle"
+      ]
+    }
+  ],
+  "remediation_plan": {
+    "plan_id": "RMP-2A4C6E8F0B12",
+    "root_cause": "execution_stop_reason:max_batches_reached",
+    "remediation_steps": [
+      {
+        "step_id": "RMS-01",
+        "action": "confirm_root_cause_chain",
+        "why": "stopped_at=max_batches_reached; primary_chain_reason=max_batches_reached",
+        "required_artifacts": [
+          "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+          "trace:trace-batch-u-example"
+        ],
+        "trace_refs": [
+          "trace-batch-u-example",
+          "stop_reason:max_batches_reached"
+        ]
+      },
+      {
+        "step_id": "RMS-05",
+        "action": "rerun_bounded_batch_cycle",
+        "why": "verify remediation resolves stop condition without bypassing governance",
+        "required_artifacts": [
+          "core_system_integration_validation:CSIV-EXAMPLE001",
+          "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+        ],
+        "trace_refs": [
+          "trace-batch-u-example",
+          "rerun:bounded_cycle"
+        ]
+      }
+    ],
+    "required_artifacts": [
+      "core_system_integration_validation:CSIV-EXAMPLE001",
+      "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+    ],
+    "expected_outcome": "continue deterministic roadmap progression in next governed cycle",
+    "risk_level": "low",
+    "created_at": "2026-04-03T23:45:00Z",
+    "trace_id": "trace-batch-u-example"
+  }
 }
