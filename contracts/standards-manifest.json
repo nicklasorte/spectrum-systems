@@ -2577,15 +2577,15 @@
     {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.31",
-      "last_updated_in": "1.3.32",
+      "last_updated_in": "1.3.40",
       "example_path": "contracts/examples/roadmap_multi_batch_run_result.json",
-      "notes": "RDX-006 bounded multi-batch governed execution artifact proving per-batch re-authorization, deterministic ordering, and fail-closed stop-reason recording."
+      "notes": "RDX-006 bounded multi-batch governed execution artifact proving deterministic adaptive continuation, early-stop safety, per-batch re-authorization, and fail-closed stop-reason recording."
     },
     {
       "artifact_type": "roadmap_output",

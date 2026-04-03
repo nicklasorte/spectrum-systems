@@ -1,6 +1,6 @@
 {
   "run_id": "RMB-1234567890AB",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "roadmap_id": "RDX-CANVAS-2026-04-03",
   "attempted_batch_ids": [
     "BATCH-I",
@@ -16,7 +16,8 @@
   "stop_reason_codes": [
     "max_batches_reached"
   ],
-  "max_batches_per_run": 2,
+  "max_batches_per_run": 4,
+  "resolved_max_batches_per_run": 2,
   "batches_executed_count": 2,
   "final_roadmap_status_ref": "roadmap_artifact:inline:RDX-CANVAS-2026-04-03",
   "loop_validation_refs": [
@@ -31,6 +32,43 @@
     "REA-1234567890AB",
     "REA-ABCDEF123456"
   ],
+  "continuation_decision_sequence": [
+    {
+      "step": 1,
+      "decision": "continue",
+      "reason_code": "continue_initial"
+    },
+    {
+      "step": 2,
+      "decision": "continue",
+      "reason_code": "continue_safe"
+    },
+    {
+      "step": 3,
+      "decision": "stop",
+      "reason_code": "max_batches_reached"
+    }
+  ],
+  "execution_efficiency_report": {
+    "batches_executed_per_run": 2,
+    "useful_batches": 2,
+    "early_stops": 0,
+    "average_progress_per_run": 1.0,
+    "chain_context_refs": [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    ],
+    "adaptive_factors": {
+      "mode": "adaptive",
+      "risk_level": "medium",
+      "program_phase": "build",
+      "recent_failures": 0,
+      "resolved_from": [
+        "risk:medium",
+        "phase:build"
+      ]
+    }
+  },
   "executed_at": "2026-04-03T20:00:00Z",
   "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "trace_id": "trace-rdx-006-run-001",
