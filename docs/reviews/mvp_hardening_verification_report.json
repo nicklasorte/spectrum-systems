@@ -1,0 +1,282 @@
+{
+  "runs_executed": 5,
+  "determinism_pass_rate": 1.0,
+  "execution_fingerprint_match": true,
+  "decision_sequence_consistency": true,
+  "remediation_determinism": true,
+  "replay_integrity_results": {
+    "valid_runs_match": true,
+    "mismatch_fail_closed": true
+  },
+  "trace_integrity_results": {
+    "all_artifacts_have_trace_id": true,
+    "span_relationships_valid": true,
+    "missing_trace_blocks": true
+  },
+  "adversarial_results": {
+    "missing_artifact": {
+      "case_id": "context_missing_upstream_refs",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "missing_context_bundle"
+    },
+    "missing_eval": {
+      "case_id": "evidence_required_grounded_empty_claims",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "required-grounded mode requires governable claim candidates when claim-bearing fields are present"
+    },
+    "indeterminate_eval": {
+      "case_id": "monitor_ingestion_malformed_regression",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "regression_run_result run_id=run-bad failed schema validation: 'blocked' is a required property; 'regression_status' is a required property; 'suite_id' is a required property; 'created_at' is a required property; 'total_traces' is a required property; 'passed_traces' is a required property; 'failed_traces' is a required property; 'pass_rate' is a required property; 'overall_status' is a required property; 'results' is a required property; 'summary' is a required property"
+    },
+    "schema_violation": {
+      "case_id": "monitor_malformed_digest",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "regression_run_result run_id=run-healthy-001 failed schema validation: 'bad-digest' does not match '^[a-f0-9]{64}$'"
+    },
+    "replay_mismatch": {
+      "case_id": "replay_lineage_chain_mismatch",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "input artifact failed validation: 'trace-replay-001' is not a 'uuid'"
+    },
+    "trace_missing": {
+      "case_id": "replay_missing_trace_context",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "input artifact failed validation: 'trace-replay-001' is not a 'uuid'"
+    },
+    "conflicting_signals": {
+      "case_id": "monitor_contradictory_status",
+      "observed_outcome": "block",
+      "expected_outcome": "block",
+      "passed": true,
+      "blocking_reason": "blocked=true requires regression_status='fail'"
+    }
+  },
+  "cross_module_drift_detected": false,
+  "pass_fail": "PASS",
+  "blocking_issues": [],
+  "created_at": "2026-04-03T23:33:12Z",
+  "trace_id": "trace-mvp-hardening-verify-8fa32627",
+  "evidence": {
+    "report_ids": [
+      "MVPR-4539DDD6D41A",
+      "MVPR-4539DDD6D41A",
+      "MVPR-4539DDD6D41A",
+      "MVPR-4539DDD6D41A",
+      "MVPR-4539DDD6D41A"
+    ],
+    "trace_ids": [
+      "trace-batch-mvp-8fa32627",
+      "trace-batch-mvp-8fa32627",
+      "trace-batch-mvp-8fa32627",
+      "trace-batch-mvp-8fa32627",
+      "trace-batch-mvp-8fa32627"
+    ],
+    "payload_hashes": [
+      "9699ae55908ae8070849b10305d059277c0d041ff1979f842783206a82e014d3",
+      "9699ae55908ae8070849b10305d059277c0d041ff1979f842783206a82e014d3",
+      "9699ae55908ae8070849b10305d059277c0d041ff1979f842783206a82e014d3",
+      "9699ae55908ae8070849b10305d059277c0d041ff1979f842783206a82e014d3",
+      "9699ae55908ae8070849b10305d059277c0d041ff1979f842783206a82e014d3"
+    ],
+    "decision_sequences": [
+      [
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ]
+      ],
+      [
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ]
+      ],
+      [
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ]
+      ],
+      [
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ]
+      ],
+      [
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ],
+        [
+          {
+            "step": 1,
+            "decision": "continue",
+            "reason_code": "continue_initial"
+          }
+        ]
+      ]
+    ]
+  }
+}
