@@ -249,3 +249,57 @@ def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> N
     assert bundle["glossary_definitions"] == []
     assert bundle["glossary_canonicalization"]["unresolved_terms"] == ["SLA@general"]
     assert bundle["glossary_canonicalization"]["injection_enabled"] is True
+
+from spectrum_systems.modules.runtime.context_selector import (
+    build_context_bundle,
+    canonical_serialize_context_bundle,
+)
+
+
+def test_context_bundle_v2_schema_example_validation() -> None:
+    schema = load_schema("context_bundle_v2")
+    example_path = Path("contracts/examples/context_bundle_v2.json")
+    payload = json.loads(example_path.read_text(encoding="utf-8"))
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(payload)
+
+
+def test_context_bundle_v2_canonical_serialization_is_deterministic() -> None:
+    bundle = build_context_bundle(
+        roadmap_state={"source_refs": ["roadmap:1"]},
+        target_scope={"scope_type": "batch_id", "scope_id": "BATCH-O"},
+        review_artifacts=[
+            {
+                "artifact_type": "review_artifact",
+                "artifact_id": "rvw-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        eval_artifacts=[],
+        failure_artifacts=[],
+        build_report_artifacts=[
+            {
+                "artifact_type": "build_report",
+                "artifact_id": "br-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        handoff_artifacts=[
+            {
+                "artifact_type": "next_slice_handoff",
+                "artifact_id": "handoff-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        pqx_execution_artifacts=[],
+        touched_module_refs=["m/a.py"],
+        active_risks=[],
+        intent_refs=[],
+        trace_id="trace-ctx-1",
+    )
+    assert canonical_serialize_context_bundle(bundle) == canonical_serialize_context_bundle(bundle)

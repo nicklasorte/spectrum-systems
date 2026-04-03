@@ -1,65 +1,79 @@
-# HS-06 Context Bundle v2 (Typed + Trusted)
+# CTX Governed Context Pipeline (context_bundle_v2)
 
-## Purpose
-Context Bundle v2 hardens the runtime input boundary by requiring every context item to be typed, trust-scoped, source-classified, provenance-linked, and deterministically ordered.
+## Core principle
+Context is not memory.
 
-## Canonical artifact shape
-Top-level required fields:
-- `artifact_type` = `context_bundle`
-- `schema_version` = `2.0.0`
-- `context_bundle_id` and `context_id` (same deterministic ID)
-- `created_at` (deterministic timestamp from canonical content seed)
-- `trace.trace_id` and `trace.run_id` (runtime linkage)
-- `context_items` (ordered typed items)
+Context is deterministically:
+1. selected
+2. ranked
+3. injected
+4. lifecycle-governed
 
-Compatibility fields retained in this slice:
-- `primary_input`, `policy_constraints`, `retrieved_context`, `prior_artifacts`, `glossary_terms`, `unresolved_questions`
-- `metadata`, `token_estimates`, `truncation_log`, `priority_order`
+Control/eval/certification remain authoritative.
 
-## Context item semantics
-Each `context_items[]` entry is strict (`additionalProperties: false`) and includes:
-- `item_index` (deterministic order index)
-- `item_id` (deterministic stable ID)
-- `item_type` (enum: `primary_input`, `policy_constraints`, `retrieved_context`, `prior_artifact`, `glossary_term`, `unresolved_question`)
-- `trust_level` (enum: `high`, `medium`, `low`, `untrusted`)
-- `source_classification` (enum: `internal`, `external`, `inferred`, `user_provided`)
-- `provenance_refs` (non-empty references)
-- `content`
+## Contract: `context_bundle_v2`
+`contracts/schemas/context_bundle_v2.schema.json` defines strict bounded context packaging:
+- `additionalProperties: false`
+- explicit required fields
+- bounded arrays
+- deterministic ordering requirement (`priority_metadata.deterministic_ordering = true`)
+- canonical serialization requirement (`json_sort_keys_compact_utf8`)
 
-## Composition and ordering rules
-- Composition uses a fixed section order:
-  1. primary_input
-  2. policy_constraints
-  3. retrieved_context (deterministically sorted)
-  4. prior_artifact (deterministically sorted by artifact identity)
-  5. glossary_term
-  6. unresolved_question
-- Same logical inputs produce the same `context_items` ordering, `context_bundle_id`, and `created_at`.
-- No environment-dependent ordering behavior is allowed.
+Required payload fields include:
+- `context_id`, `schema_version`, `target_scope`
+- selected references across review/eval/risk/build/handoff/touched-module/intent dimensions
+- `priority_metadata`
+- `created_at`, `trace_id`, `source_refs`
 
-## Fail-closed behavior
-Validation fails closed when any of the following is detected:
-- unknown `item_type`
-- unknown `trust_level`
-- invalid `source_classification`
-- missing/empty provenance references
-- missing trace linkage (`trace_id` / `run_id`)
-- non-sequential `item_index`
-- malformed schema shape
+## Selection model
+`build_context_bundle()` in `spectrum_systems/modules/runtime/context_selector.py`:
+- consumes governed roadmap/review/eval/failure/build/handoff/PQX/risk inputs
+- includes only same-scope and locality-relevant artifacts
+- fails closed when required inputs are missing
+- excludes stale context by policy
+- keeps active-risk-linked artifacts even when stale
+- replaces superseded artifacts with the latest valid representative
 
-No silent coercion is performed for unknown item type/trust/source values.
+## Ranking model (deterministic)
+Ranking uses only deterministic signal dimensions:
+1. scope locality (same batch/slice/program)
+2. touched-module overlap
+3. risk severity linkage
+4. review/eval relevance
+5. recency
+6. deterministic tiebreaker by artifact reference
 
-## Runtime linkage
-At the AG seam (`agent_executor.construct_context_bundle`):
-- input bundle is upgraded/composed to v2 when needed
-- `trace.trace_id` and `trace.run_id` are injected from execution context
-- validated bundle is used for execution and trace output
+No model-based ranking. No randomness.
+Same inputs always produce the same ordering.
 
-This guarantees execution artifacts can link directly to a governed context bundle identity.
+## Injection model
+`build_context_injection_payload()` in `spectrum_systems/modules/runtime/context_injection.py` enforces:
+- bounded context size (`max_refs`)
+- explicit advisory-only contract
+- explicit authority boundary statement
+- source refs preserved for traceability
+- replayability from governed artifacts only
+- no hidden/implicit context
 
-## Explicitly out of scope in HS-06
-- retrieval ranking redesign
-- vector search infrastructure
-- routing policy redesign
-- prompt injection platform expansion
-- broad memory/knowledge-graph platform work
+## Lifecycle model
+Lifecycle behavior is explicit and deterministic:
+- stale context expires by policy window
+- active risk references persist until resolved
+- superseded artifacts are replaced (latest valid only)
+- closed failures are retained but deprioritized
+- irrelevant history is not silently retained
+
+## Process flow (updated)
+artifacts
+  ↓
+context selection
+  ↓
+context ranking
+  ↓
+context injection
+  ↓
+Codex/PQX execution
+  ↓
+new artifacts
+
+Context informs execution. Control remains authority.

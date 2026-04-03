@@ -1,0 +1,56 @@
+{
+  "artifact_type": "context_bundle_v2",
+  "schema_version": "1.0.0",
+  "context_id": "ctx2-f9f81798fe65e4bb",
+  "target_scope": {
+    "scope_type": "batch_id",
+    "scope_id": "BATCH-O"
+  },
+  "selected_artifact_refs": [
+    "build_report:br-20260403-01",
+    "review_artifact:rvw-20260403-22",
+    "eval_result:eval-20260403-09",
+    "failure_eval_case:fail-20260402-05"
+  ],
+  "review_signal_refs": [
+    "review_artifact:rvw-20260403-22"
+  ],
+  "eval_signal_refs": [
+    "eval_result:eval-20260403-09",
+    "failure_eval_case:fail-20260402-05"
+  ],
+  "active_risk_refs": [
+    "risk_register:rsk-20260403-03"
+  ],
+  "recent_build_report_refs": [
+    "build_report:br-20260403-01"
+  ],
+  "handoff_refs": [
+    "next_slice_handoff:handoff-20260403-01"
+  ],
+  "touched_module_refs": [
+    "spectrum_systems/modules/runtime/context_selector.py",
+    "spectrum_systems/modules/runtime/context_injection.py"
+  ],
+  "intent_refs": [
+    "intent:ctx-governed-pipeline"
+  ],
+  "priority_metadata": {
+    "ranking_policy": "deterministic_context_ranking",
+    "ranking_policy_version": "1.0.0",
+    "lifecycle_policy": "expiry_and_active_risk_persistence",
+    "max_selected_artifacts": 16,
+    "deterministic_ordering": true,
+    "canonical_serialization": "json_sort_keys_compact_utf8"
+  },
+  "created_at": "2026-04-03T00:00:00Z",
+  "trace_id": "trace-ctx-20260403",
+  "source_refs": [
+    "build_report:br-20260403-01",
+    "eval_result:eval-20260403-09",
+    "failure_eval_case:fail-20260402-05",
+    "next_slice_handoff:handoff-20260403-01",
+    "review_artifact:rvw-20260403-22",
+    "risk_register:rsk-20260403-03"
+  ]
+}
