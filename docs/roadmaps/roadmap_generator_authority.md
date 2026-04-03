@@ -53,3 +53,16 @@ If roadmap and foundation disagree:
 - Canonical reusable generator prompt: `docs/architecture/strategy_guided_roadmap_prompt.md`
 - This note is the canonical authority companion for generator behavior.
 - No competing roadmap generator prompt variants may be used without explicit deprecation/normalization.
+
+## Program-Constrained System Flow (BATCH-P)
+Required flow ordering for roadmap generation and execution:
+
+program
+  ↓
+review → eval → control
+  ↓
+roadmap (constrained)
+  ↓
+execution (RDX)
+
+Program artifacts provide direction constraints (goal, target scope, priorities) but do not override eval/control freeze/block authority.

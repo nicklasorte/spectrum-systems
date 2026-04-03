@@ -61,14 +61,17 @@ def _eligibility() -> dict:
     }
     return {
         "artifact_type": "roadmap_eligibility_artifact",
-        "schema_version": "1.0.0",
-        "artifact_version": "1.0.0",
+        "schema_version": "1.2.0",
+        "artifact_version": "1.2.0",
         "roadmap_ref": "docs/roadmaps/system_roadmap.md",
         "evaluated_at": "2026-03-30T00:00:00Z",
         "identity_basis": {
             "roadmap_artifact_id": "roadmap-cycle-policy-test",
             "roadmap_digest": "a542be4e4e3d2a77e6a508d46267f37754378291a075e59977fe80c0baab1128",
         },
+        "program_alignment_status": "not_evaluated",
+        "program_violation": False,
+        "program_enforcement_action": "no_program_artifact",
         "eligible_step_ids": ["CTRL-02"],
         "recommended_next_step_ids": ["CTRL-02"],
         "blocked_steps": [],

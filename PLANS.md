@@ -91,6 +91,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | Plan file | Item | Status |
 | --- | --- | --- |
+| docs/review-actions/PLAN-BATCH-PA-2026-04-03.md | BATCH-PA — Narrow Fix: Program Layer Contract Preflight Block Closure | Active |
 | docs/review-actions/PLAN-BATCH-RA-2026-04-03.md | BATCH-RA — Narrow Fix: Review Artifact Class Alignment | Active |
 | docs/review-actions/PLAN-BATCH-R-2026-04-03.md | BATCH-R — RVW + RPT governed Claude review system | Active |
 | docs/review-actions/PLAN-BB-2026-03-19.md | Prompt BB — Failure-First Observability | Active |

@@ -1008,15 +1008,15 @@
     {
       "artifact_type": "governed_roadmap_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.3",
-      "last_updated_in": "1.3.9",
+      "last_updated_in": "1.3.10",
       "example_path": "contracts/examples/governed_roadmap_artifact.json",
-      "notes": "Deterministic governed roadmap planning artifact with required strategy alignment, trust-gain, replay-trace, and expansion eval/control declarations for fail-closed PQX strategy gating."
+      "notes": "Deterministic governed roadmap planning artifact with required strategy alignment, trust-gain, replay-trace, expansion eval/control declarations, and optional batch ownership references for program alignment gating."
     },
     {
       "artifact_type": "grounding_control_decision",
@@ -1850,6 +1850,19 @@
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
     },
     {
+      "artifact_type": "program_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.10",
+      "last_updated_in": "1.3.10",
+      "example_path": "contracts/examples/program_artifact.json",
+      "notes": "PRG deterministic direction artifact defining program goal/scope/targets/priority constraints for MAP and RDX without overriding eval/control authority."
+    },
+    {
       "artifact_type": "program_brief",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1862,6 +1875,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/program_brief.json",
       "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "program_progress",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.10",
+      "last_updated_in": "1.3.10",
+      "example_path": "contracts/examples/program_progress.json",
+      "notes": "PRG deterministic program progress artifact for completed/remaining batch tracking, progress percentage, blockers, and readiness state."
     },
     {
       "artifact_type": "promotion_gate_attack_result",
@@ -2447,15 +2473,15 @@
     {
       "artifact_type": "roadmap_eligibility_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.3",
-      "last_updated_in": "1.3.9",
+      "last_updated_in": "1.3.10",
       "example_path": "contracts/examples/roadmap_eligibility_artifact.json",
-      "notes": "Deterministic fail-closed eligibility projection artifact with per-row strategy gate outcomes (allow/warn/freeze/block) and strategy-status observability."
+      "notes": "RDX-002 deterministic fail-closed roadmap next-batch selection/readiness decision artifact with reason codes, blockers, replay hash, and program alignment compliance signaling."
     },
     {
       "artifact_type": "roadmap_execution_authorization",

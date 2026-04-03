@@ -13,6 +13,9 @@
     "roadmap_ref",
     "evaluated_at",
     "identity_basis",
+    "program_alignment_status",
+    "program_violation",
+    "program_enforcement_action",
     "eligible_step_ids",
     "recommended_next_step_ids",
     "blocked_steps",
@@ -29,11 +32,13 @@
     },
     "schema_version": {
       "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "const": "1.2.0"
     },
     "artifact_version": {
       "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "const": "1.2.0"
     },
     "roadmap_ref": {
       "type": "string",
@@ -220,6 +225,27 @@
           }
         }
       }
+    },
+    "program_alignment_status": {
+      "type": "string",
+      "enum": [
+        "aligned",
+        "degraded",
+        "violated",
+        "not_evaluated"
+      ]
+    },
+    "program_violation": {
+      "type": "boolean"
+    },
+    "program_enforcement_action": {
+      "type": "string",
+      "enum": [
+        "none",
+        "freeze",
+        "block",
+        "no_program_artifact"
+      ]
     }
   },
   "$defs": {

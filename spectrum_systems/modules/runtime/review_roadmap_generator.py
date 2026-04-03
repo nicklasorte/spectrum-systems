@@ -7,6 +7,11 @@ import hashlib
 import json
 from typing import Any, Dict, List
 
+from spectrum_systems.modules.runtime.program_layer import (
+    ProgramLayerError,
+    apply_program_constraints,
+)
+
 from spectrum_systems.modules.runtime.repo_review_snapshot_store import (
     RepoReviewSnapshotStoreError,
     validate_repo_review_snapshot,
@@ -86,6 +91,7 @@ def build_review_roadmap(
     *,
     snapshot: Dict[str, Any],
     control_decision: Dict[str, Any],
+    program_artifact: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     handoff = _normalize_handoff(snapshot)
 
@@ -113,6 +119,15 @@ def build_review_roadmap(
         for target in handoff["defer_targets"]:
             steps.append({"category": "defer", "target": target})
 
+    filtered_out_targets: List[str] = []
+    if generation_status == "generated" and program_artifact is not None:
+        try:
+            constraint_result = apply_program_constraints(steps=steps, program_artifact=program_artifact)
+        except ProgramLayerError as exc:
+            raise ReviewRoadmapGeneratorError(f"program constraint failure: {exc}") from exc
+        steps = constraint_result.ordered_steps
+        filtered_out_targets = constraint_result.filtered_out_targets
+
     seed = {
         "snapshot_id": snapshot["snapshot_id"],
         "control_decision_id": control_decision.get("decision_id"),
@@ -120,6 +135,8 @@ def build_review_roadmap(
         "handoff": handoff,
         "steps": steps,
         "generation_status": generation_status,
+        "program_id": None if program_artifact is None else str(program_artifact.get("program_id") or ""),
+        "filtered_out_targets": filtered_out_targets,
     }
     digest = _canonical_hash(seed)
     return {
@@ -138,6 +155,8 @@ def build_review_roadmap(
         "defer_targets": handoff["defer_targets"],
         "sequencing_constraints": handoff["sequencing_constraints"],
         "ordered_steps": steps,
+        "program_id": None if program_artifact is None else str(program_artifact.get("program_id") or ""),
+        "filtered_out_targets": filtered_out_targets,
         "policy_assertions": {
             "hardening_before_expansion": generation_status == "blocked" or all(
                 step["category"] != "build" or any(prev["category"] == "hardening" for prev in steps[:idx])
