@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/operator_backlog_handoff.schema.json",
+  "title": "operator_backlog_handoff",
+  "description": "Prioritized operator hardening backlog derived from deterministic system-cycle shakeout friction evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "handoff_id",
+    "schema_version",
+    "prioritized_items",
+    "grouped_candidates",
+    "dependency_notes",
+    "trust_gain",
+    "operator_time_saved",
+    "created_at",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "handoff_id": {"type": "string", "pattern": "^OBH-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "prioritized_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rank",
+          "title",
+          "why_it_matters",
+          "affected_layer",
+          "expected_trust_gain",
+          "expected_usability_gain",
+          "operator_time_saved_minutes",
+          "suggested_batch_grouping",
+          "source_friction_refs"
+        ],
+        "properties": {
+          "rank": {"type": "integer", "minimum": 1},
+          "title": {"type": "string", "minLength": 5},
+          "why_it_matters": {"type": "string", "minLength": 10},
+          "affected_layer": {"type": "string", "enum": ["PRG", "RVW/RPT", "CTX", "TPA", "PQX/RDX", "BATCH-Z", "BATCH-U"]},
+          "expected_trust_gain": {"type": "string", "enum": ["low", "medium", "high"]},
+          "expected_usability_gain": {"type": "string", "enum": ["low", "medium", "high"]},
+          "operator_time_saved_minutes": {"type": "integer", "minimum": 1},
+          "suggested_batch_grouping": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+          "source_friction_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "grouped_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["friction_type", "scenario_refs", "suggested_fix_type"],
+        "properties": {
+          "friction_type": {"type": "string", "minLength": 5},
+          "scenario_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "pattern": "^SCN-[A-Z0-9_]+$"},
+            "uniqueItems": true
+          },
+          "suggested_fix_type": {"type": "string", "enum": ["runtime", "contract", "documentation", "tests", "operator_cli"]}
+        }
+      }
+    },
+    "dependency_notes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 5},
+      "uniqueItems": true
+    },
+    "trust_gain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "justification"],
+      "properties": {
+        "score": {"type": "integer", "minimum": 1, "maximum": 100},
+        "justification": {"type": "string", "minLength": 10}
+      }
+    },
+    "operator_time_saved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minutes_per_cycle", "justification"],
+      "properties": {
+        "minutes_per_cycle": {"type": "integer", "minimum": 1},
+        "justification": {"type": "string", "minLength": 10}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    }
+  }
+}
