@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.1.0",
+  "artifact_type": "pqx_slice_execution_record",
+  "step_id": "AI-02",
+  "run_id": "pqx-slice-20260403T094751Z",
+  "trace_id": "trace:pqx-slice-20260403T094751Z:AI-02",
+  "status": "completed",
+  "decision_summary": {
+    "execution_status": "success",
+    "control_decision": "allow",
+    "enforcement_action": "allow"
+  },
+  "artifacts_emitted": [
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.request.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.result.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.replay_result.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.regression_run_result.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.control_decision.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.control_loop_certification_pack.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.error_budget_status.json",
+    "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.done_certification_record.json"
+  ],
+  "certification_status": "certified",
+  "replay_result_ref": "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.replay_result.json",
+  "control_decision_ref": "artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.control_decision.json",
+  "control_surface_gap_packet_ref": null,
+  "control_surface_gap_packet_consumed": false,
+  "prioritized_control_surface_gaps": [],
+  "pqx_gap_work_items": [],
+  "control_surface_gap_influence": {
+    "influenced_execution_block": false,
+    "influenced_next_step_selection": false,
+    "influenced_priority_ordering": false,
+    "influenced_transition_decision": false,
+    "reason_codes": [],
+    "control_surface_blocking_reason_refs": []
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "returncode": 2,
+  "stdout": {
+    "status": "failed",
+    "queue_run_id": "pqx003-qr-20-run_b",
+    "run_id": "pqx003-run-20-run_b",
+    "completed": 3,
+    "failed": 1,
+    "next_slice_ref": "GOV-10",
+    "resume_token": "resume:pqx003-qr-20-run_b:3",
+    "batch_result": {
+      "overall_batch_status": "stopped",
+      "per_slice_statuses": [
+        {
+          "slice_id": "AI-01",
+          "status": "completed"
+        },
+        {
+          "slice_id": "AI-02",
+          "status": "completed"
+        },
+        {
+          "slice_id": "TRUST-01",
+          "status": "completed"
+        },
+        {
+          "slice_id": "SRE-03",
+          "status": "failed"
+        },
+        {
+          "slice_id": "GOV-10",
+          "status": "pending"
+        },
+        {
+          "slice_id": "CTRL-LOOP-01",
+          "status": "pending"
+        },
+        {
+          "slice_id": "CTRL-LOOP-02",
+          "status": "pending"
+        },
+        {
+          "slice_id": "CTRL-LOOP-03",
+          "status": "pending"
+        },
+        {
+          "slice_id": "CTRL-LOOP-04",
+          "status": "pending"
+        },
+        {
+          "slice_id": "CTRL-LOOP-05",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-01",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-02",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-03",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-04",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-05",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-06",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-07",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-08",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-09",
+          "status": "pending"
+        },
+        {
+          "slice_id": "X-10",
+          "status": "pending"
+        }
+      ],
+      "stopping_slice_id": "SRE-03",
+      "completed_step_ids": [
+        "AI-01",
+        "AI-02",
+        "TRUST-01"
+      ],
+      "pending_step_ids": [
+        "GOV-10",
+        "CTRL-LOOP-01",
+        "CTRL-LOOP-02",
+        "CTRL-LOOP-03",
+        "CTRL-LOOP-04",
+        "CTRL-LOOP-05",
+        "X-01",
+        "X-02",
+        "X-03",
+        "X-04",
+        "X-05",
+        "X-06",
+        "X-07",
+        "X-08",
+        "X-09",
+        "X-10"
+      ]
+    },
+    "state_path": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/sequence.state.json"
+  },
+  "stderr": ""
+}

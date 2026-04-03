@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "pqx-slice-20260403T094715Z",
+  "step_id": "TRUST-01",
+  "execution_status": "success",
+  "started_at": "2026-04-03T09:47:15Z",
+  "completed_at": "2026-04-03T09:47:15Z",
+  "output_text": "deterministic output for TRUST-01",
+  "error": null
+}
