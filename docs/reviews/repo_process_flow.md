@@ -19,7 +19,9 @@ Roadmap Progress Update (roadmap_progress_update)
   ↓
 Loop Validation (roadmap_execution_loop_validation)
   ↓
-Next Candidate Selection (not executed)
+Stop-or-Continue Decision (bounded by max_batches_per_run + hard-stop conditions)
+  ↓
+Next Candidate Selection (if allowed, within run limit)
   ↓
 Artifacts Produced
   ↓
@@ -59,9 +61,12 @@ Roadmap Progress Update (roadmap_progress_update)
   ↓
 Loop Validation (roadmap_execution_loop_validation)
   - stage consistency, replay readiness, determinism checks
-  - single-batch guarantee enforcement
+  - bounded multi-batch continuation under strict stop conditions
   ↓
-Next Candidate Selection (not executed)
+Stop-or-Continue Decision (bounded by max_batches_per_run + hard-stop conditions)
+  - stop immediately on freeze/block/failure/missing-signal/replay/hard-gate/max-limit conditions
+  ↓
+Next Candidate Selection (if allowed, within run limit)
   ↓
 Artifacts
   - execution record
@@ -71,7 +76,7 @@ Artifacts
 Replay + Determinism Check
 
 ## Current Weak Points
-- loop validation is deterministic only when evaluated_at/executed_at/validated_at timestamps are fixed by caller
+- bounded chaining remains deterministic only when evaluated_at/executed_at/validated_at timestamps are fixed by caller
 - replay chain fails closed when any required stage ref is missing
 - eval signal present: repo_redundancy_density_high
 - high redundancy across inspected files

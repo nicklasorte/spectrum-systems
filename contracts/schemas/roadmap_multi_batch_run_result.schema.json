@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_multi_batch_run_result.schema.json",
+  "title": "Roadmap Multi-Batch Run Result",
+  "description": "Deterministic governed bounded roadmap run artifact covering sequential authorized batch attempts under fixed per-run execution policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "schema_version",
+    "roadmap_id",
+    "attempted_batch_ids",
+    "completed_batch_ids",
+    "blocked_batch_id",
+    "frozen_batch_id",
+    "stop_reason",
+    "stop_reason_codes",
+    "max_batches_per_run",
+    "batches_executed_count",
+    "final_roadmap_status_ref",
+    "loop_validation_refs",
+    "progress_update_refs",
+    "authorization_refs",
+    "executed_at",
+    "input_hash",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^RMB-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "attempted_batch_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^BATCH-[A-Z]$"
+      }
+    },
+    "completed_batch_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^BATCH-[A-Z]$"
+      }
+    },
+    "blocked_batch_id": {
+      "type": ["string", "null"],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "frozen_batch_id": {
+      "type": ["string", "null"],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "stop_reason": {
+      "type": "string",
+      "enum": [
+        "MAX_BATCHES_REACHED",
+        "CONTROL_FREEZE",
+        "CONTROL_BLOCK",
+        "AUTHORIZATION_INVALID",
+        "AUTHORIZATION_WARN_STOP",
+        "PQX_EXECUTION_FAILURE",
+        "PQX_EXECUTION_BLOCKED",
+        "REPLAY_NOT_READY",
+        "LOOP_VALIDATION_FAILURE",
+        "INVALID_ROADMAP_STATE",
+        "INVALID_PROGRESS_STATE",
+        "CONTRACT_PRECONDITION_FAILURE",
+        "HARD_GATE_STOP"
+      ]
+    },
+    "stop_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "max_batches_per_run": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "batches_executed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "final_roadmap_status_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loop_validation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^RLV-[A-F0-9]{12}$"
+      }
+    },
+    "progress_update_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^RPU-[A-F0-9]{12}$"
+      }
+    },
+    "authorization_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^REA-[A-F0-9]{12}$"
+      }
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

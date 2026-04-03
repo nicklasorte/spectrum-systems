@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.30",
+  "artifact_version": "1.3.31",
   "schema_version": "1.0.0",
-  "standards_version": "1.3.30",
-  "record_id": "REC-STD-2026-04-03-RDX-005",
-  "run_id": "run-20260403T190000Z",
-  "created_at": "2026-04-03T19:00:00Z",
+  "standards_version": "1.3.31",
+  "record_id": "REC-STD-2026-04-03-RDX-006",
+  "run_id": "run-20260403T210000Z",
+  "created_at": "2026-04-03T21:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -2367,6 +2367,45 @@
       "notes": "Deterministic fail-closed eligibility projection artifact with per-row strategy gate outcomes (allow/warn/freeze/block) and strategy-status observability."
     },
     {
+      "artifact_type": "roadmap_execution_authorization",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.28",
+      "last_updated_in": "1.3.28",
+      "example_path": "contracts/examples/roadmap_execution_authorization.json",
+      "notes": "RDX-003 deterministic control authorization gate artifact between roadmap selection and downstream PQX execution."
+    },
+    {
+      "artifact_type": "roadmap_execution_loop_validation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.30",
+      "last_updated_in": "1.3.30",
+      "example_path": "contracts/examples/roadmap_execution_loop_validation.json",
+      "notes": "RDX-005 deterministic fail-closed single-batch roadmap loop validation artifact proving selection/authorization/execution/progress consistency, replay readiness, and non-chaining guarantees."
+    },
+    {
+      "artifact_type": "roadmap_multi_batch_run_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.31",
+      "last_updated_in": "1.3.31",
+      "example_path": "contracts/examples/roadmap_multi_batch_run_result.json",
+      "notes": "RDX-006 bounded multi-batch governed execution artifact proving per-batch re-authorization, deterministic ordering, and fail-closed stop-reason recording."
+    },
+    {
       "artifact_type": "roadmap_output",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2378,6 +2417,19 @@
       "last_updated_in": "1.3.8",
       "example_path": "",
       "notes": "Strategy enforcement layer roadmap output contract requiring strict strategy alignment and primary trust gain fields per step."
+    },
+    {
+      "artifact_type": "roadmap_progress_update",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.29",
+      "last_updated_in": "1.3.30",
+      "example_path": "contracts/examples/roadmap_progress_update.json",
+      "notes": "RDX-004 deterministic one-authorized-batch execution outcome and roadmap state transition artifact emitted after PQX execution boundary."
     },
     {
       "artifact_type": "roadmap_review_artifact",
@@ -2404,45 +2456,6 @@
       "last_updated_in": "1.3.27",
       "example_path": "contracts/examples/roadmap_selection_result.json",
       "notes": "RDX-002 deterministic fail-closed roadmap next-batch selection/readiness decision artifact with reason codes, blockers, and replay hash."
-    },
-    {
-      "artifact_type": "roadmap_execution_authorization",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.28",
-      "last_updated_in": "1.3.28",
-      "example_path": "contracts/examples/roadmap_execution_authorization.json",
-      "notes": "RDX-003 deterministic control authorization gate artifact between roadmap selection and downstream PQX execution."
-    },
-    {
-      "artifact_type": "roadmap_progress_update",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.29",
-      "last_updated_in": "1.3.30",
-      "example_path": "contracts/examples/roadmap_progress_update.json",
-      "notes": "RDX-004 deterministic one-authorized-batch execution outcome and roadmap state transition artifact emitted after PQX execution boundary."
-    },
-    {
-      "artifact_type": "roadmap_execution_loop_validation",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.30",
-      "last_updated_in": "1.3.30",
-      "example_path": "contracts/examples/roadmap_execution_loop_validation.json",
-      "notes": "RDX-005 deterministic fail-closed single-batch roadmap loop validation artifact proving selection/authorization/execution/progress consistency, replay readiness, and non-chaining guarantees."
     },
     {
       "artifact_type": "routing_decision",
