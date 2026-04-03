@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/core_system_integration_validation.schema.json",
+  "title": "core_system_integration_validation",
+  "description": "Governed cross-layer integration validation artifact proving PRG/RVW/CTX/TPA/MAP/RDX/control-certification coherence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation_id",
+    "schema_version",
+    "exercised_layers",
+    "validation_scope",
+    "determinism_status",
+    "replay_status",
+    "authority_boundary_status",
+    "cross_layer_findings",
+    "blocking_conditions",
+    "deterministic_outcome",
+    "replayability_fingerprint",
+    "created_at",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "validation_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "exercised_layers": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["PRG", "RVW", "RPT", "CTX", "TPA", "MAP", "RDX", "CONTROL", "CERT"]
+      }
+    },
+    "validation_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["batch_id", "run_id", "mode"],
+      "properties": {
+        "batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "determinism_status": {
+      "type": "string",
+      "enum": ["deterministic", "non_deterministic"]
+    },
+    "replay_status": {
+      "type": "string",
+      "enum": ["replayable", "not_replayable"]
+    },
+    "authority_boundary_status": {
+      "type": "string",
+      "enum": ["bounded", "violated"]
+    },
+    "cross_layer_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "layer", "severity"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 3
+          },
+          "message": {
+            "type": "string",
+            "minLength": 3
+          },
+          "layer": {
+            "type": "string",
+            "enum": ["PRG", "RVW", "RPT", "CTX", "TPA", "MAP", "RDX", "CONTROL", "CERT"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["warning", "error"]
+          }
+        }
+      }
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "deterministic_outcome": {
+      "type": "string",
+      "enum": ["deterministic", "failed_closed"]
+    },
+    "replayability_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      },
+      "required": [
+        "program_artifact",
+        "review_control_signal",
+        "eval_result",
+        "context_bundle_v2",
+        "tpa_gate",
+        "roadmap_execution_loop_validation",
+        "roadmap_multi_batch_run_result",
+        "control_decision",
+        "certification_pack"
+      ]
+    }
+  }
+}

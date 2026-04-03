@@ -1,0 +1,40 @@
+{
+  "validation_id": "CSIV-7FA245E0AA72",
+  "schema_version": "1.0.0",
+  "exercised_layers": [
+    "PRG",
+    "RVW",
+    "RPT",
+    "CTX",
+    "TPA",
+    "MAP",
+    "RDX",
+    "CONTROL",
+    "CERT"
+  ],
+  "validation_scope": {
+    "batch_id": "BATCH-Z",
+    "run_id": "run-batch-z-001",
+    "mode": "governed_integration"
+  },
+  "determinism_status": "deterministic",
+  "replay_status": "replayable",
+  "authority_boundary_status": "bounded",
+  "cross_layer_findings": [],
+  "blocking_conditions": [],
+  "deterministic_outcome": "deterministic",
+  "replayability_fingerprint": "cdca50712c177ec8b8af57f85f410691e190417db6e6fdf7e2f8eca19359f354",
+  "created_at": "2026-04-03T23:30:00Z",
+  "trace_id": "trace-batch-z-001",
+  "source_refs": {
+    "program_artifact": "program_artifact:PRG-QUALITY-CERTIFICATION",
+    "review_control_signal": "review_control_signal:rcs-001",
+    "eval_result": "eval_result:run-001",
+    "context_bundle_v2": "context_bundle_v2:ctx2-001",
+    "tpa_gate": "tpa_gate:AI-01-G",
+    "roadmap_execution_loop_validation": "roadmap_execution_loop_validation:RLV-001",
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-001",
+    "control_decision": "control_execution_result:ctrl-001",
+    "certification_pack": "control_loop_certification_pack:cert-001"
+  }
+}
