@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.41",
-  "schema_version": "1.3.41",
-  "standards_version": "1.3.41",
-  "record_id": "REC-STD-2026-04-03-BATCH-Y1",
-  "run_id": "run-20260403T235959Z",
+  "artifact_version": "1.3.42",
+  "schema_version": "1.3.42",
+  "standards_version": "1.3.42",
+  "record_id": "REC-STD-2026-04-03-BATCH-MVP",
+  "run_id": "run-20260403T235959Z-batch-mvp",
   "created_at": "2026-04-03T23:59:59Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -1559,6 +1559,19 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_friction_report.json",
       "notes": "BATCH-Y deterministic operator-friction harvest report emitted from realistic governed system-cycle scenarios."
+    },
+    {
+      "artifact_type": "system_mvp_validation_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.42",
+      "last_updated_in": "1.3.42",
+      "example_path": "contracts/examples/system_mvp_validation_report.json",
+      "notes": "BATCH-MVP deterministic end-to-end governed multi-cycle validation report covering correctness, safety, explainability, and efficiency judgments."
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
