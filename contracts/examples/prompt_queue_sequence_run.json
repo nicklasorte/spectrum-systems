@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4.0",
+  "schema_version": "1.5.0",
   "queue_run_id": "queue-run-pqx-001",
   "run_id": "run-pqx-batch-001",
   "trace_id": "trace-pqx-batch-001",
@@ -203,5 +203,191 @@
         ]
       }
     }
+  },
+  "termination_reason": "PAUSED_MAX_SLICES",
+  "admitted_input_snapshot": {
+    "slice_requests": [
+      {
+        "slice_id": "PQX-QUEUE-01",
+        "trace_id": "trace-pqx-queue-01"
+      },
+      {
+        "slice_id": "PQX-QUEUE-02",
+        "trace_id": "trace-pqx-queue-02"
+      },
+      {
+        "slice_id": "PQX-QUEUE-03",
+        "trace_id": "trace-pqx-queue-03"
+      }
+    ],
+    "admitted_slice_ids": [
+      "PQX-QUEUE-01",
+      "PQX-QUEUE-02",
+      "PQX-QUEUE-03"
+    ],
+    "admitted_canonical_step_ids": [
+      "AI-01",
+      "AI-02",
+      "TRUST-01"
+    ],
+    "already_completed_slice_ids": [],
+    "enforce_dependencies": true
+  },
+  "admitted_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "admission_preflight_artifact": {
+    "artifact_type": "pqx_admission_preflight_artifact",
+    "schema_version": "1.0.0",
+    "admission_id": "pqx-admission-aaaaaaaaaaaaaaaa",
+    "queue_run_id": "queue-run-pqx-001",
+    "run_id": "run-pqx-batch-001",
+    "trace_id": "trace-pqx-batch-001",
+    "admission_status": "admitted",
+    "admitted_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "admitted_input_snapshot": {
+      "slice_requests": [
+        {
+          "slice_id": "PQX-QUEUE-01",
+          "trace_id": "trace-pqx-queue-01"
+        },
+        {
+          "slice_id": "PQX-QUEUE-02",
+          "trace_id": "trace-pqx-queue-02"
+        },
+        {
+          "slice_id": "PQX-QUEUE-03",
+          "trace_id": "trace-pqx-queue-03"
+        }
+      ],
+      "admitted_slice_ids": [
+        "PQX-QUEUE-01",
+        "PQX-QUEUE-02",
+        "PQX-QUEUE-03"
+      ],
+      "admitted_canonical_step_ids": [
+        "AI-01",
+        "AI-02",
+        "TRUST-01"
+      ],
+      "already_completed_slice_ids": [],
+      "enforce_dependencies": true
+    },
+    "admission_result": {
+      "admission_status": "admitted",
+      "admitted_slice_ids": [
+        "PQX-QUEUE-01",
+        "PQX-QUEUE-02",
+        "PQX-QUEUE-03"
+      ],
+      "admitted_canonical_step_ids": [
+        "AI-01",
+        "AI-02",
+        "TRUST-01"
+      ],
+      "already_completed_slice_ids": [],
+      "violations": []
+    }
+  },
+  "run_fingerprint": {
+    "fingerprint_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "decision_sequence": [
+      {
+        "slice_id": "PQX-QUEUE-01",
+        "status": "success",
+        "error": null
+      }
+    ],
+    "stopping_slice_id": null
+  },
+  "replayable_run_snapshot": {
+    "admitted_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "admitted_input_snapshot": {
+      "slice_requests": [
+        {
+          "slice_id": "PQX-QUEUE-01",
+          "trace_id": "trace-pqx-queue-01"
+        },
+        {
+          "slice_id": "PQX-QUEUE-02",
+          "trace_id": "trace-pqx-queue-02"
+        },
+        {
+          "slice_id": "PQX-QUEUE-03",
+          "trace_id": "trace-pqx-queue-03"
+        }
+      ],
+      "admitted_slice_ids": [
+        "PQX-QUEUE-01",
+        "PQX-QUEUE-02",
+        "PQX-QUEUE-03"
+      ],
+      "admitted_canonical_step_ids": [
+        "AI-01",
+        "AI-02",
+        "TRUST-01"
+      ],
+      "already_completed_slice_ids": [],
+      "enforce_dependencies": true
+    },
+    "execution_history": [
+      {
+        "execution_ref": "exec:queue-run-pqx-001:PQX-QUEUE-01:1",
+        "queue_run_id": "queue-run-pqx-001",
+        "run_id": "run-pqx-batch-001",
+        "trace_id": "trace-pqx-queue-01",
+        "slice_id": "PQX-QUEUE-01",
+        "status": "success",
+        "parent_execution_ref": null,
+        "started_at": "2026-03-29T12:00:10Z",
+        "completed_at": "2026-03-29T12:00:20Z",
+        "error": null,
+        "slice_execution_record_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_execution_record.json",
+        "certification_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.done_certification_record.json",
+        "audit_bundle_ref": "runs/PQX-QUEUE-01/run-pqx-batch-001.pqx_slice_audit_bundle.json",
+        "certification_complete": true,
+        "audit_complete": true,
+        "continuation_record_id": null,
+        "control_surface_gap_visibility": {
+          "control_surface_gap_packet_ref": "contracts/examples/control_surface_gap_packet.json",
+          "control_surface_gap_packet_consumed": true,
+          "prioritized_control_surface_gaps": [
+            {
+              "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+              "surface_name": "control_surface_manifest",
+              "severity": "critical",
+              "blocking": true,
+              "source_artifact_ref": "contracts/examples/control_surface_manifest.json"
+            }
+          ],
+          "pqx_gap_work_items": [
+            {
+              "work_item_id": "PQX-WORK-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "gap_id": "csg-aaaaaaaaaaaaaaaaaaaaaaaa",
+              "surface_name": "control_surface_manifest",
+              "required_action_type": "fix_manifest_declaration",
+              "blocking": true
+            }
+          ],
+          "control_surface_gap_influence": {
+            "influenced_execution_block": false,
+            "influenced_next_step_selection": true,
+            "influenced_priority_ordering": false,
+            "influenced_transition_decision": true,
+            "reason_codes": [
+              "blocking_gap_work_items_present"
+            ],
+            "control_surface_blocking_reason_refs": [
+              "csg-aaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          }
+        }
+      }
+    ],
+    "completed_slice_ids": [
+      "PQX-QUEUE-01"
+    ],
+    "failed_slice_ids": [],
+    "status": "running",
+    "termination_reason": "PAUSED_MAX_SLICES",
+    "blocked_reason": null
   }
 }

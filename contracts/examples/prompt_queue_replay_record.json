@@ -12,7 +12,10 @@
     "replayed_step_id": "step-002",
     "decision_match": true,
     "state_match": true,
-    "transition_match": true
+    "transition_match": true,
+    "termination_reason_match": true,
+    "decision_sequence_match": true,
+    "final_outcome_match": true
   },
   "parity_status": "match",
   "mismatch_summary": null,

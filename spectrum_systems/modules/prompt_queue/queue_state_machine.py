@@ -398,6 +398,40 @@ def _expected_next_step_id(step_index: int) -> str:
     return f"step-{step_index + 1:03d}"
 
 
+def _derive_queue_termination_reason(*, queue_state: dict, replay_step: dict | None) -> str:
+    queue_status = queue_state.get("queue_status")
+    if queue_status == "completed":
+        return "COMPLETED_ALL_STEPS"
+    if queue_status == "blocked":
+        return "BLOCKED_STEP"
+    if queue_status == "running":
+        if isinstance(replay_step, dict) and replay_step.get("status") == "completed":
+            return "CONTINUED_AFTER_STEP"
+        if isinstance(replay_step, dict) and replay_step.get("status") == "blocked":
+            return "BLOCKED_STEP"
+        return "RUNNING"
+    raise QueueLoopError("non-deterministic replay result: unsupported queue_status for termination derivation")
+
+
+def _build_decision_sequence_projection(queue_state: dict) -> list[dict[str, str | int | None]]:
+    step_results = queue_state.get("step_results")
+    if not isinstance(step_results, list):
+        raise QueueLoopError("non-deterministic replay result: step_results must be a list")
+    projection: list[dict[str, str | int | None]] = []
+    for row in step_results:
+        if not isinstance(row, dict):
+            raise QueueLoopError("non-deterministic replay result: step_result rows must be objects")
+        projection.append(
+            {
+                "step_id": row.get("step_id"),
+                "step_index": row.get("step_index"),
+                "status": row.get("status"),
+                "result_ref": row.get("result_ref"),
+            }
+        )
+    return projection
+
+
 def _extract_transition_from_last_step(queue_state: dict) -> str:
     step_results = queue_state.get("step_results", [])
     if not step_results:
@@ -539,8 +573,22 @@ def replay_queue_from_checkpoint(checkpoint: dict) -> dict:
         "last_result_ref": replay_step_b.get("result_ref"),
     }
     state_match = _stable_hash(replay_state_projection_a) == _stable_hash(replay_state_projection_b)
+    final_outcome_match = replayed_state_a.get("queue_status") == replayed_state_b.get("queue_status")
+    termination_reason_match = _derive_queue_termination_reason(queue_state=replayed_state_a, replay_step=replay_step_a) == _derive_queue_termination_reason(
+        queue_state=replayed_state_b, replay_step=replay_step_b
+    )
+    decision_sequence_match = _stable_hash({"sequence": _build_decision_sequence_projection(replayed_state_a)}) == _stable_hash(
+        {"sequence": _build_decision_sequence_projection(replayed_state_b)}
+    )
 
-    parity_match = transition_match and decision_match and state_match
+    parity_match = (
+        transition_match
+        and decision_match
+        and state_match
+        and termination_reason_match
+        and decision_sequence_match
+        and final_outcome_match
+    )
     mismatch_details = []
     if not decision_match:
         mismatch_details.append("decision_ref divergence")
@@ -573,6 +621,9 @@ def replay_queue_from_checkpoint(checkpoint: dict) -> dict:
             "decision_match": decision_match,
             "state_match": state_match,
             "transition_match": transition_match,
+            "termination_reason_match": termination_reason_match,
+            "decision_sequence_match": decision_sequence_match,
+            "final_outcome_match": final_outcome_match,
         },
         "parity_status": "match" if parity_match else "mismatch",
         "mismatch_summary": None if parity_match else "; ".join(mismatch_details),
