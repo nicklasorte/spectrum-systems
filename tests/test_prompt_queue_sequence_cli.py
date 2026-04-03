@@ -48,6 +48,7 @@ def test_cli_success_returns_zero_and_writes_state(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["status"] == "completed"
+    assert payload["batch_result"]["overall_batch_status"] == "completed"
     saved = json.loads(state_path.read_text(encoding="utf-8"))
     assert saved["completed_slice_ids"] == ["PQX-QUEUE-01", "PQX-QUEUE-02"]
 
