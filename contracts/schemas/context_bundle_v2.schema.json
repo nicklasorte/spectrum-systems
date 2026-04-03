@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_bundle_v2.schema.json",
+  "title": "Context Bundle V2",
+  "description": "Deterministic, governed context selection artifact for Codex/PQX execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "context_id",
+    "target_scope",
+    "selected_artifact_refs",
+    "review_signal_refs",
+    "eval_signal_refs",
+    "active_risk_refs",
+    "recent_build_report_refs",
+    "handoff_refs",
+    "touched_module_refs",
+    "intent_refs",
+    "priority_metadata",
+    "created_at",
+    "trace_id",
+    "source_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "context_bundle_v2"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "context_id": {
+      "type": "string",
+      "pattern": "^ctx2-[a-f0-9]{16}$"
+    },
+    "target_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_type", "scope_id"],
+      "properties": {
+        "scope_type": {
+          "type": "string",
+          "enum": ["slice_id", "batch_id", "program_id"]
+        },
+        "scope_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "selected_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "review_signal_refs": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "eval_signal_refs": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "active_risk_refs": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "recent_build_report_refs": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "handoff_refs": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    },
+    "touched_module_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "intent_refs": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "priority_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ranking_policy",
+        "ranking_policy_version",
+        "lifecycle_policy",
+        "max_selected_artifacts",
+        "deterministic_ordering",
+        "canonical_serialization"
+      ],
+      "properties": {
+        "ranking_policy": {
+          "type": "string",
+          "const": "deterministic_context_ranking"
+        },
+        "ranking_policy_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "lifecycle_policy": {
+          "type": "string",
+          "const": "expiry_and_active_risk_persistence"
+        },
+        "max_selected_artifacts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "deterministic_ordering": {
+          "type": "boolean",
+          "const": true
+        },
+        "canonical_serialization": {
+          "type": "string",
+          "const": "json_sort_keys_compact_utf8"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._:/#@-]{3,256}$"
+      }
+    }
+  }
+}

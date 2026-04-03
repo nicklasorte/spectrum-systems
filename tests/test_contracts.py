@@ -251,6 +251,12 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("pqx_slice_continuation_record")
         validate_artifact(instance, "pqx_slice_continuation_record")
 
+
+    def test_context_pipeline_contract_examples_validate(self) -> None:
+        for name in ("context_bundle_v2", "build_report", "next_slice_handoff"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_tpa_slice_artifact_example_validates(self) -> None:
         instance = load_example("tpa_slice_artifact")
         validate_artifact(instance, "tpa_slice_artifact")
