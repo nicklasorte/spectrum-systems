@@ -1,0 +1,108 @@
+{
+  "certification_id": "e473e963fab31bd8c4406ca3bfe9543284e75d34eabbd21d538954b9fd0f9076",
+  "run_id": "pqx-slice-20260403T094715Z",
+  "timestamp": "2026-04-03T09:47:15Z",
+  "input_refs": {
+    "replay_result_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.replay_result.json",
+    "regression_result_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.regression_run_result.json",
+    "certification_pack_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.control_loop_certification_pack.json",
+    "error_budget_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.error_budget_status.json",
+    "policy_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.control_decision.json"
+  },
+  "check_results": {
+    "replay": {
+      "passed": true,
+      "details": []
+    },
+    "regression": {
+      "passed": true,
+      "details": []
+    },
+    "contracts": {
+      "passed": true,
+      "details": []
+    },
+    "reliability": {
+      "passed": true,
+      "details": []
+    },
+    "fail_closed": {
+      "passed": true,
+      "details": []
+    },
+    "control_consistency": {
+      "passed": true,
+      "details": []
+    },
+    "trace_linkage": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_invariants": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_evidence_completeness": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_evidence_cohesion": {
+      "passed": true,
+      "details": []
+    }
+  },
+  "trust_spine_invariant_result": {
+    "passed": true,
+    "categories_checked": [
+      "threshold_context_consistency",
+      "policy_authority_consistency",
+      "replay_enforcement_promotion_alignment",
+      "coverage_promotion_alignment",
+      "gate_proof_truthfulness",
+      "certification_closure_coherence"
+    ],
+    "blocking_reasons": [],
+    "evaluated_surfaces": {
+      "target_surface": "certification",
+      "replay_result": "replay_result",
+      "evaluation_control_decision": "evaluation_control_decision",
+      "enforcement_result": "enforcement_result",
+      "eval_coverage_summary": "eval_coverage_summary",
+      "gate_proof": "embedded",
+      "done_certification": "absent"
+    }
+  },
+  "trust_spine_evidence_completeness_result": {
+    "passed": true,
+    "categories_checked": [
+      "required_authority_refs_present",
+      "enforcement_evidence_present",
+      "coverage_evidence_present",
+      "certification_supporting_refs_present",
+      "promotion_supporting_refs_present",
+      "active_path_vs_legacy_mode_consistency"
+    ],
+    "blocking_reasons": [],
+    "missing_refs": [],
+    "evaluated_surfaces": {
+      "target_surface": "certification",
+      "authority_path_mode": "reduced_depth_non_authority",
+      "refs_count": "7"
+    },
+    "authority_path_mode": "reduced_depth_non_authority",
+    "promotable": false,
+    "certifiable": false
+  },
+  "trust_spine_evidence_cohesion_result": {
+    "passed": true,
+    "overall_decision": "ALLOW",
+    "deterministic_cohesion_id": "",
+    "contradiction_categories": [],
+    "blocking_reasons": [],
+    "evidence_ref": ""
+  },
+  "final_status": "PASSED",
+  "system_response": "allow",
+  "blocking_reasons": [],
+  "trace_id": "trace:pqx-slice-20260403T094715Z:AI-01"
+}

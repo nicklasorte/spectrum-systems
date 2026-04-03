@@ -1,0 +1,104 @@
+{
+  "artifact_type": "control_loop_certification_pack",
+  "schema_version": "1.2.0",
+  "certification_id": "clcp-0da4d0d7766408d5",
+  "certification_scope": "trust-boundary/runtime",
+  "certification_status": "certified",
+  "decision": "pass",
+  "executed_checks": [
+    {
+      "check_id": "control_loop_chaos_runner",
+      "check_name": "Control-loop chaos runner",
+      "status": "pass",
+      "exit_code": 0,
+      "command": "python scripts/run_control_loop_chaos_tests.py --scenarios tests/fixtures/control_loop_chaos_scenarios.json --output outputs/control_loop_chaos/evaluation_control_chaos_summary.json",
+      "evidence_ref": "outputs/control_loop_chaos/evaluation_control_chaos_summary.json",
+      "summary": "Chaos summary produced with zero mismatches."
+    },
+    {
+      "check_id": "targeted_control_loop_eval_gate_tests",
+      "check_name": "Targeted control-loop/eval gate test set",
+      "status": "pass",
+      "exit_code": 0,
+      "command": "pytest tests/test_control_loop.py tests/test_control_loop_chaos.py tests/test_eval_ci_gate.py -q",
+      "evidence_ref": "outputs/control_loop_certification/targeted_test_output.log",
+      "summary": "Targeted control-loop and eval gate tests passed."
+    },
+    {
+      "check_id": "review_artifact_validation",
+      "check_name": "Review artifact pair validation",
+      "status": "pass",
+      "exit_code": 0,
+      "command": "python scripts/validate_review_artifact.py docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json --markdown docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.md",
+      "evidence_ref": "docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json",
+      "summary": "Canonical pairwise review validation succeeded."
+    },
+    {
+      "check_id": "repo_review_validator",
+      "check_name": "Repository review validator",
+      "status": "pass",
+      "exit_code": 0,
+      "command": "python scripts/validate_review_artifacts.py",
+      "evidence_ref": "outputs/control_loop_certification/repo_review_validation.log",
+      "summary": "Repository-level review validator succeeded."
+    }
+  ],
+  "scenario_summary": {
+    "chaos_run_id": "chaos-20260327T000000Z",
+    "scenario_count": 7,
+    "pass_count": 7,
+    "fail_count": 0
+  },
+  "test_summary": {
+    "targeted_test_command": "pytest tests/test_control_loop.py tests/test_control_loop_chaos.py tests/test_eval_ci_gate.py -q",
+    "targeted_test_status": "pass",
+    "targeted_test_exit_code": 0
+  },
+  "artifact_validation_summary": {
+    "review_artifact_validation_status": "pass",
+    "repo_review_validator_status": "pass"
+  },
+  "related_review_refs": [
+    "docs/reviews/2026-03-27-control-loop-trust-boundary-surgical-review.json"
+  ],
+  "related_plan_refs": [
+    "docs/review-actions/PLAN-PQX-CLT-003-2026-03-27.md"
+  ],
+  "generated_at": "2026-04-03T09:47:15Z",
+  "provenance_trace_refs": {
+    "commit_sha": "deterministic-local",
+    "branch": "main",
+    "trace_refs": [
+      "trace:pqx-slice-20260403T094715Z:AI-02"
+    ]
+  },
+  "run_id": "pqx-slice-20260403T094715Z",
+  "trace_id": "trace:pqx-slice-20260403T094715Z:AI-02",
+  "gate_proof_evidence": {
+    "severity_linkage_complete": true,
+    "deterministic_transition_consumption": true,
+    "policy_caused_action_observed": true,
+    "recurrence_prevention_linked": true,
+    "failure_binding_required_for_progression": true,
+    "missing_binding_blocks_progression": true,
+    "advisory_only_learning_rejected": true,
+    "transition_policy_consumes_binding_deterministically": true,
+    "hard_gate_falsification_required_for_promotion": true,
+    "severity_linkage_refs": [
+      "contracts/examples/failure_eval_case.json",
+      "contracts/examples/evaluation_control_decision.json"
+    ],
+    "transition_consumption_refs": [
+      "contracts/examples/prompt_queue_transition_decision.json"
+    ],
+    "policy_action_refs": [
+      "contracts/examples/pqx_slice_execution_record.json"
+    ],
+    "recurrence_prevention_refs": [
+      "contracts/examples/failure_policy_binding.json"
+    ],
+    "hard_gate_falsification_refs": [
+      "contracts/examples/pqx_hard_gate_falsification_record.json"
+    ]
+  }
+}

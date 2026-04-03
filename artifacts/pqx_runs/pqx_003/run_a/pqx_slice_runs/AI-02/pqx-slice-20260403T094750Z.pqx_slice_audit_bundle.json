@@ -1,0 +1,13 @@
+{
+  "bundle_id": "pqx-slice-audit:pqx-slice-20260403T094750Z:AI-02",
+  "step_id": "AI-02",
+  "run_id": "pqx-slice-20260403T094750Z",
+  "trace_id": "trace:pqx-slice-20260403T094750Z:AI-02",
+  "trace_ref": "artifacts/pqx_runs/pqx_003/run_a/pqx_slice_runs/AI-02/pqx-slice-20260403T094750Z.request.json",
+  "replay_result_ref": "artifacts/pqx_runs/pqx_003/run_a/pqx_slice_runs/AI-02/pqx-slice-20260403T094750Z.replay_result.json",
+  "eval_artifact_refs": [
+    "artifacts/pqx_runs/pqx_003/run_a/pqx_slice_runs/AI-02/pqx-slice-20260403T094750Z.regression_run_result.json"
+  ],
+  "control_decision_ref": "artifacts/pqx_runs/pqx_003/run_a/pqx_slice_runs/AI-02/pqx-slice-20260403T094750Z.control_decision.json",
+  "certification_result_ref": "artifacts/pqx_runs/pqx_003/run_a/pqx_slice_runs/AI-02/pqx-slice-20260403T094750Z.done_certification_record.json"
+}

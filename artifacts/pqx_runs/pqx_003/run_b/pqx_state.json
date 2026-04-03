@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "rows": [
+    {
+      "step_id": "AI-01",
+      "status": "complete",
+      "last_run": "2026-04-03T09:47:51Z",
+      "dependencies_satisfied": true,
+      "retries": 0,
+      "strategy_gate_decision": "allow"
+    },
+    {
+      "step_id": "AI-02",
+      "status": "complete",
+      "last_run": "2026-04-03T09:47:51Z",
+      "dependencies_satisfied": true,
+      "retries": 0,
+      "strategy_gate_decision": "allow"
+    },
+    {
+      "step_id": "TRUST-01",
+      "status": "complete",
+      "last_run": "2026-04-03T09:47:51Z",
+      "dependencies_satisfied": true,
+      "retries": 0,
+      "strategy_gate_decision": "allow"
+    }
+  ]
+}

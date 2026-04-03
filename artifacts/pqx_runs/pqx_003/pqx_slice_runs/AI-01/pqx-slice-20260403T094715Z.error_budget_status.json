@@ -1,0 +1,40 @@
+{
+  "artifact_id": "c9383f4f653bfd355f62c2fdda246f9703f4a39ba2a6d7e5bccfd5eb35ac639e",
+  "artifact_type": "error_budget_status",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-04-03T09:47:15Z",
+  "trace_refs": {
+    "trace_id": "trace:pqx-slice-20260403T094715Z:AI-01"
+  },
+  "slo_id": "7f6f4f35a3d9c73fec0faece8f35f98af88c9b270e2d6a8a907a5162e03f8f8f",
+  "observability_metrics_id": "5b98439dd1a2382e9a7ea440e0e3da573f84ec6a1278ae55a2e0893a0f8e83d6",
+  "policy_id": "sre-error-budget-policy-v1",
+  "budget_window": "single_run",
+  "budget_status": "healthy",
+  "objectives": [
+    {
+      "metric_name": "replay_success_rate",
+      "target_value": 0.99,
+      "observed_value": 1.0,
+      "allowed_error": 0.01,
+      "consumed_error": 0.0,
+      "remaining_error": 0.01,
+      "consumption_ratio": 0.0,
+      "status": "healthy"
+    },
+    {
+      "metric_name": "drift_exceed_threshold_rate",
+      "target_value": 0.05,
+      "observed_value": 0.0,
+      "allowed_error": 0.05,
+      "consumed_error": 0.0,
+      "remaining_error": 0.05,
+      "consumption_ratio": 0.0,
+      "status": "healthy"
+    }
+  ],
+  "highest_severity": "healthy",
+  "triggered_conditions": [],
+  "reasons": [],
+  "generated_by_version": "error_budget.py@1.0.0"
+}

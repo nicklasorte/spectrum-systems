@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "pqx-slice-20260403T094751Z",
+  "step_id": "TRUST-01",
+  "step_name": "Context admission gate",
+  "dependencies": [
+    "AI-02"
+  ],
+  "requested_at": "2026-04-03T09:47:51Z",
+  "prompt": "Implement roadmap step TRUST-01: Context admission gate",
+  "roadmap_version": "docs/roadmap/system_roadmap.md",
+  "row_snapshot": {
+    "row_index": 2,
+    "step_id": "TRUST-01",
+    "step_name": "Context admission gate",
+    "dependencies": [
+      "AI-02"
+    ],
+    "status": "VALID"
+  }
+}

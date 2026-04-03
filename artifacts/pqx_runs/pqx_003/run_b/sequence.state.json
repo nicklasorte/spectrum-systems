@@ -1,0 +1,379 @@
+{
+  "schema_version": "1.4.0",
+  "queue_run_id": "pqx003-qr-20-run_b",
+  "run_id": "pqx003-run-20-run_b",
+  "trace_id": "pqx003-trace-20-run_b",
+  "status": "failed",
+  "created_at": "2026-04-03T09:47:50Z",
+  "updated_at": "2026-04-03T09:47:51Z",
+  "requested_slice_ids": [
+    "AI-01",
+    "AI-02",
+    "TRUST-01",
+    "SRE-03",
+    "GOV-10",
+    "CTRL-LOOP-01",
+    "CTRL-LOOP-02",
+    "CTRL-LOOP-03",
+    "CTRL-LOOP-04",
+    "CTRL-LOOP-05",
+    "X-01",
+    "X-02",
+    "X-03",
+    "X-04",
+    "X-05",
+    "X-06",
+    "X-07",
+    "X-08",
+    "X-09",
+    "X-10"
+  ],
+  "completed_slice_ids": [
+    "AI-01",
+    "AI-02",
+    "TRUST-01"
+  ],
+  "failed_slice_ids": [
+    "SRE-03"
+  ],
+  "current_slice_id": null,
+  "prior_slice_ref": "exec:pqx003-qr-20-run_b:SRE-03:1",
+  "next_slice_ref": "GOV-10",
+  "execution_history": [
+    {
+      "execution_ref": "exec:pqx003-qr-20-run_b:AI-01:1",
+      "queue_run_id": "pqx003-qr-20-run_b",
+      "run_id": "pqx003-run-20-run_b",
+      "trace_id": "pqx003-01",
+      "slice_id": "AI-01",
+      "status": "success",
+      "parent_execution_ref": null,
+      "started_at": "2026-04-03T09:47:50Z",
+      "completed_at": "2026-04-03T09:47:51Z",
+      "error": null,
+      "slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.pqx_slice_execution_record.json",
+      "certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.done_certification_record.json",
+      "audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.pqx_slice_audit_bundle.json",
+      "certification_complete": true,
+      "audit_complete": true,
+      "continuation_record_id": null,
+      "control_surface_gap_visibility": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      }
+    },
+    {
+      "execution_ref": "exec:pqx003-qr-20-run_b:AI-02:1",
+      "queue_run_id": "pqx003-qr-20-run_b",
+      "run_id": "pqx003-run-20-run_b",
+      "trace_id": "pqx003-02",
+      "slice_id": "AI-02",
+      "status": "success",
+      "parent_execution_ref": "exec:pqx003-qr-20-run_b:AI-01:1",
+      "started_at": "2026-04-03T09:47:51Z",
+      "completed_at": "2026-04-03T09:47:51Z",
+      "error": null,
+      "slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.pqx_slice_execution_record.json",
+      "certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.done_certification_record.json",
+      "audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.pqx_slice_audit_bundle.json",
+      "certification_complete": true,
+      "audit_complete": true,
+      "continuation_record_id": "cont:pqx003-qr-20-run_b:AI-01:AI-02",
+      "control_surface_gap_visibility": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      }
+    },
+    {
+      "execution_ref": "exec:pqx003-qr-20-run_b:TRUST-01:1",
+      "queue_run_id": "pqx003-qr-20-run_b",
+      "run_id": "pqx003-run-20-run_b",
+      "trace_id": "pqx003-03",
+      "slice_id": "TRUST-01",
+      "status": "success",
+      "parent_execution_ref": "exec:pqx003-qr-20-run_b:AI-02:1",
+      "started_at": "2026-04-03T09:47:51Z",
+      "completed_at": "2026-04-03T09:47:51Z",
+      "error": null,
+      "slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.pqx_slice_execution_record.json",
+      "certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.done_certification_record.json",
+      "audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.pqx_slice_audit_bundle.json",
+      "certification_complete": true,
+      "audit_complete": true,
+      "continuation_record_id": "cont:pqx003-qr-20-run_b:AI-02:TRUST-01",
+      "control_surface_gap_visibility": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      }
+    },
+    {
+      "execution_ref": "exec:pqx003-qr-20-run_b:SRE-03:1",
+      "queue_run_id": "pqx003-qr-20-run_b",
+      "run_id": "pqx003-run-20-run_b",
+      "trace_id": "pqx003-04",
+      "slice_id": "SRE-03",
+      "status": "failed",
+      "parent_execution_ref": "exec:pqx003-qr-20-run_b:TRUST-01:1",
+      "started_at": "2026-04-03T09:47:51Z",
+      "completed_at": "2026-04-03T09:47:51Z",
+      "error": "Requested roadmap row 'TRUST-01' is already complete.",
+      "slice_execution_record_ref": null,
+      "certification_ref": null,
+      "audit_bundle_ref": null,
+      "certification_complete": false,
+      "audit_complete": false,
+      "continuation_record_id": "cont:pqx003-qr-20-run_b:TRUST-01:SRE-03",
+      "control_surface_gap_visibility": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      }
+    }
+  ],
+  "continuation_records": [
+    {
+      "artifact_id": "cont:pqx003-qr-20-run_b:AI-01:AI-02",
+      "artifact_type": "pqx_slice_continuation_record",
+      "schema_version": "1.0.0",
+      "prior_step_id": "AI-01",
+      "next_step_id": "AI-02",
+      "prior_run_id": "pqx003-run-20-run_b",
+      "prior_trace_id": "pqx003-01",
+      "prior_slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.pqx_slice_execution_record.json",
+      "prior_certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.done_certification_record.json",
+      "prior_audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-01/pqx-slice-20260403T094750Z.pqx_slice_audit_bundle.json",
+      "continuation_status": "ready",
+      "continuation_decision": "allow",
+      "continuation_reasons": [
+        "prior slice emitted canonical execution, certification, and audit artifacts",
+        "lineage continuity satisfied for run_id and trace_id"
+      ],
+      "created_at": "2026-04-03T09:47:51Z"
+    },
+    {
+      "artifact_id": "cont:pqx003-qr-20-run_b:AI-02:TRUST-01",
+      "artifact_type": "pqx_slice_continuation_record",
+      "schema_version": "1.0.0",
+      "prior_step_id": "AI-02",
+      "next_step_id": "TRUST-01",
+      "prior_run_id": "pqx003-run-20-run_b",
+      "prior_trace_id": "pqx003-02",
+      "prior_slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.pqx_slice_execution_record.json",
+      "prior_certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.done_certification_record.json",
+      "prior_audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/AI-02/pqx-slice-20260403T094751Z.pqx_slice_audit_bundle.json",
+      "continuation_status": "ready",
+      "continuation_decision": "allow",
+      "continuation_reasons": [
+        "prior slice emitted canonical execution, certification, and audit artifacts",
+        "lineage continuity satisfied for run_id and trace_id"
+      ],
+      "created_at": "2026-04-03T09:47:51Z"
+    },
+    {
+      "artifact_id": "cont:pqx003-qr-20-run_b:TRUST-01:SRE-03",
+      "artifact_type": "pqx_slice_continuation_record",
+      "schema_version": "1.0.0",
+      "prior_step_id": "TRUST-01",
+      "next_step_id": "SRE-03",
+      "prior_run_id": "pqx003-run-20-run_b",
+      "prior_trace_id": "pqx003-03",
+      "prior_slice_execution_record_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.pqx_slice_execution_record.json",
+      "prior_certification_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.done_certification_record.json",
+      "prior_audit_bundle_ref": "/workspace/spectrum-systems/artifacts/pqx_runs/pqx_003/run_b/pqx_slice_runs/TRUST-01/pqx-slice-20260403T094751Z.pqx_slice_audit_bundle.json",
+      "continuation_status": "ready",
+      "continuation_decision": "allow",
+      "continuation_reasons": [
+        "prior slice emitted canonical execution, certification, and audit artifacts",
+        "lineage continuity satisfied for run_id and trace_id"
+      ],
+      "created_at": "2026-04-03T09:47:51Z"
+    }
+  ],
+  "lineage": {
+    "prior_run_id": "pqx003-run-20-run_b",
+    "prior_trace_id": "pqx003-03"
+  },
+  "certification_complete_by_slice": {
+    "AI-01": true,
+    "AI-02": true,
+    "TRUST-01": true,
+    "SRE-03": false,
+    "GOV-10": false,
+    "CTRL-LOOP-01": false,
+    "CTRL-LOOP-02": false,
+    "CTRL-LOOP-03": false,
+    "CTRL-LOOP-04": false,
+    "CTRL-LOOP-05": false,
+    "X-01": false,
+    "X-02": false,
+    "X-03": false,
+    "X-04": false,
+    "X-05": false,
+    "X-06": false,
+    "X-07": false,
+    "X-08": false,
+    "X-09": false,
+    "X-10": false
+  },
+  "audit_complete_by_slice": {
+    "AI-01": true,
+    "AI-02": true,
+    "TRUST-01": true,
+    "SRE-03": false,
+    "GOV-10": false,
+    "CTRL-LOOP-01": false,
+    "CTRL-LOOP-02": false,
+    "CTRL-LOOP-03": false,
+    "CTRL-LOOP-04": false,
+    "CTRL-LOOP-05": false,
+    "X-01": false,
+    "X-02": false,
+    "X-03": false,
+    "X-04": false,
+    "X-05": false,
+    "X-06": false,
+    "X-07": false,
+    "X-08": false,
+    "X-09": false,
+    "X-10": false
+  },
+  "blocked_continuation_context": null,
+  "replay_verification": {
+    "status": "not_run",
+    "replay_record_ref": null
+  },
+  "review_checkpoint_status": {
+    "slice_1_optional_review": "not_required",
+    "slice_2_required_review": "required_pending",
+    "slice_3_strict_review": "required_pending"
+  },
+  "review_artifact_refs": [],
+  "sequence_budget_status": "within_budget",
+  "sequence_budget_ref": "pqx003-qr-20-run_b:sequence-budget",
+  "chain_certification_status": "pending",
+  "chain_certification_refs": [],
+  "bundle_readiness_decision": {
+    "ready": true,
+    "reason": "dependencies/artifacts valid and no blocking findings"
+  },
+  "bundle_certification_status": "pending",
+  "bundle_certification_ref": null,
+  "bundle_audit_status": "pending",
+  "bundle_audit_ref": null,
+  "unresolved_fix_ids": [],
+  "blocked_reason": "Requested roadmap row 'TRUST-01' is already complete.",
+  "resume_token": "resume:pqx003-qr-20-run_b:3",
+  "control_surface_gap_visibility": {
+    "by_slice": {
+      "AI-01": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      },
+      "AI-02": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      },
+      "TRUST-01": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      },
+      "SRE-03": {
+        "control_surface_gap_packet_ref": null,
+        "control_surface_gap_packet_consumed": false,
+        "prioritized_control_surface_gaps": [],
+        "pqx_gap_work_items": [],
+        "control_surface_gap_influence": {
+          "influenced_execution_block": false,
+          "influenced_next_step_selection": false,
+          "influenced_priority_ordering": false,
+          "influenced_transition_decision": false,
+          "reason_codes": [],
+          "control_surface_blocking_reason_refs": []
+        }
+      }
+    },
+    "summary": {
+      "control_surface_gap_packet_ref": null,
+      "control_surface_gap_packet_consumed": false,
+      "prioritized_control_surface_gaps": [],
+      "pqx_gap_work_items": [],
+      "control_surface_gap_influence": {
+        "influenced_execution_block": false,
+        "influenced_next_step_selection": false,
+        "influenced_priority_ordering": false,
+        "influenced_transition_decision": false,
+        "reason_codes": [],
+        "control_surface_blocking_reason_refs": []
+      }
+    }
+  }
+}

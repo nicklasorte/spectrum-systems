@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "pqx-slice-20260403T094750Z",
+  "step_id": "AI-02",
+  "step_name": "Context bundle system",
+  "dependencies": [
+    "AI-01"
+  ],
+  "requested_at": "2026-04-03T09:47:50Z",
+  "prompt": "Implement roadmap step AI-02: Context bundle system",
+  "roadmap_version": "docs/roadmap/system_roadmap.md",
+  "row_snapshot": {
+    "row_index": 1,
+    "step_id": "AI-02",
+    "step_name": "Context bundle system",
+    "dependencies": [
+      "AI-01"
+    ],
+    "status": "VALID"
+  }
+}
