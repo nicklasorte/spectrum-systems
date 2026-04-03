@@ -430,6 +430,7 @@ def _execute_pending_fix_loop(
                 execute_slice=lambda _: {"execution_status": "success"},
                 resume=step_state_path.exists(),
                 max_slices=1,
+                enforce_dependency_admission=False,
                 clock=clock,
             )
             history = result_state["execution_history"][-1]
@@ -640,6 +641,7 @@ def execute_bundle_run(
                 execute_slice=executor,
                 resume=step_state_path.exists(),
                 max_slices=1,
+                enforce_dependency_admission=False,
                 clock=clock,
             )
 

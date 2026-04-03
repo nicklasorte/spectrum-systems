@@ -430,3 +430,159 @@ def test_two_slice_replay_verification_pass_and_fail_closed(tmp_path: Path) -> N
             trace_id="trace-rp-1",
             clock=FixedClock(["2026-03-29T23:32:02Z"]),
         )
+
+
+def test_admission_rejects_missing_step_id_before_execution(tmp_path: Path) -> None:
+    with pytest.raises(PQXSequenceRunnerError, match="MISSING_STEP_ID"):
+        execute_sequence_run(
+            slice_requests=[{"slice_id": "AI-999", "trace_id": "trace-missing"}],
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-run-admit-missing",
+            run_id="run-admit-missing",
+            trace_id="trace-admit-missing",
+        )
+
+
+def test_admission_rejects_dependency_invalid_set_before_execution(tmp_path: Path) -> None:
+    with pytest.raises(PQXSequenceRunnerError, match="DEPENDENCY_UNSATISFIED"):
+        execute_sequence_run(
+            slice_requests=[{"slice_id": "AI-02", "trace_id": "trace-dep"}],
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-run-admit-dep",
+            run_id="run-admit-dep",
+            trace_id="trace-admit-dep",
+        )
+
+
+def test_batch_stops_on_block_and_preserves_prior_completion(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        if payload["slice_id"] == "AI-02":
+            return {"execution_status": "blocked", "error": "policy_block"}
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    state = execute_sequence_run(
+        slice_requests=[
+                {"slice_id": "AI-01", "trace_id": "trace-1"},
+                {"slice_id": "AI-02", "trace_id": "trace-2"},
+                {"slice_id": "TRUST-01", "trace_id": "trace-3"},
+        ],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-block-stop",
+        run_id="run-block-stop",
+        trace_id="trace-block-stop",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:10:{i:02d}Z" for i in range(1, 30)]),
+    )
+
+    assert state["status"] == "blocked"
+    assert state["completed_slice_ids"] == ["AI-01"]
+    assert state["failed_slice_ids"] == ["AI-02"]
+    assert state["batch_result"]["stopping_slice_id"] == "AI-02"
+    assert state["batch_result"]["pending_step_ids"] == ["TRUST-01"]
+
+
+def test_batch_stops_on_review_without_marking_slice_complete(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        if payload["slice_id"] == "AI-02":
+            return {"execution_status": "review_required", "error": "human_review_required"}
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    state = execute_sequence_run(
+        slice_requests=[
+                {"slice_id": "AI-01", "trace_id": "trace-1"},
+                {"slice_id": "AI-02", "trace_id": "trace-2"},
+                {"slice_id": "TRUST-01", "trace_id": "trace-3"},
+        ],
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-run-review-stop",
+        run_id="run-review-stop",
+        trace_id="trace-review-stop",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:20:{i:02d}Z" for i in range(1, 30)]),
+    )
+
+    assert state["status"] == "blocked"
+    assert state["completed_slice_ids"] == ["AI-01"]
+    assert state["failed_slice_ids"] == ["AI-02"]
+    assert state["batch_result"]["completed_step_ids"] == ["AI-01"]
+    assert state["batch_result"]["per_slice_statuses"][1] == {"slice_id": "AI-02", "status": "require_review"}
+
+
+def test_deterministic_batch_result_same_admitted_input(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    req = [{"slice_id": "AI-01", "trace_id": "trace-1"}, {"slice_id": "AI-02", "trace_id": "trace-2"}]
+    first = execute_sequence_run(
+        slice_requests=req,
+        state_path=tmp_path / "state-a.json",
+        queue_run_id="queue-run-det",
+        run_id="run-det",
+        trace_id="trace-det",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:30:{i:02d}Z" for i in range(1, 25)]),
+    )
+    second = execute_sequence_run(
+        slice_requests=req,
+        state_path=tmp_path / "state-b.json",
+        queue_run_id="queue-run-det",
+        run_id="run-det",
+        trace_id="trace-det",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:31:{i:02d}Z" for i in range(1, 25)]),
+    )
+    assert first["batch_result"] == second["batch_result"]
+
+
+def test_incidental_text_and_path_naming_do_not_change_batch_decisions(tmp_path: Path) -> None:
+    def _executor(payload: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"review-keyword/{payload['slice_id']}.record.json",
+            "done_certification_record": f"block-keyword/{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    req = [{"slice_id": "AI-01", "trace_id": "trace-1"}, {"slice_id": "AI-02", "trace_id": "trace-2"}]
+    first = execute_sequence_run(
+        slice_requests=req,
+        state_path=tmp_path / "block-wording-state.json",
+        queue_run_id="queue-run-text-a",
+        run_id="run-text",
+        trace_id="trace-text",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:40:{i:02d}Z" for i in range(1, 25)]),
+    )
+    second = execute_sequence_run(
+        slice_requests=req,
+        state_path=tmp_path / "review-wording-state.json",
+        queue_run_id="queue-run-text-b",
+        run_id="run-text",
+        trace_id="trace-text",
+        execute_slice=_executor,
+        clock=FixedClock([f"2026-03-30T00:41:{i:02d}Z" for i in range(1, 25)]),
+    )
+    assert first["batch_result"]["per_slice_statuses"] == second["batch_result"]["per_slice_statuses"]

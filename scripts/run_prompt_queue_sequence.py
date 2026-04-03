@@ -19,7 +19,7 @@ from spectrum_systems.modules.runtime.pqx_sequence_runner import (  # noqa: E402
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run narrow sequential PQX execution for 2–3 ordered slices")
+    parser = argparse.ArgumentParser(description="Run admitted sequential PQX execution for ordered multi-slice batches")
     parser.add_argument("--state-path", required=True, help="Path to prompt_queue_sequence_run state artifact")
     parser.add_argument("--slices-path", required=True, help="Path to ordered slice request list JSON")
     parser.add_argument("--queue-run-id", required=True)
@@ -66,6 +66,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         "failed": len(state["failed_slice_ids"]),
         "next_slice_ref": state["next_slice_ref"],
         "resume_token": state["resume_token"],
+        "batch_result": state.get("batch_result"),
         "state_path": str(state_path),
     }
     print(json.dumps(output))
