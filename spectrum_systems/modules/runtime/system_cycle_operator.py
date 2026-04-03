@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_observability,
+    build_adaptive_execution_policy_review,
     build_adaptive_execution_trend_report,
 )
 from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run
@@ -484,8 +485,16 @@ def run_system_cycle(
         trace_id=integration["trace_id"],
         created_at=timestamp,
     )
+    adaptive_policy_review = build_adaptive_execution_policy_review(
+        adaptive_run_results,
+        observability=adaptive_observability,
+        trend_report=adaptive_trend_report,
+        trace_id=integration["trace_id"],
+        created_at=timestamp,
+    )
     adaptive_observability_ref = f"adaptive_execution_observability:{adaptive_observability['observability_id']}"
     adaptive_trend_ref = f"adaptive_execution_trend_report:{adaptive_trend_report['trend_report_id']}"
+    adaptive_policy_review_ref = f"adaptive_execution_policy_review:{adaptive_policy_review['review_id']}"
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
@@ -497,6 +506,7 @@ def run_system_cycle(
                 + [
                     f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
                     f"adaptive_useful_batches_per_run={adaptive_observability['average_useful_batches_per_run']}",
+                    f"adaptive_policy_review={adaptive_policy_review['review_id']}",
                 ]
             )
         ),
@@ -559,6 +569,7 @@ def run_system_cycle(
                         f"core_system_integration_validation:{validation_id}",
                         adaptive_observability_ref,
                         adaptive_trend_ref,
+                        adaptive_policy_review_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -614,10 +625,11 @@ def run_system_cycle(
         "watch_next": [
             f"next_batch_id={next_batch_id or 'none'}",
             f"next_action={failure_next_action}",
-            f"adaptive_safety_trend={adaptive_trend_report['safety_trend']}",
-            f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
-            f"adaptive_tuning_warranted={str(adaptive_trend_report['tuning_warranted']).lower()}",
-        ],
+                f"adaptive_safety_trend={adaptive_trend_report['safety_trend']}",
+                f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
+                f"adaptive_tuning_warranted={str(adaptive_trend_report['tuning_warranted']).lower()}",
+                f"adaptive_policy_tuning_signal={adaptive_policy_review['operator_tuning_signals'][0]}",
+            ],
         "artifact_index": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
             "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
@@ -634,6 +646,7 @@ def run_system_cycle(
                         f"next_step_recommendation:{recommendation['recommendation_id']}",
                         adaptive_observability_ref,
                         adaptive_trend_ref,
+                        adaptive_policy_review_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -670,6 +683,7 @@ def run_system_cycle(
                 f"next_step_recommendation:{recommendation['recommendation_id']}",
                 adaptive_observability_ref,
                 adaptive_trend_ref,
+                adaptive_policy_review_ref,
             }
         ),
     }
@@ -680,6 +694,7 @@ def run_system_cycle(
         "roadmap_multi_batch_run_result": run_result,
         "adaptive_execution_observability": adaptive_observability,
         "adaptive_execution_trend_report": adaptive_trend_report,
+        "adaptive_execution_policy_review": adaptive_policy_review,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
         "build_summary": summary,

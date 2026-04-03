@@ -8,8 +8,9 @@ This architecture slice keeps bounded adaptive execution fail-closed while makin
 2. **Efficiency telemetry** (attempted/useful batches, stop reasons, continuation decisions)
 3. **Adaptive observability aggregation** (`adaptive_execution_observability`)
 4. **Guardrail evaluation + trend report** (`adaptive_execution_trend_report`)
-5. **Operator awareness** (cycle outputs reference guardrail status, safety trend, and cap efficiency signals)
-6. **Future policy tuning** (threshold adjustment is explicit, governed, and replayable)
+5. **Evidence-backed policy review** (`adaptive_execution_policy_review`)
+6. **Deterministic policy tuning** (bounded rule updates in continuation/cap controls)
+7. **Operator awareness** (cycle outputs reference guardrail status, safety trend, and policy-tuning signal)
 
 ## Guardrail intent
 
@@ -17,6 +18,8 @@ This architecture slice keeps bounded adaptive execution fail-closed while makin
 - Detect cap expansion that does not increase useful work.
 - Detect replay/determinism integrity drift.
 - Keep continuation behavior bounded by explicit threshold checks.
+- Require explicit rejected-policy logging for proposed but unsafe/unjustified changes.
+- Keep tuning deterministic: no probabilistic exploration, no authority bypass.
 
 ## Non-goals
 
