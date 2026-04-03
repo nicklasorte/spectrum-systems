@@ -12,7 +12,9 @@
     "what_ran",
     "what_changed",
     "what_failed",
+    "run_outcome",
     "watch_next",
+    "artifact_index",
     "failure_surface",
     "trace_id",
     "created_at",
@@ -20,7 +22,7 @@
   ],
   "properties": {
     "summary_id": {"type": "string", "pattern": "^BSR-[A-F0-9]{12}$"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "run_id": {"type": "string", "minLength": 1},
     "what_ran": {
       "type": "array",
@@ -38,20 +40,63 @@
       "items": {"type": "string", "minLength": 3},
       "uniqueItems": true
     },
+    "run_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "stop_reason", "has_blockers"],
+      "properties": {
+        "status": {"type": "string", "enum": ["success", "blocked"]},
+        "stop_reason": {"type": "string", "minLength": 3},
+        "has_blockers": {"type": "boolean"}
+      }
+    },
     "watch_next": {
       "type": "array",
       "minItems": 1,
       "items": {"type": "string", "minLength": 3},
       "uniqueItems": true
     },
+    "artifact_index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_multi_batch_run_result",
+        "core_system_integration_validation",
+        "next_step_recommendation",
+        "trace_id",
+        "replay_refs"
+      ],
+      "properties": {
+        "roadmap_multi_batch_run_result": {"type": "string", "minLength": 3},
+        "core_system_integration_validation": {"type": "string", "minLength": 3},
+        "next_step_recommendation": {"type": "string", "minLength": 3},
+        "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+        "replay_refs": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
+      }
+    },
     "failure_surface": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["stop_reason", "root_cause", "next_action"],
+      "required": ["stop_reason", "root_cause", "next_action", "blocker_refs", "source_refs"],
       "properties": {
         "stop_reason": {"type": "string", "minLength": 3},
         "root_cause": {"type": "string", "minLength": 3},
-        "next_action": {"type": "string", "minLength": 3}
+        "next_action": {"type": "string", "minLength": 3},
+        "blocker_refs": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 3},
+          "uniqueItems": true
+        }
       }
     },
     "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},

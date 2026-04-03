@@ -63,13 +63,13 @@ def _required_reviews(blocking_conditions: list[str]) -> list[str]:
 
 def _root_cause(stop_reason: str, blocking_conditions: list[str]) -> str:
     if blocking_conditions:
-        return f"integration_blockers:{blocking_conditions[0]}"
+        return f"blocking_condition:{blocking_conditions[0]} (stop_reason={stop_reason})"
     return f"execution_stop_reason:{stop_reason}"
 
 
 def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
     if blocking_conditions:
-        return "resolve blocking conditions and rerun bounded governed cycle"
+        return f"resolve blocker {blocking_conditions[0]} and rerun bounded governed cycle"
     if stop_reason == "max_batches_reached":
         return "run next governed cycle to continue roadmap progression"
     if stop_reason in {"authorization_block", "missing_required_signal", "authorization_freeze"}:
@@ -77,6 +77,18 @@ def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
     if stop_reason == "no_eligible_batch":
         return "refresh roadmap and signal readiness before rerun"
     return "inspect run artifacts and remediate before rerun"
+
+
+def _watchouts(stop_reason: str, blocking_conditions: list[str], required_reviews: list[str]) -> list[str]:
+    watchouts = [
+        f"stop_reason={stop_reason}",
+        "do_not_bypass_fail_closed_authority_boundaries",
+    ]
+    if blocking_conditions:
+        watchouts.append(f"primary_blocker={blocking_conditions[0]}")
+    if required_reviews:
+        watchouts.append(f"required_reviews={','.join(required_reviews)}")
+    return watchouts
 
 
 def run_system_cycle(
@@ -144,7 +156,9 @@ def run_system_cycle(
     )
 
     blocking_conditions = [str(item) for item in integration.get("blocking_conditions", [])]
+    replay_refs = sorted(set(str(item) for item in run_result.get("loop_validation_refs", [])))
     next_batch_id = _next_not_started_batch_id(updated_roadmap)
+    required_reviews = _required_reviews(blocking_conditions)
     why = [
         f"bounded_stop_reason={run_result['stop_reason']}",
         f"integration_outcome={integration['deterministic_outcome']}",
@@ -164,14 +178,33 @@ def run_system_cycle(
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "next_batch_id": next_batch_id,
         "why": sorted(set(why)),
         "blockers": sorted(set(blocking_conditions)),
-        "required_reviews": _required_reviews(blocking_conditions),
+        "required_reviews": required_reviews,
         "risk_summary": {
             "level": risk_level,
             "signals": sorted(set(risk_signals)),
+        },
+        "next_step": {
+            "action": _next_action(str(run_result["stop_reason"]), blocking_conditions),
+            "why_now": sorted(set(why))[0],
+            "blocked_by": sorted(set(blocking_conditions)),
+            "watchouts": _watchouts(str(run_result["stop_reason"]), blocking_conditions, required_reviews),
+            "required_artifacts": sorted(
+                {
+                    f"core_system_integration_validation:{integration['validation_id']}",
+                    f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                }
+                | set(replay_refs)
+            ),
+        },
+        "artifact_refs": {
+            "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+            "core_system_integration_validation": f"core_system_integration_validation:{integration['validation_id']}",
+            "trace_id": integration["trace_id"],
+            "replay_refs": replay_refs,
         },
         "trace_id": integration["trace_id"],
         "created_at": timestamp,
@@ -188,9 +221,11 @@ def run_system_cycle(
     _validate_schema(recommendation, "next_step_recommendation")
 
     stop_reason = str(run_result["stop_reason"])
+    failure_root_cause = _root_cause(stop_reason, blocking_conditions)
+    failure_next_action = _next_action(stop_reason, blocking_conditions)
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "run_id": run_result["run_id"],
         "what_ran": [
             "roadmap selection",
@@ -203,14 +238,34 @@ def run_system_cycle(
             f"completed_batches={','.join(run_result['completed_batch_ids']) or 'none'}",
         ],
         "what_failed": sorted(set(blocking_conditions + ([stop_reason] if stop_reason != "max_batches_reached" else []))),
+        "run_outcome": {
+            "status": "blocked" if blocking_conditions or stop_reason != "max_batches_reached" else "success",
+            "stop_reason": stop_reason,
+            "has_blockers": bool(blocking_conditions),
+        },
         "watch_next": [
             f"next_batch_id={next_batch_id or 'none'}",
-            f"required_reviews={','.join(recommendation['required_reviews']) or 'none'}",
+            f"next_action={failure_next_action}",
         ],
+        "artifact_index": {
+            "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+            "core_system_integration_validation": f"core_system_integration_validation:{integration['validation_id']}",
+            "next_step_recommendation": f"next_step_recommendation:{recommendation['recommendation_id']}",
+            "trace_id": integration["trace_id"],
+            "replay_refs": replay_refs,
+        },
         "failure_surface": {
             "stop_reason": stop_reason,
-            "root_cause": _root_cause(stop_reason, blocking_conditions),
-            "next_action": _next_action(stop_reason, blocking_conditions),
+            "root_cause": failure_root_cause,
+            "next_action": failure_next_action,
+            "blocker_refs": sorted(set(blocking_conditions)),
+            "source_refs": sorted(
+                {
+                    f"core_system_integration_validation:{integration['validation_id']}",
+                    f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                }
+                | set(replay_refs)
+            ),
         },
         "trace_id": integration["trace_id"],
         "created_at": timestamp,

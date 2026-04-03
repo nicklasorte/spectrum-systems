@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -12,14 +12,33 @@
     "completed batch: BATCH-A"
   ],
   "what_failed": [],
+  "run_outcome": {
+    "status": "success",
+    "stop_reason": "max_batches_reached",
+    "has_blockers": false
+  },
   "watch_next": [
     "next candidate batch: BATCH-B",
     "no authority boundary violations detected"
   ],
+  "artifact_index": {
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+    "core_system_integration_validation": "core_system_integration_validation:CSIV-EXAMPLE001",
+    "next_step_recommendation": "next_step_recommendation:NSR-7D568E86D860",
+    "trace_id": "trace-batch-u-example",
+    "replay_refs": [
+      "roadmap_execution_loop_validation:RLV-EXAMPLE001"
+    ]
+  },
   "failure_surface": {
     "stop_reason": "max_batches_reached",
     "root_cause": "bounded execution reached configured max_batches_per_run",
-    "next_action": "run next governed cycle to continue roadmap progression"
+    "next_action": "run next governed cycle to continue roadmap progression",
+    "blocker_refs": [],
+    "source_refs": [
+      "core_system_integration_validation:CSIV-EXAMPLE001",
+      "roadmap_multi_batch_run_result:RMB-EXAMPLE0001"
+    ]
   },
   "trace_id": "trace-batch-u-example",
   "created_at": "2026-04-03T23:45:00Z",
