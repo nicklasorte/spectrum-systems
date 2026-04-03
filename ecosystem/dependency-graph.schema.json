@@ -100,7 +100,8 @@
             "enum": [
               "coordination",
               "work",
-              "review"
+              "review",
+              "governance"
             ]
           },
           "description": {
@@ -144,7 +145,8 @@
             "enum": [
               "coordination",
               "work",
-              "review"
+              "review",
+              "governance"
             ]
           },
           "intended_consumers": {

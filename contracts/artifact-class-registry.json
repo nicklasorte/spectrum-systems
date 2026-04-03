@@ -37,6 +37,16 @@
         "decision log",
         "review findings"
       ]
+    },
+    {
+      "name": "governance",
+      "description": "Artifacts that encode policy authority, control decisions, attestations, and lifecycle governance state.",
+      "examples": [
+        "routing policy",
+        "evaluation control decision",
+        "trust posture snapshot",
+        "policy backtest report"
+      ]
     }
   ],
   "allowed_transitions": [
@@ -63,6 +73,22 @@
     {
       "from": "review",
       "to": "coordination"
+    },
+    {
+      "from": "coordination",
+      "to": "governance"
+    },
+    {
+      "from": "governance",
+      "to": "coordination"
+    },
+    {
+      "from": "review",
+      "to": "governance"
+    },
+    {
+      "from": "governance",
+      "to": "review"
     }
   ]
 }

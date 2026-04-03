@@ -125,6 +125,8 @@ def sanitize_id(value: str) -> str:
 
 def infer_artifact_class(artifact_type: str) -> str:
     lowered = artifact_type.lower()
+    if any(keyword in lowered for keyword in ["policy", "governance", "control", "compliance"]):
+        return "governance"
     if any(keyword in lowered for keyword in ["comment", "review"]):
         return "review"
     if any(keyword in lowered for keyword in ["working_paper", "study", "work"]):
