@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 from spectrum_systems.contracts import load_example, validate_artifact
@@ -114,6 +115,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
 
     validate_artifact(first["next_step_recommendation"], "next_step_recommendation")
     validate_artifact(first["build_summary"], "build_summary")
+    validate_artifact(first["batch_delivery_report"], "batch_delivery_report")
+    validate_artifact(first["batch_handoff_bundle"], "batch_handoff_bundle")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
@@ -163,6 +166,91 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert "required_reviews" in first["next_cycle_input_bundle"]
     assert first["next_cycle_input_bundle"]["continuation_depth"] == 1
     assert first["next_cycle_input_bundle"]["source_cycle_runner_result_ref"].startswith("cycle_runner_result:CRR-")
+    assert first["batch_handoff_bundle"]["source_delivery_report_ref"] == f"batch_delivery_report:{first['batch_delivery_report']['report_id']}"
+
+
+def test_prior_handoff_auto_ingested_and_required_validations_propagated(tmp_path: Path) -> None:
+    handoff_root = tmp_path / "handoffs"
+    handoff_root.mkdir(parents=True, exist_ok=True)
+    prior = copy.deepcopy(load_example("batch_handoff_bundle"))
+    prior["bundle_id"] = "BHB-AAAAAAAAAAAA"
+    prior["created_at"] = "2026-04-03T23:58:00Z"
+    prior["required_validations_next"] = ["validation:pytest tests/test_contract_enforcement.py"]
+    prior["recommended_next_batch"] = "BATCH-J"
+    (handoff_root / "prior.json").write_text(json.dumps(prior), encoding="utf-8")
+
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={**_integration_inputs(), "handoff_bundle_root": str(handoff_root)},
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    assert result["prior_batch_handoff_bundle"]["bundle_id"] == "BHB-AAAAAAAAAAAA"
+    assert any(
+        item == "required_validation:validation:pytest tests/test_contract_enforcement.py"
+        for item in result["next_step_recommendation"]["next_step"]["watchouts"]
+    )
+    assert any(
+        item == "required_validation:validation:pytest tests/test_contract_enforcement.py"
+        for item in result["build_summary"]["watch_next"]
+    )
+
+
+def test_required_prior_handoff_fails_closed_on_malformed_bundle(tmp_path: Path) -> None:
+    handoff_root = tmp_path / "handoffs"
+    handoff_root.mkdir(parents=True, exist_ok=True)
+    bad = {"bundle_id": "BHB-AAAAAAAAAAAA", "schema_version": "1.0.0"}
+    (handoff_root / "bad.json").write_text(json.dumps(bad), encoding="utf-8")
+    try:
+        run_system_cycle(
+            roadmap_artifact=_roadmap(),
+            selection_signals=_selection_signals(),
+            authorization_signals=_authorization_signals(),
+            integration_inputs={**_integration_inputs(), "handoff_bundle_root": str(handoff_root), "require_prior_handoff": True},
+            pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+            pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+            execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+            created_at="2026-04-03T23:59:00Z",
+            pqx_execute_fn=_pqx_stub,
+        )
+    except sco.SystemCycleOperatorError as exc:
+        assert "required prior batch_handoff_bundle unavailable" in str(exc)
+    else:
+        raise AssertionError("expected fail-closed error for malformed required prior handoff bundle")
+
+
+def test_critical_prior_handoff_risk_prevents_unsafe_continuation(tmp_path: Path) -> None:
+    handoff_root = tmp_path / "handoffs"
+    handoff_root.mkdir(parents=True, exist_ok=True)
+    prior = copy.deepcopy(load_example("batch_handoff_bundle"))
+    prior["bundle_id"] = "BHB-BBBBBBBBBBBB"
+    prior["created_at"] = "2026-04-03T23:59:30Z"
+    prior["must_carry_forward_risks"] = ["critical_risk:AUTH_HUMAN_SIGNOFF_MISSING"]
+    (handoff_root / "critical.json").write_text(json.dumps(prior), encoding="utf-8")
+
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={**_integration_inputs(), "handoff_bundle_root": str(handoff_root)},
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    assert result["next_cycle_decision"]["decision"] == "stop"
+    assert result["roadmap_multi_batch_run_result"]["stop_reason"] in {
+        "authorization_block",
+        "program_priority_violation",
+    }
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:

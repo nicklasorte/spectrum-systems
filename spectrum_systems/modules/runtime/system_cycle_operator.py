@@ -36,6 +36,101 @@ def _validate_schema(instance: dict[str, Any], schema_name: str) -> None:
         raise SystemCycleOperatorError(f"{schema_name} validation failed: {details}")
 
 
+def _sorted_unique_strings(values: list[Any]) -> list[str]:
+    return sorted({str(item) for item in values if str(item).strip()})
+
+
+def _batch_handoff_sort_key(bundle: dict[str, Any]) -> tuple[str, str]:
+    return (str(bundle.get("created_at") or ""), str(bundle.get("bundle_id") or ""))
+
+
+def _load_latest_prior_batch_handoff_bundle(*, handoff_root: Path | None, required: bool) -> dict[str, Any] | None:
+    if handoff_root is None:
+        if required:
+            raise SystemCycleOperatorError("prior batch_handoff_bundle is required but no handoff root is configured")
+        return None
+    if not handoff_root.exists():
+        if required:
+            raise SystemCycleOperatorError(f"prior batch_handoff_bundle is required but directory is missing: {handoff_root}")
+        return None
+    if not handoff_root.is_dir():
+        raise SystemCycleOperatorError(f"handoff bundle root must be a directory: {handoff_root}")
+
+    valid: list[dict[str, Any]] = []
+    latest_error: str | None = None
+    for path in sorted(handoff_root.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            latest_error = f"{path}: {exc}"
+            continue
+        if not isinstance(payload, dict):
+            latest_error = f"{path}: payload root must be object"
+            continue
+        try:
+            _validate_schema(payload, "batch_handoff_bundle")
+        except SystemCycleOperatorError as exc:
+            latest_error = f"{path}: {exc}"
+            continue
+        valid.append(payload)
+
+    if valid:
+        return sorted(valid, key=_batch_handoff_sort_key)[-1]
+    if required:
+        raise SystemCycleOperatorError(f"required prior batch_handoff_bundle unavailable: {latest_error or 'none found'}")
+    return None
+
+
+def derive_batch_handoff_bundle(delivery_report: dict[str, Any]) -> dict[str, Any]:
+    _validate_schema(delivery_report, "batch_delivery_report")
+    risks = _sorted_unique_strings(list(delivery_report.get("remaining_risks", [])))
+    followups = _sorted_unique_strings(list(delivery_report.get("open_followups", [])))
+    review_findings = _sorted_unique_strings(list(delivery_report.get("blocking_issues", [])))
+    required_validations_next = sorted(item for item in followups if item.startswith("validation:"))
+    open_contract_work = sorted(item for item in followups if item.startswith("contract:"))
+    evidence_refs = _sorted_unique_strings(list(delivery_report.get("evidence_refs", [])))
+    program_constraints = sorted(item for item in risks if item.startswith("program_"))
+    human_decision_required = bool(
+        review_findings
+        or any("critical" in item.lower() for item in risks)
+        or delivery_report.get("recommended_next_batch") is None
+    )
+    seed = {
+        "source_batch_id": delivery_report["batch_id"],
+        "roadmap_id": delivery_report["roadmap_id"],
+        "recommended_next_batch": delivery_report["recommended_next_batch"],
+        "must_carry_forward_risks": risks,
+        "open_review_findings": review_findings,
+        "required_validations_next": required_validations_next,
+        "trace_id": delivery_report["trace_id"],
+    }
+    bundle = {
+        "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
+        "schema_version": "1.0.0",
+        "source_batch_id": delivery_report["batch_id"],
+        "roadmap_id": delivery_report["roadmap_id"],
+        "recommended_next_batch": delivery_report["recommended_next_batch"],
+        "must_carry_forward_risks": risks,
+        "must_carry_forward_artifacts": evidence_refs,
+        "must_preserve_invariants": [
+            "artifact_first",
+            "deterministic_selection",
+            "fail_closed",
+            "no_hidden_memory",
+            "trace_linkage",
+        ],
+        "required_validations_next": required_validations_next,
+        "open_contract_work": open_contract_work,
+        "open_review_findings": review_findings,
+        "program_constraints": program_constraints,
+        "human_decision_required": human_decision_required,
+        "source_delivery_report_ref": f"batch_delivery_report:{delivery_report['report_id']}",
+        "trace_id": delivery_report["trace_id"],
+        "created_at": delivery_report["created_at"],
+    }
+    _validate_schema(bundle, "batch_handoff_bundle")
+    return bundle
+
 
 
 def _normalize_execution_policy(execution_policy: dict[str, Any] | None) -> dict[str, Any]:
@@ -504,9 +599,16 @@ def _build_next_cycle_input_bundle(
     source_cycle_runner_result_ref: str,
     trace_navigation: dict[str, Any],
     adaptive_refs: list[str],
+    prior_handoff_bundle: dict[str, Any] | None,
     trace_id: str,
     created_at: str,
 ) -> dict[str, Any]:
+    required_reviews_final = sorted(
+        set(required_reviews + (prior_handoff_bundle.get("required_validations_next", []) if isinstance(prior_handoff_bundle, dict) else []))
+    )
+    recommended_start_batch = next_batch_id
+    if isinstance(prior_handoff_bundle, dict) and isinstance(prior_handoff_bundle.get("recommended_next_batch"), str):
+        recommended_start_batch = str(prior_handoff_bundle["recommended_next_batch"])
     seed = {
         "current_cycle_id": current_cycle_id,
         "required_artifacts": sorted(set(required_artifacts)),
@@ -516,7 +618,7 @@ def _build_next_cycle_input_bundle(
         "program_drift_severity": program_drift_severity,
         "risk_level": risk_level,
         "blocking_conditions": sorted(set(blocking_conditions)),
-        "required_reviews": sorted(set(required_reviews)),
+        "required_reviews": required_reviews_final,
         "continuation_depth": continuation_depth + 1,
         "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
         "trace_id": trace_id,
@@ -527,8 +629,8 @@ def _build_next_cycle_input_bundle(
             [
                 f"trace_navigation:{trace_navigation.get('validation_id', 'unknown')}",
                 f"roadmap_multi_batch_run_result:{current_cycle_id}",
-            ]
-            + adaptive_refs
+            ] + adaptive_refs
+            + ([f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"] if isinstance(prior_handoff_bundle, dict) else [])
         )
     )
     return {
@@ -547,10 +649,10 @@ def _build_next_cycle_input_bundle(
         ),
         "active_risks": sorted(set([f"risk_level={risk_level}"] + list(risk_signals))),
         "unresolved_blockers": sorted(set(blocking_conditions)),
-        "required_reviews": sorted(set(required_reviews)),
+        "required_reviews": required_reviews_final,
         "continuation_depth": continuation_depth + 1,
         "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
-        "recommended_start_batch": next_batch_id,
+        "recommended_start_batch": recommended_start_batch,
         "context_refs": context_refs,
         "created_at": created_at,
         "trace_id": trace_id,
@@ -662,11 +764,35 @@ def run_system_cycle(
         raise SystemCycleOperatorError("created_at is required for deterministic system cycle execution")
     timestamp = created_at
     normalized_execution_policy = _normalize_execution_policy(execution_policy)
+    if not isinstance(integration_inputs, dict):
+        raise SystemCycleOperatorError("integration_inputs must be an object")
+
+    prior_handoff_required = bool(integration_inputs.get("require_prior_handoff", False))
+    handoff_root_raw = integration_inputs.get("handoff_bundle_root")
+    if isinstance(handoff_root_raw, str) and handoff_root_raw.strip():
+        handoff_root = Path(handoff_root_raw)
+    else:
+        handoff_root = pqx_runs_root / "batch_handoffs"
+    prior_handoff_bundle = _load_latest_prior_batch_handoff_bundle(handoff_root=handoff_root, required=prior_handoff_required)
+
+    effective_selection_signals = dict(selection_signals)
+    effective_authorization_signals = dict(authorization_signals)
+    if isinstance(prior_handoff_bundle, dict):
+        prior_recommended = prior_handoff_bundle.get("recommended_next_batch")
+        if isinstance(prior_recommended, str):
+            existing_priority = [str(item) for item in effective_selection_signals.get("priority_ordering", []) if str(item).strip()]
+            effective_selection_signals["priority_ordering"] = [prior_recommended] + [
+                item for item in existing_priority if item != prior_recommended
+            ]
+            effective_selection_signals["prior_handoff_recommended_next_batch"] = prior_recommended
+        carry_risks = [str(item) for item in prior_handoff_bundle.get("must_carry_forward_risks", [])]
+        if any("critical" in item.lower() for item in carry_risks):
+            effective_authorization_signals["control_block_condition"] = True
 
     multi_batch = execute_bounded_roadmap_run(
         roadmap_artifact,
-        selection_signals,
-        authorization_signals,
+        effective_selection_signals,
+        effective_authorization_signals,
         pqx_state_path=pqx_state_path,
         pqx_runs_root=pqx_runs_root,
         execution_policy=normalized_execution_policy,
@@ -679,9 +805,6 @@ def run_system_cycle(
     )
     run_result = multi_batch["run_result"]
     updated_roadmap = multi_batch["roadmap"]
-
-    if not isinstance(integration_inputs, dict):
-        raise SystemCycleOperatorError("integration_inputs must be an object")
 
     roadmap_loop_validation = dict(integration_inputs.get("roadmap_loop_validation") or {})
     if "validation_id" not in roadmap_loop_validation and run_result.get("loop_validation_refs"):
@@ -706,7 +829,7 @@ def run_system_cycle(
         control_decision=dict(integration_inputs.get("control_decision") or {}),
         certification_pack=dict(integration_inputs.get("certification_pack") or {}),
         validation_scope=dict(integration_inputs.get("validation_scope") or {}),
-        trace_id=str(integration_inputs.get("trace_id") or authorization_signals.get("trace_id") or ""),
+        trace_id=str(integration_inputs.get("trace_id") or effective_authorization_signals.get("trace_id") or ""),
         source_refs=dict(integration_inputs.get("source_refs") or {}),
         created_at=timestamp,
     )
@@ -852,6 +975,7 @@ def run_system_cycle(
         source_cycle_runner_result_ref=source_cycle_runner_result_ref,
         trace_navigation=trace_navigation,
         adaptive_refs=[adaptive_observability_ref, adaptive_trend_ref, adaptive_policy_review_ref],
+        prior_handoff_bundle=prior_handoff_bundle,
         trace_id=integration["trace_id"],
         created_at=timestamp,
     )
@@ -898,6 +1022,9 @@ def run_system_cycle(
     _validate_schema(next_cycle_decision, "next_cycle_decision")
     next_cycle_decision_ref = f"next_cycle_decision:{next_cycle_decision['cycle_decision_id']}"
     next_cycle_input_bundle_ref = f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}"
+    required_validations_next = sorted(
+        set(prior_handoff_bundle.get("required_validations_next", []) if isinstance(prior_handoff_bundle, dict) else [])
+    )
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
@@ -957,6 +1084,7 @@ def run_system_cycle(
                         f"control_state={integration_inputs.get('control_decision', {}).get('decision', 'unknown')}",
                         f"program_caused_stop={str(program_caused_stop).lower()}",
                     ]
+                    + [f"required_validation:{item}" for item in required_validations_next]
                 )
             ),
             "required_artifacts": selected_candidate["required_artifacts"],
@@ -999,6 +1127,11 @@ def run_system_cycle(
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
+                    + (
+                        [f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"]
+                        if isinstance(prior_handoff_bundle, dict)
+                        else []
+                    )
                 )
             ),
         },
@@ -1023,6 +1156,11 @@ def run_system_cycle(
                     next_cycle_input_bundle_ref,
                 ]
                 + list(source_refs or [])
+                + (
+                    [f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"]
+                    if isinstance(prior_handoff_bundle, dict)
+                    else []
+                )
             )
         ),
     }
@@ -1069,7 +1207,7 @@ def run_system_cycle(
                 f"adaptive_policy_tuning_signal={adaptive_policy_review['operator_tuning_signals'][0]}",
                 f"program_caused_stop={str(program_caused_stop).lower()}",
                 f"recommended_program_aligned_move={selected_candidate['action']}",
-            ],
+            ] + [f"required_validation:{item}" for item in required_validations_next],
         "artifact_index": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
             "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
@@ -1095,6 +1233,11 @@ def run_system_cycle(
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
+                    + (
+                        [f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"]
+                        if isinstance(prior_handoff_bundle, dict)
+                        else []
+                    )
                 )
             ),
         },
@@ -1136,6 +1279,58 @@ def run_system_cycle(
         ),
     }
     _validate_schema(summary, "build_summary")
+    delivery_seed = {
+        "batch_id": run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN",
+        "roadmap_id": run_result["roadmap_id"],
+        "trace_id": integration["trace_id"],
+        "created_at": timestamp,
+        "stop_reason": stop_reason,
+    }
+    delivery_status = "completed" if stop_reason == "max_batches_reached" and not blocking_conditions else (
+        "completed_with_risk" if stop_reason == "max_batches_reached" else ("blocked" if blocking_conditions else "failed")
+    )
+    batch_delivery_report = {
+        "report_id": f"BDR-{_canonical_hash(delivery_seed)[:12].upper()}",
+        "schema_version": "1.0.0",
+        "batch_id": delivery_seed["batch_id"],
+        "roadmap_id": run_result["roadmap_id"],
+        "intent": "Execute governed roadmap batch and emit deterministic handoff memory artifacts.",
+        "status": delivery_status,
+        "files_changed": [],
+        "contracts_added_or_updated": [],
+        "tests_run": [],
+        "results_summary": _sorted_unique_strings(
+            [
+                f"stop_reason={stop_reason}",
+                f"next_cycle_decision={next_cycle_decision['decision']}",
+                f"program_alignment_status={program_alignment_status}",
+            ]
+        ),
+        "remaining_risks": _sorted_unique_strings(
+            list(blocking_conditions)
+            + [f"critical_risk:{item}" for item in blocking_conditions if item.startswith("AUTH_")]
+        ),
+        "open_followups": _sorted_unique_strings(
+            [f"validation:{item}" for item in required_reviews]
+            + [f"contract:{item}" for item in required_reviews if "contract" in item]
+        ),
+        "recommended_next_batch": next_cycle_input_bundle.get("recommended_start_batch"),
+        "blocking_issues": _sorted_unique_strings(blocking_conditions),
+        "evidence_refs": _sorted_unique_strings(
+            [
+                f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                next_cycle_decision_ref,
+                next_cycle_input_bundle_ref,
+                f"next_step_recommendation:{recommendation['recommendation_id']}",
+                f"build_summary:{summary['summary_id']}",
+            ]
+        ),
+        "source_refs": _sorted_unique_strings(list(run_result.get("source_refs", []))),
+        "trace_id": integration["trace_id"],
+        "created_at": timestamp,
+    }
+    _validate_schema(batch_delivery_report, "batch_delivery_report")
+    batch_handoff_bundle = derive_batch_handoff_bundle(batch_delivery_report)
 
     return {
         "updated_roadmap": updated_roadmap,
@@ -1147,8 +1342,11 @@ def run_system_cycle(
         "next_step_recommendation": recommendation,
         "next_cycle_decision": next_cycle_decision,
         "next_cycle_input_bundle": next_cycle_input_bundle,
+        "batch_delivery_report": batch_delivery_report,
+        "batch_handoff_bundle": batch_handoff_bundle,
+        "prior_batch_handoff_bundle": prior_handoff_bundle,
         "build_summary": summary,
     }
 
 
-__all__ = ["SystemCycleOperatorError", "decide_next_cycle", "run_system_cycle"]
+__all__ = ["SystemCycleOperatorError", "decide_next_cycle", "derive_batch_handoff_bundle", "run_system_cycle"]

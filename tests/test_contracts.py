@@ -157,6 +157,8 @@ class ContractSchemaTests(unittest.TestCase):
             "cycle_runner_result",
             "multi_cycle_execution_report",
             "roadmap_execution_report",
+            "batch_delivery_report",
+            "batch_handoff_bundle",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

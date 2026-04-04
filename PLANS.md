@@ -91,6 +91,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | Plan file | Item | Status |
 | docs/review-actions/PLAN-BATCH-S2-2026-04-04.md | BATCH-S2 — Self-Testing Foundation (ST-02 + ST-03 + ST-05 + ST-21) | Active |
+| docs/review-actions/PLAN-BATCH-HANDOFF-MEMORY-2026-04-04.md | BATCH-HANDOFF-MEMORY — Batch Delivery + Handoff Memory | Active |
 | docs/review-actions/PLAN-BATCH-S1-2026-04-04.md | BATCH-S1 — Trust Boundary Hardening (REPORT-003 + ST-01) | Active |
 | docs/review-actions/PLAN-BATCH-MVP-END-TO-END-2026-04-04.md | BATCH-MVP-END-TO-END — Full Roadmap Execution (Control-Governed) | Active |
 | docs/review-actions/PLAN-BATCH-MULTI-CYCLE-FIX-2026-04-04.md | BATCH-MULTI-CYCLE-FIX — Manifest Classification Repair | Active |
