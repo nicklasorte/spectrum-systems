@@ -1,0 +1,21 @@
+{
+  "artifact_type": "tpa_bypass_drift_signal",
+  "schema_version": "1.0.0",
+  "signal_id": "tpa-bypass:run-001:AI-01:1",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "drift_type": "tpa_bypass",
+  "affected_artifact_id": "pqx_slice_execution_record:AI-01",
+  "missing_tpa_components": ["plan", "build", "simplify", "gate"],
+  "execution_context": {
+    "slice_id": "AI-01",
+    "step_id": "AI-01",
+    "required_scope": true,
+    "module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+    "file_path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py"
+  },
+  "severity": "warn",
+  "occurrence_count": 1,
+  "reason_code": "tpa_bypass_detected",
+  "detected_at": "2026-04-04T00:00:00Z"
+}

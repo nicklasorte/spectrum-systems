@@ -7,6 +7,7 @@
   "slice_id": "AI-01-P",
   "step_id": "AI-01",
   "phase": "plan",
+  "tpa_mode": "full",
   "produced_at": "2026-04-03T00:00:00Z",
   "artifact": {
     "artifact_kind": "plan",

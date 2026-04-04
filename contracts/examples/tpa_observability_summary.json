@@ -13,6 +13,19 @@
     "complexity_regression_rate": 0.0,
     "cleanup_deletion_rate": 0.5
   },
+  "bypass_attempt_count": 1,
+  "bypass_hotspots": [
+    {
+      "path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+      "count": 1
+    }
+  ],
+  "repeated_offenders": [
+    {
+      "scope": "AI-01",
+      "count": 1
+    }
+  ],
   "top_tpa_hotspot_modules": [
     {
       "module_ref": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",

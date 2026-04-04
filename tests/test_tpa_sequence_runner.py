@@ -421,3 +421,73 @@ def test_cleanup_only_mode_requires_strict_equivalence_and_replay_ref(tmp_path: 
             execute_slice=_bad_cleanup_executor,
             clock=FixedClock([f"2026-04-03T00:57:{i:02d}Z" for i in range(1, 40)]),
         )
+
+
+def test_required_scope_non_tpa_slice_fails_closed_with_bypass_signal(tmp_path: Path) -> None:
+    def _non_tpa_executor(_: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": "records/AI-01.json",
+            "done_certification_record": "certs/AI-01.json",
+            "pqx_slice_audit_bundle": "audit/AI-01.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    with pytest.raises(PQXSequenceRunnerError, match="tpa_bypass_detected"):
+        execute_sequence_run(
+            slice_requests=[
+                {
+                    "slice_id": "AI-01",
+                    "trace_id": "trace-direct-ai01",
+                    "changed_paths": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+                }
+            ],
+            state_path=tmp_path / "state-bypass.json",
+            queue_run_id="queue-tpa-009",
+            run_id="run-tpa-009",
+            trace_id="trace-tpa-batch-009",
+            execute_slice=_non_tpa_executor,
+            clock=FixedClock([f"2026-04-03T01:00:{i:02d}Z" for i in range(1, 30)]),
+        )
+
+
+def test_lightweight_mode_allows_minimal_simplify_artifact(tmp_path: Path) -> None:
+    requests = _tpa_slice_requests()
+    requests[0]["tpa_plan"]["tpa_mode"] = "lightweight"
+
+    def _lightweight_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-S"):
+            response.pop("tpa_simplify", None)
+        return response
+
+    state = execute_sequence_run(
+        slice_requests=requests,
+        state_path=tmp_path / "state-lightweight.json",
+        queue_run_id="queue-tpa-010",
+        run_id="run-tpa-010",
+        trace_id="trace-tpa-batch-010",
+        execute_slice=_lightweight_executor,
+        clock=FixedClock([f"2026-04-03T01:10:{i:02d}Z" for i in range(1, 40)]),
+    )
+    assert state["tpa_artifacts"]["AI-01"]["plan"]["tpa_mode"] == "lightweight"
+    assert state["tpa_artifacts"]["AI-01"]["simplify"]["phase"] == "simplify"
+
+
+def test_lightweight_mode_blocks_when_not_eligible(tmp_path: Path) -> None:
+    requests = _tpa_slice_requests()
+    requests[0]["tpa_plan"]["tpa_mode"] = "lightweight"
+    requests[0]["changed_paths"] = ["a.py", "b.py", "c.py"]
+    requests[0]["estimated_loc_delta"] = 250
+
+    with pytest.raises(PQXSequenceRunnerError, match="lightweight mode not eligible"):
+        execute_sequence_run(
+            slice_requests=requests,
+            state_path=tmp_path / "state-lightweight-block.json",
+            queue_run_id="queue-tpa-011",
+            run_id="run-tpa-011",
+            trace_id="trace-tpa-batch-011",
+            execute_slice=_executor,
+            clock=FixedClock([f"2026-04-03T01:20:{i:02d}Z" for i in range(1, 40)]),
+        )
