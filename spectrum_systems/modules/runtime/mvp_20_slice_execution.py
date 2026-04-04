@@ -159,6 +159,16 @@ def _run_drill_sequence(*, created_at: str, pqx_state_path: Path, pqx_runs_root:
         if next_batch is None:
             break
         batch_id = str(next_batch["batch_id"])
+        all_batches = [
+            str(batch["batch_id"])
+            for batch in roadmap["batches"]
+            if isinstance(batch, dict) and isinstance(batch.get("batch_id"), str)
+        ]
+        remaining_batches = [
+            str(batch["batch_id"])
+            for batch in roadmap["batches"]
+            if isinstance(batch, dict) and batch.get("status") == "not_started" and isinstance(batch.get("batch_id"), str)
+        ]
 
         selection_signals = {
             "signals": ["roadmap_authority_resolved", "executor_ingestion_valid", "state_binding_complete"],
@@ -166,8 +176,8 @@ def _run_drill_sequence(*, created_at: str, pqx_state_path: Path, pqx_runs_root:
             "control_loop": {"eval_present": True, "trace_present": True, "schema_valid": True},
             "risk_level": "medium",
             "program_phase": "build",
-            "allowed_targets": [batch_id],
-            "priority_ordering": [batch_id],
+            "allowed_targets": all_batches,
+            "priority_ordering": remaining_batches,
             "eval_health": "healthy",
         }
         integration = _base_integration_inputs(trace_id, batch_id)
@@ -273,6 +283,9 @@ def run_mvp_20_slice_execution_drill(
     )
 
     trace_integrity_ok = bool(run_a["build_summary_refs"] and run_a["recommendation_refs"] and run_a["continuation_refs"])
+    blocked_before_first_slice = len(run_a["attempted_sequence"]) == 0
+    governed_stop_reason = run_a["stop_reason"] if run_a["stop_reason"].startswith("program_") else "none"
+    drill_mode = "positive_path"
 
     report_seed = {
         "roadmap_id": run_a["roadmap_id"],
@@ -301,11 +314,18 @@ def run_mvp_20_slice_execution_drill(
             "batch_continuation_record_readable": True,
             "final_report_readable": True,
             "notes": [
+                f"drill_mode={drill_mode}",
+                f"blocked_before_first_slice={str(blocked_before_first_slice).lower()}",
+                f"governed_stop_reason={governed_stop_reason}",
                 "Build summary and recommendation artifacts identify stop location and next action.",
                 "Continuation records are linked for each attempted slice decision point.",
             ],
         },
-        "blocking_issues": [] if run_a["stop_reason"] == "max_batches_reached" else [run_a["stop_reason"]],
+        "blocking_issues": (
+            ([] if run_a["stop_reason"] == "max_batches_reached" else [run_a["stop_reason"]])
+            + [f"attempted_slices={len(run_a['attempted_sequence'])}"]
+            + [f"attempt_explanation={'blocked_before_first_slice' if blocked_before_first_slice else 'drill_progressed_before_stop'}"]
+        ),
         "created_at": timestamp,
         "trace_id": run_a["trace_id"],
         "evidence_refs": {
