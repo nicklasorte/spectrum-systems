@@ -180,6 +180,7 @@ class ContractSchemaTests(unittest.TestCase):
             "system_budget_status",
             "canary_rollout_record",
             "trust_posture_snapshot",
+            "operations_monitoring_contract",
             "artifact_family_health_report",
             "evidence_gap_hotspot_report",
             "override_hotspot_report",

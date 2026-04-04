@@ -1,0 +1,584 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/operations_monitoring_contract.schema.json",
+  "title": "operations_monitoring_contract",
+  "description": "Governed deterministic monitoring contract defining operational signals, thresholds, severities, required actions, and escalation rules for unattended operation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "monitored_signals",
+    "thresholds",
+    "severity_mapping",
+    "required_actions",
+    "escalation_rules",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "contract_id": {
+      "type": "string",
+      "pattern": "^OMC-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "monitored_signals": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "signal_name",
+          "source_artifact_type",
+          "metric_definition",
+          "threshold_values",
+          "severity_levels",
+          "operator_action"
+        ],
+        "properties": {
+          "signal_name": {
+            "type": "string",
+            "enum": [
+              "capability_readiness_state",
+              "drift_severity",
+              "override_rate",
+              "replay_match_rate",
+              "decision_quality_budget_status",
+              "promotion_consistency_status",
+              "policy_conflict_count",
+              "stale_artifact_ratio"
+            ]
+          },
+          "source_artifact_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metric_definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "threshold_values": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "normal",
+              "warning",
+              "freeze",
+              "block"
+            ],
+            "properties": {
+              "normal": {
+                "type": "string",
+                "minLength": 1
+              },
+              "warning": {
+                "type": "string",
+                "minLength": 1
+              },
+              "freeze": {
+                "type": "string",
+                "minLength": 1
+              },
+              "block": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "severity_levels": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "normal",
+                "warning",
+                "freeze",
+                "block"
+              ]
+            }
+          },
+          "operator_action": {
+            "type": "string",
+            "enum": [
+              "none",
+              "observe",
+              "investigate",
+              "intervene"
+            ]
+          }
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_readiness_state",
+        "drift_severity",
+        "override_rate",
+        "replay_match_rate",
+        "decision_quality_budget_status",
+        "promotion_consistency_status",
+        "policy_conflict_count",
+        "stale_artifact_ratio"
+      ],
+      "properties": {
+        "capability_readiness_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal",
+            "warning",
+            "freeze",
+            "block"
+          ],
+          "properties": {
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "supervised",
+                  "autonomous"
+                ]
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "warning": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "constrained"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "freeze": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "constrained"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "block": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "unsafe"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          }
+        },
+        "drift_severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal",
+            "warning",
+            "freeze",
+            "block"
+          ],
+          "properties": {
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "none"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "warning": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "freeze": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "freeze"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "block": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "block"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          }
+        },
+        "override_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal_max",
+            "warning_max",
+            "freeze_max",
+            "block_min"
+          ],
+          "properties": {
+            "normal_max": {
+              "type": "number",
+              "const": 0.05
+            },
+            "warning_max": {
+              "type": "number",
+              "const": 0.1
+            },
+            "freeze_max": {
+              "type": "number",
+              "const": 0.15
+            },
+            "block_min": {
+              "type": "number",
+              "const": 0.150001
+            }
+          }
+        },
+        "replay_match_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal_min",
+            "warning_min",
+            "freeze_min",
+            "block_max"
+          ],
+          "properties": {
+            "normal_min": {
+              "type": "number",
+              "const": 0.98
+            },
+            "warning_min": {
+              "type": "number",
+              "const": 0.95
+            },
+            "freeze_min": {
+              "type": "number",
+              "const": 0.9
+            },
+            "block_max": {
+              "type": "number",
+              "const": 0.899999
+            }
+          }
+        },
+        "decision_quality_budget_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal",
+            "warning",
+            "freeze",
+            "block"
+          ],
+          "properties": {
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "healthy"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "warning": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "freeze": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "exhausted"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "block": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "critical"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          }
+        },
+        "promotion_consistency_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal",
+            "warning",
+            "freeze",
+            "block"
+          ],
+          "properties": {
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "consistent"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "warning": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "needs_review"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "freeze": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "inconsistent"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "block": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "invalid"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          }
+        },
+        "policy_conflict_count": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal_max",
+            "warning_max",
+            "freeze_max",
+            "block_min"
+          ],
+          "properties": {
+            "normal_max": {
+              "type": "integer",
+              "const": 0
+            },
+            "warning_max": {
+              "type": "integer",
+              "const": 1
+            },
+            "freeze_max": {
+              "type": "integer",
+              "const": 3
+            },
+            "block_min": {
+              "type": "integer",
+              "const": 4
+            }
+          }
+        },
+        "stale_artifact_ratio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal_max",
+            "warning_max",
+            "freeze_max",
+            "block_min"
+          ],
+          "properties": {
+            "normal_max": {
+              "type": "number",
+              "const": 0.05
+            },
+            "warning_max": {
+              "type": "number",
+              "const": 0.1
+            },
+            "freeze_max": {
+              "type": "number",
+              "const": 0.2
+            },
+            "block_min": {
+              "type": "number",
+              "const": 0.200001
+            }
+          }
+        }
+      }
+    },
+    "severity_mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "properties": {
+        "normal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "warning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "freeze": {
+          "type": "string",
+          "minLength": 1
+        },
+        "block": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "required_actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "properties": {
+        "normal": {
+          "type": "string",
+          "const": "none"
+        },
+        "warning": {
+          "type": "string",
+          "const": "observe"
+        },
+        "freeze": {
+          "type": "string",
+          "const": "investigate"
+        },
+        "block": {
+          "type": "string",
+          "const": "intervene"
+        }
+      }
+    },
+    "escalation_rules": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "escalation_state",
+          "required_action",
+          "condition"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "warning",
+              "freeze",
+              "block"
+            ]
+          },
+          "escalation_state": {
+            "type": "string",
+            "enum": [
+              "none",
+              "watch",
+              "paused",
+              "remediation_required"
+            ]
+          },
+          "required_action": {
+            "type": "string",
+            "enum": [
+              "none",
+              "observe",
+              "investigate",
+              "intervene"
+            ]
+          },
+          "condition": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

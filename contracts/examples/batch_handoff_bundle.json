@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.9.0",
+  "schema_version": "1.10.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -94,5 +94,9 @@
   ],
   "policy_activation_ref": "policy_activation_record:PAC-1111AAAABBBB",
   "policy_conflict_refs": [],
-  "active_policy_refs": []
+  "active_policy_refs": [],
+  "monitoring_contract_ref": "operations_monitoring_contract:OMC-1A2B3C4D5E6F",
+  "operational_severity": "normal",
+  "operational_required_action": "none",
+  "operational_escalation_state": "none"
 }

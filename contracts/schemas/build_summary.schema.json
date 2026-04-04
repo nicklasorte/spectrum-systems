@@ -67,7 +67,11 @@
     "policy_candidate_refs",
     "policy_activation_ref",
     "policy_conflict_refs",
-    "active_policy_refs"
+    "active_policy_refs",
+    "monitoring_contract_ref",
+    "operational_severity",
+    "operational_required_action",
+    "operational_escalation_state"
   ],
   "properties": {
     "summary_id": {
@@ -76,7 +80,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.14.0"
+      "const": "1.15.0"
     },
     "run_id": {
       "type": "string",
@@ -809,6 +813,37 @@
       },
       "minItems": 0,
       "uniqueItems": true
+    },
+    "monitoring_contract_ref": {
+      "type": "string",
+      "pattern": "^operations_monitoring_contract:OMC-[A-F0-9]{12}$"
+    },
+    "operational_severity": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ]
+    },
+    "operational_required_action": {
+      "type": "string",
+      "enum": [
+        "none",
+        "observe",
+        "investigate",
+        "intervene"
+      ]
+    },
+    "operational_escalation_state": {
+      "type": "string",
+      "enum": [
+        "none",
+        "watch",
+        "paused",
+        "remediation_required"
+      ]
     }
   },
   "$defs": {

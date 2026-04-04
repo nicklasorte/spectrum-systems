@@ -729,7 +729,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.9.0",
+        "schema_version": "1.10.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -765,6 +765,10 @@ def derive_batch_handoff_bundle(
         "canary_rollout_ref": canary_rollout_ref,
         "continuous_eval_run_refs": continuous_eval_run_refs,
         "trust_posture_snapshot_ref": trust_posture_snapshot_ref,
+        "monitoring_contract_ref": "operations_monitoring_contract:OMC-000000000000",
+        "operational_severity": "normal",
+        "operational_required_action": "none",
+        "operational_escalation_state": "none",
         "judgment_lifecycle_refs": judgment_lifecycle_refs,
         "precedent_selection_refs": precedent_selection_refs,
         "precedent_conflict_refs": precedent_conflict_refs,
@@ -2211,7 +2215,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.14.0",
+        "schema_version": "1.15.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -2247,6 +2251,10 @@ def run_system_cycle(
             "continuous_eval_run_record:CER-000000000004",
         ],
         "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-000000000000",
+        "monitoring_contract_ref": "operations_monitoring_contract:OMC-000000000000",
+        "operational_severity": "normal",
+        "operational_required_action": "none",
+        "operational_escalation_state": "none",
         "artifact_family_health_report_ref": "artifact_family_health_report:AFH-000000000000",
         "evidence_gap_hotspot_report_ref": "evidence_gap_hotspot_report:EGH-000000000000",
         "override_hotspot_report_ref": "override_hotspot_report:OVH-000000000000",
@@ -2757,6 +2765,10 @@ def run_system_cycle(
     summary["canary_rollout_ref"] = canary_rollout_ref
     summary["continuous_eval_run_refs"] = continuous_eval_refs
     summary["trust_posture_snapshot_ref"] = trust_posture_ref
+    summary["monitoring_contract_ref"] = str(trust_posture_snapshot["monitoring_contract_ref"])
+    summary["operational_severity"] = str(trust_posture_snapshot["operational_severity"])
+    summary["operational_required_action"] = str(trust_posture_snapshot["operational_required_action"])
+    summary["operational_escalation_state"] = str(trust_posture_snapshot["operational_escalation_state"])
     summary["artifact_family_health_report_ref"] = artifact_family_health_ref
     summary["evidence_gap_hotspot_report_ref"] = evidence_gap_hotspot_ref
     summary["override_hotspot_report_ref"] = override_hotspot_ref
@@ -2807,6 +2819,10 @@ def run_system_cycle(
     batch_handoff_bundle["canary_rollout_ref"] = canary_rollout_ref
     batch_handoff_bundle["continuous_eval_run_refs"] = continuous_eval_refs
     batch_handoff_bundle["trust_posture_snapshot_ref"] = trust_posture_ref
+    batch_handoff_bundle["monitoring_contract_ref"] = summary["monitoring_contract_ref"]
+    batch_handoff_bundle["operational_severity"] = summary["operational_severity"]
+    batch_handoff_bundle["operational_required_action"] = summary["operational_required_action"]
+    batch_handoff_bundle["operational_escalation_state"] = summary["operational_escalation_state"]
     batch_handoff_bundle["judgment_lifecycle_refs"] = summary["judgment_lifecycle_refs"]
     batch_handoff_bundle["precedent_selection_refs"] = summary["precedent_selection_refs"]
     batch_handoff_bundle["precedent_conflict_refs"] = summary["precedent_conflict_refs"]

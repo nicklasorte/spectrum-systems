@@ -144,7 +144,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.14.0"
+    assert first["build_summary"]["schema_version"] == "1.15.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -231,6 +231,15 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["canary_rollout_ref"].startswith("canary_rollout_record:CNR-")
     assert len(first["build_summary"]["continuous_eval_run_refs"]) == 4
     assert first["build_summary"]["trust_posture_snapshot_ref"].startswith("trust_posture_snapshot:TPS-")
+    assert first["build_summary"]["monitoring_contract_ref"].startswith("operations_monitoring_contract:OMC-")
+    assert first["build_summary"]["operational_severity"] in {"normal", "warning", "freeze", "block"}
+    assert first["build_summary"]["operational_required_action"] in {"none", "observe", "investigate", "intervene"}
+    assert first["build_summary"]["operational_escalation_state"] in {"none", "watch", "paused", "remediation_required"}
+    assert first["trust_posture_snapshot"]["monitoring_contract_ref"] == first["build_summary"]["monitoring_contract_ref"]
+    assert first["batch_handoff_bundle"]["monitoring_contract_ref"] == first["build_summary"]["monitoring_contract_ref"]
+    assert first["batch_handoff_bundle"]["operational_severity"] == first["build_summary"]["operational_severity"]
+    assert first["batch_handoff_bundle"]["operational_required_action"] == first["build_summary"]["operational_required_action"]
+    assert first["batch_handoff_bundle"]["operational_escalation_state"] == first["build_summary"]["operational_escalation_state"]
     assert first["batch_handoff_bundle"]["failure_taxonomy_ref"] == first["build_summary"]["failure_taxonomy_ref"]
     assert first["batch_handoff_bundle"]["rollback_plan_ref"] == first["build_summary"]["rollback_plan_ref"]
     assert first["batch_handoff_bundle"]["promotion_consistency_ref"] == first["build_summary"]["promotion_consistency_ref"]
