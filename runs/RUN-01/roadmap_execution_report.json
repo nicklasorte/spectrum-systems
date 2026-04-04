@@ -1,0 +1,61 @@
+{
+  "run_id": "RUN-01",
+  "roadmap_id": "RUN-01-AUTONOMOUS-VALIDATION",
+  "created_at": "2026-04-04T00:00:00Z",
+  "bounded_cycles": 40,
+  "adaptation_enabled": true,
+  "drift_detection_enabled": true,
+  "policy_activation_enabled": true,
+  "readiness_autonomy_gating_enabled": true,
+  "total_batches": 24,
+  "batches_executed": 6,
+  "batches_blocked": 1,
+  "executed_batch_ids": [
+    "RUN01-B01",
+    "RUN01-B02",
+    "RUN01-B03",
+    "RUN01-B04",
+    "RUN01-B05",
+    "RUN01-B06"
+  ],
+  "blocked_batch_ids": [
+    "RUN01-B07"
+  ],
+  "stop_reason": "unsafe_halt",
+  "halted_without_intervention": true,
+  "validation_checks": {
+    "no_silent_failures": true,
+    "no_implicit_state_dependencies": true,
+    "no_promotion_without_full_gating": true,
+    "drift_changes_behavior": true,
+    "repeated_failures_decrease_over_time": true,
+    "policies_emerge_from_patterns": true,
+    "system_halts_correctly_when_required": true
+  },
+  "exception_routes": [
+    {
+      "cycle": 7,
+      "batch_id": "RUN01-B07",
+      "route": "exception_router/missing-signal",
+      "fail_closed": true
+    }
+  ],
+  "roadmap_adjustments": [
+    {
+      "cycle": 6,
+      "action": "freeze_downstream_batches",
+      "target_batch_ids": [
+        "RUN01-B19",
+        "RUN01-B20",
+        "RUN01-B21"
+      ],
+      "reason": "high drift"
+    },
+    {
+      "cycle": 7,
+      "action": "inject_required_signal",
+      "target_batch_id": "RUN01-B14",
+      "reason": "prevent repeated signal-related failure"
+    }
+  ]
+}

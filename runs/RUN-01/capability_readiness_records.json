@@ -1,0 +1,50 @@
+[
+  {
+    "readiness_id": "CRD-RUN01-001",
+    "cycle": 1,
+    "batch_id": "RUN01-B01",
+    "readiness_state": "supervised",
+    "trust_score": 0.865,
+    "decision_budget_remaining": 13
+  },
+  {
+    "readiness_id": "CRD-RUN01-002",
+    "cycle": 2,
+    "batch_id": "RUN01-B02",
+    "readiness_state": "supervised",
+    "trust_score": 0.87,
+    "decision_budget_remaining": 12
+  },
+  {
+    "readiness_id": "CRD-RUN01-003",
+    "cycle": 3,
+    "batch_id": "RUN01-B03",
+    "readiness_state": "supervised",
+    "trust_score": 0.86,
+    "decision_budget_remaining": 11
+  },
+  {
+    "readiness_id": "CRD-RUN01-004",
+    "cycle": 4,
+    "batch_id": "RUN01-B04",
+    "readiness_state": "supervised",
+    "trust_score": 0.865,
+    "decision_budget_remaining": 10
+  },
+  {
+    "readiness_id": "CRD-RUN01-005",
+    "cycle": 5,
+    "batch_id": "RUN01-B05",
+    "readiness_state": "supervised",
+    "trust_score": 0.855,
+    "decision_budget_remaining": 9
+  },
+  {
+    "readiness_id": "CRD-RUN01-006",
+    "cycle": 6,
+    "batch_id": "RUN01-B06",
+    "readiness_state": "constrained",
+    "trust_score": 0.66,
+    "decision_budget_remaining": 5
+  }
+]

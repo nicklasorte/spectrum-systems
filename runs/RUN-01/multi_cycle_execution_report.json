@@ -1,0 +1,85 @@
+{
+  "run_id": "RUN-01",
+  "cycle_count": 7,
+  "cycles": [
+    {
+      "cycle_index": 1,
+      "batch_id": "RUN01-B01",
+      "scenario": "happy_path",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 2,
+      "batch_id": "RUN01-B02",
+      "scenario": "happy_path",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 3,
+      "batch_id": "RUN01-B03",
+      "scenario": "edge_case",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 4,
+      "batch_id": "RUN01-B04",
+      "scenario": "happy_path",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 5,
+      "batch_id": "RUN01-B05",
+      "scenario": "edge_case",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 6,
+      "batch_id": "RUN01-B06",
+      "scenario": "drift_inducing",
+      "status": "executed",
+      "control_decision": "allow",
+      "stop_reason": "",
+      "judgment_lifecycle": "evaluated_and_committed",
+      "handoff_state": "carried_forward"
+    },
+    {
+      "cycle_index": 7,
+      "batch_id": "RUN01-B07",
+      "scenario": "failure_injected_missing_signal",
+      "status": "blocked",
+      "control_decision": "block",
+      "stop_reason": "missing_required_signal",
+      "judgment_lifecycle": "exception_routed",
+      "handoff_state": "carried_forward_with_block"
+    }
+  ],
+  "failure_trend": {
+    "cycle_1_10": 1,
+    "cycle_11_20": 0
+  },
+  "decision_quality_budget": {
+    "initial_budget": 14,
+    "remaining_budget": 1,
+    "budget_enforced": true
+  }
+}

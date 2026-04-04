@@ -1,0 +1,50 @@
+[
+  {
+    "snapshot_id": "TPS-RUN01-001",
+    "cycle": 1,
+    "batch_id": "RUN01-B01",
+    "trust_score": 0.865,
+    "readiness_state": "supervised",
+    "unsafe_promotion_blocked": true
+  },
+  {
+    "snapshot_id": "TPS-RUN01-002",
+    "cycle": 2,
+    "batch_id": "RUN01-B02",
+    "trust_score": 0.87,
+    "readiness_state": "supervised",
+    "unsafe_promotion_blocked": true
+  },
+  {
+    "snapshot_id": "TPS-RUN01-003",
+    "cycle": 3,
+    "batch_id": "RUN01-B03",
+    "trust_score": 0.86,
+    "readiness_state": "supervised",
+    "unsafe_promotion_blocked": true
+  },
+  {
+    "snapshot_id": "TPS-RUN01-004",
+    "cycle": 4,
+    "batch_id": "RUN01-B04",
+    "trust_score": 0.865,
+    "readiness_state": "supervised",
+    "unsafe_promotion_blocked": true
+  },
+  {
+    "snapshot_id": "TPS-RUN01-005",
+    "cycle": 5,
+    "batch_id": "RUN01-B05",
+    "trust_score": 0.855,
+    "readiness_state": "supervised",
+    "unsafe_promotion_blocked": true
+  },
+  {
+    "snapshot_id": "TPS-RUN01-006",
+    "cycle": 6,
+    "batch_id": "RUN01-B06",
+    "trust_score": 0.66,
+    "readiness_state": "constrained",
+    "unsafe_promotion_blocked": true
+  }
+]
