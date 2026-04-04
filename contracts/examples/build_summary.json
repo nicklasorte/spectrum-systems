@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.6.0",
+  "schema_version": "1.7.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -245,5 +245,10 @@
   "autonomy_reason_codes": [
     "all_continue_conditions_satisfied"
   ],
-  "autonomy_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A"
+  "autonomy_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+  "exception_class": "execution_failure",
+  "recommended_exception_action": "remediation_batch",
+  "exception_action_type": "create_remediation_batch",
+  "exception_requires_human_review": false,
+  "exception_requires_freeze": false
 }

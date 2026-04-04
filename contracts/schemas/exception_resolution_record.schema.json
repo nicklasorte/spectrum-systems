@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/exception_resolution_record.schema.json",
+  "title": "exception_resolution_record",
+  "description": "Deterministic governed exception resolution route artifact mapping a classified exception to the next allowed action.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exception_resolution_id",
+    "exception_classification_ref",
+    "recommended_action",
+    "action_type",
+    "route_target",
+    "requires_human_review",
+    "requires_roadmap_adjustment",
+    "requires_freeze",
+    "required_followup_artifacts",
+    "blocking_conditions",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "exception_resolution_id": {"type": "string", "pattern": "^ERR-[A-F0-9]{12}$"},
+    "exception_classification_ref": {"type": "string", "pattern": "^exception_classification_record:ECR-[A-F0-9]{12}$"},
+    "recommended_action": {
+      "type": "string",
+      "enum": [
+        "create_eval_coverage_work",
+        "re_run_or_remediate_eval_path",
+        "freeze_and_investigate",
+        "freeze_and_replay_investigation",
+        "queue_review",
+        "require_human_review",
+        "roadmap_adjustment",
+        "remediation_batch",
+        "escalate"
+      ]
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "create_remediation_batch",
+        "create_eval_batch",
+        "queue_review",
+        "freeze_and_investigate",
+        "escalate",
+        "adjust_roadmap",
+        "stop_without_auto_action"
+      ]
+    },
+    "route_target": {
+      "type": "string",
+      "enum": [
+        "eval_pipeline",
+        "review_queue",
+        "operator_review",
+        "roadmap_governance",
+        "policy_authority",
+        "remediation_queue",
+        "drift_response",
+        "replay_governance",
+        "investigation_queue"
+      ]
+    },
+    "requires_human_review": {"type": "boolean"},
+    "requires_roadmap_adjustment": {"type": "boolean"},
+    "requires_freeze": {"type": "boolean"},
+    "required_followup_artifacts": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

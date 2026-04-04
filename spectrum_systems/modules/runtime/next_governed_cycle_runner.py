@@ -29,6 +29,12 @@ _REQUIRED_BUNDLE_FIELDS = (
     "source_cycle_runner_result_ref",
     "autonomy_decision_ref",
     "autonomy_blockers",
+    "latest_exception_class",
+    "latest_exception_resolution_action",
+    "latest_exception_action_type",
+    "latest_exception_requires_human_review",
+    "latest_exception_requires_freeze",
+    "required_next_actions",
 )
 
 
@@ -212,6 +218,9 @@ def run_next_governed_cycle(
     )
     _recommended_start_batch = next_cycle_input_bundle.get("recommended_start_batch")
     context_refs = [str(item) for item in next_cycle_input_bundle.get("context_refs", [])]
+    latest_exception_requires_human_review = bool(next_cycle_input_bundle.get("latest_exception_requires_human_review", False))
+    latest_exception_requires_freeze = bool(next_cycle_input_bundle.get("latest_exception_requires_freeze", False))
+    required_next_actions = [str(item) for item in next_cycle_input_bundle.get("required_next_actions", [])]
 
     if not context_refs:
         refusal_reasons.append("input_bundle_invalid")
@@ -219,6 +228,8 @@ def run_next_governed_cycle(
     if unresolved_blockers:
         refusal_reasons.append("execution_precondition_missing")
     if autonomy_blockers:
+        refusal_reasons.append("execution_precondition_missing")
+    if latest_exception_requires_human_review or latest_exception_requires_freeze:
         refusal_reasons.append("execution_precondition_missing")
 
     if not required_artifacts:
@@ -280,6 +291,9 @@ def run_next_governed_cycle(
                 "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
                 "recommended_start_batch": _recommended_start_batch,
                 "context_refs": context_refs,
+                "required_next_actions": required_next_actions,
+                "latest_exception_class": str(next_cycle_input_bundle.get("latest_exception_class", "")),
+                "latest_exception_resolution_action": str(next_cycle_input_bundle.get("latest_exception_resolution_action", "")),
             },
         }
 
@@ -370,6 +384,9 @@ def run_next_governed_cycle(
             "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
             "recommended_start_batch": _recommended_start_batch,
             "context_refs": context_refs,
+            "required_next_actions": required_next_actions,
+            "latest_exception_class": str(next_cycle_input_bundle.get("latest_exception_class", "")),
+            "latest_exception_resolution_action": str(next_cycle_input_bundle.get("latest_exception_resolution_action", "")),
         },
     }
 

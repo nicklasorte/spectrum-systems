@@ -1,0 +1,16 @@
+{
+  "exception_classification_id": "ECR-1A2B3C4D5E6F",
+  "source_artifact_ref": "roadmap_multi_batch_run_result:RMB-EXAMPLE0001",
+  "source_batch_id": "BATCH-I",
+  "source_cycle_id": "RMB-EXAMPLE0001",
+  "control_decision": "allow",
+  "autonomy_decision": "continue",
+  "stop_reason": "execution_failed",
+  "exception_class": "execution_failure",
+  "severity": "high",
+  "normalized_failure_keys": [
+    "EXECUTION_FAILED"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-exception-router-example"
+}

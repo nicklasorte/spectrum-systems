@@ -541,3 +541,14 @@ def test_standards_manifest_registers_required_eval_coverage_contracts() -> None
     ):
         assert contract in standards
         assert standards[contract]["schema_version"] == "1.0.0"
+
+
+def test_standards_manifest_registers_exception_router_contracts() -> None:
+    standards = load_standards_contracts()
+    assert standards["exception_classification_record"]["schema_version"] == "1.0.0"
+    assert standards["exception_classification_record"]["example_path"] == "contracts/examples/exception_classification_record.json"
+    assert standards["exception_resolution_record"]["schema_version"] == "1.0.0"
+    assert standards["exception_resolution_record"]["example_path"] == "contracts/examples/exception_resolution_record.json"
+    assert standards["batch_handoff_bundle"]["schema_version"] == "1.2.0"
+    assert standards["next_cycle_input_bundle"]["schema_version"] == "1.2.0"
+    assert standards["build_summary"]["schema_version"] == "1.7.0"

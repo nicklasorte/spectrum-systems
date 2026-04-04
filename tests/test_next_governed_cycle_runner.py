@@ -251,6 +251,26 @@ def test_autonomy_blockers_prevent_unattended_execution() -> None:
     assert "execution_precondition_missing" in result["cycle_runner_result"]["refusal_reason_codes"]
 
 
+def test_exception_requires_human_review_prevents_unattended_execution() -> None:
+    bundle = _bundle()
+    bundle["latest_exception_requires_human_review"] = True
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["cycle_runner_result"]["execution_status"] == "refused"
+    assert "execution_precondition_missing" in result["cycle_runner_result"]["refusal_reason_codes"]
+
+
 def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     result = run_next_governed_cycle(
         next_cycle_decision=_decision("run_next_cycle"),
@@ -274,6 +294,8 @@ def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     assert artifact["executed_cycle_id"].startswith("RMB-")
     assert result["executed_cycle"] is not None
     assert len(result["executed_cycle"]["roadmap_multi_batch_run_result"]["attempted_batch_ids"]) == 1
+    assert result["bundle_consumption_summary"]["latest_exception_class"] == "execution_failure"
+    assert result["bundle_consumption_summary"]["latest_exception_resolution_action"] == "remediation_batch"
 
 
 def test_runner_result_is_deterministic_for_same_inputs() -> None:

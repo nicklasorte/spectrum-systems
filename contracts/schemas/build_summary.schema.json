@@ -34,7 +34,12 @@
     "autonomy_decision",
     "autonomy_reason_codes",
     "autonomy_decision_ref",
-    "next_cycle_inputs_ref"
+    "next_cycle_inputs_ref",
+    "exception_class",
+    "recommended_exception_action",
+    "exception_action_type",
+    "exception_requires_human_review",
+    "exception_requires_freeze"
   ],
   "properties": {
     "summary_id": {
@@ -43,7 +48,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.6.0"
+      "const": "1.7.0"
     },
     "run_id": {
       "type": "string",
@@ -563,6 +568,55 @@
     "next_cycle_inputs_ref": {
       "type": "string",
       "pattern": "^next_cycle_input_bundle:NCB-[A-F0-9]{12}$"
+    },
+    "exception_class": {
+      "type": "string",
+      "enum": [
+        "missing_eval_coverage",
+        "missing_required_eval_result",
+        "indeterminate_required_eval",
+        "replay_mismatch",
+        "review_required",
+        "autonomy_blocked",
+        "program_misalignment",
+        "drift_detected",
+        "unresolved_critical_risk",
+        "policy_violation",
+        "execution_failure",
+        "unknown_blocker"
+      ]
+    },
+    "recommended_exception_action": {
+      "type": "string",
+      "enum": [
+        "create_eval_coverage_work",
+        "re_run_or_remediate_eval_path",
+        "freeze_and_investigate",
+        "freeze_and_replay_investigation",
+        "queue_review",
+        "require_human_review",
+        "roadmap_adjustment",
+        "remediation_batch",
+        "escalate"
+      ]
+    },
+    "exception_action_type": {
+      "type": "string",
+      "enum": [
+        "create_remediation_batch",
+        "create_eval_batch",
+        "queue_review",
+        "freeze_and_investigate",
+        "escalate",
+        "adjust_roadmap",
+        "stop_without_auto_action"
+      ]
+    },
+    "exception_requires_human_review": {
+      "type": "boolean"
+    },
+    "exception_requires_freeze": {
+      "type": "boolean"
     }
   },
   "$defs": {
