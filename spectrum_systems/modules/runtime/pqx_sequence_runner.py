@@ -559,6 +559,16 @@ def _build_bypass_signal(
     }
 
 
+def _request_has_tpa_scope_evidence(request: dict[str, Any]) -> bool:
+    if request.get("tpa_scope_required") is True:
+        return True
+    if isinstance(request.get("tpa_scope_context"), dict):
+        return True
+    if isinstance(request.get("changed_paths"), list) and bool(request.get("changed_paths")):
+        return True
+    return any(bool(str(request.get(key) or "").strip()) for key in ("module", "artifact_type"))
+
+
 def _persist_with_batch_result(state: dict, state_path: Path) -> dict:
     persisted = _persist_and_reload_exact(state, state_path)
     result = deepcopy(persisted)
@@ -1200,13 +1210,20 @@ def execute_sequence_run(
         step_id, tpa_phase = _parse_tpa_slice_id(next_slice_id)
         required_scope = False
         if tpa_phase is None:
-            tpa_context = {
-                "file_path": (request.get("changed_paths") or [""])[0] if isinstance(request.get("changed_paths"), list) and request.get("changed_paths") else "",
-                "module": request.get("module"),
-                "artifact_type": request.get("artifact_type"),
-                "pqx_step_metadata": {"step_id": step_id},
-            }
-            required_scope = is_tpa_required(tpa_context, policy=tpa_scope_policy)
+            if _request_has_tpa_scope_evidence(request):
+                tpa_context = dict(request.get("tpa_scope_context") or {})
+                tpa_context.setdefault(
+                    "file_path",
+                    (request.get("changed_paths") or [""])[0]
+                    if isinstance(request.get("changed_paths"), list) and request.get("changed_paths")
+                    else "",
+                )
+                tpa_context.setdefault("module", request.get("module"))
+                tpa_context.setdefault("artifact_type", request.get("artifact_type"))
+                tpa_context.setdefault("pqx_step_metadata", {"step_id": step_id})
+                required_scope = bool(request.get("tpa_scope_required")) or is_tpa_required(
+                    tpa_context, policy=tpa_scope_policy
+                )
         if tpa_phase is not None and execution_status != "success":
             raise PQXSequenceRunnerError(f"TPA slice {next_slice_id} must succeed; fail-closed on {execution_status}")
 

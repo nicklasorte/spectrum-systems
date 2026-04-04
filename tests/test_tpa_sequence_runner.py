@@ -491,3 +491,26 @@ def test_lightweight_mode_blocks_when_not_eligible(tmp_path: Path) -> None:
             execute_slice=_executor,
             clock=FixedClock([f"2026-04-03T01:20:{i:02d}Z" for i in range(1, 40)]),
         )
+
+
+def test_non_tpa_slice_without_scope_evidence_does_not_force_tpa(tmp_path: Path) -> None:
+    def _executor_without_tpa(_: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": "records/AI-01.json",
+            "done_certification_record": "certs/AI-01.json",
+            "pqx_slice_audit_bundle": "audit/AI-01.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    state = execute_sequence_run(
+        slice_requests=[{"slice_id": "AI-01", "trace_id": "trace-ai-01"}],
+        state_path=tmp_path / "state-no-scope.json",
+        queue_run_id="queue-tpa-012",
+        run_id="run-tpa-012",
+        trace_id="trace-tpa-batch-012",
+        execute_slice=_executor_without_tpa,
+        clock=FixedClock([f"2026-04-03T01:30:{i:02d}Z" for i in range(1, 20)]),
+    )
+    assert state["status"] == "completed"
