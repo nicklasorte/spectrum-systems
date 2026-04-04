@@ -3678,7 +3678,7 @@
     },
     {
       "artifact_type": "complexity_budget",
-      "artifact_class": "observability",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -3691,7 +3691,7 @@
     },
     {
       "artifact_type": "complexity_trend",
-      "artifact_class": "observability",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
