@@ -160,6 +160,15 @@ def _resolve_batch(roadmap_artifact: dict[str, Any], batch_id: str) -> dict[str,
     return None
 
 
+def _derive_next_candidate_batch_id(roadmap_artifact: dict[str, Any]) -> str | None:
+    for batch in roadmap_artifact.get("batches", []):
+        if isinstance(batch, dict) and batch.get("status") == "not_started":
+            batch_id = batch.get("batch_id")
+            if isinstance(batch_id, str):
+                return batch_id
+    return None
+
+
 def _resolve_risk_level(selection_signals: dict[str, Any], authorization_signals: dict[str, Any]) -> str:
     direct = str(selection_signals.get("risk_level") or authorization_signals.get("risk_level") or "").strip().lower()
     if direct in {"low", "medium", "high"}:
@@ -231,45 +240,149 @@ def _resolve_max_batches_for_state(
 
 
 def should_continue_execution(
-    last_batch_result: dict[str, Any] | None,
-    control_decision: str,
-    context_risk_signals: dict[str, Any],
-    program_alignment: dict[str, Any],
-    replay_integrity: str,
-    continuation_state: dict[str, Any],
+    *,
+    last_control_decision: str,
+    program_constraint_signal: dict[str, Any] | None,
+    program_drift_signal: dict[str, Any] | None,
+    failure_pattern_record: dict[str, Any] | None,
+    eval_summary: dict[str, Any] | None,
+    risk_signals: dict[str, Any] | None,
+    roadmap_state: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    """Deterministic stop/continue policy for bounded multi-batch execution."""
-    if last_batch_result is None:
-        return {"continue": True, "reason_code": "continue_initial"}
+    """Deterministic continue/stop/escalate policy for bounded multi-batch execution."""
+    program_constraint_signal = dict(program_constraint_signal or {})
+    program_drift_signal = dict(program_drift_signal or {})
+    failure_pattern_record = dict(failure_pattern_record or {})
+    eval_summary = dict(eval_summary or {})
+    risk_signals = dict(risk_signals or {})
+    roadmap_state = dict(roadmap_state or {})
 
-    if control_decision in {"freeze", "block"}:
-        return {"continue": False, "reason_code": f"control_decision_{control_decision}"}
+    control = str(last_control_decision or "allow")
+    risk_level = str(risk_signals.get("risk_level") or "medium")
+    next_candidate = roadmap_state.get("next_candidate_batch_id")
 
-    if replay_integrity != "ready":
-        return {"continue": False, "reason_code": STOP_REASON_REPLAY_NOT_READY}
+    if control == "block":
+        return {"decision": "stop", "reason_codes": ["control_block"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+    if control == "freeze":
+        return {"decision": "stop", "reason_codes": ["control_freeze"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    non_progress_threshold = int(continuation_state.get("consecutive_non_progress_stop_threshold", 2))
-    if int(continuation_state.get("consecutive_non_progress", 0)) >= non_progress_threshold:
-        return {"continue": False, "reason_code": STOP_REASON_DIMINISHING_RETURNS}
+    repeated_failure_count = int(failure_pattern_record.get("repeated_failure_count", 0))
+    repeated_failure_threshold = int(failure_pattern_record.get("stop_threshold", 2))
+    if repeated_failure_count >= repeated_failure_threshold:
+        return {
+            "decision": "stop",
+            "reason_codes": [STOP_REASON_REPEATED_FAILURE_PATTERN],
+            "risk_level": risk_level,
+            "next_candidate_batch_id": next_candidate,
+        }
 
-    repeated_failure_threshold = int(continuation_state.get("repeated_failure_reason_stop_threshold", 2))
-    if int(continuation_state.get("repeated_failure_reason_count", 0)) >= repeated_failure_threshold:
-        return {"continue": False, "reason_code": STOP_REASON_REPEATED_FAILURE_PATTERN}
+    blocking_conditions = [str(item) for item in program_constraint_signal.get("blocking_conditions", []) if str(item).strip()]
+    allowed_targets = [str(item) for item in program_constraint_signal.get("allowed_targets", []) if str(item).strip()]
+    current_batch_id = str(roadmap_state.get("current_batch_id") or "")
+    if blocking_conditions:
+        return {"decision": "stop", "reason_codes": ["program_blocking_condition"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+    if allowed_targets and current_batch_id and current_batch_id not in allowed_targets:
+        return {"decision": "stop", "reason_codes": ["program_violation_disallowed_target"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    unresolved_blocker_threshold = int(continuation_state.get("unresolved_blocker_stop_threshold", 2))
-    if int(continuation_state.get("unresolved_blocker_streak", 0)) >= unresolved_blocker_threshold:
-        return {"continue": False, "reason_code": STOP_REASON_UNRESOLVED_BLOCKER_PERSISTS}
+    priority_ordering = [str(item) for item in program_constraint_signal.get("priority_ordering", []) if str(item).strip()]
+    if priority_ordering and next_candidate is not None and next_candidate != priority_ordering[0]:
+        return {"decision": "stop", "reason_codes": ["program_priority_violation"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    risk_accumulation = int(continuation_state.get("risk_accumulation", 0))
-    risk_threshold = int(continuation_state.get("risk_accumulation_stop_threshold", 6))
-    if risk_accumulation >= risk_threshold:
-        return {"continue": False, "reason_code": STOP_REASON_RISK_ACCUMULATION_EXCEEDED}
+    drift_level = str(program_drift_signal.get("drift_level") or "low")
+    if drift_level == "high":
+        return {"decision": "stop", "reason_codes": ["program_drift_high"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    risk_level = str(context_risk_signals.get("risk_level") or "medium")
-    if risk_level == "high" and not bool(program_alignment.get("safety_critical", True)):
-        return {"continue": False, "reason_code": STOP_REASON_RISK_ACCUMULATION_EXCEEDED}
+    eval_health = str(eval_summary.get("health") or "healthy")
+    if eval_health == "degraded":
+        return {"decision": "stop", "reason_codes": ["eval_health_degraded"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    return {"continue": True, "reason_code": "continue_safe"}
+    escalation_required = bool(risk_signals.get("escalation_required")) or control == "require_review"
+    if escalation_required:
+        return {"decision": "escalate", "reason_codes": ["manual_review_required"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+
+    return {"decision": "continue", "reason_codes": ["continue_safe"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+
+
+def _build_batch_continuation_record(
+    *,
+    current_batch_id: str | None,
+    next_candidate_batch_id: str | None,
+    decision: dict[str, Any],
+    signals_used: dict[str, Any],
+    program_state_snapshot: dict[str, Any],
+    trace_id: str,
+    created_at: str,
+) -> dict[str, Any]:
+    seed = {
+        "current_batch_id": current_batch_id,
+        "next_candidate_batch_id": next_candidate_batch_id,
+        "decision": decision["decision"],
+        "reason_codes": decision["reason_codes"],
+        "signals_used": signals_used,
+        "program_state_snapshot": program_state_snapshot,
+        "trace_id": trace_id,
+    }
+    return {
+        "continuation_id": f"BCR-{_canonical_hash(seed)[:12].upper()}",
+        "current_batch_id": current_batch_id,
+        "next_candidate_batch_id": next_candidate_batch_id,
+        "decision": decision["decision"],
+        "reason_codes": decision["reason_codes"],
+        "signals_used": signals_used,
+        "program_state_snapshot": program_state_snapshot,
+        "risk_level": decision["risk_level"],
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+
+
+def batch_execution_gate(
+    *,
+    last_control_decision: str,
+    program_constraint_signal: dict[str, Any],
+    program_drift_signal: dict[str, Any],
+    failure_pattern_record: dict[str, Any],
+    eval_summary: dict[str, Any],
+    risk_signals: dict[str, Any],
+    roadmap_state: dict[str, Any],
+    trace_id: str,
+    created_at: str,
+) -> dict[str, Any]:
+    decision = should_continue_execution(
+        last_control_decision=last_control_decision,
+        program_constraint_signal=program_constraint_signal,
+        program_drift_signal=program_drift_signal,
+        failure_pattern_record=failure_pattern_record,
+        eval_summary=eval_summary,
+        risk_signals=risk_signals,
+        roadmap_state=roadmap_state,
+    )
+    record = _build_batch_continuation_record(
+        current_batch_id=str(roadmap_state.get("current_batch_id")) if roadmap_state.get("current_batch_id") is not None else None,
+        next_candidate_batch_id=str(roadmap_state.get("next_candidate_batch_id"))
+        if roadmap_state.get("next_candidate_batch_id") is not None
+        else None,
+        decision=decision,
+        signals_used={
+            "last_control_decision": last_control_decision,
+            "program_constraint_signal": program_constraint_signal,
+            "program_drift_signal": program_drift_signal,
+            "failure_pattern_record": failure_pattern_record,
+            "eval_summary": eval_summary,
+            "risk_signals": risk_signals,
+            "roadmap_state": roadmap_state,
+        },
+        program_state_snapshot={
+            "allowed_targets": list(program_constraint_signal.get("allowed_targets", [])),
+            "priority_ordering": list(program_constraint_signal.get("priority_ordering", [])),
+            "blocking_conditions": list(program_constraint_signal.get("blocking_conditions", [])),
+            "roadmap_state": roadmap_state,
+        },
+        trace_id=trace_id,
+        created_at=created_at,
+    )
+    _validate_schema(record, "batch_continuation_record", label="batch_continuation_record")
+    return {"decision": decision, "continuation_record": record}
 
 
 def execute_bounded_roadmap_run(
@@ -328,6 +441,7 @@ def execute_bounded_roadmap_run(
     stop_reason_codes: list[str] = [STOP_REASON_MAX_BATCHES_REACHED]
 
     continuation_decisions: list[dict[str, Any]] = []
+    continuation_records: list[dict[str, Any]] = []
     chain_context: list[dict[str, Any]] = []
 
     continuation_state = {
@@ -365,24 +479,45 @@ def execute_bounded_roadmap_run(
             stop_reason_codes = [STOP_REASON_MAX_BATCHES_REACHED]
             break
 
-        continuation_decision = should_continue_execution(
-            last_batch_result,
-            str((last_batch_result or {}).get("control_decision") or "allow"),
-            {"risk_level": _resolve_risk_level(selection_signals, authorization_signals)},
-            {"safety_critical": True, "program_phase": _resolve_program_phase(selection_signals)},
-            str((last_batch_result or {}).get("replay_integrity") or "ready"),
-            continuation_state,
+        next_candidate_batch_id = _derive_next_candidate_batch_id(current_roadmap)
+        risk_level = _resolve_risk_level(selection_signals, authorization_signals)
+        gate_result = batch_execution_gate(
+            last_control_decision=str((last_batch_result or {}).get("control_decision") or "allow"),
+            program_constraint_signal={
+                "allowed_targets": selection_signals.get("allowed_targets", []),
+                "priority_ordering": selection_signals.get("priority_ordering", []),
+                "blocking_conditions": selection_signals.get("program_blocking_conditions", []),
+            },
+            program_drift_signal={"drift_level": selection_signals.get("program_drift_level", "low")},
+            failure_pattern_record={
+                "repeated_failure_count": continuation_state.get("repeated_failure_reason_count", 0),
+                "stop_threshold": continuation_state.get("repeated_failure_reason_stop_threshold", 2),
+            },
+            eval_summary={"health": selection_signals.get("eval_health", "healthy")},
+            risk_signals={"risk_level": risk_level, "escalation_required": bool(selection_signals.get("escalation_required", False))},
+            roadmap_state={
+                "current_batch_id": current_roadmap.get("current_batch_id"),
+                "next_candidate_batch_id": next_candidate_batch_id,
+            },
+            trace_id=trace_id,
+            created_at=timestamp,
         )
+        continuation_decision = gate_result["decision"]
+        continuation_records.append(gate_result["continuation_record"])
         continuation_decisions.append(
             {
                 "step": len(continuation_decisions) + 1,
-                "decision": "continue" if continuation_decision["continue"] else "stop",
-                "reason_code": continuation_decision["reason_code"],
+                "decision": continuation_decision["decision"],
+                "reason_code": continuation_decision["reason_codes"][0],
             }
         )
-        if not continuation_decision["continue"]:
-            stop_reason = continuation_decision["reason_code"]
-            stop_reason_codes = [continuation_decision["reason_code"]]
+        if continuation_decision["decision"] == "escalate":
+            stop_reason = STOP_REASON_AUTHORIZATION_BLOCK
+            stop_reason_codes = ["manual_review_required"]
+            break
+        if continuation_decision["decision"] == "stop":
+            stop_reason = continuation_decision["reason_codes"][0]
+            stop_reason_codes = list(continuation_decision["reason_codes"])
             break
 
         try:
@@ -556,7 +691,7 @@ def execute_bounded_roadmap_run(
 
     result = {
         "run_id": _run_id(seed),
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "attempted_batch_ids": attempted_batch_ids,
         "completed_batch_ids": completed_batch_ids,
@@ -572,6 +707,7 @@ def execute_bounded_roadmap_run(
         "progress_update_refs": progress_update_refs,
         "authorization_refs": authorization_refs,
         "continuation_decision_sequence": continuation_decisions,
+        "batch_continuation_records": continuation_records,
         "execution_efficiency_report": {
             "batches_executed_per_run": attempted,
             "useful_batches": useful_batches,
@@ -594,6 +730,7 @@ def execute_bounded_roadmap_run(
 
 __all__ = [
     "RoadmapMultiBatchExecutionError",
+    "batch_execution_gate",
     "execute_bounded_roadmap_run",
     "should_continue_execution",
 ]

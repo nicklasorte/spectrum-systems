@@ -633,6 +633,10 @@ def run_system_cycle(
     adaptive_policy_review_ref = f"adaptive_execution_policy_review:{adaptive_policy_review['review_id']}"
 
     stop_reason = str(run_result["stop_reason"])
+    continuation_sequence = list(run_result.get("continuation_decision_sequence", []))
+    last_continuation_decision = (
+        str(continuation_sequence[-1].get("decision")) if continuation_sequence else ("stop" if stop_reason != "max_batches_reached" else "continue")
+    )
     failure_root_cause = _root_cause(stop_reason, blocking_conditions)
     failure_root_cause_chain = _root_cause_chain(stop_reason, blocking_conditions)
     failure_next_action = _next_action(stop_reason, blocking_conditions)
@@ -652,8 +656,11 @@ def run_system_cycle(
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "next_batch_id": next_batch_id,
+        "continuation_decision": last_continuation_decision,
+        "stop_reason": stop_reason,
+        "next_batch_candidate": next_batch_id,
         "why": sorted(
             set(
                 why
@@ -760,8 +767,11 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "run_id": run_result["run_id"],
+        "continuation_decision": last_continuation_decision,
+        "stop_reason": stop_reason,
+        "next_batch_candidate": next_batch_id,
         "what_ran": [
             "roadmap selection",
             "control authorization",

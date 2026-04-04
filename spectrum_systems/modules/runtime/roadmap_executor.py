@@ -314,7 +314,7 @@ def execute_authorized_batch(
     }
     progress_update = {
         "progress_update_id": _progress_update_id(progress_seed),
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "batch_id": selected_batch_id,
         "previous_batch_status": previous_status,
@@ -327,8 +327,10 @@ def execute_authorized_batch(
         "reason_codes": sorted(set(reason_codes)),
         "stop_reason": stop_reason,
         "stop_reason_codes": [stop_reason] if isinstance(stop_reason, str) else [],
+        "last_continuation_decision": "stop" if isinstance(stop_reason, str) else "continue",
         "blocking_conditions": sorted(set(blocking_conditions)),
         "next_candidate_batch_id": next_candidate_batch_id,
+        "next_batch_candidate": next_candidate_batch_id,
         "roadmap_input_hash": input_hash,
         "execution_result_hash": execution_result_hash,
         "trace_id": trace_id,

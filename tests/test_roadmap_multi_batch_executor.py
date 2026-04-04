@@ -227,20 +227,58 @@ def test_missing_signal_later_batch_stops_before_execution(tmp_path: Path) -> No
 
 def test_should_continue_execution_supports_early_stop_reason_codes() -> None:
     decision = should_continue_execution(
-        last_batch_result={"control_decision": "allow", "replay_integrity": "ready", "execution_status": "succeeded"},
-        control_decision="allow",
-        context_risk_signals={"risk_level": "medium"},
-        program_alignment={"safety_critical": True},
-        replay_integrity="ready",
-        continuation_state={
-            "consecutive_non_progress": 2,
-            "repeated_failure_reason_count": 0,
-            "unresolved_blocker_streak": 0,
-            "risk_accumulation": 0,
-            "risk_accumulation_stop_threshold": 6,
-        },
+        last_control_decision="freeze",
+        program_constraint_signal={},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
     )
-    assert decision == {"continue": False, "reason_code": "diminishing_returns_detected"}
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["control_freeze"]
+
+
+def test_should_continue_stops_on_repeated_failure_pattern() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 3, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["repeated_failure_pattern"]
+
+
+def test_should_continue_stops_on_program_violation() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={"allowed_targets": ["BATCH-J"]},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-I"},
+    )
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["program_violation_disallowed_target"]
+
+
+def test_should_continue_safe_path_continues() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={"allowed_targets": ["BATCH-I", "BATCH-J"], "priority_ordering": ["BATCH-I", "BATCH-J"]},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "low"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-I"},
+    )
+    assert decision["decision"] == "continue"
+    assert decision["reason_codes"] == ["continue_safe"]
 
 
 def test_determinism_same_inputs_identical_run_result(tmp_path: Path) -> None:
@@ -282,25 +320,18 @@ def test_no_reprioritization_and_never_exceeds_max(tmp_path: Path) -> None:
     assert result["max_batches_per_run"] == 1
 
 
-def test_tuned_non_progress_threshold_stops_earlier(tmp_path: Path) -> None:
+def test_eval_health_degraded_stops(tmp_path: Path) -> None:
     decision = should_continue_execution(
-        last_batch_result={"control_decision": "allow", "replay_integrity": "ready", "execution_status": "succeeded"},
-        control_decision="allow",
-        context_risk_signals={"risk_level": "medium"},
-        program_alignment={"safety_critical": True},
-        replay_integrity="ready",
-        continuation_state={
-            "consecutive_non_progress": 1,
-            "consecutive_non_progress_stop_threshold": 1,
-            "repeated_failure_reason_count": 0,
-            "repeated_failure_reason_stop_threshold": 2,
-            "unresolved_blocker_streak": 0,
-            "unresolved_blocker_stop_threshold": 2,
-            "risk_accumulation": 0,
-            "risk_accumulation_stop_threshold": 6,
-        },
+        last_control_decision="allow",
+        program_constraint_signal={},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "degraded"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-I"},
     )
-    assert decision == {"continue": False, "reason_code": "diminishing_returns_detected"}
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["eval_health_degraded"]
 
 
 def test_low_risk_bonus_batch_applies_when_enabled(tmp_path: Path) -> None:
