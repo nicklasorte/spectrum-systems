@@ -22,6 +22,8 @@
     "reason_codes",
     "blocking_conditions",
     "next_candidate_batch_id",
+    "next_batch_candidate",
+    "last_continuation_decision",
     "roadmap_input_hash",
     "execution_result_hash",
     "trace_id",
@@ -34,7 +36,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "roadmap_id": {
       "type": "string",
@@ -183,6 +185,21 @@
         ]
       },
       "uniqueItems": true
+    },
+    "last_continuation_decision": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "stop",
+        "escalate"
+      ]
+    },
+    "next_batch_candidate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^BATCH-[A-Z]$"
     }
   },
   "allOf": [

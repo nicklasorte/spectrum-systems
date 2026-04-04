@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.43",
-  "schema_version": "1.3.43",
-  "standards_version": "1.3.43",
+  "artifact_version": "1.3.44",
+  "schema_version": "1.3.44",
+  "standards_version": "1.3.44",
   "record_id": "REC-STD-2026-04-03-BATCH-MVP",
   "run_id": "run-20260403T235959Z-batch-mvp",
   "created_at": "2026-04-03T23:59:59Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.43",
+  "source_repo_version": "1.3.44",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -209,6 +209,19 @@
       "notes": "SRE-05/06 governed policy artifact for supported dimensions, thresholds, baseline-source requirements, and invalid-comparison behavior."
     },
     {
+      "artifact_type": "batch_continuation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.44",
+      "last_updated_in": "1.3.44",
+      "example_path": "contracts/examples/batch_continuation_record.json",
+      "notes": "BATCH-RDX-LOOP deterministic continuation gate artifact capturing continue/stop/escalate decisions and evidence signals before each batch."
+    },
+    {
       "artifact_type": "book_intelligence_pack",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -237,13 +250,13 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.39",
+      "last_updated_in": "1.3.44",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-U operator usability artifact summarizing bounded run execution, deltas, failures, and next-watch guidance with explicit failure surface."
     },
@@ -1524,13 +1537,13 @@
     {
       "artifact_type": "next_step_recommendation",
       "artifact_class": "coordination",
-      "schema_version": "1.4.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.42",
+      "last_updated_in": "1.3.44",
       "example_path": "contracts/examples/next_step_recommendation.json",
       "notes": "BATCH-RM remediation integration adds deterministic remediation_plan artifact, remediation_plan_ref, and bounded remediation step guidance in next-step recommendations."
     },
@@ -2629,13 +2642,13 @@
     {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.31",
-      "last_updated_in": "1.3.40",
+      "last_updated_in": "1.3.44",
       "example_path": "contracts/examples/roadmap_multi_batch_run_result.json",
       "notes": "RDX-006 bounded multi-batch governed execution artifact proving deterministic adaptive continuation, early-stop safety, per-batch re-authorization, and fail-closed stop-reason recording."
     },
@@ -2655,13 +2668,13 @@
     {
       "artifact_type": "roadmap_progress_update",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.29",
-      "last_updated_in": "1.3.32",
+      "last_updated_in": "1.3.44",
       "example_path": "contracts/examples/roadmap_progress_update.json",
       "notes": "RDX-004 deterministic one-authorized-batch execution outcome and roadmap state transition artifact emitted after PQX execution boundary."
     },

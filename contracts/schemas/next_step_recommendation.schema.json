@@ -9,6 +9,9 @@
     "recommendation_id",
     "schema_version",
     "next_batch_id",
+    "next_batch_candidate",
+    "stop_reason",
+    "continuation_decision",
     "why",
     "blockers",
     "required_reviews",
@@ -33,7 +36,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.4.0"
+      "const": "1.5.0"
     },
     "next_batch_id": {
       "type": [
@@ -520,6 +523,25 @@
     },
     "remediation_plan": {
       "$ref": "#/$defs/remediation_plan"
+    },
+    "continuation_decision": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "stop",
+        "escalate"
+      ]
+    },
+    "stop_reason": {
+      "type": "string",
+      "minLength": 3
+    },
+    "next_batch_candidate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^BATCH-[A-Z]$"
     }
   },
   "$defs": {

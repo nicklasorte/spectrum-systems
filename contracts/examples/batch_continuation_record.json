@@ -1,0 +1,30 @@
+{
+  "continuation_id": "BCR-1234567890AB",
+  "current_batch_id": "BATCH-I",
+  "next_candidate_batch_id": "BATCH-J",
+  "decision": "continue",
+  "reason_codes": [
+    "continue_safe"
+  ],
+  "signals_used": {
+    "last_control_decision": "allow",
+    "failure_pattern_record": {
+      "repeated_failure_count": 0,
+      "stop_threshold": 2
+    }
+  },
+  "program_state_snapshot": {
+    "allowed_targets": [
+      "BATCH-I",
+      "BATCH-J"
+    ],
+    "priority_ordering": [
+      "BATCH-I",
+      "BATCH-J"
+    ],
+    "blocking_conditions": []
+  },
+  "risk_level": "medium",
+  "created_at": "2026-04-03T20:00:00Z",
+  "trace_id": "trace-rdx-loop-001"
+}

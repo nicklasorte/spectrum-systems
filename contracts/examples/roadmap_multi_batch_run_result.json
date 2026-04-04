@@ -1,6 +1,6 @@
 {
   "run_id": "RMB-1234567890AB",
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "roadmap_id": "RDX-CANVAS-2026-04-03",
   "attempted_batch_ids": [
     "BATCH-I",
@@ -75,5 +75,59 @@
   "source_refs": [
     "contracts/examples/roadmap_artifact.json",
     "contracts/examples/roadmap_execution_loop_validation.json"
+  ],
+  "batch_continuation_records": [
+    {
+      "continuation_id": "BCR-1234567890AB",
+      "current_batch_id": "BATCH-I",
+      "next_candidate_batch_id": "BATCH-I",
+      "decision": "continue",
+      "reason_codes": [
+        "continue_safe"
+      ],
+      "signals_used": {
+        "last_control_decision": "allow"
+      },
+      "program_state_snapshot": {
+        "allowed_targets": [
+          "BATCH-I",
+          "BATCH-J"
+        ],
+        "priority_ordering": [
+          "BATCH-I",
+          "BATCH-J"
+        ],
+        "blocking_conditions": []
+      },
+      "risk_level": "medium",
+      "created_at": "2026-04-03T20:00:00Z",
+      "trace_id": "trace-rdx-006-run-001"
+    },
+    {
+      "continuation_id": "BCR-ABCDEF123456",
+      "current_batch_id": "BATCH-J",
+      "next_candidate_batch_id": "BATCH-J",
+      "decision": "continue",
+      "reason_codes": [
+        "continue_safe"
+      ],
+      "signals_used": {
+        "last_control_decision": "allow"
+      },
+      "program_state_snapshot": {
+        "allowed_targets": [
+          "BATCH-I",
+          "BATCH-J"
+        ],
+        "priority_ordering": [
+          "BATCH-I",
+          "BATCH-J"
+        ],
+        "blocking_conditions": []
+      },
+      "risk_level": "medium",
+      "created_at": "2026-04-03T20:00:00Z",
+      "trace_id": "trace-rdx-006-run-001"
+    }
   ]
 }

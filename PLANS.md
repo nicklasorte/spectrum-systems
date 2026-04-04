@@ -90,6 +90,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | Plan file | Item | Status |
+| docs/review-actions/PLAN-BATCH-RDX-LOOP-2026-04-03.md | BATCH-RDX-LOOP — Batch Continuation and Stop Logic | Active |
 | docs/review-actions/PLAN-BATCH-X1A-2026-04-03.md | BATCH-X1A — Adaptive Execution Artifact Class Alignment | Active |
 | docs/review-actions/PLAN-BATCH-X1-2026-04-03.md | BATCH-X1 — Autonomy Guardrails + Observability | Active |
 | docs/review-actions/PLAN-BATCH-W-2026-04-03.md | BATCH-W — Policy Tuning from Adaptive Execution Signals | Active |
