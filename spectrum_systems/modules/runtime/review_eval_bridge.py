@@ -26,8 +26,12 @@ def _validate(artifact: Dict[str, Any], schema_name: str) -> None:
         raise ReviewEvalBridgeError(f"{schema_name} validation failed: {exc}") from exc
 
 
-def _canonical_payload(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+def canonical_json(obj: dict[str, Any]) -> bytes:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def dedupe_preserve_order(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))
 
 
 def _review_trace_id(review_signal: Dict[str, Any]) -> str:
@@ -53,7 +57,9 @@ def canonicalize_review_signal(review_signal: Dict[str, Any]) -> Dict[str, Any]:
         raise ReviewEvalBridgeError("review_control_signal must be an object")
     _validate(review_signal, "review_control_signal")
 
-    critical_findings = sorted({str(item).strip() for item in review_signal.get("critical_findings") or [] if str(item).strip()})
+    critical_findings = dedupe_preserve_order(
+        [str(item).strip() for item in review_signal.get("critical_findings") or [] if str(item).strip()]
+    )
     normalized = {
         "artifact_type": "review_control_signal",
         "schema_version": "1.1.0",
@@ -114,13 +120,13 @@ def build_eval_result_from_review_signal(review_signal: Dict[str, Any]) -> Dict[
         "trace_id": _review_trace_id(normalized),
         "result_status": status,
         "score": score,
-        "failure_modes": sorted(dict.fromkeys(failure_modes)),
+        "failure_modes": dedupe_preserve_order(failure_modes),
         "provenance_refs": [
             f"review_control_signal:{normalized['signal_id']}",
             f"review:{normalized['review_id']}",
             f"review_type:{normalized['review_type']}",
             f"review_source_digest:{normalized['trace_linkage']['source_digest_sha256']}",
-            f"review_signal_digest:{hashlib.sha256(_canonical_payload(normalized).encode('utf-8')).hexdigest()}",
+            f"review_signal_digest:{hashlib.sha256(canonical_json(normalized)).hexdigest()}",
             f"review_finding_count:{finding_count}",
         ],
     }

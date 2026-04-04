@@ -19,6 +19,14 @@ class EvalCaseGenerationError(ValueError):
     """Raised when a failure_eval_case cannot be generated deterministically."""
 
 
+def canonical_json(obj: dict[str, Any]) -> bytes:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def dedupe_preserve_order(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))
+
+
 _IN_SCOPE_SOURCE_TYPES = frozenset(
     {
         "agent_failure_record",
@@ -67,7 +75,7 @@ def _canonical_list(values: Any) -> list[str]:
     if not isinstance(values, list):
         raise EvalCaseGenerationError("list-like input must be a list or string")
     normalized = [str(item).strip() for item in values if str(item).strip()]
-    return sorted(dict.fromkeys(normalized))
+    return dedupe_preserve_order(normalized)
 
 
 def normalize_failure_pattern(
@@ -95,8 +103,7 @@ def normalize_failure_pattern(
         "root_cause_chain": normalized_chain,
         "blocking_conditions": _canonical_list(blocking_conditions),
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return hashlib.sha256(canonical_json(payload)).hexdigest()
 
 
 def build_failure_pattern_record(
@@ -146,8 +153,7 @@ def build_failure_pattern_record(
 
 
 def _deterministic_timestamp(seed_payload: Dict[str, Any]) -> str:
-    canonical = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(canonical_json(seed_payload)).hexdigest()
     offset_seconds = int(digest[:8], 16) % (365 * 24 * 60 * 60)
     base = datetime(2026, 1, 1, tzinfo=timezone.utc)
     return (base + timedelta(seconds=offset_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -561,7 +567,7 @@ def generate_failure_derived_eval_cases_from_review_signal(
     if not should_generate:
         return []
 
-    unique_findings = sorted(dict.fromkeys(critical_findings))
+    unique_findings = dedupe_preserve_order(critical_findings)
     artifacts: list[Dict[str, Any]] = []
     seen_eval_case_ids: set[str] = set()
     eval_case_schema = load_schema("eval_case")

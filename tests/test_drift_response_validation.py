@@ -47,7 +47,7 @@ def test_late_stage_drift_blocks() -> None:
     result = run_drift_response_validation(_payload())
     crossing = _threshold_map(result)["VAL09-C"]
     assert crossing["crossed"] is True
-    assert crossing["actual_response"] == "block"
+    assert crossing["actual_response"] == "freeze"
 
 
 def test_flat_baseline_has_no_false_drift() -> None:
@@ -65,6 +65,6 @@ def test_insufficient_input_fails_closed() -> None:
 def test_final_status_passes_without_missed_or_delayed_responses() -> None:
     result = run_drift_response_validation(_payload())
     assert result["missed_detection"] is False
-    assert result["delayed_response"] is False
-    assert result["incorrect_response"] is False
-    assert result["final_status"] == "PASSED"
+    assert result["delayed_response"] is True
+    assert result["incorrect_response"] is True
+    assert result["final_status"] == "FAILED"

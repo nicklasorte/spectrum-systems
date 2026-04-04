@@ -1,42 +1,53 @@
-# Review → Eval Hardening Report
+# REPORT-003 — Review → Eval → Control Hardening Audit
 
-Date: 2026-04-03
-Batch: BATCH-R
+Date: 2026-04-04
+Scope: `review_signal_extractor.py`, `review_eval_bridge.py`, `evaluation_control.py`, `evaluation_auto_generation.py`
 
-## Scope assessed
-- `spectrum_systems/modules/runtime/review_signal_extractor.py`
-- `spectrum_systems/modules/runtime/review_eval_bridge.py`
-- `spectrum_systems/modules/runtime/evaluation_control.py`
-- `spectrum_systems/modules/runtime/evaluation_auto_generation.py`
+## Executive Summary
+This audit hardened the highest-risk trust boundary in the runtime spine without changing control-loop ownership or adding capability. The hardening focused on precedence integrity, deterministic canonicalization, and fail-closed behavior for review-derived eval influence.
 
-## Findings
+## Findings and Minimal Fixes
 
-1. **Untyped review taxonomy drift risk** (Severity: High)
-   - Prior state accepted arbitrary `review_type` strings, enabling drift between trigger policy and control ingest.
-   - Fix: enforce normalized review types (`surgical`, `failure`, `batch_architecture`, `hard_gate`, `strategic`) and reject unknown values fail-closed.
+| ID | Severity | Failure mode | Evidence | Minimal fix applied |
+| --- | --- | --- | --- | --- |
+| REPORT-003-F01 | S1 | Replay mismatch could resolve to `block` instead of required `freeze`, weakening replay-boundary semantics. | `spectrum_systems/modules/runtime/evaluation_control.py` replay control path (`consistency_status`, final decision override). | Added explicit precedence override: replay mismatch now resolves to `system_response=freeze` with deny semantics unless a stronger required-signal block already applies. |
+| REPORT-003-F02 | S1 | Indeterminate replay signals could resolve as non-freeze depending on budget/rationale merge. | `spectrum_systems/modules/runtime/evaluation_control.py` (`indeterminate_failure` handling). | Added explicit indeterminate precedence override to force deny+freeze unless required-signal/review-fail block is already active. |
+| REPORT-003-F03 | S2 | Canonical dedupe in review/eval seams used sorted set behavior that could reorder source findings. | `review_signal_extractor.py`, `review_eval_bridge.py`, `evaluation_auto_generation.py`. | Replaced sort-based dedupe with `dedupe_preserve_order` in trust-boundary lists. |
+| REPORT-003-F04 | S2 | Hash canonicalization was reimplemented ad hoc in several paths. | Same module set above. | Introduced explicit `canonical_json` helper in scoped modules and used sha256 over canonical bytes. |
+| REPORT-003-F05 | S1 | Missing required review signal/type must hard-block regardless of baseline replay posture. | `evaluation_control.py` review required checks. | Preserved and tightened precedence ordering so missing-required checks remain terminal block decisions. |
+| REPORT-003-F06 | S1 | Review-derived eval generation must fail closed when mapping token absent (`eval_family`). | `evaluation_auto_generation.py` `_extract_review_eval_family`. | Verified fail-closed exception path and added/retained tests to assert no token guessing. |
 
-2. **Missing typed request in review trigger artifacts** (Severity: High)
-   - Prior trigger artifact did not carry structured `review_request` data required for deterministic replay/audit.
-   - Fix: add governed `review_request` contract and embed in `prompt_queue_review_trigger` when trigger is active.
+## Bypass Detection Results
 
-3. **Required-review type enforcement gap in control** (Severity: Critical)
-   - Prior control could require “a review” but not specific review classes.
-   - Fix: add `required_review_types` enforcement and force `deny_missing_required_signal` when required types are missing.
+### Control entry points
+- `build_evaluation_control_decision(...)` is the canonical mapper in `evaluation_control.py`.
+- `run_control_loop(...)` in `control_loop.py` consumes replay/failure signals and routes through `build_evaluation_control_decision(...)`.
+- Runtime control integration (`control_integration.py`) consumes the emitted `evaluation_control_decision` output rather than bypassing control.
 
-4. **Limited review observability outputs** (Severity: Medium)
-   - Prior bridge had no strict artifacts for review fail-rate hotspots or review-driven eval generation summaries.
-   - Fix: add deterministic summary/hotspot/generation report artifacts with strict schemas.
+### Audit conclusions
+- PQX/runtime control flow calls eval/replay artifacts before control decision emission.
+- No direct promotion path was introduced in the scoped hardening changes.
+- Required review-eval presence gating remains fail-closed (`missing_required_signal` → deny/block).
 
-5. **Review-failure recurrence not surfaced as priority** (Severity: Medium)
-   - Prior review-failure eval generation deduped, but recurrence intensity did not deterministically mark priority.
-   - Fix: recurrence-aware provenance and high-priority threshold tagging.
+## Precedence Integrity (post-hardening)
+Enforced order in effective decision outcomes:
+1. Missing required signal/type → `block`
+2. Trace/schema invalidity → fail closed (error raised; no allow)
+3. Replay mismatch → `freeze`
+4. Required review eval fail → `block`
+5. Indeterminate (when not already blocked by required-signal/review-fail) → `freeze`
 
-## Integrity confirmations
-- Review PASS cannot override stronger BLOCK/DENY decisions.
-- Review FAIL always yields deny/block when consumed.
-- Malformed review signals continue to fail closed via schema validation.
-- Canonical ordering is preserved via stable sort and canonical JSON hashing in ID/report generation.
+## Determinism and Fail-Closed Guarantees
+- Canonical hashing uses `sha256(canonical_json(...))` in scoped modules.
+- Dedupe order uses `dedupe_preserve_order(...)`.
+- Malformed review signal and malformed replay/control inputs fail closed with explicit exceptions.
+- Missing eval-family token in review critical findings fails closed (no heuristic mapping).
 
-## Proposed follow-ups
-- Add optional hard bind from `review_request.review_id` to emitted `review_control_signal.review_id` in runtime ingestion seams.
-- Add periodic batch job for fleet-level review hotspot rollups once scheduler seam is finalized.
+## Contract Discipline Verification
+Validated through contract test/enforcement suite:
+- Draft 2020-12 schema loading/validation intact.
+- Required fields and additional-properties constraints remain enforced by contract tests.
+
+## Residual Risk
+- Existing downstream tests outside the immediate trust-boundary suite required expectation updates where replay mismatch/indeterminate outcomes are now freeze-class by design.
+- Risk level after patch: **S2 (managed)**; no bypass path introduced and no parallel authority added.

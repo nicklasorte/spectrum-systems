@@ -259,12 +259,12 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_invalid",
-      "deny_budget_invalid",
+      "deny_trust_breach",
       "indeterminate_failure",
       "trust_breach"
     ]
@@ -388,8 +388,8 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_warning",
@@ -888,12 +888,13 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_exhausted",
-      "deny_budget_exhausted",
+      "deny_stability_breach",
+      "stability_breach",
       "trust_breach"
     ]
   },
@@ -1124,11 +1125,12 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
-      "deny_trust_breach",
+      "deny_stability_breach",
+      "stability_breach",
       "trust_breach"
     ]
   },
@@ -1251,12 +1253,12 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_exhausted",
-      "deny_budget_exhausted",
+      "deny_stability_breach",
       "stability_breach",
       "trust_breach"
     ]
@@ -1366,12 +1368,12 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_invalid",
-      "deny_budget_invalid",
+      "deny_trust_breach",
       "indeterminate_failure",
       "trust_breach"
     ]
@@ -1734,12 +1736,13 @@
         "generated_by_version": "error_budget.py@1.0.0"
       }
     },
-    "expected_status": "blocked",
-    "expected_response": "block",
+    "expected_status": "exhausted",
+    "expected_response": "freeze",
     "expected_decision": "deny",
     "expected_reasons": [
       "budget_warning",
-      "deny_trust_breach",
+      "deny_stability_breach",
+      "stability_breach",
       "trust_breach"
     ]
   }

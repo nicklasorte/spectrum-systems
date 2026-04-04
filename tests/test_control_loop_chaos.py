@@ -100,7 +100,7 @@ def test_runner_is_deterministic_across_repeated_runs() -> None:
             {"observed_values": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
             "freeze",
         ),
-        ({"consistency_status": "mismatch"}, None, "block"),
+        ({"consistency_status": "mismatch"}, None, "freeze"),
         (
             {"observability_metrics": {"metrics": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.50}}},
             {"observed_values": {"replay_success_rate": 0.70, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
@@ -109,7 +109,7 @@ def test_runner_is_deterministic_across_repeated_runs() -> None:
         (
             {"observability_metrics": {"metrics": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}}, "consistency_status": "mismatch"},
             {"observed_values": {"replay_success_rate": 0.95, "drift_exceed_threshold_rate": 0.50}, "budget_status": "healthy"},
-            "block",
+            "freeze",
         ),
     ],
 )

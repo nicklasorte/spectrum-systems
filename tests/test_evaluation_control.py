@@ -141,9 +141,9 @@ def test_trust_breach_with_budget_warning_remains_deny() -> None:
         }
     ]
     decision = build_evaluation_control_decision(replay)
-    assert decision["system_response"] == "block"
+    assert decision["system_response"] == "freeze"
     assert decision["decision"] == "deny"
-    assert decision["rationale_code"] == "deny_trust_breach"
+    assert decision["rationale_code"] == "deny_stability_breach"
     assert "budget_warning" in decision["triggered_signals"]
 
 
@@ -183,7 +183,7 @@ def test_budget_invalid_forces_deny_response() -> None:
     assert "budget_invalid" in decision["triggered_signals"]
 
 
-def test_indeterminate_replay_routes_to_trust_breach_rationale() -> None:
+def test_indeterminate_replay_routes_to_freeze_rationale() -> None:
     replay = _replay_result()
     replay["consistency_status"] = "indeterminate"
     replay["failure_reason"] = "indeterminate_replay_consistency"
@@ -193,6 +193,7 @@ def test_indeterminate_replay_routes_to_trust_breach_rationale() -> None:
 
     assert decision["decision"] == "deny"
     assert decision["rationale_code"] == "deny_trust_breach"
+    assert decision["system_response"] == "freeze"
     assert "indeterminate_failure" in decision["triggered_signals"]
 
 
@@ -353,5 +354,38 @@ def test_review_eval_pass_does_not_override_stronger_blocking_signal() -> None:
 
     decision = build_evaluation_control_decision(replay, review_eval_results=[review_eval])
     assert decision["decision"] == "deny"
+    assert decision["system_response"] == "freeze"
+    assert decision["rationale_code"] == "deny_stability_breach"
+    assert "stability_breach" in decision["triggered_signals"]
+
+
+def test_review_eval_fail_blocks_when_review_is_required() -> None:
+    replay = _replay_result()
+    review_signal = copy.deepcopy(load_example("review_control_signal"))
+    review_signal["review_type"] = "hard_gate"
+    review_signal["gate_assessment"] = "FAIL"
+    review_signal["critical_findings"] = ["required review failed [eval_family:review_gate_alignment]"]
+    review_eval = build_eval_result_from_review_signal(review_signal)
+
+    decision = build_evaluation_control_decision(
+        replay,
+        review_eval_results=[review_eval],
+        required_review_types=["hard_gate"],
+    )
+    assert decision["decision"] == "deny"
     assert decision["system_response"] == "block"
-    assert "trust_breach" in decision["triggered_signals"]
+    assert decision["rationale_code"] == "deny_trust_breach"
+
+
+def test_indeterminate_replay_forces_freeze_when_not_blocked_by_required_signal() -> None:
+    replay = _replay_result()
+    replay["consistency_status"] = "indeterminate"
+    replay["drift_detected"] = False
+    replay["failure_reason"] = "indeterminate_replay_consistency"
+    replay["error_budget_status"]["budget_status"] = "healthy"
+    replay["error_budget_status"]["highest_severity"] = "healthy"
+    replay["error_budget_status"]["triggered_conditions"] = []
+    decision = build_evaluation_control_decision(replay)
+    assert decision["decision"] == "deny"
+    assert decision["system_response"] == "freeze"
+    assert decision["rationale_code"] == "deny_trust_breach"
