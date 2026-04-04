@@ -1,0 +1,870 @@
+{
+  "roadmap_id": "RUN-01-AUTONOMOUS-VALIDATION",
+  "version": "1.0.0",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-run-01",
+  "batches": [
+    {
+      "batch_id": "RUN01-B01",
+      "acronym": "RUN01",
+      "title": "RUN01-B01 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [],
+      "hard_gate": false,
+      "priority": 1,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B02",
+      "acronym": "RUN01",
+      "title": "RUN01-B02 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B01"
+      ],
+      "hard_gate": false,
+      "priority": 2,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B03",
+      "acronym": "RUN01",
+      "title": "RUN01-B03 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B02"
+      ],
+      "hard_gate": false,
+      "priority": 3,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B04",
+      "acronym": "RUN01",
+      "title": "RUN01-B04 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B03"
+      ],
+      "hard_gate": false,
+      "priority": 4,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B05",
+      "acronym": "RUN01",
+      "title": "RUN01-B05 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B04"
+      ],
+      "hard_gate": false,
+      "priority": 5,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B06",
+      "acronym": "RUN01",
+      "title": "RUN01-B06 drift_inducing",
+      "goal": "Execute drift_inducing deterministically.",
+      "depends_on": [
+        "RUN01-B05"
+      ],
+      "hard_gate": true,
+      "priority": 6,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for drift_inducing."
+    },
+    {
+      "batch_id": "RUN01-B07",
+      "acronym": "RUN01",
+      "title": "RUN01-B07 failure_injected_missing_signal",
+      "goal": "Execute failure_injected_missing_signal deterministically.",
+      "depends_on": [
+        "RUN01-B06"
+      ],
+      "hard_gate": true,
+      "priority": 7,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for failure_injected_missing_signal."
+    },
+    {
+      "batch_id": "RUN01-B08",
+      "acronym": "RUN01",
+      "title": "RUN01-B08 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B07"
+      ],
+      "hard_gate": false,
+      "priority": 8,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B09",
+      "acronym": "RUN01",
+      "title": "RUN01-B09 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B08"
+      ],
+      "hard_gate": false,
+      "priority": 9,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B10",
+      "acronym": "RUN01",
+      "title": "RUN01-B10 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B09"
+      ],
+      "hard_gate": false,
+      "priority": 10,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B11",
+      "acronym": "RUN01",
+      "title": "RUN01-B11 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B10"
+      ],
+      "hard_gate": false,
+      "priority": 11,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B12",
+      "acronym": "RUN01",
+      "title": "RUN01-B12 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B11"
+      ],
+      "hard_gate": false,
+      "priority": 12,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B13",
+      "acronym": "RUN01",
+      "title": "RUN01-B13 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B12"
+      ],
+      "hard_gate": false,
+      "priority": 13,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B14",
+      "acronym": "RUN01",
+      "title": "RUN01-B14 failure_injected_invalid_state",
+      "goal": "Execute failure_injected_invalid_state deterministically.",
+      "depends_on": [
+        "RUN01-B13"
+      ],
+      "hard_gate": true,
+      "priority": 14,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for failure_injected_invalid_state."
+    },
+    {
+      "batch_id": "RUN01-B15",
+      "acronym": "RUN01",
+      "title": "RUN01-B15 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B14"
+      ],
+      "hard_gate": false,
+      "priority": 15,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B16",
+      "acronym": "RUN01",
+      "title": "RUN01-B16 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B15"
+      ],
+      "hard_gate": false,
+      "priority": 16,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B17",
+      "acronym": "RUN01",
+      "title": "RUN01-B17 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B16"
+      ],
+      "hard_gate": false,
+      "priority": 17,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B18",
+      "acronym": "RUN01",
+      "title": "RUN01-B18 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B17"
+      ],
+      "hard_gate": false,
+      "priority": 18,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B19",
+      "acronym": "RUN01",
+      "title": "RUN01-B19 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B18"
+      ],
+      "hard_gate": false,
+      "priority": 19,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B20",
+      "acronym": "RUN01",
+      "title": "RUN01-B20 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B19"
+      ],
+      "hard_gate": false,
+      "priority": 20,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B21",
+      "acronym": "RUN01",
+      "title": "RUN01-B21 edge_case",
+      "goal": "Execute edge_case deterministically.",
+      "depends_on": [
+        "RUN01-B20"
+      ],
+      "hard_gate": false,
+      "priority": 21,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for edge_case."
+    },
+    {
+      "batch_id": "RUN01-B22",
+      "acronym": "RUN01",
+      "title": "RUN01-B22 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B21"
+      ],
+      "hard_gate": false,
+      "priority": 22,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B23",
+      "acronym": "RUN01",
+      "title": "RUN01-B23 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B22"
+      ],
+      "hard_gate": false,
+      "priority": 23,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    },
+    {
+      "batch_id": "RUN01-B24",
+      "acronym": "RUN01",
+      "title": "RUN01-B24 happy_path",
+      "goal": "Execute happy_path deterministically.",
+      "depends_on": [
+        "RUN01-B23"
+      ],
+      "hard_gate": false,
+      "priority": 24,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed",
+        "required_signals_present",
+        "readiness_gate_passed"
+      ],
+      "stop_conditions": [
+        "missing_required_signal",
+        "invalid_state",
+        "drift_freeze"
+      ],
+      "artifacts_expected": [
+        "roadmap_execution_report",
+        "multi_cycle_execution_report",
+        "trust_posture_snapshot",
+        "drift_detection_record",
+        "policy_activation_record",
+        "capability_readiness_record"
+      ],
+      "tests_required": [
+        "determinism_check",
+        "gating_check",
+        "exception_router_check"
+      ],
+      "description": "RUN-01 scenario batch for happy_path."
+    }
+  ]
+}

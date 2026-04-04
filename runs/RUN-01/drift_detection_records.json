@@ -1,0 +1,13 @@
+[
+  {
+    "drift_detection_id": "DDR-RUN01-001",
+    "cycle": 6,
+    "batch_id": "RUN01-B06",
+    "drift_level": "high",
+    "behavior_change": "freeze_and_reprioritize",
+    "actions": [
+      "freeze",
+      "reprioritize"
+    ]
+  }
+]

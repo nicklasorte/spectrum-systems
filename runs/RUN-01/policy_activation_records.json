@@ -1,0 +1,10 @@
+[
+  {
+    "policy_activation_id": "PAC-RUN01-001",
+    "cycle": 7,
+    "policy_name": "signal_preflight_required",
+    "trigger_pattern": "missing_required_signal",
+    "activation_decision": "active",
+    "expected_failure_reduction": "high"
+  }
+]
