@@ -203,6 +203,166 @@ def _write_inputs(tmp_path: Path) -> Dict[str, str]:
     }
 
 
+
+
+def _attach_valid_tpa_refs(refs: Dict[str, str], tmp_path: Path, *, step_id: str = "AI-01") -> Dict[str, str]:
+    plan = {
+        "artifact_kind": "plan",
+        "execution_mode": "feature_build",
+        "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+        "seams_reused": ["pqx_sequence_runner.execute_sequence_run"],
+        "abstraction_intent": "reuse_existing",
+        "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+        "known_risk_refs": ["risk_register:risk-high-1"],
+        "prior_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+        "modules_affected": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+        "improvement_objective": "Prevent known context-linked failures while keeping TPA bounded.",
+        "context_rationale": "Recent failures show repeated helper/indirection regressions.",
+        "constraints_acknowledged": {"build_small": True, "no_redesign": True},
+    }
+    build_signals = {
+        "files_changed_count": 1,
+        "lines_added": 22,
+        "lines_removed": 8,
+        "net_line_delta": 14,
+        "functions_added_count": 2,
+        "functions_removed_count": 0,
+        "helpers_added_count": 1,
+        "helpers_removed_count": 0,
+        "wrappers_collapsed_count": 0,
+        "deletions_count": 0,
+        "public_surface_delta_count": 1,
+        "approximate_max_nesting_delta": 1,
+        "approximate_branching_delta": 1,
+        "abstraction_added_count": 1,
+        "abstraction_removed_count": 0,
+    }
+    simplify_signals = {
+        "files_changed_count": 1,
+        "lines_added": 10,
+        "lines_removed": 18,
+        "net_line_delta": -8,
+        "functions_added_count": 1,
+        "functions_removed_count": 1,
+        "helpers_added_count": 0,
+        "helpers_removed_count": 1,
+        "wrappers_collapsed_count": 1,
+        "deletions_count": 1,
+        "public_surface_delta_count": 0,
+        "approximate_max_nesting_delta": -1,
+        "approximate_branching_delta": -1,
+        "abstraction_added_count": 0,
+        "abstraction_removed_count": 1,
+    }
+    build = {
+        "artifact_kind": "build",
+        "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+        "new_layers": 0,
+        "unused_helpers": [],
+        "unnecessary_indirection": [],
+        "plan_scope_match": True,
+        "abstraction_justifications": [],
+        "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+        "known_failure_patterns_avoided": ["failure_pattern:unused-helper-regression"],
+        "existing_abstractions_satisfied": True,
+        "speculative_expansion_detected": False,
+        "reused_module_refs": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+        "complexity_signals": build_signals,
+    }
+    simplify = {
+        "artifact_kind": "simplify",
+        "source_build_artifact_id": f"tpa:run-001:{step_id}-B",
+        "actions": ["reduce_nesting", "rename_for_clarity"],
+        "behavior_changed": False,
+        "new_layers_introduced": 0,
+        "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+        "redundant_code_paths_removed": 1,
+        "duplicate_logic_collapsed": [],
+        "pattern_consistency_refs": ["pattern:pqx-tpa-runtime-style"],
+        "complexity_signals": simplify_signals,
+        "delete_pass": {
+            "deletion_considered": True,
+            "deletion_performed": True,
+            "deletion_rejected_reason": None,
+            "deleted_items": ["obsolete_wrapper:legacy-branch"],
+            "collapsed_abstractions": ["adapter-layer:thin-wrapper"],
+            "removed_helpers": ["helper:unused_context_glue"],
+            "removed_wrappers": ["wrapper:legacy_wrapper"],
+            "indirection_avoided": ["direct_call:use_existing_runtime_seam"],
+        },
+    }
+    gate = {
+        "artifact_kind": "gate",
+        "build_artifact_id": f"tpa:run-001:{step_id}-B",
+        "simplify_artifact_id": f"tpa:run-001:{step_id}-S",
+        "behavioral_equivalence": True,
+        "contract_valid": True,
+        "tests_valid": True,
+        "selected_pass": "pass_2_simplify",
+        "rejected_pass": "pass_1_build",
+        "selection_inputs": {
+            "build_artifact_id": f"tpa:run-001:{step_id}-B",
+            "simplify_artifact_id": f"tpa:run-001:{step_id}-S",
+            "comparison_inputs_present": True,
+        },
+        "selection_metrics": {
+            "build": build_signals,
+            "simplify": simplify_signals,
+            "simplify_delta": {k: simplify_signals[k] - build_signals[k] for k in build_signals},
+        },
+        "selection_rationale": "equivalence proven and simplify has lower complexity",
+        "promotion_ready": True,
+        "fail_closed_reason": None,
+        "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+        "review_signal_refs": ["review_artifact:rvw-001"],
+        "eval_signal_refs": ["eval_result:ev-001"],
+        "addressed_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+        "unaddressed_failure_pattern_refs": [],
+        "high_risk_unmitigated": False,
+        "risk_mitigation_refs": ["mitigation:risk-high-1-covered"],
+        "simplicity_review": {
+            "decision": "allow",
+            "overall_severity": "low",
+            "findings": [
+                {"category": "delete_instead_of_abstract", "severity": "low", "message": "Delete-pass completed."}
+            ],
+            "report_ref": "docs/reviews/2026-04-04-tpa-completion-hardening.md",
+        },
+        "complexity_regression_gate": {
+            "decision": "allow",
+            "policy_ref": "policy:tpa-complexity-regression:v1",
+            "regression_detected": False,
+            "historical_baseline_available": True,
+            "historical_baseline_ref": "baseline:tpa:AI-01",
+            "exception_justified": False,
+        },
+    }
+
+    phase_payloads = {"plan": plan, "build": build, "simplify": simplify, "gate": gate}
+    phase_suffix = {"plan": "P", "build": "B", "simplify": "S", "gate": "G"}
+    for phase, payload in phase_payloads.items():
+        artifact = {
+            "artifact_type": "tpa_slice_artifact",
+            "schema_version": "1.2.0",
+            "artifact_id": f"tpa:run-001:{step_id}-{phase_suffix[phase]}",
+            "run_id": "run-001",
+            "trace_id": "trace-001",
+            "slice_id": f"{step_id}-{phase_suffix[phase]}",
+            "step_id": step_id,
+            "phase": phase,
+            "produced_at": "2026-04-04T00:00:00Z",
+            "artifact": payload,
+        }
+        refs[f"tpa_{phase}_artifact"] = _write_json(tmp_path / f"tpa_{phase}.json", artifact)
+
+    refs["scope_file_path"] = "spectrum_systems/modules/runtime/pqx_sequence_runner.py"
+    refs["scope_module"] = "spectrum_systems.modules.runtime.pqx_sequence_runner"
+    refs["scope_artifact_type"] = "pqx_generated_slice"
+    refs["pqx_step_metadata"] = {"step_id": step_id}
+    return refs
+
+
+
 def test_certification_pass(tmp_path: Path) -> None:
     refs = _write_inputs(tmp_path)
     first = run_done_certification(refs)
@@ -216,7 +376,10 @@ def test_certification_pass(tmp_path: Path) -> None:
     assert first["trust_spine_evidence_cohesion_result"]["passed"] is True
     assert first["check_results"]["trust_spine_evidence_completeness"]["passed"] is True
     assert first["check_results"]["trust_spine_evidence_cohesion"]["passed"] is True
+    assert first["check_results"]["tpa_compliance"]["passed"] is True
     assert first["check_results"]["system_readiness"]["passed"] is True
+    assert first["tpa_required"] is False
+    assert first["tpa_status"] == "NOT_REQUIRED"
     assert first == second
 
 
@@ -468,3 +631,29 @@ def test_ambiguous_certification_pack_trace_refs_blocks(tmp_path: Path) -> None:
     assert result["system_response"] == "block"
     assert any(reason.startswith("TRACE_LINKAGE_AMBIGUOUS:") for reason in result["blocking_reasons"])
     assert result["check_results"]["trace_linkage"]["passed"] is False
+
+
+def test_done_certification_tpa_required_pass(tmp_path: Path) -> None:
+    refs = _attach_valid_tpa_refs(_write_inputs(tmp_path), tmp_path)
+    result = run_done_certification(refs)
+    assert result["tpa_required"] is True
+    assert result["tpa_status"] == "PASS"
+    assert len(result["tpa_artifact_refs"]) == 4
+    assert result["check_results"]["tpa_compliance"]["passed"] is True
+
+
+def test_done_certification_tpa_required_missing_artifact_fails_closed(tmp_path: Path) -> None:
+    refs = _attach_valid_tpa_refs(_write_inputs(tmp_path), tmp_path)
+    refs.pop("tpa_gate_artifact")
+    result = run_done_certification(refs)
+    assert result["final_status"] == "FAILED"
+    assert result["tpa_required"] is True
+    assert result["tpa_status"] == "FAIL"
+    assert result["check_results"]["tpa_compliance"]["passed"] is False
+
+
+def test_done_certification_fails_closed_when_tpa_scope_policy_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs["tpa_scope_policy_path"] = str(tmp_path / "missing_policy.json")
+    with pytest.raises(DoneCertificationError, match="TPA scope policy evaluation failed"):
+        run_done_certification(refs)

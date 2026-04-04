@@ -65,6 +65,8 @@ from typing import Any, Dict, List, Optional
 
 from jsonschema import Draft202012Validator, FormatChecker
 
+from spectrum_systems.modules.governance.tpa_scope_policy import TPAScopePolicyError, is_tpa_required, load_tpa_scope_policy
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -75,6 +77,7 @@ _BUDGET_DECISION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_budget_decision.schema.
 _ENFORCEMENT_ACTION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_enforcement_action.schema.json"
 _OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authorization.schema.json"
 _DONE_CERTIFICATION_SCHEMA_PATH = _SCHEMA_DIR / "done_certification_record.schema.json"
+_TPA_SLICE_SCHEMA_PATH = _SCHEMA_DIR / "tpa_slice_artifact.schema.json"
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
@@ -91,6 +94,7 @@ _DEFAULT_SCOPE = "release"
 # Context key for a governed override authorization artifact
 _OVERRIDE_AUTHORIZATION_KEY = "override_authorization"
 _DONE_CERTIFICATION_PATH_KEY = "done_certification_path"
+_TPA_ARTIFACT_KEYS = ("tpa_plan_artifact", "tpa_build_artifact", "tpa_simplify_artifact", "tpa_gate_artifact")
 
 # Module-level mapping of system_response → action_type (used in multiple places)
 _RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
@@ -166,12 +170,116 @@ def _canonical_response_for_enforcement(decision: Dict[str, Any]) -> str:
     return system_response
 
 
+def _evaluate_tpa_admission_gate(context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    gate: Dict[str, Any] = {
+        "tpa_required": False,
+        "tpa_artifact_refs": [],
+        "reason_code": None,
+        "block_reason": None,
+        "gate_passed": True,
+    }
+
+    policy_path = None
+    if isinstance(context, dict):
+        policy_path = context.get("tpa_scope_policy_path")
+
+    scope_context = {
+        "file_path": str((context or {}).get("scope_file_path") or ""),
+        "module": str((context or {}).get("scope_module") or ""),
+        "artifact_type": str((context or {}).get("scope_artifact_type") or ""),
+        "pqx_step_metadata": (context or {}).get("pqx_step_metadata") if isinstance((context or {}).get("pqx_step_metadata"), dict) else {},
+    }
+
+    try:
+        scope_policy = load_tpa_scope_policy(policy_path)
+        gate["tpa_required"] = is_tpa_required(scope_context, policy=scope_policy)
+    except TPAScopePolicyError as exc:
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = f"TPA scope policy evaluation failed: {exc}"
+        gate["gate_passed"] = False
+        return gate
+
+    if not gate["tpa_required"]:
+        return gate
+
+    if not isinstance(context, dict):
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "TPA required scope missing promotion context."
+        gate["gate_passed"] = False
+        return gate
+
+    schema = _load_schema(_TPA_SLICE_SCHEMA_PATH)
+    phase_map = {
+        "tpa_plan_artifact": "plan",
+        "tpa_build_artifact": "build",
+        "tpa_simplify_artifact": "simplify",
+        "tpa_gate_artifact": "gate",
+    }
+
+    artifacts: Dict[str, Dict[str, Any]] = {}
+    for key in _TPA_ARTIFACT_KEYS:
+        raw = context.get(key)
+        if not isinstance(raw, str) or not raw.strip():
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = f"reason_code=missing_tpa_artifact; missing required {key}."
+            gate["gate_passed"] = False
+            return gate
+        path = Path(raw)
+        gate["tpa_artifact_refs"].append(str(path))
+        if not path.is_file():
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = f"reason_code=missing_tpa_artifact; file not found for {key}: {path}"
+            gate["gate_passed"] = False
+            return gate
+        try:
+            artifact = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = f"reason_code=missing_tpa_artifact; invalid JSON for {key}: {exc}"
+            gate["gate_passed"] = False
+            return gate
+        errors = _validate_against_schema(artifact, schema)
+        if errors:
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = f"reason_code=missing_tpa_artifact; invalid {key}: " + "; ".join(errors)
+            gate["gate_passed"] = False
+            return gate
+        expected_phase = phase_map[key]
+        if artifact.get("phase") != expected_phase:
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = f"reason_code=missing_tpa_artifact; {key} phase mismatch"
+            gate["gate_passed"] = False
+            return gate
+        artifacts[key] = artifact
+
+    step_ids = {str(artifact.get("step_id") or "") for artifact in artifacts.values()}
+    if len(step_ids) != 1:
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA artifact step_id mismatch"
+        gate["gate_passed"] = False
+        return gate
+
+    gate_payload = dict((artifacts["tpa_gate_artifact"].get("artifact") or {}))
+    regression_decision = str(((gate_payload.get("complexity_regression_gate") or {}).get("decision") or "")).lower()
+    simplicity_decision = str(((gate_payload.get("simplicity_review") or {}).get("decision") or "")).lower()
+    if not bool(gate_payload.get("promotion_ready")) or regression_decision in {"block", "freeze"} or simplicity_decision in {"block", "freeze"}:
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA gate did not satisfy promotion conditions"
+        gate["gate_passed"] = False
+        return gate
+
+    return gate
+
+
 def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
     if enforcement_scope != "promotion":
         return {
             "artifact_reference": "not_applicable",
             "certification_decision": "not_applicable",
             "certification_status": "not_applicable",
+            "tpa_required": False,
+            "tpa_artifact_refs": [],
+            "reason_code": None,
             "block_reason": None,
             "gate_passed": True,
         }
@@ -179,6 +287,9 @@ def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
         "artifact_reference": "missing",
         "certification_decision": "missing",
         "certification_status": "missing",
+        "tpa_required": False,
+        "tpa_artifact_refs": [],
+        "reason_code": "missing_tpa_artifact",
         "block_reason": "done_certification_record is required for promotion scope.",
         "gate_passed": False,
     }
@@ -311,6 +422,7 @@ def _evaluate_certification_gate(
         "trust_spine_invariants",
         "trust_spine_evidence_completeness",
         "trust_spine_evidence_cohesion",
+        "tpa_compliance",
         "system_readiness",
     ):
         check_entry = check_results.get(check_name)
@@ -340,6 +452,17 @@ def _evaluate_certification_gate(
             )
             gate["gate_passed"] = False
             return gate
+
+    tpa_gate = _evaluate_tpa_admission_gate(context)
+    gate["tpa_required"] = tpa_gate["tpa_required"]
+    gate["tpa_artifact_refs"] = tpa_gate["tpa_artifact_refs"]
+    gate["reason_code"] = tpa_gate["reason_code"]
+    if not tpa_gate["gate_passed"]:
+        gate["certification_decision"] = "blocked"
+        gate["certification_status"] = "blocked"
+        gate["block_reason"] = tpa_gate["block_reason"]
+        gate["gate_passed"] = False
+        return gate
 
     gate["block_reason"] = None
     gate["gate_passed"] = True

@@ -773,15 +773,15 @@
     {
       "artifact_type": "done_certification_record",
       "artifact_class": "coordination",
-      "schema_version": "1.4.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.66",
-      "last_updated_in": "1.3.18",
+      "last_updated_in": "1.4.0",
       "example_path": "contracts/examples/done_certification_record.json",
-      "notes": "DONE-01 system-readiness enforcement requires repo_review_snapshot + repo_health_eval_summary inputs and emits deterministic PASSED/WARNED/FROZEN/FAILED readiness outcomes for promotion authority gating."
+      "notes": "DONE-01 fail-closed certification now records governed TPA scope status (PASS/FAIL/NOT_REQUIRED), TPA artifact lineage refs, and enforces tpa_compliance for promotion authority in required scope."
     },
     {
       "artifact_type": "drift_detection_record",
@@ -3531,6 +3531,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/tactic_register.json",
       "notes": "Governed tactic register record grounded to book/transcript evidence."
+    },
+    {
+      "artifact_type": "tpa_scope_policy",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.4.0",
+      "last_updated_in": "1.4.0",
+      "example_path": "contracts/examples/tpa_scope_policy.json",
+      "notes": "TPA-016 governed scope policy for required-vs-optional TPA enforcement boundaries consumed by promotion and done-certification gates."
     },
     {
       "artifact_type": "tpa_observability_summary",
