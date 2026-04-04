@@ -48,6 +48,7 @@ def _authorization_signals() -> dict:
 
 def _integration_inputs() -> dict:
     return {
+        "known_cycle_runner_result_ids": ["CRR-1A2B3C4D5E6F"],
         "program_artifact": {"program_id": "PRG-1"},
         "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
         "eval_result": {"run_id": "eval-1", "result_status": "pass"},
@@ -164,6 +165,72 @@ def test_runner_refuses_on_missing_bundle_fields() -> None:
     assert "input_bundle_missing_required_field" in artifact["refusal_reason_codes"]
 
 
+def test_runner_refuses_when_continuation_depth_exceeded() -> None:
+    bundle = _bundle()
+    bundle["continuation_depth"] = 5
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    artifact = result["cycle_runner_result"]
+    assert artifact["execution_status"] == "refused"
+    assert "continuation_depth_exceeded" in artifact["refusal_reason_codes"]
+    assert artifact["refusal_severity"] == "abnormal"
+
+
+def test_runner_refuses_on_provenance_chain_mismatch() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["known_cycle_runner_result_ids"] = ["CRR-FFFFFFFFFFFF"]
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=_bundle(),
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    artifact = result["cycle_runner_result"]
+    assert artifact["execution_status"] == "refused"
+    assert "provenance_chain_invalid" in artifact["refusal_reason_codes"]
+
+
+def test_required_reviews_do_not_block_execution() -> None:
+    bundle = _bundle()
+    bundle["required_reviews"] = ["cross_layer_propagation_review"]
+    bundle["unresolved_blockers"] = []
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    assert result["cycle_runner_result"]["execution_status"] == "executed"
+
+
 def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     result = run_next_governed_cycle(
         next_cycle_decision=_decision("run_next_cycle"),
@@ -174,7 +241,7 @@ def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-04T00:00:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -182,6 +249,7 @@ def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     artifact = result["cycle_runner_result"]
     validate_artifact(artifact, "cycle_runner_result")
     assert artifact["execution_status"] == "executed"
+    assert artifact["replay_entry_point"]["input_artifact_refs"]
     assert artifact["attempted_execution"] is True
     assert artifact["executed_cycle_id"].startswith("RMB-")
     assert result["executed_cycle"] is not None
@@ -198,7 +266,7 @@ def test_runner_result_is_deterministic_for_same_inputs() -> None:
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-04T00:00:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -217,7 +285,7 @@ def test_runner_does_not_recurse_into_second_cycle() -> None:
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-04T00:00:00Z",
         pqx_execute_fn=_pqx_stub,
     )

@@ -13,8 +13,11 @@
     "active_program_constraints",
     "active_risks",
     "unresolved_blockers",
+    "required_reviews",
     "recommended_start_batch",
     "context_refs",
+    "source_cycle_runner_result_ref",
+    "continuation_depth",
     "created_at",
     "trace_id"
   ],
@@ -86,6 +89,22 @@
     "trace_id": {
       "type": "string",
       "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "required_reviews": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "continuation_depth": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_cycle_runner_result_ref": {
+      "type": "string",
+      "pattern": "^cycle_runner_result:CRR-[A-F0-9]{12}$"
     }
   }
 }
