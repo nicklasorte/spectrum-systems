@@ -1,0 +1,42 @@
+{
+  "artifact_type": "tpa_policy_candidate",
+  "schema_version": "1.0.0",
+  "candidate_id": "tpa-policy:run-001:spectrum_systems_modules_runtime_pqx_sequence_runner.py:multi_issue_pattern",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "generated_at": "2026-04-04T00:00:00Z",
+  "policy_version": "policy:tpa-complexity-regression:v1",
+  "module_scope": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+  "issue_pattern": "multi_issue_pattern",
+  "proposed_change": "bundle_policy_hardening",
+  "expected_impact": "reduce recurring complexity regressions ; reduce bypass attempts in required scope",
+  "evidence_refs": [
+    "complexity_budget:run-001:AI-01",
+    "complexity_trend:run-001:AI-01",
+    "tpa_bypass_drift_signal:run-001:AI-02"
+  ],
+  "review_required": true,
+  "lifecycle_state": "proposed",
+  "auto_apply": false,
+  "detected_patterns": [
+    {
+      "issue_pattern": "complexity_regression",
+      "occurrence_count": 3,
+      "proposed_change": "tighten_complexity_thresholds",
+      "expected_impact": "reduce recurring complexity regressions",
+      "evidence_refs": [
+        "complexity_budget:run-001:AI-01",
+        "complexity_trend:run-001:AI-01"
+      ]
+    },
+    {
+      "issue_pattern": "bypass_attempt",
+      "occurrence_count": 4,
+      "proposed_change": "restrict_tpa_optional_paths",
+      "expected_impact": "reduce bypass attempts in required scope",
+      "evidence_refs": [
+        "tpa_bypass_drift_signal:run-001:AI-02"
+      ]
+    }
+  ]
+}

@@ -52,3 +52,42 @@ def test_review_roadmap_fails_closed_without_structured_handoff() -> None:
     snapshot.pop("roadmap_handoff", None)
     with pytest.raises(ReviewRoadmapGeneratorError, match="roadmap_handoff"):
         build_review_roadmap(snapshot=snapshot, control_decision={"system_response": "allow", "decision_id": "ECD-1"})
+
+
+def test_review_roadmap_applies_tpa_priority_scores_deterministically() -> None:
+    snapshot = _snapshot()
+    snapshot["roadmap_handoff"]["hardening_targets"] = ["module.degraded", "module.stable"]
+    snapshot["roadmap_handoff"]["merge_consolidation_targets"] = ["module.consolidate"]
+    snapshot["roadmap_handoff"]["build_candidates"] = ["module.build"]
+    snapshot["roadmap_handoff"]["defer_targets"] = ["module.defer"]
+    budget = [
+        {"module_or_path": "module.degraded", "budget_status": "exceeded"},
+        {"module_or_path": "module.stable", "budget_status": "healthy"},
+    ]
+    trend = [
+        {"module": "module.degraded", "trend_direction": "degrading"},
+        {"module": "module.stable", "trend_direction": "stable"},
+    ]
+    campaign = [
+        {"target_module": "module.degraded", "priority": "high", "reason": "repeated_complexity_regressions"},
+        {"target_module": "module.stable", "priority": "low", "reason": "preventative_cleanup"},
+    ]
+
+    first = build_review_roadmap(
+        snapshot=snapshot,
+        control_decision={"system_response": "allow", "decision_id": "ECD-ALLOW"},
+        complexity_budget_artifacts=budget,
+        complexity_trend_artifacts=trend,
+        tpa_simplification_campaign_artifacts=campaign,
+    )
+    second = build_review_roadmap(
+        snapshot=snapshot,
+        control_decision={"system_response": "allow", "decision_id": "ECD-ALLOW"},
+        complexity_budget_artifacts=budget,
+        complexity_trend_artifacts=trend,
+        tpa_simplification_campaign_artifacts=campaign,
+    )
+
+    assert first == second
+    assert first["ordered_steps"][0]["target"] == "module.degraded"
+    assert first["ordered_steps"][0]["tpa_priority_score"] > first["ordered_steps"][1]["tpa_priority_score"]

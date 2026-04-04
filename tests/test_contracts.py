@@ -189,6 +189,7 @@ class ContractSchemaTests(unittest.TestCase):
             "precedent_selection_record",
             "precedent_conflict_record",
             "override_governance_record",
+            "tpa_policy_candidate",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

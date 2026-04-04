@@ -7,6 +7,14 @@ from typing import Any
 from spectrum_systems.contracts import validate_artifact
 
 _DECISION_RANK = {"allow": 0, "warn": 1, "freeze": 2, "block": 3}
+_BUDGET_PRIORITY_WEIGHT = {"healthy": 0, "warning": 30, "exceeded": 60}
+_TREND_PRIORITY_WEIGHT = {"improving": 0, "stable": 10, "degrading": 30}
+_CAMPAIGN_PRIORITY_WEIGHT = {"low": 0, "medium": 10, "high": 20}
+_ISSUE_PROPOSAL = {
+    "complexity_regression": "tighten_complexity_thresholds",
+    "bypass_attempt": "restrict_tpa_optional_paths",
+    "simplification_failure": "require_full_tpa_mode",
+}
 
 
 def _complexity_score(signals: dict[str, int]) -> int:
@@ -232,3 +240,147 @@ def enforce_budget_trend_control(
         str(budget.get("recommended_control_decision", "allow")),
         str(trend.get("recommended_control_decision", "allow")),
     )
+
+
+def calculate_tpa_priority_score(
+    *,
+    budget: dict[str, Any] | None,
+    trend: dict[str, Any] | None,
+    campaign: dict[str, Any] | None,
+) -> int:
+    if budget is None or trend is None or campaign is None:
+        return 0
+
+    budget_status = str(budget.get("budget_status", "healthy"))
+    trend_direction = str(trend.get("trend_direction", "stable"))
+    campaign_priority = str(campaign.get("priority", "low"))
+    reasons = str(campaign.get("reason", ""))
+
+    score = (
+        _BUDGET_PRIORITY_WEIGHT.get(budget_status, 0)
+        + _TREND_PRIORITY_WEIGHT.get(trend_direction, 0)
+        + _CAMPAIGN_PRIORITY_WEIGHT.get(campaign_priority, 0)
+    )
+
+    if budget_status == "exceeded":
+        score += 5
+    if "repeated_complexity_regressions" in reasons:
+        score += 5
+    if trend_direction == "degrading":
+        score += 5
+    return min(100, max(0, score))
+
+
+def classify_system_health_mode(
+    *,
+    budget: dict[str, Any] | None,
+    trend: dict[str, Any] | None,
+) -> str:
+    if budget is None or trend is None:
+        return "critical"
+
+    budget_status = str(budget.get("budget_status", "healthy"))
+    trend_direction = str(trend.get("trend_direction", "stable"))
+    recommended = strongest_decision(
+        "allow",
+        str(budget.get("recommended_control_decision", "allow")),
+        str(trend.get("recommended_control_decision", "allow")),
+    )
+
+    if budget_status == "exceeded" and trend_direction == "degrading":
+        return "critical"
+    if recommended == "block":
+        return "critical"
+    if budget_status == "exceeded" or trend_direction == "degrading" or recommended in {"freeze", "warn"}:
+        return "degraded"
+    return "normal"
+
+
+def build_control_priority_signal(
+    *,
+    existing_decision: str,
+    budget: dict[str, Any] | None,
+    trend: dict[str, Any] | None,
+) -> dict[str, Any]:
+    mode = classify_system_health_mode(budget=budget, trend=trend)
+    effective_decision = enforce_budget_trend_control(existing_decision=existing_decision, budget=budget, trend=trend)
+    hardening_prioritized = mode in {"degraded", "critical"}
+
+    if mode == "critical":
+        pqx_schedule_mode = "hardening_only"
+        promotion_gate = "strict_block_on_regression"
+        enforcement_escalation = "critical_enforcement"
+    elif mode == "degraded":
+        pqx_schedule_mode = "hardening_first"
+        promotion_gate = "strict_hardening_before_expansion"
+        enforcement_escalation = "degraded_enforcement"
+    else:
+        pqx_schedule_mode = "balanced"
+        promotion_gate = "standard"
+        enforcement_escalation = "normal_enforcement"
+
+    return {
+        "system_health_mode": mode,
+        "effective_control_decision": effective_decision,
+        "prioritize_hardening": hardening_prioritized,
+        "pqx_schedule_mode": pqx_schedule_mode,
+        "promotion_gating_mode": promotion_gate,
+        "enforcement_escalation_mode": enforcement_escalation,
+    }
+
+
+def build_tpa_policy_candidate(
+    *,
+    run_id: str,
+    trace_id: str,
+    generated_at: str,
+    policy_version: str,
+    module_scope: str,
+    pattern_history: list[dict[str, Any]],
+    minimum_recurrence: int = 3,
+) -> dict[str, Any] | None:
+    repeated: list[dict[str, Any]] = []
+    for row in sorted(pattern_history, key=lambda item: (str(item.get("issue_pattern", "")), str(item.get("proposed_change", "")))):
+        issue_pattern = str(row.get("issue_pattern", "")).strip()
+        occurrence_count = int(row.get("occurrence_count", 0))
+        if not issue_pattern or occurrence_count < minimum_recurrence:
+            continue
+        evidence_refs = sorted({str(ref).strip() for ref in (row.get("evidence_refs") or []) if str(ref).strip()})
+        if not evidence_refs:
+            continue
+        proposed_change = str(row.get("proposed_change") or _ISSUE_PROPOSAL.get(issue_pattern, "tighten_complexity_thresholds"))
+        repeated.append(
+            {
+                "issue_pattern": issue_pattern,
+                "occurrence_count": occurrence_count,
+                "proposed_change": proposed_change,
+                "expected_impact": str(row.get("expected_impact") or "reduce_recurring_tpa_control_failures"),
+                "evidence_refs": evidence_refs,
+            }
+        )
+
+    if not repeated:
+        return None
+
+    issue_summary = "_".join(item["issue_pattern"] for item in repeated)
+    scope_token = module_scope.replace("/", "_")
+    candidate = {
+        "artifact_type": "tpa_policy_candidate",
+        "schema_version": "1.0.0",
+        "candidate_id": f"tpa-policy:{run_id}:{scope_token}:{issue_summary}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "generated_at": generated_at,
+        "policy_version": policy_version,
+        "module_scope": module_scope,
+        "issue_pattern": repeated[0]["issue_pattern"] if len(repeated) == 1 else "multi_issue_pattern",
+        "proposed_change": repeated[0]["proposed_change"] if len(repeated) == 1 else "bundle_policy_hardening",
+        "expected_impact": " ; ".join(item["expected_impact"] for item in repeated),
+        "evidence_refs": sorted({ref for item in repeated for ref in item["evidence_refs"]}),
+        "review_required": True,
+        "lifecycle_state": "proposed",
+        "auto_apply": False,
+        "detected_patterns": repeated,
+    }
+    validate_artifact(candidate, "tpa_policy_candidate")
+    return candidate

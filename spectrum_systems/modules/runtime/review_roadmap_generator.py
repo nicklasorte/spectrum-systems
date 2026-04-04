@@ -11,6 +11,7 @@ from spectrum_systems.modules.runtime.program_layer import (
     ProgramLayerError,
     apply_program_constraints,
 )
+from spectrum_systems.modules.runtime.tpa_complexity_governance import calculate_tpa_priority_score
 
 from spectrum_systems.modules.runtime.repo_review_snapshot_store import (
     RepoReviewSnapshotStoreError,
@@ -92,6 +93,9 @@ def build_review_roadmap(
     snapshot: Dict[str, Any],
     control_decision: Dict[str, Any],
     program_artifact: Dict[str, Any] | None = None,
+    complexity_budget_artifacts: List[Dict[str, Any]] | None = None,
+    complexity_trend_artifacts: List[Dict[str, Any]] | None = None,
+    tpa_simplification_campaign_artifacts: List[Dict[str, Any]] | None = None,
 ) -> Dict[str, Any]:
     handoff = _normalize_handoff(snapshot)
 
@@ -128,6 +132,44 @@ def build_review_roadmap(
         steps = constraint_result.ordered_steps
         filtered_out_targets = constraint_result.filtered_out_targets
 
+    budget_by_target = {
+        str(item.get("module_or_path")): item
+        for item in (complexity_budget_artifacts or [])
+        if isinstance(item, dict) and str(item.get("module_or_path", "")).strip()
+    }
+    trend_by_target = {
+        str(item.get("module")): item
+        for item in (complexity_trend_artifacts or [])
+        if isinstance(item, dict) and str(item.get("module", "")).strip()
+    }
+    campaign_by_target = {
+        str(item.get("target_module")): item
+        for item in (tpa_simplification_campaign_artifacts or [])
+        if isinstance(item, dict) and str(item.get("target_module", "")).strip()
+    }
+
+    category_rank = {"hardening": 0, "consolidation": 1, "build": 2, "defer": 3}
+    enriched_steps: List[Dict[str, Any]] = []
+    for step in steps:
+        target = step["target"]
+        tpa_priority_score = calculate_tpa_priority_score(
+            budget=budget_by_target.get(target),
+            trend=trend_by_target.get(target),
+            campaign=campaign_by_target.get(target),
+        )
+        enriched = dict(step)
+        enriched["tpa_priority_score"] = tpa_priority_score
+        enriched_steps.append(enriched)
+
+    steps = sorted(
+        enriched_steps,
+        key=lambda item: (
+            category_rank.get(item["category"], 99),
+            -int(item.get("tpa_priority_score", 0)),
+            item["target"],
+        ),
+    )
+
     seed = {
         "snapshot_id": snapshot["snapshot_id"],
         "control_decision_id": control_decision.get("decision_id"),
@@ -137,6 +179,13 @@ def build_review_roadmap(
         "generation_status": generation_status,
         "program_id": None if program_artifact is None else str(program_artifact.get("program_id") or ""),
         "filtered_out_targets": filtered_out_targets,
+        "tpa_priority_signals": [
+            {
+                "target": step["target"],
+                "tpa_priority_score": int(step.get("tpa_priority_score", 0)),
+            }
+            for step in steps
+        ],
     }
     digest = _canonical_hash(seed)
     return {
