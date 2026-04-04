@@ -1,0 +1,16 @@
+{
+  "artifact_type": "tpa_simplification_campaign",
+  "schema_version": "1.0.0",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "target_module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+  "reason": "repeated_complexity_regressions",
+  "recommended_action": "simplify",
+  "priority": "medium",
+  "evidence_refs": [
+    "complexity_budget:run-001:AI-01",
+    "complexity_trend:run-001:AI-01"
+  ],
+  "pqx_cleanup_ready": true
+}

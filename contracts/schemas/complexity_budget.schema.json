@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/complexity_budget.schema.json",
+  "title": "Complexity Budget",
+  "description": "Deterministic governed complexity budget status per module/path used for TPA enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "step_id",
+    "module_or_path",
+    "baseline_complexity",
+    "current_complexity",
+    "allowed_growth_delta",
+    "budget_status",
+    "burn_rate",
+    "last_updated",
+    "sustained_increase_count",
+    "recommended_control_decision",
+    "evidence_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "complexity_budget"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "module_or_path": {"type": "string", "minLength": 1},
+    "baseline_complexity": {"type": "integer"},
+    "current_complexity": {"type": "integer"},
+    "allowed_growth_delta": {"type": "integer", "minimum": 0},
+    "budget_status": {"type": "string", "enum": ["healthy", "warning", "exceeded"]},
+    "burn_rate": {"type": "number", "minimum": 0},
+    "last_updated": {"type": "string", "format": "date-time"},
+    "sustained_increase_count": {"type": "integer", "minimum": 0},
+    "recommended_control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

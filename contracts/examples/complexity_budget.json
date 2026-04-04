@@ -1,0 +1,20 @@
+{
+  "artifact_type": "complexity_budget",
+  "schema_version": "1.0.0",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "module_or_path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+  "baseline_complexity": 4,
+  "current_complexity": 5,
+  "allowed_growth_delta": 6,
+  "budget_status": "healthy",
+  "burn_rate": 0.166667,
+  "last_updated": "2026-04-04T00:00:00Z",
+  "sustained_increase_count": 0,
+  "recommended_control_decision": "allow",
+  "evidence_refs": [
+    "tpa_slice_artifact:run-001:AI-01-B",
+    "tpa_slice_artifact:run-001:AI-01-S"
+  ]
+}
