@@ -28,6 +28,11 @@ from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_trend_report,
 )
 from spectrum_systems.modules.runtime.capability_readiness import evaluate_capability_readiness
+from spectrum_systems.modules.runtime.decision_quality_control import (
+    evaluate_calibration,
+    evaluate_decision_quality_budget,
+    evaluate_judgment_promotion_gate,
+)
 from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (
     apply_roadmap_adjustments,
     derive_roadmap_adjustments,
@@ -449,6 +454,18 @@ def derive_batch_handoff_bundle(
         (item for item in evidence_refs if item.startswith("promotion_consistency_record:")),
         "promotion_consistency_record:PCR-000000000000",
     )
+    decision_quality_budget_ref = next(
+        (item for item in evidence_refs if item.startswith("decision_quality_budget_status:")),
+        "decision_quality_budget_status:DQB-000000000000",
+    )
+    calibration_assessment_ref = next(
+        (item for item in evidence_refs if item.startswith("calibration_assessment_record:")),
+        "calibration_assessment_record:CAL-000000000000",
+    )
+    judgment_promotion_gate_ref = next(
+        (item for item in evidence_refs if item.startswith("judgment_promotion_gate_record:")),
+        "judgment_promotion_gate_record:JPG-000000000000",
+    )
     system_budget_status_ref = next(
         (item for item in evidence_refs if item.startswith("system_budget_status:")),
         "system_budget_status:SBS-000000000000",
@@ -509,7 +526,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.7.0",
+        "schema_version": "1.8.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -534,6 +551,9 @@ def derive_batch_handoff_bundle(
         "correction_pattern_ref": correction_pattern_ref,
         "rollback_plan_ref": rollback_plan_ref,
         "promotion_consistency_ref": promotion_consistency_ref,
+        "decision_quality_budget_ref": decision_quality_budget_ref,
+        "calibration_assessment_ref": calibration_assessment_ref,
+        "judgment_promotion_gate_ref": judgment_promotion_gate_ref,
         "system_budget_status_ref": system_budget_status_ref,
         "canary_rollout_ref": canary_rollout_ref,
         "continuous_eval_run_refs": continuous_eval_run_refs,
@@ -1921,7 +1941,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.12.0",
+        "schema_version": "1.13.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1941,6 +1961,9 @@ def run_system_cycle(
         "correction_pattern_ref": correction_pattern_ref or "correction_pattern_record:CPR-000000000000",
         "rollback_plan_ref": "rollback_plan_record:RBP-000000000000",
         "promotion_consistency_ref": "promotion_consistency_record:PCR-000000000000",
+        "decision_quality_budget_ref": "decision_quality_budget_status:DQB-000000000000",
+        "calibration_assessment_ref": "calibration_assessment_record:CAL-000000000000",
+        "judgment_promotion_gate_ref": "judgment_promotion_gate_record:JPG-000000000000",
         "system_budget_status_ref": "system_budget_status:SBS-000000000000",
         "canary_rollout_ref": "canary_rollout_record:CNR-000000000000",
         "continuous_eval_run_refs": [
@@ -2182,6 +2205,20 @@ def run_system_cycle(
             *list(readiness_inputs.get("replay_metrics") or []),
             {"status": str(integration.get("replay_status", "unknown"))},
         ],
+        decision_quality_budget_statuses=[
+            *list(readiness_inputs.get("decision_quality_budget_statuses") or []),
+            {
+                "budget_exhausted": bool(readiness_inputs.get("decision_quality_budget_exhausted", False)),
+                "severity": str(readiness_inputs.get("decision_quality_budget_severity", "none")),
+            },
+        ],
+        calibration_assessments=[
+            *list(readiness_inputs.get("calibration_assessments") or []),
+            {
+                "calibration_error": float(readiness_inputs.get("calibration_error", 0.0)),
+                "drift_delta": float(readiness_inputs.get("calibration_drift_delta", 0.0)),
+            },
+        ],
         unresolved_risks=[
             *[str(item) for item in readiness_inputs.get("unresolved_risks", [])],
             *[str(item) for item in unresolved_critical_risks],
@@ -2318,7 +2355,82 @@ def run_system_cycle(
         trace_id=integration["trace_id"],
     )
     promotion_consistency_ref = f"promotion_consistency_record:{promotion_consistency_record['promotion_consistency_id']}"
-    if next_cycle_decision["decision"] == "run_next_cycle" and promotion_consistency_record["promotion_state"] != "allow":
+    decision_quality_budget_status = evaluate_decision_quality_budget(
+        decision_quality_budget_id=f"DQB-{_canonical_hash({'trace_id': integration['trace_id'], 'run_id': run_result['run_id'], 'created_at': timestamp})[:12].upper()}",
+        scope={
+            "artifact_family": "judgment_flow",
+            "route": "promotion_gate",
+            "policy": "judgment_policy_lifecycle",
+            "judgment_class": "required",
+        },
+        failure_taxonomy_records=[failure_taxonomy_record],
+        override_governance_records=[{"override_state": "none"}],
+        eval_results=[dict(integration_inputs.get("eval_result") or {})],
+        promotion_consistency_records=[promotion_consistency_record],
+        drift_signals=[
+            {"drift_level": program_drift_severity, "drift_detected": program_drift_severity in {"medium", "high"}},
+            *[
+                {"drift_level": str(row.get("drift_level", "low")), "drift_detected": bool(row.get("drift_detected", False))}
+                for row in integration_inputs.get("drift_signals", [])
+                if isinstance(row, dict)
+            ],
+        ],
+        budget_thresholds={"safe": 0.05, "warning": 0.1, "freeze_candidate": 0.2, "block": 0.3},
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    decision_quality_budget_ref = f"decision_quality_budget_status:{decision_quality_budget_status['decision_quality_budget_id']}"
+    calibration_assessment_record = evaluate_calibration(
+        calibration_id=f"CAL-{_canonical_hash({'trace_id': integration['trace_id'], 'run_id': run_result['run_id'], 'eval_result': integration_inputs.get('eval_result', {})})[:12].upper()}",
+        scope={
+            "artifact_family": "judgment_flow",
+            "route": "promotion_gate",
+            "policy": "judgment_policy_lifecycle",
+            "judgment_class": "required",
+        },
+        judgment_records=[
+            *[
+                {"confidence": float(row.get("confidence", row.get("score", 0.0)))}
+                for row in integration_inputs.get("judgment_records", [])
+                if isinstance(row, dict)
+            ],
+            {"confidence": 0.95 if str((integration_inputs.get("eval_result") or {}).get("result_status", "")).lower() == "pass" else 0.2},
+        ],
+        eval_results=[dict(integration_inputs.get("eval_result") or {"result_status": "fail"})],
+        post_hoc_correctness_signals=[
+            *[
+                {"correctness": row.get("correctness", row.get("result_status", "incorrect"))}
+                for row in integration_inputs.get("post_hoc_correctness_signals", [])
+                if isinstance(row, dict)
+            ],
+            {"correctness": "correct" if str((integration_inputs.get("eval_result") or {}).get("result_status", "")).lower() == "pass" else "incorrect"},
+        ],
+        prior_calibration_assessment=dict(integration_inputs.get("prior_calibration_assessment") or {}),
+        sample_window_size=int(integration_inputs.get("calibration_window_size", 5)),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    calibration_assessment_ref = f"calibration_assessment_record:{calibration_assessment_record['calibration_id']}"
+    judgment_promotion_gate_record = evaluate_judgment_promotion_gate(
+        source_batch_id=str(run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN"),
+        required_judgment_refs=sorted(
+            set(
+                list(integration_inputs.get("required_judgment_refs") or [])
+                + [f"eval_result:{str((integration_inputs.get('eval_result') or {}).get('run_id') or 'missing')}"]
+            )
+        ),
+        decision_quality_budget_status=decision_quality_budget_status,
+        calibration_assessment_record=calibration_assessment_record,
+        promotion_consistency_record=promotion_consistency_record,
+        supporting_artifact_refs=[decision_quality_budget_ref, calibration_assessment_ref, promotion_consistency_ref],
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    judgment_promotion_gate_ref = f"judgment_promotion_gate_record:{judgment_promotion_gate_record['promotion_gate_id']}"
+    if next_cycle_decision["decision"] == "run_next_cycle" and (
+        promotion_consistency_record["promotion_state"] != "allow"
+        or judgment_promotion_gate_record["promotion_decision"] != "allow"
+    ):
         next_cycle_decision["decision"] = "stop"
         next_cycle_decision["decision_reason_codes"] = sorted(
             set(list(next_cycle_decision["decision_reason_codes"]) + ["missing_required_artifacts"])
@@ -2343,6 +2455,9 @@ def run_system_cycle(
                 readiness_ref,
                 rollback_plan_ref,
                 promotion_consistency_ref,
+                decision_quality_budget_ref,
+                calibration_assessment_ref,
+                judgment_promotion_gate_ref,
                 budget_status_ref,
                 canary_rollout_ref,
                 trust_posture_ref,
@@ -2358,6 +2473,9 @@ def run_system_cycle(
     )
     summary["rollback_plan_ref"] = rollback_plan_ref
     summary["promotion_consistency_ref"] = promotion_consistency_ref
+    summary["decision_quality_budget_ref"] = decision_quality_budget_ref
+    summary["calibration_assessment_ref"] = calibration_assessment_ref
+    summary["judgment_promotion_gate_ref"] = judgment_promotion_gate_ref
     summary["system_budget_status_ref"] = budget_status_ref
     summary["canary_rollout_ref"] = canary_rollout_ref
     summary["continuous_eval_run_refs"] = continuous_eval_refs
@@ -2381,7 +2499,14 @@ def run_system_cycle(
     batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
     batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
         list(batch_delivery_report["evidence_refs"])
-        + [failure_taxonomy_ref, rollback_plan_ref, promotion_consistency_ref]
+        + [
+            failure_taxonomy_ref,
+            rollback_plan_ref,
+            promotion_consistency_ref,
+            decision_quality_budget_ref,
+            calibration_assessment_ref,
+            judgment_promotion_gate_ref,
+        ]
         + ([correction_pattern_ref] if correction_pattern_ref else [])
     )
     batch_handoff_bundle["recommended_next_batch"] = adjusted_next_batch_id
@@ -2391,6 +2516,9 @@ def run_system_cycle(
     batch_handoff_bundle["correction_pattern_ref"] = correction_pattern_ref or "correction_pattern_record:CPR-000000000000"
     batch_handoff_bundle["rollback_plan_ref"] = rollback_plan_ref
     batch_handoff_bundle["promotion_consistency_ref"] = promotion_consistency_ref
+    batch_handoff_bundle["decision_quality_budget_ref"] = decision_quality_budget_ref
+    batch_handoff_bundle["calibration_assessment_ref"] = calibration_assessment_ref
+    batch_handoff_bundle["judgment_promotion_gate_ref"] = judgment_promotion_gate_ref
     batch_handoff_bundle["system_budget_status_ref"] = budget_status_ref
     batch_handoff_bundle["canary_rollout_ref"] = canary_rollout_ref
     batch_handoff_bundle["continuous_eval_run_refs"] = continuous_eval_refs
@@ -2423,6 +2551,9 @@ def run_system_cycle(
                 failure_taxonomy_ref,
                 rollback_plan_ref,
                 promotion_consistency_ref,
+                decision_quality_budget_ref,
+                calibration_assessment_ref,
+                judgment_promotion_gate_ref,
                 budget_status_ref,
                 canary_rollout_ref,
                 trust_posture_ref,
@@ -2459,6 +2590,9 @@ def run_system_cycle(
         "correction_pattern_record": correction_pattern_record,
         "rollback_plan_record": rollback_plan_record,
         "promotion_consistency_record": promotion_consistency_record,
+        "decision_quality_budget_status": decision_quality_budget_status,
+        "calibration_assessment_record": calibration_assessment_record,
+        "judgment_promotion_gate_record": judgment_promotion_gate_record,
         "continuous_eval_run_records": continuous_eval_run_records,
         "system_budget_status": system_budget_status,
         "canary_rollout_record": canary_rollout_record,

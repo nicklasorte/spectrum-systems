@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_quality_budget_status.schema.json",
+  "title": "decision_quality_budget_status",
+  "description": "Deterministic decision-quality error-budget status for judgment-required flows.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_quality_budget_id",
+    "scope",
+    "wrong_approve_rate",
+    "wrong_block_rate",
+    "override_rate",
+    "review_load_rate",
+    "budget_thresholds",
+    "budget_exhausted",
+    "severity",
+    "reason_codes",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "decision_quality_budget_id": {"type": "string", "pattern": "^DQB-[A-F0-9]{12}$"},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_family", "route", "policy", "judgment_class"],
+      "properties": {
+        "artifact_family": {"type": "string", "minLength": 1},
+        "route": {"type": "string", "minLength": 1},
+        "policy": {"type": "string", "minLength": 1},
+        "judgment_class": {"type": "string", "minLength": 1}
+      }
+    },
+    "wrong_approve_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "wrong_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "override_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "review_load_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "budget_thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["safe", "warning", "freeze_candidate", "block"],
+      "properties": {
+        "safe": {"type": "number", "minimum": 0, "maximum": 1},
+        "warning": {"type": "number", "minimum": 0, "maximum": 1},
+        "freeze_candidate": {"type": "number", "minimum": 0, "maximum": 1},
+        "block": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "budget_exhausted": {"type": "boolean"},
+    "severity": {"type": "string", "enum": ["none", "warning", "freeze_candidate", "block"]},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z0-9_:-]+$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

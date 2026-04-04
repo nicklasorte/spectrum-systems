@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_promotion_gate_record.schema.json",
+  "title": "judgment_promotion_gate_record",
+  "description": "Deterministic judgment-required promotion gate decision artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "promotion_gate_id",
+    "source_batch_id",
+    "required_judgment_refs",
+    "judgment_eval_pass_rate",
+    "calibration_status",
+    "consistency_status",
+    "promotion_decision",
+    "reason_codes",
+    "supporting_artifact_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "promotion_gate_id": {"type": "string", "pattern": "^JPG-[A-F0-9]{12}$"},
+    "source_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+    "required_judgment_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "judgment_eval_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "calibration_status": {"type": "string", "enum": ["good", "degraded", "poor"]},
+    "consistency_status": {"type": "string", "enum": ["consistent", "insufficient_evidence", "inconsistent"]},
+    "promotion_decision": {"type": "string", "enum": ["allow", "hold", "deny"]},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z0-9_:-]+$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "supporting_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

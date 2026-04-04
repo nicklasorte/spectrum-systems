@@ -130,6 +130,9 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
         validate_artifact(first["correction_pattern_record"], "correction_pattern_record")
     validate_artifact(first["rollback_plan_record"], "rollback_plan_record")
     validate_artifact(first["promotion_consistency_record"], "promotion_consistency_record")
+    validate_artifact(first["decision_quality_budget_status"], "decision_quality_budget_status")
+    validate_artifact(first["calibration_assessment_record"], "calibration_assessment_record")
+    validate_artifact(first["judgment_promotion_gate_record"], "judgment_promotion_gate_record")
     for record in first["continuous_eval_run_records"]:
         validate_artifact(record, "continuous_eval_run_record")
     validate_artifact(first["system_budget_status"], "system_budget_status")
@@ -141,7 +144,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.12.0"
+    assert first["build_summary"]["schema_version"] == "1.13.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -214,6 +217,9 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["failure_taxonomy_ref"].startswith("failure_taxonomy_record:FTX-")
     assert first["build_summary"]["rollback_plan_ref"].startswith("rollback_plan_record:RBP-")
     assert first["build_summary"]["promotion_consistency_ref"].startswith("promotion_consistency_record:PCR-")
+    assert first["build_summary"]["decision_quality_budget_ref"].startswith("decision_quality_budget_status:DQB-")
+    assert first["build_summary"]["calibration_assessment_ref"].startswith("calibration_assessment_record:CAL-")
+    assert first["build_summary"]["judgment_promotion_gate_ref"].startswith("judgment_promotion_gate_record:JPG-")
     assert first["build_summary"]["system_budget_status_ref"].startswith("system_budget_status:SBS-")
     assert first["build_summary"]["canary_rollout_ref"].startswith("canary_rollout_record:CNR-")
     assert len(first["build_summary"]["continuous_eval_run_refs"]) == 4
@@ -221,6 +227,9 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["batch_handoff_bundle"]["failure_taxonomy_ref"] == first["build_summary"]["failure_taxonomy_ref"]
     assert first["batch_handoff_bundle"]["rollback_plan_ref"] == first["build_summary"]["rollback_plan_ref"]
     assert first["batch_handoff_bundle"]["promotion_consistency_ref"] == first["build_summary"]["promotion_consistency_ref"]
+    assert first["batch_handoff_bundle"]["decision_quality_budget_ref"] == first["build_summary"]["decision_quality_budget_ref"]
+    assert first["batch_handoff_bundle"]["calibration_assessment_ref"] == first["build_summary"]["calibration_assessment_ref"]
+    assert first["batch_handoff_bundle"]["judgment_promotion_gate_ref"] == first["build_summary"]["judgment_promotion_gate_ref"]
     assert first["batch_handoff_bundle"]["system_budget_status_ref"] == first["build_summary"]["system_budget_status_ref"]
     assert first["batch_handoff_bundle"]["canary_rollout_ref"] == first["build_summary"]["canary_rollout_ref"]
     assert first["batch_handoff_bundle"]["continuous_eval_run_refs"] == first["build_summary"]["continuous_eval_run_refs"]
