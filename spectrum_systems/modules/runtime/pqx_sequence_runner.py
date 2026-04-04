@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable
@@ -369,7 +370,7 @@ def _build_tpa_slice_artifact(
         raise PQXSequenceRunnerError("TPA artifact requested for non-TPA slice id")
     artifact = {
         "artifact_type": "tpa_slice_artifact",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "artifact_id": f"tpa:{run_id}:{slice_id}",
         "run_id": run_id,
         "trace_id": trace_id,
@@ -395,6 +396,118 @@ def _deterministic_gate_selection(*, run_id: str, step_id: str, build_artifact_i
     }
     digest = _canonical_hash(hash_payload)
     return "pass_1_build" if int(digest[-1], 16) % 2 == 0 else "pass_2_simplify"
+
+
+_REQUIRED_COMPLEXITY_SIGNAL_KEYS = (
+    "files_changed_count",
+    "lines_added",
+    "lines_removed",
+    "net_line_delta",
+    "functions_added_count",
+    "functions_removed_count",
+    "helpers_added_count",
+    "helpers_removed_count",
+    "wrappers_collapsed_count",
+    "deletions_count",
+    "public_surface_delta_count",
+    "approximate_max_nesting_delta",
+    "approximate_branching_delta",
+    "abstraction_added_count",
+    "abstraction_removed_count",
+)
+
+
+def _normalized_complexity_signals(payload: dict[str, Any], *, field_name: str) -> dict[str, int]:
+    signals = payload.get(field_name)
+    if not isinstance(signals, dict):
+        raise PQXSequenceRunnerError(f"TPA {payload.get('artifact_kind', 'unknown')} requires {field_name} object")
+    missing = [key for key in _REQUIRED_COMPLEXITY_SIGNAL_KEYS if key not in signals]
+    if missing:
+        raise PQXSequenceRunnerError(f"TPA complexity signals missing required fields: {', '.join(missing)}")
+    normalized: dict[str, int] = {}
+    for key in _REQUIRED_COMPLEXITY_SIGNAL_KEYS:
+        value = signals.get(key)
+        if not isinstance(value, int):
+            raise PQXSequenceRunnerError(f"TPA complexity signal {key} must be integer")
+        normalized[key] = value
+    if normalized["net_line_delta"] != normalized["lines_added"] - normalized["lines_removed"]:
+        raise PQXSequenceRunnerError("TPA complexity signal net_line_delta must equal lines_added-lines_removed")
+    return normalized
+
+
+def _complexity_delta(build_signals: dict[str, int], simplify_signals: dict[str, int]) -> dict[str, int]:
+    return {key: simplify_signals[key] - build_signals[key] for key in _REQUIRED_COMPLEXITY_SIGNAL_KEYS}
+
+
+def _complexity_score(signals: dict[str, int]) -> int:
+    return (
+        (signals["lines_added"] - signals["lines_removed"])
+        + signals["helpers_added_count"] * 2
+        + signals["functions_added_count"] * 2
+        + signals["abstraction_added_count"] * 3
+        + signals["public_surface_delta_count"] * 3
+        + signals["approximate_max_nesting_delta"] * 2
+        + signals["approximate_branching_delta"] * 2
+        - signals["helpers_removed_count"] * 2
+        - signals["functions_removed_count"] * 2
+        - signals["abstraction_removed_count"] * 3
+        - signals["wrappers_collapsed_count"] * 2
+        - signals["deletions_count"] * 2
+    )
+
+
+def _deterministic_selection_from_signals(
+    *, build_signals: dict[str, int], simplify_signals: dict[str, int], simplicity_decision: str
+) -> str:
+    if simplicity_decision == "block":
+        return "pass_1_build"
+    build_score = _complexity_score(build_signals)
+    simplify_score = _complexity_score(simplify_signals)
+    return "pass_2_simplify" if simplify_score <= build_score else "pass_1_build"
+
+
+def _build_tpa_observability_summary(
+    *,
+    run_id: str,
+    trace_id: str,
+    step_id: str,
+    generated_at: str,
+    gate_payload: dict[str, Any],
+    plan_payload: dict[str, Any],
+) -> dict[str, Any]:
+    selected = gate_payload["selected_pass"]
+    simplify_win = selected == "pass_2_simplify"
+    regression = bool(gate_payload["complexity_regression_gate"]["regression_detected"])
+    delete_count = int(gate_payload["selection_metrics"]["simplify"]["deletions_count"])
+    modules = plan_payload.get("modules_affected", [])
+    failures = plan_payload.get("prior_failure_pattern_refs", [])
+    summary = {
+        "artifact_type": "tpa_observability_summary",
+        "schema_version": "1.0.0",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "generated_at": generated_at,
+        "step_id": step_id,
+        "metrics": {
+            "pass2_promotion_rate": 1.0 if selected == "pass_2_simplify" else 0.0,
+            "pass1_retained_rate": 1.0 if selected == "pass_1_build" else 0.0,
+            "simplify_win_rate": 1.0 if simplify_win else 0.0,
+            "simplify_loss_rate": 0.0 if simplify_win else 1.0,
+            "complexity_regression_rate": 1.0 if regression else 0.0,
+            "cleanup_deletion_rate": 1.0 if delete_count > 0 else 0.0,
+        },
+        "top_tpa_hotspot_modules": [
+            {"module_ref": module_ref, "count": count} for module_ref, count in Counter(modules).most_common(5)
+        ],
+        "repeated_tpa_failure_patterns": [
+            {"pattern_ref": pattern_ref, "count": count} for pattern_ref, count in Counter(failures).most_common(5)
+        ],
+    }
+    try:
+        validate_artifact(summary, "tpa_observability_summary")
+    except Exception as exc:
+        raise PQXSequenceRunnerError(f"invalid TPA observability summary artifact for {step_id}: {exc}") from exc
+    return summary
 
 
 def _persist_with_batch_result(state: dict, state_path: Path) -> dict:
@@ -1042,10 +1155,16 @@ def execute_sequence_run(
                 plan_payload = request.get("tpa_plan")
                 if not isinstance(plan_payload, dict):
                     raise PQXSequenceRunnerError(f"TPA plan slice {next_slice_id} missing request.tpa_plan artifact payload")
+                if plan_payload.get("execution_mode") not in {"feature_build", "cleanup_only"}:
+                    raise PQXSequenceRunnerError("TPA plan must declare execution_mode feature_build or cleanup_only")
                 if not str(plan_payload.get("context_bundle_ref") or "").startswith("context_bundle_v2:"):
                     raise PQXSequenceRunnerError("TPA plan must reference context_bundle_v2 via context_bundle_ref")
                 if not plan_payload.get("modules_affected"):
                     raise PQXSequenceRunnerError("TPA plan must declare modules_affected from governed context")
+                if plan_payload.get("execution_mode") == "cleanup_only":
+                    cleanup_scope = plan_payload.get("cleanup_scope")
+                    if not isinstance(cleanup_scope, dict) or not cleanup_scope.get("bounded_files"):
+                        raise PQXSequenceRunnerError("TPA cleanup-only plan must declare cleanup_scope.bounded_files")
                 if not str(plan_payload.get("improvement_objective") or "").strip():
                     raise PQXSequenceRunnerError("TPA plan must declare improvement_objective")
                 if not str(plan_payload.get("context_rationale") or "").strip():
@@ -1082,6 +1201,7 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA build must not perform speculative expansion beyond required scope")
                 if not bool(build_payload.get("existing_abstractions_satisfied")):
                     raise PQXSequenceRunnerError("TPA build must confirm existing abstractions are reused when available")
+                _normalized_complexity_signals(build_payload, field_name="complexity_signals")
                 plan_failure_patterns = set(plan_fields.get("prior_failure_pattern_refs", []))
                 avoided_patterns = set(build_payload.get("known_failure_patterns_avoided", []))
                 if not plan_failure_patterns.issubset(avoided_patterns):
@@ -1111,9 +1231,11 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA simplify must not introduce new abstraction layers")
                 if simplify_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
                     raise PQXSequenceRunnerError("TPA simplify must use same context_bundle_ref as TPA plan")
-                if int(simplify_payload.get("redundant_code_paths_removed", 0)) <= 0 and not simplify_payload.get(
-                    "duplicate_logic_collapsed"
-                ):
+                _normalized_complexity_signals(simplify_payload, field_name="complexity_signals")
+                delete_pass = simplify_payload.get("delete_pass")
+                if not isinstance(delete_pass, dict) or not bool(delete_pass.get("deletion_considered")):
+                    raise PQXSequenceRunnerError("TPA simplify must include delete_pass with deletion_considered=true")
+                if int(simplify_payload.get("redundant_code_paths_removed", 0)) <= 0 and not simplify_payload.get("duplicate_logic_collapsed") and not delete_pass.get("deleted_items"):
                     raise PQXSequenceRunnerError("TPA simplify must remove redundancy using context-informed simplification")
                 if not simplify_payload.get("pattern_consistency_refs"):
                     raise PQXSequenceRunnerError("TPA simplify must declare pattern consistency references")
@@ -1135,14 +1257,38 @@ def execute_sequence_run(
                     for key in ("behavioral_equivalence", "contract_valid", "tests_valid")
                 ):
                     raise PQXSequenceRunnerError("TPA gate must prove behavioral equivalence, contract validity, and test validity")
-                deterministic_selected = _deterministic_gate_selection(
-                    run_id=run_id,
-                    step_id=step_id,
-                    build_artifact_id=artifacts["build"]["artifact_id"],
-                    simplify_artifact_id=artifacts["simplify"]["artifact_id"],
+                selection_inputs = gate_payload.get("selection_inputs")
+                if not isinstance(selection_inputs, dict):
+                    raise PQXSequenceRunnerError("TPA gate must include selection_inputs")
+                if not bool(selection_inputs.get("comparison_inputs_present")):
+                    raise PQXSequenceRunnerError("TPA gate must fail closed when selection comparison inputs are missing")
+                if selection_inputs.get("build_artifact_id") != artifacts["build"]["artifact_id"] or selection_inputs.get("simplify_artifact_id") != artifacts["simplify"]["artifact_id"]:
+                    raise PQXSequenceRunnerError("TPA gate selection_inputs artifact refs must match governed build/simplify artifacts")
+                build_signals = _normalized_complexity_signals(artifacts["build"]["artifact"], field_name="complexity_signals")
+                simplify_signals = _normalized_complexity_signals(artifacts["simplify"]["artifact"], field_name="complexity_signals")
+                simplicity_review = gate_payload.get("simplicity_review")
+                if not isinstance(simplicity_review, dict):
+                    raise PQXSequenceRunnerError("TPA gate must include simplicity_review")
+                simplicity_decision = simplicity_review.get("decision")
+                if simplicity_decision not in {"allow", "warn", "freeze", "block"}:
+                    raise PQXSequenceRunnerError("TPA gate simplicity_review.decision invalid")
+                deterministic_selected = _deterministic_selection_from_signals(
+                    build_signals=build_signals,
+                    simplify_signals=simplify_signals,
+                    simplicity_decision=simplicity_decision,
                 )
                 if gate_payload.get("selected_pass") != deterministic_selected:
                     raise PQXSequenceRunnerError("TPA gate selected_pass mismatch with deterministic control decision")
+                rejected_pass = "pass_2_simplify" if deterministic_selected == "pass_1_build" else "pass_1_build"
+                if gate_payload.get("rejected_pass") != rejected_pass:
+                    raise PQXSequenceRunnerError("TPA gate rejected_pass mismatch with deterministic control decision")
+                selection_metrics = gate_payload.get("selection_metrics")
+                if not isinstance(selection_metrics, dict):
+                    raise PQXSequenceRunnerError("TPA gate must include selection_metrics")
+                if selection_metrics.get("build") != build_signals or selection_metrics.get("simplify") != simplify_signals:
+                    raise PQXSequenceRunnerError("TPA gate selection_metrics build/simplify must match governed complexity signals")
+                if selection_metrics.get("simplify_delta") != _complexity_delta(build_signals, simplify_signals):
+                    raise PQXSequenceRunnerError("TPA gate selection_metrics simplify_delta mismatch")
                 if gate_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
                     raise PQXSequenceRunnerError("TPA gate must use same context_bundle_ref as plan/build/simplify")
                 if gate_payload.get("unaddressed_failure_pattern_refs"):
@@ -1156,6 +1302,27 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA gate must freeze/block when high-risk context lacks mitigation")
                 if plan_risks and not gate_payload.get("risk_mitigation_refs"):
                     raise PQXSequenceRunnerError("TPA gate must include risk mitigation refs for known risks")
+                regression_gate = gate_payload.get("complexity_regression_gate")
+                if not isinstance(regression_gate, dict):
+                    raise PQXSequenceRunnerError("TPA gate must include complexity_regression_gate")
+                if regression_gate.get("decision") not in {"allow", "warn", "freeze", "block"}:
+                    raise PQXSequenceRunnerError("TPA gate complexity_regression_gate.decision invalid")
+                if regression_gate.get("regression_detected") and regression_gate.get("decision") == "allow":
+                    raise PQXSequenceRunnerError("TPA gate must block/freeze/warn regressions per policy")
+                if simplicity_decision in {"block", "freeze"} and bool(gate_payload.get("promotion_ready")):
+                    raise PQXSequenceRunnerError("TPA gate cannot mark promotion_ready for blocked/frozen simplicity review")
+                if regression_gate.get("decision") in {"block", "freeze"} and bool(gate_payload.get("promotion_ready")):
+                    raise PQXSequenceRunnerError("TPA gate cannot mark promotion_ready for blocked/frozen complexity regression gate")
+                if artifacts["plan"]["artifact"].get("execution_mode") == "cleanup_only":
+                    cleanup_validation = gate_payload.get("cleanup_only_validation")
+                    if not isinstance(cleanup_validation, dict):
+                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires cleanup_only_validation")
+                    if not bool(cleanup_validation.get("mode_enabled")):
+                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires mode_enabled=true")
+                    if not bool(cleanup_validation.get("equivalence_proven")):
+                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires strict equivalence proof")
+                    if not cleanup_validation.get("replay_ref"):
+                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires replay_ref")
                 artifacts["gate"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
@@ -1175,11 +1342,19 @@ def execute_sequence_run(
                             "run_id": run_id,
                             "step_id": step_id,
                             "selected_pass": deterministic_selected,
-                            "build_artifact_id": artifacts["build"]["artifact_id"],
-                            "simplify_artifact_id": artifacts["simplify"]["artifact_id"],
+                            "selection_inputs": selection_inputs,
+                            "selection_metrics": gate_payload.get("selection_metrics"),
                         }
                     ),
                 }
+                artifacts["observability_summary"] = _build_tpa_observability_summary(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    generated_at=iso_now(clock),
+                    gate_payload=gate_payload,
+                    plan_payload=artifacts["plan"]["artifact"],
+                )
 
         completed_at = iso_now(clock)
         continuation_record_id = None

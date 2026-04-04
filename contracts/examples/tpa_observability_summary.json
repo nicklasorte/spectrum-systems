@@ -1,0 +1,28 @@
+{
+  "artifact_type": "tpa_observability_summary",
+  "schema_version": "1.0.0",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "generated_at": "2026-04-04T00:00:00Z",
+  "step_id": "AI-01",
+  "metrics": {
+    "pass2_promotion_rate": 1.0,
+    "pass1_retained_rate": 0.0,
+    "simplify_win_rate": 1.0,
+    "simplify_loss_rate": 0.0,
+    "complexity_regression_rate": 0.0,
+    "cleanup_deletion_rate": 0.5
+  },
+  "top_tpa_hotspot_modules": [
+    {
+      "module_ref": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+      "count": 1
+    }
+  ],
+  "repeated_tpa_failure_patterns": [
+    {
+      "pattern_ref": "failure_pattern:unused-helper-regression",
+      "count": 1
+    }
+  ]
+}

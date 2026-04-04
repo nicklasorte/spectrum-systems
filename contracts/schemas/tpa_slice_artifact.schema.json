@@ -19,7 +19,7 @@
   ],
   "properties": {
     "artifact_type": {"type": "string", "const": "tpa_slice_artifact"},
-    "schema_version": {"type": "string", "const": "1.1.0"},
+    "schema_version": {"type": "string", "const": "1.2.0"},
     "artifact_id": {"type": "string", "minLength": 1},
     "run_id": {"type": "string", "minLength": 1},
     "trace_id": {"type": "string", "minLength": 1},
@@ -38,11 +38,88 @@
   },
   "$defs": {
     "non_empty": {"type": "string", "minLength": 1},
+    "complexity_signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files_changed_count",
+        "lines_added",
+        "lines_removed",
+        "net_line_delta",
+        "functions_added_count",
+        "functions_removed_count",
+        "helpers_added_count",
+        "helpers_removed_count",
+        "wrappers_collapsed_count",
+        "deletions_count",
+        "public_surface_delta_count",
+        "approximate_max_nesting_delta",
+        "approximate_branching_delta",
+        "abstraction_added_count",
+        "abstraction_removed_count"
+      ],
+      "properties": {
+        "files_changed_count": {"type": "integer", "minimum": 0},
+        "lines_added": {"type": "integer", "minimum": 0},
+        "lines_removed": {"type": "integer", "minimum": 0},
+        "net_line_delta": {"type": "integer"},
+        "functions_added_count": {"type": "integer", "minimum": 0},
+        "functions_removed_count": {"type": "integer", "minimum": 0},
+        "helpers_added_count": {"type": "integer", "minimum": 0},
+        "helpers_removed_count": {"type": "integer", "minimum": 0},
+        "wrappers_collapsed_count": {"type": "integer", "minimum": 0},
+        "deletions_count": {"type": "integer", "minimum": 0},
+        "public_surface_delta_count": {"type": "integer"},
+        "approximate_max_nesting_delta": {"type": "integer"},
+        "approximate_branching_delta": {"type": "integer"},
+        "abstraction_added_count": {"type": "integer", "minimum": 0},
+        "abstraction_removed_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "complexity_signal_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files_changed_count",
+        "lines_added",
+        "lines_removed",
+        "net_line_delta",
+        "functions_added_count",
+        "functions_removed_count",
+        "helpers_added_count",
+        "helpers_removed_count",
+        "wrappers_collapsed_count",
+        "deletions_count",
+        "public_surface_delta_count",
+        "approximate_max_nesting_delta",
+        "approximate_branching_delta",
+        "abstraction_added_count",
+        "abstraction_removed_count"
+      ],
+      "properties": {
+        "files_changed_count": {"type": "integer"},
+        "lines_added": {"type": "integer"},
+        "lines_removed": {"type": "integer"},
+        "net_line_delta": {"type": "integer"},
+        "functions_added_count": {"type": "integer"},
+        "functions_removed_count": {"type": "integer"},
+        "helpers_added_count": {"type": "integer"},
+        "helpers_removed_count": {"type": "integer"},
+        "wrappers_collapsed_count": {"type": "integer"},
+        "deletions_count": {"type": "integer"},
+        "public_surface_delta_count": {"type": "integer"},
+        "approximate_max_nesting_delta": {"type": "integer"},
+        "approximate_branching_delta": {"type": "integer"},
+        "abstraction_added_count": {"type": "integer"},
+        "abstraction_removed_count": {"type": "integer"}
+      }
+    },
     "plan_artifact": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "artifact_kind",
+        "execution_mode",
         "files_touched",
         "seams_reused",
         "abstraction_intent",
@@ -56,6 +133,16 @@
       ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "plan"},
+        "execution_mode": {"type": "string", "enum": ["feature_build", "cleanup_only"]},
+        "cleanup_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bounded_files", "reason"],
+          "properties": {
+            "bounded_files": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "minItems": 1, "uniqueItems": true},
+            "reason": {"$ref": "#/$defs/non_empty"}
+          }
+        },
         "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "seams_reused": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "abstraction_intent": {"type": "string", "enum": ["reuse_existing", "minimal_extension"]},
@@ -74,7 +161,13 @@
             "no_redesign": {"type": "boolean", "const": true}
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"execution_mode": {"const": "cleanup_only"}}},
+          "then": {"required": ["cleanup_scope"]}
+        }
+      ]
     },
     "build_artifact": {
       "type": "object",
@@ -91,7 +184,8 @@
         "known_failure_patterns_avoided",
         "existing_abstractions_satisfied",
         "speculative_expansion_detected",
-        "reused_module_refs"
+        "reused_module_refs",
+        "complexity_signals"
       ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "build"},
@@ -113,14 +207,11 @@
           }
         },
         "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
-        "known_failure_patterns_avoided": {
-          "type": "array",
-          "items": {"$ref": "#/$defs/non_empty"},
-          "uniqueItems": true
-        },
+        "known_failure_patterns_avoided": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "existing_abstractions_satisfied": {"type": "boolean"},
         "speculative_expansion_detected": {"type": "boolean"},
-        "reused_module_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+        "reused_module_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "complexity_signals": {"$ref": "#/$defs/complexity_signals"}
       }
     },
     "simplify_artifact": {
@@ -135,24 +226,48 @@
         "context_bundle_ref",
         "redundant_code_paths_removed",
         "duplicate_logic_collapsed",
-        "pattern_consistency_refs"
+        "pattern_consistency_refs",
+        "complexity_signals",
+        "delete_pass"
       ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "simplify"},
         "source_build_artifact_id": {"$ref": "#/$defs/non_empty"},
         "actions": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["dedupe_logic", "reduce_nesting", "rename_for_clarity", "delete_unnecessary_code"]
-          }
+          "items": {"type": "string", "enum": ["dedupe_logic", "reduce_nesting", "rename_for_clarity", "delete_unnecessary_code"]}
         },
         "behavior_changed": {"type": "boolean"},
         "new_layers_introduced": {"type": "integer", "minimum": 0},
         "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
         "redundant_code_paths_removed": {"type": "integer", "minimum": 0},
         "duplicate_logic_collapsed": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "pattern_consistency_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+        "pattern_consistency_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "complexity_signals": {"$ref": "#/$defs/complexity_signals"},
+        "delete_pass": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deletion_considered",
+            "deletion_performed",
+            "deletion_rejected_reason",
+            "deleted_items",
+            "collapsed_abstractions",
+            "removed_helpers",
+            "removed_wrappers",
+            "indirection_avoided"
+          ],
+          "properties": {
+            "deletion_considered": {"type": "boolean"},
+            "deletion_performed": {"type": "boolean"},
+            "deletion_rejected_reason": {"type": ["string", "null"]},
+            "deleted_items": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+            "collapsed_abstractions": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+            "removed_helpers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+            "removed_wrappers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+            "indirection_avoided": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+          }
+        }
       }
     },
     "gate_artifact": {
@@ -166,14 +281,21 @@
         "contract_valid",
         "tests_valid",
         "selected_pass",
-        "selection_reason",
+        "rejected_pass",
+        "selection_inputs",
+        "selection_metrics",
+        "selection_rationale",
+        "promotion_ready",
+        "fail_closed_reason",
         "context_bundle_ref",
         "review_signal_refs",
         "eval_signal_refs",
         "addressed_failure_pattern_refs",
         "unaddressed_failure_pattern_refs",
         "high_risk_unmitigated",
-        "risk_mitigation_refs"
+        "risk_mitigation_refs",
+        "simplicity_review",
+        "complexity_regression_gate"
       ],
       "properties": {
         "artifact_kind": {"type": "string", "const": "gate"},
@@ -183,14 +305,101 @@
         "contract_valid": {"type": "boolean"},
         "tests_valid": {"type": "boolean"},
         "selected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
-        "selection_reason": {"$ref": "#/$defs/non_empty"},
+        "rejected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
+        "selection_inputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["build_artifact_id", "simplify_artifact_id", "comparison_inputs_present"],
+          "properties": {
+            "build_artifact_id": {"$ref": "#/$defs/non_empty"},
+            "simplify_artifact_id": {"$ref": "#/$defs/non_empty"},
+            "comparison_inputs_present": {"type": "boolean"}
+          }
+        },
+        "selection_metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["build", "simplify", "simplify_delta"],
+          "properties": {
+            "build": {"$ref": "#/$defs/complexity_signals"},
+            "simplify": {"$ref": "#/$defs/complexity_signals"},
+            "simplify_delta": {"$ref": "#/$defs/complexity_signal_delta"}
+          }
+        },
+        "selection_rationale": {"$ref": "#/$defs/non_empty"},
+        "promotion_ready": {"type": "boolean"},
+        "fail_closed_reason": {"type": ["string", "null"]},
         "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
         "review_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "eval_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "addressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "unaddressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "high_risk_unmitigated": {"type": "boolean"},
-        "risk_mitigation_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+        "risk_mitigation_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "simplicity_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["decision", "overall_severity", "findings", "report_ref"],
+          "properties": {
+            "decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+            "overall_severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+            "findings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["category", "severity", "message"],
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "unnecessary_indirection",
+                      "abstraction_creep",
+                      "wrapper_on_wrapper",
+                      "helper_explosion",
+                      "naming_clarity",
+                      "readability_degradation",
+                      "delete_instead_of_abstract"
+                    ]
+                  },
+                  "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+                  "message": {"$ref": "#/$defs/non_empty"}
+                }
+              }
+            },
+            "report_ref": {"$ref": "#/$defs/non_empty"}
+          }
+        },
+        "complexity_regression_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "decision",
+            "policy_ref",
+            "regression_detected",
+            "historical_baseline_available",
+            "historical_baseline_ref",
+            "exception_justified"
+          ],
+          "properties": {
+            "decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+            "policy_ref": {"$ref": "#/$defs/non_empty"},
+            "regression_detected": {"type": "boolean"},
+            "historical_baseline_available": {"type": "boolean"},
+            "historical_baseline_ref": {"type": ["string", "null"]},
+            "exception_justified": {"type": "boolean"}
+          }
+        },
+        "cleanup_only_validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode_enabled", "equivalence_proven", "replay_ref"],
+          "properties": {
+            "mode_enabled": {"type": "boolean"},
+            "equivalence_proven": {"type": "boolean"},
+            "replay_ref": {"type": ["string", "null"]}
+          }
+        }
       }
     }
   }
