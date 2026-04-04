@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-LTV-B-2026-04-04.md | BATCH-LTV-B — Decision-Quality Control (LT-05 + LT-06 + LT-09) | Active |
 | docs/review-actions/PLAN-BATCH-LTV-A-2026-04-04.md | BATCH-LTV-A — Brownfield Trust Core (LT-01 + LT-02 + LT-04) | Active |
 | docs/review-actions/PLAN-BATCH-12-2026-04-04.md | BATCH-12 — Continuous Evaluation + Safety + Observability (ST-10 + ST-14 + ST-17 + ST-18) | Active |
 | docs/review-actions/PLAN-BATCH-11-2026-04-04.md | BATCH-11 — Self-Correction + Stability Guarantees (A6 + A9 + A12 + A13) | Active |

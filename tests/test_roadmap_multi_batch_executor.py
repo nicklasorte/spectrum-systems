@@ -1008,6 +1008,9 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert first["failure_taxonomy_ref"] == "failure_taxonomy_record:FTX-000000000000"
     assert first["rollback_plan_ref"] == "rollback_plan_record:RBP-000000000000"
     assert first["promotion_consistency_ref"] == "promotion_consistency_record:PCR-000000000000"
+    assert first["decision_quality_budget_ref"] == "decision_quality_budget_status:DQB-000000000000"
+    assert first["calibration_assessment_ref"] == "calibration_assessment_record:CAL-000000000000"
+    assert first["judgment_promotion_gate_ref"] == "judgment_promotion_gate_record:JPG-000000000000"
 
     resolved_delivery = dict(delivery)
     resolved_delivery["remaining_risks"] = []

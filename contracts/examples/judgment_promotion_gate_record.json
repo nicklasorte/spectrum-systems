@@ -1,0 +1,22 @@
+{
+  "promotion_gate_id": "JPG-1A2B3C4D5E6F",
+  "source_batch_id": "BATCH-I",
+  "required_judgment_refs": [
+    "judgment_record:JDR-000000000001",
+    "judgment_eval_result:JER-000000000001"
+  ],
+  "judgment_eval_pass_rate": 0.95,
+  "calibration_status": "good",
+  "consistency_status": "consistent",
+  "promotion_decision": "allow",
+  "reason_codes": [
+    "promotion_gate_satisfied"
+  ],
+  "supporting_artifact_refs": [
+    "decision_quality_budget_status:DQB-1A2B3C4D5E6F",
+    "calibration_assessment_record:CAL-1A2B3C4D5E6F",
+    "promotion_consistency_record:PCR-1A2B3C4D5E6F"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-b-example"
+}

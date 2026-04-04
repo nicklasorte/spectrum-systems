@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.12.0",
+  "schema_version": "1.13.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -283,5 +283,8 @@
   "precedent_conflict_refs": [],
   "override_governance_refs": [
     "override_governance_record:OVG-111111111111"
-  ]
+  ],
+  "decision_quality_budget_ref": "decision_quality_budget_status:DQB-1A2B3C4D5E6F",
+  "calibration_assessment_ref": "calibration_assessment_record:CAL-1A2B3C4D5E6F",
+  "judgment_promotion_gate_ref": "judgment_promotion_gate_record:JPG-1A2B3C4D5E6F"
 }

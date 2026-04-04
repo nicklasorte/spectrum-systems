@@ -43,6 +43,8 @@ def evaluate_capability_readiness(
     exception_routing_outputs: list[dict[str, Any]],
     drift_signals: list[dict[str, Any]],
     replay_metrics: list[dict[str, Any]],
+    decision_quality_budget_statuses: list[dict[str, Any]] | None = None,
+    calibration_assessments: list[dict[str, Any]] | None = None,
     unresolved_risks: list[str],
     recent_batches_considered: int = 5,
     prior_readiness_state: str | None = None,
@@ -55,17 +57,25 @@ def evaluate_capability_readiness(
     exception_window = [item for item in exception_routing_outputs if isinstance(item, dict)][-window:]
     drift_window = [item for item in drift_signals if isinstance(item, dict)][-window:]
     replay_window = [item for item in replay_metrics if isinstance(item, dict)][-window:]
+    budget_window = [item for item in (decision_quality_budget_statuses or []) if isinstance(item, dict)][-window:]
+    calibration_window = [item for item in (calibration_assessments or []) if isinstance(item, dict)][-window:]
+
+    required_signal_windows = {
+        "batch_delivery_reports": delivery_window,
+        "eval_results": eval_window,
+        "autonomy_decisions": autonomy_window,
+        "exception_routing_outputs": exception_window,
+        "drift_signals": drift_window,
+        "replay_metrics": replay_window,
+    }
+    if decision_quality_budget_statuses is not None:
+        required_signal_windows["decision_quality_budget_statuses"] = budget_window
+    if calibration_assessments is not None:
+        required_signal_windows["calibration_assessments"] = calibration_window
 
     missing_required_signals = sorted(
         signal
-        for signal, values in {
-            "batch_delivery_reports": delivery_window,
-            "eval_results": eval_window,
-            "autonomy_decisions": autonomy_window,
-            "exception_routing_outputs": exception_window,
-            "drift_signals": drift_window,
-            "replay_metrics": replay_window,
-        }.items()
+        for signal, values in required_signal_windows.items()
         if not values or not any(isinstance(item, dict) and item for item in values)
     )
 
@@ -99,6 +109,14 @@ def evaluate_capability_readiness(
         sum(1 for item in delivery_window if str(item.get("status") or "").lower() in {"blocked", "failed", "completed_with_risk"}),
         len(delivery_window),
     )
+    decision_quality_exhausted_rate = _rate(
+        sum(1 for item in budget_window if bool(item.get("budget_exhausted")) or str(item.get("severity") or "").lower() in {"freeze_candidate", "block"}),
+        len(budget_window),
+    )
+    calibration_poor_rate = _rate(
+        sum(1 for item in calibration_window if float(item.get("calibration_error", 1.0)) >= 0.1 or float(item.get("drift_delta", 0.0)) > 0.05),
+        len(calibration_window),
+    )
     unresolved_risk_count = len([item for item in unresolved_risks if str(item).strip()])
 
     reason_codes: list[str] = []
@@ -115,6 +133,10 @@ def evaluate_capability_readiness(
         reason_codes.append("failure_recurrence_high")
     if autonomy_block_rate >= 0.4:
         reason_codes.append("autonomy_block_rate_high")
+    if decision_quality_exhausted_rate > 0:
+        reason_codes.append("decision_quality_budget_exhausted")
+    if calibration_poor_rate >= 0.5:
+        reason_codes.append("calibration_quality_degraded")
     if unresolved_risk_count > 0:
         reason_codes.append("unresolved_risks_present")
 
@@ -141,6 +163,8 @@ def evaluate_capability_readiness(
         or override_rate >= 0.2
         or autonomy_block_rate >= 0.2
         or failure_recurrence_rate >= 0.25
+        or decision_quality_exhausted_rate > 0
+        or calibration_poor_rate >= 0.2
     ):
         readiness_state = "constrained"
 
@@ -161,6 +185,8 @@ def evaluate_capability_readiness(
         f"override_rate={override_rate:.6f}",
         f"autonomy_block_rate={autonomy_block_rate:.6f}",
         f"failure_recurrence_rate={failure_recurrence_rate:.6f}",
+        f"decision_quality_exhausted_rate={decision_quality_exhausted_rate:.6f}",
+        f"calibration_poor_rate={calibration_poor_rate:.6f}",
         f"unresolved_risk_count={unresolved_risk_count}",
     ]
 

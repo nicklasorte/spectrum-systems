@@ -1,0 +1,25 @@
+{
+  "calibration_id": "CAL-1A2B3C4D5E6F",
+  "scope": {
+    "artifact_family": "judgment_flow",
+    "route": "promotion_gate",
+    "policy": "judgment_policy_lifecycle",
+    "judgment_class": "required"
+  },
+  "sample_window_size": 12,
+  "confidence_distribution": {
+    "high": 4,
+    "medium": 5,
+    "low": 3
+  },
+  "correctness_distribution": {
+    "correct": 10,
+    "incorrect": 2
+  },
+  "calibration_error": 0.083333,
+  "overconfidence_rate": 0.083333,
+  "underconfidence_rate": 0.0,
+  "drift_delta": 0.015,
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-b-example"
+}

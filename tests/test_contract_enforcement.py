@@ -549,10 +549,10 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["exception_classification_record"]["example_path"] == "contracts/examples/exception_classification_record.json"
     assert standards["exception_resolution_record"]["schema_version"] == "1.0.0"
     assert standards["exception_resolution_record"]["example_path"] == "contracts/examples/exception_resolution_record.json"
-    assert standards["batch_handoff_bundle"]["schema_version"] == "1.7.0"
+    assert standards["batch_handoff_bundle"]["schema_version"] == "1.8.0"
     assert standards["next_cycle_input_bundle"]["schema_version"] == "1.3.0"
     assert standards["next_cycle_decision"]["schema_version"] == "1.1.0"
-    assert standards["build_summary"]["schema_version"] == "1.12.0"
+    assert standards["build_summary"]["schema_version"] == "1.13.0"
     assert standards["decision_proof_record"]["schema_version"] == "1.0.0"
     assert standards["allow_decision_proof"]["schema_version"] == "1.0.0"
     assert standards["unknown_state_signal"]["schema_version"] == "1.0.0"
@@ -560,6 +560,9 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["correction_pattern_record"]["schema_version"] == "1.0.0"
     assert standards["rollback_plan_record"]["schema_version"] == "1.0.0"
     assert standards["promotion_consistency_record"]["schema_version"] == "1.0.0"
+    assert standards["decision_quality_budget_status"]["schema_version"] == "1.0.0"
+    assert standards["calibration_assessment_record"]["schema_version"] == "1.0.0"
+    assert standards["judgment_promotion_gate_record"]["schema_version"] == "1.0.0"
 
 
 def test_standards_manifest_registers_capability_readiness_contract() -> None:

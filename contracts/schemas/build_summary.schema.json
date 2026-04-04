@@ -50,6 +50,9 @@
     "correction_pattern_ref",
     "rollback_plan_ref",
     "promotion_consistency_ref",
+    "decision_quality_budget_ref",
+    "calibration_assessment_ref",
+    "judgment_promotion_gate_ref",
     "system_budget_status_ref",
     "canary_rollout_ref",
     "continuous_eval_run_refs",
@@ -69,7 +72,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.12.0"
+      "const": "1.13.0"
     },
     "run_id": {
       "type": "string",
@@ -759,6 +762,18 @@
       },
       "minItems": 1,
       "uniqueItems": true
+    },
+    "decision_quality_budget_ref": {
+      "type": "string",
+      "pattern": "^decision_quality_budget_status:DQB-[A-F0-9]{12}$"
+    },
+    "calibration_assessment_ref": {
+      "type": "string",
+      "pattern": "^calibration_assessment_record:CAL-[A-F0-9]{12}$"
+    },
+    "judgment_promotion_gate_ref": {
+      "type": "string",
+      "pattern": "^judgment_promotion_gate_record:JPG-[A-F0-9]{12}$"
     }
   },
   "$defs": {

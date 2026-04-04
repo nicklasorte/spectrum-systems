@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/calibration_assessment_record.schema.json",
+  "title": "calibration_assessment_record",
+  "description": "Deterministic longitudinal judgment calibration assessment over a defined evidence window.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "calibration_id",
+    "scope",
+    "sample_window_size",
+    "confidence_distribution",
+    "correctness_distribution",
+    "calibration_error",
+    "overconfidence_rate",
+    "underconfidence_rate",
+    "drift_delta",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "calibration_id": {"type": "string", "pattern": "^CAL-[A-F0-9]{12}$"},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_family", "route", "policy", "judgment_class"],
+      "properties": {
+        "artifact_family": {"type": "string", "minLength": 1},
+        "route": {"type": "string", "minLength": 1},
+        "policy": {"type": "string", "minLength": 1},
+        "judgment_class": {"type": "string", "minLength": 1}
+      }
+    },
+    "sample_window_size": {"type": "integer", "minimum": 1},
+    "confidence_distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["high", "medium", "low"],
+      "properties": {
+        "high": {"type": "integer", "minimum": 0},
+        "medium": {"type": "integer", "minimum": 0},
+        "low": {"type": "integer", "minimum": 0}
+      }
+    },
+    "correctness_distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correct", "incorrect"],
+      "properties": {
+        "correct": {"type": "integer", "minimum": 0},
+        "incorrect": {"type": "integer", "minimum": 0}
+      }
+    },
+    "calibration_error": {"type": "number", "minimum": 0, "maximum": 1},
+    "overconfidence_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "underconfidence_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_delta": {"type": "number", "minimum": -1, "maximum": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}
