@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/artifact_lifecycle_status_record.schema.json",
+  "title": "artifact_lifecycle_status_record",
+  "description": "Deterministic lifecycle and aging posture record for brownfield artifact control.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lifecycle_status_id", "schema_version", "artifact_id", "artifact_type", "lifecycle_state", "stale_days", "retrieval_weight", "trust_penalty", "warnings", "created_at", "trace_id"],
+  "properties": {
+    "lifecycle_status_id": {"type": "string", "pattern": "^ALS-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_type": {"type": "string", "minLength": 1},
+    "lifecycle_state": {"type": "string", "enum": ["active", "superseded", "stale", "revoked"]},
+    "stale_days": {"type": "integer", "minimum": 0},
+    "retrieval_weight": {"type": "number", "minimum": 0, "maximum": 1},
+    "trust_penalty": {"type": "number", "minimum": 0, "maximum": 1},
+    "warnings": {"type": "array", "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

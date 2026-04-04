@@ -12,6 +12,10 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.program_layer import validate_roadmap_against_program as validate_program_alignment
+from spectrum_systems.modules.runtime.roadmap_signal_steering import (
+    select_priority_batch,
+    steering_enforcement,
+)
 from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
     STOP_REASON_MISSING_REQUIRED_SIGNAL,
     STOP_REASON_NO_ELIGIBLE_BATCH,
@@ -329,6 +333,21 @@ def select_next_batch(
     if not isinstance(batches, list):
         raise RoadmapSelectionError("roadmap_artifact.batches must be a list")
 
+    signal_bundle = system_signals.get("roadmap_signal_bundle")
+    if signal_bundle is not None:
+        if not isinstance(signal_bundle, dict):
+            raise RoadmapSelectionError("system_signals.roadmap_signal_bundle must be an object")
+        _validate_schema(signal_bundle, "roadmap_signal_bundle", label="roadmap_signal_bundle")
+
+    if bool(system_signals.get("roadmap_signal_bundle_required")) and signal_bundle is None:
+        return None
+
+    if signal_bundle is not None:
+        enforcement, _ = steering_enforcement(signal_bundle)
+        if enforcement in {"freeze", "block"}:
+            return None
+
+    ready_candidates: list[str] = []
     for index, batch in enumerate(batches):
         if batch.get("status") != "not_started":
             continue
@@ -340,12 +359,17 @@ def select_next_batch(
 
         readiness = validate_batch_readiness(candidate, system_signals)
         if readiness["ready_to_run"]:
-            return str(candidate["batch_id"])
+            ready_candidates.append(str(candidate["batch_id"]))
+            continue
 
         # Fail closed: first dependency-eligible batch blocks progression.
         return None
 
-    return None
+    if not ready_candidates:
+        return None
+    if signal_bundle is not None:
+        return select_priority_batch(ready_candidates, signal_bundle)
+    return ready_candidates[0]
 
 
 def build_roadmap_selection_result(
@@ -391,7 +415,20 @@ def build_roadmap_selection_result(
         stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
     else:
         ready_to_run = False
-        if not reasons:
+        signal_bundle = system_signals.get("roadmap_signal_bundle") if isinstance(system_signals, dict) else None
+        if isinstance(signal_bundle, dict):
+            enforcement, enforcement_reasons = steering_enforcement(signal_bundle)
+            if enforcement == "block":
+                reasons = [_REASON_HARD_GATE]
+                blockers = [f"roadmap steering block: {reason}" for reason in enforcement_reasons]
+                stop_reason = "authorization_block"
+            elif enforcement == "freeze":
+                reasons = [_REASON_HARD_GATE]
+                blockers = [f"roadmap steering freeze: {reason}" for reason in enforcement_reasons]
+                stop_reason = "authorization_freeze"
+        if stop_reason is not None:
+            pass
+        elif not reasons:
             reasons = [_REASON_AMBIGUOUS]
             blockers = ["dependency-eligible batch failed readiness with no reason codes"]
             stop_reason = STOP_REASON_NO_ELIGIBLE_BATCH
