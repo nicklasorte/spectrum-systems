@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.13.0",
+  "schema_version": "1.14.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -286,5 +286,11 @@
   ],
   "decision_quality_budget_ref": "decision_quality_budget_status:DQB-1A2B3C4D5E6F",
   "calibration_assessment_ref": "calibration_assessment_record:CAL-1A2B3C4D5E6F",
-  "judgment_promotion_gate_ref": "judgment_promotion_gate_record:JPG-1A2B3C4D5E6F"
+  "judgment_promotion_gate_ref": "judgment_promotion_gate_record:JPG-1A2B3C4D5E6F",
+  "policy_candidate_refs": [
+    "policy_candidate_record:PCD-1111AAAABBBB"
+  ],
+  "policy_activation_ref": "policy_activation_record:PAC-1111AAAABBBB",
+  "policy_conflict_refs": [],
+  "active_policy_refs": []
 }

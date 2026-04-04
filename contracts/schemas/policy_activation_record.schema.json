@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_activation_record.schema.json",
+  "title": "policy_activation_record",
+  "description": "Governed rollout-state record for policy candidate activation decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_activation_id",
+    "policy_candidate_ref",
+    "rollout_stage",
+    "eval_results_ref",
+    "promotion_decision",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "policy_activation_id": {
+      "type": "string",
+      "pattern": "^PAC-[A-F0-9]{12}$"
+    },
+    "policy_candidate_ref": {
+      "type": "string",
+      "pattern": "^policy_candidate_record:PCD-[A-F0-9]{12}$"
+    },
+    "rollout_stage": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "canary",
+        "active",
+        "rejected"
+      ]
+    },
+    "eval_results_ref": {
+      "type": "string",
+      "pattern": "^eval_result:EVR-[A-F0-9]{12}$"
+    },
+    "promotion_decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "hold",
+        "deny"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_conflict_record.schema.json",
+  "title": "policy_conflict_record",
+  "description": "Deterministic policy conflict artifact with explicit precedence/resolution strategy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_conflict_id",
+    "conflicting_policy_refs",
+    "conflict_type",
+    "severity",
+    "resolution_strategy",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "policy_conflict_id": {
+      "type": "string",
+      "pattern": "^PCF-[A-F0-9]{12}$"
+    },
+    "conflicting_policy_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^policy_candidate_record:PCD-[A-F0-9]{12}$"
+      },
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "conflict_type": {
+      "type": "string",
+      "enum": [
+        "logic_mismatch",
+        "scope_overlap",
+        "precedence_ambiguity"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "resolution_strategy": {
+      "type": "string",
+      "minLength": 3
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

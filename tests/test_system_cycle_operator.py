@@ -144,7 +144,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.13.0"
+    assert first["build_summary"]["schema_version"] == "1.14.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -215,6 +215,13 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["batch_handoff_bundle"]["capability_readiness_ref"] == first["build_summary"]["capability_readiness_ref"]
     assert first["batch_handoff_bundle"]["capability_readiness_state"] == first["build_summary"]["capability_readiness_state"]
     assert first["build_summary"]["failure_taxonomy_ref"].startswith("failure_taxonomy_record:FTX-")
+    for candidate in first["policy_candidate_records"]:
+        validate_artifact(candidate, "policy_candidate_record")
+    validate_artifact(first["policy_activation_record"], "policy_activation_record")
+    for conflict in first["policy_conflict_records"]:
+        validate_artifact(conflict, "policy_conflict_record")
+    assert first["build_summary"]["policy_activation_ref"].startswith("policy_activation_record:PAC-")
+    assert first["batch_handoff_bundle"]["policy_activation_ref"] == first["build_summary"]["policy_activation_ref"]
     assert first["build_summary"]["rollback_plan_ref"].startswith("rollback_plan_record:RBP-")
     assert first["build_summary"]["promotion_consistency_ref"].startswith("promotion_consistency_record:PCR-")
     assert first["build_summary"]["decision_quality_budget_ref"].startswith("decision_quality_budget_status:DQB-")
@@ -909,3 +916,75 @@ def test_observability_artifacts_are_deterministic() -> None:
     assert first["artifact_family_health_report"] == second["artifact_family_health_report"]
     assert first["evidence_gap_hotspot_report"] == second["evidence_gap_hotspot_report"]
     assert first["override_hotspot_report"] == second["override_hotspot_report"]
+
+
+def test_policy_candidate_generation_and_canary_rollout() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDG-1111AAAABBBB"}]
+    integration_inputs["policy_eval_results"] = [{"eval_ref": "eval_result:EVR-1111AAAABBBB", "passed": True}]
+    integration_inputs["correction_recurrence_threshold"] = 1
+    integration_inputs["policy_recurrence_threshold"] = 1
+    integration_inputs["prior_failure_taxonomy_records"] = [
+        {
+            "failure_taxonomy_id": "FTX-1111AAAABBBB",
+            "source_exception_ref": "exception_resolution_record:ERR-1111AAAABBBB",
+            "source_batch_id": "BATCH-I",
+            "source_cycle_id": "RDX-1111AAAABBBB",
+            "normalized_failure_keys": ["stop_reason:authorization_block"],
+            "failure_class": "policy_blocker",
+            "severity": "high",
+            "recurrence_count": 2,
+            "first_seen_at": "2026-04-04T00:00:00Z",
+            "last_seen_at": "2026-04-04T00:00:00Z",
+            "created_at": "2026-04-04T00:00:00Z",
+            "trace_id": "trace-batch-u-test",
+        }
+    ]
+    integration_inputs["policy_rollout_stage"] = "canary"
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["policy_candidate_records"]
+    assert result["policy_activation_record"]["rollout_stage"] == "canary"
+    assert result["policy_activation_record"]["promotion_decision"] == "allow"
+
+
+def test_policy_conflict_blocks_activation_fail_closed() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDG-1111AAAABBBB"}]
+    integration_inputs["policy_eval_results"] = [{"eval_ref": "eval_result:EVR-1111AAAABBBB", "passed": True}]
+    integration_inputs["correction_recurrence_threshold"] = 1
+    integration_inputs["policy_recurrence_threshold"] = 1
+    integration_inputs["active_policy_candidates"] = [
+            {
+                "policy_candidate_id": "PCD-AAAAAAAAAAAA",
+                "pattern_key": "general_failure",
+                "proposed_policy_logic": {
+                    "scope": {"failure_class": "execution_failure", "severity": "medium", "pattern_key": "general_failure"},
+                    "conditions": {"recurrence_count_gte": 2, "required_eval_refs": ["eval_result:EVR-AAAAAAAAAAAA"]},
+                    "action": {"remediation_type": "manual_review", "control_effect": "observe_only", "block_on_missing_validation": False},
+                },
+            }
+    ]
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals={**_selection_signals(), "disallowed_targets": ["BATCH-I"]},
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["policy_conflict_records"]
+    assert result["policy_activation_record"]["rollout_stage"] == "rejected"
+    assert result["policy_activation_record"]["promotion_decision"] == "deny"

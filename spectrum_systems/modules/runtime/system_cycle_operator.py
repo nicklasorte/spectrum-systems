@@ -239,6 +239,202 @@ def derive_correction_pattern(
     return record
 
 
+def derive_policy_candidates(
+    *,
+    correction_pattern_record: dict[str, Any] | None,
+    failure_taxonomy_record: dict[str, Any],
+    judgment_records: list[dict[str, Any]],
+    eval_results: list[dict[str, Any]],
+    created_at: str,
+    trace_id: str,
+    recurrence_threshold: int = 2,
+) -> list[dict[str, Any]]:
+    _validate_schema(failure_taxonomy_record, "failure_taxonomy_record")
+    if not isinstance(correction_pattern_record, dict):
+        return []
+    _validate_schema(correction_pattern_record, "correction_pattern_record")
+    if int(failure_taxonomy_record["recurrence_count"]) < recurrence_threshold:
+        return []
+    if not bool(correction_pattern_record.get("recurrence_threshold_met")):
+        return []
+
+    supporting_eval_refs = sorted(
+        {
+            str(item.get("eval_ref"))
+            for item in eval_results
+            if isinstance(item, dict) and bool(item.get("passed")) and str(item.get("eval_ref") or "").strip()
+        }
+    )
+    if not supporting_eval_refs:
+        return []
+
+    judgment_refs = sorted(
+        {
+            str(item.get("judgment_ref"))
+            for item in judgment_records
+            if isinstance(item, dict) and str(item.get("judgment_ref") or "").strip()
+        }
+    )
+    if not judgment_refs:
+        return []
+
+    source_correction_ref = f"correction_pattern_record:{correction_pattern_record['correction_pattern_id']}"
+    pattern_key = str(correction_pattern_record["pattern_key"])
+    recurrence_count = int(failure_taxonomy_record["recurrence_count"])
+    confidence_level = "high" if recurrence_count >= 4 else ("medium" if recurrence_count >= recurrence_threshold else "low")
+    proposed_policy_logic = {
+        "scope": {
+            "failure_class": str(failure_taxonomy_record["failure_class"]),
+            "severity": str(failure_taxonomy_record["severity"]),
+            "pattern_key": pattern_key,
+        },
+        "conditions": {
+            "recurrence_count_gte": recurrence_threshold,
+            "required_eval_refs": supporting_eval_refs,
+        },
+        "action": {
+            "remediation_type": str(correction_pattern_record["recommended_remediation_type"]),
+            "control_effect": "enforce_followup_validation",
+            "block_on_missing_validation": True,
+        },
+    }
+    seed = {
+        "pattern_key": pattern_key,
+        "source_correction_ref": source_correction_ref,
+        "supporting_eval_refs": supporting_eval_refs,
+        "trace_id": trace_id,
+    }
+    candidate = {
+        "policy_candidate_id": f"PCD-{_canonical_hash(seed)[:12].upper()}",
+        "source_judgment_refs": judgment_refs,
+        "source_correction_pattern_refs": [source_correction_ref],
+        "pattern_key": pattern_key,
+        "proposed_policy_logic": proposed_policy_logic,
+        "supporting_eval_refs": supporting_eval_refs,
+        "confidence_level": confidence_level,
+        "recurrence_count": recurrence_count,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(candidate, "policy_candidate_record")
+    return [candidate]
+
+
+def detect_policy_conflicts(
+    *,
+    policy_candidates: list[dict[str, Any]],
+    active_policy_candidates: list[dict[str, Any]],
+    created_at: str,
+    trace_id: str,
+) -> list[dict[str, Any]]:
+    combined = [item for item in policy_candidates + active_policy_candidates if isinstance(item, dict)]
+    seen_by_pattern: dict[str, dict[str, Any]] = {}
+    conflicts: list[dict[str, Any]] = []
+    for item in sorted(combined, key=lambda row: str(row.get("policy_candidate_id") or "")):
+        pattern_key = str(item.get("pattern_key") or "")
+        candidate_id = str(item.get("policy_candidate_id") or "")
+        logic_hash = _canonical_hash(item.get("proposed_policy_logic") or {})
+        if not pattern_key or not candidate_id:
+            continue
+        existing = seen_by_pattern.get(pattern_key)
+        if existing is None:
+            seen_by_pattern[pattern_key] = {"policy_candidate_id": candidate_id, "logic_hash": logic_hash}
+            continue
+        if existing["logic_hash"] == logic_hash:
+            continue
+        seed = {"existing": existing["policy_candidate_id"], "incoming": candidate_id, "pattern_key": pattern_key, "trace_id": trace_id}
+        conflict = {
+            "policy_conflict_id": f"PCF-{_canonical_hash(seed)[:12].upper()}",
+            "conflicting_policy_refs": sorted(
+                [f"policy_candidate_record:{existing['policy_candidate_id']}", f"policy_candidate_record:{candidate_id}"]
+            ),
+            "conflict_type": "logic_mismatch",
+            "severity": "high",
+            "resolution_strategy": "prefer_highest_recurrence_then_latest_eval",
+            "created_at": created_at,
+            "trace_id": trace_id,
+        }
+        _validate_schema(conflict, "policy_conflict_record")
+        conflicts.append(conflict)
+    return conflicts
+
+
+def resolve_policy_conflicts(*, policy_conflict_records: list[dict[str, Any]]) -> dict[str, Any]:
+    blocking_refs: list[str] = []
+    resolved_refs: list[str] = []
+    for record in policy_conflict_records:
+        _validate_schema(record, "policy_conflict_record")
+        ref = f"policy_conflict_record:{record['policy_conflict_id']}"
+        if str(record["severity"]) == "high" and str(record["resolution_strategy"]) == "manual_resolution_required":
+            blocking_refs.append(ref)
+        elif str(record["severity"]) == "high":
+            blocking_refs.append(ref)
+        else:
+            resolved_refs.append(ref)
+    return {
+        "blocking_conflict_refs": sorted(set(blocking_refs)),
+        "resolved_conflict_refs": sorted(set(resolved_refs)),
+        "unresolved_high_severity_conflicts": bool(blocking_refs),
+        "precedence_rules": [
+            "higher_recurrence_count_precedes_lower_recurrence_count",
+            "if_recurrence_tied_use_lexicographically_lowest_policy_candidate_id",
+        ],
+    }
+
+
+def evaluate_policy_candidate(
+    *,
+    policy_candidate_record: dict[str, Any] | None,
+    eval_results: list[dict[str, Any]],
+    consistency_checks_passed: bool,
+    replay_checks_passed: bool,
+    conflict_summary: dict[str, Any],
+    requested_rollout_stage: str,
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    if not isinstance(policy_candidate_record, dict):
+        raise SystemCycleOperatorError("policy candidate evaluation requires policy_candidate_record")
+    _validate_schema(policy_candidate_record, "policy_candidate_record")
+    supported_stages = {"candidate", "canary", "active"}
+    if requested_rollout_stage not in supported_stages:
+        raise SystemCycleOperatorError(f"unsupported requested rollout stage: {requested_rollout_stage}")
+
+    eval_validation_passed = bool(eval_results) and all(bool(item.get("passed")) for item in eval_results if isinstance(item, dict))
+    conflict_blocked = bool((conflict_summary or {}).get("unresolved_high_severity_conflicts"))
+
+    rollout_stage = "rejected"
+    promotion_decision = "deny"
+    if eval_validation_passed and consistency_checks_passed and replay_checks_passed and not conflict_blocked:
+        if requested_rollout_stage == "candidate":
+            rollout_stage = "candidate"
+            promotion_decision = "hold"
+        elif requested_rollout_stage == "canary":
+            rollout_stage = "canary"
+            promotion_decision = "allow"
+        elif requested_rollout_stage == "active":
+            rollout_stage = "active"
+            promotion_decision = "allow"
+
+    seed = {
+        "policy_candidate_ref": policy_candidate_record["policy_candidate_id"],
+        "rollout_stage": rollout_stage,
+        "promotion_decision": promotion_decision,
+        "trace_id": trace_id,
+    }
+    record = {
+        "policy_activation_id": f"PAC-{_canonical_hash(seed)[:12].upper()}",
+        "policy_candidate_ref": f"policy_candidate_record:{policy_candidate_record['policy_candidate_id']}",
+        "rollout_stage": rollout_stage,
+        "eval_results_ref": str((eval_results[0] if eval_results else {}).get("eval_ref") or "eval_result:EVR-000000000000"),
+        "promotion_decision": promotion_decision,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "policy_activation_record")
+    return record
+
+
 def build_rollback_plan_record(
     *,
     source_batch_id: str,
@@ -446,6 +642,13 @@ def derive_batch_handoff_bundle(
         (item for item in evidence_refs if item.startswith("correction_pattern_record:")),
         "correction_pattern_record:CPR-000000000000",
     )
+    policy_activation_ref = next(
+        (item for item in evidence_refs if item.startswith("policy_activation_record:")),
+        "policy_activation_record:PAC-000000000000",
+    )
+    policy_candidate_refs = sorted(item for item in evidence_refs if item.startswith("policy_candidate_record:"))
+    policy_conflict_refs = sorted(item for item in evidence_refs if item.startswith("policy_conflict_record:"))
+    active_policy_refs: list[str] = []
     rollback_plan_ref = next(
         (item for item in evidence_refs if item.startswith("rollback_plan_record:")),
         "rollback_plan_record:RBP-000000000000",
@@ -526,7 +729,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.8.0",
+        "schema_version": "1.9.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -549,6 +752,10 @@ def derive_batch_handoff_bundle(
         "allow_decision_proof_ref": allow_decision_proof_ref,
         "failure_taxonomy_ref": failure_taxonomy_ref,
         "correction_pattern_ref": correction_pattern_ref,
+        "policy_candidate_refs": policy_candidate_refs,
+        "policy_activation_ref": policy_activation_ref,
+        "policy_conflict_refs": policy_conflict_refs,
+        "active_policy_refs": active_policy_refs,
         "rollback_plan_ref": rollback_plan_ref,
         "promotion_consistency_ref": promotion_consistency_ref,
         "decision_quality_budget_ref": decision_quality_budget_ref,
@@ -1648,6 +1855,64 @@ def run_system_cycle(
         if isinstance(correction_pattern_record, dict)
         else None
     )
+    policy_eval_results = [dict(item) for item in integration_inputs.get("policy_eval_results", []) if isinstance(item, dict)]
+    policy_judgment_records = [dict(item) for item in integration_inputs.get("judgment_records", []) if isinstance(item, dict)]
+    policy_candidates = derive_policy_candidates(
+        correction_pattern_record=correction_pattern_record,
+        failure_taxonomy_record=failure_taxonomy_record,
+        judgment_records=policy_judgment_records,
+        eval_results=policy_eval_results,
+        recurrence_threshold=int(integration_inputs.get("policy_recurrence_threshold", 2)),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    if isinstance(correction_pattern_record, dict) and not policy_candidates:
+        blocking_conditions = sorted(set(blocking_conditions + ["POLICY_VALIDATION_MISSING"]))
+    policy_candidate_refs = [f"policy_candidate_record:{item['policy_candidate_id']}" for item in policy_candidates]
+    active_policy_candidates = [
+        dict(item) for item in integration_inputs.get("active_policy_candidates", []) if isinstance(item, dict)
+    ]
+    policy_conflict_records = detect_policy_conflicts(
+        policy_candidates=policy_candidates,
+        active_policy_candidates=active_policy_candidates,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    policy_conflict_refs = [f"policy_conflict_record:{item['policy_conflict_id']}" for item in policy_conflict_records]
+    conflict_summary = resolve_policy_conflicts(policy_conflict_records=policy_conflict_records)
+    if conflict_summary["unresolved_high_severity_conflicts"]:
+        blocking_conditions = sorted(set(blocking_conditions + ["POLICY_CONFLICT_BLOCK"]))
+
+    policy_rollout_stage = str(integration_inputs.get("policy_rollout_stage") or "candidate")
+    policy_activation_record = (
+        evaluate_policy_candidate(
+            policy_candidate_record=policy_candidates[0],
+            eval_results=policy_eval_results,
+            consistency_checks_passed=bool(integration_inputs.get("policy_consistency_checks_passed", True)),
+            replay_checks_passed=bool(integration_inputs.get("policy_replay_checks_passed", True)),
+            conflict_summary=conflict_summary,
+            requested_rollout_stage=policy_rollout_stage,
+            created_at=timestamp,
+            trace_id=integration["trace_id"],
+        )
+        if policy_candidates
+        else {
+            "policy_activation_id": "PAC-000000000000",
+            "policy_candidate_ref": "policy_candidate_record:PCD-000000000000",
+            "rollout_stage": "rejected",
+            "eval_results_ref": "eval_result:EVR-000000000000",
+            "promotion_decision": "deny",
+            "created_at": timestamp,
+            "trace_id": integration["trace_id"],
+        }
+    )
+    _validate_schema(policy_activation_record, "policy_activation_record")
+    policy_activation_ref = f"policy_activation_record:{policy_activation_record['policy_activation_id']}"
+    active_policy_refs = (
+        [policy_activation_record["policy_candidate_ref"]]
+        if policy_activation_record["rollout_stage"] == "active" and policy_activation_record["promotion_decision"] == "allow"
+        else []
+    )
     replay_status_value = str(integration.get("replay_status", "unknown")).strip().lower()
     replay_ok = replay_status_value in {"passed", "match", "ready", "replay_ready", "replayable"}
     decision_proof_record = build_decision_proof_record(
@@ -1745,6 +2010,8 @@ def run_system_cycle(
     decision_eval_state = {
         "decision": str(integration_inputs.get("control_decision", {}).get("decision", "unknown")),
         "health": "degraded" if blocking_conditions else "healthy",
+        "policy_activation_decision": str(policy_activation_record["promotion_decision"]),
+        "policy_rollout_stage": str(policy_activation_record["rollout_stage"]),
     }
     repeated_failure_count = max(
         int(run_result.get("repeated_failure_count", 0)),
@@ -1925,8 +2192,11 @@ def run_system_cycle(
                     decision_proof_ref,
                     allow_decision_proof_ref,
                     failure_taxonomy_ref,
+                    policy_activation_ref,
                 ]
                 + ([correction_pattern_ref] if correction_pattern_ref else [])
+                + policy_candidate_refs
+                + policy_conflict_refs
                 + unknown_state_signal_refs
                 + list(source_refs or [])
                 + (
@@ -1941,7 +2211,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.13.0",
+        "schema_version": "1.14.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1959,6 +2229,10 @@ def run_system_cycle(
         "allow_decision_proof_ref": allow_decision_proof_ref,
         "failure_taxonomy_ref": failure_taxonomy_ref,
         "correction_pattern_ref": correction_pattern_ref or "correction_pattern_record:CPR-000000000000",
+        "policy_candidate_refs": policy_candidate_refs,
+        "policy_activation_ref": policy_activation_ref,
+        "policy_conflict_refs": policy_conflict_refs,
+        "active_policy_refs": active_policy_refs,
         "rollback_plan_ref": "rollback_plan_record:RBP-000000000000",
         "promotion_consistency_ref": "promotion_consistency_record:PCR-000000000000",
         "decision_quality_budget_ref": "decision_quality_budget_status:DQB-000000000000",
@@ -2041,10 +2315,13 @@ def run_system_cycle(
                         decision_proof_ref,
                         allow_decision_proof_ref,
                         failure_taxonomy_ref,
+                        policy_activation_ref,
                         next_cycle_decision_ref,
                         next_cycle_input_bundle_ref,
                     ]
                     + ([correction_pattern_ref] if correction_pattern_ref else [])
+                    + policy_candidate_refs
+                    + policy_conflict_refs
                     + unknown_state_signal_refs
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -2501,6 +2778,7 @@ def run_system_cycle(
         list(batch_delivery_report["evidence_refs"])
         + [
             failure_taxonomy_ref,
+            policy_activation_ref,
             rollback_plan_ref,
             promotion_consistency_ref,
             decision_quality_budget_ref,
@@ -2508,12 +2786,18 @@ def run_system_cycle(
             judgment_promotion_gate_ref,
         ]
         + ([correction_pattern_ref] if correction_pattern_ref else [])
+        + policy_candidate_refs
+        + policy_conflict_refs
     )
     batch_handoff_bundle["recommended_next_batch"] = adjusted_next_batch_id
     batch_handoff_bundle["capability_readiness_state"] = readiness_state
     batch_handoff_bundle["capability_readiness_ref"] = readiness_ref
     batch_handoff_bundle["failure_taxonomy_ref"] = failure_taxonomy_ref
     batch_handoff_bundle["correction_pattern_ref"] = correction_pattern_ref or "correction_pattern_record:CPR-000000000000"
+    batch_handoff_bundle["policy_candidate_refs"] = policy_candidate_refs
+    batch_handoff_bundle["policy_activation_ref"] = policy_activation_ref
+    batch_handoff_bundle["policy_conflict_refs"] = policy_conflict_refs
+    batch_handoff_bundle["active_policy_refs"] = active_policy_refs
     batch_handoff_bundle["rollback_plan_ref"] = rollback_plan_ref
     batch_handoff_bundle["promotion_consistency_ref"] = promotion_consistency_ref
     batch_handoff_bundle["decision_quality_budget_ref"] = decision_quality_budget_ref
@@ -2549,6 +2833,7 @@ def run_system_cycle(
             + [
                 readiness_ref,
                 failure_taxonomy_ref,
+                policy_activation_ref,
                 rollback_plan_ref,
                 promotion_consistency_ref,
                 decision_quality_budget_ref,
@@ -2563,6 +2848,8 @@ def run_system_cycle(
                 *continuous_eval_refs,
             ]
             + ([correction_pattern_ref] if correction_pattern_ref else [])
+            + policy_candidate_refs
+            + policy_conflict_refs
         )
     )
     batch_handoff_bundle["required_next_actions"] = sorted(
@@ -2588,6 +2875,9 @@ def run_system_cycle(
         "exception_resolution_record": exception_resolution_record,
         "failure_taxonomy_record": failure_taxonomy_record,
         "correction_pattern_record": correction_pattern_record,
+        "policy_candidate_records": policy_candidates,
+        "policy_activation_record": policy_activation_record,
+        "policy_conflict_records": policy_conflict_records,
         "rollback_plan_record": rollback_plan_record,
         "promotion_consistency_record": promotion_consistency_record,
         "decision_quality_budget_status": decision_quality_budget_status,
@@ -2616,6 +2906,10 @@ def run_system_cycle(
 __all__ = [
     "SystemCycleOperatorError",
     "build_failure_taxonomy_record",
+    "derive_policy_candidates",
+    "evaluate_policy_candidate",
+    "detect_policy_conflicts",
+    "resolve_policy_conflicts",
     "build_rollback_plan_record",
     "decide_next_cycle",
     "derive_correction_pattern",
