@@ -2,6 +2,22 @@
 
 **Authority status:** ACTIVE ROADMAP AUTHORITY (March 31, 2026 revision)
 
+## Governed Artifact Activation (BATCH-ROADMAP-ACTIVATE)
+
+- Human-readable roadmap source (this file): `docs/roadmaps/system_roadmap.md`
+- System source of truth (machine-readable): `contracts/examples/system_roadmap.json`
+- Contract authority: `contracts/schemas/system_roadmap.schema.json`
+
+### Active governed batch list (deterministic order by `batch_id`)
+
+| batch_id | title | status | dependencies | priority |
+| --- | --- | --- | --- | --- |
+| BATCH-CL-01 | Control Loop Failure Binding | completed | — | 1 |
+| BATCH-CL-02 | Error Budget Engine | not_started | BATCH-CL-01 | 2 |
+| BATCH-CL-03 | Recurrence Prevention Enforcement | not_started | BATCH-CL-02 | 3 |
+
+Execution automation must select from the JSON artifact and fail closed when schema, dependency, alignment, or continuation checks fail.
+
 ## March 31, 2026 Authority Revision (Supersession / Extension)
 This revision supersedes the prior B1/B2 roadmap state by preserving valid completed governance foundations and extending forward execution with a stricter pre-expansion gate.
 
@@ -376,4 +392,3 @@ Reason: the current repo shows strong components but still partial/bypassable fo
 6. Trace IDs are locally valid but do not chain end-to-end across artifact classes.
 7. Calibration evidence is generated but lifecycle state transitions are not policy-bound.
 8. Golden-path readiness passes despite missing falsification coverage for malformed or absent evidence.
-

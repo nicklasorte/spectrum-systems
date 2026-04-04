@@ -12,7 +12,9 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.contracts import load_example, load_schema  # noqa: E402
 from spectrum_systems.modules.runtime.roadmap_selector import (  # noqa: E402
+    RoadmapSelectionError,
     build_roadmap_selection_result,
+    load_active_roadmap,
     select_next_batch,
     validate_batch_readiness,
     validate_roadmap_against_program,
@@ -185,3 +187,39 @@ def test_validate_roadmap_against_program_fails_closed_on_disallowed_target() ->
     assert result["alignment_status"] == "invalid"
     assert result["fail_closed"] is True
     assert any(item["reason_code"] == "disallowed_target" for item in result["violations"])
+
+
+def test_system_roadmap_load_and_select_next_batch_deterministic() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    first = select_next_batch(
+        roadmap,
+        program_aligned_batch_ids={"BATCH-CL-02", "BATCH-CL-03"},
+        continuation_allowed=True,
+    )
+    second = select_next_batch(
+        roadmap,
+        program_aligned_batch_ids={"BATCH-CL-02", "BATCH-CL-03"},
+        continuation_allowed=True,
+    )
+    assert first == "BATCH-CL-02"
+    assert first == second
+
+
+def test_system_roadmap_selection_fails_on_program_misalignment() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    try:
+        select_next_batch(roadmap, program_aligned_batch_ids={"BATCH-CL-03"}, continuation_allowed=True)
+    except RoadmapSelectionError as exc:
+        assert "no eligible batch found" in str(exc)
+    else:
+        raise AssertionError("expected fail-closed selection error")
+
+
+def test_system_roadmap_selection_fails_when_continuation_blocked() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    try:
+        select_next_batch(roadmap, continuation_allowed=False)
+    except RoadmapSelectionError as exc:
+        assert "continuation rules block roadmap execution" in str(exc)
+    else:
+        raise AssertionError("expected fail-closed continuation error")

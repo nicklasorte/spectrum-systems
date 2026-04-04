@@ -1,0 +1,36 @@
+{
+  "roadmap_id": "SYSTEM-ROADMAP-2026-04",
+  "version": "1.0.0",
+  "batches": [
+    {
+      "batch_id": "BATCH-CL-01",
+      "title": "Control Loop Failure Binding",
+      "status": "completed",
+      "dependencies": [],
+      "priority": 1,
+      "description": "Bind failures to governed eval and policy updates."
+    },
+    {
+      "batch_id": "BATCH-CL-02",
+      "title": "Error Budget Engine",
+      "status": "not_started",
+      "dependencies": [
+        "BATCH-CL-01"
+      ],
+      "priority": 2,
+      "description": "Apply deterministic warn/freeze/block controls from budget status."
+    },
+    {
+      "batch_id": "BATCH-CL-03",
+      "title": "Recurrence Prevention Enforcement",
+      "status": "not_started",
+      "dependencies": [
+        "BATCH-CL-02"
+      ],
+      "priority": 3,
+      "description": "Require recurrence-prevention artifacts before continuation."
+    }
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-system-roadmap-example"
+}

@@ -151,6 +151,10 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_system_roadmap_contract_example_validates(self) -> None:
+        instance = load_example("system_roadmap")
+        validate_artifact(instance, "system_roadmap")
+
     def test_program_layer_contract_examples_validate(self) -> None:
         for name in (
             "program_artifact",

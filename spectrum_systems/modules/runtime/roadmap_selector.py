@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -49,6 +50,64 @@ def _validate_schema(instance: dict[str, Any], schema_name: str, *, label: str) 
     if errors:
         reason = "; ".join(error.message for error in errors)
         raise RoadmapSelectionError(f"{label} failed schema validation ({schema_name}): {reason}")
+
+
+def load_active_roadmap(path: Path | str) -> dict[str, Any]:
+    """Load and validate the governed ``system_roadmap`` artifact from disk."""
+    roadmap_path = Path(path)
+    try:
+        payload = json.loads(roadmap_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise RoadmapSelectionError(f"unable to read roadmap artifact: {roadmap_path}") from exc
+    except json.JSONDecodeError as exc:
+        raise RoadmapSelectionError(f"roadmap artifact is not valid JSON: {roadmap_path}") from exc
+    if not isinstance(payload, dict):
+        raise RoadmapSelectionError("roadmap artifact root must be an object")
+    _validate_schema(payload, "system_roadmap", label="system_roadmap")
+    return payload
+
+
+def _select_next_batch_from_system_roadmap(
+    roadmap_artifact: dict[str, Any],
+    *,
+    program_aligned_batch_ids: set[str] | None,
+    continuation_allowed: bool,
+) -> str:
+    if not continuation_allowed:
+        raise RoadmapSelectionError("continuation rules block roadmap execution")
+
+    batches = roadmap_artifact.get("batches")
+    if not isinstance(batches, list):
+        raise RoadmapSelectionError("system_roadmap.batches must be a list")
+
+    status_by_id: dict[str, str] = {}
+    for row in batches:
+        if isinstance(row, dict) and isinstance(row.get("batch_id"), str) and isinstance(row.get("status"), str):
+            status_by_id[row["batch_id"]] = row["status"]
+
+    eligible: list[str] = []
+    for batch in batches:
+        if not isinstance(batch, dict):
+            raise RoadmapSelectionError("system_roadmap.batches entries must be objects")
+        batch_id = batch.get("batch_id")
+        if not isinstance(batch_id, str) or not batch_id:
+            raise RoadmapSelectionError("system_roadmap batch_id must be a non-empty string")
+        if batch.get("status") != "not_started":
+            continue
+
+        dependencies = batch.get("dependencies", [])
+        if not isinstance(dependencies, list):
+            raise RoadmapSelectionError(f"dependencies must be a list for {batch_id}")
+        if any(status_by_id.get(dep) != "completed" for dep in dependencies):
+            continue
+
+        if program_aligned_batch_ids is not None and batch_id not in program_aligned_batch_ids:
+            continue
+        eligible.append(batch_id)
+
+    if not eligible:
+        raise RoadmapSelectionError("no eligible batch found")
+    return sorted(eligible)[0]
 
 
 def _require_signal_set(system_signals: Any) -> set[str]:
@@ -197,9 +256,25 @@ def _build_batch_context(roadmap_artifact: dict[str, Any], candidate_index: int)
     return candidate
 
 
-def select_next_batch(roadmap_artifact: dict[str, Any], system_signals: dict[str, Any]) -> str | None:
+def select_next_batch(
+    roadmap_artifact: dict[str, Any],
+    system_signals: dict[str, Any] | None = None,
+    *,
+    program_aligned_batch_ids: set[str] | None = None,
+    continuation_allowed: bool = True,
+) -> str | None:
     """Select the next roadmap batch allowed to run, or ``None`` when no batch is eligible."""
+    if "version" in roadmap_artifact and "created_at" in roadmap_artifact and "trace_id" in roadmap_artifact:
+        _validate_schema(roadmap_artifact, "system_roadmap", label="system_roadmap")
+        return _select_next_batch_from_system_roadmap(
+            roadmap_artifact,
+            program_aligned_batch_ids=program_aligned_batch_ids,
+            continuation_allowed=continuation_allowed,
+        )
+
     _validate_schema(roadmap_artifact, "roadmap_artifact", label="roadmap_artifact")
+    if not isinstance(system_signals, dict):
+        raise RoadmapSelectionError("system_signals must be an object")
 
     batches = roadmap_artifact.get("batches", [])
     if not isinstance(batches, list):
@@ -313,6 +388,7 @@ def validate_roadmap_against_program(roadmap_artifact: dict[str, Any], program_c
 __all__ = [
     "RoadmapSelectionError",
     "build_roadmap_selection_result",
+    "load_active_roadmap",
     "select_next_batch",
     "validate_batch_readiness",
     "validate_roadmap_against_program",

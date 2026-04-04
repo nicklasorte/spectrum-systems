@@ -4,6 +4,7 @@ import copy
 from pathlib import Path
 
 from spectrum_systems.contracts import load_example, validate_artifact
+from spectrum_systems.modules.runtime.roadmap_selector import load_active_roadmap, select_next_batch
 from spectrum_systems.modules.runtime import system_cycle_operator as sco
 from spectrum_systems.modules.runtime.system_cycle_operator import run_system_cycle
 
@@ -432,3 +433,26 @@ def test_invalid_execution_policy_fails_closed() -> None:
         assert False, "expected SystemCycleOperatorError"
     except sco.SystemCycleOperatorError as exc:
         assert "execution_policy" in str(exc)
+
+
+def test_governed_system_roadmap_selection_wires_to_single_cycle_execution() -> None:
+    governed = load_active_roadmap(Path("contracts/examples/system_roadmap.json"))
+    selected = select_next_batch(
+        governed,
+        program_aligned_batch_ids={"BATCH-CL-02", "BATCH-CL-03"},
+        continuation_allowed=True,
+    )
+    assert selected == "BATCH-CL-02"
+
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 0},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["roadmap_multi_batch_run_result"]["batches_executed_count"] == 1
