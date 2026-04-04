@@ -115,12 +115,20 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
-    assert first["next_step_recommendation"]["schema_version"] == "1.5.0"
-    assert first["build_summary"]["schema_version"] == "1.3.0"
+    assert first["next_step_recommendation"]["schema_version"] == "1.6.0"
+    assert first["build_summary"]["schema_version"] == "1.4.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
     assert first["build_summary"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
+    assert first["next_step_recommendation"]["execution_path_type"] == "positive_path"
+    assert first["next_step_recommendation"]["program_alignment_status"] == "aligned"
+    assert first["next_step_recommendation"]["program_stop_cause"] == "none"
+    assert first["next_step_recommendation"]["program_drift_severity"] in {"low", "medium", "high"}
+    assert first["build_summary"]["execution_path_type"] == "positive_path"
+    assert first["build_summary"]["program_alignment_status"] == "aligned"
+    assert first["build_summary"]["program_stop_cause"] == "none"
+    assert first["build_summary"]["program_drift_severity"] in {"low", "medium", "high"}
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
     assert first["build_summary"]["run_outcome"]["status"] == "success"

@@ -645,8 +645,11 @@ def run_system_cycle(
         if continuation_records
         else {}
     )
-    program_alignment_status = "invalid" if stop_reason.startswith("program_") else "aligned"
-    program_caused_stop = stop_reason.startswith("program_")
+    program_alignment_status = str(run_result.get("program_alignment_status") or ("misaligned" if stop_reason.startswith("program_") else "aligned"))
+    program_stop_cause = str(run_result.get("program_stop_cause") or (stop_reason if stop_reason.startswith("program_") else "none"))
+    program_drift_severity = str(run_result.get("program_drift_severity") or latest_program_drift.get("drift_level", "low"))
+    execution_path_type = str(run_result.get("execution_path_type") or ("negative_path" if program_alignment_status == "misaligned" else "positive_path"))
+    program_caused_stop = program_alignment_status == "misaligned"
     last_continuation_decision = (
         str(continuation_sequence[-1].get("decision")) if continuation_sequence else ("stop" if stop_reason != "max_batches_reached" else "continue")
     )
@@ -669,11 +672,15 @@ def run_system_cycle(
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.5.0",
+        "schema_version": "1.6.0",
         "next_batch_id": next_batch_id,
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
         "next_batch_candidate": next_batch_id,
+        "execution_path_type": execution_path_type,
+        "program_alignment_status": program_alignment_status,
+        "program_stop_cause": program_stop_cause,
+        "program_drift_severity": program_drift_severity,
         "why": sorted(
             set(
                 why
@@ -682,7 +689,7 @@ def run_system_cycle(
                     f"adaptive_useful_batches_per_run={adaptive_observability['average_useful_batches_per_run']}",
                     f"adaptive_policy_review={adaptive_policy_review['review_id']}",
                     f"program_alignment_status={program_alignment_status}",
-                    f"program_drift_severity={latest_program_drift.get('drift_level', 'low')}",
+                    f"program_drift_severity={program_drift_severity}",
                 ]
             )
         ),
@@ -785,11 +792,15 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
         "next_batch_candidate": next_batch_id,
+        "execution_path_type": execution_path_type,
+        "program_alignment_status": program_alignment_status,
+        "program_stop_cause": program_stop_cause,
+        "program_drift_severity": program_drift_severity,
         "what_ran": [
             "roadmap selection",
             "control authorization",

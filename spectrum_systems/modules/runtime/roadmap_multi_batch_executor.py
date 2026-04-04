@@ -34,6 +34,10 @@ from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
     STOP_REASON_LOOP_VALIDATION_FAILED,
     STOP_REASON_MAX_BATCHES_REACHED,
     STOP_REASON_NO_ELIGIBLE_BATCH,
+    STOP_REASON_PROGRAM_ALIGNMENT_INVALID,
+    STOP_REASON_PROGRAM_BLOCKING_CONDITION,
+    STOP_REASON_PROGRAM_DRIFT_DETECTED,
+    STOP_REASON_PROGRAM_PRIORITY_VIOLATION,
     STOP_REASON_REPEATED_FAILURE_PATTERN,
     STOP_REASON_REPLAY_NOT_READY,
     STOP_REASON_RISK_ACCUMULATION_EXCEEDED,
@@ -43,6 +47,20 @@ from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
 
 class RoadmapMultiBatchExecutionError(ValueError):
     """Raised when bounded multi-batch roadmap execution cannot be computed safely."""
+
+
+PROGRAM_STOP_CAUSES = {
+    STOP_REASON_PROGRAM_ALIGNMENT_INVALID,
+    STOP_REASON_PROGRAM_PRIORITY_VIOLATION,
+    STOP_REASON_PROGRAM_BLOCKING_CONDITION,
+    STOP_REASON_PROGRAM_DRIFT_DETECTED,
+}
+
+STOP_REASON_NORMALIZATION = {
+    "program_disallowed_target": STOP_REASON_PROGRAM_ALIGNMENT_INVALID,
+    "program_violation_disallowed_target": STOP_REASON_PROGRAM_ALIGNMENT_INVALID,
+    "program_drift_high": STOP_REASON_PROGRAM_DRIFT_DETECTED,
+}
 
 
 def _utc_now() -> str:
@@ -59,6 +77,19 @@ def _canonical_hash(payload: dict[str, Any]) -> str:
 
 def _run_id(seed: dict[str, Any]) -> str:
     return f"RMB-{_canonical_hash(seed)[:12].upper()}"
+
+
+def _derive_program_semantics(stop_reason: str) -> dict[str, str]:
+    return {
+        "execution_path_type": "negative_path" if stop_reason in PROGRAM_STOP_CAUSES else "positive_path",
+        "program_alignment_status": "misaligned" if stop_reason in PROGRAM_STOP_CAUSES else "aligned",
+        "program_stop_cause": stop_reason if stop_reason in PROGRAM_STOP_CAUSES else "none",
+        "program_drift_severity": "high" if stop_reason == STOP_REASON_PROGRAM_DRIFT_DETECTED else "low",
+    }
+
+
+def _normalize_stop_reason(value: str) -> str:
+    return STOP_REASON_NORMALIZATION.get(value, value)
 
 
 def _validate_schema(instance: dict[str, Any], schema_name: str, *, label: str) -> None:
@@ -288,7 +319,7 @@ def should_continue_execution(
     current_batch_upper = current_batch_id.upper()
     enforcement_mode = str(program_constraint_signal.get("enforcement_mode") or "block").strip().lower()
     if blocking_conditions:
-        return {"decision": "stop", "reason_codes": ["program_blocking_condition"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+        return {"decision": "stop", "reason_codes": [STOP_REASON_PROGRAM_BLOCKING_CONDITION], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
     if current_batch_upper and current_batch_upper in disallowed_targets:
         return {"decision": "stop", "reason_codes": ["program_disallowed_target"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
     if allowed_targets and current_batch_upper and current_batch_upper not in allowed_targets:
@@ -303,11 +334,11 @@ def should_continue_execution(
                 "risk_level": risk_level,
                 "next_candidate_batch_id": next_candidate,
             }
-        return {"decision": "stop", "reason_codes": ["program_priority_violation"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+        return {"decision": "stop", "reason_codes": [STOP_REASON_PROGRAM_PRIORITY_VIOLATION], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
     drift_level = str(program_drift_signal.get("drift_level") or "low")
     if drift_level == "high":
-        return {"decision": "stop", "reason_codes": ["program_drift_high"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+        return {"decision": "stop", "reason_codes": [STOP_REASON_PROGRAM_DRIFT_DETECTED], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
     eval_health = str(eval_summary.get("health") or "healthy")
     if eval_health == "degraded":
@@ -474,8 +505,9 @@ def execute_bounded_roadmap_run(
         set((source_refs or []) + ["roadmap_artifact:inline", "roadmap_execution_loop_validation:inline"])
     )
     if alignment_result["alignment_status"] != "aligned":
-        stop_reason = "program_violation_disallowed_target"
-        stop_reason_codes = ["program_violation_disallowed_target"]
+        stop_reason = STOP_REASON_PROGRAM_ALIGNMENT_INVALID
+        stop_reason_codes = [STOP_REASON_PROGRAM_ALIGNMENT_INVALID]
+        program_semantics = _derive_program_semantics(stop_reason)
         continuation_record = _build_batch_continuation_record(
             current_batch_id=str(roadmap_artifact.get("current_batch_id")) if roadmap_artifact.get("current_batch_id") else None,
             next_candidate_batch_id=_derive_next_candidate_batch_id(roadmap_artifact),
@@ -494,7 +526,7 @@ def execute_bounded_roadmap_run(
         )
         result = {
             "run_id": _run_id({"roadmap_id": roadmap_artifact["roadmap_id"], "input_hash": _canonical_hash(roadmap_artifact), "executed_at": timestamp}),
-            "schema_version": "1.3.0",
+            "schema_version": "1.4.0",
             "roadmap_id": roadmap_artifact["roadmap_id"],
             "attempted_batch_ids": [],
             "completed_batch_ids": [],
@@ -509,7 +541,7 @@ def execute_bounded_roadmap_run(
             "loop_validation_refs": [],
             "progress_update_refs": [],
             "authorization_refs": [],
-            "continuation_decision_sequence": [{"step": 1, "decision": "stop", "reason_code": "program_violation_disallowed_target"}],
+            "continuation_decision_sequence": [{"step": 1, "decision": "stop", "reason_code": STOP_REASON_PROGRAM_ALIGNMENT_INVALID}],
             "batch_continuation_records": [continuation_record],
             "execution_efficiency_report": {
                 "batches_executed_per_run": 0,
@@ -523,6 +555,7 @@ def execute_bounded_roadmap_run(
             "input_hash": _canonical_hash({"roadmap_artifact": roadmap_artifact, "selection_signals": selection_signals}),
             "trace_id": trace_id,
             "source_refs": normalized_source_refs,
+            **program_semantics,
         }
         _validate_schema(result, "roadmap_multi_batch_run_result", label="roadmap_multi_batch_run_result")
         return {"roadmap": copy.deepcopy(roadmap_artifact), "run_result": result}
@@ -630,8 +663,8 @@ def execute_bounded_roadmap_run(
             stop_reason_codes = ["manual_review_required"]
             break
         if continuation_decision["decision"] == "stop":
-            stop_reason = continuation_decision["reason_codes"][0]
-            stop_reason_codes = list(continuation_decision["reason_codes"])
+            stop_reason = _normalize_stop_reason(continuation_decision["reason_codes"][0])
+            stop_reason_codes = [_normalize_stop_reason(code) for code in continuation_decision["reason_codes"]]
             break
 
         try:
@@ -805,7 +838,7 @@ def execute_bounded_roadmap_run(
 
     result = {
         "run_id": _run_id(seed),
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "roadmap_id": roadmap_artifact["roadmap_id"],
         "attempted_batch_ids": attempted_batch_ids,
         "completed_batch_ids": completed_batch_ids,
@@ -834,6 +867,7 @@ def execute_bounded_roadmap_run(
         "input_hash": input_hash,
         "trace_id": trace_id,
         "source_refs": normalized_source_refs,
+        **_derive_program_semantics(stop_reason),
     }
     _validate_schema(result, "roadmap_multi_batch_run_result", label="roadmap_multi_batch_run_result")
     return {

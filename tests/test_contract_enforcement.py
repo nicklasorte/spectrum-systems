@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
+from spectrum_systems.contracts import load_example, load_schema, validate_artifact
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "run_contract_enforcement.py"
@@ -503,3 +504,28 @@ def test_standards_manifest_registers_recovery_bridge_contracts() -> None:
     assert standards["drift_remediation_policy"]["schema_version"] == "1.0.0"
     assert standards["drift_remediation_artifact"]["schema_version"] == "1.0.0"
     assert standards["fix_plan_artifact"]["schema_version"] == "1.0.0"
+
+
+def test_program_stop_reason_enum_contains_hardened_program_reasons() -> None:
+    schema = load_schema("roadmap_multi_batch_run_result")
+    stop_reason_enum = schema["properties"]["stop_reason"]["enum"]
+    for value in (
+        "program_alignment_invalid",
+        "program_priority_violation",
+        "program_blocking_condition",
+        "program_drift_detected",
+    ):
+        assert value in stop_reason_enum
+
+
+def test_operator_artifacts_require_structured_program_fields() -> None:
+    for artifact_name in ("build_summary", "next_step_recommendation"):
+        artifact = load_example(artifact_name)
+        validate_artifact(artifact, artifact_name)
+        for key in (
+            "execution_path_type",
+            "program_alignment_status",
+            "program_stop_cause",
+            "program_drift_severity",
+        ):
+            assert key in artifact

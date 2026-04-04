@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -223,5 +223,9 @@
   ],
   "continuation_decision": "continue",
   "stop_reason": "max_batches_reached",
-  "next_batch_candidate": "BATCH-K"
+  "next_batch_candidate": "BATCH-K",
+  "execution_path_type": "positive_path",
+  "program_alignment_status": "aligned",
+  "program_stop_cause": "none",
+  "program_drift_severity": "low"
 }

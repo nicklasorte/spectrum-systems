@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.46",
-  "schema_version": "1.3.46",
-  "standards_version": "1.3.46",
-  "record_id": "REC-STD-2026-04-04-BATCH-PRG-ENFORCE",
-  "run_id": "run-20260404T000000Z-batch-prg-enforce",
+  "artifact_version": "1.3.47",
+  "schema_version": "1.3.47",
+  "standards_version": "1.3.47",
+  "record_id": "REC-STD-2026-04-04-BATCH-PRG-SCHEMA",
+  "run_id": "run-20260404T000000Z-batch-prg-schema",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.46",
+  "source_repo_version": "1.3.47",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -250,15 +250,15 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.44",
+      "last_updated_in": "1.3.47",
       "example_path": "contracts/examples/build_summary.json",
-      "notes": "BATCH-U operator usability artifact summarizing bounded run execution, deltas, failures, and next-watch guidance with explicit failure surface."
+      "notes": "BATCH-PRG-SCHEMA adds required structured program semantics fields and enum-bound stop_reason semantics for deterministic operator interpretation."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1550,15 +1550,15 @@
     {
       "artifact_type": "next_step_recommendation",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.6.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.44",
+      "last_updated_in": "1.3.47",
       "example_path": "contracts/examples/next_step_recommendation.json",
-      "notes": "BATCH-RM remediation integration adds deterministic remediation_plan artifact, remediation_plan_ref, and bounded remediation step guidance in next-step recommendations."
+      "notes": "BATCH-PRG-SCHEMA adds required structured program semantics fields and enum-bound stop_reason semantics for deterministic next-step interpretation."
     },
     {
       "artifact_type": "observability_metrics",
@@ -2655,15 +2655,15 @@
     {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.31",
-      "last_updated_in": "1.3.44",
+      "last_updated_in": "1.3.47",
       "example_path": "contracts/examples/roadmap_multi_batch_run_result.json",
-      "notes": "RDX-006 bounded multi-batch governed execution artifact proving deterministic adaptive continuation, early-stop safety, per-batch re-authorization, and fail-closed stop-reason recording."
+      "notes": "BATCH-PRG-SCHEMA hardens program semantics with explicit execution_path_type, program_alignment_status, program_stop_cause, and program_drift_severity plus enum-bound program stop reasons."
     },
     {
       "artifact_type": "roadmap_output",
