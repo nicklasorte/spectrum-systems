@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_simplification_campaign.schema.json",
+  "title": "TPA Simplification Campaign",
+  "description": "Deterministic hotspot-driven simplification campaign signal for PQX scheduling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "step_id",
+    "target_module",
+    "reason",
+    "recommended_action",
+    "priority",
+    "evidence_refs",
+    "pqx_cleanup_ready"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_simplification_campaign"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "target_module": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "recommended_action": {"type": "string", "enum": ["simplify", "refactor", "delete"]},
+    "priority": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "pqx_cleanup_ready": {"type": "boolean"}
+  }
+}

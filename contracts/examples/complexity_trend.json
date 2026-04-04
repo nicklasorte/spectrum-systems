@@ -1,0 +1,42 @@
+{
+  "artifact_type": "complexity_trend",
+  "schema_version": "1.0.0",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+  "artifact_type_scope": "runtime_module",
+  "slice_family": "TPA",
+  "points": [
+    {
+      "index": 0,
+      "step_id": "AI-01",
+      "complexity": 5,
+      "complexity_delta": 1,
+      "simplify_effectiveness": -1.0,
+      "deletions_count": 0,
+      "abstraction_growth": 1
+    }
+  ],
+  "trend_direction": "stable",
+  "volatility": 0.0,
+  "regression_points": [
+    "AI-01"
+  ],
+  "stability_score": 1.0,
+  "simplify_effectiveness": -1.0,
+  "deletion_rate": 0.0,
+  "abstraction_growth": 1.0,
+  "query_views": {
+    "top_degrading_modules": [
+      {"module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py", "score": 0.0}
+    ],
+    "most_improved_modules": [
+      {"module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py", "score": 0.0}
+    ],
+    "most_volatile_modules": [
+      {"module": "spectrum_systems/modules/runtime/pqx_sequence_runner.py", "score": 0.0}
+    ]
+  },
+  "recommended_control_decision": "allow"
+}

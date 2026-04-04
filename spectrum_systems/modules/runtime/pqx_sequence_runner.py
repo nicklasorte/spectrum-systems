@@ -20,6 +20,12 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
     confirm_slice_completion_after_enforcement_allow,
     run_pqx_slice,
 )
+from spectrum_systems.modules.runtime.tpa_complexity_governance import (
+    build_complexity_budget,
+    build_complexity_trend,
+    build_simplification_campaign,
+    enforce_budget_trend_control,
+)
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
     PQXBundleStateError,
     block_step as bundle_block_step,
@@ -1427,6 +1433,67 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA gate must freeze/block when high-risk context lacks mitigation")
                 if plan_risks and not gate_payload.get("risk_mitigation_refs"):
                     raise PQXSequenceRunnerError("TPA gate must include risk mitigation refs for known risks")
+                trend_history = artifacts.get("complexity_trend_history", [])
+                if not isinstance(trend_history, list):
+                    raise PQXSequenceRunnerError("TPA complexity trend history must be a list")
+                trend_points = [point for point in trend_history if isinstance(point, dict)]
+                build_complexity_score = _complexity_score(build_signals)
+                simplify_complexity_score = _complexity_score(simplify_signals)
+                trend_points.append(
+                    {
+                        "index": len(trend_points),
+                        "step_id": step_id,
+                        "complexity": simplify_complexity_score,
+                        "complexity_delta": simplify_complexity_score - build_complexity_score,
+                        "simplify_effectiveness": float(build_complexity_score - simplify_complexity_score),
+                        "deletions_count": int(simplify_signals["deletions_count"]),
+                        "abstraction_growth": int(
+                            simplify_signals["abstraction_added_count"] - simplify_signals["abstraction_removed_count"]
+                        ),
+                    }
+                )
+                artifacts["complexity_trend_history"] = deepcopy(trend_points)
+                historical_scores = [int(point.get("complexity", 0)) for point in trend_points[:-1]]
+                module_ref = str((artifacts["plan"]["artifact"].get("modules_affected") or ["unknown"])[0])
+                budget_artifact = build_complexity_budget(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    module_or_path=module_ref,
+                    build_signals=build_signals,
+                    simplify_signals=simplify_signals,
+                    last_updated=iso_now(clock),
+                    historical_scores=historical_scores,
+                )
+                trend_artifact = build_complexity_trend(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    module=module_ref,
+                    artifact_type_scope=str(request.get("artifact_type") or "unknown"),
+                    slice_family="TPA",
+                    points=trend_points,
+                )
+                campaign_artifact = build_simplification_campaign(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    target_module=module_ref,
+                    trend=trend_artifact,
+                    budget=budget_artifact,
+                )
+                regression_gate = gate_payload.get("complexity_regression_gate")
+                if not isinstance(regression_gate, dict):
+                    raise PQXSequenceRunnerError("TPA gate must include complexity_regression_gate")
+                enforced_regression_decision = enforce_budget_trend_control(
+                    existing_decision=str(regression_gate.get("decision")),
+                    budget=budget_artifact,
+                    trend=trend_artifact,
+                )
+                if enforced_regression_decision != regression_gate.get("decision"):
+                    raise PQXSequenceRunnerError(
+                        "TPA gate complexity_regression_gate.decision under-enforced relative to complexity budget/trend"
+                    )
                 regression_gate = gate_payload.get("complexity_regression_gate")
                 if not isinstance(regression_gate, dict):
                     raise PQXSequenceRunnerError("TPA gate must include complexity_regression_gate")
@@ -1482,6 +1549,9 @@ def execute_sequence_run(
                     plan_payload=artifacts["plan"]["artifact"],
                     bypass_signals=bypass_signals,
                 )
+                artifacts["complexity_budget"] = budget_artifact
+                artifacts["complexity_trend"] = trend_artifact
+                artifacts["simplification_campaign"] = campaign_artifact
         elif required_scope:
             missing_components = ["plan", "build", "simplify", "gate"]
             occurrence_count = len(bypass_signals) + 1

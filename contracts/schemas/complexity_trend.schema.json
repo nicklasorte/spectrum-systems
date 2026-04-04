@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/complexity_trend.schema.json",
+  "title": "Complexity Trend",
+  "description": "Deterministic longitudinal complexity trend artifact grouped by module, artifact type, and slice family.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "step_id",
+    "module",
+    "artifact_type_scope",
+    "slice_family",
+    "points",
+    "trend_direction",
+    "volatility",
+    "regression_points",
+    "stability_score",
+    "simplify_effectiveness",
+    "deletion_rate",
+    "abstraction_growth",
+    "query_views",
+    "recommended_control_decision"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "complexity_trend"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "module": {"type": "string", "minLength": 1},
+    "artifact_type_scope": {"type": "string", "minLength": 1},
+    "slice_family": {"type": "string", "minLength": 1},
+    "points": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "step_id", "complexity", "complexity_delta", "simplify_effectiveness", "deletions_count", "abstraction_growth"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+          "complexity": {"type": "integer"},
+          "complexity_delta": {"type": "integer"},
+          "simplify_effectiveness": {"type": "number"},
+          "deletions_count": {"type": "integer", "minimum": 0},
+          "abstraction_growth": {"type": "integer"}
+        }
+      }
+    },
+    "trend_direction": {"type": "string", "enum": ["improving", "stable", "degrading"]},
+    "volatility": {"type": "number", "minimum": 0},
+    "regression_points": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^AI-[0-9]+$"},
+      "uniqueItems": true
+    },
+    "stability_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "simplify_effectiveness": {"type": "number"},
+    "deletion_rate": {"type": "number", "minimum": 0},
+    "abstraction_growth": {"type": "number"},
+    "query_views": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["top_degrading_modules", "most_improved_modules", "most_volatile_modules"],
+      "properties": {
+        "top_degrading_modules": {"type": "array", "items": {"$ref": "#/$defs/ranked"}},
+        "most_improved_modules": {"type": "array", "items": {"$ref": "#/$defs/ranked"}},
+        "most_volatile_modules": {"type": "array", "items": {"$ref": "#/$defs/ranked"}}
+      }
+    },
+    "recommended_control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]}
+  },
+  "$defs": {
+    "ranked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "score"],
+      "properties": {
+        "module": {"type": "string", "minLength": 1},
+        "score": {"type": "number"}
+      }
+    }
+  }
+}
