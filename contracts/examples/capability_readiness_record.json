@@ -1,0 +1,26 @@
+{
+  "readiness_id": "CRD-1A2B3C4D5E6F",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-04",
+  "recent_batches_considered": 5,
+  "eval_pass_rate": 1.0,
+  "eval_fail_rate": 0.0,
+  "eval_indeterminate_rate": 0.0,
+  "replay_success_rate": 1.0,
+  "drift_signal_rate": 0.0,
+  "override_rate": 0.0,
+  "unresolved_risk_count": 0,
+  "autonomy_block_rate": 0.0,
+  "failure_recurrence_rate": 0.0,
+  "readiness_state": "autonomous",
+  "reason_codes": [
+    "readiness_state:autonomous"
+  ],
+  "supporting_signals": [
+    "eval_pass_rate=1.000000",
+    "eval_fail_rate=0.000000",
+    "replay_success_rate=1.000000"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-capability-readiness-example"
+}

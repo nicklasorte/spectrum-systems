@@ -117,13 +117,14 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
     validate_artifact(first["batch_delivery_report"], "batch_delivery_report")
     validate_artifact(first["batch_handoff_bundle"], "batch_handoff_bundle")
+    validate_artifact(first["capability_readiness_record"], "capability_readiness_record")
     validate_artifact(first["autonomy_decision_record"], "autonomy_decision_record")
     validate_artifact(first["exception_classification_record"], "exception_classification_record")
     validate_artifact(first["exception_resolution_record"], "exception_resolution_record")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.7.0"
+    assert first["build_summary"]["schema_version"] == "1.8.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -182,6 +183,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["batch_handoff_bundle"]["autonomy_decision_ref"] == first["build_summary"]["autonomy_decision_ref"]
     assert first["batch_handoff_bundle"]["latest_exception_class"] == first["exception_classification_record"]["exception_class"]
     assert first["batch_handoff_bundle"]["latest_exception_resolution_action"] == first["exception_resolution_record"]["recommended_action"]
+    assert first["build_summary"]["capability_readiness_ref"].startswith("capability_readiness_record:CRD-")
+    assert first["build_summary"]["capability_readiness_state"] in {"unsafe", "constrained", "supervised", "autonomous"}
+    assert first["batch_handoff_bundle"]["capability_readiness_ref"] == first["build_summary"]["capability_readiness_ref"]
+    assert first["batch_handoff_bundle"]["capability_readiness_state"] == first["build_summary"]["capability_readiness_state"]
 
 
 def test_prior_handoff_auto_ingested_and_required_validations_propagated(tmp_path: Path) -> None:
@@ -579,6 +584,126 @@ def test_malformed_autonomy_policy_fails_closed_and_propagates_blockers() -> Non
     assert "malformed_autonomy_policy" in result["autonomy_decision_record"]["reason_codes"]
     assert result["next_cycle_input_bundle"]["autonomy_blockers"]
     assert any(item.startswith("autonomy_blocker:autonomy:") for item in result["batch_handoff_bundle"]["autonomy_blockers"])
+
+
+def test_capability_readiness_high_failure_rate_marks_unsafe() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["eval_result"] = {"run_id": "eval-1", "result_status": "fail"}
+    integration_inputs["capability_readiness_inputs"] = {
+        "eval_results": [{"result_status": "fail"}, {"result_status": "fail"}],
+        "batch_delivery_reports": [{"status": "blocked"}],
+        "autonomy_decisions": [{"decision": "stop"}],
+        "exception_routing_outputs": [{"action_type": "escalate"}],
+        "drift_signals": [{"drift_level": "high"}],
+        "replay_metrics": [{"status": "mismatch"}],
+        "unresolved_risks": ["critical_risk:AUTH_REVIEW_PENDING"],
+    }
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["capability_readiness_record"]["readiness_state"] == "unsafe"
+    assert result["build_summary"]["autonomy_decision"] == "stop"
+
+
+def test_capability_readiness_high_drift_marks_constrained() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["capability_readiness_inputs"] = {
+        "batch_delivery_reports": [{"status": "completed_with_risk"}],
+        "eval_results": [{"result_status": "pass"}, {"result_status": "pass"}, {"result_status": "pass"}],
+        "autonomy_decisions": [{"decision": "continue"}],
+        "exception_routing_outputs": [{"action_type": "queue_review"}],
+        "drift_signals": [{"drift_level": "high"}, {"drift_level": "medium"}],
+        "replay_metrics": [{"status": "match"}, {"status": "match"}],
+    }
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["capability_readiness_record"]["readiness_state"] in {"constrained", "unsafe"}
+
+
+def test_capability_readiness_stable_runs_mark_autonomous() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["capability_readiness_inputs"] = {
+        "batch_delivery_reports": [{"status": "completed"}, {"status": "completed"}, {"status": "completed"}],
+        "eval_results": [{"result_status": "pass"}, {"result_status": "pass"}, {"result_status": "pass"}],
+        "autonomy_decisions": [{"decision": "continue"}, {"decision": "continue"}],
+        "exception_routing_outputs": [{"action_type": "queue_review"}],
+        "drift_signals": [{"drift_level": "low"}, {"drift_level": "low"}],
+        "replay_metrics": [{"status": "match"}, {"status": "match"}, {"status": "match"}],
+        "recent_batches_considered": 3,
+    }
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["capability_readiness_record"]["readiness_state"] == "autonomous"
+
+
+def test_capability_readiness_replay_mismatch_degrades_readiness() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["capability_readiness_inputs"] = {
+        "batch_delivery_reports": [{"status": "completed"}],
+        "eval_results": [{"result_status": "pass"}],
+        "autonomy_decisions": [{"decision": "continue"}],
+        "exception_routing_outputs": [{"action_type": "queue_review"}],
+        "drift_signals": [{"drift_level": "low"}],
+        "replay_metrics": [{"status": "mismatch"}],
+    }
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["capability_readiness_record"]["readiness_state"] == "unsafe"
+    assert "replay_consistency_low" in result["capability_readiness_record"]["reason_codes"]
+
+
+def test_capability_readiness_missing_inputs_fail_closed() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["capability_readiness_inputs"] = {}
+    integration_inputs["eval_result"] = {}
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["capability_readiness_record"]["readiness_state"] == "unsafe"
+    assert any(code.startswith("missing_required_signal:") for code in result["capability_readiness_record"]["reason_codes"])
 
 
 def test_governed_system_roadmap_selection_wires_to_single_cycle_execution() -> None:

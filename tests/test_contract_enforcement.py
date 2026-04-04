@@ -549,9 +549,15 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["exception_classification_record"]["example_path"] == "contracts/examples/exception_classification_record.json"
     assert standards["exception_resolution_record"]["schema_version"] == "1.0.0"
     assert standards["exception_resolution_record"]["example_path"] == "contracts/examples/exception_resolution_record.json"
-    assert standards["batch_handoff_bundle"]["schema_version"] == "1.2.0"
+    assert standards["batch_handoff_bundle"]["schema_version"] == "1.3.0"
     assert standards["next_cycle_input_bundle"]["schema_version"] == "1.2.0"
-    assert standards["build_summary"]["schema_version"] == "1.7.0"
+    assert standards["build_summary"]["schema_version"] == "1.8.0"
+
+
+def test_standards_manifest_registers_capability_readiness_contract() -> None:
+    standards = load_standards_contracts()
+    assert standards["capability_readiness_record"]["schema_version"] == "1.0.0"
+    assert standards["capability_readiness_record"]["example_path"] == "contracts/examples/capability_readiness_record.json"
 
 
 def test_system_roadmap_invalid_missing_required_field_fails_validation() -> None:

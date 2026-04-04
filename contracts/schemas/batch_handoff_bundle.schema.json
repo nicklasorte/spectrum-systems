@@ -29,7 +29,9 @@
     "latest_exception_action_type",
     "latest_exception_requires_human_review",
     "latest_exception_requires_freeze",
-    "required_next_actions"
+    "required_next_actions",
+    "capability_readiness_state",
+    "capability_readiness_ref"
   ],
   "properties": {
     "bundle_id": {
@@ -38,7 +40,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.2.0"
+      "const": "1.3.0"
     },
     "source_batch_id": {
       "type": "string",
@@ -194,6 +196,19 @@
         "minLength": 3
       },
       "uniqueItems": true
+    },
+    "capability_readiness_state": {
+      "type": "string",
+      "enum": [
+        "unsafe",
+        "constrained",
+        "supervised",
+        "autonomous"
+      ]
+    },
+    "capability_readiness_ref": {
+      "type": "string",
+      "pattern": "^capability_readiness_record:CRD-[A-F0-9]{12}$"
     }
   }
 }

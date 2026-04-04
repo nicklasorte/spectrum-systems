@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.7.0",
+  "schema_version": "1.8.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -90,6 +90,7 @@
   "created_at": "2026-04-03T23:45:00Z",
   "source_refs": [
     "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+    "capability_readiness_record:CRD-1A2B3C4D5E6F",
     "core_system_integration_validation:CSIV-EXAMPLE001",
     "next_cycle_decision:NCD-1A2B3C4D5E6F",
     "next_cycle_input_bundle:NCB-7A90B1C2D3E4",
@@ -250,5 +251,7 @@
   "recommended_exception_action": "remediation_batch",
   "exception_action_type": "create_remediation_batch",
   "exception_requires_human_review": false,
-  "exception_requires_freeze": false
+  "exception_requires_freeze": false,
+  "capability_readiness_state": "supervised",
+  "capability_readiness_ref": "capability_readiness_record:CRD-1A2B3C4D5E6F"
 }
