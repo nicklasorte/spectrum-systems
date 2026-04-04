@@ -10,6 +10,7 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.program_layer import validate_roadmap_against_program as validate_program_alignment
 from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
     STOP_REASON_MISSING_REQUIRED_SIGNAL,
     STOP_REASON_NO_ELIGIBLE_BATCH,
@@ -298,9 +299,21 @@ def build_roadmap_selection_result(
     return result
 
 
+def validate_roadmap_against_program(roadmap_artifact: dict[str, Any], program_constraint_signal: dict[str, Any]) -> dict[str, Any]:
+    """Validate roadmap alignment against the current enforced program signal."""
+    _validate_schema(roadmap_artifact, "roadmap_artifact", label="roadmap_artifact")
+    result = validate_program_alignment(
+        roadmap_artifact=roadmap_artifact,
+        program_constraint_signal=program_constraint_signal,
+    )
+    _validate_schema(result, "program_roadmap_alignment_result", label="program_roadmap_alignment_result")
+    return result
+
+
 __all__ = [
     "RoadmapSelectionError",
     "build_roadmap_selection_result",
     "select_next_batch",
     "validate_batch_readiness",
+    "validate_roadmap_against_program",
 ]

@@ -322,3 +322,23 @@ def test_repeated_failure_pattern_reuses_known_playbook_step() -> None:
         trace_id="trace-batch-u-test",
     )
     assert any(step["action"] == "reuse_known_repeated_failure_playbook" for step in steps)
+
+
+def test_operator_artifacts_surface_program_alignment_and_program_caused_stop_state() -> None:
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals={**_selection_signals(), "disallowed_targets": ["BATCH-I"]},
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    summary = result["build_summary"]
+    recommendation = result["next_step_recommendation"]
+    assert any(item.startswith("program_alignment_status=") for item in summary["what_changed"])
+    assert any(item.startswith("program_caused_stop=") for item in summary["watch_next"])
+    assert any(item.startswith("program_alignment_status=") for item in recommendation["why"])
+    assert any(item.startswith("program_caused_stop=") for item in recommendation["next_step"]["watchouts"])

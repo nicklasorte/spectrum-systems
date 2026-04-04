@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_feedback_record.schema.json",
+  "title": "program_feedback_record",
+  "description": "Deterministic governed feedback record from execution outcomes for future roadmap generation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "program_id",
+    "completed_batches",
+    "blocked_batches",
+    "recurring_failures",
+    "drift_signals",
+    "risk_signals",
+    "improvement_recommendations",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "program_id": {"type": "string", "minLength": 1},
+    "completed_batches": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "blocked_batches": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "recurring_failures": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "drift_signals": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "risk_signals": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "improvement_recommendations": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 1}
+  }
+}

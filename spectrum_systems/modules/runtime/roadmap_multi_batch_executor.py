@@ -12,10 +12,15 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.program_layer import (
+    build_program_constraint_signal,
+    detect_program_drift,
+)
 from spectrum_systems.modules.runtime.roadmap_execution_loop_validator import (
     RoadmapExecutionLoopValidationError,
     validate_single_batch_execution_loop,
 )
+from spectrum_systems.modules.runtime.roadmap_selector import validate_roadmap_against_program
 from spectrum_systems.modules.runtime.roadmap_stop_reasons import (
     STOP_REASON_AUTHORIZATION_BLOCK,
     STOP_REASON_AUTHORIZATION_FREEZE,
@@ -277,15 +282,27 @@ def should_continue_execution(
         }
 
     blocking_conditions = [str(item) for item in program_constraint_signal.get("blocking_conditions", []) if str(item).strip()]
-    allowed_targets = [str(item) for item in program_constraint_signal.get("allowed_targets", []) if str(item).strip()]
+    allowed_targets = [str(item).strip().upper() for item in program_constraint_signal.get("allowed_targets", []) if str(item).strip()]
+    disallowed_targets = [str(item).strip().upper() for item in program_constraint_signal.get("disallowed_targets", []) if str(item).strip()]
     current_batch_id = str(roadmap_state.get("current_batch_id") or "")
+    current_batch_upper = current_batch_id.upper()
+    enforcement_mode = str(program_constraint_signal.get("enforcement_mode") or "block").strip().lower()
     if blocking_conditions:
         return {"decision": "stop", "reason_codes": ["program_blocking_condition"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
-    if allowed_targets and current_batch_id and current_batch_id not in allowed_targets:
+    if current_batch_upper and current_batch_upper in disallowed_targets:
+        return {"decision": "stop", "reason_codes": ["program_disallowed_target"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
+    if allowed_targets and current_batch_upper and current_batch_upper not in allowed_targets:
         return {"decision": "stop", "reason_codes": ["program_violation_disallowed_target"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
-    priority_ordering = [str(item) for item in program_constraint_signal.get("priority_ordering", []) if str(item).strip()]
-    if priority_ordering and next_candidate is not None and next_candidate != priority_ordering[0]:
+    priority_ordering = [str(item).strip().upper() for item in program_constraint_signal.get("priority_ordering", []) if str(item).strip()]
+    if priority_ordering and next_candidate is not None and str(next_candidate).strip().upper() != priority_ordering[0]:
+        if enforcement_mode == "warn":
+            return {
+                "decision": "escalate",
+                "reason_codes": ["program_priority_violation_warn"],
+                "risk_level": risk_level,
+                "next_candidate_batch_id": next_candidate,
+            }
         return {"decision": "stop", "reason_codes": ["program_priority_violation"], "risk_level": risk_level, "next_candidate_batch_id": next_candidate}
 
     drift_level = str(program_drift_signal.get("drift_level") or "low")
@@ -411,6 +428,104 @@ def execute_bounded_roadmap_run(
 
     trace_id = str(authorization_signals.get("trace_id") or "").strip() or "trace-missing"
     timestamp = run_executed_at or validated_at or executed_at or evaluated_at or _utc_now()
+    selected_signal = selection_signals.get("program_constraint_signal")
+    if isinstance(selected_signal, dict):
+        program_constraint_signal = build_program_constraint_signal(
+            program_artifact={
+                "program_id": selected_signal.get("program_id", "PRG-UNKNOWN"),
+                "schema_version": selected_signal.get("program_version", "1.0.0"),
+                "allowed_targets": selected_signal.get("allowed_targets", []),
+                "disallowed_targets": selected_signal.get("disallowed_targets", []),
+                "batches": selected_signal.get("priority_ordering", []),
+                "success_criteria": selected_signal.get("success_criteria", ["program_alignment"]),
+                "blocking_conditions": selected_signal.get("blocking_conditions", []),
+            },
+            program_status={
+                "program_version": selected_signal.get("program_version", "1.0.0"),
+                "priority_ordering": selected_signal.get("priority_ordering", []),
+                "blocking_conditions": selected_signal.get("blocking_conditions", []),
+                "enforcement_mode": selected_signal.get("enforcement_mode", "block"),
+            },
+            trace_id=trace_id,
+            created_at=timestamp,
+        )
+    else:
+        program_constraint_signal = build_program_constraint_signal(
+            program_artifact={
+                "program_id": str(selection_signals.get("program_id") or "PRG-ROADMAP-EXECUTION"),
+                "schema_version": "1.0.0",
+                "allowed_targets": selection_signals.get("allowed_targets", []),
+                "disallowed_targets": selection_signals.get("disallowed_targets", []),
+                "batches": selection_signals.get("priority_ordering", []),
+                "success_criteria": selection_signals.get("program_success_criteria", ["roadmap_progression"]),
+                "blocking_conditions": selection_signals.get("program_blocking_conditions", []),
+            },
+            program_status={
+                "program_version": str(selection_signals.get("program_version") or "1.0.0"),
+                "priority_ordering": selection_signals.get("priority_ordering", []),
+                "blocking_conditions": selection_signals.get("program_blocking_conditions", []),
+                "enforcement_mode": selection_signals.get("program_enforcement_mode", "block"),
+            },
+            trace_id=trace_id,
+            created_at=timestamp,
+        )
+    alignment_result = validate_roadmap_against_program(roadmap_artifact, program_constraint_signal)
+    normalized_source_refs = sorted(
+        set((source_refs or []) + ["roadmap_artifact:inline", "roadmap_execution_loop_validation:inline"])
+    )
+    if alignment_result["alignment_status"] != "aligned":
+        stop_reason = "program_violation_disallowed_target"
+        stop_reason_codes = ["program_violation_disallowed_target"]
+        continuation_record = _build_batch_continuation_record(
+            current_batch_id=str(roadmap_artifact.get("current_batch_id")) if roadmap_artifact.get("current_batch_id") else None,
+            next_candidate_batch_id=_derive_next_candidate_batch_id(roadmap_artifact),
+            decision={
+                "decision": "stop",
+                "reason_codes": stop_reason_codes,
+                "risk_level": _resolve_risk_level(selection_signals, authorization_signals),
+            },
+            signals_used={
+                "alignment_result": alignment_result,
+                "program_constraint_signal": program_constraint_signal,
+            },
+            program_state_snapshot={"alignment_status": alignment_result["alignment_status"]},
+            trace_id=trace_id,
+            created_at=timestamp,
+        )
+        result = {
+            "run_id": _run_id({"roadmap_id": roadmap_artifact["roadmap_id"], "input_hash": _canonical_hash(roadmap_artifact), "executed_at": timestamp}),
+            "schema_version": "1.3.0",
+            "roadmap_id": roadmap_artifact["roadmap_id"],
+            "attempted_batch_ids": [],
+            "completed_batch_ids": [],
+            "blocked_batch_id": None,
+            "frozen_batch_id": None,
+            "stop_reason": stop_reason,
+            "stop_reason_codes": stop_reason_codes,
+            "max_batches_per_run": policy["max_batches_per_run"],
+            "resolved_max_batches_per_run": 1,
+            "batches_executed_count": 0,
+            "final_roadmap_status_ref": f"roadmap_artifact:inline:{roadmap_artifact['roadmap_id']}",
+            "loop_validation_refs": [],
+            "progress_update_refs": [],
+            "authorization_refs": [],
+            "continuation_decision_sequence": [{"step": 1, "decision": "stop", "reason_code": "program_violation_disallowed_target"}],
+            "batch_continuation_records": [continuation_record],
+            "execution_efficiency_report": {
+                "batches_executed_per_run": 0,
+                "useful_batches": 0,
+                "early_stops": 1,
+                "average_progress_per_run": 0.0,
+                "chain_context_refs": [],
+                "adaptive_factors": {"mode": "static", "resolved_from": ["program_alignment_invalid"]},
+            },
+            "executed_at": timestamp,
+            "input_hash": _canonical_hash({"roadmap_artifact": roadmap_artifact, "selection_signals": selection_signals}),
+            "trace_id": trace_id,
+            "source_refs": normalized_source_refs,
+        }
+        _validate_schema(result, "roadmap_multi_batch_run_result", label="roadmap_multi_batch_run_result")
+        return {"roadmap": copy.deepcopy(roadmap_artifact), "run_result": result}
 
     input_payload = {
         "roadmap_artifact": roadmap_artifact,
@@ -424,10 +539,6 @@ def execute_bounded_roadmap_run(
         "validated_at": validated_at,
     }
     input_hash = _canonical_hash(input_payload)
-
-    normalized_source_refs = sorted(
-        set((source_refs or []) + ["roadmap_artifact:inline", "roadmap_execution_loop_validation:inline"])
-    )
 
     attempted_batch_ids: list[str] = []
     completed_batch_ids: list[str] = []
@@ -481,14 +592,17 @@ def execute_bounded_roadmap_run(
 
         next_candidate_batch_id = _derive_next_candidate_batch_id(current_roadmap)
         risk_level = _resolve_risk_level(selection_signals, authorization_signals)
+        program_drift_signal = detect_program_drift(
+            program_constraint_signal=program_constraint_signal,
+            executed_batches=completed_batch_ids,
+            planned_batches=[str(item.get("batch_id") or "") for item in current_roadmap.get("batches", []) if isinstance(item, dict)],
+            trace_id=trace_id,
+            created_at=timestamp,
+        )
         gate_result = batch_execution_gate(
             last_control_decision=str((last_batch_result or {}).get("control_decision") or "allow"),
-            program_constraint_signal={
-                "allowed_targets": selection_signals.get("allowed_targets", []),
-                "priority_ordering": selection_signals.get("priority_ordering", []),
-                "blocking_conditions": selection_signals.get("program_blocking_conditions", []),
-            },
-            program_drift_signal={"drift_level": selection_signals.get("program_drift_level", "low")},
+            program_constraint_signal=program_constraint_signal,
+            program_drift_signal={"drift_level": program_drift_signal["severity"]},
             failure_pattern_record={
                 "repeated_failure_count": continuation_state.get("repeated_failure_reason_count", 0),
                 "stop_threshold": continuation_state.get("repeated_failure_reason_stop_threshold", 2),

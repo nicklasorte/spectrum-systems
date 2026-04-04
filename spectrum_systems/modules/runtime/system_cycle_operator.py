@@ -634,6 +634,19 @@ def run_system_cycle(
 
     stop_reason = str(run_result["stop_reason"])
     continuation_sequence = list(run_result.get("continuation_decision_sequence", []))
+    continuation_records = [row for row in run_result.get("batch_continuation_records", []) if isinstance(row, dict)]
+    latest_program_signal = (
+        dict(continuation_records[-1].get("signals_used", {}).get("program_constraint_signal", {}))
+        if continuation_records
+        else {}
+    )
+    latest_program_drift = (
+        dict(continuation_records[-1].get("signals_used", {}).get("program_drift_signal", {}))
+        if continuation_records
+        else {}
+    )
+    program_alignment_status = "invalid" if stop_reason.startswith("program_") else "aligned"
+    program_caused_stop = stop_reason.startswith("program_")
     last_continuation_decision = (
         str(continuation_sequence[-1].get("decision")) if continuation_sequence else ("stop" if stop_reason != "max_batches_reached" else "continue")
     )
@@ -668,6 +681,8 @@ def run_system_cycle(
                     f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
                     f"adaptive_useful_batches_per_run={adaptive_observability['average_useful_batches_per_run']}",
                     f"adaptive_policy_review={adaptive_policy_review['review_id']}",
+                    f"program_alignment_status={program_alignment_status}",
+                    f"program_drift_severity={latest_program_drift.get('drift_level', 'low')}",
                 ]
             )
         ),
@@ -699,7 +714,10 @@ def run_system_cycle(
             "watchouts": sorted(
                 set(
                     _watchouts(str(run_result["stop_reason"]), blocking_conditions, required_reviews)
-                    + [f"control_state={integration_inputs.get('control_decision', {}).get('decision', 'unknown')}"]
+                    + [
+                        f"control_state={integration_inputs.get('control_decision', {}).get('decision', 'unknown')}",
+                        f"program_caused_stop={str(program_caused_stop).lower()}",
+                    ]
                 )
             ),
             "required_artifacts": selected_candidate["required_artifacts"],
@@ -779,9 +797,11 @@ def run_system_cycle(
             "integration validation (BATCH-Z)",
         ],
         "what_changed": [
-            f"attempted_batches={','.join(run_result['attempted_batch_ids']) or 'none'}",
-            f"completed_batches={','.join(run_result['completed_batch_ids']) or 'none'}",
-        ],
+                f"attempted_batches={','.join(run_result['attempted_batch_ids']) or 'none'}",
+                f"completed_batches={','.join(run_result['completed_batch_ids']) or 'none'}",
+                f"program_alignment_status={program_alignment_status}",
+                f"program_enforcement_mode={latest_program_signal.get('enforcement_mode', 'block')}",
+            ],
         "what_failed": sorted(set(blocking_conditions + ([stop_reason] if stop_reason != "max_batches_reached" else []))),
         "run_outcome": {
             "status": "blocked" if blocking_conditions or stop_reason != "max_batches_reached" else "success",
@@ -795,6 +815,8 @@ def run_system_cycle(
                 f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
                 f"adaptive_tuning_warranted={str(adaptive_trend_report['tuning_warranted']).lower()}",
                 f"adaptive_policy_tuning_signal={adaptive_policy_review['operator_tuning_signals'][0]}",
+                f"program_caused_stop={str(program_caused_stop).lower()}",
+                f"recommended_program_aligned_move={selected_candidate['action']}",
             ],
         "artifact_index": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",

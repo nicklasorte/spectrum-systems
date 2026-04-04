@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_constraint_signal.schema.json",
+  "title": "program_constraint_signal",
+  "description": "Deterministic governed signal emitted from active program artifacts and status to enforce roadmap and batch boundaries.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "program_id",
+    "program_version",
+    "allowed_targets",
+    "disallowed_targets",
+    "priority_ordering",
+    "success_criteria",
+    "blocking_conditions",
+    "enforcement_mode",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "program_id": {"type": "string", "minLength": 1},
+    "program_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "allowed_targets": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "disallowed_targets": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "priority_ordering": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "success_criteria": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "blocking_conditions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "enforcement_mode": {"type": "string", "enum": ["warn", "freeze", "block"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 1}
+  }
+}
