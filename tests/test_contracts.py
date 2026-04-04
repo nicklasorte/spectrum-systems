@@ -161,6 +161,7 @@ class ContractSchemaTests(unittest.TestCase):
             "batch_handoff_bundle",
             "exception_classification_record",
             "exception_resolution_record",
+            "roadmap_adjustment_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

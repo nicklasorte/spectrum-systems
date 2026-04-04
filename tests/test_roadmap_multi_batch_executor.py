@@ -18,6 +18,11 @@ from spectrum_systems.modules.runtime.controlled_multi_cycle_runner import (  # 
     run_full_roadmap_execution,
 )
 from spectrum_systems.modules.runtime.system_cycle_operator import derive_batch_handoff_bundle  # noqa: E402
+from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (  # noqa: E402
+    RoadmapAdjustmentError,
+    apply_roadmap_adjustments,
+    derive_roadmap_adjustments,
+)
 
 
 def _roadmap() -> dict:
@@ -750,6 +755,89 @@ def test_eval_health_degraded_stops(tmp_path: Path) -> None:
     )
     assert decision["decision"] == "stop"
     assert decision["reason_codes"] == ["eval_health_degraded"]
+
+
+def test_adjustments_missing_eval_insert_and_deterministic() -> None:
+    roadmap = _roadmap()
+    exception_resolution = copy.deepcopy(load_example("exception_resolution_record"))
+    handoff = copy.deepcopy(load_example("batch_handoff_bundle"))
+    handoff["source_batch_id"] = "BATCH-I"
+    handoff["roadmap_id"] = roadmap["roadmap_id"]
+    handoff["latest_exception_class"] = "missing_eval_coverage"
+    handoff["trace_id"] = "trace-a4-adjust-1"
+    first = derive_roadmap_adjustments(
+        roadmap_artifact=roadmap,
+        exception_resolution_record=exception_resolution,
+        batch_handoff_bundle=handoff,
+        eval_coverage_signal={"coverage_gap_detected": True},
+        drift_signals={"drift_detected": False, "repeated_failure": False},
+        unresolved_risks=[],
+        created_at="2026-04-04T00:00:00Z",
+    )
+    second = derive_roadmap_adjustments(
+        roadmap_artifact=roadmap,
+        exception_resolution_record=exception_resolution,
+        batch_handoff_bundle=handoff,
+        eval_coverage_signal={"coverage_gap_detected": True},
+        drift_signals={"drift_detected": False, "repeated_failure": False},
+        unresolved_risks=[],
+        created_at="2026-04-04T00:00:00Z",
+    )
+    assert first == second
+    assert any(item["adjustment_type"] == "insert" for item in first)
+    updated = apply_roadmap_adjustments(roadmap_artifact=roadmap, adjustments=first, created_at="2026-04-04T00:00:00Z")
+    ids = [row["batch_id"] for row in updated["batches"]]
+    assert "BATCH-R" in ids
+    target = next(row for row in updated["batches"] if row["batch_id"] == "BATCH-I")
+    assert target["depends_on"] == ["BATCH-R"]
+
+
+def test_adjustments_drift_defer_block_review_and_repeated_failure() -> None:
+    roadmap = _roadmap()
+    exception_resolution = copy.deepcopy(load_example("exception_resolution_record"))
+    exception_resolution["requires_human_review"] = True
+    handoff = copy.deepcopy(load_example("batch_handoff_bundle"))
+    handoff["source_batch_id"] = "BATCH-I"
+    handoff["roadmap_id"] = roadmap["roadmap_id"]
+    handoff["latest_exception_class"] = "drift_detected"
+    handoff["trace_id"] = "trace-a4-adjust-2"
+    adjustments = derive_roadmap_adjustments(
+        roadmap_artifact=roadmap,
+        exception_resolution_record=exception_resolution,
+        batch_handoff_bundle=handoff,
+        eval_coverage_signal={"coverage_gap_detected": False},
+        drift_signals={"drift_detected": True, "repeated_failure": True},
+        unresolved_risks=["critical_risk:AUTH_SIGNOFF_MISSING"],
+        created_at="2026-04-04T00:00:00Z",
+    )
+    kinds = {item["adjustment_type"] for item in adjustments}
+    assert {"defer", "block", "annotate", "reorder"}.issubset(kinds)
+
+
+def test_invalid_adjustment_fails_closed() -> None:
+    roadmap = _roadmap()
+    bad = {
+        "adjustment_id": "RADJ-ABCDEF123456",
+        "roadmap_id": roadmap["roadmap_id"],
+        "source_batch_id": "BATCH-I",
+        "source_exception_ref": "exception_classification_record:ECR-ABCDEF123456",
+        "adjustment_type": "insert",
+        "target_batch_id": "BATCH-Z",
+        "new_position": 1,
+        "reason_codes": ["missing_eval_coverage"],
+        "supporting_signals": ["eval_coverage_gap"],
+        "affected_dependencies": [],
+        "safety_classification": "governed_change",
+        "requires_human_review": True,
+        "created_at": "2026-04-04T00:00:00Z",
+        "trace_id": "trace-a4-bad",
+    }
+    try:
+        apply_roadmap_adjustments(roadmap_artifact=roadmap, adjustments=[bad], created_at="2026-04-04T00:00:00Z")
+    except RoadmapAdjustmentError as exc:
+        assert "target batch does not exist" in str(exc)
+    else:
+        raise AssertionError("expected fail-closed adjustment error")
 
 
 def test_low_risk_bonus_batch_applies_when_enabled(tmp_path: Path) -> None:

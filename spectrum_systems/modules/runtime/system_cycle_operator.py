@@ -16,6 +16,10 @@ from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_policy_review,
     build_adaptive_execution_trend_report,
 )
+from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (
+    apply_roadmap_adjustments,
+    derive_roadmap_adjustments,
+)
 from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run
 from spectrum_systems.modules.runtime.exception_router import (
     classify_exception_state,
@@ -1465,9 +1469,55 @@ def run_system_cycle(
         exception_classification_record=exception_classification_record,
         exception_resolution_record=exception_resolution_record,
     )
+    eval_coverage_signal = dict(integration_inputs.get("eval_coverage_signal") or {})
+    drift_signals = {
+        "drift_detected": program_drift_severity in {"medium", "high"} or stop_reason == "program_drift_detected",
+        "repeated_failure": repeated_failure_count >= repeated_failure_threshold,
+    }
+    roadmap_adjustments = derive_roadmap_adjustments(
+        roadmap_artifact=updated_roadmap,
+        exception_resolution_record=exception_resolution_record,
+        batch_handoff_bundle=batch_handoff_bundle,
+        eval_coverage_signal=eval_coverage_signal,
+        drift_signals=drift_signals,
+        unresolved_risks=unresolved_critical_risks,
+        created_at=timestamp,
+    )
+    adjusted_roadmap = apply_roadmap_adjustments(
+        roadmap_artifact=updated_roadmap,
+        adjustments=roadmap_adjustments,
+        created_at=timestamp,
+    )
+    adjusted_next_batch_id = _next_not_started_batch_id(adjusted_roadmap)
+    adjustment_refs = [f"roadmap_adjustment_record:{row['adjustment_id']}" for row in roadmap_adjustments]
+    recommendation["next_batch_id"] = adjusted_next_batch_id
+    recommendation["next_batch_candidate"] = adjusted_next_batch_id
+    recommendation["why"] = sorted(set(list(recommendation["why"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
+    recommendation["source_refs"] = sorted(set(list(recommendation["source_refs"]) + adjustment_refs))
+    recommendation["artifact_refs"]["related_artifacts"] = sorted(
+        set(list(recommendation["artifact_refs"]["related_artifacts"]) + adjustment_refs)
+    )
+    summary["next_batch_candidate"] = adjusted_next_batch_id
+    summary["watch_next"] = sorted(set(list(summary["watch_next"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
+    summary["source_refs"] = sorted(set(list(summary["source_refs"]) + adjustment_refs))
+    summary["artifact_index"]["related_artifacts"] = sorted(set(list(summary["artifact_index"]["related_artifacts"]) + adjustment_refs))
+    next_cycle_input_bundle["recommended_start_batch"] = adjusted_next_batch_id
+    batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
+    batch_handoff_bundle["recommended_next_batch"] = adjusted_next_batch_id
+    batch_handoff_bundle["must_carry_forward_artifacts"] = sorted(
+        set(list(batch_handoff_bundle["must_carry_forward_artifacts"]) + adjustment_refs)
+    )
+    batch_handoff_bundle["required_next_actions"] = sorted(
+        set(list(batch_handoff_bundle["required_next_actions"]) + [f"apply:{item}" for item in adjustment_refs])
+    )
+    _validate_schema(next_cycle_input_bundle, "next_cycle_input_bundle")
+    _validate_schema(recommendation, "next_step_recommendation")
+    _validate_schema(summary, "build_summary")
+    _validate_schema(batch_delivery_report, "batch_delivery_report")
+    _validate_schema(batch_handoff_bundle, "batch_handoff_bundle")
 
     return {
-        "updated_roadmap": updated_roadmap,
+        "updated_roadmap": adjusted_roadmap,
         "roadmap_multi_batch_run_result": run_result,
         "adaptive_execution_observability": adaptive_observability,
         "adaptive_execution_trend_report": adaptive_trend_report,
@@ -1479,6 +1529,7 @@ def run_system_cycle(
         "next_step_recommendation": recommendation,
         "next_cycle_decision": next_cycle_decision,
         "next_cycle_input_bundle": next_cycle_input_bundle,
+        "roadmap_adjustments": roadmap_adjustments,
         "batch_delivery_report": batch_delivery_report,
         "batch_handoff_bundle": batch_handoff_bundle,
         "prior_batch_handoff_bundle": prior_handoff_bundle,

@@ -19,6 +19,9 @@ from spectrum_systems.modules.runtime.roadmap_selector import (  # noqa: E402
     validate_batch_readiness,
     validate_roadmap_against_program,
 )
+from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (  # noqa: E402
+    apply_roadmap_adjustments,
+)
 
 
 def _roadmap() -> dict:
@@ -260,3 +263,31 @@ def test_system_roadmap_dependency_correctness_blocks_until_completed() -> None:
         assert "no eligible batch found" in str(exc)
     else:
         raise AssertionError("expected dependency blocking failure")
+
+
+def test_selector_uses_updated_roadmap_after_adjustment() -> None:
+    roadmap = _roadmap()
+    adjustment = {
+        "adjustment_id": "RADJ-ABCDEF123456",
+        "roadmap_id": roadmap["roadmap_id"],
+        "source_batch_id": "BATCH-I",
+        "source_exception_ref": "exception_classification_record:ECR-ABCDEF123456",
+        "adjustment_type": "insert",
+        "target_batch_id": "BATCH-I",
+        "new_position": 1,
+        "reason_codes": ["missing_eval_coverage"],
+        "supporting_signals": ["eval_coverage_gap"],
+        "affected_dependencies": [],
+        "safety_classification": "governed_change",
+        "requires_human_review": True,
+        "created_at": "2026-04-04T00:00:00Z",
+        "trace_id": "trace-rdx-selector-adjusted",
+    }
+    updated = apply_roadmap_adjustments(
+        roadmap_artifact=roadmap,
+        adjustments=[adjustment],
+        created_at="2026-04-04T00:00:00Z",
+    )
+    signals = _signals()
+    signals["signals"].append("eval_coverage_gap_resolved")
+    assert select_next_batch(updated, signals) == "BATCH-R"

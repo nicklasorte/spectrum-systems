@@ -1,0 +1,22 @@
+{
+  "adjustment_id": "RADJ-A1234567890B",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "source_batch_id": "BATCH-I",
+  "source_exception_ref": "exception_classification_record:ECR-A1234567890B",
+  "adjustment_type": "insert",
+  "target_batch_id": "BATCH-J",
+  "new_position": 1,
+  "reason_codes": [
+    "missing_eval_coverage"
+  ],
+  "supporting_signals": [
+    "eval_coverage_gap"
+  ],
+  "affected_dependencies": [
+    "BATCH-I"
+  ],
+  "safety_classification": "governed_change",
+  "requires_human_review": true,
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-a4-example"
+}
