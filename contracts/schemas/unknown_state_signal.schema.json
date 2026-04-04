@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/unknown_state_signal.schema.json",
+  "title": "unknown_state_signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "unknown_state_signal_id",
+    "source_cycle_id",
+    "source_artifact_ref",
+    "unknown_class",
+    "severity",
+    "blocking",
+    "reason_codes",
+    "supporting_signal_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "unknown_state_signal_id": {
+      "type": "string",
+      "pattern": "^USS-[A-F0-9]{12}$"
+    },
+    "source_cycle_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "source_artifact_ref": {
+      "type": "string",
+      "minLength": 3
+    },
+    "unknown_class": {
+      "type": "string",
+      "enum": [
+        "missing_signal_context",
+        "conflicting_signal_set",
+        "insufficient_evidence",
+        "malformed_prior_state",
+        "unknown_dependency_state"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "blocking": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "supporting_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

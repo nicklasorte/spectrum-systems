@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -48,5 +48,9 @@
     "artifact:remediation_plan"
   ],
   "capability_readiness_state": "constrained",
-  "capability_readiness_ref": "capability_readiness_record:CRD-1A2B3C4D5E6F"
+  "capability_readiness_ref": "capability_readiness_record:CRD-1A2B3C4D5E6F",
+  "decision_proof_ref": "decision_proof_record:DPR-1A2B3C4D5E6F",
+  "allow_decision_proof_ref": "allow_decision_proof:ADP-1A2B3C4D5E6F",
+  "unknown_state_signal_refs": [],
+  "unknown_state_blockers": []
 }

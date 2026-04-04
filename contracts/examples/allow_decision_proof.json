@@ -1,0 +1,17 @@
+{
+  "allow_decision_proof_id": "ADP-1A2B3C4D5E6F",
+  "source_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+  "eval_coverage_complete": true,
+  "required_evals_present": true,
+  "no_blocking_policy_violations": true,
+  "no_replay_mismatch": true,
+  "no_schema_failure": true,
+  "no_trace_failure": true,
+  "no_blocking_unknown_state_signal": true,
+  "supporting_signal_refs": [
+    "required_validations=0",
+    "unknown_state_blockers=0"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-next-cycle-example"
+}

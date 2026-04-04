@@ -10,7 +10,12 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_example, load_schema
-from spectrum_systems.modules.runtime.autonomy_guardrails import evaluate_autonomy_guardrails
+from spectrum_systems.modules.runtime.autonomy_guardrails import (
+    build_allow_decision_proof,
+    build_decision_proof_record,
+    build_unknown_state_signal,
+    evaluate_autonomy_guardrails,
+)
 from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_observability,
     build_adaptive_execution_policy_review,
@@ -48,6 +53,20 @@ def _validate_schema(instance: dict[str, Any], schema_name: str) -> None:
 
 def _sorted_unique_strings(values: list[Any]) -> list[str]:
     return sorted({str(item) for item in values if str(item).strip()})
+
+
+def validate_explicit_state_dependencies(
+    *,
+    prior_handoff_bundle: dict[str, Any] | None,
+    source_cycle_runner_result_ref: str,
+    require_prior_handoff: bool,
+) -> list[str]:
+    missing: list[str] = []
+    if not source_cycle_runner_result_ref.startswith("cycle_runner_result:CRR-"):
+        missing.append("missing_governed_source_cycle_runner_result_ref")
+    if require_prior_handoff and prior_handoff_bundle is None:
+        missing.append("missing_prior_handoff_bundle")
+    return sorted(set(missing))
 
 
 def _batch_handoff_sort_key(bundle: dict[str, Any]) -> tuple[str, str]:
@@ -105,6 +124,16 @@ def derive_batch_handoff_bundle(
     autonomy_blockers = sorted(item for item in followups if item.startswith("autonomy_blocker:"))
     open_contract_work = sorted(item for item in followups if item.startswith("contract:"))
     evidence_refs = _sorted_unique_strings(list(delivery_report.get("evidence_refs", [])))
+    decision_proof_ref = next(
+        (item for item in evidence_refs if item.startswith("decision_proof_record:")),
+        "decision_proof_record:DPR-000000000000",
+    )
+    allow_decision_proof_ref = next(
+        (item for item in evidence_refs if item.startswith("allow_decision_proof:")),
+        "allow_decision_proof:ADP-000000000000",
+    )
+    unknown_state_signal_refs = sorted(item for item in evidence_refs if item.startswith("unknown_state_signal:"))
+    unknown_state_blockers = sorted(item for item in followups if item.startswith("unknown_state_blocker:"))
     program_constraints = sorted(item for item in risks if item.startswith("program_"))
     human_decision_required = bool(
         review_findings
@@ -133,7 +162,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -152,6 +181,10 @@ def derive_batch_handoff_bundle(
             (item for item in evidence_refs if item.startswith("autonomy_decision_record:")),
             "autonomy_decision_record:ADR-000000000000",
         ),
+        "decision_proof_ref": decision_proof_ref,
+        "allow_decision_proof_ref": allow_decision_proof_ref,
+        "unknown_state_signal_refs": unknown_state_signal_refs,
+        "unknown_state_blockers": unknown_state_blockers,
         "open_contract_work": open_contract_work,
         "open_review_findings": review_findings,
         "program_constraints": program_constraints,
@@ -636,6 +669,10 @@ def _build_next_cycle_input_bundle(
     blocking_conditions: list[str],
     required_reviews: list[str],
     autonomy_decision_ref: str,
+    decision_proof_ref: str,
+    allow_decision_proof_ref: str,
+    unknown_state_signal_refs: list[str],
+    unknown_state_blockers: list[str],
     autonomy_blockers: list[str],
     exception_classification_record: dict[str, Any],
     exception_resolution_record: dict[str, Any],
@@ -663,6 +700,10 @@ def _build_next_cycle_input_bundle(
         "risk_level": risk_level,
         "blocking_conditions": sorted(set(blocking_conditions)),
         "required_reviews": required_reviews_final,
+        "decision_proof_ref": decision_proof_ref,
+        "allow_decision_proof_ref": allow_decision_proof_ref,
+        "unknown_state_signal_refs": sorted(set(unknown_state_signal_refs)),
+        "unknown_state_blockers": sorted(set(unknown_state_blockers)),
         "autonomy_blockers": sorted(set(autonomy_blockers)),
         "autonomy_decision_ref": autonomy_decision_ref,
         "continuation_depth": continuation_depth + 1,
@@ -681,7 +722,7 @@ def _build_next_cycle_input_bundle(
     )
     return {
         "bundle_id": bundle_id,
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "source_cycle_id": current_cycle_id,
         "required_artifacts": sorted(set(required_artifacts)),
         "active_program_constraints": sorted(
@@ -694,10 +735,14 @@ def _build_next_cycle_input_bundle(
             )
         ),
         "active_risks": sorted(set([f"risk_level={risk_level}"] + list(risk_signals))),
-        "unresolved_blockers": sorted(set(blocking_conditions + autonomy_blockers)),
+        "unresolved_blockers": sorted(set(blocking_conditions + autonomy_blockers + unknown_state_blockers)),
         "required_reviews": required_reviews_final,
         "autonomy_decision_ref": autonomy_decision_ref,
         "autonomy_blockers": sorted(set(autonomy_blockers)),
+        "decision_proof_ref": decision_proof_ref,
+        "allow_decision_proof_ref": allow_decision_proof_ref,
+        "unknown_state_signal_refs": sorted(set(unknown_state_signal_refs)),
+        "unknown_state_blockers": sorted(set(unknown_state_blockers)),
         "continuation_depth": continuation_depth + 1,
         "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
         "recommended_start_batch": recommended_start_batch,
@@ -732,6 +777,7 @@ def decide_next_cycle(
     operator_summary: dict[str, Any],
     required_artifacts_for_next_cycle: list[str],
     next_cycle_input_bundle: dict[str, Any],
+    allow_decision_proof_ref: str,
     created_at: str,
     trace_id: str,
 ) -> dict[str, Any]:
@@ -791,7 +837,7 @@ def decide_next_cycle(
     cycle_decision_id = f"NCD-{_canonical_hash(decision_seed)[:12].upper()}"
     return {
         "cycle_decision_id": cycle_decision_id,
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "current_cycle_id": current_cycle_id,
         "decision": decision,
         "decision_reason_codes": reason_codes,
@@ -800,6 +846,7 @@ def decide_next_cycle(
         "risk_posture": risk_posture,
         "required_artifacts_for_next_cycle": sorted(set(required_artifacts_for_next_cycle)),
         "next_cycle_inputs_ref": f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}",
+        "allow_decision_proof_ref": allow_decision_proof_ref,
         "created_at": created_at,
         "trace_id": trace_id,
     }
@@ -1019,6 +1066,11 @@ def run_system_cycle(
     required_artifacts_for_next_cycle = sorted(set(selected_candidate["required_artifacts"]))
     continuation_depth = int(integration_inputs.get("continuation_depth", 0))
     source_cycle_runner_result_ref = str(integration_inputs.get("source_cycle_runner_result_ref") or "cycle_runner_result:CRR-000000000000")
+    explicit_state_issues = validate_explicit_state_dependencies(
+        prior_handoff_bundle=prior_handoff_bundle,
+        source_cycle_runner_result_ref=source_cycle_runner_result_ref,
+        require_prior_handoff=prior_handoff_required,
+    )
     required_validations_next = sorted(
         set(prior_handoff_bundle.get("required_validations_next", []) if isinstance(prior_handoff_bundle, dict) else [])
     )
@@ -1054,6 +1106,47 @@ def run_system_cycle(
         trace_id=integration["trace_id"],
     )
     autonomy_decision_ref = f"autonomy_decision_record:{autonomy_decision_record['autonomy_decision_id']}"
+    if not autonomy_decision_record.get("reason_codes"):
+        raise SystemCycleOperatorError("autonomy_decision_record missing explicit reason_codes")
+
+    unknown_state_signals: list[dict[str, Any]] = []
+    if explicit_state_issues:
+        unknown_state_signals.append(
+            build_unknown_state_signal(
+                source_cycle_id=str(run_result["run_id"]),
+                source_artifact_ref=f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                unknown_class="unknown_dependency_state",
+                severity="high",
+                blocking=True,
+                reason_codes=explicit_state_issues,
+                supporting_signal_refs=[source_cycle_runner_result_ref],
+                created_at=timestamp,
+                trace_id=integration["trace_id"],
+            )
+        )
+    if str(integration.get("replay_status", "unknown")) == "unknown":
+        unknown_state_signals.append(
+            build_unknown_state_signal(
+                source_cycle_id=str(run_result["run_id"]),
+                source_artifact_ref=f"core_system_integration_validation:{integration['validation_id']}",
+                unknown_class="insufficient_evidence",
+                severity="medium",
+                blocking=True,
+                reason_codes=["unknown_replay_status"],
+                supporting_signal_refs=[f"replay_status:{integration.get('replay_status', 'unknown')}"],
+                created_at=timestamp,
+                trace_id=integration["trace_id"],
+            )
+        )
+    unknown_state_signal_refs = [f"unknown_state_signal:{item['unknown_state_signal_id']}" for item in unknown_state_signals]
+    unknown_state_blockers = sorted(
+        {
+            f"unknown_state:{item['unknown_class']}:{code}"
+            for item in unknown_state_signals
+            if bool(item.get("blocking"))
+            for code in item.get("reason_codes", [])
+        }
+    )
     autonomy_blockers = [] if autonomy_decision_record["decision"] == "continue" else [
         f"autonomy:{code}" for code in autonomy_decision_record["reason_codes"]
     ]
@@ -1081,6 +1174,71 @@ def run_system_cycle(
     )
     exception_classification_ref = f"exception_classification_record:{exception_classification_record['exception_classification_id']}"
     exception_resolution_ref = f"exception_resolution_record:{exception_resolution_record['exception_resolution_id']}"
+    replay_status_value = str(integration.get("replay_status", "unknown")).strip().lower()
+    replay_ok = replay_status_value in {"passed", "match", "ready", "replay_ready", "replayable"}
+    decision_proof_record = build_decision_proof_record(
+        source_decision_ref=autonomy_decision_ref,
+        source_cycle_id=str(run_result["run_id"]),
+        decision_type="autonomy_guardrail",
+        reason_codes=list(autonomy_decision_record["reason_codes"]),
+        required_inputs_present=not explicit_state_issues,
+        supporting_signal_refs=sorted(
+            set(
+                list(autonomy_decision_record["supporting_signals"])
+                + [f"stop_reason:{stop_reason}", f"control_decision:{control_decision_value}"]
+            )
+        ),
+        supporting_artifact_refs=sorted(
+            set(
+                [
+                    f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+                    f"core_system_integration_validation:{integration['validation_id']}",
+                    source_cycle_runner_result_ref,
+                ]
+                + ([f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"] if isinstance(prior_handoff_bundle, dict) else [])
+            )
+        ),
+        replay_consistency_status="match" if replay_ok else "mismatch",
+        schema_validation_status="pass",
+        trace_validation_status="pass",
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    decision_proof_ref = f"decision_proof_record:{decision_proof_record['decision_proof_id']}"
+    allow_decision_proof = build_allow_decision_proof(
+        source_decision_ref=autonomy_decision_ref,
+        eval_coverage_complete=not required_validations_next,
+        required_evals_present=not any(code.startswith("missing_required_signal:") for code in autonomy_decision_record["reason_codes"]),
+        no_blocking_policy_violations=control_decision_value != "freeze",
+        no_replay_mismatch=replay_ok,
+        no_schema_failure=True,
+        no_trace_failure=True,
+        no_blocking_unknown_state_signal=not unknown_state_blockers,
+        supporting_signal_refs=sorted(
+            set(
+                [
+                    f"required_validations={len(required_validations_next)}",
+                    f"unknown_state_blockers={len(unknown_state_blockers)}",
+                    f"replay_status={integration.get('replay_status', 'unknown')}",
+                ]
+            )
+        ),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    allow_decision_proof_ref = f"allow_decision_proof:{allow_decision_proof['allow_decision_proof_id']}"
+    allow_is_proven = all(
+        bool(allow_decision_proof[key])
+        for key in (
+            "eval_coverage_complete",
+            "required_evals_present",
+            "no_blocking_policy_violations",
+            "no_replay_mismatch",
+            "no_schema_failure",
+            "no_trace_failure",
+            "no_blocking_unknown_state_signal",
+        )
+    )
     next_cycle_input_bundle = _build_next_cycle_input_bundle(
         current_cycle_id=str(run_result["run_id"]),
         required_artifacts=required_artifacts_for_next_cycle,
@@ -1093,6 +1251,10 @@ def run_system_cycle(
         blocking_conditions=blocking_conditions,
         required_reviews=required_reviews,
         autonomy_decision_ref=autonomy_decision_ref,
+        decision_proof_ref=decision_proof_ref,
+        allow_decision_proof_ref=allow_decision_proof_ref,
+        unknown_state_signal_refs=unknown_state_signal_refs,
+        unknown_state_blockers=unknown_state_blockers,
         autonomy_blockers=autonomy_blockers,
         exception_classification_record=exception_classification_record,
         exception_resolution_record=exception_resolution_record,
@@ -1141,9 +1303,14 @@ def run_system_cycle(
         operator_summary={"program_alignment_status": program_alignment_status, "program_stop_cause": program_stop_cause},
         required_artifacts_for_next_cycle=required_artifacts_for_next_cycle,
         next_cycle_input_bundle=next_cycle_input_bundle,
+        allow_decision_proof_ref=allow_decision_proof_ref,
         created_at=timestamp,
         trace_id=integration["trace_id"],
     )
+    if next_cycle_decision["decision"] == "run_next_cycle" and not allow_is_proven:
+        next_cycle_decision["decision"] = "stop"
+        next_cycle_decision["decision_reason_codes"] = ["missing_required_artifacts"]
+        next_cycle_decision["risk_posture"] = "critical"
     _validate_schema(next_cycle_decision, "next_cycle_decision")
     next_cycle_decision_ref = f"next_cycle_decision:{next_cycle_decision['cycle_decision_id']}"
     next_cycle_input_bundle_ref = f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}"
@@ -1244,9 +1411,12 @@ def run_system_cycle(
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
                         remediation_plan_ref,
+                        decision_proof_ref,
+                        allow_decision_proof_ref,
                         next_cycle_decision_ref,
                         next_cycle_input_bundle_ref,
                     ]
+                    + unknown_state_signal_refs
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
                     + (
@@ -1276,7 +1446,10 @@ def run_system_cycle(
                     remediation_plan_ref,
                     next_cycle_decision_ref,
                     next_cycle_input_bundle_ref,
+                    decision_proof_ref,
+                    allow_decision_proof_ref,
                 ]
+                + unknown_state_signal_refs
                 + list(source_refs or [])
                 + (
                     [f"batch_handoff_bundle:{prior_handoff_bundle['bundle_id']}"]
@@ -1290,7 +1463,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.8.0",
+        "schema_version": "1.9.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1304,6 +1477,10 @@ def run_system_cycle(
         "autonomy_decision": autonomy_decision_record["decision"],
         "autonomy_reason_codes": autonomy_decision_record["reason_codes"],
         "autonomy_decision_ref": autonomy_decision_ref,
+        "decision_proof_ref": decision_proof_ref,
+        "allow_decision_proof_ref": allow_decision_proof_ref,
+        "unknown_state_signal_refs": unknown_state_signal_refs,
+        "unknown_state_blockers": unknown_state_blockers,
         "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
         "exception_class": exception_classification_record["exception_class"],
         "recommended_exception_action": exception_resolution_record["recommended_action"],
@@ -1360,9 +1537,12 @@ def run_system_cycle(
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
                         remediation_plan_ref,
+                        decision_proof_ref,
+                        allow_decision_proof_ref,
                         next_cycle_decision_ref,
                         next_cycle_input_bundle_ref,
                     ]
+                    + unknown_state_signal_refs
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
                     + (
@@ -1405,11 +1585,14 @@ def run_system_cycle(
                 adaptive_observability_ref,
                 adaptive_trend_ref,
                 adaptive_policy_review_ref,
+                decision_proof_ref,
+                allow_decision_proof_ref,
                 next_cycle_decision_ref,
                 next_cycle_input_bundle_ref,
                 exception_classification_ref,
                 exception_resolution_ref,
             }
+            | set(unknown_state_signal_refs)
         ),
     }
     _validate_schema(summary, "build_summary")
@@ -1449,6 +1632,7 @@ def run_system_cycle(
             [f"validation:{item}" for item in required_reviews]
             + [f"contract:{item}" for item in required_reviews if "contract" in item]
             + [f"autonomy_blocker:{item}" for item in autonomy_blockers]
+            + [f"unknown_state_blocker:{item}" for item in unknown_state_blockers]
         ),
         "recommended_next_batch": next_cycle_input_bundle.get("recommended_start_batch"),
         "blocking_issues": _sorted_unique_strings(blocking_conditions),
@@ -1458,11 +1642,14 @@ def run_system_cycle(
                 next_cycle_decision_ref,
                 next_cycle_input_bundle_ref,
                 autonomy_decision_ref,
+                decision_proof_ref,
+                allow_decision_proof_ref,
                 f"next_step_recommendation:{recommendation['recommendation_id']}",
                 f"build_summary:{summary['summary_id']}",
                 exception_classification_ref,
                 exception_resolution_ref,
             ]
+            + unknown_state_signal_refs
         ),
         "source_refs": _sorted_unique_strings(list(run_result.get("source_refs", []))),
         "trace_id": integration["trace_id"],
@@ -1542,6 +1729,7 @@ def run_system_cycle(
         [f"validation:{item}" for item in required_reviews]
         + [f"contract:{item}" for item in required_reviews if "contract" in item]
         + [f"autonomy_blocker:{item}" for item in autonomy_blockers]
+        + [f"unknown_state_blocker:{item}" for item in unknown_state_blockers]
     )
     batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
         [
@@ -1549,12 +1737,15 @@ def run_system_cycle(
             next_cycle_decision_ref,
             next_cycle_input_bundle_ref,
             autonomy_decision_ref,
+            decision_proof_ref,
+            allow_decision_proof_ref,
             f"next_step_recommendation:{recommendation['recommendation_id']}",
             f"build_summary:{summary['summary_id']}",
             exception_classification_ref,
             exception_resolution_ref,
             readiness_ref,
         ]
+        + unknown_state_signal_refs
     )
     batch_handoff_bundle = derive_batch_handoff_bundle(
         batch_delivery_report,
@@ -1619,6 +1810,9 @@ def run_system_cycle(
         "adaptive_execution_trend_report": adaptive_trend_report,
         "adaptive_execution_policy_review": adaptive_policy_review,
         "autonomy_decision_record": autonomy_decision_record,
+        "decision_proof_record": decision_proof_record,
+        "allow_decision_proof": allow_decision_proof,
+        "unknown_state_signals": unknown_state_signals,
         "exception_classification_record": exception_classification_record,
         "exception_resolution_record": exception_resolution_record,
         "core_system_integration_validation": integration,
@@ -1634,4 +1828,10 @@ def run_system_cycle(
     }
 
 
-__all__ = ["SystemCycleOperatorError", "decide_next_cycle", "derive_batch_handoff_bundle", "run_system_cycle"]
+__all__ = [
+    "SystemCycleOperatorError",
+    "decide_next_cycle",
+    "derive_batch_handoff_bundle",
+    "run_system_cycle",
+    "validate_explicit_state_dependencies",
+]

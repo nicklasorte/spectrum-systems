@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.58",
-  "schema_version": "1.3.58",
-  "standards_version": "1.3.58",
-  "record_id": "REC-STD-2026-04-04-BATCH-A2",
-  "run_id": "run-20260404T000000Z-batch-a2",
+  "artifact_version": "1.3.59",
+  "schema_version": "1.3.59",
+  "standards_version": "1.3.59",
+  "record_id": "REC-STD-2026-04-04-BATCH-10",
+  "run_id": "run-20260404T000000Z-batch-10",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.58",
+  "source_repo_version": "1.3.59",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -145,6 +145,19 @@
       "notes": "SRE-11 governed bounded policy artifact defining alert status/severity mappings, required source artifacts, and invalid-input handling for alert trigger evaluation."
     },
     {
+      "artifact_type": "allow_decision_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.59",
+      "last_updated_in": "1.3.59",
+      "example_path": "contracts/examples/allow_decision_proof.json",
+      "notes": "BATCH-10 explicit allow-path justification artifact; allow is valid only when all governed checks are proven."
+    },
+    {
       "artifact_type": "artifact_envelope",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -263,13 +276,13 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.3.0",
+      "schema_version": "1.4.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.58",
+      "last_updated_in": "1.3.59",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
       "notes": "BATCH-A1 handoff bundle now carries autonomy decision reference and unresolved autonomy blockers for fail-closed continuation propagation."
     },
@@ -302,13 +315,13 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.8.0",
+      "schema_version": "1.9.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.58",
+      "last_updated_in": "1.3.59",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-A1 operator summary now carries autonomy guardrail decision/ref and reason codes for unattended continuation gating transparency."
     },
@@ -639,6 +652,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/decision_log.json",
       "notes": "Structured decision tracking with readiness, options, dependencies, and evidence."
+    },
+    {
+      "artifact_type": "decision_proof_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.59",
+      "last_updated_in": "1.3.59",
+      "example_path": "contracts/examples/decision_proof_record.json",
+      "notes": "BATCH-10 deterministic proof artifact for governed decision reconstruction and fail-closed auditability."
     },
     {
       "artifact_type": "done_certification_error",
@@ -1679,26 +1705,26 @@
     {
       "artifact_type": "next_cycle_decision",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.48",
-      "last_updated_in": "1.3.48",
+      "last_updated_in": "1.3.59",
       "example_path": "contracts/examples/next_cycle_decision.json",
       "notes": "BATCH-CYCLE-LOOP deterministic governed decision artifact indicating whether a bounded next cycle should run, stop, or escalate."
     },
     {
       "artifact_type": "next_cycle_input_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.48",
-      "last_updated_in": "1.3.55",
+      "last_updated_in": "1.3.59",
       "example_path": "contracts/examples/next_cycle_input_bundle.json",
       "notes": "BATCH-A1 next-cycle input bundle now requires autonomy decision reference and autonomy blockers so runner refuses unattended continuation when blocked."
     },
@@ -3219,6 +3245,19 @@
       "last_updated_in": "1.3.18",
       "example_path": "contracts/examples/trust_spine_evidence_cohesion_result.json",
       "notes": "CON-033 deterministic fail-closed cohesion proof for trust-spine evidence continuity across manifest/enforcement/obedience/invariant/certification/promotion/preflight seams."
+    },
+    {
+      "artifact_type": "unknown_state_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.59",
+      "last_updated_in": "1.3.59",
+      "example_path": "contracts/examples/unknown_state_signal.json",
+      "notes": "BATCH-10 explicit unknown-state modeling artifact with severity/blocking semantics for fail-closed control."
     },
     {
       "artifact_type": "viewpoint_pack",

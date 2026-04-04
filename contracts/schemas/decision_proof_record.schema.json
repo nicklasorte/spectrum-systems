@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_proof_record.schema.json",
+  "title": "decision_proof_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision_proof_id",
+    "source_decision_ref",
+    "source_cycle_id",
+    "decision_type",
+    "reason_codes",
+    "required_inputs_present",
+    "supporting_signal_refs",
+    "supporting_artifact_refs",
+    "replay_consistency_status",
+    "schema_validation_status",
+    "trace_validation_status",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "decision_proof_id": {
+      "type": "string",
+      "pattern": "^DPR-[A-F0-9]{12}$"
+    },
+    "source_decision_ref": {
+      "type": "string",
+      "minLength": 3
+    },
+    "source_cycle_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "decision_type": {
+      "type": "string",
+      "enum": [
+        "autonomy_guardrail",
+        "next_cycle_continuation",
+        "handoff_continuation"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "required_inputs_present": {
+      "type": "boolean"
+    },
+    "supporting_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "supporting_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "replay_consistency_status": {
+      "type": "string",
+      "enum": [
+        "match",
+        "mismatch"
+      ]
+    },
+    "schema_validation_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "trace_validation_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

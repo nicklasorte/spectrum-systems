@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.8.0",
+  "schema_version": "1.9.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -253,5 +253,9 @@
   "exception_requires_human_review": false,
   "exception_requires_freeze": false,
   "capability_readiness_state": "supervised",
-  "capability_readiness_ref": "capability_readiness_record:CRD-1A2B3C4D5E6F"
+  "capability_readiness_ref": "capability_readiness_record:CRD-1A2B3C4D5E6F",
+  "decision_proof_ref": "decision_proof_record:DPR-1A2B3C4D5E6F",
+  "allow_decision_proof_ref": "allow_decision_proof:ADP-1A2B3C4D5E6F",
+  "unknown_state_signal_refs": [],
+  "unknown_state_blockers": []
 }
