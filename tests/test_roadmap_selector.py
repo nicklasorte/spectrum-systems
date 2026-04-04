@@ -223,3 +223,10 @@ def test_system_roadmap_selection_fails_when_continuation_blocked() -> None:
         assert "continuation rules block roadmap execution" in str(exc)
     else:
         raise AssertionError("expected fail-closed continuation error")
+
+
+def test_system_roadmap_selection_sequence_is_deterministic_across_updates() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    first_pick = select_next_batch(roadmap, continuation_allowed=True)
+    second_pick = select_next_batch(roadmap, continuation_allowed=True)
+    assert first_pick == second_pick

@@ -87,3 +87,17 @@ python scripts/run_cycle_observability.py   --manifest runs/cycle-0001/cycle_man
 Use `scripts/run_next_governed_cycle.py` to consume `next_cycle_decision` + `next_cycle_input_bundle` and execute at most one governed follow-on cycle.
 - If decision is `run_next_cycle` and preconditions are met: executes exactly one cycle and writes `cycle_runner_result` with `execution_status=executed`.
 - Otherwise: writes `cycle_runner_result` with `execution_status=refused` and explicit reason codes.
+
+## Controlled multi-cycle proof flow (bounded)
+Use the repo-governed roadmap loop in bounded mode only:
+
+`repo-governed roadmap -> deterministic batch selection -> one bounded cycle -> roadmap progress update -> deterministic reselection -> bounded repetition -> terminal stop -> multi_cycle_execution_report`
+
+Required stop conditions for the bounded proof:
+- `max_cycles_per_invocation` reached
+- no eligible batch remains
+- continuation decision refuses (`stop` / `escalate`)
+- blocked/refused path when configured (`stop_on_first_refusal`, `stop_on_blocked_batch`)
+- program/review constraints block progression
+
+The multi-cycle proof must never bypass one-step seams; each cycle is still executed through the existing governed cycle runner path.
