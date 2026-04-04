@@ -1,0 +1,18 @@
+{
+  "schedule_id": "OES-1A2B3C4D5E6F",
+  "schema_version": "1.0.0",
+  "cadence": "daily",
+  "roadmap_source": "PLANS.md#active-plans",
+  "max_cycles_per_run": 24,
+  "max_runtime": "6h",
+  "allowed_execution_scope": [
+    "roadmap_selector",
+    "bounded_cycle_runner",
+    "drift_steering",
+    "policy_activation",
+    "readiness_gating",
+    "budget_enforcement"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-ops-02-example"
+}

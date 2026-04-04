@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/operations_execution_schedule.schema.json",
+  "title": "operations_execution_schedule",
+  "description": "Deterministic governed schedule contract for unattended autonomous execution runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schedule_id",
+    "schema_version",
+    "cadence",
+    "roadmap_source",
+    "max_cycles_per_run",
+    "max_runtime",
+    "allowed_execution_scope",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "schedule_id": {
+      "type": "string",
+      "pattern": "^OES-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "cadence": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "daily",
+        "event-driven"
+      ]
+    },
+    "roadmap_source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "max_cycles_per_run": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_runtime": {
+      "type": "string",
+      "pattern": "^[0-9]+[smhd]$"
+    },
+    "allowed_execution_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

@@ -568,6 +568,8 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["policy_conflict_record"]["schema_version"] == "1.0.0"
     assert standards["operations_monitoring_contract"]["schema_version"] == "1.0.0"
     assert standards["operations_monitoring_contract"]["example_path"] == "contracts/examples/operations_monitoring_contract.json"
+    assert standards["operations_execution_schedule"]["schema_version"] == "1.0.0"
+    assert standards["operations_execution_schedule"]["example_path"] == "contracts/examples/operations_execution_schedule.json"
 
 
 def test_standards_manifest_registers_capability_readiness_contract() -> None:
