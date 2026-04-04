@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_execution_report.schema.json",
+  "title": "roadmap_execution_report",
+  "description": "Deterministic full-run governed roadmap execution report with strict control-loop stop semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roadmap_id",
+    "schema_version",
+    "total_batches",
+    "batches_executed",
+    "batches_blocked",
+    "batches_warned",
+    "stop_reason",
+    "final_control_decision",
+    "execution_sequence",
+    "determinism_status",
+    "replay_status",
+    "trace_integrity_status",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "roadmap_id": {"type": "string", "minLength": 3},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "total_batches": {"type": "integer", "minimum": 0},
+    "batches_executed": {"type": "integer", "minimum": 0},
+    "batches_blocked": {"type": "integer", "minimum": 0},
+    "batches_warned": {"type": "integer", "minimum": 0},
+    "stop_reason": {
+      "type": "string",
+      "enum": [
+        "roadmap_complete",
+        "max_cycles_reached",
+        "continuation_depth_exceeded",
+        "execution_policy_violation",
+        "control_block",
+        "control_freeze",
+        "invalid_state",
+        "missing_required_signals",
+        "no_eligible_batch",
+        "execution_refused",
+        "selection_refused",
+        "blocked_batch"
+      ]
+    },
+    "final_control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+    "execution_sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cycle_index", "batch_id", "control_decision", "cycle_stop_reason", "status"],
+        "properties": {
+          "cycle_index": {"type": "integer", "minimum": 1},
+          "batch_id": {"type": ["string", "null"]},
+          "control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+          "cycle_stop_reason": {"type": "string", "minLength": 3},
+          "status": {"type": "string", "enum": ["executed", "blocked", "stopped"]}
+        }
+      }
+    },
+    "determinism_status": {"type": "string", "enum": ["deterministic", "non_deterministic"]},
+    "replay_status": {"type": "string", "enum": ["parity_verified", "not_ready"]},
+    "trace_integrity_status": {"type": "string", "enum": ["complete", "incomplete"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

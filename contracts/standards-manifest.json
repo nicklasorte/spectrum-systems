@@ -2769,6 +2769,19 @@
       "notes": "RDX-005 deterministic fail-closed single-batch roadmap loop validation artifact proving selection/authorization/execution/progress consistency, replay readiness, and non-chaining guarantees."
     },
     {
+      "artifact_type": "roadmap_execution_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.4.1",
+      "last_updated_in": "1.4.1",
+      "example_path": "contracts/examples/roadmap_execution_report.json",
+      "notes": "BATCH-MVP-END-TO-END deterministic full-roadmap execution report with fail-closed control-loop continuation/stop semantics."
+    },
+    {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
       "schema_version": "1.4.0",
