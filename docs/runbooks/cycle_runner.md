@@ -19,9 +19,10 @@ This runbook is bounded: execute one governed cycle, emit continuation artifacts
 - Bounded continuation artifacts:
   - `next_cycle_decision` (`run_next_cycle | stop | escalate`)
   - `next_cycle_input_bundle` (machine-readable handoff for the next governed run)
+  - `cycle_runner_result` (single-step execute/refuse outcome with emitted refs and trace linkage)
 
 ## Bounded cycle flow
-`program constraints -> roadmap selection/authorization -> governed execution (PQX/TPA) -> eval/control/enforcement -> continuation evaluation -> next_cycle_decision -> next_cycle_input_bundle -> stop`
+`program constraints -> roadmap selection/authorization -> governed execution (PQX/TPA) -> eval/control/enforcement -> continuation evaluation -> next_cycle_decision -> next_cycle_input_bundle -> bounded cycle runner -> exactly one next governed cycle (optional) -> cycle_runner_result -> stop`
 
 ## Typical usage
 ```python
@@ -80,3 +81,9 @@ python scripts/run_cycle_observability.py   --manifest runs/cycle-0001/cycle_man
 - `current_state=blocked` with empty `blocking_issues` is rejected.
 - Partial timing fields (`execution_started_at` without `execution_completed_at` or vice versa) are rejected.
 - All rollups derive from recorded artifacts only; missing derivation inputs are reported, not guessed.
+
+
+## One-step next-cycle CLI
+Use `scripts/run_next_governed_cycle.py` to consume `next_cycle_decision` + `next_cycle_input_bundle` and execute at most one governed follow-on cycle.
+- If decision is `run_next_cycle` and preconditions are met: executes exactly one cycle and writes `cycle_runner_result` with `execution_status=executed`.
+- Otherwise: writes `cycle_runner_result` with `execution_status=refused` and explicit reason codes.

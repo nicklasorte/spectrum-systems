@@ -2,7 +2,7 @@
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.48",
-  "schema_version": "1.3.48",
+  "schema_version": "1.3.49",
   "standards_version": "1.3.48",
   "record_id": "REC-STD-2026-04-04-BATCH-CYCLE-LOOP",
   "run_id": "run-20260404T000000Z-batch-cycle-loop",
@@ -1507,6 +1507,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/next_best_action_memo.json",
       "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "cycle_runner_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.49",
+      "last_updated_in": "1.3.49",
+      "example_path": "contracts/examples/cycle_runner_result.json",
+      "notes": "BATCH-CYCLE-RUNNER deterministic one-step bounded next-cycle runner result artifact recording execution/refusal and trace-linked outputs."
     },
     {
       "artifact_type": "next_cycle_decision",
