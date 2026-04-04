@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/precedent_conflict_record.schema.json",
+  "title": "precedent_conflict_record",
+  "description": "Explicit governed artifact for deterministic precedent conflicts and their precedence resolution status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "precedent_conflict_id",
+    "target_judgment_ref",
+    "conflicting_precedent_refs",
+    "conflict_type",
+    "severity",
+    "precedence_resolution",
+    "blocking",
+    "required_followup",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "precedent_conflict_id": {
+      "type": "string",
+      "pattern": "^PCF-[A-F0-9]{12}$"
+    },
+    "target_judgment_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conflicting_precedent_refs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "conflict_type": {
+      "type": "string",
+      "enum": [
+        "contradictory_outcome",
+        "scope_overlap_conflict",
+        "stale_active_precedent",
+        "policy_precedence_conflict"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "precedence_resolution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blocking": {
+      "type": "boolean"
+    },
+    "required_followup": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

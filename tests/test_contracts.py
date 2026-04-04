@@ -177,6 +177,10 @@ class ContractSchemaTests(unittest.TestCase):
             "artifact_family_health_report",
             "evidence_gap_hotspot_report",
             "override_hotspot_report",
+            "judgment_lifecycle_record",
+            "precedent_selection_record",
+            "precedent_conflict_record",
+            "override_governance_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

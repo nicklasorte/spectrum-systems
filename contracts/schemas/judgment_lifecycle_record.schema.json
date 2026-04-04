@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/judgment_lifecycle_record.schema.json",
+  "title": "judgment_lifecycle_record",
+  "description": "Deterministic governed lifecycle state for a judgment artifact including explicit supersession links.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "judgment_lifecycle_id",
+    "judgment_record_ref",
+    "lifecycle_state",
+    "prior_judgment_ref",
+    "supersedes_refs",
+    "superseded_by_ref",
+    "activation_status",
+    "retirement_reason",
+    "effective_at",
+    "retired_at",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "judgment_lifecycle_id": {
+      "type": "string",
+      "pattern": "^JLC-[A-F0-9]{12}$"
+    },
+    "judgment_record_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lifecycle_state": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "candidate",
+        "active",
+        "superseded",
+        "retired",
+        "revoked"
+      ]
+    },
+    "prior_judgment_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "supersedes_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "superseded_by_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "activation_status": {
+      "type": "string",
+      "enum": [
+        "inactive",
+        "active",
+        "blocked"
+      ]
+    },
+    "retirement_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "effective_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "retired_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "activation_status": {
+            "const": "active"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lifecycle_state": {
+            "const": "active"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "lifecycle_state": {
+            "enum": [
+              "superseded",
+              "retired",
+              "revoked"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "activation_status": {
+            "const": "inactive"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "precedent_selection_id": "PSL-E2B7D8AA9C10",
+  "target_judgment_ref": "judgment_record:artifact-release-2026-04-04",
+  "candidate_precedent_refs": [
+    "judgment_record:artifact-release-2026-03-28",
+    "judgment_record:artifact-release-2026-03-15"
+  ],
+  "selected_precedent_ref": "judgment_record:artifact-release-2026-03-28",
+  "rejected_precedent_refs": [
+    "judgment_record:artifact-release-2026-03-15"
+  ],
+  "similarity_basis": [
+    "judgment_type",
+    "scope",
+    "environment"
+  ],
+  "scope_match_signals": [
+    "active_only",
+    "non_retired",
+    "exact_scope_match"
+  ],
+  "precedence_rule_applied": "global invariants > domain policy > active local judgment > override",
+  "conflict_detected": false,
+  "supporting_artifact_refs": [
+    "judgment_lifecycle_record:JLC-2A0E629FBF39",
+    "judgment_record:artifact-release-2026-03-28"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-a-example"
+}

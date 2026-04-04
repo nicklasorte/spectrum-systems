@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.6.0",
+  "schema_version": "1.7.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -65,5 +65,25 @@
     "continuous_eval_run_record:CER-333333333333",
     "continuous_eval_run_record:CER-444444444444"
   ],
-  "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-111111111111"
+  "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-111111111111",
+  "judgment_lifecycle_refs": [
+    "judgment_lifecycle_record:JLC-111111111111"
+  ],
+  "precedent_selection_refs": [
+    "precedent_selection_record:PSL-111111111111"
+  ],
+  "precedent_conflict_refs": [],
+  "override_governance_refs": [
+    "override_governance_record:OVG-111111111111"
+  ],
+  "override_escalation_indicators": [
+    "override_hotspot_ref:override_hotspot_report:OVH-111111111111"
+  ],
+  "expiring_override_refs": [],
+  "required_lifecycle_followups": [
+    "review:precedent_conflicts"
+  ],
+  "required_governance_followups": [
+    "review:override_governance"
+  ]
 }

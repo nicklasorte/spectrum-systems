@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/precedent_selection_record.schema.json",
+  "title": "precedent_selection_record",
+  "description": "Deterministic precedent retrieval and winner-selection artifact for governed judgment replay.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "precedent_selection_id",
+    "target_judgment_ref",
+    "candidate_precedent_refs",
+    "selected_precedent_ref",
+    "rejected_precedent_refs",
+    "similarity_basis",
+    "scope_match_signals",
+    "precedence_rule_applied",
+    "conflict_detected",
+    "supporting_artifact_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "precedent_selection_id": {
+      "type": "string",
+      "pattern": "^PSL-[A-F0-9]{12}$"
+    },
+    "target_judgment_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_precedent_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "selected_precedent_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "rejected_precedent_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "similarity_basis": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "scope_match_signals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "precedence_rule_applied": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conflict_detected": {
+      "type": "boolean"
+    },
+    "supporting_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
