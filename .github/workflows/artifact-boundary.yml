@@ -105,12 +105,17 @@ jobs:
             --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
             --output-dir outputs/contract_preflight
 
-      - name: Upload contract preflight report
+      - name: Upload contract preflight outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: contract-preflight-report
-          path: outputs/contract_preflight/
+          name: contract-preflight-outputs
+          if-no-files-found: warn
+          path: |
+            outputs/contract_preflight/contract_preflight_report.md
+            outputs/contract_preflight/contract_preflight_report.json
+            outputs/contract_preflight/contract_preflight_result_artifact.json
+            outputs/contract_preflight/contract_preflight_diagnosis_bundle.md
 
   run-pytest:
     needs:

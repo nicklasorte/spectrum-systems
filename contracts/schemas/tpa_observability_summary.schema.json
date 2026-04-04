@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_observability_summary.schema.json",
+  "title": "TPA Observability Summary",
+  "description": "Governed TPA effectiveness metrics aggregated from deterministic TPA artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "generated_at",
+    "step_id",
+    "metrics",
+    "top_tpa_hotspot_modules",
+    "repeated_tpa_failure_patterns"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_observability_summary"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pass2_promotion_rate",
+        "pass1_retained_rate",
+        "simplify_win_rate",
+        "simplify_loss_rate",
+        "complexity_regression_rate",
+        "cleanup_deletion_rate"
+      ],
+      "properties": {
+        "pass2_promotion_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "pass1_retained_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "simplify_win_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "simplify_loss_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "complexity_regression_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "cleanup_deletion_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "top_tpa_hotspot_modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["module_ref", "count"],
+        "properties": {
+          "module_ref": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "repeated_tpa_failure_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern_ref", "count"],
+        "properties": {
+          "pattern_ref": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  }
+}

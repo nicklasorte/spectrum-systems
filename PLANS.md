@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-TPA-02-2026-04-04.md | BATCH-TPA-02 — TPA Completion Hardening (TPA-006..TPA-012) | Active |
 | docs/review-actions/PLAN-RUN-01-FIX-2026-04-04.md | RUN-01-FIX — Contract Preflight Block Remediation | Active |
 | docs/review-actions/PLAN-BATCH-LTV-B-2026-04-04.md | BATCH-LTV-B — Decision-Quality Control (LT-05 + LT-06 + LT-09) | Active |
 | docs/review-actions/PLAN-BATCH-LTV-A-2026-04-04.md | BATCH-LTV-A — Brownfield Trust Core (LT-01 + LT-02 + LT-04) | Active |

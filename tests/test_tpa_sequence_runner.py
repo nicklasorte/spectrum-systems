@@ -7,7 +7,8 @@ import pytest
 
 from spectrum_systems.modules.runtime.pqx_sequence_runner import (
     PQXSequenceRunnerError,
-    _deterministic_gate_selection,
+    _complexity_delta,
+    _deterministic_selection_from_signals,
     execute_sequence_run,
 )
 
@@ -29,6 +30,7 @@ def _tpa_slice_requests() -> list[dict]:
             "trace_id": "trace-tpa-plan",
             "tpa_plan": {
                 "artifact_kind": "plan",
+                "execution_mode": "feature_build",
                 "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
                 "seams_reused": ["pqx_sequence_runner.execute_sequence_run"],
                 "abstraction_intent": "reuse_existing",
@@ -71,8 +73,42 @@ def _executor(payload: dict) -> dict:
             "existing_abstractions_satisfied": True,
             "speculative_expansion_detected": False,
             "reused_module_refs": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+            "complexity_signals": {
+                "files_changed_count": 1,
+                "lines_added": 22,
+                "lines_removed": 8,
+                "net_line_delta": 14,
+                "functions_added_count": 2,
+                "functions_removed_count": 0,
+                "helpers_added_count": 1,
+                "helpers_removed_count": 0,
+                "wrappers_collapsed_count": 0,
+                "deletions_count": 0,
+                "public_surface_delta_count": 1,
+                "approximate_max_nesting_delta": 1,
+                "approximate_branching_delta": 1,
+                "abstraction_added_count": 1,
+                "abstraction_removed_count": 0,
+            },
         }
     elif slice_id.endswith("-S"):
+        simplify_signals = {
+            "files_changed_count": 1,
+            "lines_added": 10,
+            "lines_removed": 18,
+            "net_line_delta": -8,
+            "functions_added_count": 1,
+            "functions_removed_count": 1,
+            "helpers_added_count": 0,
+            "helpers_removed_count": 1,
+            "wrappers_collapsed_count": 1,
+            "deletions_count": 1,
+            "public_surface_delta_count": 0,
+            "approximate_max_nesting_delta": -1,
+            "approximate_branching_delta": -1,
+            "abstraction_added_count": 0,
+            "abstraction_removed_count": 1,
+        }
         result["tpa_simplify"] = {
             "artifact_kind": "simplify",
             "source_build_artifact_id": f"tpa:{payload['run_id']}:AI-01-B",
@@ -83,13 +119,57 @@ def _executor(payload: dict) -> dict:
             "redundant_code_paths_removed": 1,
             "duplicate_logic_collapsed": [],
             "pattern_consistency_refs": ["pattern:pqx-tpa-runtime-style"],
+            "complexity_signals": simplify_signals,
+            "delete_pass": {
+                "deletion_considered": True,
+                "deletion_performed": True,
+                "deletion_rejected_reason": None,
+                "deleted_items": ["obsolete_wrapper:legacy-branch"],
+                "collapsed_abstractions": ["adapter-layer:thin-wrapper"],
+                "removed_helpers": ["helper:unused_context_glue"],
+                "removed_wrappers": ["wrapper:legacy_wrapper"],
+                "indirection_avoided": ["direct_call:use_existing_runtime_seam"],
+            },
         }
     elif slice_id.endswith("-G"):
-        selected = _deterministic_gate_selection(
-            run_id=payload["run_id"],
-            step_id="AI-01",
-            build_artifact_id=f"tpa:{payload['run_id']}:AI-01-B",
-            simplify_artifact_id=f"tpa:{payload['run_id']}:AI-01-S",
+        build_signals = {
+            "files_changed_count": 1,
+            "lines_added": 22,
+            "lines_removed": 8,
+            "net_line_delta": 14,
+            "functions_added_count": 2,
+            "functions_removed_count": 0,
+            "helpers_added_count": 1,
+            "helpers_removed_count": 0,
+            "wrappers_collapsed_count": 0,
+            "deletions_count": 0,
+            "public_surface_delta_count": 1,
+            "approximate_max_nesting_delta": 1,
+            "approximate_branching_delta": 1,
+            "abstraction_added_count": 1,
+            "abstraction_removed_count": 0,
+        }
+        simplify_signals = {
+            "files_changed_count": 1,
+            "lines_added": 10,
+            "lines_removed": 18,
+            "net_line_delta": -8,
+            "functions_added_count": 1,
+            "functions_removed_count": 1,
+            "helpers_added_count": 0,
+            "helpers_removed_count": 1,
+            "wrappers_collapsed_count": 1,
+            "deletions_count": 1,
+            "public_surface_delta_count": 0,
+            "approximate_max_nesting_delta": -1,
+            "approximate_branching_delta": -1,
+            "abstraction_added_count": 0,
+            "abstraction_removed_count": 1,
+        }
+        selected = _deterministic_selection_from_signals(
+            build_signals=build_signals,
+            simplify_signals=simplify_signals,
+            simplicity_decision="allow",
         )
         result["tpa_gate"] = {
             "artifact_kind": "gate",
@@ -99,7 +179,20 @@ def _executor(payload: dict) -> dict:
             "contract_valid": True,
             "tests_valid": True,
             "selected_pass": selected,
-            "selection_reason": "equivalence proven and deterministic control selected pass",
+            "rejected_pass": "pass_1_build" if selected == "pass_2_simplify" else "pass_2_simplify",
+            "selection_inputs": {
+                "build_artifact_id": f"tpa:{payload['run_id']}:AI-01-B",
+                "simplify_artifact_id": f"tpa:{payload['run_id']}:AI-01-S",
+                "comparison_inputs_present": True,
+            },
+            "selection_metrics": {
+                "build": build_signals,
+                "simplify": simplify_signals,
+                "simplify_delta": _complexity_delta(build_signals, simplify_signals),
+            },
+            "selection_rationale": "equivalence proven and simplify has lower deterministic complexity score",
+            "promotion_ready": True,
+            "fail_closed_reason": None,
             "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
             "review_signal_refs": ["review_artifact:rvw-001"],
             "eval_signal_refs": ["eval_result:ev-001"],
@@ -107,6 +200,22 @@ def _executor(payload: dict) -> dict:
             "unaddressed_failure_pattern_refs": [],
             "high_risk_unmitigated": False,
             "risk_mitigation_refs": ["mitigation:risk-high-1-covered"],
+            "simplicity_review": {
+                "decision": "allow",
+                "overall_severity": "low",
+                "findings": [
+                    {"category": "delete_instead_of_abstract", "severity": "low", "message": "Delete-pass completed."}
+                ],
+                "report_ref": "docs/reviews/2026-04-04-tpa-completion-hardening.md",
+            },
+            "complexity_regression_gate": {
+                "decision": "allow",
+                "policy_ref": "policy:tpa-complexity-regression:v1",
+                "regression_detected": False,
+                "historical_baseline_available": True,
+                "historical_baseline_ref": "baseline:tpa:AI-01",
+                "exception_justified": False,
+            },
         }
     return result
 
@@ -137,6 +246,8 @@ def test_tpa_happy_path_emits_artifacts_and_deterministic_selection(tmp_path: Pa
     assert first["tpa_artifacts"]["AI-01"]["build"]["phase"] == "build"
     assert first["tpa_artifacts"]["AI-01"]["simplify"]["phase"] == "simplify"
     assert first["tpa_artifacts"]["AI-01"]["gate"]["phase"] == "gate"
+    assert first["tpa_artifacts"]["AI-01"]["observability_summary"]["artifact_type"] == "tpa_observability_summary"
+    assert first["tpa_artifacts"]["AI-01"]["observability_summary"]["metrics"]["simplify_win_rate"] == 1.0
     assert (
         first["tpa_artifacts"]["AI-01"]["gate"]["artifact"]["selected_pass"]
         == second["tpa_artifacts"]["AI-01"]["gate"]["artifact"]["selected_pass"]
@@ -179,6 +290,25 @@ def test_tpa_gate_fails_on_nondeterministic_selection(tmp_path: Path) -> None:
             trace_id="trace-tpa-batch-003",
             execute_slice=_bad_gate_executor,
             clock=FixedClock([f"2026-04-03T00:20:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_tpa_gate_fails_closed_when_selection_inputs_missing(tmp_path: Path) -> None:
+    def _bad_gate_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["selection_inputs"]["comparison_inputs_present"] = False
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="comparison inputs are missing"):
+        execute_sequence_run(
+            slice_requests=_tpa_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-tpa-003a",
+            run_id="run-tpa-003a",
+            trace_id="trace-tpa-batch-003a",
+            execute_slice=_bad_gate_executor,
+            clock=FixedClock([f"2026-04-03T00:25:{i:02d}Z" for i in range(1, 40)]),
         )
 
 
@@ -237,4 +367,57 @@ def test_tpa_gate_blocks_high_risk_without_mitigation(tmp_path: Path) -> None:
             trace_id="trace-tpa-batch-006",
             execute_slice=_bad_gate_executor,
             clock=FixedClock([f"2026-04-03T00:50:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_tpa_gate_blocks_on_high_severity_simplicity_review(tmp_path: Path) -> None:
+    def _bad_review_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["simplicity_review"]["decision"] = "block"
+            response["tpa_gate"]["simplicity_review"]["overall_severity"] = "critical"
+            response["tpa_gate"]["selected_pass"] = "pass_1_build"
+            response["tpa_gate"]["rejected_pass"] = "pass_2_simplify"
+            response["tpa_gate"]["promotion_ready"] = True
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="cannot mark promotion_ready"):
+        execute_sequence_run(
+            slice_requests=_tpa_slice_requests(),
+            state_path=tmp_path / "state-review-block.json",
+            queue_run_id="queue-tpa-007",
+            run_id="run-tpa-007",
+            trace_id="trace-tpa-batch-007",
+            execute_slice=_bad_review_executor,
+            clock=FixedClock([f"2026-04-03T00:55:{i:02d}Z" for i in range(1, 40)]),
+        )
+
+
+def test_cleanup_only_mode_requires_strict_equivalence_and_replay_ref(tmp_path: Path) -> None:
+    requests = _tpa_slice_requests()
+    requests[0]["tpa_plan"]["execution_mode"] = "cleanup_only"
+    requests[0]["tpa_plan"]["cleanup_scope"] = {
+        "bounded_files": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+        "reason": "target complexity debt cleanup",
+    }
+
+    def _bad_cleanup_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["cleanup_only_validation"] = {
+                "mode_enabled": True,
+                "equivalence_proven": False,
+                "replay_ref": None,
+            }
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="strict equivalence proof"):
+        execute_sequence_run(
+            slice_requests=requests,
+            state_path=tmp_path / "state-cleanup-only.json",
+            queue_run_id="queue-tpa-008",
+            run_id="run-tpa-008",
+            trace_id="trace-tpa-batch-008",
+            execute_slice=_bad_cleanup_executor,
+            clock=FixedClock([f"2026-04-03T00:57:{i:02d}Z" for i in range(1, 40)]),
         )
