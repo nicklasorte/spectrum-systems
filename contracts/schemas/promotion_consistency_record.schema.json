@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/promotion_consistency_record.schema.json",
+  "title": "promotion_consistency_record",
+  "description": "Deterministic multi-run promotion consistency evidence gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "promotion_consistency_id",
+    "source_batch_id",
+    "runs_considered",
+    "deterministic_match_rate",
+    "replay_match_rate",
+    "eval_consistency_rate",
+    "drift_free_status",
+    "promotion_state",
+    "reason_codes",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "promotion_consistency_id": {"type": "string", "pattern": "^PCR-[A-F0-9]{12}$"},
+    "source_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+    "runs_considered": {"type": "integer", "minimum": 1},
+    "deterministic_match_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "replay_match_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "eval_consistency_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_free_status": {"type": "string", "enum": ["drift_free", "drift_present"]},
+    "promotion_state": {"type": "string", "enum": ["deny", "hold", "allow"]},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z0-9_:-]+$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

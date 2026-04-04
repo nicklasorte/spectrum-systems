@@ -125,10 +125,15 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
         validate_artifact(signal, "unknown_state_signal")
     validate_artifact(first["exception_classification_record"], "exception_classification_record")
     validate_artifact(first["exception_resolution_record"], "exception_resolution_record")
+    validate_artifact(first["failure_taxonomy_record"], "failure_taxonomy_record")
+    if first["correction_pattern_record"] is not None:
+        validate_artifact(first["correction_pattern_record"], "correction_pattern_record")
+    validate_artifact(first["rollback_plan_record"], "rollback_plan_record")
+    validate_artifact(first["promotion_consistency_record"], "promotion_consistency_record")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.9.0"
+    assert first["build_summary"]["schema_version"] == "1.10.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -198,6 +203,13 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["capability_readiness_state"] in {"unsafe", "constrained", "supervised", "autonomous"}
     assert first["batch_handoff_bundle"]["capability_readiness_ref"] == first["build_summary"]["capability_readiness_ref"]
     assert first["batch_handoff_bundle"]["capability_readiness_state"] == first["build_summary"]["capability_readiness_state"]
+    assert first["build_summary"]["failure_taxonomy_ref"].startswith("failure_taxonomy_record:FTX-")
+    assert first["build_summary"]["rollback_plan_ref"].startswith("rollback_plan_record:RBP-")
+    assert first["build_summary"]["promotion_consistency_ref"].startswith("promotion_consistency_record:PCR-")
+    assert first["batch_handoff_bundle"]["failure_taxonomy_ref"] == first["build_summary"]["failure_taxonomy_ref"]
+    assert first["batch_handoff_bundle"]["rollback_plan_ref"] == first["build_summary"]["rollback_plan_ref"]
+    assert first["batch_handoff_bundle"]["promotion_consistency_ref"] == first["build_summary"]["promotion_consistency_ref"]
+    assert first["promotion_consistency_record"]["promotion_state"] in {"deny", "hold", "allow"}
 
 
 def test_prior_handoff_auto_ingested_and_required_validations_propagated(tmp_path: Path) -> None:
@@ -740,3 +752,59 @@ def test_governed_system_roadmap_selection_wires_to_single_cycle_execution() -> 
         pqx_execute_fn=_pqx_stub,
     )
     assert result["roadmap_multi_batch_run_result"]["batches_executed_count"] == 1
+
+
+def test_failure_taxonomy_recurrence_and_correction_pattern_threshold() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["promotion_consistency_evidence"] = [
+        {"determinism_status": "deterministic", "replay_status": "match", "eval_status": "pass", "drift_detected": False},
+        {"determinism_status": "deterministic", "replay_status": "match", "eval_status": "pass", "drift_detected": False},
+    ]
+    seed_result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    integration_inputs["prior_failure_taxonomy_records"] = [seed_result["failure_taxonomy_record"]]
+    integration_inputs["correction_recurrence_threshold"] = 2
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["failure_taxonomy_record"]["recurrence_count"] >= 2
+    assert result["correction_pattern_record"] is not None
+    assert result["correction_pattern_record"]["recurrence_threshold_met"] is True
+
+
+def test_promotion_consistency_denies_unstable_or_non_reversible_paths() -> None:
+    integration_inputs = _integration_inputs()
+    integration_inputs["promotion_consistency_evidence"] = [
+        {"determinism_status": "nondeterministic", "replay_status": "mismatch", "eval_status": "fail", "drift_detected": True},
+        {"determinism_status": "deterministic", "replay_status": "match", "eval_status": "pass", "drift_detected": False},
+    ]
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals={**_selection_signals(), "disallowed_targets": ["BATCH-I"]},
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["promotion_consistency_record"]["promotion_state"] in {"deny", "hold"}
+    assert result["next_cycle_decision"]["decision"] != "run_next_cycle"

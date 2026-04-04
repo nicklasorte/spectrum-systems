@@ -1,0 +1,15 @@
+{
+  "promotion_consistency_id": "PCR-1A2B3C4D5E6F",
+  "source_batch_id": "BATCH-I",
+  "runs_considered": 3,
+  "deterministic_match_rate": 1.0,
+  "replay_match_rate": 1.0,
+  "eval_consistency_rate": 1.0,
+  "drift_free_status": "drift_free",
+  "promotion_state": "allow",
+  "reason_codes": [
+    "stable_multi_run_evidence"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-11-example"
+}

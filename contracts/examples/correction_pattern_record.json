@@ -1,0 +1,13 @@
+{
+  "correction_pattern_id": "CPR-1A2B3C4D5E6F",
+  "source_failure_taxonomy_ref": "failure_taxonomy_record:FTX-1A2B3C4D5E6F",
+  "pattern_key": "missing_eval_coverage",
+  "recommended_remediation_type": "eval_coverage_remediation",
+  "supporting_artifact_refs": [
+    "failure_taxonomy_record:FTX-1A2B3C4D5E6F",
+    "exception_resolution_record:ERR-ABCDEF123456"
+  ],
+  "recurrence_threshold_met": true,
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-11-example"
+}

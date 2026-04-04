@@ -165,6 +165,10 @@ class ContractSchemaTests(unittest.TestCase):
             "capability_readiness_record",
             "exception_classification_record",
             "exception_resolution_record",
+            "failure_taxonomy_record",
+            "correction_pattern_record",
+            "rollback_plan_record",
+            "promotion_consistency_record",
             "roadmap_adjustment_record",
         ):
             instance = load_example(name)

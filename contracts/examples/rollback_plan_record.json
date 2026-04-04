@@ -1,0 +1,27 @@
+{
+  "rollback_plan_id": "RBP-1A2B3C4D5E6F",
+  "source_batch_id": "BATCH-I",
+  "source_artifact_refs": [
+    "roadmap_adjustment_record:RADJ-ABCDEF123456",
+    "batch_handoff_bundle:BHB-ABCDEF123456"
+  ],
+  "rollback_actions": [
+    {
+      "action_type": "revert_roadmap_adjustment",
+      "target_ref": "roadmap_adjustment_record:RADJ-ABCDEF123456",
+      "sequence": 1
+    },
+    {
+      "action_type": "restore_handoff_state",
+      "target_ref": "batch_handoff_bundle:BHB-ABCDEF123456",
+      "sequence": 2
+    }
+  ],
+  "reversibility_status": "reversible",
+  "required_preconditions": [
+    "requires_snapshot:batch_handoff_bundle",
+    "requires_snapshot:roadmap_adjustment_record"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-11-example"
+}

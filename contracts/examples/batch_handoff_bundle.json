@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.4.0",
+  "schema_version": "1.5.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -52,5 +52,9 @@
   "decision_proof_ref": "decision_proof_record:DPR-1A2B3C4D5E6F",
   "allow_decision_proof_ref": "allow_decision_proof:ADP-1A2B3C4D5E6F",
   "unknown_state_signal_refs": [],
-  "unknown_state_blockers": []
+  "unknown_state_blockers": [],
+  "failure_taxonomy_ref": "failure_taxonomy_record:FTX-1111AAAABBBB",
+  "correction_pattern_ref": "correction_pattern_record:CPR-1111AAAABBBB",
+  "rollback_plan_ref": "rollback_plan_record:RBP-1111AAAABBBB",
+  "promotion_consistency_ref": "promotion_consistency_record:PCR-1111AAAABBBB"
 }

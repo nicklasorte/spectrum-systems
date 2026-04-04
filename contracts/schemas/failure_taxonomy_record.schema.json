@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_taxonomy_record.schema.json",
+  "title": "failure_taxonomy_record",
+  "description": "Deterministic governed failure normalization artifact that turns cycle failures into structured taxonomy inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "failure_taxonomy_id",
+    "source_exception_ref",
+    "source_batch_id",
+    "source_cycle_id",
+    "normalized_failure_keys",
+    "failure_class",
+    "severity",
+    "recurrence_count",
+    "first_seen_at",
+    "last_seen_at",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "failure_taxonomy_id": {"type": "string", "pattern": "^FTX-[A-F0-9]{12}$"},
+    "source_exception_ref": {"type": "string", "pattern": "^exception_resolution_record:ERR-[A-F0-9]{12}$"},
+    "source_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+    "source_cycle_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+    "normalized_failure_keys": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z0-9_:.=-]+$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "eval_coverage_failure",
+        "replay_consistency_failure",
+        "unknown_dependency_state",
+        "autonomy_guardrail_failure",
+        "policy_blocker",
+        "drift_instability",
+        "execution_failure"
+      ]
+    },
+    "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "recurrence_count": {"type": "integer", "minimum": 1},
+    "first_seen_at": {"type": "string", "format": "date-time"},
+    "last_seen_at": {"type": "string", "format": "date-time"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

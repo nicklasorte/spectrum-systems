@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.59",
-  "schema_version": "1.3.59",
-  "standards_version": "1.3.59",
-  "record_id": "REC-STD-2026-04-04-BATCH-10",
-  "run_id": "run-20260404T000000Z-batch-10",
+  "artifact_version": "1.3.60",
+  "schema_version": "1.3.60",
+  "standards_version": "1.3.60",
+  "record_id": "REC-STD-2026-04-04-BATCH-11",
+  "run_id": "run-20260404T000000Z-batch-11",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.59",
+  "source_repo_version": "1.3.60",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -276,15 +276,15 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.4.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.59",
+      "last_updated_in": "1.3.60",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
-      "notes": "BATCH-A1 handoff bundle now carries autonomy decision reference and unresolved autonomy blockers for fail-closed continuation propagation."
+      "notes": "BATCH-11 handoff now carries failure taxonomy, correction pattern, rollback plan, and promotion consistency references for deterministic carry-forward governance."
     },
     {
       "artifact_type": "book_intelligence_pack",
@@ -315,15 +315,15 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.9.0",
+      "schema_version": "1.10.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.59",
+      "last_updated_in": "1.3.60",
       "example_path": "contracts/examples/build_summary.json",
-      "notes": "BATCH-A1 operator summary now carries autonomy guardrail decision/ref and reason codes for unattended continuation gating transparency."
+      "notes": "BATCH-11 adds explicit failure taxonomy, correction pattern, rollback plan, and promotion consistency references for governed stability gating."
     },
     {
       "artifact_type": "capability_readiness_record",
@@ -573,6 +573,19 @@
       "last_updated_in": "1.3.39",
       "example_path": "contracts/examples/core_system_integration_validation.json",
       "notes": "BATCH-Z governed cross-layer integration validation artifact covering authority boundaries, determinism, replayability, and fail-closed bounded execution seams."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.60",
+      "last_updated_in": "1.3.60",
+      "artifact_type": "correction_pattern_record",
+      "example_path": "contracts/examples/correction_pattern_record.json",
+      "notes": "BATCH-11 deterministic recurrence-driven correction pattern artifact with explicit remediation type mapping."
     },
     {
       "artifact_type": "cross_run_intelligence_decision",
@@ -1212,6 +1225,19 @@
       "last_updated_in": "1.3.43",
       "example_path": "contracts/examples/failure_pattern_record.json",
       "notes": "BATCH-L deterministic repeated-failure signature record linking stop reasons, root causes, and trace lineage for eval generation and recurrence prevention."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.60",
+      "last_updated_in": "1.3.60",
+      "artifact_type": "failure_taxonomy_record",
+      "example_path": "contracts/examples/failure_taxonomy_record.json",
+      "notes": "BATCH-11 deterministic normalized failure taxonomy artifact turning governed failures into recurring structured inputs."
     },
     {
       "artifact_type": "fix_plan_artifact",
@@ -2305,6 +2331,19 @@
       "notes": "BATCH-PRG-ENFORCE deterministic fail-closed roadmap/program alignment validation result."
     },
     {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.60",
+      "last_updated_in": "1.3.60",
+      "artifact_type": "promotion_consistency_record",
+      "example_path": "contracts/examples/promotion_consistency_record.json",
+      "notes": "BATCH-11 deterministic multi-run promotion consistency gate artifact requiring stable replay/eval/determinism evidence."
+    },
+    {
       "artifact_type": "promotion_gate_attack_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3027,6 +3066,19 @@
       "last_updated_in": "1.3.32",
       "example_path": "contracts/examples/roadmap_selection_result.json",
       "notes": "RDX-002 deterministic fail-closed roadmap next-batch selection/readiness decision artifact with reason codes, blockers, and replay hash."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.60",
+      "last_updated_in": "1.3.60",
+      "artifact_type": "rollback_plan_record",
+      "example_path": "contracts/examples/rollback_plan_record.json",
+      "notes": "BATCH-11 deterministic rollback planning artifact for promotion-sensitive and roadmap mutation reversibility guarantees."
     },
     {
       "artifact_type": "routing_decision",
