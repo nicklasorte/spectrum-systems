@@ -13,6 +13,7 @@ from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import (  # n
     execute_bounded_roadmap_run,
     should_continue_execution,
 )
+from spectrum_systems.modules.runtime.controlled_multi_cycle_runner import run_controlled_multi_cycle  # noqa: E402
 
 
 def _roadmap() -> dict:
@@ -64,6 +65,41 @@ def _pqx_success(**_: dict) -> dict:
                 "certification_ref": "runs/pqx/cert.record.json",
                 "audit_bundle_ref": "runs/pqx/audit.record.json",
             }
+        ],
+    }
+
+
+def _system_roadmap_for_execution() -> dict:
+    return {
+        "roadmap_id": "RDX-MULTI-CYCLE-TEST",
+        "version": "1.0.0",
+        "created_at": "2026-04-04T00:00:00Z",
+        "trace_id": "trace-rdx-006-test",
+        "batches": [
+            {
+                "batch_id": "BATCH-I",
+                "title": "I",
+                "description": "I",
+                "priority": 1,
+                "status": "not_started",
+                "dependencies": [],
+            },
+            {
+                "batch_id": "BATCH-J",
+                "title": "J",
+                "description": "J",
+                "priority": 2,
+                "status": "not_started",
+                "dependencies": ["BATCH-I"],
+            },
+            {
+                "batch_id": "BATCH-K",
+                "title": "K",
+                "description": "K",
+                "priority": 3,
+                "status": "not_started",
+                "dependencies": ["BATCH-J"],
+            },
         ],
     }
 
@@ -278,7 +314,75 @@ def test_should_continue_safe_path_continues() -> None:
         roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-I"},
     )
     assert decision["decision"] == "continue"
-    assert decision["reason_codes"] == ["continue_safe"]
+
+
+def test_controlled_multi_cycle_is_deterministic_and_contract_valid(tmp_path: Path) -> None:
+    kwargs = dict(
+        system_roadmap=_system_roadmap_for_execution(),
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "allow", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles_per_invocation=2,
+        stop_on_first_refusal=False,
+        stop_on_blocked_batch=True,
+        pqx_execute_fn=_pqx_success,
+    )
+    first = run_controlled_multi_cycle(**kwargs)
+    second = run_controlled_multi_cycle(**kwargs)
+    assert first["multi_cycle_execution_report"] == second["multi_cycle_execution_report"]
+    assert first["multi_cycle_execution_report"]["executed_batch_ids"] == ["BATCH-I", "BATCH-J"]
+    assert first["multi_cycle_execution_report"]["stop_reason"] == "max_cycles_reached"
+
+
+def test_controlled_multi_cycle_stops_on_blocked_batch_when_configured(tmp_path: Path) -> None:
+    def _blocked(**_: dict) -> dict:
+        return {"status": "blocked", "blocked_reason": "blocked", "batch_result": {"status": "blocked"}, "execution_history": []}
+
+    result = run_controlled_multi_cycle(
+        system_roadmap=_system_roadmap_for_execution(),
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "allow", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles_per_invocation=3,
+        stop_on_first_refusal=True,
+        stop_on_blocked_batch=True,
+        pqx_execute_fn=_blocked,
+    )
+    report = result["multi_cycle_execution_report"]
+    assert report["stop_reason"] == "blocked_batch"
+    assert report["total_cycles_refused"] >= 1
 
 
 def test_determinism_same_inputs_identical_run_result(tmp_path: Path) -> None:

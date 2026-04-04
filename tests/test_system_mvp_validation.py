@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.runtime.mvp_20_slice_execution import run_mvp_20_slice_execution_drill
 from spectrum_systems.modules.runtime.system_mvp_validation import run_system_mvp_validation
 
@@ -106,3 +106,10 @@ def test_mvp_20_slice_execution_drill_enforces_stop_and_parity() -> None:
     assert run_a["completed_sequence"] == run_b["completed_sequence"]
     assert run_a["stop_reason"] == run_b["stop_reason"]
     assert run_a["required_review_hits"] >= 1
+
+
+def test_multi_cycle_execution_report_example_contract_valid() -> None:
+    report = load_example("multi_cycle_execution_report")
+    validate_artifact(report, "multi_cycle_execution_report")
+    assert report["trace_id"].startswith("trace-")
+    assert report["evidence_refs"]

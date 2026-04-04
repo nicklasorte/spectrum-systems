@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/multi_cycle_execution_report.schema.json",
+  "title": "multi_cycle_execution_report",
+  "description": "Deterministic bounded multi-cycle governed roadmap execution proof report.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "schema_version",
+    "roadmap_id",
+    "total_cycles_attempted",
+    "total_cycles_executed",
+    "total_cycles_refused",
+    "executed_batch_ids",
+    "refused_batch_ids",
+    "continuation_sequence",
+    "stop_reason",
+    "deterministic_selection_status",
+    "deterministic_decision_status",
+    "replay_status",
+    "trace_integrity_status",
+    "program_alignment_status",
+    "review_gate_status",
+    "created_at",
+    "trace_id",
+    "evidence_refs"
+  ],
+  "properties": {
+    "report_id": {"type": "string", "pattern": "^MCR-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "roadmap_id": {"type": "string", "minLength": 3},
+    "total_cycles_attempted": {"type": "integer", "minimum": 0},
+    "total_cycles_executed": {"type": "integer", "minimum": 0},
+    "total_cycles_refused": {"type": "integer", "minimum": 0},
+    "executed_batch_ids": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+      "uniqueItems": true
+    },
+    "refused_batch_ids": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+      "uniqueItems": true
+    },
+    "continuation_sequence": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["run_next_cycle", "stop", "escalate"]}
+    },
+    "stop_reason": {
+      "type": "string",
+      "enum": [
+        "max_cycles_reached",
+        "no_eligible_batch",
+        "blocked_batch",
+        "continuation_refused",
+        "execution_refused",
+        "selection_refused"
+      ]
+    },
+    "deterministic_selection_status": {"type": "string", "enum": ["deterministic", "non_deterministic"]},
+    "deterministic_decision_status": {"type": "string", "enum": ["deterministic", "non_deterministic"]},
+    "replay_status": {"type": "string", "enum": ["parity_verified", "not_ready"]},
+    "trace_integrity_status": {"type": "string", "enum": ["complete", "incomplete"]},
+    "program_alignment_status": {"type": "string", "enum": ["aligned", "misaligned"]},
+    "review_gate_status": {"type": "string", "enum": ["enforced", "missing"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    }
+  }
+}

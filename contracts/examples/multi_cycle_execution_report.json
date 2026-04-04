@@ -1,0 +1,36 @@
+{
+  "report_id": "MCR-12AB34CD56EF",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-BATCH-MVP-20",
+  "total_cycles_attempted": 3,
+  "total_cycles_executed": 2,
+  "total_cycles_refused": 1,
+  "executed_batch_ids": [
+    "BATCH-I",
+    "BATCH-J"
+  ],
+  "refused_batch_ids": [
+    "BATCH-K"
+  ],
+  "continuation_sequence": [
+    "run_next_cycle",
+    "run_next_cycle",
+    "stop"
+  ],
+  "stop_reason": "continuation_refused",
+  "deterministic_selection_status": "deterministic",
+  "deterministic_decision_status": "deterministic",
+  "replay_status": "parity_verified",
+  "trace_integrity_status": "complete",
+  "program_alignment_status": "aligned",
+  "review_gate_status": "enforced",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-multi-cycle-proof",
+  "evidence_refs": [
+    "system_roadmap:RDX-BATCH-MVP-20",
+    "roadmap_multi_batch_run_result:RMB-1111AAAABBBB",
+    "next_cycle_decision:NCD-1111AAAABBBB",
+    "next_cycle_input_bundle:NCB-1111AAAABBBB",
+    "trace:trace-batch-multi-cycle-proof"
+  ]
+}

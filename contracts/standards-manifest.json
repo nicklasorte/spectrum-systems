@@ -1495,6 +1495,17 @@
       "notes": "Dependency-aware milestone tracking with decision gates and risk alignment."
     },
     {
+      "artifact_type": "multi_cycle_execution_report",
+      "schema_path": "contracts/schemas/multi_cycle_execution_report.schema.json",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "owner": "spectrum-systems",
+      "description": "Deterministic bounded multi-cycle roadmap execution proof report.",
+      "intended_consumers": [
+        "spectrum-systems"
+      ]
+    },
+    {
       "artifact_type": "multi_pass_generation_record",
       "artifact_class": "coordination",
       "schema_version": "1.4.0",
