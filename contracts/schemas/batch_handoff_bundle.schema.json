@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/batch_handoff_bundle.schema.json",
+  "title": "batch_handoff_bundle",
+  "description": "Deterministic governed unresolved-state handoff used to carry forward prior-batch context into the next governed batch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_id",
+    "schema_version",
+    "source_batch_id",
+    "roadmap_id",
+    "recommended_next_batch",
+    "must_carry_forward_risks",
+    "must_carry_forward_artifacts",
+    "must_preserve_invariants",
+    "required_validations_next",
+    "open_contract_work",
+    "open_review_findings",
+    "program_constraints",
+    "human_decision_required",
+    "source_delivery_report_ref",
+    "trace_id",
+    "created_at"
+  ],
+  "properties": {
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^BHB-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_batch_id": {
+      "type": "string",
+      "pattern": "^BATCH-[A-Z0-9-]+$"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "recommended_next_batch": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^BATCH-[A-Z0-9-]+$"
+    },
+    "must_carry_forward_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "must_carry_forward_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "must_preserve_invariants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_validations_next": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "open_contract_work": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "open_review_findings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "program_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "human_decision_required": {
+      "type": "boolean"
+    },
+    "source_delivery_report_ref": {
+      "type": "string",
+      "pattern": "^batch_delivery_report:BDR-[A-F0-9]{12}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

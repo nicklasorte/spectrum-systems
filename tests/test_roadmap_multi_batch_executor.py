@@ -17,6 +17,7 @@ from spectrum_systems.modules.runtime.controlled_multi_cycle_runner import (  # 
     run_controlled_multi_cycle,
     run_full_roadmap_execution,
 )
+from spectrum_systems.modules.runtime.system_cycle_operator import derive_batch_handoff_bundle  # noqa: E402
 
 
 def _roadmap() -> dict:
@@ -877,3 +878,41 @@ def test_should_continue_stops_on_program_drift_detected() -> None:
     )
     assert decision["decision"] == "stop"
     assert decision["reason_codes"] == ["program_drift_detected"]
+
+
+def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed() -> None:
+    delivery = {
+        "report_id": "BDR-111111111111",
+        "schema_version": "1.0.0",
+        "batch_id": "BATCH-I",
+        "roadmap_id": "RDX-CANVAS-2026-04-04",
+        "intent": "deterministic test",
+        "status": "completed_with_risk",
+        "files_changed": [],
+        "contracts_added_or_updated": [],
+        "tests_run": [],
+        "results_summary": ["ok"],
+        "remaining_risks": ["critical_risk:AUTH_REVIEW_PENDING", "risk:minor"],
+        "open_followups": ["validation:pytest tests/test_contract_enforcement.py", "contract:batch_handoff_bundle@1.0.0"],
+        "recommended_next_batch": "BATCH-J",
+        "blocking_issues": ["PROP_REVIEW_EVAL_NOT_INGESTED"],
+        "evidence_refs": ["roadmap_multi_batch_run_result:RMB-111111111111"],
+        "source_refs": ["roadmap_artifact:inline"],
+        "trace_id": "trace-derive-test",
+        "created_at": "2026-04-04T00:00:00Z",
+    }
+    first = derive_batch_handoff_bundle(delivery)
+    second = derive_batch_handoff_bundle(delivery)
+    assert first == second
+    assert first["must_carry_forward_risks"] == ["critical_risk:AUTH_REVIEW_PENDING", "risk:minor"]
+    assert first["required_validations_next"] == ["validation:pytest tests/test_contract_enforcement.py"]
+
+    resolved_delivery = dict(delivery)
+    resolved_delivery["remaining_risks"] = []
+    resolved_delivery["open_followups"] = []
+    resolved_delivery["blocking_issues"] = []
+    resolved_delivery["report_id"] = "BDR-222222222222"
+    resolved = derive_batch_handoff_bundle(resolved_delivery)
+    assert resolved["must_carry_forward_risks"] == []
+    assert resolved["open_contract_work"] == []
+    assert resolved["open_review_findings"] == []

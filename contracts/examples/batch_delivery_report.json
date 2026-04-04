@@ -1,0 +1,46 @@
+{
+  "report_id": "BDR-1A2B3C4D5E6F",
+  "schema_version": "1.0.0",
+  "batch_id": "BATCH-I",
+  "roadmap_id": "RDX-CANVAS-2026-04-04",
+  "intent": "Execute one governed roadmap batch and publish deterministic carry-forward state.",
+  "status": "completed_with_risk",
+  "files_changed": [
+    "spectrum_systems/modules/runtime/system_cycle_operator.py",
+    "contracts/schemas/batch_delivery_report.schema.json",
+    "contracts/schemas/batch_handoff_bundle.schema.json"
+  ],
+  "contracts_added_or_updated": [
+    "batch_delivery_report@1.0.0",
+    "batch_handoff_bundle@1.0.0"
+  ],
+  "tests_run": [
+    "pytest tests/test_roadmap_selector.py",
+    "pytest tests/test_roadmap_multi_batch_executor.py",
+    "pytest tests/test_system_cycle_operator.py"
+  ],
+  "results_summary": [
+    "bounded governed run completed deterministically",
+    "prior-batch handoff ingestion activated"
+  ],
+  "remaining_risks": [
+    "critical_risk:AUTH_REVIEW_PENDING"
+  ],
+  "open_followups": [
+    "validation:pytest tests/test_contract_enforcement.py"
+  ],
+  "recommended_next_batch": "BATCH-J",
+  "blocking_issues": [
+    "PROP_REVIEW_EVAL_NOT_INGESTED"
+  ],
+  "evidence_refs": [
+    "roadmap_multi_batch_run_result:RMB-1234567890AB",
+    "next_step_recommendation:NSR-1234567890AB",
+    "next_cycle_input_bundle:NCB-7A90B1C2D3E4"
+  ],
+  "source_refs": [
+    "roadmap_artifact:RDX-CANVAS-2026-04-04"
+  ],
+  "trace_id": "trace-batch-handoff-example",
+  "created_at": "2026-04-04T00:00:00Z"
+}
