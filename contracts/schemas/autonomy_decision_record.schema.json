@@ -44,7 +44,10 @@
           "control_decision_freeze",
           "missing_required_input",
           "malformed_autonomy_policy",
-          "missing_eval_input"
+          "missing_eval_input",
+          "budget_exhausted",
+          "budget_warning",
+          "malformed_budget_signal"
         ]
       }
     },

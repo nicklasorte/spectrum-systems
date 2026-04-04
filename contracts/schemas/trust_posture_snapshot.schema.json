@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/trust_posture_snapshot.schema.json",
+  "title": "trust_posture_snapshot",
+  "description": "Deterministic system trust posture aggregation from governed artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "schema_version",
+    "overall_trust_state",
+    "eval_pass_rate",
+    "drift_status",
+    "replay_consistency",
+    "override_rate",
+    "readiness_state",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "snapshot_id": {"type": "string", "pattern": "^TPS-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "overall_trust_state": {"type": "string", "enum": ["healthy", "watch", "degraded", "critical"]},
+    "eval_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_status": {"type": "string", "enum": ["stable", "warning", "drift_detected"]},
+    "replay_consistency": {"type": "string", "enum": ["consistent", "inconsistent", "unknown"]},
+    "override_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "readiness_state": {"type": "string", "enum": ["unsafe", "constrained", "supervised", "autonomous"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

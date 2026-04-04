@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/system_budget_status.schema.json",
+  "title": "system_budget_status",
+  "description": "Deterministic system safety budget evaluation artifact for cost/latency/error enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "budget_status_id",
+    "schema_version",
+    "cost_budget_status",
+    "latency_budget_status",
+    "error_budget_status",
+    "budget_exhausted",
+    "threshold_values",
+    "current_values",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "budget_status_id": {"type": "string", "pattern": "^SBS-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "cost_budget_status": {"type": "string", "enum": ["within_budget", "warning", "breached"]},
+    "latency_budget_status": {"type": "string", "enum": ["within_budget", "warning", "breached"]},
+    "error_budget_status": {"type": "string", "enum": ["within_budget", "warning", "breached"]},
+    "budget_exhausted": {"type": "boolean"},
+    "threshold_values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cost", "latency_ms", "error_rate"],
+      "properties": {
+        "cost": {"type": "number", "minimum": 0},
+        "latency_ms": {"type": "number", "minimum": 0},
+        "error_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "current_values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cost", "latency_ms", "error_rate"],
+      "properties": {
+        "cost": {"type": "number", "minimum": 0},
+        "latency_ms": {"type": "number", "minimum": 0},
+        "error_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

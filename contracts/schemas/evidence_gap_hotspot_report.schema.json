@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/evidence_gap_hotspot_report.schema.json",
+  "title": "evidence_gap_hotspot_report",
+  "description": "Deterministic report of evidence and evaluation stage gaps by artifact family.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_id", "schema_version", "hotspots", "created_at", "trace_id"],
+  "properties": {
+    "report_id": {"type": "string", "pattern": "^EGH-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "hotspots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_family", "missing_stages"],
+        "properties": {
+          "artifact_family": {"type": "string", "minLength": 1},
+          "missing_stages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "enum": ["offline", "pre_merge", "canary", "production"]},
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

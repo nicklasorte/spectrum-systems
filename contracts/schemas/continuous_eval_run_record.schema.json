@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/continuous_eval_run_record.schema.json",
+  "title": "continuous_eval_run_record",
+  "description": "Deterministic governed continuous evaluation artifact for explicit stage-level evaluation outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eval_run_id",
+    "schema_version",
+    "eval_stage",
+    "artifact_family",
+    "eval_case_ids",
+    "pass_rate",
+    "fail_rate",
+    "indeterminate_rate",
+    "drift_delta",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "eval_run_id": {"type": "string", "pattern": "^CER-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "eval_stage": {"type": "string", "enum": ["offline", "pre_merge", "canary", "production"]},
+    "artifact_family": {"type": "string", "minLength": 1},
+    "eval_case_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "fail_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "indeterminate_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_delta": {"type": "number", "minimum": -1, "maximum": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}
