@@ -1,0 +1,17 @@
+{
+  "failure_taxonomy_id": "FTX-1A2B3C4D5E6F",
+  "source_exception_ref": "exception_resolution_record:ERR-ABCDEF123456",
+  "source_batch_id": "BATCH-I",
+  "source_cycle_id": "run-20260404T000000Z",
+  "normalized_failure_keys": [
+    "class:eval_coverage_failure",
+    "stop_reason:max_batches_reached"
+  ],
+  "failure_class": "eval_coverage_failure",
+  "severity": "medium",
+  "recurrence_count": 2,
+  "first_seen_at": "2026-04-03T23:00:00Z",
+  "last_seen_at": "2026-04-04T00:00:00Z",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-11-example"
+}

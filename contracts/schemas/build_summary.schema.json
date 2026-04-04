@@ -45,7 +45,11 @@
     "decision_proof_ref",
     "allow_decision_proof_ref",
     "unknown_state_signal_refs",
-    "unknown_state_blockers"
+    "unknown_state_blockers",
+    "failure_taxonomy_ref",
+    "correction_pattern_ref",
+    "rollback_plan_ref",
+    "promotion_consistency_ref"
   ],
   "properties": {
     "summary_id": {
@@ -54,7 +58,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.9.0"
+      "const": "1.10.0"
     },
     "run_id": {
       "type": "string",
@@ -660,6 +664,22 @@
         "minLength": 3
       },
       "uniqueItems": true
+    },
+    "failure_taxonomy_ref": {
+      "type": "string",
+      "pattern": "^failure_taxonomy_record:FTX-[A-F0-9]{12}$"
+    },
+    "correction_pattern_ref": {
+      "type": "string",
+      "pattern": "^correction_pattern_record:CPR-[A-F0-9]{12}$"
+    },
+    "rollback_plan_ref": {
+      "type": "string",
+      "pattern": "^rollback_plan_record:RBP-[A-F0-9]{12}$"
+    },
+    "promotion_consistency_ref": {
+      "type": "string",
+      "pattern": "^promotion_consistency_record:PCR-[A-F0-9]{12}$"
     }
   },
   "$defs": {

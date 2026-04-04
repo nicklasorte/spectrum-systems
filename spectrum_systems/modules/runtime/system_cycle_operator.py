@@ -55,6 +55,301 @@ def _sorted_unique_strings(values: list[Any]) -> list[str]:
     return sorted({str(item) for item in values if str(item).strip()})
 
 
+def _normalize_failure_keys(
+    *,
+    stop_reason: str,
+    blocking_conditions: list[str],
+    unknown_state_blockers: list[str],
+    autonomy_blockers: list[str],
+    required_validations_next: list[str],
+    replay_status: str,
+    program_drift_severity: str,
+) -> list[str]:
+    keys: set[str] = {f"stop_reason:{stop_reason}"}
+    keys.update(f"blocking:{item.lower()}" for item in blocking_conditions)
+    keys.update(f"unknown_state:{item.lower()}" for item in unknown_state_blockers)
+    keys.update(f"autonomy:{item.lower()}" for item in autonomy_blockers)
+    if required_validations_next:
+        keys.add("missing_eval_coverage")
+    if replay_status in {"mismatch", "failed", "error"}:
+        keys.add("replay_mismatch")
+    if replay_status == "unknown":
+        keys.add("replay_unknown")
+    if program_drift_severity in {"medium", "high"}:
+        keys.add(f"drift:{program_drift_severity}")
+    return sorted(keys)
+
+
+def build_failure_taxonomy_record(
+    *,
+    source_exception_ref: str,
+    source_batch_id: str,
+    source_cycle_id: str,
+    normalized_failure_keys: list[str],
+    required_validations_next: list[str],
+    replay_status: str,
+    program_drift_severity: str,
+    unknown_state_blockers: list[str],
+    autonomy_blockers: list[str],
+    prior_failure_taxonomy_records: list[dict[str, Any]],
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    if not normalized_failure_keys:
+        raise SystemCycleOperatorError("failure taxonomy requires at least one normalized failure key")
+    if unknown_state_blockers:
+        failure_class = "unknown_dependency_state"
+        severity = "high"
+    elif required_validations_next:
+        failure_class = "eval_coverage_failure"
+        severity = "high"
+    elif replay_status in {"mismatch", "failed", "error"}:
+        failure_class = "replay_consistency_failure"
+        severity = "critical"
+    elif replay_status == "unknown":
+        failure_class = "replay_consistency_failure"
+        severity = "high"
+    elif autonomy_blockers:
+        failure_class = "autonomy_guardrail_failure"
+        severity = "high"
+    elif program_drift_severity == "high":
+        failure_class = "drift_instability"
+        severity = "critical"
+    elif program_drift_severity == "medium":
+        failure_class = "drift_instability"
+        severity = "high"
+    elif any(item.startswith("AUTH_") or item.startswith("PROP_") for item in normalized_failure_keys):
+        failure_class = "policy_blocker"
+        severity = "high"
+    else:
+        failure_class = "execution_failure"
+        severity = "medium"
+
+    current_key_set = set(normalized_failure_keys)
+    prior_matches = 0
+    first_seen_at = created_at
+    for row in prior_failure_taxonomy_records:
+        if not isinstance(row, dict):
+            raise SystemCycleOperatorError("prior failure taxonomy records must be objects")
+        _validate_schema(row, "failure_taxonomy_record")
+        prior_key_set = set(str(item) for item in row.get("normalized_failure_keys", []))
+        if str(row.get("failure_class")) == failure_class and bool(prior_key_set & current_key_set):
+            prior_matches += 1
+            candidate_first_seen = str(row.get("first_seen_at") or created_at)
+            if candidate_first_seen < first_seen_at:
+                first_seen_at = candidate_first_seen
+
+    seed = {
+        "source_exception_ref": source_exception_ref,
+        "source_batch_id": source_batch_id,
+        "source_cycle_id": source_cycle_id,
+        "normalized_failure_keys": normalized_failure_keys,
+        "failure_class": failure_class,
+        "trace_id": trace_id,
+    }
+    record = {
+        "failure_taxonomy_id": f"FTX-{_canonical_hash(seed)[:12].upper()}",
+        "source_exception_ref": source_exception_ref,
+        "source_batch_id": source_batch_id,
+        "source_cycle_id": source_cycle_id,
+        "normalized_failure_keys": normalized_failure_keys,
+        "failure_class": failure_class,
+        "severity": severity,
+        "recurrence_count": prior_matches + 1,
+        "first_seen_at": first_seen_at,
+        "last_seen_at": created_at,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "failure_taxonomy_record")
+    return record
+
+
+def derive_correction_pattern(
+    *,
+    failure_taxonomy_record: dict[str, Any],
+    source_exception_ref: str,
+    unknown_state_signal_refs: list[str],
+    recurrence_threshold: int,
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any] | None:
+    _validate_schema(failure_taxonomy_record, "failure_taxonomy_record")
+    if int(failure_taxonomy_record["recurrence_count"]) < recurrence_threshold:
+        return None
+
+    failure_class = str(failure_taxonomy_record["failure_class"])
+    if failure_class == "eval_coverage_failure":
+        pattern_key = "missing_eval_coverage"
+        remediation = "eval_coverage_remediation"
+    elif failure_class == "replay_consistency_failure":
+        pattern_key = "replay_mismatch"
+        remediation = "replay_investigation"
+    elif failure_class == "unknown_dependency_state":
+        pattern_key = "unknown_dependency_state"
+        remediation = "dependency_hardening"
+    elif failure_class == "autonomy_guardrail_failure":
+        pattern_key = "autonomy_guardrail_block"
+        remediation = "autonomy_guardrail_remediation"
+    elif failure_class == "policy_blocker":
+        pattern_key = "policy_blocker"
+        remediation = "policy_alignment_remediation"
+    elif failure_class == "drift_instability":
+        pattern_key = "drift_instability"
+        remediation = "drift_stabilization"
+    else:
+        pattern_key = "general_failure"
+        remediation = "manual_review"
+
+    seed = {
+        "source_failure_taxonomy_ref": f"failure_taxonomy_record:{failure_taxonomy_record['failure_taxonomy_id']}",
+        "pattern_key": pattern_key,
+        "remediation": remediation,
+        "trace_id": trace_id,
+    }
+    record = {
+        "correction_pattern_id": f"CPR-{_canonical_hash(seed)[:12].upper()}",
+        "source_failure_taxonomy_ref": f"failure_taxonomy_record:{failure_taxonomy_record['failure_taxonomy_id']}",
+        "pattern_key": pattern_key,
+        "recommended_remediation_type": remediation,
+        "supporting_artifact_refs": sorted(
+            set(
+                [
+                    f"failure_taxonomy_record:{failure_taxonomy_record['failure_taxonomy_id']}",
+                    source_exception_ref,
+                ] + unknown_state_signal_refs
+            )
+        ),
+        "recurrence_threshold_met": True,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "correction_pattern_record")
+    return record
+
+
+def build_rollback_plan_record(
+    *,
+    source_batch_id: str,
+    source_artifact_refs: list[str],
+    roadmap_adjustment_refs: list[str],
+    next_cycle_decision: str,
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    promotion_sensitive = bool(roadmap_adjustment_refs) or next_cycle_decision == "run_next_cycle"
+    rollback_actions: list[dict[str, Any]] = []
+    sequence = 1
+    for ref in sorted(set(roadmap_adjustment_refs)):
+        rollback_actions.append({"action_type": "revert_roadmap_adjustment", "target_ref": ref, "sequence": sequence})
+        sequence += 1
+    if next_cycle_decision == "run_next_cycle":
+        rollback_actions.append({"action_type": "restore_next_cycle_gate", "target_ref": f"batch:{source_batch_id}", "sequence": sequence})
+        sequence += 1
+    if not rollback_actions and promotion_sensitive:
+        rollback_actions.append({"action_type": "manual_hold", "target_ref": f"batch:{source_batch_id}", "sequence": sequence})
+    reversibility_status = "not_required"
+    if promotion_sensitive and rollback_actions and all(item["action_type"] != "manual_hold" for item in rollback_actions):
+        reversibility_status = "reversible"
+    elif promotion_sensitive and rollback_actions:
+        reversibility_status = "not_reversible"
+    required_preconditions = sorted(
+        set(
+            ["requires_snapshot:batch_handoff_bundle", "requires_snapshot:build_summary"]
+            + ([f"requires_snapshot:{item}" for item in roadmap_adjustment_refs] if roadmap_adjustment_refs else [])
+        )
+    )
+    seed = {
+        "source_batch_id": source_batch_id,
+        "source_artifact_refs": sorted(set(source_artifact_refs)),
+        "rollback_actions": rollback_actions,
+        "trace_id": trace_id,
+    }
+    record = {
+        "rollback_plan_id": f"RBP-{_canonical_hash(seed)[:12].upper()}",
+        "source_batch_id": source_batch_id,
+        "source_artifact_refs": sorted(set(source_artifact_refs)),
+        "rollback_actions": rollback_actions,
+        "reversibility_status": reversibility_status,
+        "required_preconditions": required_preconditions,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "rollback_plan_record")
+    return record
+
+
+def evaluate_promotion_consistency(
+    *,
+    source_batch_id: str,
+    evidence_window: list[dict[str, Any]],
+    rollback_plan_record: dict[str, Any],
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    if not evidence_window:
+        raise SystemCycleOperatorError("promotion consistency evidence window cannot be empty")
+    runs_considered = len(evidence_window)
+    deterministic_matches = sum(1 for item in evidence_window if str(item.get("determinism_status", "")).lower() == "deterministic")
+    replay_matches = sum(1 for item in evidence_window if str(item.get("replay_status", "")).lower() in {"passed", "match", "replay_ready", "ready"})
+    eval_matches = sum(1 for item in evidence_window if str(item.get("eval_status", "")).lower() in {"pass", "healthy"})
+    drift_present = any(bool(item.get("drift_detected")) for item in evidence_window)
+    deterministic_rate = deterministic_matches / runs_considered
+    replay_rate = replay_matches / runs_considered
+    eval_rate = eval_matches / runs_considered
+    drift_free_status = "drift_present" if drift_present else "drift_free"
+
+    reason_codes: list[str] = []
+    promotion_state = "hold"
+    if runs_considered < 3:
+        reason_codes.append("insufficient_evidence_window")
+        promotion_state = "hold"
+    if replay_rate < 1.0:
+        reason_codes.append("replay_inconsistency")
+        promotion_state = "deny"
+    if deterministic_rate < 1.0:
+        reason_codes.append("deterministic_instability")
+        promotion_state = "deny"
+    if drift_present and promotion_state != "deny":
+        reason_codes.append("drift_present")
+        promotion_state = "hold"
+    if eval_rate < 1.0 and promotion_state != "deny":
+        reason_codes.append("eval_inconsistency")
+        promotion_state = "hold"
+    if rollback_plan_record["reversibility_status"] == "not_reversible":
+        reason_codes.append("non_reversible_promotion_sensitive_path")
+        promotion_state = "deny"
+    if not reason_codes:
+        reason_codes = ["stable_multi_run_evidence"]
+        promotion_state = "allow"
+
+    seed = {
+        "source_batch_id": source_batch_id,
+        "runs_considered": runs_considered,
+        "deterministic_rate": deterministic_rate,
+        "replay_rate": replay_rate,
+        "eval_rate": eval_rate,
+        "drift_free_status": drift_free_status,
+        "promotion_state": promotion_state,
+        "trace_id": trace_id,
+    }
+    record = {
+        "promotion_consistency_id": f"PCR-{_canonical_hash(seed)[:12].upper()}",
+        "source_batch_id": source_batch_id,
+        "runs_considered": runs_considered,
+        "deterministic_match_rate": deterministic_rate,
+        "replay_match_rate": replay_rate,
+        "eval_consistency_rate": eval_rate,
+        "drift_free_status": drift_free_status,
+        "promotion_state": promotion_state,
+        "reason_codes": sorted(set(reason_codes)),
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "promotion_consistency_record")
+    return record
+
+
 def validate_explicit_state_dependencies(
     *,
     prior_handoff_bundle: dict[str, Any] | None,
@@ -132,6 +427,22 @@ def derive_batch_handoff_bundle(
         (item for item in evidence_refs if item.startswith("allow_decision_proof:")),
         "allow_decision_proof:ADP-000000000000",
     )
+    failure_taxonomy_ref = next(
+        (item for item in evidence_refs if item.startswith("failure_taxonomy_record:")),
+        "failure_taxonomy_record:FTX-000000000000",
+    )
+    correction_pattern_ref = next(
+        (item for item in evidence_refs if item.startswith("correction_pattern_record:")),
+        "correction_pattern_record:CPR-000000000000",
+    )
+    rollback_plan_ref = next(
+        (item for item in evidence_refs if item.startswith("rollback_plan_record:")),
+        "rollback_plan_record:RBP-000000000000",
+    )
+    promotion_consistency_ref = next(
+        (item for item in evidence_refs if item.startswith("promotion_consistency_record:")),
+        "promotion_consistency_record:PCR-000000000000",
+    )
     unknown_state_signal_refs = sorted(item for item in evidence_refs if item.startswith("unknown_state_signal:"))
     unknown_state_blockers = sorted(item for item in followups if item.startswith("unknown_state_blocker:"))
     program_constraints = sorted(item for item in risks if item.startswith("program_"))
@@ -162,7 +473,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -183,6 +494,10 @@ def derive_batch_handoff_bundle(
         ),
         "decision_proof_ref": decision_proof_ref,
         "allow_decision_proof_ref": allow_decision_proof_ref,
+        "failure_taxonomy_ref": failure_taxonomy_ref,
+        "correction_pattern_ref": correction_pattern_ref,
+        "rollback_plan_ref": rollback_plan_ref,
+        "promotion_consistency_ref": promotion_consistency_ref,
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "open_contract_work": open_contract_work,
@@ -1174,6 +1489,44 @@ def run_system_cycle(
     )
     exception_classification_ref = f"exception_classification_record:{exception_classification_record['exception_classification_id']}"
     exception_resolution_ref = f"exception_resolution_record:{exception_resolution_record['exception_resolution_id']}"
+    normalized_failure_keys = _normalize_failure_keys(
+        stop_reason=stop_reason,
+        blocking_conditions=blocking_conditions,
+        unknown_state_blockers=unknown_state_blockers,
+        autonomy_blockers=autonomy_blockers,
+        required_validations_next=required_validations_next,
+        replay_status=str(integration.get("replay_status", "unknown")).strip().lower(),
+        program_drift_severity=program_drift_severity,
+    )
+    prior_failure_taxonomy_records = [dict(item) for item in integration_inputs.get("prior_failure_taxonomy_records", [])]
+    failure_taxonomy_record = build_failure_taxonomy_record(
+        source_exception_ref=exception_resolution_ref,
+        source_batch_id=str(run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN"),
+        source_cycle_id=str(run_result["run_id"]),
+        normalized_failure_keys=normalized_failure_keys,
+        required_validations_next=required_validations_next,
+        replay_status=str(integration.get("replay_status", "unknown")).strip().lower(),
+        program_drift_severity=program_drift_severity,
+        unknown_state_blockers=unknown_state_blockers,
+        autonomy_blockers=autonomy_blockers,
+        prior_failure_taxonomy_records=prior_failure_taxonomy_records,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    failure_taxonomy_ref = f"failure_taxonomy_record:{failure_taxonomy_record['failure_taxonomy_id']}"
+    correction_pattern_record = derive_correction_pattern(
+        failure_taxonomy_record=failure_taxonomy_record,
+        source_exception_ref=exception_resolution_ref,
+        unknown_state_signal_refs=unknown_state_signal_refs,
+        recurrence_threshold=int(integration_inputs.get("correction_recurrence_threshold", 2)),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    correction_pattern_ref = (
+        f"correction_pattern_record:{correction_pattern_record['correction_pattern_id']}"
+        if isinstance(correction_pattern_record, dict)
+        else None
+    )
     replay_status_value = str(integration.get("replay_status", "unknown")).strip().lower()
     replay_ok = replay_status_value in {"passed", "match", "ready", "replay_ready", "replayable"}
     decision_proof_record = build_decision_proof_record(
@@ -1413,9 +1766,11 @@ def run_system_cycle(
                         remediation_plan_ref,
                         decision_proof_ref,
                         allow_decision_proof_ref,
+                        failure_taxonomy_ref,
                         next_cycle_decision_ref,
                         next_cycle_input_bundle_ref,
                     ]
+                    + ([correction_pattern_ref] if correction_pattern_ref else [])
                     + unknown_state_signal_refs
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -1448,7 +1803,9 @@ def run_system_cycle(
                     next_cycle_input_bundle_ref,
                     decision_proof_ref,
                     allow_decision_proof_ref,
+                    failure_taxonomy_ref,
                 ]
+                + ([correction_pattern_ref] if correction_pattern_ref else [])
                 + unknown_state_signal_refs
                 + list(source_refs or [])
                 + (
@@ -1463,7 +1820,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.9.0",
+        "schema_version": "1.10.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1479,6 +1836,10 @@ def run_system_cycle(
         "autonomy_decision_ref": autonomy_decision_ref,
         "decision_proof_ref": decision_proof_ref,
         "allow_decision_proof_ref": allow_decision_proof_ref,
+        "failure_taxonomy_ref": failure_taxonomy_ref,
+        "correction_pattern_ref": correction_pattern_ref or "correction_pattern_record:CPR-000000000000",
+        "rollback_plan_ref": "rollback_plan_record:RBP-000000000000",
+        "promotion_consistency_ref": "promotion_consistency_record:PCR-000000000000",
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
@@ -1539,9 +1900,11 @@ def run_system_cycle(
                         remediation_plan_ref,
                         decision_proof_ref,
                         allow_decision_proof_ref,
+                        failure_taxonomy_ref,
                         next_cycle_decision_ref,
                         next_cycle_input_bundle_ref,
                     ]
+                    + ([correction_pattern_ref] if correction_pattern_ref else [])
                     + unknown_state_signal_refs
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -1587,11 +1950,13 @@ def run_system_cycle(
                 adaptive_policy_review_ref,
                 decision_proof_ref,
                 allow_decision_proof_ref,
+                failure_taxonomy_ref,
                 next_cycle_decision_ref,
                 next_cycle_input_bundle_ref,
                 exception_classification_ref,
                 exception_resolution_ref,
             }
+            | ({correction_pattern_ref} if correction_pattern_ref else set())
             | set(unknown_state_signal_refs)
         ),
     }
@@ -1773,26 +2138,84 @@ def run_system_cycle(
     )
     adjusted_next_batch_id = _next_not_started_batch_id(adjusted_roadmap)
     adjustment_refs = [f"roadmap_adjustment_record:{row['adjustment_id']}" for row in roadmap_adjustments]
+    rollback_plan_record = build_rollback_plan_record(
+        source_batch_id=str(run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN"),
+        source_artifact_refs=[
+            f"build_summary:{summary['summary_id']}",
+            f"next_step_recommendation:{recommendation['recommendation_id']}",
+            failure_taxonomy_ref,
+            *([correction_pattern_ref] if correction_pattern_ref else []),
+            *adjustment_refs,
+        ],
+        roadmap_adjustment_refs=adjustment_refs,
+        next_cycle_decision=next_cycle_decision["decision"],
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    rollback_plan_ref = f"rollback_plan_record:{rollback_plan_record['rollback_plan_id']}"
+    promotion_evidence_window = [dict(item) for item in integration_inputs.get("promotion_consistency_evidence", [])]
+    promotion_evidence_window.append(
+        {
+            "determinism_status": str(integration.get("determinism_status", "unknown")),
+            "replay_status": str(integration.get("replay_status", "unknown")),
+            "eval_status": "pass" if str(integration_inputs.get("eval_result", {}).get("result_status", "")).lower() == "pass" else "fail",
+            "drift_detected": program_drift_severity in {"medium", "high"} or stop_reason == "program_drift_detected",
+        }
+    )
+    promotion_consistency_record = evaluate_promotion_consistency(
+        source_batch_id=str(run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN"),
+        evidence_window=promotion_evidence_window,
+        rollback_plan_record=rollback_plan_record,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    promotion_consistency_ref = f"promotion_consistency_record:{promotion_consistency_record['promotion_consistency_id']}"
+    if next_cycle_decision["decision"] == "run_next_cycle" and promotion_consistency_record["promotion_state"] != "allow":
+        next_cycle_decision["decision"] = "stop"
+        next_cycle_decision["decision_reason_codes"] = sorted(
+            set(list(next_cycle_decision["decision_reason_codes"]) + ["missing_required_artifacts"])
+        )
+        next_cycle_decision["risk_posture"] = "critical"
     recommendation["next_batch_id"] = adjusted_next_batch_id
     recommendation["next_batch_candidate"] = adjusted_next_batch_id
     recommendation["why"] = sorted(set(list(recommendation["why"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
     recommendation["source_refs"] = sorted(set(list(recommendation["source_refs"]) + adjustment_refs))
     recommendation["artifact_refs"]["related_artifacts"] = sorted(
-        set(list(recommendation["artifact_refs"]["related_artifacts"]) + adjustment_refs)
+        set(list(recommendation["artifact_refs"]["related_artifacts"]) + adjustment_refs + [rollback_plan_ref, promotion_consistency_ref])
     )
     summary["next_batch_candidate"] = adjusted_next_batch_id
     summary["capability_readiness_state"] = readiness_state
     summary["capability_readiness_ref"] = readiness_ref
     summary["watch_next"] = sorted(set(list(summary["watch_next"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
-    summary["source_refs"] = sorted(set(list(summary["source_refs"]) + adjustment_refs + [readiness_ref]))
-    summary["artifact_index"]["related_artifacts"] = sorted(set(list(summary["artifact_index"]["related_artifacts"]) + adjustment_refs))
+    summary["source_refs"] = sorted(
+        set(list(summary["source_refs"]) + adjustment_refs + [readiness_ref, rollback_plan_ref, promotion_consistency_ref])
+    )
+    summary["artifact_index"]["related_artifacts"] = sorted(
+        set(list(summary["artifact_index"]["related_artifacts"]) + adjustment_refs + [rollback_plan_ref, promotion_consistency_ref])
+    )
+    summary["rollback_plan_ref"] = rollback_plan_ref
+    summary["promotion_consistency_ref"] = promotion_consistency_ref
     next_cycle_input_bundle["recommended_start_batch"] = adjusted_next_batch_id
     batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
+    batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
+        list(batch_delivery_report["evidence_refs"])
+        + [failure_taxonomy_ref, rollback_plan_ref, promotion_consistency_ref]
+        + ([correction_pattern_ref] if correction_pattern_ref else [])
+    )
     batch_handoff_bundle["recommended_next_batch"] = adjusted_next_batch_id
     batch_handoff_bundle["capability_readiness_state"] = readiness_state
     batch_handoff_bundle["capability_readiness_ref"] = readiness_ref
+    batch_handoff_bundle["failure_taxonomy_ref"] = failure_taxonomy_ref
+    batch_handoff_bundle["correction_pattern_ref"] = correction_pattern_ref or "correction_pattern_record:CPR-000000000000"
+    batch_handoff_bundle["rollback_plan_ref"] = rollback_plan_ref
+    batch_handoff_bundle["promotion_consistency_ref"] = promotion_consistency_ref
     batch_handoff_bundle["must_carry_forward_artifacts"] = sorted(
-        set(list(batch_handoff_bundle["must_carry_forward_artifacts"]) + adjustment_refs + [readiness_ref])
+        set(
+            list(batch_handoff_bundle["must_carry_forward_artifacts"])
+            + adjustment_refs
+            + [readiness_ref, failure_taxonomy_ref, rollback_plan_ref, promotion_consistency_ref]
+            + ([correction_pattern_ref] if correction_pattern_ref else [])
+        )
     )
     batch_handoff_bundle["required_next_actions"] = sorted(
         set(list(batch_handoff_bundle["required_next_actions"]) + [f"apply:{item}" for item in adjustment_refs])
@@ -1815,6 +2238,10 @@ def run_system_cycle(
         "unknown_state_signals": unknown_state_signals,
         "exception_classification_record": exception_classification_record,
         "exception_resolution_record": exception_resolution_record,
+        "failure_taxonomy_record": failure_taxonomy_record,
+        "correction_pattern_record": correction_pattern_record,
+        "rollback_plan_record": rollback_plan_record,
+        "promotion_consistency_record": promotion_consistency_record,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
         "next_cycle_decision": next_cycle_decision,
@@ -1830,8 +2257,12 @@ def run_system_cycle(
 
 __all__ = [
     "SystemCycleOperatorError",
+    "build_failure_taxonomy_record",
+    "build_rollback_plan_record",
     "decide_next_cycle",
+    "derive_correction_pattern",
     "derive_batch_handoff_bundle",
+    "evaluate_promotion_consistency",
     "run_system_cycle",
     "validate_explicit_state_dependencies",
 ]

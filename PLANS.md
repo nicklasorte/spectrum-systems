@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-11-2026-04-04.md | BATCH-11 — Self-Correction + Stability Guarantees (A6 + A9 + A12 + A13) | Active |
 | docs/review-actions/PLAN-BATCH-10-2026-04-04.md | BATCH-10 — Strictness + Explicit Decision Enforcement | Active |
 | Plan file | Item | Status |
 | docs/review-actions/PLAN-BATCH-A2-2026-04-04.md | BATCH-A2 — Capability Readiness + Trust Posture | Active |

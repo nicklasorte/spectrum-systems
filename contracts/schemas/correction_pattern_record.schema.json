@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/correction_pattern_record.schema.json",
+  "title": "correction_pattern_record",
+  "description": "Deterministic governed correction pattern derived from recurring structured failures.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "correction_pattern_id",
+    "source_failure_taxonomy_ref",
+    "pattern_key",
+    "recommended_remediation_type",
+    "supporting_artifact_refs",
+    "recurrence_threshold_met",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "correction_pattern_id": {"type": "string", "pattern": "^CPR-[A-F0-9]{12}$"},
+    "source_failure_taxonomy_ref": {"type": "string", "pattern": "^failure_taxonomy_record:FTX-[A-F0-9]{12}$"},
+    "pattern_key": {
+      "type": "string",
+      "enum": [
+        "missing_eval_coverage",
+        "replay_mismatch",
+        "unknown_dependency_state",
+        "autonomy_guardrail_block",
+        "policy_blocker",
+        "drift_instability",
+        "general_failure"
+      ]
+    },
+    "recommended_remediation_type": {
+      "type": "string",
+      "enum": [
+        "eval_coverage_remediation",
+        "replay_investigation",
+        "dependency_hardening",
+        "autonomy_guardrail_remediation",
+        "policy_alignment_remediation",
+        "drift_stabilization",
+        "manual_review"
+      ]
+    },
+    "supporting_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "recurrence_threshold_met": {"type": "boolean"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

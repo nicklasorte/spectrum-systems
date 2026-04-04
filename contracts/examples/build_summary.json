@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.9.0",
+  "schema_version": "1.10.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -257,5 +257,9 @@
   "decision_proof_ref": "decision_proof_record:DPR-1A2B3C4D5E6F",
   "allow_decision_proof_ref": "allow_decision_proof:ADP-1A2B3C4D5E6F",
   "unknown_state_signal_refs": [],
-  "unknown_state_blockers": []
+  "unknown_state_blockers": [],
+  "failure_taxonomy_ref": "failure_taxonomy_record:FTX-1111AAAABBBB",
+  "correction_pattern_ref": "correction_pattern_record:CPR-1111AAAABBBB",
+  "rollback_plan_ref": "rollback_plan_record:RBP-1111AAAABBBB",
+  "promotion_consistency_ref": "promotion_consistency_record:PCR-1111AAAABBBB"
 }

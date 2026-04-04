@@ -1005,6 +1005,9 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert first["autonomy_decision_ref"] == "autonomy_decision_record:ADR-8B9C0D1E2F3A"
     assert first["capability_readiness_state"] == "constrained"
     assert first["capability_readiness_ref"] == "capability_readiness_record:CRD-000000000000"
+    assert first["failure_taxonomy_ref"] == "failure_taxonomy_record:FTX-000000000000"
+    assert first["rollback_plan_ref"] == "rollback_plan_record:RBP-000000000000"
+    assert first["promotion_consistency_ref"] == "promotion_consistency_record:PCR-000000000000"
 
     resolved_delivery = dict(delivery)
     resolved_delivery["remaining_risks"] = []

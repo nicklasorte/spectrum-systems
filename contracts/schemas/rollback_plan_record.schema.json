@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rollback_plan_record.schema.json",
+  "title": "rollback_plan_record",
+  "description": "Deterministic rollback planning artifact for promotion-sensitive and roadmap mutation changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rollback_plan_id",
+    "source_batch_id",
+    "source_artifact_refs",
+    "rollback_actions",
+    "reversibility_status",
+    "required_preconditions",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "rollback_plan_id": {"type": "string", "pattern": "^RBP-[A-F0-9]{12}$"},
+    "source_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+    "source_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "rollback_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_type", "target_ref", "sequence"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": ["revert_roadmap_adjustment", "restore_handoff_state", "restore_next_cycle_gate", "manual_hold"]
+          },
+          "target_ref": {"type": "string", "minLength": 3},
+          "sequence": {"type": "integer", "minimum": 1}
+        }
+      },
+      "uniqueItems": true
+    },
+    "reversibility_status": {"type": "string", "enum": ["reversible", "limited", "not_reversible", "not_required"]},
+    "required_preconditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}
