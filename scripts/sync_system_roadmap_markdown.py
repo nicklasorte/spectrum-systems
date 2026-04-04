@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Any
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -16,13 +19,46 @@ def _load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _display_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _abbr(batch_id: str) -> str:
     prefix, number = batch_id.split("-", 1)
     return f"{prefix}{number}"
 
 
+def _strategy_alignment(batch: dict[str, Any]) -> str:
+    return "Roadmap authority + deterministic dependency-gated progression"
+
+
+def _primary_trust_gain(batch: dict[str, Any]) -> str:
+    return "policy authority" if batch["hard_gate"] else "operational clarity"
+
+
+def _eval_linkage(batch: dict[str, Any]) -> str:
+    return "; ".join(batch["tests_required"])
+
+
+def _replay_trace_considerations(batch: dict[str, Any], roadmap_trace_id: str) -> str:
+    return f"Replayable ordered batch evaluation with trace anchor {roadmap_trace_id} and batch_id {batch['batch_id']}"
+
+
+def _governance_linkage(batch: dict[str, Any]) -> str:
+    stop_conditions = ", ".join(batch["stop_conditions"])
+    gate_label = "hard gate" if batch["hard_gate"] else "governance gate"
+    return f"{gate_label}; fail-closed on: {stop_conditions}"
+
+
 def _render_markdown(roadmap: dict[str, Any], source_json: Path) -> str:
     batches = roadmap["batches"]
+    source_display = _display_path(source_json)
+    roadmap_trace_id = str(roadmap["trace_id"])
+
     lines = [
         "# Spectrum Systems — System Roadmap",
         "",
@@ -30,7 +66,7 @@ def _render_markdown(roadmap: dict[str, Any], source_json: Path) -> str:
         "",
         "**Authority status:** ACTIVE ROADMAP AUTHORITY",
         "",
-        f"- System source of truth (machine-readable): `{source_json.as_posix()}`",
+        f"- System source of truth (machine-readable): `{source_display}`",
         "- Contract authority: `contracts/schemas/system_roadmap.schema.json`",
         "- Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror",
         "",
@@ -46,13 +82,26 @@ def _render_markdown(roadmap: dict[str, Any], source_json: Path) -> str:
         "",
         "## Governed Batch Table",
         "",
-        "| batch_id | acronym | title | status | depends_on | hard_gate |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| batch_id | acronym | title | status | depends_on | hard_gate | Strategy Alignment | Primary Trust Gain | Eval Linkage | Replay / Trace Considerations | Governance Linkage |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ])
+
     for batch in batches:
         deps = ", ".join(batch["depends_on"]) if batch["depends_on"] else "—"
         lines.append(
-            f"| {batch['batch_id']} | {batch['acronym']} | {batch['title']} | {batch['status']} | {deps} | {str(batch['hard_gate']).lower()} |"
+            "| {batch_id} | {acronym} | {title} | {status} | {deps} | {hard_gate} | {strategy} | {trust} | {eval_linkage} | {replay_trace} | {governance} |".format(
+                batch_id=batch["batch_id"],
+                acronym=batch["acronym"],
+                title=batch["title"],
+                status=batch["status"],
+                deps=deps,
+                hard_gate=str(batch["hard_gate"]).lower(),
+                strategy=_strategy_alignment(batch),
+                trust=_primary_trust_gain(batch),
+                eval_linkage=_eval_linkage(batch),
+                replay_trace=_replay_trace_considerations(batch, roadmap_trace_id),
+                governance=_governance_linkage(batch),
+            )
         )
 
     lines.extend([

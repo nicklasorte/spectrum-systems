@@ -4,7 +4,7 @@
 
 **Authority status:** ACTIVE ROADMAP AUTHORITY
 
-- System source of truth (machine-readable): `/workspace/spectrum-systems/contracts/examples/system_roadmap.json`
+- System source of truth (machine-readable): `contracts/examples/system_roadmap.json`
 - Contract authority: `contracts/schemas/system_roadmap.schema.json`
 - Compatibility transition rule: `docs/roadmap/system_roadmap.md` is a required parseable operational mirror
 
@@ -31,23 +31,23 @@
 
 ## Governed Batch Table
 
-| batch_id | acronym | title | status | depends_on | hard_gate |
-| --- | --- | --- | --- | --- | --- |
-| TBH-001 | TBH | Trust Boundary Hardening 1 | completed | — | true |
-| TBH-002 | TBH | Trust Boundary Hardening 2 | completed | TBH-001 | true |
-| TBH-003 | TBH | Trust Boundary Hardening 3 | completed | TBH-002 | true |
-| STF-001 | STF | Schema/Test Foundation 1 | completed | TBH-003 | true |
-| STF-002 | STF | Schema/Test Foundation 2 | completed | STF-001 | false |
-| A-001 | A | Autonomy Guardrails 1 | completed | STF-002 | true |
-| A-003 | A | Autonomy Guardrails 3 | completed | A-001 | true |
-| A-004 | A | Autonomy Guardrails 4 | completed | A-003 | true |
-| A-002 | A | Autonomy Guardrails 2 | completed | A-004 | false |
-| MAP-010 | MAP | Roadmap Mapping 10 | completed | A-002 | false |
-| RDX-011 | RDX | Roadmap Execution 11 | completed | MAP-010 | false |
-| VAL-012 | VAL | Validation 12 | completed | RDX-011 | true |
-| JUD-013 | JUD | Judgment Activation 13 | not_started | VAL-012 | true |
-| BATCH-CL-01 | CL | Control Loop Failure Binding | completed | — | true |
-| BATCH-CL-02 | CL | Error Budget Engine | not_started | BATCH-CL-01 | true |
-| BATCH-CL-03 | CL | Recurrence Prevention Enforcement | not_started | BATCH-CL-02 | true |
+| batch_id | acronym | title | status | depends_on | hard_gate | Strategy Alignment | Primary Trust Gain | Eval Linkage | Replay / Trace Considerations | Governance Linkage |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| TBH-001 | TBH | Trust Boundary Hardening 1 | completed | — | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_tbh_001.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id TBH-001 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| TBH-002 | TBH | Trust Boundary Hardening 2 | completed | TBH-001 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_tbh_002.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id TBH-002 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| TBH-003 | TBH | Trust Boundary Hardening 3 | completed | TBH-002 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_tbh_003.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id TBH-003 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| STF-001 | STF | Schema/Test Foundation 1 | completed | TBH-003 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_stf_001.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id STF-001 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| STF-002 | STF | Schema/Test Foundation 2 | completed | STF-001 | false | Roadmap authority + deterministic dependency-gated progression | operational clarity | pytest tests/test_stf_002.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id STF-002 | governance gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| A-001 | A | Autonomy Guardrails 1 | completed | STF-002 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_a_001.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id A-001 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| A-003 | A | Autonomy Guardrails 3 | completed | A-001 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_a_003.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id A-003 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| A-004 | A | Autonomy Guardrails 4 | completed | A-003 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_a_004.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id A-004 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| A-002 | A | Autonomy Guardrails 2 | completed | A-004 | false | Roadmap authority + deterministic dependency-gated progression | operational clarity | pytest tests/test_a_002.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id A-002 | governance gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| MAP-010 | MAP | Roadmap Mapping 10 | completed | A-002 | false | Roadmap authority + deterministic dependency-gated progression | operational clarity | pytest tests/test_map_010.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id MAP-010 | governance gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| RDX-011 | RDX | Roadmap Execution 11 | completed | MAP-010 | false | Roadmap authority + deterministic dependency-gated progression | operational clarity | pytest tests/test_rdx_011.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id RDX-011 | governance gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| VAL-012 | VAL | Validation 12 | completed | RDX-011 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_val_012.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id VAL-012 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| JUD-013 | JUD | Judgment Activation 13 | not_started | VAL-012 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_jud_013.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id JUD-013 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| BATCH-CL-01 | CL | Control Loop Failure Binding | completed | — | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_batch_cl_01.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id BATCH-CL-01 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| BATCH-CL-02 | CL | Error Budget Engine | not_started | BATCH-CL-01 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_batch_cl_02.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id BATCH-CL-02 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
+| BATCH-CL-03 | CL | Recurrence Prevention Enforcement | not_started | BATCH-CL-02 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_batch_cl_03.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id BATCH-CL-03 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
 
 Execution automation must read the governed JSON artifact, validate against schema before selection, and fail closed on invalid roadmap state.
