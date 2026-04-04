@@ -54,7 +54,11 @@
     "override_escalation_indicators",
     "expiring_override_refs",
     "required_lifecycle_followups",
-    "required_governance_followups"
+    "required_governance_followups",
+    "policy_candidate_refs",
+    "policy_activation_ref",
+    "policy_conflict_refs",
+    "active_policy_refs"
   ],
   "properties": {
     "bundle_id": {
@@ -63,7 +67,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.8.0"
+      "const": "1.9.0"
     },
     "source_batch_id": {
       "type": "string",
@@ -372,6 +376,37 @@
     "judgment_promotion_gate_ref": {
       "type": "string",
       "pattern": "^judgment_promotion_gate_record:JPG-[A-F0-9]{12}$"
+    },
+    "policy_candidate_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^policy_candidate_record:PCD-[A-F0-9]{12}$"
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "policy_activation_ref": {
+      "type": "string",
+      "pattern": "^policy_activation_record:PAC-[A-F0-9]{12}$"
+    },
+    "policy_conflict_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^policy_conflict_record:PCF-[A-F0-9]{12}$"
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "active_policy_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^policy_candidate_record:PCD-[A-F0-9]{12}$"
+      },
+      "minItems": 0,
+      "uniqueItems": true
     }
   }
 }

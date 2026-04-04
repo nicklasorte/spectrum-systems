@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/policy_candidate_record.schema.json",
+  "title": "policy_candidate_record",
+  "description": "Deterministic candidate policy artifact derived from validated recurring judgment/correction patterns.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_candidate_id",
+    "source_judgment_refs",
+    "source_correction_pattern_refs",
+    "pattern_key",
+    "proposed_policy_logic",
+    "supporting_eval_refs",
+    "confidence_level",
+    "recurrence_count",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "policy_candidate_id": {
+      "type": "string",
+      "pattern": "^PCD-[A-F0-9]{12}$"
+    },
+    "source_judgment_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^judgment_record:JDG-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "source_correction_pattern_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^correction_pattern_record:CPR-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "pattern_key": {
+      "type": "string",
+      "minLength": 3
+    },
+    "proposed_policy_logic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "conditions",
+        "action"
+      ],
+      "properties": {
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "failure_class",
+            "severity",
+            "pattern_key"
+          ],
+          "properties": {
+            "failure_class": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string"
+            },
+            "pattern_key": {
+              "type": "string"
+            }
+          }
+        },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "recurrence_count_gte",
+            "required_eval_refs"
+          ],
+          "properties": {
+            "recurrence_count_gte": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required_eval_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^eval_result:EVR-[A-F0-9]{12}$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          }
+        },
+        "action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "remediation_type",
+            "control_effect",
+            "block_on_missing_validation"
+          ],
+          "properties": {
+            "remediation_type": {
+              "type": "string"
+            },
+            "control_effect": {
+              "type": "string"
+            },
+            "block_on_missing_validation": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "supporting_eval_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^eval_result:EVR-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "recurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "policy_conflict_id": "PCF-1A2B3C4D5E6F",
+  "conflicting_policy_refs": [
+    "policy_candidate_record:PCD-1A2B3C4D5E6F",
+    "policy_candidate_record:PCD-0A1B2C3D4E5F"
+  ],
+  "conflict_type": "logic_mismatch",
+  "severity": "high",
+  "resolution_strategy": "prefer_highest_recurrence_then_latest_eval",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-d-example"
+}

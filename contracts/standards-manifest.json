@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.63",
-  "schema_version": "1.3.63",
-  "standards_version": "1.3.63",
-  "record_id": "REC-STD-2026-04-04-BATCH-12",
-  "run_id": "run-20260404T000000Z-batch-12",
+  "artifact_version": "1.3.64",
+  "schema_version": "1.3.64",
+  "standards_version": "1.3.64",
+  "record_id": "REC-STD-2026-04-04-BATCH-LTV-D",
+  "run_id": "run-20260404T000000Z-batch-ltv-d",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.63",
+  "source_repo_version": "1.3.64",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -302,15 +302,15 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.8.0",
+      "schema_version": "1.9.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.63",
+      "last_updated_in": "1.3.64",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
-      "notes": "BATCH-11 handoff now carries failure taxonomy, correction pattern, rollback plan, and promotion consistency references for deterministic carry-forward governance."
+      "notes": "BATCH-LTV-D handoff now carries policy candidate/activation/conflict and active policy refs for deterministic cross-cycle control continuity."
     },
     {
       "artifact_type": "book_intelligence_pack",
@@ -341,15 +341,15 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.13.0",
+      "schema_version": "1.14.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.63",
+      "last_updated_in": "1.3.64",
       "example_path": "contracts/examples/build_summary.json",
-      "notes": "BATCH-11 adds explicit failure taxonomy, correction pattern, rollback plan, and promotion consistency references for governed stability gating."
+      "notes": "BATCH-LTV-D adds policy candidate/activation/conflict visibility and active-policy propagation for governed policy rollout."
     },
     {
       "artifact_type": "calibration_assessment_record",
@@ -2018,6 +2018,19 @@
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
     },
     {
+      "artifact_type": "policy_activation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.64",
+      "last_updated_in": "1.3.64",
+      "example_path": "contracts/examples/policy_activation_record.json",
+      "notes": "BATCH-LTV-D governed policy extraction/activation/conflict artifact for deterministic policy rollout control."
+    },
+    {
       "artifact_type": "policy_backtest_accuracy_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2042,6 +2055,32 @@
       "last_updated_in": "1.0.68",
       "example_path": null,
       "notes": "ADV-01 deterministic policy backtesting result artifact for replay-authoritative baseline-vs-candidate control decision simulation and pre-promotion governance readiness."
+    },
+    {
+      "artifact_type": "policy_candidate_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.64",
+      "last_updated_in": "1.3.64",
+      "example_path": "contracts/examples/policy_candidate_record.json",
+      "notes": "BATCH-LTV-D governed policy extraction/activation/conflict artifact for deterministic policy rollout control."
+    },
+    {
+      "artifact_type": "policy_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.64",
+      "last_updated_in": "1.3.64",
+      "example_path": "contracts/examples/policy_conflict_record.json",
+      "notes": "BATCH-LTV-D governed policy extraction/activation/conflict artifact for deterministic policy rollout control."
     },
     {
       "artifact_type": "policy_enforcement_integrity_result",

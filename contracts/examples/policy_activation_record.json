@@ -1,0 +1,9 @@
+{
+  "policy_activation_id": "PAC-1A2B3C4D5E6F",
+  "policy_candidate_ref": "policy_candidate_record:PCD-1A2B3C4D5E6F",
+  "rollout_stage": "canary",
+  "eval_results_ref": "eval_result:EVR-1A2B3C4D5E6F",
+  "promotion_decision": "allow",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-d-example"
+}
