@@ -228,6 +228,8 @@ def test_critical_review_findings_generate_failure_derived_eval_cases() -> None:
     assert all(case["created_from"] == "failure_trace" for case in cases)
     assert all(case["provenance"]["review_id"] == "REV-TEST-001" for case in cases)
     assert all(case["provenance"]["review_control_signal_id"] == "rcs-1111111111111111" for case in cases)
+    assert cases[0]["expected_output_spec"]["reason_code"] == "review_failure_derived::review_gate_alignment"
+    assert cases[1]["expected_output_spec"]["reason_code"] == "review_failure_derived::review_signal_validity"
 
 
 def test_ambiguous_review_finding_mapping_fails_closed() -> None:

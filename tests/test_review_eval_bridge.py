@@ -57,6 +57,12 @@ def test_fail_review_maps_to_failed_eval_result() -> None:
     assert "review_scale_not_recommended" in eval_result["failure_modes"]
     assert any(ref.startswith("review_control_signal:") for ref in eval_result["provenance_refs"])
 
+def test_critical_findings_dedupe_preserves_input_order() -> None:
+    signal = _review_signal()
+    signal["critical_findings"] = ["third finding", "first finding", "second finding"]
+    normalized = canonicalize_review_signal(signal)
+    assert normalized["critical_findings"] == ["third finding", "first finding", "second finding"]
+
 
 def test_review_failure_summary_is_deterministic() -> None:
     signal = _review_signal()

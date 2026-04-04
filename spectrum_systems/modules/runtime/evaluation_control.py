@@ -55,6 +55,13 @@ class EvaluationControlError(Exception):
 
 ThresholdContext = Literal["active_runtime", "comparative_analysis"]
 
+def canonical_json(obj: dict[str, Any]) -> bytes:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def dedupe_preserve_order(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))
+
 
 def _resolve_threshold_context(context: ThresholdContext) -> ThresholdContext:
     if context not in {"active_runtime", "comparative_analysis"}:
@@ -107,12 +114,11 @@ def _deterministic_decision_id(
         "decision": decision,
         "system_response": system_response,
         "rationale_code": rationale_code,
-        "triggered_signals": sorted(triggered_signals),
+        "triggered_signals": dedupe_preserve_order(triggered_signals),
         "threshold_snapshot": threshold_snapshot,
         "schema_version": schema_version,
     }
-    seed = json.dumps(seed_payload, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
+    digest = hashlib.sha256(canonical_json(seed_payload)).hexdigest()[:12].upper()
     return f"ECD-{digest}"
 
 
@@ -229,6 +235,7 @@ def _to_eval_summary_from_replay_result(replay_result: Dict[str, Any]) -> Dict[s
         "drift_rate": _optional_drift_rate(metrics, drift_detected=drift_detected),
         "reproducibility_score": reproducibility_score,
         "indeterminate_failure_count": 1 if consistency_status == "indeterminate" else 0,
+        "consistency_status": consistency_status,
         "created_at": _canonical_timestamp(replay_result.get("timestamp")),
         "budget_status": str(error_budget.get("budget_status") or "invalid"),
     }
@@ -492,7 +499,7 @@ def build_evaluation_control_decision(
         triggered_signals.append("trust_breach")
     if indeterminate_failures > 0:
         triggered_signals.append("indeterminate_failure")
-    triggered_signals = list(dict.fromkeys(triggered_signals))
+    triggered_signals = dedupe_preserve_order(triggered_signals)
 
     severe_hits = [s for s in triggered_signals if s in SEVERE_SIGNALS]
     if artifact_type == "failure_eval_case":
@@ -550,8 +557,9 @@ def build_evaluation_control_decision(
     required_type_set = set(required_review_types or [])
     observed_review_types: set[str] = set()
 
+    saw_review_eval_fail = False
     if review_signal_required and not resolved_review_eval_results:
-        triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
+        triggered_signals = dedupe_preserve_order([*triggered_signals, "missing_required_signal"])
         system_status, system_response, decision_label, rationale_code = (
             "blocked",
             "block",
@@ -569,7 +577,8 @@ def build_evaluation_control_decision(
                 if isinstance(ref, str) and ref.startswith("review_type:"):
                     observed_review_types.add(ref.split(":", 1)[1])
             if review_status == "fail":
-                triggered_signals = list(dict.fromkeys([*triggered_signals, "trust_breach"]))
+                saw_review_eval_fail = True
+                triggered_signals = dedupe_preserve_order([*triggered_signals, "trust_breach"])
                 system_status, system_response, decision_label, rationale_code = (
                     "blocked",
                     "block",
@@ -577,7 +586,7 @@ def build_evaluation_control_decision(
                     "deny_trust_breach",
                 )
             elif review_status == "indeterminate" and decision_label != "deny":
-                triggered_signals = list(dict.fromkeys([*triggered_signals, "indeterminate_failure"]))
+                triggered_signals = dedupe_preserve_order([*triggered_signals, "indeterminate_failure"])
                 system_status, system_response, decision_label, rationale_code = (
                     "warning",
                     "warn",
@@ -585,7 +594,7 @@ def build_evaluation_control_decision(
                     "require_review_warning_signal",
                 )
             if "review_scale_not_recommended" in failure_modes and decision_label != "deny":
-                triggered_signals = list(dict.fromkeys([*triggered_signals, "stability_breach"]))
+                triggered_signals = dedupe_preserve_order([*triggered_signals, "stability_breach"])
                 system_status, system_response, decision_label, rationale_code = (
                     "exhausted",
                     "freeze",
@@ -594,12 +603,37 @@ def build_evaluation_control_decision(
                 )
 
     if required_type_set and not required_type_set.issubset(observed_review_types):
-        triggered_signals = list(dict.fromkeys([*triggered_signals, "missing_required_signal"]))
+        triggered_signals = dedupe_preserve_order([*triggered_signals, "missing_required_signal"])
         system_status, system_response, decision_label, rationale_code = (
             "blocked",
             "block",
             "deny",
             "deny_missing_required_signal",
+        )
+    replay_consistency_status = str(eval_summary.get("consistency_status") or "")
+    if (
+        replay_consistency_status == "mismatch"
+        and "missing_required_signal" not in triggered_signals
+        and not saw_review_eval_fail
+    ):
+        triggered_signals = dedupe_preserve_order([*triggered_signals, "stability_breach"])
+        system_status, system_response, decision_label, rationale_code = (
+            "exhausted",
+            "freeze",
+            "deny",
+            "deny_stability_breach",
+        )
+    if (
+        "indeterminate_failure" in triggered_signals
+        and "missing_required_signal" not in triggered_signals
+        and not saw_review_eval_fail
+        and replay_consistency_status != "mismatch"
+    ):
+        system_status, system_response, decision_label, rationale_code = (
+            "exhausted",
+            "freeze",
+            "deny",
+            "deny_trust_breach",
         )
 
     schema_version = "1.2.0"

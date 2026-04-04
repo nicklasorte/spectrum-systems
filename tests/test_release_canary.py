@@ -191,8 +191,9 @@ def test_rollback_triggered_by_control_block() -> None:
     candidate_summary = _eval_summary("cand-run", pass_rate=1.0, trace_suffix="5")
     candidate_summary["reproducibility_score"] = 0.0
     record = _build(candidate_eval_summary=candidate_summary)
-    assert record["decision"] == "rollback"
-    assert record["rollback_target_version"] == "baseline-v1"
+    assert record["decision"] == "hold"
+    assert record["rollback_target_version"] is None
+    assert record["canary_comparison_results"]["control_responses"]["candidate"] == "freeze"
 
 
 def test_deterministic_results_across_runs() -> None:

@@ -32,6 +32,14 @@ _SECTION_SPLIT = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 _METADATA_TABLE_ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$")
 
 
+def canonical_json(obj: dict[str, Any]) -> bytes:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def dedupe_preserve_order(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))
+
+
 def _normalize_review_type(value: str) -> str:
     raw = value.strip().lower()
     if raw in _ALLOWED_REVIEW_TYPES:
@@ -129,7 +137,7 @@ def _extract_critical_findings(section_text: str) -> list[str]:
                 findings.append(finding)
         elif stripped.startswith("### "):
             findings.append(stripped.removeprefix("### ").strip())
-    return sorted(dict.fromkeys(findings))
+    return dedupe_preserve_order(findings)
 
 
 def _resolve_gate_assessment(frontmatter: dict[str, str], findings: list[str]) -> str:
@@ -186,7 +194,7 @@ def extract_review_signal(review_markdown_path: str | Path) -> dict[str, Any]:
         "critical_findings": critical_findings,
         "path": review_path.as_posix(),
     }
-    payload_digest = hashlib.sha256(json.dumps(payload_seed, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    payload_digest = hashlib.sha256(canonical_json(payload_seed)).hexdigest()
     artifact_id = deterministic_id(prefix="rcs", namespace="review_control_signal", payload=payload_seed)
     signal = {
         "artifact_type": "review_control_signal",

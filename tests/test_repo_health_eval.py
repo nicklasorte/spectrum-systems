@@ -83,7 +83,7 @@ def test_repo_health_control_block_behavior() -> None:
     }
     artifacts = build_repo_health_eval(snapshot)
     decision = build_repo_health_control_decision(snapshot=snapshot, eval_summary=artifacts["eval_summary"])
-    assert decision["system_response"] == "block"
+    assert decision["system_response"] == "freeze"
 
 
 def test_repo_health_missing_review_artifact_fails_closed() -> None:
@@ -107,7 +107,7 @@ def test_repo_health_severe_review_risk_path_blocks() -> None:
     artifacts = build_repo_health_eval(snapshot)
     decision = build_repo_health_control_decision(snapshot=snapshot, eval_summary=artifacts["eval_summary"])
     assert decision["decision"] == "deny"
-    assert decision["system_response"] == "block"
+    assert decision["system_response"] == "freeze"
 
 
 def test_repo_health_eval_summary_degraded_for_minor_drift() -> None:
