@@ -23,5 +23,10 @@
     "adaptive_execution_trend_report:AET-EXAMPLE0001"
   ],
   "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-next-cycle-example"
+  "trace_id": "trace-next-cycle-example",
+  "required_reviews": [
+    "cross_layer_propagation_review"
+  ],
+  "continuation_depth": 1,
+  "source_cycle_runner_result_ref": "cycle_runner_result:CRR-1A2B3C4D5E6F"
 }

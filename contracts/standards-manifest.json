@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.48",
-  "schema_version": "1.3.49",
-  "standards_version": "1.3.48",
-  "record_id": "REC-STD-2026-04-04-BATCH-CYCLE-LOOP",
-  "run_id": "run-20260404T000000Z-batch-cycle-loop",
+  "artifact_version": "1.3.50",
+  "schema_version": "1.3.50",
+  "standards_version": "1.3.50",
+  "record_id": "REC-STD-2026-04-04-BATCH-CYCLE-HARDEN",
+  "run_id": "run-20260404T000000Z-batch-cycle-harden",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.48",
+  "source_repo_version": "1.3.50",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -1511,15 +1511,15 @@
     {
       "artifact_type": "cycle_runner_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.49",
-      "last_updated_in": "1.3.49",
+      "last_updated_in": "1.3.50",
       "example_path": "contracts/examples/cycle_runner_result.json",
-      "notes": "BATCH-CYCLE-RUNNER deterministic one-step bounded next-cycle runner result artifact recording execution/refusal and trace-linked outputs."
+      "notes": "BATCH-CYCLE-HARDEN adds structured error_detail, refusal severity, and replay entry point fields while preserving deterministic bounded next-cycle runner result semantics."
     },
     {
       "artifact_type": "next_cycle_decision",
@@ -1537,15 +1537,28 @@
     {
       "artifact_type": "next_cycle_input_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.48",
-      "last_updated_in": "1.3.48",
+      "last_updated_in": "1.3.50",
       "example_path": "contracts/examples/next_cycle_input_bundle.json",
-      "notes": "BATCH-CYCLE-LOOP machine-readable handoff bundle containing required artifacts, blockers, and context refs for the next bounded cycle."
+      "notes": "BATCH-CYCLE-HARDEN adds continuation depth, required review separation, and cycle runner provenance refs for bounded fail-closed continuation chaining."
+    },
+    {
+      "artifact_type": "execution_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.50",
+      "last_updated_in": "1.3.50",
+      "example_path": "contracts/examples/execution_policy.json",
+      "notes": "BATCH-CYCLE-HARDEN explicit execution policy contract for max batch and continuation-depth fail-closed validation before cycle execution."
     },
     {
       "artifact_type": "next_slice_handoff",

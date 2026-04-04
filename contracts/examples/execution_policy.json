@@ -1,0 +1,7 @@
+{
+  "max_batches_per_run": 1,
+  "max_continuation_depth": 3,
+  "allow_warn_execution": true,
+  "stop_on_warn": false,
+  "stop_on_hard_gate": true
+}

@@ -13,10 +13,13 @@
     "attempted_execution",
     "execution_status",
     "refusal_reason_codes",
+    "refusal_severity",
     "executed_cycle_id",
     "emitted_artifact_refs",
     "next_cycle_decision_ref",
     "next_cycle_input_bundle_ref",
+    "replay_entry_point",
+    "error_detail",
     "created_at",
     "trace_id"
   ],
@@ -61,7 +64,10 @@
           "input_bundle_invalid",
           "trace_mismatch",
           "execution_precondition_missing",
-          "execution_error"
+          "execution_error",
+          "continuation_depth_exceeded",
+          "provenance_chain_invalid",
+          "invalid_execution_policy"
         ]
       },
       "uniqueItems": true
@@ -102,6 +108,71 @@
     "trace_id": {
       "type": "string",
       "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "refusal_severity": {
+      "type": "string",
+      "enum": [
+        "expected",
+        "abnormal"
+      ]
+    },
+    "error_detail": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "replay_entry_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_artifact_refs",
+        "decision_refs",
+        "bundle_refs",
+        "execution_refs"
+      ],
+      "properties": {
+        "input_artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          },
+          "uniqueItems": true
+        },
+        "decision_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          },
+          "uniqueItems": true
+        },
+        "bundle_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          },
+          "uniqueItems": true
+        },
+        "execution_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          },
+          "uniqueItems": true
+        }
+      }
     }
   },
   "allOf": [

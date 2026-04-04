@@ -102,7 +102,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -159,6 +159,9 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["next_cycle_input_bundle"], "next_cycle_input_bundle")
     assert first["next_cycle_decision"]["next_cycle_inputs_ref"] == first["next_step_recommendation"]["next_cycle_inputs_ref"]
     assert first["next_cycle_input_bundle"]["bundle_id"] in first["next_step_recommendation"]["next_cycle_inputs_ref"]
+    assert "required_reviews" in first["next_cycle_input_bundle"]
+    assert first["next_cycle_input_bundle"]["continuation_depth"] == 1
+    assert first["next_cycle_input_bundle"]["source_cycle_runner_result_ref"].startswith("cycle_runner_result:CRR-")
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -172,7 +175,7 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
         integration_inputs=integration_inputs,
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -226,7 +229,7 @@ def test_candidate_ranking_is_deterministic_and_sorted() -> None:
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -249,7 +252,7 @@ def test_blocked_candidates_prioritize_unblock_path() -> None:
         integration_inputs=integration_inputs,
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -272,7 +275,7 @@ def test_candidate_generation_consumes_prg_ctx_rvw_signals() -> None:
         integration_inputs=integration_inputs,
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -298,7 +301,7 @@ def test_authority_boundary_breaks_raise_risk_level() -> None:
         integration_inputs=integration_inputs,
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -352,7 +355,7 @@ def test_operator_artifacts_surface_program_alignment_and_program_caused_stop_st
         integration_inputs=_integration_inputs(),
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
-        execution_policy={"max_batches_per_run": 1},
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
@@ -411,3 +414,21 @@ def test_next_cycle_decision_escalates_on_high_drift_and_is_deterministic() -> N
     assert first == second
     assert first["decision"] == "escalate"
     assert "program_drift_high" in first["decision_reason_codes"]
+
+
+def test_invalid_execution_policy_fails_closed() -> None:
+    try:
+        run_system_cycle(
+            roadmap_artifact=_roadmap(),
+            selection_signals=_selection_signals(),
+            authorization_signals=_authorization_signals(),
+            integration_inputs=_integration_inputs(),
+            pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+            pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+            execution_policy={"max_batches_per_run": 1, "max_continuation_depth": -1},
+            created_at="2026-04-03T23:59:00Z",
+            pqx_execute_fn=_pqx_stub,
+        )
+        assert False, "expected SystemCycleOperatorError"
+    except sco.SystemCycleOperatorError as exc:
+        assert "execution_policy" in str(exc)

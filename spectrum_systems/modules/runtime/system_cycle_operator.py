@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -24,10 +23,6 @@ class SystemCycleOperatorError(ValueError):
     """Raised when a system cycle cannot be produced deterministically."""
 
 
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
 def _canonical_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
@@ -41,6 +36,17 @@ def _validate_schema(instance: dict[str, Any], schema_name: str) -> None:
         raise SystemCycleOperatorError(f"{schema_name} validation failed: {details}")
 
 
+
+
+def _normalize_execution_policy(execution_policy: dict[str, Any] | None) -> dict[str, Any]:
+    normalized = dict(execution_policy or {})
+    normalized.setdefault("max_batches_per_run", 1)
+    normalized.setdefault("max_continuation_depth", 0)
+    normalized.setdefault("allow_warn_execution", True)
+    normalized.setdefault("stop_on_warn", False)
+    normalized.setdefault("stop_on_hard_gate", True)
+    _validate_schema(normalized, "execution_policy")
+    return normalized
 def _next_not_started_batch_id(roadmap_artifact: dict[str, Any]) -> str | None:
     for batch in roadmap_artifact.get("batches", []):
         if isinstance(batch, dict) and batch.get("status") == "not_started":
@@ -494,6 +500,8 @@ def _build_next_cycle_input_bundle(
     risk_signals: list[str],
     blocking_conditions: list[str],
     required_reviews: list[str],
+    continuation_depth: int,
+    source_cycle_runner_result_ref: str,
     trace_navigation: dict[str, Any],
     adaptive_refs: list[str],
     trace_id: str,
@@ -509,6 +517,8 @@ def _build_next_cycle_input_bundle(
         "risk_level": risk_level,
         "blocking_conditions": sorted(set(blocking_conditions)),
         "required_reviews": sorted(set(required_reviews)),
+        "continuation_depth": continuation_depth + 1,
+        "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
         "trace_id": trace_id,
     }
     bundle_id = f"NCB-{_canonical_hash(seed)[:12].upper()}"
@@ -536,7 +546,10 @@ def _build_next_cycle_input_bundle(
             )
         ),
         "active_risks": sorted(set([f"risk_level={risk_level}"] + list(risk_signals))),
-        "unresolved_blockers": sorted(set(blocking_conditions + required_reviews)),
+        "unresolved_blockers": sorted(set(blocking_conditions)),
+        "required_reviews": sorted(set(required_reviews)),
+        "continuation_depth": continuation_depth + 1,
+        "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
         "recommended_start_batch": next_batch_id,
         "context_refs": context_refs,
         "created_at": created_at,
@@ -641,11 +654,14 @@ def run_system_cycle(
     pqx_runs_root: Path,
     execution_policy: dict[str, Any] | None = None,
     source_refs: list[str] | None = None,
-    created_at: str | None = None,
+    created_at: str,
     pqx_execute_fn: Callable[..., dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Run one full bounded system cycle and emit operator-focused summary artifacts."""
-    timestamp = created_at or _utc_now()
+    if not isinstance(created_at, str) or not created_at.strip():
+        raise SystemCycleOperatorError("created_at is required for deterministic system cycle execution")
+    timestamp = created_at
+    normalized_execution_policy = _normalize_execution_policy(execution_policy)
 
     multi_batch = execute_bounded_roadmap_run(
         roadmap_artifact,
@@ -653,7 +669,7 @@ def run_system_cycle(
         authorization_signals,
         pqx_state_path=pqx_state_path,
         pqx_runs_root=pqx_runs_root,
-        execution_policy=execution_policy,
+        execution_policy=normalized_execution_policy,
         evaluated_at=timestamp,
         executed_at=timestamp,
         validated_at=timestamp,
@@ -819,6 +835,8 @@ def run_system_cycle(
     )
     remediation_plan_ref = f"remediation_plan:{remediation_plan['plan_id']}"
     required_artifacts_for_next_cycle = sorted(set(selected_candidate["required_artifacts"]))
+    continuation_depth = int(integration_inputs.get("continuation_depth", 0))
+    source_cycle_runner_result_ref = str(integration_inputs.get("source_cycle_runner_result_ref") or "cycle_runner_result:CRR-000000000000")
     next_cycle_input_bundle = _build_next_cycle_input_bundle(
         current_cycle_id=str(run_result["run_id"]),
         required_artifacts=required_artifacts_for_next_cycle,
@@ -830,6 +848,8 @@ def run_system_cycle(
         risk_signals=risk_signals,
         blocking_conditions=blocking_conditions,
         required_reviews=required_reviews,
+        continuation_depth=continuation_depth,
+        source_cycle_runner_result_ref=source_cycle_runner_result_ref,
         trace_navigation=trace_navigation,
         adaptive_refs=[adaptive_observability_ref, adaptive_trend_ref, adaptive_policy_review_ref],
         trace_id=integration["trace_id"],

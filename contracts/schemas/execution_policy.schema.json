@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/execution_policy.schema.json",
+  "title": "execution_policy",
+  "description": "Deterministic execution policy for bounded governed cycle execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "max_batches_per_run",
+    "max_continuation_depth",
+    "allow_warn_execution",
+    "stop_on_warn",
+    "stop_on_hard_gate"
+  ],
+  "properties": {
+    "max_batches_per_run": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "min_cap",
+            "max_cap"
+          ],
+          "properties": {
+            "min_cap": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_cap": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      ]
+    },
+    "max_continuation_depth": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "allow_warn_execution": {
+      "type": "boolean"
+    },
+    "stop_on_warn": {
+      "type": "boolean"
+    },
+    "stop_on_hard_gate": {
+      "type": "boolean"
+    }
+  }
+}

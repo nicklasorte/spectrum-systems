@@ -18,5 +18,30 @@
   "next_cycle_decision_ref": "next_cycle_decision:NCD-2B3C4D5E6F7A",
   "next_cycle_input_bundle_ref": "next_cycle_input_bundle:NCB-8B91C2D3E4F5",
   "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-next-cycle-example"
+  "trace_id": "trace-next-cycle-example",
+  "refusal_severity": "expected",
+  "error_detail": null,
+  "replay_entry_point": {
+    "input_artifact_refs": [
+      "next_cycle_decision:NCD-1A2B3C4D5E6F",
+      "next_cycle_input_bundle:NCB-7A90B1C2D3E4",
+      "cycle_runner_result:CRR-1A2B3C4D5E6F"
+    ],
+    "decision_refs": [
+      "next_cycle_decision:NCD-1A2B3C4D5E6F",
+      "next_cycle_decision:NCD-2B3C4D5E6F7A"
+    ],
+    "bundle_refs": [
+      "next_cycle_input_bundle:NCB-7A90B1C2D3E4",
+      "next_cycle_input_bundle:NCB-8B91C2D3E4F5"
+    ],
+    "execution_refs": [
+      "roadmap_multi_batch_run_result:RMB-EXAMPLECYCLE2",
+      "core_system_integration_validation:CSIV-EXAMPLE0002",
+      "next_step_recommendation:NSR-EXAMPLE0002",
+      "build_summary:BSR-EXAMPLE0002",
+      "next_cycle_decision:NCD-2B3C4D5E6F7A",
+      "next_cycle_input_bundle:NCB-8B91C2D3E4F5"
+    ]
+  }
 }
