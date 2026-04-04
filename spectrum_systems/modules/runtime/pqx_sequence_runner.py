@@ -387,17 +387,6 @@ def _build_tpa_slice_artifact(
     return artifact
 
 
-def _deterministic_gate_selection(*, run_id: str, step_id: str, build_artifact_id: str, simplify_artifact_id: str) -> str:
-    hash_payload = {
-        "run_id": run_id,
-        "step_id": step_id,
-        "build_artifact_id": build_artifact_id,
-        "simplify_artifact_id": simplify_artifact_id,
-    }
-    digest = _canonical_hash(hash_payload)
-    return "pass_1_build" if int(digest[-1], 16) % 2 == 0 else "pass_2_simplify"
-
-
 _REQUIRED_COMPLEXITY_SIGNAL_KEYS = (
     "files_changed_count",
     "lines_added",
