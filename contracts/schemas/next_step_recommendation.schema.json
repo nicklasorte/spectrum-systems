@@ -27,7 +27,11 @@
     "quick_links",
     "trace_id",
     "created_at",
-    "source_refs"
+    "source_refs",
+    "execution_path_type",
+    "program_alignment_status",
+    "program_stop_cause",
+    "program_drift_severity"
   ],
   "properties": {
     "recommendation_id": {
@@ -36,7 +40,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.5.0"
+      "const": "1.6.0"
     },
     "next_batch_id": {
       "type": [
@@ -534,7 +538,33 @@
     },
     "stop_reason": {
       "type": "string",
-      "minLength": 3
+      "enum": [
+        "max_batches_reached",
+        "hard_gate_stop",
+        "authorization_block",
+        "authorization_freeze",
+        "missing_required_signal",
+        "execution_blocked",
+        "execution_failed",
+        "loop_validation_failed",
+        "replay_not_ready",
+        "invalid_roadmap_state",
+        "invalid_progress_state",
+        "contract_precondition_failed",
+        "no_eligible_batch",
+        "diminishing_returns_detected",
+        "repeated_failure_pattern",
+        "unresolved_blocker_persists",
+        "risk_accumulation_threshold_exceeded",
+        "control_block",
+        "control_freeze",
+        "program_blocking_condition",
+        "program_priority_violation",
+        "program_alignment_invalid",
+        "program_drift_detected",
+        "eval_health_degraded",
+        "manual_review_required"
+      ]
     },
     "next_batch_candidate": {
       "type": [
@@ -542,6 +572,38 @@
         "null"
       ],
       "pattern": "^BATCH-[A-Z]$"
+    },
+    "execution_path_type": {
+      "type": "string",
+      "enum": [
+        "positive_path",
+        "negative_path"
+      ]
+    },
+    "program_alignment_status": {
+      "type": "string",
+      "enum": [
+        "aligned",
+        "misaligned"
+      ]
+    },
+    "program_stop_cause": {
+      "type": "string",
+      "enum": [
+        "none",
+        "program_alignment_invalid",
+        "program_priority_violation",
+        "program_blocking_condition",
+        "program_drift_detected"
+      ]
+    },
+    "program_drift_severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
     }
   },
   "$defs": {

@@ -439,5 +439,24 @@ def test_execute_bounded_run_blocks_when_roadmap_program_alignment_invalid(tmp_p
         run_executed_at="2026-04-03T20:03:00Z",
         pqx_execute_fn=_pqx_success,
     )["run_result"]
-    assert result["stop_reason"] == "program_violation_disallowed_target"
+    assert result["stop_reason"] == "program_alignment_invalid"
+    assert result["stop_reason_codes"] == ["program_alignment_invalid"]
+    assert result["execution_path_type"] == "negative_path"
+    assert result["program_alignment_status"] == "misaligned"
+    assert result["program_stop_cause"] == "program_alignment_invalid"
+    assert result["program_drift_severity"] == "low"
     assert result["attempted_batch_ids"] == []
+
+
+def test_should_continue_stops_on_program_drift_detected() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={},
+        program_drift_signal={"drift_level": "high"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["program_drift_detected"]

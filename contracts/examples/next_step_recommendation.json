@@ -1,6 +1,6 @@
 {
   "recommendation_id": "NSR-7D568E86D860",
-  "schema_version": "1.5.0",
+  "schema_version": "1.6.0",
   "next_batch_id": "BATCH-B",
   "why": [
     "bounded run completed one batch without authority violations",
@@ -312,5 +312,9 @@
   },
   "continuation_decision": "continue",
   "stop_reason": "max_batches_reached",
-  "next_batch_candidate": "BATCH-B"
+  "next_batch_candidate": "BATCH-B",
+  "execution_path_type": "positive_path",
+  "program_alignment_status": "aligned",
+  "program_stop_cause": "none",
+  "program_drift_severity": "low"
 }
