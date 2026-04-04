@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.14.0",
+  "schema_version": "1.15.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -292,5 +292,9 @@
   ],
   "policy_activation_ref": "policy_activation_record:PAC-1111AAAABBBB",
   "policy_conflict_refs": [],
-  "active_policy_refs": []
+  "active_policy_refs": [],
+  "monitoring_contract_ref": "operations_monitoring_contract:OMC-1A2B3C4D5E6F",
+  "operational_severity": "normal",
+  "operational_required_action": "none",
+  "operational_escalation_state": "none"
 }

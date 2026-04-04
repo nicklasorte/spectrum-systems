@@ -1,6 +1,6 @@
 {
   "snapshot_id": "TPS-111111111111",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "overall_trust_state": "healthy",
   "eval_pass_rate": 0.99,
   "drift_status": "stable",
@@ -8,5 +8,9 @@
   "override_rate": 0.0,
   "readiness_state": "supervised",
   "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-example-batch-12"
+  "trace_id": "trace-example-batch-12",
+  "monitoring_contract_ref": "operations_monitoring_contract:OMC-1A2B3C4D5E6F",
+  "operational_severity": "normal",
+  "operational_required_action": "none",
+  "operational_escalation_state": "none"
 }

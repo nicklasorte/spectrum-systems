@@ -1,0 +1,273 @@
+{
+  "contract_id": "OMC-1A2B3C4D5E6F",
+  "schema_version": "1.0.0",
+  "monitored_signals": [
+    {
+      "signal_name": "capability_readiness_state",
+      "source_artifact_type": "capability_readiness_record",
+      "metric_definition": "current readiness_state enum from capability_readiness_record",
+      "threshold_values": {
+        "normal": "state in {supervised, autonomous}",
+        "warning": "state == constrained",
+        "freeze": "state == constrained on promotion-sensitive flow",
+        "block": "state == unsafe"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "investigate"
+    },
+    {
+      "signal_name": "drift_severity",
+      "source_artifact_type": "drift_detection_record",
+      "metric_definition": "current drift severity classification on governed path",
+      "threshold_values": {
+        "normal": "severity == none",
+        "warning": "severity == warning",
+        "freeze": "severity == freeze",
+        "block": "severity == block"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "investigate"
+    },
+    {
+      "signal_name": "override_rate",
+      "source_artifact_type": "override_governance_record",
+      "metric_definition": "override_count / decision_count for batch window",
+      "threshold_values": {
+        "normal": "rate <= 0.05",
+        "warning": "0.05 < rate <= 0.10",
+        "freeze": "0.10 < rate <= 0.15",
+        "block": "rate > 0.15"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "observe"
+    },
+    {
+      "signal_name": "replay_match_rate",
+      "source_artifact_type": "replay_execution_record",
+      "metric_definition": "matching replays / total replay checks in bounded window",
+      "threshold_values": {
+        "normal": "rate >= 0.98",
+        "warning": "0.95 <= rate < 0.98",
+        "freeze": "0.90 <= rate < 0.95",
+        "block": "rate < 0.90"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "intervene"
+    },
+    {
+      "signal_name": "decision_quality_budget_status",
+      "source_artifact_type": "decision_quality_budget_status",
+      "metric_definition": "latest decision quality budget classification",
+      "threshold_values": {
+        "normal": "status == healthy",
+        "warning": "status == warning",
+        "freeze": "status == exhausted",
+        "block": "status == critical"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "investigate"
+    },
+    {
+      "signal_name": "promotion_consistency_status",
+      "source_artifact_type": "promotion_consistency_record",
+      "metric_definition": "promotion consistency status on current path",
+      "threshold_values": {
+        "normal": "status == consistent",
+        "warning": "status == needs_review",
+        "freeze": "status == inconsistent",
+        "block": "status == invalid"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "intervene"
+    },
+    {
+      "signal_name": "policy_conflict_count",
+      "source_artifact_type": "policy_conflict_record",
+      "metric_definition": "count of unresolved policy conflicts in active batch",
+      "threshold_values": {
+        "normal": "count == 0",
+        "warning": "count == 1",
+        "freeze": "2 <= count <= 3",
+        "block": "count >= 4"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "investigate"
+    },
+    {
+      "signal_name": "stale_artifact_ratio",
+      "source_artifact_type": "batch_handoff_bundle",
+      "metric_definition": "stale carry-forward artifacts / total carry-forward artifacts",
+      "threshold_values": {
+        "normal": "ratio <= 0.05",
+        "warning": "0.05 < ratio <= 0.10",
+        "freeze": "0.10 < ratio <= 0.20",
+        "block": "ratio > 0.20"
+      },
+      "severity_levels": [
+        "normal",
+        "warning",
+        "freeze",
+        "block"
+      ],
+      "operator_action": "observe"
+    }
+  ],
+  "thresholds": {
+    "capability_readiness_state": {
+      "normal": [
+        "supervised",
+        "autonomous"
+      ],
+      "warning": [
+        "constrained"
+      ],
+      "freeze": [
+        "constrained"
+      ],
+      "block": [
+        "unsafe"
+      ]
+    },
+    "drift_severity": {
+      "normal": [
+        "none"
+      ],
+      "warning": [
+        "warning"
+      ],
+      "freeze": [
+        "freeze"
+      ],
+      "block": [
+        "block"
+      ]
+    },
+    "override_rate": {
+      "normal_max": 0.05,
+      "warning_max": 0.1,
+      "freeze_max": 0.15,
+      "block_min": 0.150001
+    },
+    "replay_match_rate": {
+      "normal_min": 0.98,
+      "warning_min": 0.95,
+      "freeze_min": 0.9,
+      "block_max": 0.899999
+    },
+    "decision_quality_budget_status": {
+      "normal": [
+        "healthy"
+      ],
+      "warning": [
+        "warning"
+      ],
+      "freeze": [
+        "exhausted"
+      ],
+      "block": [
+        "critical"
+      ]
+    },
+    "promotion_consistency_status": {
+      "normal": [
+        "consistent"
+      ],
+      "warning": [
+        "needs_review"
+      ],
+      "freeze": [
+        "inconsistent"
+      ],
+      "block": [
+        "invalid"
+      ]
+    },
+    "policy_conflict_count": {
+      "normal_max": 0,
+      "warning_max": 1,
+      "freeze_max": 3,
+      "block_min": 4
+    },
+    "stale_artifact_ratio": {
+      "normal_max": 0.05,
+      "warning_max": 0.1,
+      "freeze_max": 0.2,
+      "block_min": 0.200001
+    }
+  },
+  "severity_mapping": {
+    "normal": "Signals in-bounds; unattended operation may continue.",
+    "warning": "Early deviation; observe and log with no control interruption.",
+    "freeze": "Unstable state; pause progression pending deterministic triage.",
+    "block": "Critical violation; stop progression and require remediation before resume."
+  },
+  "required_actions": {
+    "normal": "none",
+    "warning": "observe",
+    "freeze": "investigate",
+    "block": "intervene"
+  },
+  "escalation_rules": [
+    {
+      "severity": "normal",
+      "escalation_state": "none",
+      "required_action": "none",
+      "condition": "all signals map to normal"
+    },
+    {
+      "severity": "warning",
+      "escalation_state": "watch",
+      "required_action": "observe",
+      "condition": "one or more signals map to warning and none map to freeze/block"
+    },
+    {
+      "severity": "freeze",
+      "escalation_state": "paused",
+      "required_action": "investigate",
+      "condition": "one or more signals map to freeze and none map to block"
+    },
+    {
+      "severity": "block",
+      "escalation_state": "remediation_required",
+      "required_action": "intervene",
+      "condition": "one or more signals map to block"
+    }
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-ops-01-monitoring"
+}

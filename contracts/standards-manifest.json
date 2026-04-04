@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.64",
   "schema_version": "1.3.64",
-  "standards_version": "1.3.64",
+  "standards_version": "1.3.65",
   "record_id": "REC-STD-2026-04-04-BATCH-LTV-D",
   "run_id": "run-20260404T000000Z-batch-ltv-d",
   "created_at": "2026-04-04T00:00:00Z",
@@ -302,13 +302,13 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.9.0",
+      "schema_version": "1.10.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.64",
+      "last_updated_in": "1.3.65",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
       "notes": "BATCH-LTV-D handoff now carries policy candidate/activation/conflict and active policy refs for deterministic cross-cycle control continuity."
     },
@@ -341,13 +341,13 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.14.0",
+      "schema_version": "1.15.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.64",
+      "last_updated_in": "1.3.65",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-LTV-D adds policy candidate/activation/conflict visibility and active-policy propagation for governed policy rollout."
     },
@@ -1950,6 +1950,19 @@
       "notes": "SRE-10 deterministic metrics aggregation artifact for replay/runtime control outputs with strict bounded metric vocabulary and optional SLO breach summary."
     },
     {
+      "artifact_type": "operations_monitoring_contract",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.65",
+      "last_updated_in": "1.3.65",
+      "example_path": "contracts/examples/operations_monitoring_contract.json",
+      "notes": "OPS-01 governed deterministic unattended-operations monitoring thresholds, severity mapping, and escalation/action contract."
+    },
+    {
       "artifact_type": "operator_backlog_handoff",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3535,13 +3548,13 @@
     {
       "artifact_type": "trust_posture_snapshot",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.61",
-      "last_updated_in": "1.3.61",
+      "last_updated_in": "1.3.65",
       "example_path": "contracts/examples/trust_posture_snapshot.json",
       "notes": "BATCH-12 ST-18 deterministic system trust posture snapshot aggregated from governed artifacts."
     },

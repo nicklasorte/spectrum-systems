@@ -206,6 +206,24 @@ def build_observability_reports(
     elif drift_status == "warning" or readiness_state == "constrained":
         trust_state = "watch"
 
+    monitoring_contract_ref = f"operations_monitoring_contract:OMC-{_canonical_hash({'trace_id': trace_id, 'created_at': created_at})[:12].upper()}"
+    if trust_state == "critical":
+        operational_severity = "block"
+        operational_required_action = "intervene"
+        operational_escalation_state = "remediation_required"
+    elif trust_state == "degraded":
+        operational_severity = "freeze"
+        operational_required_action = "investigate"
+        operational_escalation_state = "paused"
+    elif trust_state == "watch":
+        operational_severity = "warning"
+        operational_required_action = "observe"
+        operational_escalation_state = "watch"
+    else:
+        operational_severity = "normal"
+        operational_required_action = "none"
+        operational_escalation_state = "none"
+
     snapshot_seed = {
         "eval_pass_rate": eval_pass_rate,
         "drift_status": drift_status,
@@ -213,17 +231,22 @@ def build_observability_reports(
         "override_rate": _rate(override_rate),
         "readiness_state": readiness_state,
         "trust_state": trust_state,
+        "monitoring_contract_ref": monitoring_contract_ref,
         "trace_id": trace_id,
     }
     trust_posture_snapshot = {
         "snapshot_id": f"TPS-{_canonical_hash(snapshot_seed)[:12].upper()}",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "overall_trust_state": trust_state,
         "eval_pass_rate": eval_pass_rate,
         "drift_status": drift_status,
         "replay_consistency": replay_consistency,
         "override_rate": _rate(override_rate),
         "readiness_state": readiness_state,
+        "monitoring_contract_ref": monitoring_contract_ref,
+        "operational_severity": operational_severity,
+        "operational_required_action": operational_required_action,
+        "operational_escalation_state": operational_escalation_state,
         "created_at": created_at,
         "trace_id": trace_id,
     }
