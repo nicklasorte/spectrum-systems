@@ -1,0 +1,128 @@
+{
+  "review_id": "BCLR-2026-04-04-001",
+  "summary_judgment": "READY WITH HARDENING",
+  "scope": [
+    "next_cycle_decision",
+    "next_cycle_input_bundle",
+    "cycle_runner_result",
+    "run_next_governed_cycle",
+    "continuation + program enforcement interaction"
+  ],
+  "top_risks": [
+    {
+      "risk_id": "BCLR-R1",
+      "title": "No explicit max-chain-depth bound on multi-invocation continuation",
+      "location": "spectrum_systems/modules/runtime/next_governed_cycle_runner.py:93-261",
+      "severity": "high",
+      "description": "run_next_governed_cycle executes one cycle and emits next_cycle_decision_ref + next_cycle_input_bundle_ref. Nothing prevents an external orchestrator from chaining these indefinitely. Boundedness is local per-call but not global across the chain.",
+      "why_it_matters": "Misconfigured or adversarial caller can chain governed cycles indefinitely without human checkpoint.",
+      "minimal_fix": "Add continuation_depth to next_cycle_input_bundle. Add max_continuation_depth to execution_policy. Refuse if depth exceeds max."
+    },
+    {
+      "risk_id": "BCLR-R2",
+      "title": "Timestamp-sourced nondeterminism when created_at is omitted",
+      "location": "spectrum_systems/modules/runtime/next_governed_cycle_runner.py:109",
+      "severity": "medium",
+      "description": "When created_at is None, _utc_now() is used. Since created_at flows into _canonical_hash, the cycle_runner_result_id becomes nondeterministic across runs.",
+      "why_it_matters": "Replay and determinism verification depend on stable artifact IDs. Nondeterministic IDs break replay chain consistency.",
+      "minimal_fix": "Make created_at mandatory or exclude it from the ID hash seed."
+    },
+    {
+      "risk_id": "BCLR-R3",
+      "title": "unresolved_blockers conflation with required_reviews in bundle generation",
+      "location": "spectrum_systems/modules/runtime/system_cycle_operator.py:539",
+      "severity": "medium",
+      "description": "_build_next_cycle_input_bundle sets unresolved_blockers = blocking_conditions + required_reviews. Any required review becomes an unresolved blocker, causing the runner to refuse execution even when blocking conditions are resolved.",
+      "why_it_matters": "Overly conservative refusal stalls the loop when the cycle is genuinely ready to proceed.",
+      "minimal_fix": "Only include blocking reviews in unresolved_blockers. Separate advisory reviews into active_risks or a new field."
+    },
+    {
+      "risk_id": "BCLR-R4",
+      "title": "Broad exception swallowing masks root cause on execution failure",
+      "location": "spectrum_systems/modules/runtime/next_governed_cycle_runner.py:201",
+      "severity": "medium",
+      "description": "except (SystemCycleOperatorError, ValueError, TypeError) catches broad exception types. Error strings are embedded in emitted_artifact_refs as error:{exc}, polluting the ref namespace.",
+      "why_it_matters": "ValueError/TypeError can mask unrelated bugs. Unstructured error strings in artifact refs may fail downstream validation.",
+      "minimal_fix": "Narrow except to SystemCycleOperatorError. Add error_detail field to cycle_runner_result schema."
+    },
+    {
+      "risk_id": "BCLR-R5",
+      "title": "Trace ID cross-validation is string-equality only, no provenance chain",
+      "location": "spectrum_systems/modules/runtime/next_governed_cycle_runner.py:140-141",
+      "severity": "medium",
+      "description": "Runner checks trace_id equality between decision and bundle but does not verify trace_id references a real previous cycle or chains to existing lineage. Fabricated matching trace IDs bypass validation.",
+      "why_it_matters": "Trace integrity is the foundation of replay and audit. Without provenance validation, synthetic decision+bundle pairs can bypass the governed chain.",
+      "minimal_fix": "Add source_cycle_runner_result_ref to next_cycle_input_bundle. Validate it references a previously emitted cycle_runner_result_id."
+    }
+  ],
+  "determinism_risks": [
+    "Timestamp fallback: _utc_now() when created_at is None makes all downstream hashes nondeterministic",
+    "pqx_execute_fn opaqueness: injected execution function is a black box whose return value is not schema-validated inside run_next_governed_cycle",
+    "Sort stability: sorted(set(...)) is deterministic for strings but no type guard enforces string-only inputs"
+  ],
+  "governance_risks": [
+    "Control bypass via direct call: run_system_cycle can be called directly bypassing decision/bundle gating in run_next_governed_cycle",
+    "Program enforcement gap: decide_next_cycle does not validate that the program artifact is schema-valid or current",
+    "No authorization re-validation: authorization_signals are not re-validated against current control plane state at runner invocation time"
+  ],
+  "boundedness_risks": [
+    "Single-call bounded, multi-call unbounded: emitted next_cycle_decision_ref and next_cycle_input_bundle_ref enable implicit unbounded chaining",
+    "No timeout or resource budget: runner has no execution timeout; hanging run_system_cycle hangs the runner indefinitely",
+    "execution_policy not validated: no schema validation on execution_policy before pass-through to run_system_cycle"
+  ],
+  "replay_risks": [
+    "Trace ID is opaque string with permissive pattern; no enforcement that it references real trace lineage",
+    "No replay entry point in cycle_runner_result: result has emitted_artifact_refs but no structured replay entry point",
+    "bundle_consumption_summary is not schema-validated: uncontracted output surface"
+  ],
+  "operator_risks": [
+    "Refusal reason codes lack severity ranking: flat array with no primary/secondary distinction",
+    "No escalation channel: decision=escalate produces refusal but does not trigger escalation workflow",
+    "CLI exit codes are coarse: no distinction between expected stop and unexpected trace_mismatch refusal"
+  ],
+  "recommended_actions": [
+    {
+      "action_id": "BCLR-A1",
+      "description": "Add continuation_depth to next_cycle_input_bundle and enforce max_continuation_depth in runner",
+      "priority": "high",
+      "scope": "schema + runtime"
+    },
+    {
+      "action_id": "BCLR-A2",
+      "description": "Make created_at mandatory in run_next_governed_cycle to eliminate timestamp nondeterminism",
+      "priority": "high",
+      "scope": "runtime + CLI"
+    },
+    {
+      "action_id": "BCLR-A3",
+      "description": "Separate required_reviews from unresolved_blockers in _build_next_cycle_input_bundle",
+      "priority": "medium",
+      "scope": "runtime"
+    },
+    {
+      "action_id": "BCLR-A4",
+      "description": "Add error_detail field to cycle_runner_result schema; narrow except clause to SystemCycleOperatorError",
+      "priority": "medium",
+      "scope": "schema + runtime"
+    },
+    {
+      "action_id": "BCLR-A5",
+      "description": "Add source_cycle_runner_result_ref to next_cycle_input_bundle for provenance chain validation",
+      "priority": "medium",
+      "scope": "schema + runtime"
+    },
+    {
+      "action_id": "BCLR-A6",
+      "description": "Schema-validate execution_policy before passing to run_system_cycle",
+      "priority": "low",
+      "scope": "schema + runtime"
+    },
+    {
+      "action_id": "BCLR-A7",
+      "description": "Emit structured replay_entry_point in cycle_runner_result",
+      "priority": "low",
+      "scope": "schema + runtime"
+    }
+  ],
+  "created_at": "2026-04-04T00:00:00Z"
+}
