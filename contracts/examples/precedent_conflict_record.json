@@ -1,0 +1,18 @@
+{
+  "precedent_conflict_id": "PCF-D88BD2522440",
+  "target_judgment_ref": "judgment_record:artifact-release-2026-04-04",
+  "conflicting_precedent_refs": [
+    "judgment_record:artifact-release-2026-03-28",
+    "judgment_record:artifact-release-2026-03-15"
+  ],
+  "conflict_type": "contradictory_outcome",
+  "severity": "high",
+  "precedence_resolution": "selected higher-precedence active domain policy precedent",
+  "blocking": true,
+  "required_followup": [
+    "create_followup:precedent_review",
+    "freeze_promotion_sensitive_path"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-ltv-a-example"
+}

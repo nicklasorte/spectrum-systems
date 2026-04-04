@@ -1,6 +1,6 @@
 {
   "summary_id": "BSR-4DFD995BD80A",
-  "schema_version": "1.11.0",
+  "schema_version": "1.12.0",
   "run_id": "RMB-EXAMPLE0001",
   "what_ran": [
     "roadmap selection",
@@ -273,5 +273,15 @@
   "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-111111111111",
   "artifact_family_health_report_ref": "artifact_family_health_report:AFH-111111111111",
   "evidence_gap_hotspot_report_ref": "evidence_gap_hotspot_report:EGH-111111111111",
-  "override_hotspot_report_ref": "override_hotspot_report:OVH-111111111111"
+  "override_hotspot_report_ref": "override_hotspot_report:OVH-111111111111",
+  "judgment_lifecycle_refs": [
+    "judgment_lifecycle_record:JLC-111111111111"
+  ],
+  "precedent_selection_refs": [
+    "precedent_selection_record:PSL-111111111111"
+  ],
+  "precedent_conflict_refs": [],
+  "override_governance_refs": [
+    "override_governance_record:OVG-111111111111"
+  ]
 }

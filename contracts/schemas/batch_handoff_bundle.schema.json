@@ -43,7 +43,15 @@
     "system_budget_status_ref",
     "canary_rollout_ref",
     "continuous_eval_run_refs",
-    "trust_posture_snapshot_ref"
+    "trust_posture_snapshot_ref",
+    "judgment_lifecycle_refs",
+    "precedent_selection_refs",
+    "precedent_conflict_refs",
+    "override_governance_refs",
+    "override_escalation_indicators",
+    "expiring_override_refs",
+    "required_lifecycle_followups",
+    "required_governance_followups"
   ],
   "properties": {
     "bundle_id": {
@@ -52,7 +60,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.6.0"
+      "const": "1.7.0"
     },
     "source_batch_id": {
       "type": "string",
@@ -282,6 +290,73 @@
     "trust_posture_snapshot_ref": {
       "type": "string",
       "pattern": "^trust_posture_snapshot:TPS-[A-F0-9]{12}$"
+    },
+    "judgment_lifecycle_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^judgment_lifecycle_record:JLC-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "precedent_selection_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^precedent_selection_record:PSL-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "precedent_conflict_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^precedent_conflict_record:PCF-[A-F0-9]{12}$"
+      },
+      "uniqueItems": true
+    },
+    "override_governance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^override_governance_record:OVG-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "override_escalation_indicators": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "expiring_override_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^override_governance_record:[A-Z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "required_lifecycle_followups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_governance_followups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     }
   }
 }

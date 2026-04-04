@@ -549,10 +549,10 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["exception_classification_record"]["example_path"] == "contracts/examples/exception_classification_record.json"
     assert standards["exception_resolution_record"]["schema_version"] == "1.0.0"
     assert standards["exception_resolution_record"]["example_path"] == "contracts/examples/exception_resolution_record.json"
-    assert standards["batch_handoff_bundle"]["schema_version"] == "1.5.0"
+    assert standards["batch_handoff_bundle"]["schema_version"] == "1.7.0"
     assert standards["next_cycle_input_bundle"]["schema_version"] == "1.3.0"
     assert standards["next_cycle_decision"]["schema_version"] == "1.1.0"
-    assert standards["build_summary"]["schema_version"] == "1.10.0"
+    assert standards["build_summary"]["schema_version"] == "1.12.0"
     assert standards["decision_proof_record"]["schema_version"] == "1.0.0"
     assert standards["allow_decision_proof"]["schema_version"] == "1.0.0"
     assert standards["unknown_state_signal"]["schema_version"] == "1.0.0"
@@ -603,3 +603,12 @@ def test_system_roadmap_markdown_sync_stays_aligned() -> None:
     for batch in roadmap["batches"]:
         assert batch["batch_id"] in markdown
         assert batch["title"] in markdown
+
+
+def test_standards_manifest_registers_ltv_a_governance_contracts() -> None:
+    standards = load_standards_contracts()
+    artifact_types = set(standards.keys())
+    assert "judgment_lifecycle_record" in artifact_types
+    assert "precedent_selection_record" in artifact_types
+    assert "precedent_conflict_record" in artifact_types
+    assert "override_governance_record" in artifact_types

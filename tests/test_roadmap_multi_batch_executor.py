@@ -1019,3 +1019,18 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert resolved["open_contract_work"] == []
     assert resolved["open_review_findings"] == []
     assert resolved["autonomy_blockers"] == []
+
+
+def test_derived_handoff_bundle_carries_ltv_a_refs() -> None:
+    delivery = load_example("batch_delivery_report")
+    delivery["evidence_refs"] = sorted(set(list(delivery["evidence_refs"]) + [
+        "judgment_lifecycle_record:JLC-1234567890AB",
+        "precedent_selection_record:PSL-1234567890AB",
+        "precedent_conflict_record:PCF-1234567890AB",
+        "override_governance_record:OVG-1234567890AB",
+    ]))
+    bundle = derive_batch_handoff_bundle(delivery)
+    assert "judgment_lifecycle_record:JLC-1234567890AB" in bundle["judgment_lifecycle_refs"]
+    assert "precedent_selection_record:PSL-1234567890AB" in bundle["precedent_selection_refs"]
+    assert "precedent_conflict_record:PCF-1234567890AB" in bundle["precedent_conflict_refs"]
+    assert "override_governance_record:OVG-1234567890AB" in bundle["override_governance_refs"]

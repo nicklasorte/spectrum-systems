@@ -973,3 +973,77 @@ def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_befo
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "replay_result_ref" in result["blocking_issues"][-1]
+
+
+from spectrum_systems.modules.runtime.judgment_engine import (
+    build_judgment_lifecycle_record,
+    supersede_judgment,
+    select_precedent_for_judgment,
+    validate_judgment_active_set,
+    build_override_governance_record,
+    validate_override_expiry,
+)
+
+
+def test_judgment_lifecycle_transitions_are_deterministic() -> None:
+    first = build_judgment_lifecycle_record(
+        judgment_record_ref="judgment_record:test-1",
+        lifecycle_state="active",
+        activation_status="active",
+        prior_judgment_ref=None,
+        supersedes_refs=[],
+        superseded_by_ref=None,
+        retirement_reason=None,
+        effective_at="2026-04-04T00:00:00Z",
+        retired_at=None,
+        created_at="2026-04-04T00:00:00Z",
+        trace_id="trace-ltv-test",
+    )
+    second = build_judgment_lifecycle_record(**{k: v for k, v in first.items() if k != "judgment_lifecycle_id"})
+    assert first["judgment_lifecycle_id"] == second["judgment_lifecycle_id"]
+
+
+def test_superseded_judgments_not_active_default() -> None:
+    active = build_judgment_lifecycle_record(
+        judgment_record_ref="judgment_record:test-a", lifecycle_state="active", activation_status="active", prior_judgment_ref=None, supersedes_refs=[], superseded_by_ref=None, retirement_reason=None, effective_at="2026-04-04T00:00:00Z", retired_at=None, created_at="2026-04-04T00:00:00Z", trace_id="trace-ltv-test"
+    )
+    superseded, replacement = supersede_judgment(prior_record=active, new_judgment_ref="judgment_record:test-b", created_at="2026-04-04T01:00:00Z", trace_id="trace-ltv-test")
+    assert superseded["activation_status"] == "inactive"
+    assert replacement["activation_status"] == "active"
+
+
+def test_only_one_active_authoritative_per_scope() -> None:
+    a = build_judgment_lifecycle_record(judgment_record_ref="judgment_record:scope@1", lifecycle_state="active", activation_status="active", prior_judgment_ref=None, supersedes_refs=[], superseded_by_ref=None, retirement_reason=None, effective_at="2026-04-04T00:00:00Z", retired_at=None, created_at="2026-04-04T00:00:00Z", trace_id="trace-ltv-test")
+    b = build_judgment_lifecycle_record(judgment_record_ref="judgment_record:scope@2", lifecycle_state="active", activation_status="active", prior_judgment_ref=None, supersedes_refs=[], superseded_by_ref=None, retirement_reason=None, effective_at="2026-04-04T00:00:00Z", retired_at=None, created_at="2026-04-04T00:00:00Z", trace_id="trace-ltv-test")
+    conflicts = validate_judgment_active_set(lifecycle_records=[a, b])
+    assert conflicts
+
+
+def test_deterministic_precedent_selection_and_conflict_record() -> None:
+    precedents = [
+        {"record_ref": "judgment_record:p2", "score": 1.0, "basis": ["scope"], "precedence_tier": "active_local_judgment"},
+        {"record_ref": "judgment_record:p1", "score": 1.0, "basis": ["scope"], "precedence_tier": "active_local_judgment"},
+    ]
+    first, conflict = select_precedent_for_judgment(target_judgment_ref="judgment_record:t1", precedents=precedents, created_at="2026-04-04T00:00:00Z", trace_id="trace-ltv-test")
+    second, _ = select_precedent_for_judgment(target_judgment_ref="judgment_record:t1", precedents=precedents, created_at="2026-04-04T00:00:00Z", trace_id="trace-ltv-test")
+    assert first == second
+    assert conflict is not None
+
+
+def test_override_governance_requires_fields_and_expiry_escalates() -> None:
+    record = build_override_governance_record(
+        override_record_ref="hitl_override_decision:hod-1",
+        owner="operator:a",
+        justification="temporary",
+        scope="judgment",
+        issued_at="2026-04-01T00:00:00Z",
+        expires_at="2026-04-02T00:00:00Z",
+        review_due_at="2026-04-01T12:00:00Z",
+        linked_decision_refs=["next_cycle_decision:NCD-1"],
+        linked_artifact_refs=["judgment_record:t1"],
+        created_at="2026-04-01T00:00:00Z",
+        trace_id="trace-ltv-test",
+    )
+    checked = validate_override_expiry(record=record, now="2026-04-04T00:00:00Z")
+    assert checked["active"] is False
+    assert checked["escalation_state"] in {"freeze_candidate", "block"}

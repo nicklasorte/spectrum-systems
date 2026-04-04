@@ -141,7 +141,7 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.11.0"
+    assert first["build_summary"]["schema_version"] == "1.12.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -225,6 +225,13 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["batch_handoff_bundle"]["canary_rollout_ref"] == first["build_summary"]["canary_rollout_ref"]
     assert first["batch_handoff_bundle"]["continuous_eval_run_refs"] == first["build_summary"]["continuous_eval_run_refs"]
     assert first["batch_handoff_bundle"]["trust_posture_snapshot_ref"] == first["build_summary"]["trust_posture_snapshot_ref"]
+    assert first["build_summary"]["judgment_lifecycle_refs"]
+    assert first["build_summary"]["precedent_selection_refs"]
+    assert first["build_summary"]["override_governance_refs"]
+    assert first["batch_handoff_bundle"]["judgment_lifecycle_refs"] == first["build_summary"]["judgment_lifecycle_refs"]
+    assert first["batch_handoff_bundle"]["precedent_selection_refs"] == first["build_summary"]["precedent_selection_refs"]
+    assert first["batch_handoff_bundle"]["precedent_conflict_refs"] == first["build_summary"]["precedent_conflict_refs"]
+    assert first["batch_handoff_bundle"]["override_governance_refs"] == first["build_summary"]["override_governance_refs"]
     assert first["promotion_consistency_record"]["promotion_state"] in {"deny", "hold", "allow"}
 
 

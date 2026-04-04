@@ -56,7 +56,11 @@
     "trust_posture_snapshot_ref",
     "artifact_family_health_report_ref",
     "evidence_gap_hotspot_report_ref",
-    "override_hotspot_report_ref"
+    "override_hotspot_report_ref",
+    "judgment_lifecycle_refs",
+    "precedent_selection_refs",
+    "precedent_conflict_refs",
+    "override_governance_refs"
   ],
   "properties": {
     "summary_id": {
@@ -65,7 +69,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.11.0"
+      "const": "1.12.0"
     },
     "run_id": {
       "type": "string",
@@ -720,6 +724,41 @@
     "override_hotspot_report_ref": {
       "type": "string",
       "pattern": "^override_hotspot_report:OVH-[A-F0-9]{12}$"
+    },
+    "judgment_lifecycle_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^judgment_lifecycle_record:JLC-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "precedent_selection_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^precedent_selection_record:PSL-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "precedent_conflict_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^precedent_conflict_record:PCF-[A-F0-9]{12}$"
+      },
+      "uniqueItems": true
+    },
+    "override_governance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^override_governance_record:OVG-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
     }
   },
   "$defs": {

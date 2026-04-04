@@ -469,6 +469,16 @@ def derive_batch_handoff_bundle(
         (item for item in evidence_refs if item.startswith("trust_posture_snapshot:")),
         "trust_posture_snapshot:TPS-000000000000",
     )
+    judgment_lifecycle_refs = sorted(item for item in evidence_refs if item.startswith("judgment_lifecycle_record:"))
+    if not judgment_lifecycle_refs:
+        judgment_lifecycle_refs = ["judgment_lifecycle_record:JLC-000000000000"]
+    precedent_selection_refs = sorted(item for item in evidence_refs if item.startswith("precedent_selection_record:"))
+    if not precedent_selection_refs:
+        precedent_selection_refs = ["precedent_selection_record:PSL-000000000000"]
+    precedent_conflict_refs = sorted(item for item in evidence_refs if item.startswith("precedent_conflict_record:"))
+    override_governance_refs = sorted(item for item in evidence_refs if item.startswith("override_governance_record:"))
+    if not override_governance_refs:
+        override_governance_refs = ["override_governance_record:OVG-000000000000"]
     unknown_state_signal_refs = sorted(item for item in evidence_refs if item.startswith("unknown_state_signal:"))
     unknown_state_blockers = sorted(item for item in followups if item.startswith("unknown_state_blocker:"))
     program_constraints = sorted(item for item in risks if item.startswith("program_"))
@@ -499,7 +509,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.6.0",
+        "schema_version": "1.7.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -528,6 +538,16 @@ def derive_batch_handoff_bundle(
         "canary_rollout_ref": canary_rollout_ref,
         "continuous_eval_run_refs": continuous_eval_run_refs,
         "trust_posture_snapshot_ref": trust_posture_snapshot_ref,
+        "judgment_lifecycle_refs": judgment_lifecycle_refs,
+        "precedent_selection_refs": precedent_selection_refs,
+        "precedent_conflict_refs": precedent_conflict_refs,
+        "override_governance_refs": override_governance_refs,
+        "override_escalation_indicators": sorted(
+            item for item in risks if item.startswith("override_") or item.startswith("governance_")
+        ),
+        "expiring_override_refs": sorted(item for item in evidence_refs if item.startswith("override_governance_record:EXP-")),
+        "required_lifecycle_followups": sorted(item for item in followups if item.startswith("lifecycle:")),
+        "required_governance_followups": sorted(item for item in followups if item.startswith("governance:")),
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "open_contract_work": open_contract_work,
@@ -1901,7 +1921,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.11.0",
+        "schema_version": "1.12.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1933,6 +1953,10 @@ def run_system_cycle(
         "artifact_family_health_report_ref": "artifact_family_health_report:AFH-000000000000",
         "evidence_gap_hotspot_report_ref": "evidence_gap_hotspot_report:EGH-000000000000",
         "override_hotspot_report_ref": "override_hotspot_report:OVH-000000000000",
+        "judgment_lifecycle_refs": ["judgment_lifecycle_record:JLC-000000000000"],
+        "precedent_selection_refs": ["precedent_selection_record:PSL-000000000000"],
+        "precedent_conflict_refs": [],
+        "override_governance_refs": ["override_governance_record:OVG-000000000000"],
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
@@ -2341,6 +2365,18 @@ def run_system_cycle(
     summary["artifact_family_health_report_ref"] = artifact_family_health_ref
     summary["evidence_gap_hotspot_report_ref"] = evidence_gap_hotspot_ref
     summary["override_hotspot_report_ref"] = override_hotspot_ref
+    summary["judgment_lifecycle_refs"] = sorted(
+        set([item for item in summary.get("source_refs", []) if item.startswith("judgment_lifecycle_record:")] + summary.get("judgment_lifecycle_refs", []))
+    )
+    summary["precedent_selection_refs"] = sorted(
+        set([item for item in summary.get("source_refs", []) if item.startswith("precedent_selection_record:")] + summary.get("precedent_selection_refs", []))
+    )
+    summary["precedent_conflict_refs"] = sorted(
+        set([item for item in summary.get("source_refs", []) if item.startswith("precedent_conflict_record:")] + summary.get("precedent_conflict_refs", []))
+    )
+    summary["override_governance_refs"] = sorted(
+        set([item for item in summary.get("source_refs", []) if item.startswith("override_governance_record:")] + summary.get("override_governance_refs", []))
+    )
     next_cycle_input_bundle["recommended_start_batch"] = adjusted_next_batch_id
     batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
     batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
@@ -2359,6 +2395,25 @@ def run_system_cycle(
     batch_handoff_bundle["canary_rollout_ref"] = canary_rollout_ref
     batch_handoff_bundle["continuous_eval_run_refs"] = continuous_eval_refs
     batch_handoff_bundle["trust_posture_snapshot_ref"] = trust_posture_ref
+    batch_handoff_bundle["judgment_lifecycle_refs"] = summary["judgment_lifecycle_refs"]
+    batch_handoff_bundle["precedent_selection_refs"] = summary["precedent_selection_refs"]
+    batch_handoff_bundle["precedent_conflict_refs"] = summary["precedent_conflict_refs"]
+    batch_handoff_bundle["override_governance_refs"] = summary["override_governance_refs"]
+    batch_handoff_bundle["override_escalation_indicators"] = sorted(
+        set(list(batch_handoff_bundle.get("override_escalation_indicators", [])) + [
+            f"override_hotspot_ref:{override_hotspot_ref}",
+            f"trust_posture_ref:{trust_posture_ref}",
+        ])
+    )
+    batch_handoff_bundle["expiring_override_refs"] = sorted(
+        set(list(batch_handoff_bundle.get("expiring_override_refs", [])) + [item for item in summary["override_governance_refs"] if "EXP-" in item])
+    )
+    batch_handoff_bundle["required_lifecycle_followups"] = sorted(
+        set(list(batch_handoff_bundle.get("required_lifecycle_followups", [])) + [f"review:{item}" for item in summary["precedent_conflict_refs"]])
+    )
+    batch_handoff_bundle["required_governance_followups"] = sorted(
+        set(list(batch_handoff_bundle.get("required_governance_followups", [])) + [f"review:{item}" for item in summary["override_governance_refs"]])
+    )
     batch_handoff_bundle["must_carry_forward_artifacts"] = sorted(
         set(
             list(batch_handoff_bundle["must_carry_forward_artifacts"])

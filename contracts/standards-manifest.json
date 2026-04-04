@@ -1,8 +1,8 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.61",
-  "schema_version": "1.3.61",
+  "artifact_version": "1.3.62",
+  "schema_version": "1.3.62",
   "standards_version": "1.3.61",
   "record_id": "REC-STD-2026-04-04-BATCH-12",
   "run_id": "run-20260404T000000Z-batch-12",
@@ -289,13 +289,13 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.7.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.60",
+      "last_updated_in": "1.3.62",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
       "notes": "BATCH-11 handoff now carries failure taxonomy, correction pattern, rollback plan, and promotion consistency references for deterministic carry-forward governance."
     },
@@ -328,13 +328,13 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.10.0",
+      "schema_version": "1.12.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.60",
+      "last_updated_in": "1.3.62",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-11 adds explicit failure taxonomy, correction pattern, rollback plan, and promotion consistency references for governed stability gating."
     },
@@ -1526,6 +1526,19 @@
       "notes": "CTRL-LOOP-01 judgment eval runner extends replay reference comparison with expected-vs-actual deterministic fail-closed mismatch signaling."
     },
     {
+      "artifact_type": "judgment_lifecycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.62",
+      "last_updated_in": "1.3.62",
+      "example_path": "contracts/examples/judgment_lifecycle_record.json",
+      "notes": "LT-01 deterministic judgment lifecycle state, activation, and supersession governance artifact."
+    },
+    {
       "artifact_type": "judgment_operator_remediation_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -1896,6 +1909,19 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_friction_report.json",
       "notes": "BATCH-Y deterministic operator-friction harvest report emitted from realistic governed system-cycle scenarios."
+    },
+    {
+      "artifact_type": "override_governance_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.62",
+      "last_updated_in": "1.3.62",
+      "example_path": "contracts/examples/override_governance_record.json",
+      "notes": "LT-04 override ownership/expiry/outcome/escalation governance record for bounded trust-core operation."
     },
     {
       "artifact_type": "override_hotspot_report",
@@ -2302,6 +2328,32 @@
       "last_updated_in": "1.0.96",
       "example_path": "contracts/examples/pqx_triage_plan_record.json",
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
+    },
+    {
+      "artifact_type": "precedent_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.62",
+      "last_updated_in": "1.3.62",
+      "example_path": "contracts/examples/precedent_conflict_record.json",
+      "notes": "LT-02 explicit precedent conflict classification, severity, blocking state, and required follow-up governance."
+    },
+    {
+      "artifact_type": "precedent_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.62",
+      "last_updated_in": "1.3.62",
+      "example_path": "contracts/examples/precedent_selection_record.json",
+      "notes": "LT-02 deterministic precedent retrieval and selection decision record with explicit rejected candidates."
     },
     {
       "artifact_type": "program_artifact",
