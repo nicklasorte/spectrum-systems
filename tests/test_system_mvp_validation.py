@@ -85,7 +85,14 @@ def test_mvp_20_slice_execution_drill_enforces_stop_and_parity() -> None:
     assert report["replay_status"] == "parity_verified"
     assert report["trace_integrity_status"] == "complete"
     assert report["program_alignment_status"] == "aligned"
+    assert not report["stop_or_completion_reason"].startswith("program_")
     assert report["operator_clarity_assessment"]["build_summary_readable"] is True
+    notes = report["operator_clarity_assessment"]["notes"]
+    assert "drill_mode=positive_path" in notes
+    assert "blocked_before_first_slice=false" in notes
+    assert "governed_stop_reason=none" in notes
+    assert "attempted_slices=10" in report["blocking_issues"] or "attempted_slices=11" in report["blocking_issues"]
+    assert "attempt_explanation=drill_progressed_before_stop" in report["blocking_issues"]
     assert report["evidence_refs"]["drill_input"].startswith("roadmap_artifact:RDX-BATCH-MVP-20")
 
     decisions = report["continuation_decision_sequence"]

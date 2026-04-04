@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_roadmap_alignment_result.schema.json",
+  "title": "program_roadmap_alignment_result",
+  "description": "Deterministic fail-closed roadmap/program alignment validation result.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "alignment_id",
+    "program_id",
+    "roadmap_id",
+    "alignment_status",
+    "fail_closed",
+    "violations",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "alignment_id": {"type": "string", "pattern": "^PRA-[A-F0-9]{12}$"},
+    "program_id": {"type": "string", "minLength": 1},
+    "roadmap_id": {"type": "string", "minLength": 1},
+    "alignment_status": {"type": "string", "enum": ["aligned", "invalid"]},
+    "fail_closed": {"type": "boolean"},
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reason_code", "batch_id", "detail"],
+        "properties": {
+          "reason_code": {
+            "type": "string",
+            "enum": ["disallowed_target", "target_not_allowed", "priority_violation", "goal_misalignment"]
+          },
+          "batch_id": {"type": "string"},
+          "detail": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 1}
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_drift_signal.schema.json",
+  "title": "program_drift_signal",
+  "description": "Deterministic governed signal for program drift detection across roadmap/batch execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "program_id",
+    "drift_detected",
+    "drift_type",
+    "affected_batches",
+    "severity",
+    "evidence_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "program_id": {"type": "string", "minLength": 1},
+    "drift_detected": {"type": "boolean"},
+    "drift_type": {
+      "type": "string",
+      "enum": ["none", "target_violation", "priority_violation", "scope_expansion", "repetition_churn"]
+    },
+    "affected_batches": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+    "evidence_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 1}
+  }
+}

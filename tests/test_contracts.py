@@ -146,7 +146,14 @@ class ContractSchemaTests(unittest.TestCase):
 
 
     def test_program_layer_contract_examples_validate(self) -> None:
-        for name in ("program_artifact", "program_progress"):
+        for name in (
+            "program_artifact",
+            "program_progress",
+            "program_constraint_signal",
+            "program_roadmap_alignment_result",
+            "program_drift_signal",
+            "program_feedback_record",
+        ):
             instance = load_example(name)
             validate_artifact(instance, name)
 

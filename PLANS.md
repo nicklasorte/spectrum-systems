@@ -97,6 +97,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BATCH-W-2026-04-03.md | BATCH-W — Policy Tuning from Adaptive Execution Signals | Active |
 | docs/review-actions/PLAN-BATCH-Y1-2026-04-03.md | BATCH-Y1 — Operator Clarity Polish | Active |
 | docs/review-actions/PLAN-BATCH-Y-2026-04-03.md | BATCH-Y — Real-Use Shakeout + Friction Harvest | Active |
+| docs/review-actions/PLAN-BATCH-PRG-ENFORCE-2026-04-04.md | BATCH-PRG-ENFORCE — Program Constraint and Drift Enforcement | Active |
+| docs/review-actions/PLAN-BATCH-PRG-RECONCILE-2026-04-04.md | BATCH-PRG-RECONCILE — Reconcile Program Enforcement with MVP-20 Drill | Active |
 | --- | --- | --- |
 | docs/review-actions/PLAN-BATCH-PA-2026-04-03.md | BATCH-PA — Narrow Fix: Program Layer Contract Preflight Block Closure | Active |
 | docs/review-actions/PLAN-BATCH-RA-2026-04-03.md | BATCH-RA — Narrow Fix: Review Artifact Class Alignment | Active |

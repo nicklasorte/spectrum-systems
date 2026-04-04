@@ -1,0 +1,14 @@
+{
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "completed_batches": ["BATCH-I", "BATCH-J"],
+  "blocked_batches": ["BATCH-K"],
+  "recurring_failures": ["missing_required_signal"],
+  "drift_signals": ["priority_violation"],
+  "risk_signals": ["risk_level:high"],
+  "improvement_recommendations": [
+    "reorder roadmap batches to match priority_ordering",
+    "close missing signal gaps before continuation"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-prg-enforce-001"
+}

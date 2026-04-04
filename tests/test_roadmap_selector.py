@@ -15,6 +15,7 @@ from spectrum_systems.modules.runtime.roadmap_selector import (  # noqa: E402
     build_roadmap_selection_result,
     select_next_batch,
     validate_batch_readiness,
+    validate_roadmap_against_program,
 )
 
 
@@ -137,3 +138,50 @@ def test_generated_result_validates_against_schema() -> None:
     result = build_roadmap_selection_result(_roadmap(), _signals(), evaluated_at="2026-04-03T13:00:00Z")
     Draft202012Validator(load_schema("roadmap_selection_result"), format_checker=FormatChecker()).validate(result)
     assert json.loads(json.dumps(result, sort_keys=True)) == result
+
+
+def test_validate_roadmap_against_program_valid_alignment() -> None:
+    result = validate_roadmap_against_program(
+        _roadmap(),
+        {
+            "program_id": "PRG-ROADMAP-EXECUTION",
+            "program_version": "1.0.0",
+            "allowed_targets": [],
+            "disallowed_targets": [],
+            "priority_ordering": ["BATCH-I", "BATCH-J", "BATCH-K"],
+            "success_criteria": ["Constrain MAP and RDX output"],
+            "blocking_conditions": [],
+            "enforcement_mode": "block",
+            "created_at": "2026-04-04T00:00:00Z",
+            "trace_id": "trace-rdx-selector-001",
+        },
+    )
+    assert result["alignment_status"] == "aligned"
+    assert result["fail_closed"] is False
+
+
+def test_validate_roadmap_against_program_fails_closed_on_disallowed_target() -> None:
+    roadmap = _roadmap()
+    for batch in roadmap["batches"]:
+        if batch["batch_id"] == "BATCH-I":
+            batch["batch_id"] = "BATCH-Z"
+            break
+
+    result = validate_roadmap_against_program(
+        roadmap,
+        {
+            "program_id": "PRG-ROADMAP-EXECUTION",
+            "program_version": "1.0.0",
+            "allowed_targets": ["BATCH-I", "BATCH-J"],
+            "disallowed_targets": ["BATCH-Z"],
+            "priority_ordering": ["BATCH-I", "BATCH-J"],
+            "success_criteria": ["Constrain MAP and RDX output"],
+            "blocking_conditions": [],
+            "enforcement_mode": "block",
+            "created_at": "2026-04-04T00:00:00Z",
+            "trace_id": "trace-rdx-selector-002",
+        },
+    )
+    assert result["alignment_status"] == "invalid"
+    assert result["fail_closed"] is True
+    assert any(item["reason_code"] == "disallowed_target" for item in result["violations"])

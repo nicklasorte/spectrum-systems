@@ -1,0 +1,15 @@
+{
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "program_version": "1.0.0",
+  "allowed_targets": ["BATCH-I", "BATCH-J", "BATCH-K"],
+  "disallowed_targets": ["BATCH-Z"],
+  "priority_ordering": ["BATCH-I", "BATCH-J", "BATCH-K"],
+  "success_criteria": [
+    "roadmap alignment remains enforced",
+    "execution remains inside approved targets"
+  ],
+  "blocking_conditions": [],
+  "enforcement_mode": "block",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-prg-enforce-001"
+}

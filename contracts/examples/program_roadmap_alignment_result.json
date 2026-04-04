@@ -1,0 +1,10 @@
+{
+  "alignment_id": "PRA-ABCDEF123456",
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "roadmap_id": "RDX-ROADMAP-001",
+  "alignment_status": "aligned",
+  "fail_closed": false,
+  "violations": [],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-prg-enforce-001"
+}

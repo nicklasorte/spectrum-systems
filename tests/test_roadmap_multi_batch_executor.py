@@ -124,7 +124,7 @@ def test_hard_gate_stops_after_completed_batch(tmp_path: Path) -> None:
 
     result = execute_bounded_roadmap_run(
         roadmap,
-        _selection_signals(),
+        {**_selection_signals(), "disallowed_targets": ["BATCH-Z"]},
         _authorization_signals(),
         pqx_state_path=tmp_path / "pqx" / "state.json",
         pqx_runs_root=tmp_path / "pqx",
@@ -390,3 +390,54 @@ def test_should_continue_stops_on_program_priority_violation() -> None:
 
     assert decision["decision"] == "stop"
     assert decision["reason_codes"] == ["program_priority_violation"]
+
+
+def test_should_continue_stops_on_disallowed_target() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={"disallowed_targets": ["BATCH-I"]},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["program_disallowed_target"]
+
+
+def test_should_continue_priority_warn_mode_escalates() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={"priority_ordering": ["BATCH-K"], "enforcement_mode": "warn"},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+    assert decision["decision"] == "escalate"
+    assert decision["reason_codes"] == ["program_priority_violation_warn"]
+
+
+def test_execute_bounded_run_blocks_when_roadmap_program_alignment_invalid(tmp_path: Path) -> None:
+    roadmap = _roadmap()
+    for batch in roadmap["batches"]:
+        if batch["batch_id"] == "BATCH-I":
+            batch["batch_id"] = "BATCH-Z"
+            break
+    result = execute_bounded_roadmap_run(
+        roadmap,
+        {**_selection_signals(), "disallowed_targets": ["BATCH-Z"]},
+        _authorization_signals(),
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        execution_policy={"max_batches_per_run": 2},
+        evaluated_at="2026-04-03T20:00:00Z",
+        executed_at="2026-04-03T20:01:00Z",
+        validated_at="2026-04-03T20:02:00Z",
+        run_executed_at="2026-04-03T20:03:00Z",
+        pqx_execute_fn=_pqx_success,
+    )["run_result"]
+    assert result["stop_reason"] == "program_violation_disallowed_target"
+    assert result["attempted_batch_ids"] == []
