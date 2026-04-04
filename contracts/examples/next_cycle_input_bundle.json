@@ -1,0 +1,27 @@
+{
+  "bundle_id": "NCB-7A90B1C2D3E4",
+  "schema_version": "1.0.0",
+  "source_cycle_id": "RMB-EXAMPLECYCLE1",
+  "required_artifacts": [
+    "roadmap_multi_batch_run_result:RMB-EXAMPLECYCLE1",
+    "core_system_integration_validation:CSIV-EXAMPLE0001",
+    "next_step_recommendation:NSR-EXAMPLE0001"
+  ],
+  "active_program_constraints": [
+    "program_alignment_status=aligned",
+    "program_stop_cause=none",
+    "program_drift_severity=low"
+  ],
+  "active_risks": [
+    "risk_posture=medium",
+    "eval_health=healthy"
+  ],
+  "unresolved_blockers": [],
+  "recommended_start_batch": "BATCH-J",
+  "context_refs": [
+    "trace_navigation:CSIV-EXAMPLE0001",
+    "adaptive_execution_trend_report:AET-EXAMPLE0001"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-next-cycle-example"
+}

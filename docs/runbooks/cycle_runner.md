@@ -2,6 +2,7 @@
 
 ## Purpose
 Run deterministic next-action resolution and live handoff/write-back for an autonomous cycle manifest, including review-driven fix-loop re-entry.
+This runbook is bounded: execute one governed cycle, emit continuation artifacts, then stop.
 
 ## Input
 - `runs/<cycle_id>/cycle_manifest.json` (must validate against `cycle_manifest` contract)
@@ -15,6 +16,12 @@ Run deterministic next-action resolution and live handoff/write-back for an auto
   - `blocking_issues`
   - optional `integration_handoff` payload
 - Updated `cycle_manifest.json` write-back for live execution/review/fix/certification transitions.
+- Bounded continuation artifacts:
+  - `next_cycle_decision` (`run_next_cycle | stop | escalate`)
+  - `next_cycle_input_bundle` (machine-readable handoff for the next governed run)
+
+## Bounded cycle flow
+`program constraints -> roadmap selection/authorization -> governed execution (PQX/TPA) -> eval/control/enforcement -> continuation evaluation -> next_cycle_decision -> next_cycle_input_bundle -> stop`
 
 ## Typical usage
 ```python

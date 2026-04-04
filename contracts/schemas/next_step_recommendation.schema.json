@@ -31,7 +31,10 @@
     "execution_path_type",
     "program_alignment_status",
     "program_stop_cause",
-    "program_drift_severity"
+    "program_drift_severity",
+    "next_cycle_decision",
+    "next_cycle_decision_reason_codes",
+    "next_cycle_inputs_ref"
   ],
   "properties": {
     "recommendation_id": {
@@ -40,7 +43,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.6.0"
+      "const": "1.7.0"
     },
     "next_batch_id": {
       "type": [
@@ -330,7 +333,9 @@
         "replay_refs",
         "upstream_refs",
         "downstream_refs",
-        "related_artifacts"
+        "related_artifacts",
+        "next_cycle_decision",
+        "next_cycle_input_bundle"
       ],
       "properties": {
         "roadmap_multi_batch_run_result": {
@@ -379,6 +384,14 @@
             "minLength": 3
           },
           "uniqueItems": true
+        },
+        "next_cycle_decision": {
+          "type": "string",
+          "pattern": "^next_cycle_decision:NCD-[A-F0-9]{12}$"
+        },
+        "next_cycle_input_bundle": {
+          "type": "string",
+          "pattern": "^next_cycle_input_bundle:NCB-[A-F0-9]{12}$"
         }
       }
     },
@@ -604,6 +617,38 @@
         "medium",
         "high"
       ]
+    },
+    "next_cycle_decision": {
+      "type": "string",
+      "enum": [
+        "run_next_cycle",
+        "stop",
+        "escalate"
+      ]
+    },
+    "next_cycle_decision_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "healthy_aligned_progress",
+          "block_or_freeze_state",
+          "program_misalignment",
+          "program_drift_high",
+          "missing_required_artifacts",
+          "repeated_failure_threshold_exceeded",
+          "eval_health_degraded",
+          "manual_review_required",
+          "roadmap_not_ready",
+          "no_remaining_batch"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "next_cycle_inputs_ref": {
+      "type": "string",
+      "pattern": "^next_cycle_input_bundle:NCB-[A-F0-9]{12}$"
     }
   },
   "$defs": {

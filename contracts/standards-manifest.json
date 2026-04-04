@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.47",
-  "schema_version": "1.3.47",
-  "standards_version": "1.3.47",
-  "record_id": "REC-STD-2026-04-04-BATCH-PRG-SCHEMA",
-  "run_id": "run-20260404T000000Z-batch-prg-schema",
+  "artifact_version": "1.3.48",
+  "schema_version": "1.3.48",
+  "standards_version": "1.3.48",
+  "record_id": "REC-STD-2026-04-04-BATCH-CYCLE-LOOP",
+  "run_id": "run-20260404T000000Z-batch-cycle-loop",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.47",
+  "source_repo_version": "1.3.48",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -250,15 +250,15 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.4.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.47",
+      "last_updated_in": "1.3.48",
       "example_path": "contracts/examples/build_summary.json",
-      "notes": "BATCH-PRG-SCHEMA adds required structured program semantics fields and enum-bound stop_reason semantics for deterministic operator interpretation."
+      "notes": "BATCH-CYCLE-LOOP operator summary now includes deterministic next-cycle decision and next-cycle input bundle references."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1509,6 +1509,32 @@
       "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "next_cycle_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.48",
+      "last_updated_in": "1.3.48",
+      "example_path": "contracts/examples/next_cycle_decision.json",
+      "notes": "BATCH-CYCLE-LOOP deterministic governed decision artifact indicating whether a bounded next cycle should run, stop, or escalate."
+    },
+    {
+      "artifact_type": "next_cycle_input_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.48",
+      "last_updated_in": "1.3.48",
+      "example_path": "contracts/examples/next_cycle_input_bundle.json",
+      "notes": "BATCH-CYCLE-LOOP machine-readable handoff bundle containing required artifacts, blockers, and context refs for the next bounded cycle."
+    },
+    {
       "artifact_type": "next_slice_handoff",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1550,15 +1576,15 @@
     {
       "artifact_type": "next_step_recommendation",
       "artifact_class": "coordination",
-      "schema_version": "1.6.0",
+      "schema_version": "1.7.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.47",
+      "last_updated_in": "1.3.48",
       "example_path": "contracts/examples/next_step_recommendation.json",
-      "notes": "BATCH-PRG-SCHEMA adds required structured program semantics fields and enum-bound stop_reason semantics for deterministic next-step interpretation."
+      "notes": "BATCH-CYCLE-LOOP recommendation surface now includes governed next-cycle decision outputs and handoff bundle reference."
     },
     {
       "artifact_type": "observability_metrics",
@@ -2020,6 +2046,45 @@
       "notes": "Decision-readiness summary combining risks, decisions, milestones, and next-best actions; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "program_constraint_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.46",
+      "last_updated_in": "1.3.46",
+      "example_path": "contracts/examples/program_constraint_signal.json",
+      "notes": "BATCH-PRG-ENFORCE deterministic enforcement-ready program boundary signal."
+    },
+    {
+      "artifact_type": "program_drift_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.46",
+      "last_updated_in": "1.3.46",
+      "example_path": "contracts/examples/program_drift_signal.json",
+      "notes": "BATCH-PRG-ENFORCE deterministic drift detection signal for target/priority/scope/churn violations."
+    },
+    {
+      "artifact_type": "program_feedback_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.46",
+      "last_updated_in": "1.3.46",
+      "example_path": "contracts/examples/program_feedback_record.json",
+      "notes": "BATCH-PRG-ENFORCE deterministic execution feedback record feeding future roadmap generation."
+    },
+    {
       "artifact_type": "program_progress",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2031,6 +2096,19 @@
       "last_updated_in": "1.3.10",
       "example_path": "contracts/examples/program_progress.json",
       "notes": "PRG deterministic program progress artifact for completed/remaining batch tracking, progress percentage, blockers, and readiness state."
+    },
+    {
+      "artifact_type": "program_roadmap_alignment_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.46",
+      "last_updated_in": "1.3.46",
+      "example_path": "contracts/examples/program_roadmap_alignment_result.json",
+      "notes": "BATCH-PRG-ENFORCE deterministic fail-closed roadmap/program alignment validation result."
     },
     {
       "artifact_type": "promotion_gate_attack_result",
@@ -2960,58 +3038,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "program_constraint_signal",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.46",
-      "last_updated_in": "1.3.46",
-      "example_path": "contracts/examples/program_constraint_signal.json",
-      "notes": "BATCH-PRG-ENFORCE deterministic enforcement-ready program boundary signal."
-    },
-    {
-      "artifact_type": "program_roadmap_alignment_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.46",
-      "last_updated_in": "1.3.46",
-      "example_path": "contracts/examples/program_roadmap_alignment_result.json",
-      "notes": "BATCH-PRG-ENFORCE deterministic fail-closed roadmap/program alignment validation result."
-    },
-    {
-      "artifact_type": "program_drift_signal",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.46",
-      "last_updated_in": "1.3.46",
-      "example_path": "contracts/examples/program_drift_signal.json",
-      "notes": "BATCH-PRG-ENFORCE deterministic drift detection signal for target/priority/scope/churn violations."
-    },
-    {
-      "artifact_type": "program_feedback_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.46",
-      "last_updated_in": "1.3.46",
-      "example_path": "contracts/examples/program_feedback_record.json",
-      "notes": "BATCH-PRG-ENFORCE deterministic execution feedback record feeding future roadmap generation."
     }
   ]
 }

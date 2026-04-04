@@ -90,6 +90,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | Plan file | Item | Status |
+| docs/review-actions/PLAN-BATCH-CYCLE-LOOP-2026-04-04.md | BATCH-CYCLE-LOOP — Bounded Next-Cycle Automation | Active |
 | docs/review-actions/PLAN-BATCH-RDX-LOOP-2026-04-03.md | BATCH-RDX-LOOP — Batch Continuation and Stop Logic | Active |
 | docs/review-actions/PLAN-BATCH-MVP-20-2026-04-04.md | BATCH-MVP-20 — Governed 20-Slice Roadmap Execution Drill | Active |
 | docs/review-actions/PLAN-BATCH-X1A-2026-04-03.md | BATCH-X1A — Adaptive Execution Artifact Class Alignment | Active |
