@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_cycle_decision.schema.json",
+  "title": "next_cycle_decision",
+  "description": "Deterministic bounded-cycle continuation decision emitted once per governed cycle run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cycle_decision_id",
+    "schema_version",
+    "current_cycle_id",
+    "decision",
+    "decision_reason_codes",
+    "program_alignment_status",
+    "program_stop_cause",
+    "risk_posture",
+    "required_artifacts_for_next_cycle",
+    "next_cycle_inputs_ref",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "cycle_decision_id": {
+      "type": "string",
+      "pattern": "^NCD-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "current_cycle_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "run_next_cycle",
+        "stop",
+        "escalate"
+      ]
+    },
+    "decision_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "healthy_aligned_progress",
+          "block_or_freeze_state",
+          "program_misalignment",
+          "program_drift_high",
+          "missing_required_artifacts",
+          "repeated_failure_threshold_exceeded",
+          "eval_health_degraded",
+          "manual_review_required",
+          "roadmap_not_ready",
+          "no_remaining_batch"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "program_alignment_status": {
+      "type": "string",
+      "enum": [
+        "aligned",
+        "misaligned",
+        "unknown"
+      ]
+    },
+    "program_stop_cause": {
+      "type": "string",
+      "enum": [
+        "none",
+        "program_alignment_invalid",
+        "program_priority_violation",
+        "program_blocking_condition",
+        "program_drift_detected",
+        "manual_review_required",
+        "unknown"
+      ]
+    },
+    "risk_posture": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "required_artifacts_for_next_cycle": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "next_cycle_inputs_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^next_cycle_input_bundle:NCB-[A-F0-9]{12}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

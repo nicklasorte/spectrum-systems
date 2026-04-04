@@ -145,6 +145,12 @@ class ContractSchemaTests(unittest.TestCase):
 
 
 
+
+    def test_cycle_loop_contract_examples_validate(self) -> None:
+        for name in ("next_cycle_decision", "next_cycle_input_bundle"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_program_layer_contract_examples_validate(self) -> None:
         for name in (
             "program_artifact",

@@ -482,6 +482,155 @@ def _rank_candidates(
     return sorted(ranked, key=lambda item: (-item["score"], item["candidate"]["candidate_id"]))
 
 
+def _build_next_cycle_input_bundle(
+    *,
+    current_cycle_id: str,
+    required_artifacts: list[str],
+    next_batch_id: str | None,
+    program_alignment_status: str,
+    program_stop_cause: str,
+    program_drift_severity: str,
+    risk_level: str,
+    risk_signals: list[str],
+    blocking_conditions: list[str],
+    required_reviews: list[str],
+    trace_navigation: dict[str, Any],
+    adaptive_refs: list[str],
+    trace_id: str,
+    created_at: str,
+) -> dict[str, Any]:
+    seed = {
+        "current_cycle_id": current_cycle_id,
+        "required_artifacts": sorted(set(required_artifacts)),
+        "next_batch_id": next_batch_id,
+        "program_alignment_status": program_alignment_status,
+        "program_stop_cause": program_stop_cause,
+        "program_drift_severity": program_drift_severity,
+        "risk_level": risk_level,
+        "blocking_conditions": sorted(set(blocking_conditions)),
+        "required_reviews": sorted(set(required_reviews)),
+        "trace_id": trace_id,
+    }
+    bundle_id = f"NCB-{_canonical_hash(seed)[:12].upper()}"
+    context_refs = sorted(
+        set(
+            [
+                f"trace_navigation:{trace_navigation.get('validation_id', 'unknown')}",
+                f"roadmap_multi_batch_run_result:{current_cycle_id}",
+            ]
+            + adaptive_refs
+        )
+    )
+    return {
+        "bundle_id": bundle_id,
+        "schema_version": "1.0.0",
+        "source_cycle_id": current_cycle_id,
+        "required_artifacts": sorted(set(required_artifacts)),
+        "active_program_constraints": sorted(
+            set(
+                [
+                    f"program_alignment_status={program_alignment_status}",
+                    f"program_stop_cause={program_stop_cause}",
+                    f"program_drift_severity={program_drift_severity}",
+                ]
+            )
+        ),
+        "active_risks": sorted(set([f"risk_level={risk_level}"] + list(risk_signals))),
+        "unresolved_blockers": sorted(set(blocking_conditions + required_reviews)),
+        "recommended_start_batch": next_batch_id,
+        "context_refs": context_refs,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+
+
+def decide_next_cycle(
+    *,
+    current_cycle_id: str,
+    stop_reason: str,
+    program_constraint_signal: dict[str, Any],
+    program_feedback_record: dict[str, Any],
+    roadmap_state: dict[str, Any],
+    batch_continuation_records: list[dict[str, Any]],
+    eval_control_state: dict[str, Any],
+    failure_pattern_record: dict[str, Any],
+    drift_signal: dict[str, Any],
+    operator_summary: dict[str, Any],
+    required_artifacts_for_next_cycle: list[str],
+    next_cycle_input_bundle: dict[str, Any],
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    decision = "run_next_cycle"
+    reason_codes: list[str] = ["healthy_aligned_progress"]
+    risk_posture = "low"
+
+    control_decision = str(eval_control_state.get("decision") or "").strip().lower()
+    if control_decision in {"freeze", "block"} or stop_reason in {"authorization_freeze", "authorization_block", "control_freeze", "control_block"}:
+        decision = "escalate" if control_decision == "freeze" or stop_reason in {"authorization_freeze", "control_freeze"} else "stop"
+        reason_codes = ["block_or_freeze_state"]
+        risk_posture = "critical"
+    elif str(operator_summary.get("program_alignment_status", "aligned")) == "misaligned":
+        decision = "stop"
+        reason_codes = ["program_misalignment"]
+        risk_posture = "critical"
+    elif str(drift_signal.get("drift_level", "low")) == "high":
+        decision = "escalate"
+        reason_codes = ["program_drift_high"]
+        risk_posture = "high"
+    elif not required_artifacts_for_next_cycle:
+        decision = "stop"
+        reason_codes = ["missing_required_artifacts"]
+        risk_posture = "high"
+    elif int(failure_pattern_record.get("repeated_failure_count", 0)) >= int(failure_pattern_record.get("stop_threshold", 2)):
+        decision = "stop"
+        reason_codes = ["repeated_failure_threshold_exceeded"]
+        risk_posture = "high"
+    elif str(eval_control_state.get("health", "healthy")) != "healthy":
+        decision = "stop"
+        reason_codes = ["eval_health_degraded"]
+        risk_posture = "high"
+    elif bool(next_cycle_input_bundle.get("unresolved_blockers")):
+        decision = "stop"
+        reason_codes = ["missing_required_artifacts"]
+        risk_posture = "high"
+    elif roadmap_state.get("next_candidate_batch_id") is None:
+        decision = "stop"
+        reason_codes = ["no_remaining_batch"]
+        risk_posture = "medium"
+    elif str(program_constraint_signal.get("enforcement_mode", "block")) == "freeze":
+        decision = "escalate"
+        reason_codes = ["manual_review_required"]
+        risk_posture = "high"
+
+    decision_seed = {
+        "current_cycle_id": current_cycle_id,
+        "decision": decision,
+        "reason_codes": reason_codes,
+        "trace_id": trace_id,
+        "created_at": created_at,
+        "stop_reason": stop_reason,
+        "roadmap_state": roadmap_state,
+        "batch_continuation_records": batch_continuation_records,
+        "feedback": program_feedback_record,
+    }
+    cycle_decision_id = f"NCD-{_canonical_hash(decision_seed)[:12].upper()}"
+    return {
+        "cycle_decision_id": cycle_decision_id,
+        "schema_version": "1.0.0",
+        "current_cycle_id": current_cycle_id,
+        "decision": decision,
+        "decision_reason_codes": reason_codes,
+        "program_alignment_status": str(operator_summary.get("program_alignment_status", "unknown")),
+        "program_stop_cause": str(operator_summary.get("program_stop_cause", "unknown")),
+        "risk_posture": risk_posture,
+        "required_artifacts_for_next_cycle": sorted(set(required_artifacts_for_next_cycle)),
+        "next_cycle_inputs_ref": f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}",
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+
+
 def run_system_cycle(
     *,
     roadmap_artifact: dict[str, Any],
@@ -669,10 +818,70 @@ def run_system_cycle(
         review_control_signal=dict(integration_inputs.get("review_control_signal") or {}),
     )
     remediation_plan_ref = f"remediation_plan:{remediation_plan['plan_id']}"
+    required_artifacts_for_next_cycle = sorted(set(selected_candidate["required_artifacts"]))
+    next_cycle_input_bundle = _build_next_cycle_input_bundle(
+        current_cycle_id=str(run_result["run_id"]),
+        required_artifacts=required_artifacts_for_next_cycle,
+        next_batch_id=next_batch_id,
+        program_alignment_status=program_alignment_status,
+        program_stop_cause=program_stop_cause,
+        program_drift_severity=program_drift_severity,
+        risk_level=risk_level,
+        risk_signals=risk_signals,
+        blocking_conditions=blocking_conditions,
+        required_reviews=required_reviews,
+        trace_navigation=trace_navigation,
+        adaptive_refs=[adaptive_observability_ref, adaptive_trend_ref, adaptive_policy_review_ref],
+        trace_id=integration["trace_id"],
+        created_at=timestamp,
+    )
+    _validate_schema(next_cycle_input_bundle, "next_cycle_input_bundle")
+
+    decision_eval_state = {
+        "decision": str(integration_inputs.get("control_decision", {}).get("decision", "unknown")),
+        "health": "degraded" if blocking_conditions else "healthy",
+    }
+    repeated_failure_count = max(
+        int(run_result.get("repeated_failure_count", 0)),
+        int(continuation_records[-1].get("signals_used", {}).get("failure_pattern_record", {}).get("repeated_failure_count", 0))
+        if continuation_records
+        else 0,
+    )
+    repeated_failure_threshold = (
+        int(continuation_records[-1].get("signals_used", {}).get("failure_pattern_record", {}).get("stop_threshold", 2))
+        if continuation_records
+        else 2
+    )
+    next_cycle_decision = decide_next_cycle(
+        current_cycle_id=str(run_result["run_id"]),
+        stop_reason=stop_reason,
+        program_constraint_signal=latest_program_signal,
+        program_feedback_record={
+            "program_alignment_status": program_alignment_status,
+            "program_stop_cause": program_stop_cause,
+            "program_drift_severity": program_drift_severity,
+        },
+        roadmap_state={"current_batch_id": updated_roadmap.get("current_batch_id"), "next_candidate_batch_id": next_batch_id},
+        batch_continuation_records=continuation_records,
+        eval_control_state=decision_eval_state,
+        failure_pattern_record={
+            "repeated_failure_count": repeated_failure_count,
+            "stop_threshold": repeated_failure_threshold,
+        },
+        drift_signal={"drift_level": program_drift_severity},
+        operator_summary={"program_alignment_status": program_alignment_status, "program_stop_cause": program_stop_cause},
+        required_artifacts_for_next_cycle=required_artifacts_for_next_cycle,
+        next_cycle_input_bundle=next_cycle_input_bundle,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    _validate_schema(next_cycle_decision, "next_cycle_decision")
+    next_cycle_decision_ref = f"next_cycle_decision:{next_cycle_decision['cycle_decision_id']}"
+    next_cycle_input_bundle_ref = f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}"
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
-        "schema_version": "1.6.0",
+        "schema_version": "1.7.0",
         "next_batch_id": next_batch_id,
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -681,6 +890,9 @@ def run_system_cycle(
         "program_alignment_status": program_alignment_status,
         "program_stop_cause": program_stop_cause,
         "program_drift_severity": program_drift_severity,
+        "next_cycle_decision": next_cycle_decision["decision"],
+        "next_cycle_decision_reason_codes": next_cycle_decision["decision_reason_codes"],
+        "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
         "why": sorted(
             set(
                 why
@@ -747,6 +959,8 @@ def run_system_cycle(
         "artifact_refs": {
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
             "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
+            "next_cycle_decision": next_cycle_decision_ref,
+            "next_cycle_input_bundle": next_cycle_input_bundle_ref,
             "trace_id": integration["trace_id"],
             "replay_refs": replay_refs,
             "upstream_refs": sorted(set(integration.get("upstream_refs", []))),
@@ -760,6 +974,8 @@ def run_system_cycle(
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
                         remediation_plan_ref,
+                        next_cycle_decision_ref,
+                        next_cycle_input_bundle_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -783,6 +999,8 @@ def run_system_cycle(
                     adaptive_observability_ref,
                     adaptive_trend_ref,
                     remediation_plan_ref,
+                    next_cycle_decision_ref,
+                    next_cycle_input_bundle_ref,
                 ]
                 + list(source_refs or [])
             )
@@ -792,7 +1010,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -801,6 +1019,9 @@ def run_system_cycle(
         "program_alignment_status": program_alignment_status,
         "program_stop_cause": program_stop_cause,
         "program_drift_severity": program_drift_severity,
+        "next_cycle_decision": next_cycle_decision["decision"],
+        "next_cycle_decision_reason_codes": next_cycle_decision["decision_reason_codes"],
+        "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
         "what_ran": [
             "roadmap selection",
             "control authorization",
@@ -833,6 +1054,8 @@ def run_system_cycle(
             "roadmap_multi_batch_run_result": f"roadmap_multi_batch_run_result:{run_result['run_id']}",
             "core_system_integration_validation": f"core_system_integration_validation:{validation_id}",
             "next_step_recommendation": f"next_step_recommendation:{recommendation['recommendation_id']}",
+            "next_cycle_decision": next_cycle_decision_ref,
+            "next_cycle_input_bundle": next_cycle_input_bundle_ref,
             "trace_id": integration["trace_id"],
             "replay_refs": replay_refs,
             "upstream_refs": sorted(set(integration.get("upstream_refs", []))),
@@ -847,6 +1070,8 @@ def run_system_cycle(
                         adaptive_trend_ref,
                         adaptive_policy_review_ref,
                         remediation_plan_ref,
+                        next_cycle_decision_ref,
+                        next_cycle_input_bundle_ref,
                     ]
                     + replay_refs
                     + list(integration.get("related_artifacts", []))
@@ -885,6 +1110,8 @@ def run_system_cycle(
                 adaptive_observability_ref,
                 adaptive_trend_ref,
                 adaptive_policy_review_ref,
+                next_cycle_decision_ref,
+                next_cycle_input_bundle_ref,
             }
         ),
     }
@@ -898,8 +1125,10 @@ def run_system_cycle(
         "adaptive_execution_policy_review": adaptive_policy_review,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
+        "next_cycle_decision": next_cycle_decision,
+        "next_cycle_input_bundle": next_cycle_input_bundle,
         "build_summary": summary,
     }
 
 
-__all__ = ["SystemCycleOperatorError", "run_system_cycle"]
+__all__ = ["SystemCycleOperatorError", "decide_next_cycle", "run_system_cycle"]

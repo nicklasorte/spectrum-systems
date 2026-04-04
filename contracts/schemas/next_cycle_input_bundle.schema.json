@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_cycle_input_bundle.schema.json",
+  "title": "next_cycle_input_bundle",
+  "description": "Deterministic machine-readable handoff bundle required to start the next bounded governed cycle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_id",
+    "schema_version",
+    "source_cycle_id",
+    "required_artifacts",
+    "active_program_constraints",
+    "active_risks",
+    "unresolved_blockers",
+    "recommended_start_batch",
+    "context_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^NCB-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_cycle_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "active_program_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "active_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "unresolved_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "recommended_start_batch": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^BATCH-[A-Z]$"
+    },
+    "context_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

@@ -115,8 +115,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["build_summary"], "build_summary")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
-    assert first["next_step_recommendation"]["schema_version"] == "1.6.0"
-    assert first["build_summary"]["schema_version"] == "1.4.0"
+    assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
+    assert first["build_summary"]["schema_version"] == "1.5.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -130,6 +130,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["program_stop_cause"] == "none"
     assert first["build_summary"]["program_drift_severity"] in {"low", "medium", "high"}
     assert first["build_summary"]["failure_surface"]["stop_reason"] == "max_batches_reached"
+    assert first["next_step_recommendation"]["next_cycle_decision"] == "run_next_cycle"
+    assert first["build_summary"]["next_cycle_decision"] == "run_next_cycle"
+    assert first["next_step_recommendation"]["next_cycle_inputs_ref"].startswith("next_cycle_input_bundle:NCB-")
+    assert first["build_summary"]["next_cycle_inputs_ref"] == first["next_step_recommendation"]["next_cycle_inputs_ref"]
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
     assert first["build_summary"]["run_outcome"]["status"] == "success"
     assert first["build_summary"]["artifact_index"]["next_step_recommendation"].startswith("next_step_recommendation:NSR-")
@@ -151,6 +155,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["next_step_recommendation"]["remediation_steps"] == remediation["remediation_steps"]
     assert remediation["trace_id"] == first["next_step_recommendation"]["trace_id"]
     assert remediation["required_artifacts"]
+    validate_artifact(first["next_cycle_decision"], "next_cycle_decision")
+    validate_artifact(first["next_cycle_input_bundle"], "next_cycle_input_bundle")
+    assert first["next_cycle_decision"]["next_cycle_inputs_ref"] == first["next_step_recommendation"]["next_cycle_inputs_ref"]
+    assert first["next_cycle_input_bundle"]["bundle_id"] in first["next_step_recommendation"]["next_cycle_inputs_ref"]
 
 
 def test_failure_surface_exposes_root_cause_and_action() -> None:
@@ -196,11 +204,15 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
         assert summary["trace_id"] in summary["replay_entry_points"][key]["trace_refs"]
     assert recommendation["artifact_refs"]["upstream_refs"]
     assert recommendation["artifact_refs"]["downstream_refs"]
+    assert recommendation["artifact_refs"]["next_cycle_decision"].startswith("next_cycle_decision:NCD-")
+    assert recommendation["artifact_refs"]["next_cycle_input_bundle"].startswith("next_cycle_input_bundle:NCB-")
     assert any(item.startswith("adaptive_execution_observability:AEO-") for item in recommendation["artifact_refs"]["related_artifacts"])
     assert any(item.startswith("adaptive_execution_trend_report:AET-") for item in recommendation["artifact_refs"]["related_artifacts"])
     assert any(item.startswith("adaptive_execution_policy_review:AEPR-") for item in recommendation["artifact_refs"]["related_artifacts"])
     assert summary["artifact_index"]["upstream_refs"]
     assert summary["artifact_index"]["downstream_refs"]
+    assert summary["artifact_index"]["next_cycle_decision"].startswith("next_cycle_decision:NCD-")
+    assert summary["artifact_index"]["next_cycle_input_bundle"].startswith("next_cycle_input_bundle:NCB-")
     assert any(item.startswith("adaptive_execution_observability:AEO-") for item in summary["artifact_index"]["related_artifacts"])
     assert any(item.startswith("adaptive_execution_trend_report:AET-") for item in summary["artifact_index"]["related_artifacts"])
     assert any(item.startswith("adaptive_execution_policy_review:AEPR-") for item in summary["artifact_index"]["related_artifacts"])
@@ -350,3 +362,52 @@ def test_operator_artifacts_surface_program_alignment_and_program_caused_stop_st
     assert any(item.startswith("program_caused_stop=") for item in summary["watch_next"])
     assert any(item.startswith("program_alignment_status=") for item in recommendation["why"])
     assert any(item.startswith("program_caused_stop=") for item in recommendation["next_step"]["watchouts"])
+
+
+def test_next_cycle_decision_stops_on_program_misalignment() -> None:
+    bundle = {
+        "bundle_id": "NCB-1234567890AB",
+        "unresolved_blockers": [],
+    }
+    decision = sco.decide_next_cycle(
+        current_cycle_id="RMB-EXAMPLE",
+        stop_reason="program_alignment_invalid",
+        program_constraint_signal={"enforcement_mode": "block"},
+        program_feedback_record={},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+        batch_continuation_records=[],
+        eval_control_state={"decision": "allow", "health": "healthy"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        drift_signal={"drift_level": "low"},
+        operator_summary={"program_alignment_status": "misaligned", "program_stop_cause": "program_alignment_invalid"},
+        required_artifacts_for_next_cycle=["roadmap_multi_batch_run_result:RMB-EXAMPLE"],
+        next_cycle_input_bundle=bundle,
+        created_at="2026-04-03T23:59:00Z",
+        trace_id="trace-batch-u-test",
+    )
+    assert decision["decision"] == "stop"
+    assert "program_misalignment" in decision["decision_reason_codes"]
+
+
+def test_next_cycle_decision_escalates_on_high_drift_and_is_deterministic() -> None:
+    kwargs = dict(
+        current_cycle_id="RMB-EXAMPLE",
+        stop_reason="max_batches_reached",
+        program_constraint_signal={"enforcement_mode": "block"},
+        program_feedback_record={},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+        batch_continuation_records=[],
+        eval_control_state={"decision": "allow", "health": "healthy"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        drift_signal={"drift_level": "high"},
+        operator_summary={"program_alignment_status": "aligned", "program_stop_cause": "none"},
+        required_artifacts_for_next_cycle=["roadmap_multi_batch_run_result:RMB-EXAMPLE"],
+        next_cycle_input_bundle={"bundle_id": "NCB-1234567890AB", "unresolved_blockers": []},
+        created_at="2026-04-03T23:59:00Z",
+        trace_id="trace-batch-u-test",
+    )
+    first = sco.decide_next_cycle(**kwargs)
+    second = sco.decide_next_cycle(**kwargs)
+    assert first == second
+    assert first["decision"] == "escalate"
+    assert "program_drift_high" in first["decision_reason_codes"]
