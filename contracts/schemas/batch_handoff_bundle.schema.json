@@ -15,6 +15,8 @@
     "must_carry_forward_artifacts",
     "must_preserve_invariants",
     "required_validations_next",
+    "autonomy_blockers",
+    "autonomy_decision_ref",
     "open_contract_work",
     "open_review_findings",
     "program_constraints",
@@ -30,7 +32,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "source_batch_id": {
       "type": "string",
@@ -78,6 +80,18 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "autonomy_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "autonomy_decision_ref": {
+      "type": "string",
+      "pattern": "^autonomy_decision_record:ADR-[A-F0-9]{12}$"
     },
     "open_contract_work": {
       "type": "array",

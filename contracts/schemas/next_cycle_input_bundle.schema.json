@@ -14,6 +14,8 @@
     "active_risks",
     "unresolved_blockers",
     "required_reviews",
+    "autonomy_decision_ref",
+    "autonomy_blockers",
     "recommended_start_batch",
     "context_refs",
     "source_cycle_runner_result_ref",
@@ -28,7 +30,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "source_cycle_id": {
       "type": "string",
@@ -91,6 +93,18 @@
       "pattern": "^trace-[A-Za-z0-9._:-]+$"
     },
     "required_reviews": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "autonomy_decision_ref": {
+      "type": "string",
+      "pattern": "^autonomy_decision_record:ADR-[A-F0-9]{12}$"
+    },
+    "autonomy_blockers": {
       "type": "array",
       "items": {
         "type": "string",

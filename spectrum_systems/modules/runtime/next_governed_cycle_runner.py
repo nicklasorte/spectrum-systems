@@ -27,6 +27,8 @@ _REQUIRED_BUNDLE_FIELDS = (
     "context_refs",
     "continuation_depth",
     "source_cycle_runner_result_ref",
+    "autonomy_decision_ref",
+    "autonomy_blockers",
 )
 
 
@@ -201,6 +203,7 @@ def run_next_governed_cycle(
     active_risks = [str(item) for item in next_cycle_input_bundle.get("active_risks", [])]
     unresolved_blockers = [str(item) for item in next_cycle_input_bundle.get("unresolved_blockers", [])]
     required_reviews = [str(item) for item in next_cycle_input_bundle.get("required_reviews", [])]
+    autonomy_blockers = [str(item) for item in next_cycle_input_bundle.get("autonomy_blockers", [])]
     continuation_depth = int(next_cycle_input_bundle.get("continuation_depth", -1))
     source_cycle_runner_result_ref = (
         str(next_cycle_input_bundle.get("source_cycle_runner_result_ref"))
@@ -215,9 +218,14 @@ def run_next_governed_cycle(
 
     if unresolved_blockers:
         refusal_reasons.append("execution_precondition_missing")
+    if autonomy_blockers:
+        refusal_reasons.append("execution_precondition_missing")
 
     if not required_artifacts:
         refusal_reasons.append("execution_precondition_missing")
+    autonomy_decision_ref = str(next_cycle_input_bundle.get("autonomy_decision_ref", ""))
+    if not autonomy_decision_ref.startswith("autonomy_decision_record:ADR-"):
+        refusal_reasons.append("input_bundle_invalid")
 
     normalized_execution_policy: dict[str, Any] | None = None
     try:

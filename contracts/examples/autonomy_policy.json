@@ -1,0 +1,40 @@
+{
+  "autonomy_policy_id": "AP-7A1B2C3D4E5F",
+  "policy_version": "1.0.0",
+  "continue_conditions": {
+    "allowed_control_decisions": ["allow"],
+    "required_replay_status": "passed",
+    "required_review_gate_status": "passed",
+    "required_drift_status": "within_threshold"
+  },
+  "stop_conditions": {
+    "stop_on_missing_inputs": true,
+    "stop_on_malformed_policy": true,
+    "stop_on_critical_risk_threshold": true,
+    "stop_on_warn_threshold": true
+  },
+  "review_required_conditions": {
+    "review_gate_statuses": ["required", "pending"],
+    "decision_reason_codes": ["manual_review_required", "policy_override_requested", "missing_eval_input"]
+  },
+  "escalate_conditions": {
+    "control_decisions": ["freeze"],
+    "drift_statuses": ["threshold_exceeded"],
+    "reason_codes": ["program_drift_high", "control_freeze", "replay_chain_violation"]
+  },
+  "max_consecutive_warns": 2,
+  "max_unresolved_critical_risks": 0,
+  "max_continuation_depth": 3,
+  "drift_thresholds": {
+    "warn_level": "medium",
+    "stop_level": "high"
+  },
+  "override_thresholds": {
+    "allow_operator_override": false,
+    "max_override_depth": 0
+  },
+  "replay_failure_policy": "stop",
+  "missing_eval_policy": "stop",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-autonomy-policy-example"
+}

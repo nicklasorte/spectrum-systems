@@ -231,6 +231,26 @@ def test_required_reviews_do_not_block_execution() -> None:
     assert result["cycle_runner_result"]["execution_status"] == "executed"
 
 
+def test_autonomy_blockers_prevent_unattended_execution() -> None:
+    bundle = _bundle()
+    bundle["autonomy_blockers"] = ["autonomy:review_gate_required"]
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["cycle_runner_result"]["execution_status"] == "refused"
+    assert "execution_precondition_missing" in result["cycle_runner_result"]["refusal_reason_codes"]
+
+
 def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     result = run_next_governed_cycle(
         next_cycle_decision=_decision("run_next_cycle"),

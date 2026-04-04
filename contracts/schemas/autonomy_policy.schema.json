@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/autonomy_policy.schema.json",
+  "title": "autonomy_policy",
+  "description": "Deterministic governed policy that defines when bounded runtime continuation may proceed without unattended control violations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "autonomy_policy_id",
+    "policy_version",
+    "continue_conditions",
+    "stop_conditions",
+    "review_required_conditions",
+    "escalate_conditions",
+    "max_consecutive_warns",
+    "max_unresolved_critical_risks",
+    "max_continuation_depth",
+    "drift_thresholds",
+    "override_thresholds",
+    "replay_failure_policy",
+    "missing_eval_policy",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "autonomy_policy_id": {"type": "string", "pattern": "^AP-[A-F0-9]{12}$"},
+    "policy_version": {"type": "string", "pattern": "^1\\.0\\.[0-9]+$"},
+    "continue_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_control_decisions", "required_replay_status", "required_review_gate_status", "required_drift_status"],
+      "properties": {
+        "allowed_control_decisions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["allow"]}},
+        "required_replay_status": {"type": "string", "enum": ["passed", "not_required"]},
+        "required_review_gate_status": {"type": "string", "enum": ["passed"]},
+        "required_drift_status": {"type": "string", "enum": ["within_threshold"]}
+      }
+    },
+    "stop_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stop_on_missing_inputs", "stop_on_malformed_policy", "stop_on_critical_risk_threshold", "stop_on_warn_threshold"],
+      "properties": {
+        "stop_on_missing_inputs": {"type": "boolean"},
+        "stop_on_malformed_policy": {"type": "boolean"},
+        "stop_on_critical_risk_threshold": {"type": "boolean"},
+        "stop_on_warn_threshold": {"type": "boolean"}
+      }
+    },
+    "review_required_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_gate_statuses", "decision_reason_codes"],
+      "properties": {
+        "review_gate_statuses": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["required", "pending"]}},
+        "decision_reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["manual_review_required", "policy_override_requested", "missing_eval_input"]}}
+      }
+    },
+    "escalate_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control_decisions", "drift_statuses", "reason_codes"],
+      "properties": {
+        "control_decisions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["freeze"]}},
+        "drift_statuses": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["threshold_exceeded"]}},
+        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["program_drift_high", "control_freeze", "replay_chain_violation"]}}
+      }
+    },
+    "max_consecutive_warns": {"type": "integer", "minimum": 0, "maximum": 100},
+    "max_unresolved_critical_risks": {"type": "integer", "minimum": 0, "maximum": 100},
+    "max_continuation_depth": {"type": "integer", "minimum": 0, "maximum": 100},
+    "drift_thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["warn_level", "stop_level"],
+      "properties": {
+        "warn_level": {"type": "string", "enum": ["medium"]},
+        "stop_level": {"type": "string", "enum": ["high"]}
+      }
+    },
+    "override_thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allow_operator_override", "max_override_depth"],
+      "properties": {
+        "allow_operator_override": {"type": "boolean"},
+        "max_override_depth": {"type": "integer", "minimum": 0, "maximum": 20}
+      }
+    },
+    "replay_failure_policy": {"type": "string", "enum": ["stop", "require_human_review", "escalate"]},
+    "missing_eval_policy": {"type": "string", "enum": ["stop", "require_human_review"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

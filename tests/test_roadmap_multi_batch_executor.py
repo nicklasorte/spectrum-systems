@@ -893,10 +893,17 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
         "tests_run": [],
         "results_summary": ["ok"],
         "remaining_risks": ["critical_risk:AUTH_REVIEW_PENDING", "risk:minor"],
-        "open_followups": ["validation:pytest tests/test_contract_enforcement.py", "contract:batch_handoff_bundle@1.0.0"],
+        "open_followups": [
+            "validation:pytest tests/test_contract_enforcement.py",
+            "contract:batch_handoff_bundle@1.0.0",
+            "autonomy_blocker:autonomy:review_gate_required",
+        ],
         "recommended_next_batch": "BATCH-J",
         "blocking_issues": ["PROP_REVIEW_EVAL_NOT_INGESTED"],
-        "evidence_refs": ["roadmap_multi_batch_run_result:RMB-111111111111"],
+        "evidence_refs": [
+            "roadmap_multi_batch_run_result:RMB-111111111111",
+            "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+        ],
         "source_refs": ["roadmap_artifact:inline"],
         "trace_id": "trace-derive-test",
         "created_at": "2026-04-04T00:00:00Z",
@@ -906,6 +913,8 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert first == second
     assert first["must_carry_forward_risks"] == ["critical_risk:AUTH_REVIEW_PENDING", "risk:minor"]
     assert first["required_validations_next"] == ["validation:pytest tests/test_contract_enforcement.py"]
+    assert first["autonomy_blockers"] == ["autonomy_blocker:autonomy:review_gate_required"]
+    assert first["autonomy_decision_ref"] == "autonomy_decision_record:ADR-8B9C0D1E2F3A"
 
     resolved_delivery = dict(delivery)
     resolved_delivery["remaining_risks"] = []
@@ -916,3 +925,4 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert resolved["must_carry_forward_risks"] == []
     assert resolved["open_contract_work"] == []
     assert resolved["open_review_findings"] == []
+    assert resolved["autonomy_blockers"] == []

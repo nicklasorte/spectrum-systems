@@ -1,0 +1,22 @@
+{
+  "autonomy_decision_id": "ADR-8B9C0D1E2F3A",
+  "source_cycle_id": "RMB-EXAMPLE0001",
+  "autonomy_policy_id": "AP-7A1B2C3D4E5F",
+  "decision": "continue",
+  "reason_codes": [
+    "all_continue_conditions_satisfied"
+  ],
+  "supporting_signals": [
+    "control_decision=allow",
+    "replay_status=passed",
+    "review_gate_status=passed",
+    "drift_status=within_threshold"
+  ],
+  "unresolved_critical_risk_count": 0,
+  "consecutive_warn_count": 0,
+  "drift_status": "within_threshold",
+  "replay_status": "passed",
+  "review_gate_status": "passed",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-autonomy-decision-example"
+}
