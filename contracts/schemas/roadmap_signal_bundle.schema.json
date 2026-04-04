@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_signal_bundle.schema.json",
+  "title": "roadmap_signal_bundle",
+  "description": "Deterministic roadmap feeder artifact derived from drift, hotspot, replay, eval, and trust posture signals.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["signal_bundle_id", "schema_version", "roadmap_id", "drift_detection_ref", "top_block_reasons", "highest_risk_subsystems", "missing_eval_coverage", "override_hotspots", "drift_severity_summary", "replay_mismatch_refs", "judgment_conflict_refs", "budget_burn_rate", "trust_posture_snapshot_ref", "recommended_priority_adjustments", "created_at", "trace_id"],
+  "properties": {
+    "signal_bundle_id": {"type": "string", "pattern": "^RSB-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "roadmap_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"},
+    "drift_detection_ref": {"type": "string", "pattern": "^drift_detection_record:DDR-[A-F0-9]{12}$"},
+    "top_block_reasons": {"type": "array", "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
+    "highest_risk_subsystems": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "missing_eval_coverage": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "override_hotspots": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "drift_severity_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["none", "warning", "freeze_candidate", "block"],
+      "properties": {
+        "none": {"type": "integer", "minimum": 0},
+        "warning": {"type": "integer", "minimum": 0},
+        "freeze_candidate": {"type": "integer", "minimum": 0},
+        "block": {"type": "integer", "minimum": 0}
+      }
+    },
+    "replay_mismatch_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "judgment_conflict_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "budget_burn_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "trust_posture_snapshot_ref": {"type": "string", "pattern": "^trust_posture_snapshot:TPS-[A-F0-9]{12}$"},
+    "recommended_priority_adjustments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["priority_class", "reason", "weight"],
+        "properties": {
+          "priority_class": {"type": "string", "enum": ["hardening", "governance", "eval_coverage", "replay_hardening", "ltv_followup", "budget_stabilization"]},
+          "reason": {"type": "string", "minLength": 3},
+          "weight": {"type": "integer", "minimum": 1, "maximum": 100},
+          "target_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z]$"}
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

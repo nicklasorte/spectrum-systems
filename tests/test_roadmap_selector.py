@@ -49,6 +49,13 @@ def _signals(*, include_required: bool = True) -> dict:
     }
 
 
+def _roadmap_signal_bundle(*, freeze: bool = False, block: bool = False) -> dict:
+    bundle = copy.deepcopy(load_example("roadmap_signal_bundle"))
+    bundle["drift_severity_summary"]["freeze_candidate"] = 1 if freeze else 0
+    bundle["drift_severity_summary"]["block"] = 1 if block else 0
+    return bundle
+
+
 def test_correct_next_batch_selected_and_ready_true() -> None:
     roadmap = _roadmap()
     signals = _signals()
@@ -116,6 +123,48 @@ def test_multiple_candidates_choose_deterministic_list_order() -> None:
             batch["required_signals"] = []
 
     assert select_next_batch(roadmap, _signals()) == "BATCH-I"
+
+
+def test_multiple_candidates_allow_signal_bundle_priority_override() -> None:
+    roadmap = _roadmap()
+    for batch in roadmap["batches"]:
+        if batch["batch_id"] in {"BATCH-I", "BATCH-J"}:
+            batch["status"] = "not_started"
+    for batch in roadmap["batches"]:
+        if batch["batch_id"] == "BATCH-J":
+            batch["depends_on"] = []
+            batch["required_signals"] = []
+
+    signals = _signals()
+    bundle = _roadmap_signal_bundle()
+    bundle["recommended_priority_adjustments"] = [
+        {"priority_class": "eval_coverage", "reason": "missing_eval_coverage", "weight": 80, "target_batch_id": "BATCH-J"}
+    ]
+    signals["roadmap_signal_bundle"] = bundle
+    assert select_next_batch(roadmap, signals) == "BATCH-J"
+
+
+def test_missing_required_roadmap_signal_bundle_fails_closed() -> None:
+    signals = _signals()
+    signals["roadmap_signal_bundle_required"] = True
+    result = build_roadmap_selection_result(_roadmap(), signals, evaluated_at="2026-04-03T13:00:00Z")
+    assert result["ready_to_run"] is False
+    assert result["stop_reason"] == "no_eligible_batch"
+
+
+def test_freeze_or_block_bundle_overrides_normal_sequence() -> None:
+    roadmap = _roadmap()
+    freeze_signals = _signals()
+    freeze_signals["roadmap_signal_bundle"] = _roadmap_signal_bundle(freeze=True)
+    freeze_result = build_roadmap_selection_result(roadmap, freeze_signals, evaluated_at="2026-04-03T13:00:00Z")
+    assert freeze_result["ready_to_run"] is False
+    assert freeze_result["stop_reason"] == "authorization_freeze"
+
+    block_signals = _signals()
+    block_signals["roadmap_signal_bundle"] = _roadmap_signal_bundle(block=True)
+    block_result = build_roadmap_selection_result(roadmap, block_signals, evaluated_at="2026-04-03T13:00:00Z")
+    assert block_result["ready_to_run"] is False
+    assert block_result["stop_reason"] == "authorization_block"
 
 
 def test_determinism_same_inputs_identical_result() -> None:
