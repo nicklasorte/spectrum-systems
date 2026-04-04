@@ -169,6 +169,32 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("system_roadmap")
         validate_artifact(instance, "system_roadmap")
 
+
+    def test_system_roadmap_batches_have_required_governed_fields(self) -> None:
+        instance = load_example("system_roadmap")
+        required = {
+            "batch_id",
+            "acronym",
+            "title",
+            "goal",
+            "depends_on",
+            "hard_gate",
+            "priority",
+            "status",
+            "allowed_when",
+            "stop_conditions",
+            "artifacts_expected",
+            "tests_required",
+            "description",
+        }
+        for batch in instance["batches"]:
+            assert required.issubset(set(batch.keys()))
+
+    def test_system_roadmap_batches_are_deterministically_ordered_by_priority(self) -> None:
+        instance = load_example("system_roadmap")
+        priorities = [batch["priority"] for batch in instance["batches"]]
+        self.assertEqual(priorities, sorted(priorities))
+
     def test_program_layer_contract_examples_validate(self) -> None:
         for name in (
             "program_artifact",

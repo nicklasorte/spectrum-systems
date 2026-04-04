@@ -85,30 +85,78 @@ def _select_next_batch_from_system_roadmap(
         if isinstance(row, dict) and isinstance(row.get("batch_id"), str) and isinstance(row.get("status"), str):
             status_by_id[row["batch_id"]] = row["status"]
 
-    eligible: list[str] = []
     for batch in batches:
         if not isinstance(batch, dict):
             raise RoadmapSelectionError("system_roadmap.batches entries must be objects")
+
         batch_id = batch.get("batch_id")
         if not isinstance(batch_id, str) or not batch_id:
             raise RoadmapSelectionError("system_roadmap batch_id must be a non-empty string")
+
         if batch.get("status") != "not_started":
             continue
 
-        dependencies = batch.get("dependencies", [])
+        dependencies = batch.get("depends_on", [])
         if not isinstance(dependencies, list):
-            raise RoadmapSelectionError(f"dependencies must be a list for {batch_id}")
+            raise RoadmapSelectionError(f"depends_on must be a list for {batch_id}")
+
         if any(status_by_id.get(dep) != "completed" for dep in dependencies):
             continue
 
         if program_aligned_batch_ids is not None and batch_id not in program_aligned_batch_ids:
             continue
-        eligible.append(batch_id)
 
-    if not eligible:
-        raise RoadmapSelectionError("no eligible batch found")
-    return sorted(eligible)[0]
+        return batch_id
 
+    raise RoadmapSelectionError("no eligible batch found")
+
+
+
+
+def _normalize_system_roadmap_for_selection(roadmap_artifact: dict[str, Any]) -> dict[str, Any]:
+    """Normalize legacy system roadmap rows to canonical fields for deterministic selection."""
+    normalized = dict(roadmap_artifact)
+    raw_batches = normalized.get("batches", [])
+    if not isinstance(raw_batches, list):
+        raise RoadmapSelectionError("system_roadmap.batches must be a list")
+
+    normalized_batches: list[dict[str, Any]] = []
+    for index, raw in enumerate(raw_batches, start=1):
+        if not isinstance(raw, dict):
+            raise RoadmapSelectionError("system_roadmap.batches entries must be objects")
+        batch = dict(raw)
+        batch_id = str(batch.get("batch_id") or "").strip()
+        if not batch_id:
+            raise RoadmapSelectionError("system_roadmap batch_id must be a non-empty string")
+
+        depends_on = batch.get("depends_on", batch.get("dependencies", []))
+        if not isinstance(depends_on, list):
+            raise RoadmapSelectionError(f"depends_on must be a list for {batch_id}")
+
+        acronym = batch.get("acronym")
+        if not isinstance(acronym, str) or not acronym:
+            acronym = batch_id.split("-", 1)[0]
+
+        normalized_batches.append(
+            {
+                "batch_id": batch_id,
+                "acronym": acronym,
+                "title": str(batch.get("title") or batch_id),
+                "goal": str(batch.get("goal") or batch.get("description") or batch_id),
+                "depends_on": [str(dep) for dep in depends_on],
+                "hard_gate": bool(batch.get("hard_gate", batch.get("hard_gate_after", False))),
+                "priority": int(batch.get("priority", index)),
+                "status": str(batch.get("status") or "not_started"),
+                "allowed_when": ["dependencies_completed"],
+                "stop_conditions": ["missing_required_artifact", "failed_required_test", "hard_gate_failed"],
+                "artifacts_expected": [f"{batch_id.lower().replace('-', '_')}_artifact"],
+                "tests_required": [f"pytest tests/test_{batch_id.lower().replace('-', '_')}.py"],
+                "description": str(batch.get("description") or batch.get("goal") or batch_id),
+            }
+        )
+
+    normalized["batches"] = normalized_batches
+    return normalized
 
 def _require_signal_set(system_signals: Any) -> set[str]:
     if not isinstance(system_signals, dict):
@@ -265,9 +313,10 @@ def select_next_batch(
 ) -> str | None:
     """Select the next roadmap batch allowed to run, or ``None`` when no batch is eligible."""
     if "version" in roadmap_artifact and "created_at" in roadmap_artifact and "trace_id" in roadmap_artifact:
-        _validate_schema(roadmap_artifact, "system_roadmap", label="system_roadmap")
+        normalized_roadmap = _normalize_system_roadmap_for_selection(roadmap_artifact)
+        _validate_schema(normalized_roadmap, "system_roadmap", label="system_roadmap")
         return _select_next_batch_from_system_roadmap(
-            roadmap_artifact,
+            normalized_roadmap,
             program_aligned_batch_ids=program_aligned_batch_ids,
             continuation_allowed=continuation_allowed,
         )

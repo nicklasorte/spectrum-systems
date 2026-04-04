@@ -90,6 +90,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | Plan file | Item | Status |
+| docs/review-actions/PLAN-RMP-014-FIX-2026-04-04.md | RMP-014-FIX — Strategy Compliance Repair for Governed Roadmap Projection | Active |
+| docs/review-actions/PLAN-RMP-014-2026-04-04.md | RMP-014 — Machine-Readable Roadmap Normalization | Active |
 | docs/review-actions/PLAN-BATCH-A3-2026-04-04.md | BATCH-A3 — Exception Router | Active |
 | docs/review-actions/PLAN-BATCH-A1-2026-04-04.md | BATCH-A1 — Autonomy Guardrails | Active |
 | docs/review-actions/PLAN-BATCH-S2-2026-04-04.md | BATCH-S2 — Self-Testing Foundation (ST-02 + ST-03 + ST-05 + ST-21) | Active |
