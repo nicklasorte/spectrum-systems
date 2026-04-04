@@ -529,3 +529,15 @@ def test_operator_artifacts_require_structured_program_fields() -> None:
             "program_drift_severity",
         ):
             assert key in artifact
+
+
+def test_standards_manifest_registers_required_eval_coverage_contracts() -> None:
+    standards = load_standards_contracts()
+    for contract in (
+        "required_eval_registry",
+        "eval_coverage_registry",
+        "eval_coverage_signal",
+        "missing_required_eval_enforcement",
+    ):
+        assert contract in standards
+        assert standards[contract]["schema_version"] == "1.0.0"

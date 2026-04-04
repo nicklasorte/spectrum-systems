@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_coverage_registry.schema.json",
+  "title": "eval_coverage_registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "coverage_registry_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "artifact_family",
+    "required_evals_declared",
+    "required_evals_present",
+    "missing_eval_definitions",
+    "missing_eval_results",
+    "coverage_completeness_status",
+    "trace",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "eval_coverage_registry"},
+    "coverage_registry_id": {"type": "string", "pattern": "^ECR-[A-Z0-9-]+$"},
+    "artifact_version": {"type": "string", "pattern": "^1\\.0\\.0$"},
+    "schema_version": {"type": "string", "pattern": "^1\\.0\\.0$"},
+    "standards_version": {"type": "string", "minLength": 1},
+    "artifact_family": {"type": "string", "minLength": 1},
+    "required_evals_declared": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "required_evals_present": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "missing_eval_definitions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "missing_eval_results": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "indeterminate_required_evals": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "coverage_completeness_status": {
+      "type": "string",
+      "enum": ["complete", "incomplete", "indeterminate_blocking", "mapping_missing"]
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
