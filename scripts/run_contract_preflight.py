@@ -100,6 +100,7 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
 ]
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
+    "scripts/run_ops03_adversarial_stress_testing.py": ["tests/test_run_ops03_adversarial_stress_testing.py"],
     "scripts/run_trust_spine_evidence_cohesion.py": ["tests/test_trust_spine_evidence_cohesion.py"],
     "spectrum_systems/modules/runtime/control_surface_gap_loader.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,

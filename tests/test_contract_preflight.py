@@ -390,6 +390,13 @@ def test_resolve_required_surface_tests_uses_trust_spine_cohesion_override() -> 
     assert "tests/test_trust_spine_evidence_cohesion.py" in targets["scripts/run_trust_spine_evidence_cohesion.py"]
 
 
+def test_resolve_required_surface_tests_uses_ops03_override() -> None:
+    targets = preflight.resolve_required_surface_tests(Path("."), ["scripts/run_ops03_adversarial_stress_testing.py"])
+    assert "tests/test_run_ops03_adversarial_stress_testing.py" in targets[
+        "scripts/run_ops03_adversarial_stress_testing.py"
+    ]
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     wrapper_path = tmp_path / "wrapper.json"
