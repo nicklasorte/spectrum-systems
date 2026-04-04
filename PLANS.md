@@ -312,6 +312,8 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-OPS-01-2026-04-04.md | OPS-01 — Autonomous Operations Runbook + Monitoring Contract | Active |
 
+| docs/review-actions/PLAN-OPS-01-FIX-2026-04-04.md | OPS-01-FIX — Manifest Artifact Class Compatibility Repair | Active |
+
 Update this table when plans are created or completed.
 
 ---

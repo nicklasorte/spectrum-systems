@@ -1951,7 +1951,7 @@
     },
     {
       "artifact_type": "operations_monitoring_contract",
-      "artifact_class": "governance",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
