@@ -318,6 +318,28 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
     assert any(item.startswith("adaptive_execution_policy_review:AEPR-") for item in recommendation["artifact_refs"]["related_artifacts"])
     assert summary["artifact_index"]["upstream_refs"]
     assert summary["artifact_index"]["downstream_refs"]
+
+
+def test_cycle_applies_roadmap_adjustments_and_exposes_artifacts() -> None:
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={**_integration_inputs(), "eval_coverage_signal": {"coverage_gap_detected": True}},
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    assert result["roadmap_adjustments"]
+    assert result["next_step_recommendation"]["next_batch_id"] == "BATCH-R"
+    assert result["next_cycle_input_bundle"]["recommended_start_batch"] == "BATCH-R"
+    assert result["batch_handoff_bundle"]["recommended_next_batch"] == "BATCH-R"
+    assert any(ref.startswith("roadmap_adjustment_record:RADJ-") for ref in result["build_summary"]["source_refs"])
+    assert any(ref.startswith("roadmap_adjustment_record:RADJ-") for ref in result["batch_handoff_bundle"]["must_carry_forward_artifacts"])
+    summary = result["build_summary"]
     assert summary["artifact_index"]["next_cycle_decision"].startswith("next_cycle_decision:NCD-")
     assert summary["artifact_index"]["next_cycle_input_bundle"].startswith("next_cycle_input_bundle:NCB-")
     assert any(item.startswith("adaptive_execution_observability:AEO-") for item in summary["artifact_index"]["related_artifacts"])
