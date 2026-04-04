@@ -152,6 +152,9 @@ class ContractSchemaTests(unittest.TestCase):
 
     def test_cycle_loop_contract_examples_validate(self) -> None:
         for name in (
+            "decision_proof_record",
+            "allow_decision_proof",
+            "unknown_state_signal",
             "next_cycle_decision",
             "next_cycle_input_bundle",
             "cycle_runner_result",

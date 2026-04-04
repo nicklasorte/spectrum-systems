@@ -17,7 +17,8 @@
     "required_artifacts_for_next_cycle",
     "next_cycle_inputs_ref",
     "created_at",
-    "trace_id"
+    "trace_id",
+    "allow_decision_proof_ref"
   ],
   "properties": {
     "cycle_decision_id": {
@@ -26,7 +27,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "current_cycle_id": {
       "type": "string",
@@ -111,6 +112,10 @@
     "trace_id": {
       "type": "string",
       "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "allow_decision_proof_ref": {
+      "type": "string",
+      "pattern": "^allow_decision_proof:ADP-[A-F0-9]{12}$"
     }
   }
 }

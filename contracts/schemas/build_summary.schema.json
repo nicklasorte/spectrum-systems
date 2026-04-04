@@ -41,7 +41,11 @@
     "exception_requires_human_review",
     "exception_requires_freeze",
     "capability_readiness_state",
-    "capability_readiness_ref"
+    "capability_readiness_ref",
+    "decision_proof_ref",
+    "allow_decision_proof_ref",
+    "unknown_state_signal_refs",
+    "unknown_state_blockers"
   ],
   "properties": {
     "summary_id": {
@@ -50,7 +54,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.8.0"
+      "const": "1.9.0"
     },
     "run_id": {
       "type": "string",
@@ -632,6 +636,30 @@
     "capability_readiness_ref": {
       "type": "string",
       "pattern": "^capability_readiness_record:CRD-[A-F0-9]{12}$"
+    },
+    "decision_proof_ref": {
+      "type": "string",
+      "pattern": "^decision_proof_record:DPR-[A-F0-9]{12}$"
+    },
+    "allow_decision_proof_ref": {
+      "type": "string",
+      "pattern": "^allow_decision_proof:ADP-[A-F0-9]{12}$"
+    },
+    "unknown_state_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^unknown_state_signal:USS-[A-F0-9]{12}$"
+      },
+      "uniqueItems": true
+    },
+    "unknown_state_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
     }
   },
   "$defs": {

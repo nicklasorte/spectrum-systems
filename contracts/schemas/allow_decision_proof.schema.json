@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/allow_decision_proof.schema.json",
+  "title": "allow_decision_proof",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "allow_decision_proof_id",
+    "source_decision_ref",
+    "eval_coverage_complete",
+    "required_evals_present",
+    "no_blocking_policy_violations",
+    "no_replay_mismatch",
+    "no_schema_failure",
+    "no_trace_failure",
+    "no_blocking_unknown_state_signal",
+    "supporting_signal_refs",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "allow_decision_proof_id": {
+      "type": "string",
+      "pattern": "^ADP-[A-F0-9]{12}$"
+    },
+    "source_decision_ref": {
+      "type": "string",
+      "minLength": 3
+    },
+    "eval_coverage_complete": {
+      "type": "boolean"
+    },
+    "required_evals_present": {
+      "type": "boolean"
+    },
+    "no_blocking_policy_violations": {
+      "type": "boolean"
+    },
+    "no_replay_mismatch": {
+      "type": "boolean"
+    },
+    "no_schema_failure": {
+      "type": "boolean"
+    },
+    "no_trace_failure": {
+      "type": "boolean"
+    },
+    "no_blocking_unknown_state_signal": {
+      "type": "boolean"
+    },
+    "supporting_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  }
+}

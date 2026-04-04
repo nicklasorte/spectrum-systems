@@ -1,0 +1,23 @@
+{
+  "decision_proof_id": "DPR-1A2B3C4D5E6F",
+  "source_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+  "source_cycle_id": "RMB-EXAMPLECYCLE1",
+  "decision_type": "autonomy_guardrail",
+  "reason_codes": [
+    "all_continue_conditions_satisfied"
+  ],
+  "required_inputs_present": true,
+  "supporting_signal_refs": [
+    "control_decision=allow",
+    "replay_status=passed"
+  ],
+  "supporting_artifact_refs": [
+    "roadmap_multi_batch_run_result:RMB-EXAMPLECYCLE1",
+    "core_system_integration_validation:CSIV-EXAMPLE0001"
+  ],
+  "replay_consistency_status": "match",
+  "schema_validation_status": "pass",
+  "trace_validation_status": "pass",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-next-cycle-example"
+}

@@ -165,6 +165,44 @@ def test_runner_refuses_on_missing_bundle_fields() -> None:
     assert "input_bundle_missing_required_field" in artifact["refusal_reason_codes"]
 
 
+def test_runner_refuses_without_allow_decision_proof() -> None:
+    bundle = _bundle()
+    bundle["allow_decision_proof_ref"] = ""
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["cycle_runner_result"]["execution_status"] == "refused"
+    assert "execution_precondition_missing" in result["cycle_runner_result"]["refusal_reason_codes"]
+
+
+def test_runner_refuses_when_unknown_state_blockers_present() -> None:
+    bundle = _bundle()
+    bundle["unknown_state_blockers"] = ["unknown_state:unknown_dependency_state:missing_governed_source_cycle_runner_result_ref"]
+    result = run_next_governed_cycle(
+        next_cycle_decision=_decision("run_next_cycle"),
+        next_cycle_input_bundle=bundle,
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["cycle_runner_result"]["execution_status"] == "refused"
+    assert "execution_precondition_missing" in result["cycle_runner_result"]["refusal_reason_codes"]
+
+
 def test_runner_refuses_when_continuation_depth_exceeded() -> None:
     bundle = _bundle()
     bundle["continuation_depth"] = 5

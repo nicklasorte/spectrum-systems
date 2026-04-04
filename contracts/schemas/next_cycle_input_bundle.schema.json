@@ -27,7 +27,11 @@
     "latest_exception_action_type",
     "latest_exception_requires_human_review",
     "latest_exception_requires_freeze",
-    "required_next_actions"
+    "required_next_actions",
+    "decision_proof_ref",
+    "allow_decision_proof_ref",
+    "unknown_state_signal_refs",
+    "unknown_state_blockers"
   ],
   "properties": {
     "bundle_id": {
@@ -36,7 +40,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.2.0"
+      "const": "1.3.0"
     },
     "source_cycle_id": {
       "type": "string",
@@ -176,6 +180,30 @@
       "type": "boolean"
     },
     "required_next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "decision_proof_ref": {
+      "type": "string",
+      "pattern": "^decision_proof_record:DPR-[A-F0-9]{12}$"
+    },
+    "allow_decision_proof_ref": {
+      "type": "string",
+      "pattern": "^allow_decision_proof:ADP-[A-F0-9]{12}$"
+    },
+    "unknown_state_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^unknown_state_signal:USS-[A-F0-9]{12}$"
+      },
+      "uniqueItems": true
+    },
+    "unknown_state_blockers": {
       "type": "array",
       "items": {
         "type": "string",

@@ -1,0 +1,16 @@
+{
+  "unknown_state_signal_id": "USS-1A2B3C4D5E6F",
+  "source_cycle_id": "RMB-EXAMPLECYCLE1",
+  "source_artifact_ref": "roadmap_multi_batch_run_result:RMB-EXAMPLECYCLE1",
+  "unknown_class": "unknown_dependency_state",
+  "severity": "high",
+  "blocking": true,
+  "reason_codes": [
+    "missing_governed_source_cycle_runner_result_ref"
+  ],
+  "supporting_signal_refs": [
+    "cycle_runner_result:CRR-000000000000"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-next-cycle-example"
+}

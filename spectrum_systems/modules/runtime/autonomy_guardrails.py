@@ -206,4 +206,113 @@ def evaluate_autonomy_guardrails(
     return record
 
 
-__all__ = ["AutonomyGuardrailError", "evaluate_autonomy_guardrails"]
+def build_unknown_state_signal(
+    *,
+    source_cycle_id: str,
+    source_artifact_ref: str,
+    unknown_class: str,
+    severity: str,
+    blocking: bool,
+    reason_codes: list[str],
+    supporting_signal_refs: list[str],
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    payload = {
+        "source_cycle_id": source_cycle_id,
+        "source_artifact_ref": source_artifact_ref,
+        "unknown_class": unknown_class,
+        "severity": severity,
+        "blocking": blocking,
+        "reason_codes": sorted(set(reason_codes)),
+        "supporting_signal_refs": sorted(set(supporting_signal_refs)),
+        "trace_id": trace_id,
+    }
+    signal = {
+        "unknown_state_signal_id": f"USS-{_canonical_hash(payload)[:12].upper()}",
+        **payload,
+        "created_at": created_at,
+    }
+    _validate_schema(signal, "unknown_state_signal")
+    return signal
+
+
+def build_decision_proof_record(
+    *,
+    source_decision_ref: str,
+    source_cycle_id: str,
+    decision_type: str,
+    reason_codes: list[str],
+    required_inputs_present: bool,
+    supporting_signal_refs: list[str],
+    supporting_artifact_refs: list[str],
+    replay_consistency_status: str,
+    schema_validation_status: str,
+    trace_validation_status: str,
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    payload = {
+        "source_decision_ref": source_decision_ref,
+        "source_cycle_id": source_cycle_id,
+        "decision_type": decision_type,
+        "reason_codes": sorted(set(reason_codes)),
+        "required_inputs_present": bool(required_inputs_present),
+        "supporting_signal_refs": sorted(set(supporting_signal_refs)),
+        "supporting_artifact_refs": sorted(set(supporting_artifact_refs)),
+        "replay_consistency_status": replay_consistency_status,
+        "schema_validation_status": schema_validation_status,
+        "trace_validation_status": trace_validation_status,
+        "trace_id": trace_id,
+    }
+    record = {
+        "decision_proof_id": f"DPR-{_canonical_hash(payload)[:12].upper()}",
+        **payload,
+        "created_at": created_at,
+    }
+    _validate_schema(record, "decision_proof_record")
+    return record
+
+
+def build_allow_decision_proof(
+    *,
+    source_decision_ref: str,
+    eval_coverage_complete: bool,
+    required_evals_present: bool,
+    no_blocking_policy_violations: bool,
+    no_replay_mismatch: bool,
+    no_schema_failure: bool,
+    no_trace_failure: bool,
+    no_blocking_unknown_state_signal: bool,
+    supporting_signal_refs: list[str],
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    payload = {
+        "source_decision_ref": source_decision_ref,
+        "eval_coverage_complete": bool(eval_coverage_complete),
+        "required_evals_present": bool(required_evals_present),
+        "no_blocking_policy_violations": bool(no_blocking_policy_violations),
+        "no_replay_mismatch": bool(no_replay_mismatch),
+        "no_schema_failure": bool(no_schema_failure),
+        "no_trace_failure": bool(no_trace_failure),
+        "no_blocking_unknown_state_signal": bool(no_blocking_unknown_state_signal),
+        "supporting_signal_refs": sorted(set(supporting_signal_refs)),
+        "trace_id": trace_id,
+    }
+    record = {
+        "allow_decision_proof_id": f"ADP-{_canonical_hash(payload)[:12].upper()}",
+        **payload,
+        "created_at": created_at,
+    }
+    _validate_schema(record, "allow_decision_proof")
+    return record
+
+
+__all__ = [
+    "AutonomyGuardrailError",
+    "build_allow_decision_proof",
+    "build_decision_proof_record",
+    "build_unknown_state_signal",
+    "evaluate_autonomy_guardrails",
+]

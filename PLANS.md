@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-10-2026-04-04.md | BATCH-10 — Strictness + Explicit Decision Enforcement | Active |
 | Plan file | Item | Status |
 | docs/review-actions/PLAN-BATCH-A2-2026-04-04.md | BATCH-A2 — Capability Readiness + Trust Posture | Active |
 | docs/review-actions/PLAN-BATCH-A4-2026-04-04.md | BATCH-A4 — Roadmap Self-Adaptation | Active |

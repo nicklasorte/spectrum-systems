@@ -119,12 +119,16 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["batch_handoff_bundle"], "batch_handoff_bundle")
     validate_artifact(first["capability_readiness_record"], "capability_readiness_record")
     validate_artifact(first["autonomy_decision_record"], "autonomy_decision_record")
+    validate_artifact(first["decision_proof_record"], "decision_proof_record")
+    validate_artifact(first["allow_decision_proof"], "allow_decision_proof")
+    for signal in first["unknown_state_signals"]:
+        validate_artifact(signal, "unknown_state_signal")
     validate_artifact(first["exception_classification_record"], "exception_classification_record")
     validate_artifact(first["exception_resolution_record"], "exception_resolution_record")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.8.0"
+    assert first["build_summary"]["schema_version"] == "1.9.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -174,6 +178,11 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert remediation["required_artifacts"]
     validate_artifact(first["next_cycle_decision"], "next_cycle_decision")
     validate_artifact(first["next_cycle_input_bundle"], "next_cycle_input_bundle")
+    assert first["next_cycle_decision"]["allow_decision_proof_ref"].startswith("allow_decision_proof:ADP-")
+    assert first["next_cycle_input_bundle"]["decision_proof_ref"].startswith("decision_proof_record:DPR-")
+    assert first["next_cycle_input_bundle"]["allow_decision_proof_ref"] == first["next_cycle_decision"]["allow_decision_proof_ref"]
+    assert first["build_summary"]["decision_proof_ref"] == first["next_cycle_input_bundle"]["decision_proof_ref"]
+    assert first["build_summary"]["allow_decision_proof_ref"] == first["next_cycle_decision"]["allow_decision_proof_ref"]
     assert first["next_cycle_decision"]["next_cycle_inputs_ref"] == first["next_step_recommendation"]["next_cycle_inputs_ref"]
     assert first["next_cycle_input_bundle"]["bundle_id"] in first["next_step_recommendation"]["next_cycle_inputs_ref"]
     assert "required_reviews" in first["next_cycle_input_bundle"]
@@ -183,6 +192,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["batch_handoff_bundle"]["autonomy_decision_ref"] == first["build_summary"]["autonomy_decision_ref"]
     assert first["batch_handoff_bundle"]["latest_exception_class"] == first["exception_classification_record"]["exception_class"]
     assert first["batch_handoff_bundle"]["latest_exception_resolution_action"] == first["exception_resolution_record"]["recommended_action"]
+    assert first["batch_handoff_bundle"]["decision_proof_ref"] == first["build_summary"]["decision_proof_ref"]
+    assert first["batch_handoff_bundle"]["allow_decision_proof_ref"] == first["build_summary"]["allow_decision_proof_ref"]
     assert first["build_summary"]["capability_readiness_ref"].startswith("capability_readiness_record:CRD-")
     assert first["build_summary"]["capability_readiness_state"] in {"unsafe", "constrained", "supervised", "autonomous"}
     assert first["batch_handoff_bundle"]["capability_readiness_ref"] == first["build_summary"]["capability_readiness_ref"]
@@ -516,6 +527,7 @@ def test_next_cycle_decision_stops_on_program_misalignment() -> None:
         operator_summary={"program_alignment_status": "misaligned", "program_stop_cause": "program_alignment_invalid"},
         required_artifacts_for_next_cycle=["roadmap_multi_batch_run_result:RMB-EXAMPLE"],
         next_cycle_input_bundle=bundle,
+        allow_decision_proof_ref="allow_decision_proof:ADP-1234567890AB",
         created_at="2026-04-03T23:59:00Z",
         trace_id="trace-batch-u-test",
     )
@@ -537,6 +549,7 @@ def test_next_cycle_decision_escalates_on_high_drift_and_is_deterministic() -> N
         operator_summary={"program_alignment_status": "aligned", "program_stop_cause": "none"},
         required_artifacts_for_next_cycle=["roadmap_multi_batch_run_result:RMB-EXAMPLE"],
         next_cycle_input_bundle={"bundle_id": "NCB-1234567890AB", "unresolved_blockers": []},
+        allow_decision_proof_ref="allow_decision_proof:ADP-1234567890AB",
         created_at="2026-04-03T23:59:00Z",
         trace_id="trace-batch-u-test",
     )

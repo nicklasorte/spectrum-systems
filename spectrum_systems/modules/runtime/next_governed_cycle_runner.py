@@ -29,6 +29,10 @@ _REQUIRED_BUNDLE_FIELDS = (
     "source_cycle_runner_result_ref",
     "autonomy_decision_ref",
     "autonomy_blockers",
+    "decision_proof_ref",
+    "allow_decision_proof_ref",
+    "unknown_state_signal_refs",
+    "unknown_state_blockers",
     "latest_exception_class",
     "latest_exception_resolution_action",
     "latest_exception_action_type",
@@ -210,6 +214,7 @@ def run_next_governed_cycle(
     unresolved_blockers = [str(item) for item in next_cycle_input_bundle.get("unresolved_blockers", [])]
     required_reviews = [str(item) for item in next_cycle_input_bundle.get("required_reviews", [])]
     autonomy_blockers = [str(item) for item in next_cycle_input_bundle.get("autonomy_blockers", [])]
+    unknown_state_blockers = [str(item) for item in next_cycle_input_bundle.get("unknown_state_blockers", [])]
     continuation_depth = int(next_cycle_input_bundle.get("continuation_depth", -1))
     source_cycle_runner_result_ref = (
         str(next_cycle_input_bundle.get("source_cycle_runner_result_ref"))
@@ -227,6 +232,8 @@ def run_next_governed_cycle(
 
     if unresolved_blockers:
         refusal_reasons.append("execution_precondition_missing")
+    if unknown_state_blockers:
+        refusal_reasons.append("execution_precondition_missing")
     if autonomy_blockers:
         refusal_reasons.append("execution_precondition_missing")
     if latest_exception_requires_human_review or latest_exception_requires_freeze:
@@ -237,6 +244,10 @@ def run_next_governed_cycle(
     autonomy_decision_ref = str(next_cycle_input_bundle.get("autonomy_decision_ref", ""))
     if not autonomy_decision_ref.startswith("autonomy_decision_record:ADR-"):
         refusal_reasons.append("input_bundle_invalid")
+    if not str(next_cycle_input_bundle.get("decision_proof_ref", "")).startswith("decision_proof_record:DPR-"):
+        refusal_reasons.append("execution_precondition_missing")
+    if not str(next_cycle_input_bundle.get("allow_decision_proof_ref", "")).startswith("allow_decision_proof:ADP-"):
+        refusal_reasons.append("execution_precondition_missing")
 
     normalized_execution_policy: dict[str, Any] | None = None
     try:
@@ -286,6 +297,7 @@ def run_next_governed_cycle(
                 "active_program_constraints": active_program_constraints,
                 "active_risks": active_risks,
                 "unresolved_blockers": unresolved_blockers,
+                "unknown_state_blockers": unknown_state_blockers,
                 "required_reviews": required_reviews,
                 "continuation_depth": continuation_depth,
                 "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
