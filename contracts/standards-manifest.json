@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.50",
-  "schema_version": "1.3.50",
-  "standards_version": "1.3.50",
-  "record_id": "REC-STD-2026-04-04-BATCH-CYCLE-HARDEN",
-  "run_id": "run-20260404T000000Z-batch-cycle-harden",
+  "artifact_version": "1.3.51",
+  "schema_version": "1.3.51",
+  "standards_version": "1.3.51",
+  "record_id": "REC-STD-2026-04-04-BATCH-ROADMAP-ACTIVATE",
+  "run_id": "run-20260404T000000Z-batch-roadmap-activate",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.50",
+  "source_repo_version": "1.3.51",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -536,6 +536,19 @@
       "notes": "NX-01 compatibility bridge: cycle_manifest keeps sequence_mode canonical while three-slice-only fields are conditionally required; legacy manifests default sequence_mode at ingestion."
     },
     {
+      "artifact_type": "cycle_runner_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.49",
+      "last_updated_in": "1.3.50",
+      "example_path": "contracts/examples/cycle_runner_result.json",
+      "notes": "BATCH-CYCLE-HARDEN adds structured error_detail, refusal severity, and replay entry point fields while preserving deterministic bounded next-cycle runner result semantics."
+    },
+    {
       "artifact_type": "cycle_status_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -976,6 +989,19 @@
         "spectrum-systems"
       ],
       "artifact_class": "coordination"
+    },
+    {
+      "artifact_type": "execution_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.50",
+      "last_updated_in": "1.3.50",
+      "example_path": "contracts/examples/execution_policy.json",
+      "notes": "BATCH-CYCLE-HARDEN explicit execution policy contract for max batch and continuation-depth fail-closed validation before cycle execution."
     },
     {
       "artifact_type": "execution_report_artifact",
@@ -1509,19 +1535,6 @@
       "notes": "Prioritized action recommendations with dependencies and decision/risk linkage; payloads should be wrapped in the artifact envelope standard."
     },
     {
-      "artifact_type": "cycle_runner_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.49",
-      "last_updated_in": "1.3.50",
-      "example_path": "contracts/examples/cycle_runner_result.json",
-      "notes": "BATCH-CYCLE-HARDEN adds structured error_detail, refusal severity, and replay entry point fields while preserving deterministic bounded next-cycle runner result semantics."
-    },
-    {
       "artifact_type": "next_cycle_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1546,19 +1559,6 @@
       "last_updated_in": "1.3.50",
       "example_path": "contracts/examples/next_cycle_input_bundle.json",
       "notes": "BATCH-CYCLE-HARDEN adds continuation depth, required review separation, and cycle runner provenance refs for bounded fail-closed continuation chaining."
-    },
-    {
-      "artifact_type": "execution_policy",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.50",
-      "last_updated_in": "1.3.50",
-      "example_path": "contracts/examples/execution_policy.json",
-      "notes": "BATCH-CYCLE-HARDEN explicit execution policy contract for max batch and continuation-depth fail-closed validation before cycle execution."
     },
     {
       "artifact_type": "next_slice_handoff",
@@ -2972,6 +2972,19 @@
       "last_updated_in": "1.3.42",
       "example_path": "contracts/examples/system_mvp_validation_report.json",
       "notes": "BATCH-MVP deterministic end-to-end governed multi-cycle validation report covering correctness, safety, explainability, and efficiency judgments."
+    },
+    {
+      "artifact_type": "system_roadmap",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.51",
+      "last_updated_in": "1.3.51",
+      "example_path": "contracts/examples/system_roadmap.json",
+      "notes": "BATCH-ROADMAP-ACTIVATE governed roadmap source-of-truth artifact for deterministic next-batch selection and bounded execution."
     },
     {
       "artifact_type": "tactic_register",
