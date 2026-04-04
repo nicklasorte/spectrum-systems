@@ -90,6 +90,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | Plan file | Item | Status |
+| docs/review-actions/PLAN-BATCH-A2-2026-04-04.md | BATCH-A2 — Capability Readiness + Trust Posture | Active |
 | docs/review-actions/PLAN-BATCH-A4-2026-04-04.md | BATCH-A4 — Roadmap Self-Adaptation | Active |
 | docs/review-actions/PLAN-RMP-014-FIX-2026-04-04.md | RMP-014-FIX — Strategy Compliance Repair for Governed Roadmap Projection | Active |
 | docs/review-actions/PLAN-RMP-014-2026-04-04.md | RMP-014 — Machine-Readable Roadmap Normalization | Active |

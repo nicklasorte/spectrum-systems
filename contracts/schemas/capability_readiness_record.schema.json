@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/capability_readiness_record.schema.json",
+  "title": "capability_readiness_record",
+  "description": "Deterministic trust-posture readiness signal for governed supervision and unattended-operation gating.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "readiness_id",
+    "schema_version",
+    "roadmap_id",
+    "recent_batches_considered",
+    "eval_pass_rate",
+    "eval_fail_rate",
+    "eval_indeterminate_rate",
+    "replay_success_rate",
+    "drift_signal_rate",
+    "override_rate",
+    "unresolved_risk_count",
+    "autonomy_block_rate",
+    "failure_recurrence_rate",
+    "readiness_state",
+    "reason_codes",
+    "supporting_signals",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "readiness_id": {"type": "string", "pattern": "^CRD-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "roadmap_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"},
+    "recent_batches_considered": {"type": "integer", "minimum": 1},
+    "eval_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "eval_fail_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "eval_indeterminate_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "replay_success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_signal_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "override_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "unresolved_risk_count": {"type": "integer", "minimum": 0},
+    "autonomy_block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "failure_recurrence_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "readiness_state": {
+      "type": "string",
+      "enum": ["unsafe", "constrained", "supervised", "autonomous"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "supporting_signals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

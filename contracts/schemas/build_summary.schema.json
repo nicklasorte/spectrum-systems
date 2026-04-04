@@ -39,7 +39,9 @@
     "recommended_exception_action",
     "exception_action_type",
     "exception_requires_human_review",
-    "exception_requires_freeze"
+    "exception_requires_freeze",
+    "capability_readiness_state",
+    "capability_readiness_ref"
   ],
   "properties": {
     "summary_id": {
@@ -48,7 +50,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.7.0"
+      "const": "1.8.0"
     },
     "run_id": {
       "type": "string",
@@ -617,6 +619,19 @@
     },
     "exception_requires_freeze": {
       "type": "boolean"
+    },
+    "capability_readiness_state": {
+      "type": "string",
+      "enum": [
+        "unsafe",
+        "constrained",
+        "supervised",
+        "autonomous"
+      ]
+    },
+    "capability_readiness_ref": {
+      "type": "string",
+      "pattern": "^capability_readiness_record:CRD-[A-F0-9]{12}$"
     }
   },
   "$defs": {

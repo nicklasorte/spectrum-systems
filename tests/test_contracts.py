@@ -159,6 +159,7 @@ class ContractSchemaTests(unittest.TestCase):
             "roadmap_execution_report",
             "batch_delivery_report",
             "batch_handoff_bundle",
+            "capability_readiness_record",
             "exception_classification_record",
             "exception_resolution_record",
             "roadmap_adjustment_record",

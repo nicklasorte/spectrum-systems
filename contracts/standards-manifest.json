@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.57",
-  "schema_version": "1.3.57",
-  "standards_version": "1.3.57",
-  "record_id": "REC-STD-2026-04-04-RMP-014",
-  "run_id": "run-20260404T000000Z-rmp-014",
+  "artifact_version": "1.3.58",
+  "schema_version": "1.3.58",
+  "standards_version": "1.3.58",
+  "record_id": "REC-STD-2026-04-04-BATCH-A2",
+  "run_id": "run-20260404T000000Z-batch-a2",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.57",
+  "source_repo_version": "1.3.58",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -263,13 +263,13 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.3.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.55",
+      "last_updated_in": "1.3.58",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
       "notes": "BATCH-A1 handoff bundle now carries autonomy decision reference and unresolved autonomy blockers for fail-closed continuation propagation."
     },
@@ -302,15 +302,28 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.7.0",
+      "schema_version": "1.8.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.55",
+      "last_updated_in": "1.3.58",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-A1 operator summary now carries autonomy guardrail decision/ref and reason codes for unattended continuation gating transparency."
+    },
+    {
+      "artifact_type": "capability_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.58",
+      "last_updated_in": "1.3.58",
+      "example_path": "contracts/examples/capability_readiness_record.json",
+      "notes": "BATCH-A2 deterministic capability readiness posture signal for unattended-operation supervision gating."
     },
     {
       "artifact_type": "certification_integrity_result",

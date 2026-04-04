@@ -16,6 +16,7 @@ from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_policy_review,
     build_adaptive_execution_trend_report,
 )
+from spectrum_systems.modules.runtime.capability_readiness import evaluate_capability_readiness
 from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (
     apply_roadmap_adjustments,
     derive_roadmap_adjustments,
@@ -132,7 +133,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -160,6 +161,8 @@ def derive_batch_handoff_bundle(
         "latest_exception_requires_human_review": latest_exception_requires_human_review,
         "latest_exception_requires_freeze": latest_exception_requires_freeze,
         "required_next_actions": required_next_actions,
+        "capability_readiness_state": "constrained",
+        "capability_readiness_ref": "capability_readiness_record:CRD-000000000000",
         "human_decision_required": human_decision_required,
         "source_delivery_report_ref": f"batch_delivery_report:{delivery_report['report_id']}",
         "trace_id": delivery_report["trace_id"],
@@ -1287,7 +1290,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.7.0",
+        "schema_version": "1.8.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1307,6 +1310,8 @@ def run_system_cycle(
         "exception_action_type": exception_resolution_record["action_type"],
         "exception_requires_human_review": exception_resolution_record["requires_human_review"],
         "exception_requires_freeze": exception_resolution_record["requires_freeze"],
+        "capability_readiness_state": "constrained",
+        "capability_readiness_ref": "capability_readiness_record:CRD-000000000000",
         "what_ran": [
             "roadmap selection",
             "control authorization",
@@ -1469,6 +1474,93 @@ def run_system_cycle(
         exception_classification_record=exception_classification_record,
         exception_resolution_record=exception_resolution_record,
     )
+    readiness_inputs = dict(integration_inputs.get("capability_readiness_inputs") or {})
+    prior_readiness_state = (
+        str(prior_handoff_bundle.get("capability_readiness_state"))
+        if isinstance(prior_handoff_bundle, dict) and prior_handoff_bundle.get("capability_readiness_state")
+        else None
+    )
+    capability_readiness_record = evaluate_capability_readiness(
+        roadmap_id=run_result["roadmap_id"],
+        trace_id=integration["trace_id"],
+        created_at=timestamp,
+        batch_delivery_reports=[*list(readiness_inputs.get("batch_delivery_reports") or []), batch_delivery_report],
+        eval_results=[*list(readiness_inputs.get("eval_results") or []), dict(integration_inputs.get("eval_result") or {})],
+        autonomy_decisions=[*list(readiness_inputs.get("autonomy_decisions") or []), autonomy_decision_record],
+        exception_routing_outputs=[
+            *list(readiness_inputs.get("exception_routing_outputs") or []),
+            exception_resolution_record,
+        ],
+        drift_signals=[
+            *list(readiness_inputs.get("drift_signals") or []),
+            {"drift_level": program_drift_severity, "stop_reason": stop_reason},
+        ],
+        replay_metrics=[
+            *list(readiness_inputs.get("replay_metrics") or []),
+            {"status": str(integration.get("replay_status", "unknown"))},
+        ],
+        unresolved_risks=[
+            *[str(item) for item in readiness_inputs.get("unresolved_risks", [])],
+            *[str(item) for item in unresolved_critical_risks],
+        ],
+        recent_batches_considered=int(readiness_inputs.get("recent_batches_considered", 5)),
+        prior_readiness_state=prior_readiness_state,
+    )
+    _validate_schema(capability_readiness_record, "capability_readiness_record")
+    readiness_state = str(capability_readiness_record["readiness_state"])
+    readiness_ref = f"capability_readiness_record:{capability_readiness_record['readiness_id']}"
+
+    if readiness_state == "unsafe":
+        autonomy_decision_record["decision"] = "stop"
+        autonomy_decision_record["reason_codes"] = sorted(
+            set(list(autonomy_decision_record["reason_codes"]) + ["critical_risk_threshold_exceeded"])
+        )
+    elif readiness_state == "constrained" and autonomy_decision_record["decision"] == "continue":
+        autonomy_decision_record["decision"] = "require_human_review"
+        autonomy_decision_record["reason_codes"] = sorted(
+            set(list(autonomy_decision_record["reason_codes"]) + ["review_gate_required"])
+        )
+    _validate_schema(autonomy_decision_record, "autonomy_decision_record")
+    autonomy_decision_ref = f"autonomy_decision_record:{autonomy_decision_record['autonomy_decision_id']}"
+    autonomy_blockers = [] if autonomy_decision_record["decision"] == "continue" else [
+        f"autonomy:{code}" for code in autonomy_decision_record["reason_codes"]
+    ]
+    next_cycle_input_bundle["autonomy_decision_ref"] = autonomy_decision_ref
+    next_cycle_input_bundle["autonomy_blockers"] = sorted(set(autonomy_blockers))
+    summary["autonomy_decision"] = autonomy_decision_record["decision"]
+    summary["autonomy_reason_codes"] = autonomy_decision_record["reason_codes"]
+    summary["autonomy_decision_ref"] = autonomy_decision_ref
+    batch_delivery_report["results_summary"] = _sorted_unique_strings(
+        [
+            f"stop_reason={stop_reason}",
+            f"next_cycle_decision={next_cycle_decision['decision']}",
+            f"autonomy_decision={autonomy_decision_record['decision']}",
+            f"program_alignment_status={program_alignment_status}",
+        ]
+    )
+    batch_delivery_report["open_followups"] = _sorted_unique_strings(
+        [f"validation:{item}" for item in required_reviews]
+        + [f"contract:{item}" for item in required_reviews if "contract" in item]
+        + [f"autonomy_blocker:{item}" for item in autonomy_blockers]
+    )
+    batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
+        [
+            f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+            next_cycle_decision_ref,
+            next_cycle_input_bundle_ref,
+            autonomy_decision_ref,
+            f"next_step_recommendation:{recommendation['recommendation_id']}",
+            f"build_summary:{summary['summary_id']}",
+            exception_classification_ref,
+            exception_resolution_ref,
+            readiness_ref,
+        ]
+    )
+    batch_handoff_bundle = derive_batch_handoff_bundle(
+        batch_delivery_report,
+        exception_classification_record=exception_classification_record,
+        exception_resolution_record=exception_resolution_record,
+    )
     eval_coverage_signal = dict(integration_inputs.get("eval_coverage_signal") or {})
     drift_signals = {
         "drift_detected": program_drift_severity in {"medium", "high"} or stop_reason == "program_drift_detected",
@@ -1498,14 +1590,18 @@ def run_system_cycle(
         set(list(recommendation["artifact_refs"]["related_artifacts"]) + adjustment_refs)
     )
     summary["next_batch_candidate"] = adjusted_next_batch_id
+    summary["capability_readiness_state"] = readiness_state
+    summary["capability_readiness_ref"] = readiness_ref
     summary["watch_next"] = sorted(set(list(summary["watch_next"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
-    summary["source_refs"] = sorted(set(list(summary["source_refs"]) + adjustment_refs))
+    summary["source_refs"] = sorted(set(list(summary["source_refs"]) + adjustment_refs + [readiness_ref]))
     summary["artifact_index"]["related_artifacts"] = sorted(set(list(summary["artifact_index"]["related_artifacts"]) + adjustment_refs))
     next_cycle_input_bundle["recommended_start_batch"] = adjusted_next_batch_id
     batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
     batch_handoff_bundle["recommended_next_batch"] = adjusted_next_batch_id
+    batch_handoff_bundle["capability_readiness_state"] = readiness_state
+    batch_handoff_bundle["capability_readiness_ref"] = readiness_ref
     batch_handoff_bundle["must_carry_forward_artifacts"] = sorted(
-        set(list(batch_handoff_bundle["must_carry_forward_artifacts"]) + adjustment_refs)
+        set(list(batch_handoff_bundle["must_carry_forward_artifacts"]) + adjustment_refs + [readiness_ref])
     )
     batch_handoff_bundle["required_next_actions"] = sorted(
         set(list(batch_handoff_bundle["required_next_actions"]) + [f"apply:{item}" for item in adjustment_refs])
@@ -1530,6 +1626,7 @@ def run_system_cycle(
         "next_cycle_decision": next_cycle_decision,
         "next_cycle_input_bundle": next_cycle_input_bundle,
         "roadmap_adjustments": roadmap_adjustments,
+        "capability_readiness_record": capability_readiness_record,
         "batch_delivery_report": batch_delivery_report,
         "batch_handoff_bundle": batch_handoff_bundle,
         "prior_batch_handoff_bundle": prior_handoff_bundle,

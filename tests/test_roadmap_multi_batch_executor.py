@@ -1003,6 +1003,8 @@ def test_delivery_to_handoff_derivation_is_deterministic_and_stale_items_removed
     assert first["required_validations_next"] == ["validation:pytest tests/test_contract_enforcement.py"]
     assert first["autonomy_blockers"] == ["autonomy_blocker:autonomy:review_gate_required"]
     assert first["autonomy_decision_ref"] == "autonomy_decision_record:ADR-8B9C0D1E2F3A"
+    assert first["capability_readiness_state"] == "constrained"
+    assert first["capability_readiness_ref"] == "capability_readiness_record:CRD-000000000000"
 
     resolved_delivery = dict(delivery)
     resolved_delivery["remaining_risks"] = []
