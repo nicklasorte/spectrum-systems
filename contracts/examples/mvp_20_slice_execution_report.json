@@ -1,0 +1,59 @@
+{
+  "report_id": "MVP20-12AB34CD56EF",
+  "roadmap_id": "RDX-BATCH-MVP-20-2026-04-04",
+  "total_slices_planned": 20,
+  "total_slices_attempted": 11,
+  "total_slices_completed": 10,
+  "total_slices_blocked": 1,
+  "total_slices_escalated": 0,
+  "continuation_decision_sequence": [
+    {"step": 1, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 2, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 3, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 4, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 5, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 6, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 7, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 8, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 9, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 10, "decision": "continue", "reason_code": "continue_safe"},
+    {"step": 11, "decision": "stop", "reason_code": "execution_blocked"}
+  ],
+  "stop_or_completion_reason": "execution_blocked",
+  "determinism_status": "deterministic",
+  "replay_status": "parity_verified",
+  "trace_integrity_status": "complete",
+  "program_alignment_status": "aligned",
+  "operator_clarity_assessment": {
+    "build_summary_readable": true,
+    "next_step_recommendation_readable": true,
+    "batch_continuation_record_readable": true,
+    "final_report_readable": true,
+    "notes": [
+      "Operator can identify where the drill stopped and why.",
+      "Recommended next action is clear from linked artifacts."
+    ]
+  },
+  "blocking_issues": [
+    "execution_blocked"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-batch-mvp-20-example",
+  "evidence_refs": {
+    "run_a": "roadmap_multi_batch_run_result:RMB-1111AAAABBBB",
+    "run_b": "roadmap_multi_batch_run_result:RMB-2222AAAABBBB",
+    "build_summaries": [
+      "build_summary:BSR-1111AAAABBBB",
+      "build_summary:BSR-2222AAAABBBB"
+    ],
+    "next_step_recommendations": [
+      "next_step_recommendation:NSR-1111AAAABBBB",
+      "next_step_recommendation:NSR-2222AAAABBBB"
+    ],
+    "batch_continuation_records": [
+      "batch_continuation_record:BCR-1111AAAABBBB",
+      "batch_continuation_record:BCR-2222AAAABBBB"
+    ],
+    "drill_input": "roadmap_artifact:RDX-BATCH-MVP-20-2026-04-04"
+  }
+}

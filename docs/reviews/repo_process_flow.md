@@ -54,9 +54,12 @@ Roadmap Execution (RDX + PQX)
 Progress + Certification
   - roadmap_progress_update + control_loop_certification_pack
   ↓
-Stop-or-Continue Decision
+Continuation Gate (batch_continuation_record)
+  - captures continue/stop/escalate for each governed batch boundary
   - stop immediately on freeze/block/failure/missing-signal/replay/hard-gate/max-limit conditions
-  - no silent continuation beyond bounded execution policy
+  ↓
+Stop / Escalate / Continue
+  - continue only when program constraints and control conditions remain aligned
   ↓
 Replay + Determinism
   - replay chain complete only with program/review/context/tpa/roadmap/control/cert refs
@@ -94,21 +97,36 @@ Loop Validation (roadmap_execution_loop_validation)
   - stage consistency, replay readiness, determinism checks
   - bounded multi-batch continuation under strict stop conditions
   ↓
-Stop-or-Continue Decision (bounded by max_batches_per_run + hard-stop conditions)
-  - stop immediately on freeze/block/failure/missing-signal/replay/hard-gate/max-limit conditions
+Continuation Gate (bounded by max_batches_per_run + hard-stop conditions)
+  - emits continue/stop/escalate with reason codes and trace linkage
   ↓
-Next Candidate Selection (if allowed, within run limit)
+Stop / Escalate / Continue
+  - stop on any fail-closed condition; escalate on manual-review requirements
+  ↓
+Next Candidate Selection (if continue, within run limit)
   ↓
 Artifacts
   - execution record
   - eval summary
   - control decision
   ↓
+Context Selection
+  - bounded governed sources only
+  ↓
+Context Ranking
+  - deterministic rules (scope/locality/risk/review/eval/recency)
+  ↓
+Context Injection
+  - advisory only; control/eval/certification remain authority
+  ↓
+Codex/PQX Execution
+  ↓
 Replay + Determinism Check
+  ↓
+Final Drill Report (mvp_20_slice_execution_report)
+  - summarizes attempted/completed/blocked/escalated slices and parity results
 
 ## Current Weak Points
-- bounded chaining remains deterministic only when evaluated_at/executed_at/validated_at timestamps are fixed by caller
-- replay chain fails closed when any required stage ref is missing
 - eval signal present: repo_redundancy_density_high
 - high redundancy across inspected files
 

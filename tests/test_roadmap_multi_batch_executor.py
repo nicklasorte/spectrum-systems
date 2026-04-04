@@ -360,3 +360,33 @@ def test_low_risk_bonus_batch_applies_when_enabled(tmp_path: Path) -> None:
     assert result["attempted_batch_ids"] == ["BATCH-I", "BATCH-J"]
     assert result["resolved_max_batches_per_run"] == 3
     assert "low_risk_bonus_batch" in result["execution_efficiency_report"]["adaptive_factors"]["resolved_from"]
+
+
+def test_should_continue_returns_escalate_when_manual_review_required() -> None:
+    decision = should_continue_execution(
+        last_control_decision="require_review",
+        program_constraint_signal={},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium", "escalation_required": True},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+
+    assert decision["decision"] == "escalate"
+    assert decision["reason_codes"] == ["manual_review_required"]
+
+
+def test_should_continue_stops_on_program_priority_violation() -> None:
+    decision = should_continue_execution(
+        last_control_decision="allow",
+        program_constraint_signal={"priority_ordering": ["BATCH-K"]},
+        program_drift_signal={"drift_level": "low"},
+        failure_pattern_record={"repeated_failure_count": 0, "stop_threshold": 2},
+        eval_summary={"health": "healthy"},
+        risk_signals={"risk_level": "medium"},
+        roadmap_state={"current_batch_id": "BATCH-I", "next_candidate_batch_id": "BATCH-J"},
+    )
+
+    assert decision["decision"] == "stop"
+    assert decision["reason_codes"] == ["program_priority_violation"]

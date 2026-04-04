@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/mvp_20_slice_execution_report.schema.json",
+  "title": "mvp_20_slice_execution_report",
+  "description": "Deterministic governed 20-slice roadmap drill report proving continuation control, program enforcement, replay parity, trace integrity, and fail-closed stop behavior.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "roadmap_id",
+    "total_slices_planned",
+    "total_slices_attempted",
+    "total_slices_completed",
+    "total_slices_blocked",
+    "total_slices_escalated",
+    "continuation_decision_sequence",
+    "stop_or_completion_reason",
+    "determinism_status",
+    "replay_status",
+    "trace_integrity_status",
+    "program_alignment_status",
+    "operator_clarity_assessment",
+    "blocking_issues",
+    "created_at",
+    "trace_id",
+    "evidence_refs"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "pattern": "^MVP20-[A-F0-9]{12}$"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9_.-]*$"
+    },
+    "total_slices_planned": {
+      "type": "integer",
+      "const": 20
+    },
+    "total_slices_attempted": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "total_slices_completed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "total_slices_blocked": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "total_slices_escalated": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "continuation_decision_sequence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "decision",
+          "reason_code"
+        ],
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": ["continue", "stop", "escalate"]
+          },
+          "reason_code": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "stop_or_completion_reason": {
+      "type": "string",
+      "minLength": 3
+    },
+    "determinism_status": {
+      "type": "string",
+      "enum": ["deterministic", "mismatch_detected"]
+    },
+    "replay_status": {
+      "type": "string",
+      "enum": ["parity_verified", "parity_mismatch", "replay_blocked"]
+    },
+    "trace_integrity_status": {
+      "type": "string",
+      "enum": ["complete", "incomplete", "blocked"]
+    },
+    "program_alignment_status": {
+      "type": "string",
+      "enum": ["aligned", "violated"]
+    },
+    "operator_clarity_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "build_summary_readable",
+        "next_step_recommendation_readable",
+        "batch_continuation_record_readable",
+        "final_report_readable",
+        "notes"
+      ],
+      "properties": {
+        "build_summary_readable": {"type": "boolean"},
+        "next_step_recommendation_readable": {"type": "boolean"},
+        "batch_continuation_record_readable": {"type": "boolean"},
+        "final_report_readable": {"type": "boolean"},
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 6}
+        }
+      }
+    },
+    "blocking_issues": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 3},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "evidence_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_a",
+        "run_b",
+        "build_summaries",
+        "next_step_recommendations",
+        "batch_continuation_records",
+        "drill_input"
+      ],
+      "properties": {
+        "run_a": {"type": "string", "pattern": "^roadmap_multi_batch_run_result:RMB-[A-F0-9]{12}$"},
+        "run_b": {"type": "string", "pattern": "^roadmap_multi_batch_run_result:RMB-[A-F0-9]{12}$"},
+        "build_summaries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^build_summary:BSR-[A-F0-9]{12}$"},
+          "uniqueItems": true
+        },
+        "next_step_recommendations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^next_step_recommendation:NSR-[A-F0-9]{12}$"},
+          "uniqueItems": true
+        },
+        "batch_continuation_records": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^batch_continuation_record:BCR-[A-F0-9]{12}$"},
+          "uniqueItems": true
+        },
+        "drill_input": {"type": "string", "pattern": "^roadmap_artifact:[A-Z0-9_.-]+$"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "determinism_status": {"const": "deterministic"}
+        }
+      },
+      "then": {
+        "properties": {
+          "replay_status": {"const": "parity_verified"}
+        }
+      }
+    }
+  ]
+}
