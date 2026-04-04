@@ -29,6 +29,7 @@ from spectrum_systems.modules.runtime.pqx_bundle_state import (
     mark_step_complete,
     save_bundle_state,
 )
+from spectrum_systems.modules.governance.tpa_scope_policy import is_tpa_required, load_tpa_scope_policy
 from spectrum_systems.utils.deterministic_id import canonical_json
 
 
@@ -364,6 +365,7 @@ def _build_tpa_slice_artifact(
     slice_id: str,
     produced_at: str,
     artifact_payload: dict[str, Any],
+    tpa_mode: str = "full",
 ) -> dict[str, Any]:
     step_id, phase = _parse_tpa_slice_id(slice_id)
     if phase is None:
@@ -377,6 +379,7 @@ def _build_tpa_slice_artifact(
         "slice_id": slice_id,
         "step_id": step_id,
         "phase": phase,
+        "tpa_mode": tpa_mode,
         "produced_at": produced_at,
         "artifact": artifact_payload,
     }
@@ -463,6 +466,7 @@ def _build_tpa_observability_summary(
     generated_at: str,
     gate_payload: dict[str, Any],
     plan_payload: dict[str, Any],
+    bypass_signals: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     selected = gate_payload["selected_pass"]
     simplify_win = selected == "pass_2_simplify"
@@ -470,6 +474,9 @@ def _build_tpa_observability_summary(
     delete_count = int(gate_payload["selection_metrics"]["simplify"]["deletions_count"])
     modules = plan_payload.get("modules_affected", [])
     failures = plan_payload.get("prior_failure_pattern_refs", [])
+    signals = bypass_signals or []
+    hotspots = Counter(str((row.get("execution_context") or {}).get("file_path") or "unknown") for row in signals)
+    offenders = Counter(str((row.get("execution_context") or {}).get("step_id") or "unknown") for row in signals)
     summary = {
         "artifact_type": "tpa_observability_summary",
         "schema_version": "1.0.0",
@@ -485,6 +492,9 @@ def _build_tpa_observability_summary(
             "complexity_regression_rate": 1.0 if regression else 0.0,
             "cleanup_deletion_rate": 1.0 if delete_count > 0 else 0.0,
         },
+        "bypass_attempt_count": len(signals),
+        "bypass_hotspots": [{"path": path, "count": count} for path, count in hotspots.most_common(5)],
+        "repeated_offenders": [{"scope": scope, "count": count} for scope, count in offenders.most_common(5)],
         "top_tpa_hotspot_modules": [
             {"module_ref": module_ref, "count": count} for module_ref, count in Counter(modules).most_common(5)
         ],
@@ -497,6 +507,66 @@ def _build_tpa_observability_summary(
     except Exception as exc:
         raise PQXSequenceRunnerError(f"invalid TPA observability summary artifact for {step_id}: {exc}") from exc
     return summary
+
+
+def _is_lightweight_eligible(request: dict[str, Any], plan_payload: dict[str, Any]) -> bool:
+    changed_paths = request.get("changed_paths")
+    if not isinstance(changed_paths, list):
+        changed_paths = []
+    files_count = len(changed_paths) if changed_paths else len(plan_payload.get("files_touched", []))
+    loc_delta = request.get("estimated_loc_delta", 0)
+    if not isinstance(loc_delta, int):
+        loc_delta = 0
+    if any(path.startswith("tests/") or path.startswith("docs/") for path in changed_paths):
+        return True
+    return files_count <= 2 and abs(loc_delta) <= 40
+
+
+def _build_bypass_signal(
+    *,
+    run_id: str,
+    trace_id: str,
+    slice_id: str,
+    step_id: str,
+    request: dict[str, Any],
+    missing_components: list[str],
+    occurrence_count: int,
+    detected_at: str,
+) -> dict[str, Any]:
+    severity = "warn" if occurrence_count == 1 else "freeze"
+    if step_id.startswith("AI-"):
+        severity = "block" if occurrence_count >= 3 else severity
+    return {
+        "artifact_type": "tpa_bypass_drift_signal",
+        "schema_version": "1.0.0",
+        "signal_id": f"tpa-bypass:{run_id}:{step_id}:{occurrence_count}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "drift_type": "tpa_bypass",
+        "affected_artifact_id": f"pqx_slice_execution_record:{slice_id}",
+        "missing_tpa_components": missing_components,
+        "execution_context": {
+            "slice_id": slice_id,
+            "step_id": step_id,
+            "required_scope": True,
+            "module": str(request.get("module") or ""),
+            "file_path": str((request.get("changed_paths") or [""])[0] if isinstance(request.get("changed_paths"), list) and request.get("changed_paths") else ""),
+        },
+        "severity": severity,
+        "occurrence_count": occurrence_count,
+        "reason_code": "tpa_bypass_detected",
+        "detected_at": detected_at,
+    }
+
+
+def _request_has_tpa_scope_evidence(request: dict[str, Any]) -> bool:
+    if request.get("tpa_scope_required") is True:
+        return True
+    if isinstance(request.get("tpa_scope_context"), dict):
+        return True
+    if isinstance(request.get("changed_paths"), list) and bool(request.get("changed_paths")):
+        return True
+    return any(bool(str(request.get(key) or "").strip()) for key in ("module", "artifact_type"))
 
 
 def _persist_with_batch_result(state: dict, state_path: Path) -> dict:
@@ -783,6 +853,7 @@ def execute_sequence_run(
     review_snapshot: dict[str, Any] | None = None,
     review_eval_artifacts: dict[str, Any] | None = None,
     review_control_decision: dict[str, Any] | None = None,
+    tpa_scope_policy_path: str | Path | None = None,
 ) -> dict:
     """Run a narrow deterministic sequential PQX batch (2–3 slices) with persistent resumable state."""
 
@@ -905,6 +976,8 @@ def execute_sequence_run(
         review_eval_artifacts=review_eval_artifacts,
         review_control_decision=review_control_decision,
     )
+    tpa_scope_policy = load_tpa_scope_policy(tpa_scope_policy_path) if tpa_scope_policy_path is not None else load_tpa_scope_policy()
+    bypass_signals: list[dict[str, Any]] = []
     while True:
         _verify_continuity(state, slice_requests)
         next_slice_id = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
@@ -1135,11 +1208,28 @@ def execute_sequence_run(
         if execution_status not in {"success", "failed", "blocked", "review_required"}:
             raise PQXSequenceRunnerError("slice executor must return execution_status of success/failed/blocked/review_required")
         step_id, tpa_phase = _parse_tpa_slice_id(next_slice_id)
+        required_scope = False
+        if tpa_phase is None:
+            if _request_has_tpa_scope_evidence(request):
+                tpa_context = dict(request.get("tpa_scope_context") or {})
+                tpa_context.setdefault(
+                    "file_path",
+                    (request.get("changed_paths") or [""])[0]
+                    if isinstance(request.get("changed_paths"), list) and request.get("changed_paths")
+                    else "",
+                )
+                tpa_context.setdefault("module", request.get("module"))
+                tpa_context.setdefault("artifact_type", request.get("artifact_type"))
+                tpa_context.setdefault("pqx_step_metadata", {"step_id": step_id})
+                required_scope = bool(request.get("tpa_scope_required")) or is_tpa_required(
+                    tpa_context, policy=tpa_scope_policy
+                )
         if tpa_phase is not None and execution_status != "success":
             raise PQXSequenceRunnerError(f"TPA slice {next_slice_id} must succeed; fail-closed on {execution_status}")
 
         if tpa_phase is not None:
             artifacts = tpa_artifacts_by_step.setdefault(step_id, {})
+            tpa_mode = "full"
             if tpa_phase == "plan":
                 plan_payload = request.get("tpa_plan")
                 if not isinstance(plan_payload, dict):
@@ -1158,16 +1248,25 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA plan must declare improvement_objective")
                 if not str(plan_payload.get("context_rationale") or "").strip():
                     raise PQXSequenceRunnerError("TPA plan must declare context_rationale")
+                requested_mode = str(plan_payload.get("tpa_mode") or "full")
+                lightweight_eligible = _is_lightweight_eligible(request, plan_payload)
+                if requested_mode == "lightweight" and not lightweight_eligible:
+                    raise PQXSequenceRunnerError("tpa_bypass_detected: lightweight mode not eligible for this scope")
+                if requested_mode not in {"full", "lightweight"}:
+                    raise PQXSequenceRunnerError("TPA plan tpa_mode must be full|lightweight")
+                tpa_mode = requested_mode
                 artifacts["plan"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],
                     slice_id=next_slice_id,
                     produced_at=iso_now(clock),
                     artifact_payload=plan_payload,
+                    tpa_mode=tpa_mode,
                 )
             elif tpa_phase == "build":
                 if "plan" not in artifacts:
                     raise PQXSequenceRunnerError(f"TPA build slice {next_slice_id} requires completed plan artifact")
+                tpa_mode = artifacts["plan"].get("tpa_mode", "full")
                 build_payload = result.get("tpa_build")
                 if not isinstance(build_payload, dict):
                     raise PQXSequenceRunnerError(f"TPA build slice {next_slice_id} missing result.tpa_build artifact payload")
@@ -1205,15 +1304,43 @@ def execute_sequence_run(
                     slice_id=next_slice_id,
                     produced_at=iso_now(clock),
                     artifact_payload=build_payload,
+                    tpa_mode=tpa_mode,
                 )
             elif tpa_phase == "simplify":
                 if "build" not in artifacts:
                     raise PQXSequenceRunnerError(f"TPA simplify slice {next_slice_id} requires completed build artifact")
+                tpa_mode = artifacts["plan"].get("tpa_mode", "full")
                 simplify_payload = result.get("tpa_simplify")
                 if not isinstance(simplify_payload, dict):
-                    raise PQXSequenceRunnerError(
-                        f"TPA simplify slice {next_slice_id} missing result.tpa_simplify artifact payload"
-                    )
+                    if tpa_mode == "lightweight":
+                        simplify_payload = {
+                            "artifact_kind": "simplify",
+                            "source_build_artifact_id": artifacts["build"]["artifact_id"],
+                            "actions": ["delete_unnecessary_code"],
+                            "behavior_changed": False,
+                            "new_layers_introduced": 0,
+                            "context_bundle_ref": artifacts["plan"]["artifact"].get("context_bundle_ref"),
+                            "redundant_code_paths_removed": 0,
+                            "duplicate_logic_collapsed": [],
+                            "pattern_consistency_refs": ["pattern:tpa-lightweight-minimal"],
+                            "complexity_signals": _normalized_complexity_signals(
+                                artifacts["build"]["artifact"], field_name="complexity_signals"
+                            ),
+                            "delete_pass": {
+                                "deletion_considered": True,
+                                "deletion_performed": False,
+                                "deletion_rejected_reason": "lightweight_mode_minimal_simplify",
+                                "deleted_items": [],
+                                "collapsed_abstractions": [],
+                                "removed_helpers": [],
+                                "removed_wrappers": [],
+                                "indirection_avoided": [],
+                            },
+                        }
+                    else:
+                        raise PQXSequenceRunnerError(
+                            f"TPA simplify slice {next_slice_id} missing result.tpa_simplify artifact payload"
+                        )
                 if bool(simplify_payload.get("behavior_changed")):
                     raise PQXSequenceRunnerError("TPA simplify must not change behavior")
                 if int(simplify_payload.get("new_layers_introduced", 0)) > 0:
@@ -1224,7 +1351,12 @@ def execute_sequence_run(
                 delete_pass = simplify_payload.get("delete_pass")
                 if not isinstance(delete_pass, dict) or not bool(delete_pass.get("deletion_considered")):
                     raise PQXSequenceRunnerError("TPA simplify must include delete_pass with deletion_considered=true")
-                if int(simplify_payload.get("redundant_code_paths_removed", 0)) <= 0 and not simplify_payload.get("duplicate_logic_collapsed") and not delete_pass.get("deleted_items"):
+                if (
+                    tpa_mode != "lightweight"
+                    and int(simplify_payload.get("redundant_code_paths_removed", 0)) <= 0
+                    and not simplify_payload.get("duplicate_logic_collapsed")
+                    and not delete_pass.get("deleted_items")
+                ):
                     raise PQXSequenceRunnerError("TPA simplify must remove redundancy using context-informed simplification")
                 if not simplify_payload.get("pattern_consistency_refs"):
                     raise PQXSequenceRunnerError("TPA simplify must declare pattern consistency references")
@@ -1234,10 +1366,12 @@ def execute_sequence_run(
                     slice_id=next_slice_id,
                     produced_at=iso_now(clock),
                     artifact_payload=simplify_payload,
+                    tpa_mode=tpa_mode,
                 )
             elif tpa_phase == "gate":
                 if "build" not in artifacts or "simplify" not in artifacts:
                     raise PQXSequenceRunnerError(f"TPA gate slice {next_slice_id} requires build and simplify artifacts")
+                tpa_mode = artifacts["plan"].get("tpa_mode", "full")
                 gate_payload = result.get("tpa_gate")
                 if not isinstance(gate_payload, dict):
                     raise PQXSequenceRunnerError(f"TPA gate slice {next_slice_id} missing result.tpa_gate artifact payload")
@@ -1274,9 +1408,11 @@ def execute_sequence_run(
                 selection_metrics = gate_payload.get("selection_metrics")
                 if not isinstance(selection_metrics, dict):
                     raise PQXSequenceRunnerError("TPA gate must include selection_metrics")
-                if selection_metrics.get("build") != build_signals or selection_metrics.get("simplify") != simplify_signals:
+                if tpa_mode != "lightweight" and (
+                    selection_metrics.get("build") != build_signals or selection_metrics.get("simplify") != simplify_signals
+                ):
                     raise PQXSequenceRunnerError("TPA gate selection_metrics build/simplify must match governed complexity signals")
-                if selection_metrics.get("simplify_delta") != _complexity_delta(build_signals, simplify_signals):
+                if tpa_mode != "lightweight" and selection_metrics.get("simplify_delta") != _complexity_delta(build_signals, simplify_signals):
                     raise PQXSequenceRunnerError("TPA gate selection_metrics simplify_delta mismatch")
                 if gate_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
                     raise PQXSequenceRunnerError("TPA gate must use same context_bundle_ref as plan/build/simplify")
@@ -1318,6 +1454,7 @@ def execute_sequence_run(
                     slice_id=next_slice_id,
                     produced_at=iso_now(clock),
                     artifact_payload=gate_payload,
+                    tpa_mode=tpa_mode,
                 )
                 artifacts["determinism_comparison_artifact"] = {
                     "artifact_type": "tpa_determinism_comparison",
@@ -1343,7 +1480,25 @@ def execute_sequence_run(
                     generated_at=iso_now(clock),
                     gate_payload=gate_payload,
                     plan_payload=artifacts["plan"]["artifact"],
+                    bypass_signals=bypass_signals,
                 )
+        elif required_scope:
+            missing_components = ["plan", "build", "simplify", "gate"]
+            occurrence_count = len(bypass_signals) + 1
+            drift = _build_bypass_signal(
+                run_id=run_id,
+                trace_id=request["trace_id"],
+                slice_id=next_slice_id,
+                step_id=step_id,
+                request=request,
+                missing_components=missing_components,
+                occurrence_count=occurrence_count,
+                detected_at=iso_now(clock),
+            )
+            validate_artifact(drift, "tpa_bypass_drift_signal")
+            bypass_signals.append(drift)
+            state["tpa_bypass_signals"] = deepcopy(bypass_signals)
+            raise PQXSequenceRunnerError("tpa_bypass_detected: required scope execution missing mandatory TPA lineage")
 
         completed_at = iso_now(clock)
         continuation_record_id = None

@@ -13,6 +13,9 @@
     "generated_at",
     "step_id",
     "metrics",
+    "bypass_attempt_count",
+    "bypass_hotspots",
+    "repeated_offenders",
     "top_tpa_hotspot_modules",
     "repeated_tpa_failure_patterns"
   ],
@@ -41,6 +44,31 @@
         "simplify_loss_rate": {"type": "number", "minimum": 0, "maximum": 1},
         "complexity_regression_rate": {"type": "number", "minimum": 0, "maximum": 1},
         "cleanup_deletion_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "bypass_attempt_count": {"type": "integer", "minimum": 0},
+    "bypass_hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "count"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "repeated_offenders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "count"],
+        "properties": {
+          "scope": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
       }
     },
     "top_tpa_hotspot_modules": {

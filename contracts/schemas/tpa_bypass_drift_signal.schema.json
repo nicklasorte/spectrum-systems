@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_bypass_drift_signal.schema.json",
+  "title": "TPA Bypass Drift Signal",
+  "description": "Deterministic artifact emitted when required-scope PQX execution misses mandatory TPA lineage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "run_id",
+    "trace_id",
+    "drift_type",
+    "affected_artifact_id",
+    "missing_tpa_components",
+    "execution_context",
+    "severity",
+    "occurrence_count",
+    "reason_code",
+    "detected_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_bypass_drift_signal"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "signal_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "drift_type": {"type": "string", "const": "tpa_bypass"},
+    "affected_artifact_id": {"type": "string", "minLength": 1},
+    "missing_tpa_components": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["plan", "build", "simplify", "gate"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "execution_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slice_id", "step_id", "required_scope"],
+      "properties": {
+        "slice_id": {"type": "string", "minLength": 1},
+        "step_id": {"type": "string", "minLength": 1},
+        "required_scope": {"type": "boolean"},
+        "module": {"type": "string"},
+        "file_path": {"type": "string"}
+      }
+    },
+    "severity": {"type": "string", "enum": ["warn", "freeze", "block"]},
+    "occurrence_count": {"type": "integer", "minimum": 1},
+    "reason_code": {"type": "string", "const": "tpa_bypass_detected"},
+    "detected_at": {"type": "string", "format": "date-time"}
+  }
+}

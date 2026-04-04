@@ -26,6 +26,7 @@
     "slice_id": {"type": "string", "minLength": 1},
     "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
     "phase": {"type": "string", "enum": ["plan", "build", "simplify", "gate"]},
+    "tpa_mode": {"type": "string", "enum": ["full", "lightweight"]},
     "produced_at": {"type": "string", "format": "date-time"},
     "artifact": {
       "oneOf": [
@@ -152,6 +153,7 @@
         "modules_affected": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
         "improvement_objective": {"$ref": "#/$defs/non_empty"},
         "context_rationale": {"$ref": "#/$defs/non_empty"},
+        "tpa_mode": {"type": "string", "enum": ["full", "lightweight"]},
         "constraints_acknowledged": {
           "type": "object",
           "additionalProperties": false,
