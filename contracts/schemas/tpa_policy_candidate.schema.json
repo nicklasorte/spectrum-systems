@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_candidate.schema.json",
+  "title": "TPA Policy Candidate",
+  "description": "Deterministic policy candidate artifact generated from repeated TPA issue patterns; candidate is review-only and cannot auto-apply.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "run_id",
+    "trace_id",
+    "generated_at",
+    "policy_version",
+    "module_scope",
+    "issue_pattern",
+    "proposed_change",
+    "expected_impact",
+    "evidence_refs",
+    "review_required",
+    "lifecycle_state",
+    "auto_apply",
+    "detected_patterns"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_policy_candidate"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "candidate_id": {"type": "string", "pattern": "^tpa-policy:[A-Za-z0-9._:-]+$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "policy_version": {"type": "string", "minLength": 1},
+    "module_scope": {"type": "string", "minLength": 1},
+    "issue_pattern": {
+      "type": "string",
+      "enum": [
+        "complexity_regression",
+        "bypass_attempt",
+        "simplification_failure",
+        "multi_issue_pattern"
+      ]
+    },
+    "proposed_change": {"type": "string", "minLength": 3},
+    "expected_impact": {"type": "string", "minLength": 3},
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 3}
+    },
+    "review_required": {"type": "boolean", "const": true},
+    "lifecycle_state": {"type": "string", "const": "proposed"},
+    "auto_apply": {"type": "boolean", "const": false},
+    "detected_patterns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issue_pattern",
+          "occurrence_count",
+          "proposed_change",
+          "expected_impact",
+          "evidence_refs"
+        ],
+        "properties": {
+          "issue_pattern": {
+            "type": "string",
+            "enum": ["complexity_regression", "bypass_attempt", "simplification_failure"]
+          },
+          "occurrence_count": {"type": "integer", "minimum": 1},
+          "proposed_change": {"type": "string", "minLength": 3},
+          "expected_impact": {"type": "string", "minLength": 3},
+          "evidence_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 3}
+          }
+        }
+      }
+    }
+  }
+}
