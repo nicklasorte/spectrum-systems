@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.60",
-  "schema_version": "1.3.60",
-  "standards_version": "1.3.60",
-  "record_id": "REC-STD-2026-04-04-BATCH-11",
-  "run_id": "run-20260404T000000Z-batch-11",
+  "artifact_version": "1.3.61",
+  "schema_version": "1.3.61",
+  "standards_version": "1.3.61",
+  "record_id": "REC-STD-2026-04-04-BATCH-12",
+  "run_id": "run-20260404T000000Z-batch-12",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.60",
+  "source_repo_version": "1.3.61",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -169,6 +169,19 @@
       "last_updated_in": "1.0.37",
       "example_path": "contracts/examples/artifact_envelope.json",
       "notes": "Canonical governed artifact envelope for deterministic identity, timestamp, schema version, and trace reference normalization."
+    },
+    {
+      "artifact_type": "artifact_family_health_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/artifact_family_health_report.json",
+      "notes": "BATCH-12 ST-18 artifact-family health signal for trust observability and readiness gating."
     },
     {
       "artifact_type": "artifact_validation_decision",
@@ -326,6 +339,19 @@
       "notes": "BATCH-11 adds explicit failure taxonomy, correction pattern, rollback plan, and promotion consistency references for governed stability gating."
     },
     {
+      "artifact_type": "canary_rollout_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/canary_rollout_record.json",
+      "notes": "BATCH-12 ST-17 canary-first rollout governance record with promotion block/rollback decisions."
+    },
+    {
       "artifact_type": "capability_readiness_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -445,6 +471,19 @@
       "last_updated_in": "1.0.62",
       "example_path": "contracts/examples/context_validation_result.json",
       "notes": "TRUST-01 deterministic fail-closed pre-execution context validation artifact for bundle/schema/trust/source/policy checks."
+    },
+    {
+      "artifact_type": "continuous_eval_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/continuous_eval_run_record.json",
+      "notes": "BATCH-12 ST-10 governed stage-explicit deterministic continuous evaluation record."
     },
     {
       "artifact_type": "contract_impact_artifact",
@@ -1097,6 +1136,19 @@
       "last_updated_in": "1.0.52",
       "example_path": "contracts/examples/evidence_binding_record.json",
       "notes": "HS-09 deterministic claim classification/evidence linkage artifact with fail-closed grounded-output policy enforcement."
+    },
+    {
+      "artifact_type": "evidence_gap_hotspot_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/evidence_gap_hotspot_report.json",
+      "notes": "BATCH-12 ST-18 deterministic evidence gap hotspots by artifact family and eval-stage coverage."
     },
     {
       "artifact_type": "evidence_map",
@@ -1844,6 +1896,19 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_friction_report.json",
       "notes": "BATCH-Y deterministic operator-friction harvest report emitted from realistic governed system-cycle scenarios."
+    },
+    {
+      "artifact_type": "override_hotspot_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/override_hotspot_report.json",
+      "notes": "BATCH-12 ST-18 deterministic override concentration hotspots for governance attention."
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
@@ -3220,6 +3285,19 @@
       "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "system_budget_status",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/system_budget_status.json",
+      "notes": "BATCH-12 ST-14 deterministic budget status for cost/latency/error fail-closed enforcement."
+    },
+    {
       "artifact_type": "system_mvp_validation_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3284,6 +3362,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/transcript_intelligence_pack.json",
       "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
+    },
+    {
+      "artifact_type": "trust_posture_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.61",
+      "last_updated_in": "1.3.61",
+      "example_path": "contracts/examples/trust_posture_snapshot.json",
+      "notes": "BATCH-12 ST-18 deterministic system trust posture snapshot aggregated from governed artifacts."
     },
     {
       "artifact_type": "trust_spine_evidence_cohesion_result",

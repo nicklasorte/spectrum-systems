@@ -16,6 +16,12 @@ from spectrum_systems.modules.runtime.autonomy_guardrails import (
     build_unknown_state_signal,
     evaluate_autonomy_guardrails,
 )
+from spectrum_systems.modules.runtime.continuous_governance import (
+    build_canary_rollout_record,
+    build_continuous_eval_run_records,
+    build_observability_reports,
+    build_system_budget_status,
+)
 from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_observability,
     build_adaptive_execution_policy_review,
@@ -443,6 +449,26 @@ def derive_batch_handoff_bundle(
         (item for item in evidence_refs if item.startswith("promotion_consistency_record:")),
         "promotion_consistency_record:PCR-000000000000",
     )
+    system_budget_status_ref = next(
+        (item for item in evidence_refs if item.startswith("system_budget_status:")),
+        "system_budget_status:SBS-000000000000",
+    )
+    canary_rollout_ref = next(
+        (item for item in evidence_refs if item.startswith("canary_rollout_record:")),
+        "canary_rollout_record:CNR-000000000000",
+    )
+    continuous_eval_run_refs = sorted(item for item in evidence_refs if item.startswith("continuous_eval_run_record:"))
+    if not continuous_eval_run_refs:
+        continuous_eval_run_refs = [
+            "continuous_eval_run_record:CER-000000000001",
+            "continuous_eval_run_record:CER-000000000002",
+            "continuous_eval_run_record:CER-000000000003",
+            "continuous_eval_run_record:CER-000000000004",
+        ]
+    trust_posture_snapshot_ref = next(
+        (item for item in evidence_refs if item.startswith("trust_posture_snapshot:")),
+        "trust_posture_snapshot:TPS-000000000000",
+    )
     unknown_state_signal_refs = sorted(item for item in evidence_refs if item.startswith("unknown_state_signal:"))
     unknown_state_blockers = sorted(item for item in followups if item.startswith("unknown_state_blocker:"))
     program_constraints = sorted(item for item in risks if item.startswith("program_"))
@@ -473,7 +499,7 @@ def derive_batch_handoff_bundle(
     )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.5.0",
+        "schema_version": "1.6.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -498,6 +524,10 @@ def derive_batch_handoff_bundle(
         "correction_pattern_ref": correction_pattern_ref,
         "rollback_plan_ref": rollback_plan_ref,
         "promotion_consistency_ref": promotion_consistency_ref,
+        "system_budget_status_ref": system_budget_status_ref,
+        "canary_rollout_ref": canary_rollout_ref,
+        "continuous_eval_run_refs": continuous_eval_run_refs,
+        "trust_posture_snapshot_ref": trust_posture_snapshot_ref,
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "open_contract_work": open_contract_work,
@@ -1403,6 +1433,56 @@ def run_system_cycle(
             )
         )
     )
+    continuous_eval_inputs = dict(integration_inputs.get("continuous_eval_inputs") or {})
+    eval_inputs_by_stage = {
+        "offline": dict(continuous_eval_inputs.get("offline_eval_run") or {}),
+        "pre_merge": dict(continuous_eval_inputs.get("pre_merge_eval_run") or {}),
+        "canary": dict(continuous_eval_inputs.get("canary_eval_run") or {}),
+        "production": dict(continuous_eval_inputs.get("production_sampling_eval_run") or {}),
+    }
+    continuous_eval_run_records = build_continuous_eval_run_records(
+        artifact_family=str(continuous_eval_inputs.get("artifact_family") or "system_cycle"),
+        eval_inputs_by_stage=eval_inputs_by_stage,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+        require_all_stages=bool(continuous_eval_inputs.get("require_all_stages", True)),
+    )
+    continuous_eval_refs = [f"continuous_eval_run_record:{item['eval_run_id']}" for item in continuous_eval_run_records]
+    canary_eval_record = next(item for item in continuous_eval_run_records if item["eval_stage"] == "canary")
+    canary_rollout_record = build_canary_rollout_record(
+        target_change=str(integration_inputs.get("canary_target_change") or "policy"),
+        rollout_stage=str(integration_inputs.get("rollout_stage") or "canary"),
+        sample_size=int(integration_inputs.get("canary_sample_size", 10)),
+        eval_run_record=canary_eval_record,
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    canary_rollout_ref = f"canary_rollout_record:{canary_rollout_record['rollout_id']}"
+    if canary_rollout_record["promotion_decision"] in {"block", "rollback"}:
+        blocking_conditions = sorted(set(blocking_conditions + [f"CANARY_{canary_rollout_record['promotion_decision'].upper()}"]))
+
+    budget_inputs = dict(integration_inputs.get("budget_inputs") or {})
+    system_budget_status = build_system_budget_status(
+        threshold_values=dict(
+            budget_inputs.get("threshold_values")
+            or {"cost": 100.0, "latency_ms": 500.0, "error_rate": 0.05}
+        ),
+        current_values=dict(
+            budget_inputs.get("current_values")
+            or {"cost": 50.0, "latency_ms": 200.0, "error_rate": 0.01}
+        ),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    budget_status_ref = f"system_budget_status:{system_budget_status['budget_status_id']}"
+    if system_budget_status["budget_exhausted"]:
+        budget_breach_action = str(budget_inputs.get("breach_action") or "freeze")
+        if budget_breach_action == "freeze":
+            blocking_conditions = sorted(set(blocking_conditions + ["BUDGET_EXHAUSTED"]))
+            effective_authorization_signals["control_freeze_condition"] = True
+        else:
+            blocking_conditions = sorted(set(blocking_conditions + ["BUDGET_WARNING"]))
+
     autonomy_policy = integration_inputs.get("autonomy_policy")
     if not isinstance(autonomy_policy, dict):
         autonomy_policy = load_example("autonomy_policy")
@@ -1415,6 +1495,7 @@ def run_system_cycle(
         replay_status=str(integration.get("replay_status", "unknown")),
         review_gate_status=str(integration_inputs.get("review_control_signal", {}).get("gate_assessment", "unknown")),
         required_validation_carry_forward=required_validations_next,
+        system_budget_status=system_budget_status,
         continuation_depth=continuation_depth,
         consecutive_warn_count=int(run_result.get("consecutive_warn_count", 0)),
         created_at=timestamp,
@@ -1820,7 +1901,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.10.0",
+        "schema_version": "1.11.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1840,6 +1921,18 @@ def run_system_cycle(
         "correction_pattern_ref": correction_pattern_ref or "correction_pattern_record:CPR-000000000000",
         "rollback_plan_ref": "rollback_plan_record:RBP-000000000000",
         "promotion_consistency_ref": "promotion_consistency_record:PCR-000000000000",
+        "system_budget_status_ref": "system_budget_status:SBS-000000000000",
+        "canary_rollout_ref": "canary_rollout_record:CNR-000000000000",
+        "continuous_eval_run_refs": [
+            "continuous_eval_run_record:CER-000000000001",
+            "continuous_eval_run_record:CER-000000000002",
+            "continuous_eval_run_record:CER-000000000003",
+            "continuous_eval_run_record:CER-000000000004",
+        ],
+        "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-000000000000",
+        "artifact_family_health_report_ref": "artifact_family_health_report:AFH-000000000000",
+        "evidence_gap_hotspot_report_ref": "evidence_gap_hotspot_report:EGH-000000000000",
+        "override_hotspot_report_ref": "override_hotspot_report:OVH-000000000000",
         "unknown_state_signal_refs": unknown_state_signal_refs,
         "unknown_state_blockers": unknown_state_blockers,
         "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
@@ -2037,7 +2130,17 @@ def run_system_cycle(
         trace_id=integration["trace_id"],
         created_at=timestamp,
         batch_delivery_reports=[*list(readiness_inputs.get("batch_delivery_reports") or []), batch_delivery_report],
-        eval_results=[*list(readiness_inputs.get("eval_results") or []), dict(integration_inputs.get("eval_result") or {})],
+        eval_results=[
+            *list(readiness_inputs.get("eval_results") or []),
+            dict(integration_inputs.get("eval_result") or {}),
+            *[
+                {
+                    "result_status": "pass" if row["pass_rate"] >= 0.95 else ("fail" if row["fail_rate"] > 0 else "indeterminate"),
+                    "eval_stage": row["eval_stage"],
+                }
+                for row in continuous_eval_run_records
+            ],
+        ],
         autonomy_decisions=[*list(readiness_inputs.get("autonomy_decisions") or []), autonomy_decision_record],
         exception_routing_outputs=[
             *list(readiness_inputs.get("exception_routing_outputs") or []),
@@ -2046,6 +2149,10 @@ def run_system_cycle(
         drift_signals=[
             *list(readiness_inputs.get("drift_signals") or []),
             {"drift_level": program_drift_severity, "stop_reason": stop_reason},
+            *[
+                {"drift_level": "high" if abs(float(row["drift_delta"])) >= 0.2 else "low", "eval_stage": row["eval_stage"]}
+                for row in continuous_eval_run_records
+            ],
         ],
         replay_metrics=[
             *list(readiness_inputs.get("replay_metrics") or []),
@@ -2061,6 +2168,23 @@ def run_system_cycle(
     _validate_schema(capability_readiness_record, "capability_readiness_record")
     readiness_state = str(capability_readiness_record["readiness_state"])
     readiness_ref = f"capability_readiness_record:{capability_readiness_record['readiness_id']}"
+    observability_reports = build_observability_reports(
+        eval_run_records=continuous_eval_run_records,
+        budget_status=system_budget_status,
+        readiness_state=readiness_state,
+        replay_status=str(integration.get("replay_status", "unknown")).strip().lower(),
+        override_rate=float(capability_readiness_record.get("override_rate", 0.0)),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    trust_posture_snapshot = observability_reports["trust_posture_snapshot"]
+    artifact_family_health_report = observability_reports["artifact_family_health_report"]
+    evidence_gap_hotspot_report = observability_reports["evidence_gap_hotspot_report"]
+    override_hotspot_report = observability_reports["override_hotspot_report"]
+    trust_posture_ref = f"trust_posture_snapshot:{trust_posture_snapshot['snapshot_id']}"
+    artifact_family_health_ref = f"artifact_family_health_report:{artifact_family_health_report['report_id']}"
+    evidence_gap_hotspot_ref = f"evidence_gap_hotspot_report:{evidence_gap_hotspot_report['report_id']}"
+    override_hotspot_ref = f"override_hotspot_report:{override_hotspot_report['report_id']}"
 
     if readiness_state == "unsafe":
         autonomy_decision_record["decision"] = "stop"
@@ -2188,13 +2312,35 @@ def run_system_cycle(
     summary["capability_readiness_ref"] = readiness_ref
     summary["watch_next"] = sorted(set(list(summary["watch_next"]) + [f"roadmap_adjustments_applied={len(roadmap_adjustments)}"]))
     summary["source_refs"] = sorted(
-        set(list(summary["source_refs"]) + adjustment_refs + [readiness_ref, rollback_plan_ref, promotion_consistency_ref])
+        set(
+            list(summary["source_refs"])
+            + adjustment_refs
+            + [
+                readiness_ref,
+                rollback_plan_ref,
+                promotion_consistency_ref,
+                budget_status_ref,
+                canary_rollout_ref,
+                trust_posture_ref,
+                artifact_family_health_ref,
+                evidence_gap_hotspot_ref,
+                override_hotspot_ref,
+                *continuous_eval_refs,
+            ]
+        )
     )
     summary["artifact_index"]["related_artifacts"] = sorted(
         set(list(summary["artifact_index"]["related_artifacts"]) + adjustment_refs + [rollback_plan_ref, promotion_consistency_ref])
     )
     summary["rollback_plan_ref"] = rollback_plan_ref
     summary["promotion_consistency_ref"] = promotion_consistency_ref
+    summary["system_budget_status_ref"] = budget_status_ref
+    summary["canary_rollout_ref"] = canary_rollout_ref
+    summary["continuous_eval_run_refs"] = continuous_eval_refs
+    summary["trust_posture_snapshot_ref"] = trust_posture_ref
+    summary["artifact_family_health_report_ref"] = artifact_family_health_ref
+    summary["evidence_gap_hotspot_report_ref"] = evidence_gap_hotspot_ref
+    summary["override_hotspot_report_ref"] = override_hotspot_ref
     next_cycle_input_bundle["recommended_start_batch"] = adjusted_next_batch_id
     batch_delivery_report["recommended_next_batch"] = adjusted_next_batch_id
     batch_delivery_report["evidence_refs"] = _sorted_unique_strings(
@@ -2209,11 +2355,27 @@ def run_system_cycle(
     batch_handoff_bundle["correction_pattern_ref"] = correction_pattern_ref or "correction_pattern_record:CPR-000000000000"
     batch_handoff_bundle["rollback_plan_ref"] = rollback_plan_ref
     batch_handoff_bundle["promotion_consistency_ref"] = promotion_consistency_ref
+    batch_handoff_bundle["system_budget_status_ref"] = budget_status_ref
+    batch_handoff_bundle["canary_rollout_ref"] = canary_rollout_ref
+    batch_handoff_bundle["continuous_eval_run_refs"] = continuous_eval_refs
+    batch_handoff_bundle["trust_posture_snapshot_ref"] = trust_posture_ref
     batch_handoff_bundle["must_carry_forward_artifacts"] = sorted(
         set(
             list(batch_handoff_bundle["must_carry_forward_artifacts"])
             + adjustment_refs
-            + [readiness_ref, failure_taxonomy_ref, rollback_plan_ref, promotion_consistency_ref]
+            + [
+                readiness_ref,
+                failure_taxonomy_ref,
+                rollback_plan_ref,
+                promotion_consistency_ref,
+                budget_status_ref,
+                canary_rollout_ref,
+                trust_posture_ref,
+                artifact_family_health_ref,
+                evidence_gap_hotspot_ref,
+                override_hotspot_ref,
+                *continuous_eval_refs,
+            ]
             + ([correction_pattern_ref] if correction_pattern_ref else [])
         )
     )
@@ -2242,6 +2404,13 @@ def run_system_cycle(
         "correction_pattern_record": correction_pattern_record,
         "rollback_plan_record": rollback_plan_record,
         "promotion_consistency_record": promotion_consistency_record,
+        "continuous_eval_run_records": continuous_eval_run_records,
+        "system_budget_status": system_budget_status,
+        "canary_rollout_record": canary_rollout_record,
+        "trust_posture_snapshot": trust_posture_snapshot,
+        "artifact_family_health_report": artifact_family_health_report,
+        "evidence_gap_hotspot_report": evidence_gap_hotspot_report,
+        "override_hotspot_report": override_hotspot_report,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
         "next_cycle_decision": next_cycle_decision,

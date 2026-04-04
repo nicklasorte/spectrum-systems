@@ -170,6 +170,13 @@ class ContractSchemaTests(unittest.TestCase):
             "rollback_plan_record",
             "promotion_consistency_record",
             "roadmap_adjustment_record",
+            "continuous_eval_run_record",
+            "system_budget_status",
+            "canary_rollout_record",
+            "trust_posture_snapshot",
+            "artifact_family_health_report",
+            "evidence_gap_hotspot_report",
+            "override_hotspot_report",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

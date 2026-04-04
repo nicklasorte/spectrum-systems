@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/artifact_family_health_report.schema.json",
+  "title": "artifact_family_health_report",
+  "description": "Deterministic per-artifact-family health report derived from governed evaluation and budget signals.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_id", "schema_version", "artifact_family", "health_state", "reason_codes", "created_at", "trace_id"],
+  "properties": {
+    "report_id": {"type": "string", "pattern": "^AFH-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_family": {"type": "string", "minLength": 1},
+    "health_state": {"type": "string", "enum": ["healthy", "watch", "degraded", "critical"]},
+    "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

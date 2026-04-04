@@ -71,6 +71,7 @@ def evaluate_autonomy_guardrails(
     replay_status: str | None,
     review_gate_status: str | None,
     required_validation_carry_forward: list[str],
+    system_budget_status: dict[str, Any] | None,
     continuation_depth: int,
     consecutive_warn_count: int,
     created_at: str,
@@ -125,6 +126,13 @@ def evaluate_autonomy_guardrails(
         max_depth = int(autonomy_policy["max_continuation_depth"])
         replay_failure_policy = str(autonomy_policy["replay_failure_policy"])
         missing_eval_policy = str(autonomy_policy["missing_eval_policy"])
+        malformed_budget_signal = False
+        normalized_budget_status = dict(system_budget_status or {})
+        if normalized_budget_status:
+            try:
+                _validate_schema(normalized_budget_status, "system_budget_status")
+            except AutonomyGuardrailError:
+                malformed_budget_signal = True
         escalate_control_decisions = set(autonomy_policy["escalate_conditions"]["control_decisions"])
         escalate_drift_statuses = set(autonomy_policy["escalate_conditions"]["drift_statuses"])
         review_statuses = set(autonomy_policy["review_required_conditions"]["review_gate_statuses"])
@@ -133,7 +141,14 @@ def evaluate_autonomy_guardrails(
         continue_required_review = str(autonomy_policy["continue_conditions"]["required_review_gate_status"])
         continue_required_drift = str(autonomy_policy["continue_conditions"]["required_drift_status"])
 
-        if continuation_depth > max_depth:
+        if malformed_budget_signal:
+            decision = "stop"
+            reason_codes.append("malformed_budget_signal")
+            reason_codes.append("missing_required_input")
+        elif bool(normalized_budget_status.get("budget_exhausted")):
+            decision = "stop"
+            reason_codes.append("budget_exhausted")
+        elif continuation_depth > max_depth:
             decision = "stop"
             reason_codes.append("continuation_depth_exceeded")
         elif len(unresolved_critical_risks) > max_critical:
@@ -152,6 +167,13 @@ def evaluate_autonomy_guardrails(
             else:
                 decision = "stop"
                 reason_codes.append("replay_failure_stop")
+        elif (
+            str(normalized_budget_status.get("cost_budget_status", "within_budget")) == "warning"
+            or str(normalized_budget_status.get("latency_budget_status", "within_budget")) == "warning"
+            or str(normalized_budget_status.get("error_budget_status", "within_budget")) == "warning"
+        ) and latest_control_decision in continue_allowed_control:
+            decision = "require_human_review"
+            reason_codes.append("budget_warning")
         elif normalized_review_gate_status in review_statuses or required_validation_carry_forward:
             decision = "require_human_review"
             reason_codes.append("review_gate_required")

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/canary_rollout_record.schema.json",
+  "title": "canary_rollout_record",
+  "description": "Deterministic rollout-governance artifact enforcing canary evidence before full promotion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rollout_id",
+    "schema_version",
+    "target_change",
+    "rollout_stage",
+    "sample_size",
+    "eval_results_ref",
+    "promotion_decision",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "rollout_id": {"type": "string", "pattern": "^CNR-[A-F0-9]{12}$"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "target_change": {"type": "string", "enum": ["prompt", "model", "policy", "schema"]},
+    "rollout_stage": {"type": "string", "enum": ["canary", "full"]},
+    "sample_size": {"type": "integer", "minimum": 1},
+    "eval_results_ref": {"type": "string", "pattern": "^continuous_eval_run_record:CER-[A-F0-9]{12}$"},
+    "promotion_decision": {"type": "string", "enum": ["promote", "hold", "block", "rollback"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

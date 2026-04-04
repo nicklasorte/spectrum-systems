@@ -49,7 +49,14 @@
     "failure_taxonomy_ref",
     "correction_pattern_ref",
     "rollback_plan_ref",
-    "promotion_consistency_ref"
+    "promotion_consistency_ref",
+    "system_budget_status_ref",
+    "canary_rollout_ref",
+    "continuous_eval_run_refs",
+    "trust_posture_snapshot_ref",
+    "artifact_family_health_report_ref",
+    "evidence_gap_hotspot_report_ref",
+    "override_hotspot_report_ref"
   ],
   "properties": {
     "summary_id": {
@@ -58,7 +65,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.10.0"
+      "const": "1.11.0"
     },
     "run_id": {
       "type": "string",
@@ -680,6 +687,39 @@
     "promotion_consistency_ref": {
       "type": "string",
       "pattern": "^promotion_consistency_record:PCR-[A-F0-9]{12}$"
+    },
+    "system_budget_status_ref": {
+      "type": "string",
+      "pattern": "^system_budget_status:SBS-[A-F0-9]{12}$"
+    },
+    "canary_rollout_ref": {
+      "type": "string",
+      "pattern": "^canary_rollout_record:CNR-[A-F0-9]{12}$"
+    },
+    "continuous_eval_run_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^continuous_eval_run_record:CER-[A-F0-9]{12}$"
+      },
+      "minItems": 4,
+      "uniqueItems": true
+    },
+    "trust_posture_snapshot_ref": {
+      "type": "string",
+      "pattern": "^trust_posture_snapshot:TPS-[A-F0-9]{12}$"
+    },
+    "artifact_family_health_report_ref": {
+      "type": "string",
+      "pattern": "^artifact_family_health_report:AFH-[A-F0-9]{12}$"
+    },
+    "evidence_gap_hotspot_report_ref": {
+      "type": "string",
+      "pattern": "^evidence_gap_hotspot_report:EGH-[A-F0-9]{12}$"
+    },
+    "override_hotspot_report_ref": {
+      "type": "string",
+      "pattern": "^override_hotspot_report:OVH-[A-F0-9]{12}$"
     }
   },
   "$defs": {

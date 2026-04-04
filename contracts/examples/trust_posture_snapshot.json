@@ -1,0 +1,12 @@
+{
+  "snapshot_id": "TPS-111111111111",
+  "schema_version": "1.0.0",
+  "overall_trust_state": "healthy",
+  "eval_pass_rate": 0.99,
+  "drift_status": "stable",
+  "replay_consistency": "consistent",
+  "override_rate": 0.0,
+  "readiness_state": "supervised",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-example-batch-12"
+}

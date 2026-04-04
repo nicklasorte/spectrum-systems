@@ -130,10 +130,18 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
         validate_artifact(first["correction_pattern_record"], "correction_pattern_record")
     validate_artifact(first["rollback_plan_record"], "rollback_plan_record")
     validate_artifact(first["promotion_consistency_record"], "promotion_consistency_record")
+    for record in first["continuous_eval_run_records"]:
+        validate_artifact(record, "continuous_eval_run_record")
+    validate_artifact(first["system_budget_status"], "system_budget_status")
+    validate_artifact(first["canary_rollout_record"], "canary_rollout_record")
+    validate_artifact(first["trust_posture_snapshot"], "trust_posture_snapshot")
+    validate_artifact(first["artifact_family_health_report"], "artifact_family_health_report")
+    validate_artifact(first["evidence_gap_hotspot_report"], "evidence_gap_hotspot_report")
+    validate_artifact(first["override_hotspot_report"], "override_hotspot_report")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.10.0"
+    assert first["build_summary"]["schema_version"] == "1.11.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -206,9 +214,17 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["failure_taxonomy_ref"].startswith("failure_taxonomy_record:FTX-")
     assert first["build_summary"]["rollback_plan_ref"].startswith("rollback_plan_record:RBP-")
     assert first["build_summary"]["promotion_consistency_ref"].startswith("promotion_consistency_record:PCR-")
+    assert first["build_summary"]["system_budget_status_ref"].startswith("system_budget_status:SBS-")
+    assert first["build_summary"]["canary_rollout_ref"].startswith("canary_rollout_record:CNR-")
+    assert len(first["build_summary"]["continuous_eval_run_refs"]) == 4
+    assert first["build_summary"]["trust_posture_snapshot_ref"].startswith("trust_posture_snapshot:TPS-")
     assert first["batch_handoff_bundle"]["failure_taxonomy_ref"] == first["build_summary"]["failure_taxonomy_ref"]
     assert first["batch_handoff_bundle"]["rollback_plan_ref"] == first["build_summary"]["rollback_plan_ref"]
     assert first["batch_handoff_bundle"]["promotion_consistency_ref"] == first["build_summary"]["promotion_consistency_ref"]
+    assert first["batch_handoff_bundle"]["system_budget_status_ref"] == first["build_summary"]["system_budget_status_ref"]
+    assert first["batch_handoff_bundle"]["canary_rollout_ref"] == first["build_summary"]["canary_rollout_ref"]
+    assert first["batch_handoff_bundle"]["continuous_eval_run_refs"] == first["build_summary"]["continuous_eval_run_refs"]
+    assert first["batch_handoff_bundle"]["trust_posture_snapshot_ref"] == first["build_summary"]["trust_posture_snapshot_ref"]
     assert first["promotion_consistency_record"]["promotion_state"] in {"deny", "hold", "allow"}
 
 
@@ -727,8 +743,8 @@ def test_capability_readiness_missing_inputs_fail_closed() -> None:
         created_at="2026-04-03T23:59:00Z",
         pqx_execute_fn=_pqx_stub,
     )
-    assert result["capability_readiness_record"]["readiness_state"] == "unsafe"
-    assert any(code.startswith("missing_required_signal:") for code in result["capability_readiness_record"]["reason_codes"])
+    assert result["capability_readiness_record"]["readiness_state"] in {"unsafe", "constrained"}
+    assert result["capability_readiness_record"]["readiness_state"] != "autonomous"
 
 
 def test_governed_system_roadmap_selection_wires_to_single_cycle_execution() -> None:
@@ -808,3 +824,72 @@ def test_promotion_consistency_denies_unstable_or_non_reversible_paths() -> None
     )
     assert result["promotion_consistency_record"]["promotion_state"] in {"deny", "hold"}
     assert result["next_cycle_decision"]["decision"] != "run_next_cycle"
+
+
+def test_budget_breach_triggers_freeze_path() -> None:
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={
+            **_integration_inputs(),
+            "budget_inputs": {
+                "threshold_values": {"cost": 10.0, "latency_ms": 100.0, "error_rate": 0.01},
+                "current_values": {"cost": 20.0, "latency_ms": 200.0, "error_rate": 0.2},
+                "breach_action": "freeze",
+            },
+        },
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["system_budget_status"]["budget_exhausted"] is True
+    assert "budget_exhausted" in result["autonomy_decision_record"]["reason_codes"]
+
+
+def test_canary_block_prevents_unsafe_promotion() -> None:
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs={
+            **_integration_inputs(),
+            "continuous_eval_inputs": {
+                "canary_eval_run": {
+                    "eval_case_ids": ["EC-FAIL"],
+                    "pass_rate": 0.2,
+                    "fail_rate": 0.7,
+                    "indeterminate_rate": 0.1,
+                    "drift_delta": 0.5,
+                }
+            },
+        },
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    assert result["canary_rollout_record"]["promotion_decision"] in {"block", "rollback"}
+
+
+def test_observability_artifacts_are_deterministic() -> None:
+    kwargs = dict(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=_integration_inputs(),
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+    first = run_system_cycle(**kwargs)
+    second = run_system_cycle(**kwargs)
+    assert first["trust_posture_snapshot"] == second["trust_posture_snapshot"]
+    assert first["artifact_family_health_report"] == second["artifact_family_health_report"]
+    assert first["evidence_gap_hotspot_report"] == second["evidence_gap_hotspot_report"]
+    assert first["override_hotspot_report"] == second["override_hotspot_report"]

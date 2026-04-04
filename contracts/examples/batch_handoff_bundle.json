@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.5.0",
+  "schema_version": "1.6.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -56,5 +56,14 @@
   "failure_taxonomy_ref": "failure_taxonomy_record:FTX-1111AAAABBBB",
   "correction_pattern_ref": "correction_pattern_record:CPR-1111AAAABBBB",
   "rollback_plan_ref": "rollback_plan_record:RBP-1111AAAABBBB",
-  "promotion_consistency_ref": "promotion_consistency_record:PCR-1111AAAABBBB"
+  "promotion_consistency_ref": "promotion_consistency_record:PCR-1111AAAABBBB",
+  "system_budget_status_ref": "system_budget_status:SBS-111111111111",
+  "canary_rollout_ref": "canary_rollout_record:CNR-111111111111",
+  "continuous_eval_run_refs": [
+    "continuous_eval_run_record:CER-111111111111",
+    "continuous_eval_run_record:CER-222222222222",
+    "continuous_eval_run_record:CER-333333333333",
+    "continuous_eval_run_record:CER-444444444444"
+  ],
+  "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-111111111111"
 }
