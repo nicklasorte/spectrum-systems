@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.53",
-  "schema_version": "1.3.53",
-  "standards_version": "1.3.53",
-  "record_id": "REC-STD-2026-04-04-BATCH-HANDOFF-MEMORY",
-  "run_id": "run-20260404T000000Z-batch-handoff-memory",
+  "artifact_version": "1.3.54",
+  "schema_version": "1.3.54",
+  "standards_version": "1.3.54",
+  "record_id": "REC-STD-2026-04-04-BATCH-A1",
+  "run_id": "run-20260404T000000Z-batch-a1",
   "created_at": "2026-04-04T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.52",
+  "source_repo_version": "1.3.53",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -183,6 +183,32 @@
       "notes": "Structured assumptions with validation plans and dependency links."
     },
     {
+      "artifact_type": "autonomy_decision_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.54",
+      "last_updated_in": "1.3.54",
+      "example_path": "contracts/examples/autonomy_decision_record.json",
+      "notes": "BATCH-A1 deterministic replayable autonomy guardrail decision artifact emitted per cycle with explicit reason codes and supporting signals."
+    },
+    {
+      "artifact_type": "autonomy_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.54",
+      "last_updated_in": "1.3.54",
+      "example_path": "contracts/examples/autonomy_policy.json",
+      "notes": "BATCH-A1 deterministic governed autonomy policy contract defining explicit continue/stop/review/escalate thresholds and fail-closed handling."
+    },
+    {
       "artifact_type": "baseline_gate_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -237,15 +263,15 @@
     {
       "artifact_type": "batch_handoff_bundle",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.53",
-      "last_updated_in": "1.3.53",
+      "last_updated_in": "1.3.54",
       "example_path": "contracts/examples/batch_handoff_bundle.json",
-      "notes": "Governed deterministic prior-batch unresolved-state handoff bundle used for automatic next-batch context ingestion, selection biasing, and fail-closed continuation gating."
+      "notes": "BATCH-A1 handoff bundle now carries autonomy decision reference and unresolved autonomy blockers for fail-closed continuation propagation."
     },
     {
       "artifact_type": "book_intelligence_pack",
@@ -276,15 +302,15 @@
     {
       "artifact_type": "build_summary",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.6.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.35",
-      "last_updated_in": "1.3.48",
+      "last_updated_in": "1.3.54",
       "example_path": "contracts/examples/build_summary.json",
-      "notes": "BATCH-CYCLE-LOOP operator summary now includes deterministic next-cycle decision and next-cycle input bundle references."
+      "notes": "BATCH-A1 operator summary now carries autonomy guardrail decision/ref and reason codes for unattended continuation gating transparency."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1633,9 +1659,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.48",
-      "last_updated_in": "1.3.50",
+      "last_updated_in": "1.3.54",
       "example_path": "contracts/examples/next_cycle_input_bundle.json",
-      "notes": "BATCH-CYCLE-HARDEN adds continuation depth, required review separation, and cycle runner provenance refs for bounded fail-closed continuation chaining."
+      "notes": "BATCH-A1 next-cycle input bundle now requires autonomy decision reference and autonomy blockers so runner refuses unattended continuation when blocked."
     },
     {
       "artifact_type": "next_slice_handoff",

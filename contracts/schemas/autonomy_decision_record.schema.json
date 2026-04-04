@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/autonomy_decision_record.schema.json",
+  "title": "autonomy_decision_record",
+  "description": "Deterministic replayable decision artifact emitted by governed autonomy guardrail evaluation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "autonomy_decision_id",
+    "source_cycle_id",
+    "autonomy_policy_id",
+    "decision",
+    "reason_codes",
+    "supporting_signals",
+    "unresolved_critical_risk_count",
+    "consecutive_warn_count",
+    "drift_status",
+    "replay_status",
+    "review_gate_status",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "autonomy_decision_id": {"type": "string", "pattern": "^ADR-[A-F0-9]{12}$"},
+    "source_cycle_id": {"type": "string", "minLength": 3},
+    "autonomy_policy_id": {"type": "string", "pattern": "^AP-[A-F0-9]{12}$"},
+    "decision": {"type": "string", "enum": ["continue", "stop", "require_human_review", "escalate"]},
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "all_continue_conditions_satisfied",
+          "critical_risk_threshold_exceeded",
+          "warn_threshold_exceeded",
+          "continuation_depth_exceeded",
+          "replay_failure_stop",
+          "replay_failure_review",
+          "replay_failure_escalate",
+          "review_gate_required",
+          "drift_threshold_exceeded",
+          "control_decision_freeze",
+          "missing_required_input",
+          "malformed_autonomy_policy",
+          "missing_eval_input"
+        ]
+      }
+    },
+    "supporting_signals": {"type": "array", "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
+    "unresolved_critical_risk_count": {"type": "integer", "minimum": 0},
+    "consecutive_warn_count": {"type": "integer", "minimum": 0},
+    "drift_status": {"type": "string", "enum": ["within_threshold", "warning", "threshold_exceeded", "unknown"]},
+    "replay_status": {"type": "string", "enum": ["passed", "failed", "not_required", "unknown"]},
+    "review_gate_status": {"type": "string", "enum": ["passed", "required", "pending", "unknown"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

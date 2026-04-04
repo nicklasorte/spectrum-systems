@@ -31,6 +31,9 @@
     "program_drift_severity",
     "next_cycle_decision",
     "next_cycle_decision_reason_codes",
+    "autonomy_decision",
+    "autonomy_reason_codes",
+    "autonomy_decision_ref",
     "next_cycle_inputs_ref"
   ],
   "properties": {
@@ -40,7 +43,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.5.0"
+      "const": "1.6.0"
     },
     "run_id": {
       "type": "string",
@@ -534,6 +537,28 @@
         ]
       },
       "uniqueItems": true
+    },
+    "autonomy_decision": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "stop",
+        "require_human_review",
+        "escalate"
+      ]
+    },
+    "autonomy_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "autonomy_decision_ref": {
+      "type": "string",
+      "pattern": "^autonomy_decision_record:ADR-[A-F0-9]{12}$"
     },
     "next_cycle_inputs_ref": {
       "type": "string",
