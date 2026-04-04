@@ -270,6 +270,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("system_mvp_validation_report")
         validate_artifact(instance, "system_mvp_validation_report")
 
+    def test_mvp_20_slice_execution_report_example_validates(self) -> None:
+        instance = load_example("mvp_20_slice_execution_report")
+        validate_artifact(instance, "mvp_20_slice_execution_report")
+
 
     def test_context_pipeline_contract_examples_validate(self) -> None:
         for name in ("context_bundle_v2", "build_report", "next_slice_handoff"):
