@@ -1,6 +1,6 @@
 {
   "bundle_id": "BHB-1A2B3C4D5E6F",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "source_batch_id": "BATCH-I",
   "roadmap_id": "RDX-CANVAS-2026-04-04",
   "recommended_next_batch": "BATCH-J",
@@ -36,5 +36,14 @@
   "autonomy_blockers": [
     "autonomy_blocker:autonomy:review_gate_required"
   ],
-  "autonomy_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A"
+  "autonomy_decision_ref": "autonomy_decision_record:ADR-8B9C0D1E2F3A",
+  "latest_exception_class": "execution_failure",
+  "latest_exception_resolution_action": "remediation_batch",
+  "latest_exception_action_type": "create_remediation_batch",
+  "latest_exception_requires_human_review": false,
+  "latest_exception_requires_freeze": false,
+  "required_next_actions": [
+    "action:create_remediation_batch",
+    "artifact:remediation_plan"
+  ]
 }

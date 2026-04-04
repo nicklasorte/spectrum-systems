@@ -1,0 +1,17 @@
+{
+  "exception_resolution_id": "ERR-0A1B2C3D4E5F",
+  "exception_classification_ref": "exception_classification_record:ECR-1A2B3C4D5E6F",
+  "recommended_action": "remediation_batch",
+  "action_type": "create_remediation_batch",
+  "route_target": "remediation_queue",
+  "requires_human_review": false,
+  "requires_roadmap_adjustment": false,
+  "requires_freeze": false,
+  "required_followup_artifacts": [
+    "next_step_recommendation",
+    "remediation_plan"
+  ],
+  "blocking_conditions": [],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-exception-router-example"
+}

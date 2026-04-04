@@ -17,6 +17,10 @@ from spectrum_systems.modules.runtime.adaptive_execution_observability import (
     build_adaptive_execution_trend_report,
 )
 from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import execute_bounded_roadmap_run
+from spectrum_systems.modules.runtime.exception_router import (
+    classify_exception_state,
+    route_exception_resolution,
+)
 from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration
 
 
@@ -82,7 +86,12 @@ def _load_latest_prior_batch_handoff_bundle(*, handoff_root: Path | None, requir
     return None
 
 
-def derive_batch_handoff_bundle(delivery_report: dict[str, Any]) -> dict[str, Any]:
+def derive_batch_handoff_bundle(
+    delivery_report: dict[str, Any],
+    *,
+    exception_classification_record: dict[str, Any] | None = None,
+    exception_resolution_record: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     _validate_schema(delivery_report, "batch_delivery_report")
     risks = _sorted_unique_strings(list(delivery_report.get("remaining_risks", [])))
     followups = _sorted_unique_strings(list(delivery_report.get("open_followups", [])))
@@ -106,9 +115,20 @@ def derive_batch_handoff_bundle(delivery_report: dict[str, Any]) -> dict[str, An
         "required_validations_next": required_validations_next,
         "trace_id": delivery_report["trace_id"],
     }
+    latest_exception_class = str((exception_classification_record or {}).get("exception_class") or "unknown_blocker")
+    latest_exception_resolution_action = str((exception_resolution_record or {}).get("recommended_action") or "require_human_review")
+    latest_exception_action_type = str((exception_resolution_record or {}).get("action_type") or "stop_without_auto_action")
+    latest_exception_requires_human_review = bool((exception_resolution_record or {}).get("requires_human_review", True))
+    latest_exception_requires_freeze = bool((exception_resolution_record or {}).get("requires_freeze", False))
+    required_next_actions = sorted(
+        set(
+            [f"action:{latest_exception_action_type}", f"recommendation:{latest_exception_resolution_action}"]
+            + [f"followup_artifact:{item}" for item in (exception_resolution_record or {}).get("required_followup_artifacts", [])]
+        )
+    )
     bundle = {
         "bundle_id": f"BHB-{_canonical_hash(seed)[:12].upper()}",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "source_batch_id": delivery_report["batch_id"],
         "roadmap_id": delivery_report["roadmap_id"],
         "recommended_next_batch": delivery_report["recommended_next_batch"],
@@ -130,6 +150,12 @@ def derive_batch_handoff_bundle(delivery_report: dict[str, Any]) -> dict[str, An
         "open_contract_work": open_contract_work,
         "open_review_findings": review_findings,
         "program_constraints": program_constraints,
+        "latest_exception_class": latest_exception_class,
+        "latest_exception_resolution_action": latest_exception_resolution_action,
+        "latest_exception_action_type": latest_exception_action_type,
+        "latest_exception_requires_human_review": latest_exception_requires_human_review,
+        "latest_exception_requires_freeze": latest_exception_requires_freeze,
+        "required_next_actions": required_next_actions,
         "human_decision_required": human_decision_required,
         "source_delivery_report_ref": f"batch_delivery_report:{delivery_report['report_id']}",
         "trace_id": delivery_report["trace_id"],
@@ -604,6 +630,8 @@ def _build_next_cycle_input_bundle(
     required_reviews: list[str],
     autonomy_decision_ref: str,
     autonomy_blockers: list[str],
+    exception_classification_record: dict[str, Any],
+    exception_resolution_record: dict[str, Any],
     continuation_depth: int,
     source_cycle_runner_result_ref: str,
     trace_navigation: dict[str, Any],
@@ -646,7 +674,7 @@ def _build_next_cycle_input_bundle(
     )
     return {
         "bundle_id": bundle_id,
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "source_cycle_id": current_cycle_id,
         "required_artifacts": sorted(set(required_artifacts)),
         "active_program_constraints": sorted(
@@ -666,6 +694,17 @@ def _build_next_cycle_input_bundle(
         "continuation_depth": continuation_depth + 1,
         "source_cycle_runner_result_ref": source_cycle_runner_result_ref,
         "recommended_start_batch": recommended_start_batch,
+        "latest_exception_class": exception_classification_record["exception_class"],
+        "latest_exception_resolution_action": exception_resolution_record["recommended_action"],
+        "latest_exception_action_type": exception_resolution_record["action_type"],
+        "latest_exception_requires_human_review": exception_resolution_record["requires_human_review"],
+        "latest_exception_requires_freeze": exception_resolution_record["requires_freeze"],
+        "required_next_actions": sorted(
+            set(
+                [f"action:{exception_resolution_record['action_type']}", f"recommendation:{exception_resolution_record['recommended_action']}"]
+                + [f"followup_artifact:{item}" for item in exception_resolution_record["required_followup_artifacts"]]
+            )
+        ),
         "context_refs": context_refs,
         "created_at": created_at,
         "trace_id": trace_id,
@@ -1011,6 +1050,30 @@ def run_system_cycle(
     autonomy_blockers = [] if autonomy_decision_record["decision"] == "continue" else [
         f"autonomy:{code}" for code in autonomy_decision_record["reason_codes"]
     ]
+    control_decision_value = str(integration_inputs.get("control_decision", {}).get("decision", "unknown")).strip().lower() or "unknown"
+    exception_classification_record = classify_exception_state(
+        source_artifact_ref=f"roadmap_multi_batch_run_result:{run_result['run_id']}",
+        source_batch_id=str(run_result["attempted_batch_ids"][-1] if run_result["attempted_batch_ids"] else "BATCH-UNKNOWN"),
+        source_cycle_id=str(run_result["run_id"]),
+        control_decision=control_decision_value,
+        autonomy_decision=str(autonomy_decision_record["decision"]),
+        stop_reason=stop_reason,
+        blocking_conditions=blocking_conditions,
+        drift_signals={"drift_level": program_drift_severity},
+        replay_status=str(integration.get("replay_status", "unknown")),
+        review_gate_status=str(integration_inputs.get("review_control_signal", {}).get("gate_assessment", "unknown")),
+        missing_eval_enforcement_artifacts=required_validations_next,
+        unresolved_critical_risks=unresolved_critical_risks,
+        failure_keys=list(run_result.get("reason_codes", [])),
+        created_at=timestamp,
+        trace_id=integration["trace_id"],
+    )
+    exception_resolution_record = route_exception_resolution(
+        exception_classification_record=exception_classification_record,
+        created_at=timestamp,
+    )
+    exception_classification_ref = f"exception_classification_record:{exception_classification_record['exception_classification_id']}"
+    exception_resolution_ref = f"exception_resolution_record:{exception_resolution_record['exception_resolution_id']}"
     next_cycle_input_bundle = _build_next_cycle_input_bundle(
         current_cycle_id=str(run_result["run_id"]),
         required_artifacts=required_artifacts_for_next_cycle,
@@ -1024,6 +1087,8 @@ def run_system_cycle(
         required_reviews=required_reviews,
         autonomy_decision_ref=autonomy_decision_ref,
         autonomy_blockers=autonomy_blockers,
+        exception_classification_record=exception_classification_record,
+        exception_resolution_record=exception_resolution_record,
         continuation_depth=continuation_depth,
         source_cycle_runner_result_ref=source_cycle_runner_result_ref,
         trace_navigation=trace_navigation,
@@ -1218,7 +1283,7 @@ def run_system_cycle(
 
     summary = {
         "summary_id": f"BSR-{_canonical_hash({'run_id': run_result['run_id'], 'trace_id': integration['trace_id']})[:12].upper()}",
-        "schema_version": "1.6.0",
+        "schema_version": "1.7.0",
         "run_id": run_result["run_id"],
         "continuation_decision": last_continuation_decision,
         "stop_reason": stop_reason,
@@ -1233,6 +1298,11 @@ def run_system_cycle(
         "autonomy_reason_codes": autonomy_decision_record["reason_codes"],
         "autonomy_decision_ref": autonomy_decision_ref,
         "next_cycle_inputs_ref": next_cycle_input_bundle_ref,
+        "exception_class": exception_classification_record["exception_class"],
+        "recommended_exception_action": exception_resolution_record["recommended_action"],
+        "exception_action_type": exception_resolution_record["action_type"],
+        "exception_requires_human_review": exception_resolution_record["requires_human_review"],
+        "exception_requires_freeze": exception_resolution_record["requires_freeze"],
         "what_ran": [
             "roadmap selection",
             "control authorization",
@@ -1328,6 +1398,8 @@ def run_system_cycle(
                 adaptive_policy_review_ref,
                 next_cycle_decision_ref,
                 next_cycle_input_bundle_ref,
+                exception_classification_ref,
+                exception_resolution_ref,
             }
         ),
     }
@@ -1379,6 +1451,8 @@ def run_system_cycle(
                 autonomy_decision_ref,
                 f"next_step_recommendation:{recommendation['recommendation_id']}",
                 f"build_summary:{summary['summary_id']}",
+                exception_classification_ref,
+                exception_resolution_ref,
             ]
         ),
         "source_refs": _sorted_unique_strings(list(run_result.get("source_refs", []))),
@@ -1386,7 +1460,11 @@ def run_system_cycle(
         "created_at": timestamp,
     }
     _validate_schema(batch_delivery_report, "batch_delivery_report")
-    batch_handoff_bundle = derive_batch_handoff_bundle(batch_delivery_report)
+    batch_handoff_bundle = derive_batch_handoff_bundle(
+        batch_delivery_report,
+        exception_classification_record=exception_classification_record,
+        exception_resolution_record=exception_resolution_record,
+    )
 
     return {
         "updated_roadmap": updated_roadmap,
@@ -1395,6 +1473,8 @@ def run_system_cycle(
         "adaptive_execution_trend_report": adaptive_trend_report,
         "adaptive_execution_policy_review": adaptive_policy_review,
         "autonomy_decision_record": autonomy_decision_record,
+        "exception_classification_record": exception_classification_record,
+        "exception_resolution_record": exception_resolution_record,
         "core_system_integration_validation": integration,
         "next_step_recommendation": recommendation,
         "next_cycle_decision": next_cycle_decision,

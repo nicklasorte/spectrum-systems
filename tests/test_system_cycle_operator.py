@@ -118,10 +118,12 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     validate_artifact(first["batch_delivery_report"], "batch_delivery_report")
     validate_artifact(first["batch_handoff_bundle"], "batch_handoff_bundle")
     validate_artifact(first["autonomy_decision_record"], "autonomy_decision_record")
+    validate_artifact(first["exception_classification_record"], "exception_classification_record")
+    validate_artifact(first["exception_resolution_record"], "exception_resolution_record")
 
     assert first["next_step_recommendation"]["next_batch_id"] == "BATCH-J"
     assert first["next_step_recommendation"]["schema_version"] == "1.7.0"
-    assert first["build_summary"]["schema_version"] == "1.6.0"
+    assert first["build_summary"]["schema_version"] == "1.7.0"
     assert first["next_step_recommendation"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["build_summary"]["continuation_decision"] in {"continue", "stop", "escalate"}
     assert first["next_step_recommendation"]["next_batch_candidate"] == first["next_step_recommendation"]["next_batch_id"]
@@ -144,6 +146,10 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["build_summary"]["autonomy_decision_ref"].startswith("autonomy_decision_record:ADR-")
     assert first["next_cycle_input_bundle"]["autonomy_decision_ref"] == first["build_summary"]["autonomy_decision_ref"]
     assert isinstance(first["next_cycle_input_bundle"]["autonomy_blockers"], list)
+    assert first["build_summary"]["exception_class"] == first["exception_classification_record"]["exception_class"]
+    assert first["build_summary"]["recommended_exception_action"] == first["exception_resolution_record"]["recommended_action"]
+    assert first["next_cycle_input_bundle"]["latest_exception_class"] == first["exception_classification_record"]["exception_class"]
+    assert first["next_cycle_input_bundle"]["latest_exception_resolution_action"] == first["exception_resolution_record"]["recommended_action"]
     assert first["core_system_integration_validation"]["authority_boundary_status"] == "bounded"
     assert first["build_summary"]["run_outcome"]["status"] == "success"
     assert first["build_summary"]["artifact_index"]["next_step_recommendation"].startswith("next_step_recommendation:NSR-")
@@ -174,6 +180,8 @@ def test_full_cycle_deterministic_and_contract_valid() -> None:
     assert first["next_cycle_input_bundle"]["source_cycle_runner_result_ref"].startswith("cycle_runner_result:CRR-")
     assert first["batch_handoff_bundle"]["source_delivery_report_ref"] == f"batch_delivery_report:{first['batch_delivery_report']['report_id']}"
     assert first["batch_handoff_bundle"]["autonomy_decision_ref"] == first["build_summary"]["autonomy_decision_ref"]
+    assert first["batch_handoff_bundle"]["latest_exception_class"] == first["exception_classification_record"]["exception_class"]
+    assert first["batch_handoff_bundle"]["latest_exception_resolution_action"] == first["exception_resolution_record"]["recommended_action"]
 
 
 def test_prior_handoff_auto_ingested_and_required_validations_propagated(tmp_path: Path) -> None:

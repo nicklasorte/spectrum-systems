@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/exception_classification_record.schema.json",
+  "title": "exception_classification_record",
+  "description": "Deterministic governed exception classification artifact emitted when a cycle cannot safely continue in normal path.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exception_classification_id",
+    "source_artifact_ref",
+    "source_batch_id",
+    "source_cycle_id",
+    "control_decision",
+    "autonomy_decision",
+    "stop_reason",
+    "exception_class",
+    "severity",
+    "normalized_failure_keys",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "exception_classification_id": {"type": "string", "pattern": "^ECR-[A-F0-9]{12}$"},
+    "source_artifact_ref": {"type": "string", "minLength": 3},
+    "source_batch_id": {"type": "string", "pattern": "^BATCH-[A-Z0-9-]+$"},
+    "source_cycle_id": {"type": "string", "minLength": 3},
+    "control_decision": {"type": "string", "enum": ["allow", "warn", "block", "freeze", "unknown"]},
+    "autonomy_decision": {"type": "string", "enum": ["continue", "stop", "require_human_review", "escalate", "unknown"]},
+    "stop_reason": {
+      "type": "string",
+      "enum": [
+        "max_batches_reached",
+        "hard_gate_stop",
+        "authorization_block",
+        "authorization_freeze",
+        "missing_required_signal",
+        "execution_blocked",
+        "execution_failed",
+        "loop_validation_failed",
+        "replay_not_ready",
+        "invalid_roadmap_state",
+        "invalid_progress_state",
+        "contract_precondition_failed",
+        "no_eligible_batch",
+        "diminishing_returns_detected",
+        "repeated_failure_pattern",
+        "unresolved_blocker_persists",
+        "risk_accumulation_threshold_exceeded",
+        "control_block",
+        "control_freeze",
+        "program_blocking_condition",
+        "program_priority_violation",
+        "program_alignment_invalid",
+        "program_drift_detected",
+        "eval_health_degraded",
+        "manual_review_required"
+      ]
+    },
+    "exception_class": {
+      "type": "string",
+      "enum": [
+        "missing_eval_coverage",
+        "missing_required_eval_result",
+        "indeterminate_required_eval",
+        "replay_mismatch",
+        "review_required",
+        "autonomy_blocked",
+        "program_misalignment",
+        "drift_detected",
+        "unresolved_critical_risk",
+        "policy_violation",
+        "execution_failure",
+        "unknown_blocker"
+      ]
+    },
+    "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "normalized_failure_keys": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

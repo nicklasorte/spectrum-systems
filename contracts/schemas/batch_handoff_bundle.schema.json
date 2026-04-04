@@ -23,7 +23,13 @@
     "human_decision_required",
     "source_delivery_report_ref",
     "trace_id",
-    "created_at"
+    "created_at",
+    "latest_exception_class",
+    "latest_exception_resolution_action",
+    "latest_exception_action_type",
+    "latest_exception_requires_human_review",
+    "latest_exception_requires_freeze",
+    "required_next_actions"
   ],
   "properties": {
     "bundle_id": {
@@ -32,7 +38,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "source_batch_id": {
       "type": "string",
@@ -131,6 +137,63 @@
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "latest_exception_class": {
+      "type": "string",
+      "enum": [
+        "missing_eval_coverage",
+        "missing_required_eval_result",
+        "indeterminate_required_eval",
+        "replay_mismatch",
+        "review_required",
+        "autonomy_blocked",
+        "program_misalignment",
+        "drift_detected",
+        "unresolved_critical_risk",
+        "policy_violation",
+        "execution_failure",
+        "unknown_blocker"
+      ]
+    },
+    "latest_exception_resolution_action": {
+      "type": "string",
+      "enum": [
+        "create_eval_coverage_work",
+        "re_run_or_remediate_eval_path",
+        "freeze_and_investigate",
+        "freeze_and_replay_investigation",
+        "queue_review",
+        "require_human_review",
+        "roadmap_adjustment",
+        "remediation_batch",
+        "escalate"
+      ]
+    },
+    "latest_exception_action_type": {
+      "type": "string",
+      "enum": [
+        "create_remediation_batch",
+        "create_eval_batch",
+        "queue_review",
+        "freeze_and_investigate",
+        "escalate",
+        "adjust_roadmap",
+        "stop_without_auto_action"
+      ]
+    },
+    "latest_exception_requires_human_review": {
+      "type": "boolean"
+    },
+    "latest_exception_requires_freeze": {
+      "type": "boolean"
+    },
+    "required_next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
     }
   }
 }
