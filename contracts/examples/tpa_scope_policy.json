@@ -1,0 +1,28 @@
+{
+  "artifact_type": "tpa_scope_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "TPA-SCOPE-2026-04-04",
+  "required_paths": [
+    "pqx/",
+    "eval/",
+    "control/",
+    "enforcement/",
+    "artifacts/",
+    "spectrum_systems/modules/runtime/",
+    "spectrum_systems/modules/governance/"
+  ],
+  "required_artifact_types": [
+    "pqx_generated_slice",
+    "new_feature_slice",
+    "promotion_candidate"
+  ],
+  "required_pqx_steps": [
+    "AI-",
+    "RDX-"
+  ],
+  "optional_paths": [
+    "tests/",
+    "docs/"
+  ],
+  "lightweight_mode_allowed": true
+}

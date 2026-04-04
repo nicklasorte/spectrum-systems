@@ -149,6 +149,82 @@ def _write_certification_payload(tmp_path: Path, filename: str, payload: Dict[st
     return out
 
 
+def _write_tpa_artifacts(tmp_path: Path, *, step_id: str = "AI-01") -> Dict[str, str]:
+    build_signals = {
+        "files_changed_count": 1, "lines_added": 22, "lines_removed": 8, "net_line_delta": 14,
+        "functions_added_count": 2, "functions_removed_count": 0, "helpers_added_count": 1, "helpers_removed_count": 0,
+        "wrappers_collapsed_count": 0, "deletions_count": 0, "public_surface_delta_count": 1,
+        "approximate_max_nesting_delta": 1, "approximate_branching_delta": 1,
+        "abstraction_added_count": 1, "abstraction_removed_count": 0,
+    }
+    simplify_signals = {
+        "files_changed_count": 1, "lines_added": 10, "lines_removed": 18, "net_line_delta": -8,
+        "functions_added_count": 1, "functions_removed_count": 1, "helpers_added_count": 0, "helpers_removed_count": 1,
+        "wrappers_collapsed_count": 1, "deletions_count": 1, "public_surface_delta_count": 0,
+        "approximate_max_nesting_delta": -1, "approximate_branching_delta": -1,
+        "abstraction_added_count": 0, "abstraction_removed_count": 1,
+    }
+    phase_payloads = {
+        "plan": {
+            "artifact_kind": "plan", "execution_mode": "feature_build",
+            "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+            "seams_reused": ["pqx_sequence_runner.execute_sequence_run"],
+            "abstraction_intent": "reuse_existing", "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+            "known_risk_refs": ["risk_register:risk-high-1"], "prior_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+            "modules_affected": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+            "improvement_objective": "Prevent known context-linked failures while keeping TPA bounded.",
+            "context_rationale": "Recent failures show repeated helper/indirection regressions.",
+            "constraints_acknowledged": {"build_small": True, "no_redesign": True},
+        },
+        "build": {
+            "artifact_kind": "build", "files_touched": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"],
+            "new_layers": 0, "unused_helpers": [], "unnecessary_indirection": [], "plan_scope_match": True,
+            "abstraction_justifications": [], "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd",
+            "known_failure_patterns_avoided": ["failure_pattern:unused-helper-regression"],
+            "existing_abstractions_satisfied": True, "speculative_expansion_detected": False,
+            "reused_module_refs": ["spectrum_systems/modules/runtime/pqx_sequence_runner.py"], "complexity_signals": build_signals,
+        },
+        "simplify": {
+            "artifact_kind": "simplify", "source_build_artifact_id": f"tpa:run-001:{step_id}-B",
+            "actions": ["reduce_nesting", "rename_for_clarity"], "behavior_changed": False, "new_layers_introduced": 0,
+            "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd", "redundant_code_paths_removed": 1,
+            "duplicate_logic_collapsed": [], "pattern_consistency_refs": ["pattern:pqx-tpa-runtime-style"],
+            "complexity_signals": simplify_signals,
+            "delete_pass": {"deletion_considered": True, "deletion_performed": True, "deletion_rejected_reason": None,
+                            "deleted_items": ["obsolete_wrapper:legacy-branch"], "collapsed_abstractions": ["adapter-layer:thin-wrapper"],
+                            "removed_helpers": ["helper:unused_context_glue"], "removed_wrappers": ["wrapper:legacy_wrapper"],
+                            "indirection_avoided": ["direct_call:use_existing_runtime_seam"]},
+        },
+        "gate": {
+            "artifact_kind": "gate", "build_artifact_id": f"tpa:run-001:{step_id}-B", "simplify_artifact_id": f"tpa:run-001:{step_id}-S",
+            "behavioral_equivalence": True, "contract_valid": True, "tests_valid": True,
+            "selected_pass": "pass_2_simplify", "rejected_pass": "pass_1_build",
+            "selection_inputs": {"build_artifact_id": f"tpa:run-001:{step_id}-B", "simplify_artifact_id": f"tpa:run-001:{step_id}-S", "comparison_inputs_present": True},
+            "selection_metrics": {"build": build_signals, "simplify": simplify_signals, "simplify_delta": {k: simplify_signals[k]-build_signals[k] for k in build_signals}},
+            "selection_rationale": "equivalence proven and simplify has lower complexity", "promotion_ready": True, "fail_closed_reason": None,
+            "context_bundle_ref": "context_bundle_v2:ctx2-abc123abc123abcd", "review_signal_refs": ["review_artifact:rvw-001"],
+            "eval_signal_refs": ["eval_result:ev-001"], "addressed_failure_pattern_refs": ["failure_pattern:unused-helper-regression"],
+            "unaddressed_failure_pattern_refs": [], "high_risk_unmitigated": False, "risk_mitigation_refs": ["mitigation:risk-high-1-covered"],
+            "simplicity_review": {"decision": "allow", "overall_severity": "low", "findings": [{"category": "delete_instead_of_abstract", "severity": "low", "message": "Delete-pass completed."}], "report_ref": "docs/reviews/2026-04-04-tpa-completion-hardening.md"},
+            "complexity_regression_gate": {"decision": "allow", "policy_ref": "policy:tpa-complexity-regression:v1", "regression_detected": False, "historical_baseline_available": True, "historical_baseline_ref": "baseline:tpa:AI-01", "exception_justified": False},
+        },
+    }
+    suffix = {"plan": "P", "build": "B", "simplify": "S", "gate": "G"}
+    refs: Dict[str, str] = {}
+    for phase, payload in phase_payloads.items():
+        artifact = {
+            "artifact_type": "tpa_slice_artifact", "schema_version": "1.2.0",
+            "artifact_id": f"tpa:run-001:{step_id}-{suffix[phase]}", "run_id": "run-001", "trace_id": "trace-001",
+            "slice_id": f"{step_id}-{suffix[phase]}", "step_id": step_id, "phase": phase,
+            "produced_at": "2026-04-04T00:00:00Z", "artifact": payload,
+        }
+        out = tmp_path / f"{phase}.json"
+        out.write_text(json.dumps(artifact), encoding="utf-8")
+        refs[f"tpa_{phase}_artifact"] = str(out)
+    return refs
+
+
+
 # ---------------------------------------------------------------------------
 # 1–3. load_budget_decision
 # ---------------------------------------------------------------------------
@@ -1116,3 +1192,35 @@ def test_promotion_gate_blocks_trace_mismatch(tmp_path: Path):
     )
     assert action["allowed_to_proceed"] is False
     assert action["certification_gate"]["certification_decision"] == "blocked"
+
+
+def test_promotion_required_scope_missing_tpa_artifacts_blocks(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path)
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={
+            "enforcement_scope": "promotion",
+            "done_certification_path": str(certification_path),
+            "scope_artifact_type": "pqx_generated_slice",
+            "scope_file_path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+        },
+    )
+    assert action["action_type"] == "block"
+    assert "missing_tpa_artifact" in str(action["certification_gate"]["block_reason"])
+
+
+def test_promotion_required_scope_with_valid_tpa_artifacts_allows(tmp_path: Path):
+    certification_path = _write_certification_pack(tmp_path)
+    tpa_refs = _write_tpa_artifacts(tmp_path)
+    action = run_enforcement_bridge(
+        _ALLOW,
+        context={
+            "enforcement_scope": "promotion",
+            "done_certification_path": str(certification_path),
+            "scope_artifact_type": "pqx_generated_slice",
+            "scope_file_path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
+            **tpa_refs,
+        },
+    )
+    assert action["action_type"] == "allow"
+    assert action["certification_gate"]["block_reason"] is None

@@ -373,6 +373,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("tpa_observability_summary")
         validate_artifact(instance, "tpa_observability_summary")
 
+    def test_tpa_scope_policy_example_validates(self) -> None:
+        instance = load_example("tpa_scope_policy")
+        validate_artifact(instance, "tpa_scope_policy")
+
     def test_pqx_sequence_budget_example_validates(self) -> None:
         instance = load_example("pqx_sequence_budget")
         validate_artifact(instance, "pqx_sequence_budget")

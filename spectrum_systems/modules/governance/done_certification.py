@@ -19,6 +19,11 @@ from spectrum_systems.modules.runtime.trust_spine_invariants import (
     validate_trust_spine_evidence_completeness,
     validate_trust_spine_invariants,
 )
+from spectrum_systems.modules.governance.tpa_scope_policy import (
+    TPAScopePolicyError,
+    is_tpa_required,
+    load_tpa_scope_policy,
+)
 
 
 class DoneCertificationError(ValueError):
@@ -103,6 +108,14 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
         "eval_coverage_summary_ref",
         "repo_review_snapshot_ref",
         "repo_health_eval_summary_ref",
+        "tpa_plan_artifact",
+        "tpa_build_artifact",
+        "tpa_simplify_artifact",
+        "tpa_gate_artifact",
+        "tpa_scope_policy_path",
+        "scope_file_path",
+        "scope_module",
+        "scope_artifact_type",
     ):
         optional = input_refs.get(optional_key)
         if optional is None:
@@ -242,6 +255,80 @@ def _validate_trace_linkage(
     if not resolved_trace and passed:
         raise DoneCertificationError("TRACE_LINKAGE_MISSING: replay_result.trace_id is required")
     return passed, details, resolved_trace
+
+
+def _load_tpa_artifact(path_value: str, *, expected_phase: str) -> Dict[str, Any]:
+    artifact = _load_json(path_value, label=f"tpa_{expected_phase}_artifact")
+    _validate_schema(artifact, "tpa_slice_artifact", label=f"tpa_{expected_phase}_artifact")
+    if artifact.get("phase") != expected_phase:
+        raise DoneCertificationError(
+            f"tpa_{expected_phase}_artifact phase mismatch: expected {expected_phase!r} got {artifact.get('phase')!r}"
+        )
+    return artifact
+
+
+def _evaluate_tpa_compliance(*, refs: Dict[str, str], input_refs: Dict[str, Any]) -> tuple[bool, str, List[str], List[str]]:
+    scope_context = {
+        "file_path": refs.get("scope_file_path", ""),
+        "module": refs.get("scope_module", ""),
+        "artifact_type": refs.get("scope_artifact_type", ""),
+        "pqx_step_metadata": input_refs.get("pqx_step_metadata") if isinstance(input_refs.get("pqx_step_metadata"), dict) else {},
+    }
+
+    policy_path = refs.get("tpa_scope_policy_path")
+    try:
+        policy = load_tpa_scope_policy(policy_path)
+        required = is_tpa_required(scope_context, policy=policy)
+    except TPAScopePolicyError as exc:
+        raise DoneCertificationError(f"TPA scope policy evaluation failed: {exc}") from exc
+
+    required_ref_keys = (
+        "tpa_plan_artifact",
+        "tpa_build_artifact",
+        "tpa_simplify_artifact",
+        "tpa_gate_artifact",
+    )
+    tpa_artifact_refs = [refs[key] for key in required_ref_keys if key in refs]
+
+    if not required:
+        return False, "NOT_REQUIRED", [], tpa_artifact_refs
+
+    details: List[str] = []
+    missing = [key for key in required_ref_keys if key not in refs]
+    if missing:
+        details.append("missing required TPA artifacts: " + ",".join(missing))
+        return True, "FAIL", details, tpa_artifact_refs
+
+    plan = _load_tpa_artifact(refs["tpa_plan_artifact"], expected_phase="plan")
+    build = _load_tpa_artifact(refs["tpa_build_artifact"], expected_phase="build")
+    simplify = _load_tpa_artifact(refs["tpa_simplify_artifact"], expected_phase="simplify")
+    gate = _load_tpa_artifact(refs["tpa_gate_artifact"], expected_phase="gate")
+
+    if str((gate.get("artifact") or {}).get("artifact_kind") or "") != "gate":
+        details.append("TPA gate artifact kind must be gate")
+
+    gate_artifact = dict(gate.get("artifact") or {})
+    if not bool(gate_artifact.get("promotion_ready")):
+        details.append("TPA gate promotion_ready must be true")
+
+    regression_decision = str(((gate_artifact.get("complexity_regression_gate") or {}).get("decision") or "")).strip().lower()
+    if regression_decision in {"block", "freeze"}:
+        details.append("TPA complexity regression gate blocked promotion")
+
+    simplicity_decision = str(((gate_artifact.get("simplicity_review") or {}).get("decision") or "")).strip().lower()
+    if simplicity_decision in {"block", "freeze"}:
+        details.append("TPA simplicity review blocked promotion")
+
+    step_ids = {str(item.get("step_id") or "") for item in (plan, build, simplify, gate)}
+    if len(step_ids) != 1:
+        details.append("TPA artifacts must share a single step_id")
+
+    return True, ("PASS" if not details else "FAIL"), details, [
+        refs["tpa_plan_artifact"],
+        refs["tpa_build_artifact"],
+        refs["tpa_simplify_artifact"],
+        refs["tpa_gate_artifact"],
+    ]
 
 
 def run_done_certification(input_refs: dict) -> dict:
@@ -535,6 +622,11 @@ def run_done_certification(input_refs: dict) -> dict:
     if not cohesion_pass:
         blocking_reasons.extend(cohesion_details)
 
+    tpa_required, tpa_status, tpa_details, tpa_artifact_refs = _evaluate_tpa_compliance(refs=refs, input_refs=input_refs)
+    tpa_compliance_pass = tpa_status == "PASS"
+    if tpa_required and not tpa_compliance_pass:
+        blocking_reasons.extend(tpa_details or ["TPA compliance failed for required scope"])
+
     readiness_details: List[str] = []
     readiness_pass = True
     readiness_response = "allow"
@@ -624,6 +716,9 @@ def run_done_certification(input_refs: dict) -> dict:
         "certification_id": certification_pack.get("certification_id"),
         "error_budget_id": error_budget.get("artifact_id"),
         "control_decision_id": control_decision.get("decision_id"),
+        "tpa_required": tpa_required,
+        "tpa_status": tpa_status,
+        "tpa_artifact_refs": tpa_artifact_refs,
         "final_status": final_status,
         "blocking_reasons": blocking_reasons,
     }
@@ -677,6 +772,10 @@ def run_done_certification(input_refs: dict) -> dict:
                 "passed": cohesion_pass,
                 "details": cohesion_details,
             },
+            "tpa_compliance": {
+                "passed": (tpa_compliance_pass if tpa_required else True),
+                "details": tpa_details,
+            },
             "system_readiness": {
                 "passed": readiness_pass and readiness_response in {"allow", "warn"},
                 "details": readiness_details,
@@ -722,6 +821,9 @@ def run_done_certification(input_refs: dict) -> dict:
             ),
             "evidence_ref": refs.get("trust_spine_evidence_cohesion_result_ref", ""),
         },
+        "tpa_required": tpa_required,
+        "tpa_status": tpa_status,
+        "tpa_artifact_refs": tpa_artifact_refs,
         "final_status": final_status,
         "system_response": system_response,
         "blocking_reasons": blocking_reasons,

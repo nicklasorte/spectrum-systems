@@ -57,6 +57,10 @@
     "system_readiness": {
       "passed": true,
       "details": []
+    },
+    "tpa_compliance": {
+      "passed": true,
+      "details": []
     }
   },
   "trust_spine_invariant_result": {
@@ -119,5 +123,8 @@
     "require_system_readiness": false
   },
   "trace_id": "trace-example-001",
-  "run_id": "run-example-001"
+  "run_id": "run-example-001",
+  "tpa_required": false,
+  "tpa_status": "NOT_REQUIRED",
+  "tpa_artifact_refs": []
 }
