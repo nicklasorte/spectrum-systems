@@ -552,3 +552,29 @@ def test_standards_manifest_registers_exception_router_contracts() -> None:
     assert standards["batch_handoff_bundle"]["schema_version"] == "1.2.0"
     assert standards["next_cycle_input_bundle"]["schema_version"] == "1.2.0"
     assert standards["build_summary"]["schema_version"] == "1.7.0"
+
+
+def test_system_roadmap_invalid_missing_required_field_fails_validation() -> None:
+    roadmap = load_example("system_roadmap")
+    roadmap.pop("trace_id", None)
+    with pytest.raises(Exception):
+        validate_artifact(roadmap, "system_roadmap")
+
+
+def test_system_roadmap_markdown_sync_stays_aligned() -> None:
+    subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "sync_system_roadmap_markdown.py"),
+            "--roadmap-json",
+            str(REPO_ROOT / "contracts/examples/system_roadmap.json"),
+            "--markdown-out",
+            str(REPO_ROOT / "docs/roadmaps/system_roadmap.md"),
+        ],
+        check=True,
+    )
+    roadmap = load_example("system_roadmap")
+    markdown = (REPO_ROOT / "docs/roadmaps/system_roadmap.md").read_text(encoding="utf-8")
+    for batch in roadmap["batches"]:
+        assert batch["batch_id"] in markdown
+        assert batch["title"] in markdown

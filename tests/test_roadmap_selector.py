@@ -193,22 +193,22 @@ def test_system_roadmap_load_and_select_next_batch_deterministic() -> None:
     roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
     first = select_next_batch(
         roadmap,
-        program_aligned_batch_ids={"BATCH-CL-02", "BATCH-CL-03"},
+        program_aligned_batch_ids={"JUD-013"},
         continuation_allowed=True,
     )
     second = select_next_batch(
         roadmap,
-        program_aligned_batch_ids={"BATCH-CL-02", "BATCH-CL-03"},
+        program_aligned_batch_ids={"JUD-013"},
         continuation_allowed=True,
     )
-    assert first == "BATCH-CL-02"
+    assert first == "JUD-013"
     assert first == second
 
 
 def test_system_roadmap_selection_fails_on_program_misalignment() -> None:
     roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
     try:
-        select_next_batch(roadmap, program_aligned_batch_ids={"BATCH-CL-03"}, continuation_allowed=True)
+        select_next_batch(roadmap, program_aligned_batch_ids={"TBH-001"}, continuation_allowed=True)
     except RoadmapSelectionError as exc:
         assert "no eligible batch found" in str(exc)
     else:
@@ -230,3 +230,33 @@ def test_system_roadmap_selection_sequence_is_deterministic_across_updates() -> 
     first_pick = select_next_batch(roadmap, continuation_allowed=True)
     second_pick = select_next_batch(roadmap, continuation_allowed=True)
     assert first_pick == second_pick
+
+
+def test_system_roadmap_missing_required_field_fails_closed() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    roadmap.pop("trace_id", None)
+    try:
+        select_next_batch(roadmap, continuation_allowed=True)
+    except RoadmapSelectionError as exc:
+        assert "failed schema validation" in str(exc)
+    else:
+        raise AssertionError("expected schema validation failure")
+
+
+def test_system_roadmap_dependency_correctness_blocks_until_completed() -> None:
+    roadmap = load_active_roadmap(_REPO_ROOT / "contracts" / "examples" / "system_roadmap.json")
+    for batch in roadmap["batches"]:
+        if batch["batch_id"] == "JUD-013":
+            batch["status"] = "blocked"
+        if batch["batch_id"] == "RDX-011":
+            batch["status"] = "not_started"
+        if batch["batch_id"] == "MAP-010":
+            batch["status"] = "blocked"
+        if batch["batch_id"] in {"BATCH-CL-02", "BATCH-CL-03"}:
+            batch["status"] = "blocked"
+    try:
+        select_next_batch(roadmap, continuation_allowed=True)
+    except RoadmapSelectionError as exc:
+        assert "no eligible batch found" in str(exc)
+    else:
+        raise AssertionError("expected dependency blocking failure")

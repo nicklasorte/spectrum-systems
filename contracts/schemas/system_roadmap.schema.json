@@ -2,15 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/system_roadmap.schema.json",
   "title": "System Roadmap",
-  "description": "Governed deterministic roadmap source-of-truth for bounded batch activation.",
+  "description": "Canonical governed roadmap artifact used as the machine execution source of truth.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "roadmap_id",
     "version",
-    "batches",
     "created_at",
-    "trace_id"
+    "trace_id",
+    "batches"
   ],
   "properties": {
     "roadmap_id": {
@@ -21,27 +21,66 @@
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
     "batches": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "batch_id",
+          "acronym",
           "title",
-          "status",
-          "dependencies",
+          "goal",
+          "depends_on",
+          "hard_gate",
           "priority",
+          "status",
+          "allowed_when",
+          "stop_conditions",
+          "artifacts_expected",
+          "tests_required",
           "description"
         ],
         "properties": {
           "batch_id": {
             "type": "string",
-            "pattern": "^BATCH-[A-Z0-9-]+$"
+            "pattern": "^[A-Z][A-Z0-9-]*$"
+          },
+          "acronym": {
+            "type": "string",
+            "pattern": "^[A-Z]{1,6}$"
           },
           "title": {
             "type": "string",
             "minLength": 1
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9-]*$"
+            },
+            "uniqueItems": true
+          },
+          "hard_gate": {
+            "type": "boolean"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1
           },
           "status": {
             "type": "string",
@@ -52,17 +91,37 @@
               "blocked"
             ]
           },
-          "dependencies": {
+          "allowed_when": {
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^BATCH-[A-Z0-9-]+$"
+              "minLength": 1
             },
             "uniqueItems": true
           },
-          "priority": {
-            "type": "integer",
-            "minimum": 1
+          "stop_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "artifacts_expected": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "tests_required": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
           },
           "description": {
             "type": "string",
@@ -70,14 +129,6 @@
           }
         }
       }
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "trace_id": {
-      "type": "string",
-      "pattern": "^trace-[A-Za-z0-9._:-]+$"
     }
   }
 }

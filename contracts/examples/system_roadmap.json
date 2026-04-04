@@ -1,36 +1,436 @@
 {
-  "roadmap_id": "SYSTEM-ROADMAP-2026-04",
-  "version": "1.0.0",
+  "roadmap_id": "SYSTEM-MVP-ROADMAP",
+  "version": "1.1.0",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-system-roadmap-mvp-2026-04-04",
   "batches": [
     {
-      "batch_id": "BATCH-CL-01",
-      "title": "Control Loop Failure Binding",
-      "status": "completed",
-      "dependencies": [],
+      "batch_id": "TBH-001",
+      "acronym": "TBH",
+      "title": "Trust Boundary Hardening 1",
+      "goal": "Establish baseline trust-boundary checks",
+      "depends_on": [],
+      "hard_gate": true,
       "priority": 1,
-      "description": "Bind failures to governed eval and policy updates."
+      "status": "completed",
+      "allowed_when": [
+        "roadmap_initialized"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "tbh_001_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_tbh_001.py"
+      ],
+      "description": "Deterministic execution slice for TBH-001."
+    },
+    {
+      "batch_id": "TBH-002",
+      "acronym": "TBH",
+      "title": "Trust Boundary Hardening 2",
+      "goal": "Harden contract ingress boundaries",
+      "depends_on": [
+        "TBH-001"
+      ],
+      "hard_gate": true,
+      "priority": 2,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:TBH-001"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "tbh_002_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_tbh_002.py"
+      ],
+      "description": "Deterministic execution slice for TBH-002."
+    },
+    {
+      "batch_id": "TBH-003",
+      "acronym": "TBH",
+      "title": "Trust Boundary Hardening 3",
+      "goal": "Enforce deterministic boundary normalization",
+      "depends_on": [
+        "TBH-002"
+      ],
+      "hard_gate": true,
+      "priority": 3,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:TBH-002"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "tbh_003_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_tbh_003.py"
+      ],
+      "description": "Deterministic execution slice for TBH-003."
+    },
+    {
+      "batch_id": "STF-001",
+      "acronym": "STF",
+      "title": "Schema/Test Foundation 1",
+      "goal": "Stand up roadmap contract validation spine",
+      "depends_on": [
+        "TBH-003"
+      ],
+      "hard_gate": true,
+      "priority": 4,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:TBH-003"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "stf_001_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_stf_001.py"
+      ],
+      "description": "Deterministic execution slice for STF-001."
+    },
+    {
+      "batch_id": "STF-002",
+      "acronym": "STF",
+      "title": "Schema/Test Foundation 2",
+      "goal": "Add governed golden-path fixtures",
+      "depends_on": [
+        "STF-001"
+      ],
+      "hard_gate": false,
+      "priority": 5,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:STF-001"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "stf_002_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_stf_002.py"
+      ],
+      "description": "Deterministic execution slice for STF-002."
+    },
+    {
+      "batch_id": "A-001",
+      "acronym": "A",
+      "title": "Autonomy Guardrails 1",
+      "goal": "Bind continuation to explicit autonomy policy",
+      "depends_on": [
+        "STF-002"
+      ],
+      "hard_gate": true,
+      "priority": 6,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:STF-002"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "a_001_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_a_001.py"
+      ],
+      "description": "Deterministic execution slice for A-001."
+    },
+    {
+      "batch_id": "A-003",
+      "acronym": "A",
+      "title": "Autonomy Guardrails 3",
+      "goal": "Route governed exceptions deterministically",
+      "depends_on": [
+        "A-001"
+      ],
+      "hard_gate": true,
+      "priority": 7,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:A-001"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "a_003_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_a_003.py"
+      ],
+      "description": "Deterministic execution slice for A-003."
+    },
+    {
+      "batch_id": "A-004",
+      "acronym": "A",
+      "title": "Autonomy Guardrails 4",
+      "goal": "Require recurrent-risk suppression before continue",
+      "depends_on": [
+        "A-003"
+      ],
+      "hard_gate": true,
+      "priority": 8,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:A-003"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "a_004_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_a_004.py"
+      ],
+      "description": "Deterministic execution slice for A-004."
+    },
+    {
+      "batch_id": "A-002",
+      "acronym": "A",
+      "title": "Autonomy Guardrails 2",
+      "goal": "Emit operator-clarity handoff and blockers",
+      "depends_on": [
+        "A-004"
+      ],
+      "hard_gate": false,
+      "priority": 9,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:A-004"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "a_002_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_a_002.py"
+      ],
+      "description": "Deterministic execution slice for A-002."
+    },
+    {
+      "batch_id": "MAP-010",
+      "acronym": "MAP",
+      "title": "Roadmap Mapping 10",
+      "goal": "Normalize roadmap selection inputs",
+      "depends_on": [
+        "A-002"
+      ],
+      "hard_gate": false,
+      "priority": 10,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:A-002"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "map_010_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_map_010.py"
+      ],
+      "description": "Deterministic execution slice for MAP-010."
+    },
+    {
+      "batch_id": "RDX-011",
+      "acronym": "RDX",
+      "title": "Roadmap Execution 11",
+      "goal": "Bind selected roadmap batch to execution report",
+      "depends_on": [
+        "MAP-010"
+      ],
+      "hard_gate": false,
+      "priority": 11,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:MAP-010"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "rdx_011_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_rdx_011.py"
+      ],
+      "description": "Deterministic execution slice for RDX-011."
+    },
+    {
+      "batch_id": "VAL-012",
+      "acronym": "VAL",
+      "title": "Validation 12",
+      "goal": "Run bounded governance validation suite",
+      "depends_on": [
+        "RDX-011"
+      ],
+      "hard_gate": true,
+      "priority": 12,
+      "status": "completed",
+      "allowed_when": [
+        "dependencies_completed:RDX-011"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "val_012_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_val_012.py"
+      ],
+      "description": "Deterministic execution slice for VAL-012."
+    },
+    {
+      "batch_id": "JUD-013",
+      "acronym": "JUD",
+      "title": "Judgment Activation 13",
+      "goal": "Activate judgment-backed progression gate",
+      "depends_on": [
+        "VAL-012"
+      ],
+      "hard_gate": true,
+      "priority": 13,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed:VAL-012"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "jud_013_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_jud_013.py"
+      ],
+      "description": "Deterministic execution slice for JUD-013."
+    },
+    {
+      "batch_id": "BATCH-CL-01",
+      "acronym": "CL",
+      "title": "Control Loop Failure Binding",
+      "goal": "Compatibility selection row for existing governed selector consumers",
+      "depends_on": [],
+      "hard_gate": true,
+      "priority": 14,
+      "status": "completed",
+      "allowed_when": [
+        "roadmap_initialized"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "batch_cl_01_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_batch_cl_01.py"
+      ],
+      "description": "Deterministic execution slice for BATCH-CL-01."
     },
     {
       "batch_id": "BATCH-CL-02",
+      "acronym": "CL",
       "title": "Error Budget Engine",
-      "status": "not_started",
-      "dependencies": [
+      "goal": "Compatibility selection row for aligned selection tests",
+      "depends_on": [
         "BATCH-CL-01"
       ],
-      "priority": 2,
-      "description": "Apply deterministic warn/freeze/block controls from budget status."
+      "hard_gate": true,
+      "priority": 15,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed:BATCH-CL-01"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "batch_cl_02_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_batch_cl_02.py"
+      ],
+      "description": "Deterministic execution slice for BATCH-CL-02."
     },
     {
       "batch_id": "BATCH-CL-03",
+      "acronym": "CL",
       "title": "Recurrence Prevention Enforcement",
-      "status": "not_started",
-      "dependencies": [
+      "goal": "Compatibility selection row for aligned selection tests",
+      "depends_on": [
         "BATCH-CL-02"
       ],
-      "priority": 3,
-      "description": "Require recurrence-prevention artifacts before continuation."
+      "hard_gate": true,
+      "priority": 16,
+      "status": "not_started",
+      "allowed_when": [
+        "dependencies_completed:BATCH-CL-02"
+      ],
+      "stop_conditions": [
+        "missing_required_artifact",
+        "failed_required_test",
+        "hard_gate_failed"
+      ],
+      "artifacts_expected": [
+        "batch_cl_03_artifact"
+      ],
+      "tests_required": [
+        "pytest tests/test_batch_cl_03.py"
+      ],
+      "description": "Deterministic execution slice for BATCH-CL-03."
     }
-  ],
-  "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-system-roadmap-example"
+  ]
 }
