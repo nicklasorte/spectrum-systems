@@ -314,6 +314,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 | docs/review-actions/PLAN-OPS-01-FIX-2026-04-04.md | OPS-01-FIX — Manifest Artifact Class Compatibility Repair | Active |
 | docs/review-actions/PLAN-OPS-02-2026-04-04.md | OPS-02 — Scheduled Autonomous Execution + Passive Monitoring | Active |
+| docs/review-actions/PLAN-OPS-03-FIX-2026-04-04.md | OPS-03-FIX — Contract Preflight Required-Surface Linkage Repair | Active |
 
 Update this table when plans are created or completed.
 

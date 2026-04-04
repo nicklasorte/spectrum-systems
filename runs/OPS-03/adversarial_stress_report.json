@@ -1,0 +1,206 @@
+{
+  "run_id": "OPS-03",
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-ops-03",
+  "execution_mode": {
+    "drift_detection_enabled": true,
+    "roadmap_steering_enabled": true,
+    "readiness_gating_enabled": true,
+    "promotion_gating_enabled": true,
+    "policy_enforcement_enabled": true,
+    "human_intervention_used": false
+  },
+  "validation": {
+    "no_silent_continuation": true,
+    "drift_changes_behavior": true,
+    "roadmap_reprioritization_occurs": true,
+    "repeated_failure_decreases": true,
+    "system_halts_correctly_when_needed": true
+  },
+  "failure_timeline": [
+    {
+      "cycle": 1,
+      "batch_id": "RUN-01-FIX-2026-04-04",
+      "scenario": "missing_eval_coverage",
+      "control_decision": "block",
+      "system_response": "fail_closed_missing_signal",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 2,
+      "batch_id": "BATCH-LTV-B-2026-04-04",
+      "scenario": "replay_mismatch",
+      "control_decision": "deny",
+      "system_response": "freeze",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 3,
+      "batch_id": "BATCH-LTV-A-2026-04-04",
+      "scenario": "drift_spike",
+      "control_decision": "deny",
+      "system_response": "freeze",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 4,
+      "batch_id": "BATCH-LTV-D-2026-04-04",
+      "scenario": "policy_conflict",
+      "control_decision": "block",
+      "system_response": "halt_pending_policy_resolution",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 5,
+      "batch_id": "BATCH-12-2026-04-04",
+      "scenario": "judgment_conflict",
+      "control_decision": "require_review",
+      "system_response": "deterministic_conflict_router",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 6,
+      "batch_id": "BATCH-11-2026-04-04",
+      "scenario": "budget_breach",
+      "control_decision": "deny",
+      "system_response": "freeze",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    },
+    {
+      "cycle": 7,
+      "batch_id": "BATCH-10-2026-04-04",
+      "scenario": "stale_artifact_dominance",
+      "control_decision": "block",
+      "system_response": "halt",
+      "promotion_allowed": false,
+      "readiness_gating": "enabled",
+      "promotion_gating": "enabled",
+      "policy_enforcement": "enabled"
+    }
+  ],
+  "drift_evolution": [
+    {
+      "cycle": 1,
+      "batch_id": "RUN-01-FIX-2026-04-04",
+      "scenario": "missing_eval_coverage",
+      "drift_status": "within_threshold",
+      "override_rate": 0.04,
+      "eval_failure_rate": 0.07
+    },
+    {
+      "cycle": 2,
+      "batch_id": "BATCH-LTV-B-2026-04-04",
+      "scenario": "replay_mismatch",
+      "drift_status": "exceeds_threshold",
+      "override_rate": 0.1,
+      "eval_failure_rate": 0.17
+    },
+    {
+      "cycle": 3,
+      "batch_id": "BATCH-LTV-A-2026-04-04",
+      "scenario": "drift_spike",
+      "drift_status": "exceeds_threshold",
+      "override_rate": 0.1,
+      "eval_failure_rate": 0.17
+    },
+    {
+      "cycle": 4,
+      "batch_id": "BATCH-LTV-D-2026-04-04",
+      "scenario": "policy_conflict",
+      "drift_status": "warning",
+      "override_rate": 0.04,
+      "eval_failure_rate": 0.07
+    },
+    {
+      "cycle": 5,
+      "batch_id": "BATCH-12-2026-04-04",
+      "scenario": "judgment_conflict",
+      "drift_status": "warning",
+      "override_rate": 0.04,
+      "eval_failure_rate": 0.07
+    },
+    {
+      "cycle": 6,
+      "batch_id": "BATCH-11-2026-04-04",
+      "scenario": "budget_breach",
+      "drift_status": "exceeds_threshold",
+      "override_rate": 0.1,
+      "eval_failure_rate": 0.17
+    },
+    {
+      "cycle": 7,
+      "batch_id": "BATCH-10-2026-04-04",
+      "scenario": "stale_artifact_dominance",
+      "drift_status": "exceeds_threshold",
+      "override_rate": 0.1,
+      "eval_failure_rate": 0.17
+    }
+  ],
+  "roadmap_changes": [
+    {
+      "cycle": 1,
+      "action": "insert_eval_coverage_repair_before_any_execution",
+      "reason": "required eval definitions missing"
+    },
+    {
+      "cycle": 2,
+      "action": "route_to_deterministic_replay_trace_repair",
+      "reason": "trace mismatch and nondeterministic replay output"
+    },
+    {
+      "cycle": 3,
+      "action": "reprioritize_to_stability_batches",
+      "reason": "override_rate spike and eval_failures increased"
+    },
+    {
+      "cycle": 4,
+      "action": "activate_policy_precedence_resolver",
+      "reason": "conflicting active policies"
+    },
+    {
+      "cycle": 5,
+      "action": "route_to_conflict_resolution_artifact",
+      "reason": "competing valid precedents with divergent outcomes"
+    },
+    {
+      "cycle": 6,
+      "action": "tighten_execution_budget_and_defer_noncritical_batches",
+      "reason": "latency/cost threshold breached"
+    },
+    {
+      "cycle": 7,
+      "action": "enforce_freshness_priority_retrieval_filter",
+      "reason": "stale policy/judgment artifacts dominated retrieval"
+    }
+  ],
+  "halt_conditions": {
+    "halted": true,
+    "halt_reason": "unsafe_state_stale_artifact_dominance",
+    "halt_cycle": 7
+  },
+  "final_system_state": {
+    "state": "halted_fail_closed",
+    "trust_score": 0.25,
+    "failure_count": 7,
+    "unsafe_promotion_prevented": true,
+    "autonomy_without_intervention": true
+  }
+}
