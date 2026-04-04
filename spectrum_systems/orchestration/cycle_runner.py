@@ -12,6 +12,11 @@ from jsonschema import Draft202012Validator, FormatChecker
 from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.fix_engine import generate_fix_roadmap
 from spectrum_systems.modules.runtime.judgment_engine import JudgmentEngineError, run_judgment
+from spectrum_systems.modules.runtime.required_eval_coverage import (
+    RequiredEvalCoverageError,
+    enforce_required_eval_coverage,
+    load_required_eval_registry,
+)
 from spectrum_systems.orchestration.cycle_manifest_validator import (
     CycleManifestError,
     normalize_cycle_manifest,
@@ -667,6 +672,27 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
             except CycleRunnerError as exc:
                 return blocked(str(exc))
             eval_payload = _load_json(judgment_eval_path)
+            required_eval_registry_path = manifest.get("required_eval_registry_path")
+            try:
+                required_registry = load_required_eval_registry(required_eval_registry_path)
+                coverage_gate = enforce_required_eval_coverage(
+                    artifact_family="artifact_release_readiness",
+                    eval_definitions=list(eval_payload.get("required_eval_types", [])),
+                    eval_results=list(eval_payload.get("eval_results", [])),
+                    trace_id=str(manifest.get("cycle_id") or ""),
+                    run_id=str(manifest.get("run_id") or manifest.get("cycle_id") or ""),
+                    created_at=str(manifest.get("updated_at") or manifest.get("created_at") or ""),
+                    registry=required_registry,
+                )
+            except RequiredEvalCoverageError as exc:
+                return blocked(f"required eval coverage enforcement failed: {exc}")
+
+            decision = coverage_gate["enforcement"]["decision"]
+            if decision == "block":
+                return blocked("; ".join(coverage_gate["enforcement"]["blocking_reasons"]) or "required eval coverage blocked progression")
+            if decision == "freeze":
+                return blocked("required eval coverage freeze: " + "; ".join(coverage_gate["enforcement"]["blocking_reasons"]))
+
             eval_error = _validate_required_judgment_evals(eval_payload, _required_judgment_eval_types(manifest))
             if eval_error is not None:
                 return blocked(eval_error)

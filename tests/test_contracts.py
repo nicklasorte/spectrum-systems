@@ -121,6 +121,10 @@ class ContractSchemaTests(unittest.TestCase):
             "eval_registry_snapshot",
             "eval_coverage_summary",
             "eval_slice_summary",
+            "required_eval_registry",
+            "eval_coverage_registry",
+            "eval_coverage_signal",
+            "missing_required_eval_enforcement",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

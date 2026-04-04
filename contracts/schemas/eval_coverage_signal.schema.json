@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_coverage_signal.schema.json",
+  "title": "eval_coverage_signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "signal_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "artifact_family",
+    "coverage_status",
+    "block_reason",
+    "coverage_registry_ref",
+    "trace",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "eval_coverage_signal"},
+    "signal_id": {"type": "string", "pattern": "^ECS-[A-Z0-9-]+$"},
+    "artifact_version": {"type": "string", "pattern": "^1\\.0\\.0$"},
+    "schema_version": {"type": "string", "pattern": "^1\\.0\\.0$"},
+    "standards_version": {"type": "string", "minLength": 1},
+    "artifact_family": {"type": "string", "minLength": 1},
+    "coverage_status": {"type": "string", "enum": ["complete", "block", "freeze"]},
+    "block_reason": {
+      "type": "string",
+      "enum": ["none", "missing_mapping", "missing_definition", "missing_result", "indeterminate_result", "failed_required_eval"]
+    },
+    "coverage_registry_ref": {"type": "string", "minLength": 1},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
