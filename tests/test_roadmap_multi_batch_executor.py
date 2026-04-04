@@ -13,7 +13,10 @@ from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import (  # n
     execute_bounded_roadmap_run,
     should_continue_execution,
 )
-from spectrum_systems.modules.runtime.controlled_multi_cycle_runner import run_controlled_multi_cycle  # noqa: E402
+from spectrum_systems.modules.runtime.controlled_multi_cycle_runner import (  # noqa: E402
+    run_controlled_multi_cycle,
+    run_full_roadmap_execution,
+)
 
 
 def _roadmap() -> dict:
@@ -51,6 +54,12 @@ def _authorization_signals() -> dict:
         "control_block_condition": False,
         "warning_states": [],
     }
+
+
+def _authorization_signals_with_decision(decision: str) -> dict:
+    base = _authorization_signals()
+    base["control_decision"] = decision
+    return base
 
 
 def _pqx_success(**_: dict) -> dict:
@@ -100,6 +109,47 @@ def _system_roadmap_for_execution() -> dict:
                 "status": "not_started",
                 "dependencies": ["BATCH-J"],
             },
+            {
+                "batch_id": "BATCH-L",
+                "title": "L",
+                "description": "L",
+                "priority": 4,
+                "status": "not_started",
+                "dependencies": ["BATCH-K"],
+            },
+            {
+                "batch_id": "BATCH-M",
+                "title": "M",
+                "description": "M",
+                "priority": 5,
+                "status": "not_started",
+                "dependencies": ["BATCH-L"],
+            },
+        ],
+    }
+
+
+def _roadmap_for_full_execution() -> dict:
+    artifact = _roadmap()
+    artifact["batches"] = [batch for batch in artifact["batches"] if batch["batch_id"] in {"BATCH-I", "BATCH-J"}]
+    for batch in artifact["batches"]:
+        if batch["batch_id"] == "BATCH-I":
+            batch["dependencies"] = []
+        if batch["batch_id"] == "BATCH-J":
+            batch["dependencies"] = ["BATCH-I"]
+    artifact["current_batch_id"] = "BATCH-I"
+    return artifact
+
+
+def _system_roadmap_for_full_execution() -> dict:
+    return {
+        "roadmap_id": "RDX-MULTI-CYCLE-TEST",
+        "version": "1.0.0",
+        "created_at": "2026-04-04T00:00:00Z",
+        "trace_id": "trace-rdx-006-test",
+        "batches": [
+            {"batch_id": "BATCH-I", "title": "I", "description": "I", "priority": 1, "status": "not_started", "dependencies": []},
+            {"batch_id": "BATCH-J", "title": "J", "description": "J", "priority": 2, "status": "not_started", "dependencies": ["BATCH-I"]},
         ],
     }
 
@@ -383,6 +433,269 @@ def test_controlled_multi_cycle_stops_on_blocked_batch_when_configured(tmp_path:
     report = result["multi_cycle_execution_report"]
     assert report["stop_reason"] == "blocked_batch"
     assert report["total_cycles_refused"] >= 1
+
+
+def test_full_roadmap_execution_completes_under_all_allow_path(tmp_path: Path, monkeypatch) -> None:
+    calls = {"index": 0}
+
+    def _fake_run_controlled_multi_cycle(**kwargs):
+        calls["index"] += 1
+        batch = "BATCH-I" if calls["index"] == 1 else "BATCH-J"
+        updated_system = copy.deepcopy(kwargs["system_roadmap"])
+        for item in updated_system["batches"]:
+            if item["batch_id"] == batch:
+                item["status"] = "completed"
+        return {
+            "multi_cycle_execution_report": {
+                "executed_batch_ids": [batch],
+                "refused_batch_ids": [],
+                "stop_reason": "max_cycles_reached",
+            },
+            "updated_system_roadmap": updated_system,
+            "updated_roadmap": kwargs["roadmap_artifact"],
+            "cycle_outputs": [],
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.controlled_multi_cycle_runner.run_controlled_multi_cycle",
+        _fake_run_controlled_multi_cycle,
+    )
+
+    result = run_full_roadmap_execution(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("allow"),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "allow", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles=5,
+        max_continuation_depth=5,
+        pqx_execute_fn=_pqx_success,
+    )
+    report = result["roadmap_execution_report"]
+    assert report["stop_reason"] == "roadmap_complete"
+    assert report["batches_executed"] == 2
+    assert report["batches_blocked"] == 0
+    assert report["final_control_decision"] == "allow"
+
+
+def test_full_roadmap_execution_stops_on_block(tmp_path: Path) -> None:
+    report = run_full_roadmap_execution(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("block"),
+        integration_inputs={},
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_success,
+    )["roadmap_execution_report"]
+    assert report["stop_reason"] == "control_block"
+    assert report["final_control_decision"] == "block"
+    assert report["execution_sequence"] == []
+
+
+def test_full_roadmap_execution_stops_on_freeze(tmp_path: Path) -> None:
+    report = run_full_roadmap_execution(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("freeze"),
+        integration_inputs={},
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        pqx_execute_fn=_pqx_success,
+    )["roadmap_execution_report"]
+    assert report["stop_reason"] == "control_freeze"
+    assert report["final_control_decision"] == "freeze"
+
+
+def test_full_roadmap_execution_warn_path_continues(tmp_path: Path, monkeypatch) -> None:
+    calls = {"index": 0}
+
+    def _fake_run_controlled_multi_cycle(**kwargs):
+        calls["index"] += 1
+        batch = "BATCH-I" if calls["index"] == 1 else "BATCH-J"
+        updated_system = copy.deepcopy(kwargs["system_roadmap"])
+        for item in updated_system["batches"]:
+            if item["batch_id"] == batch:
+                item["status"] = "completed"
+        return {
+            "multi_cycle_execution_report": {
+                "executed_batch_ids": [batch],
+                "refused_batch_ids": [],
+                "stop_reason": "max_cycles_reached",
+            },
+            "updated_system_roadmap": updated_system,
+            "updated_roadmap": kwargs["roadmap_artifact"],
+            "cycle_outputs": [],
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.controlled_multi_cycle_runner.run_controlled_multi_cycle",
+        _fake_run_controlled_multi_cycle,
+    )
+
+    report = run_full_roadmap_execution(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("warn"),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "warn", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles=5,
+        max_continuation_depth=5,
+        pqx_execute_fn=_pqx_success,
+    )["roadmap_execution_report"]
+    assert report["stop_reason"] == "roadmap_complete"
+    assert report["final_control_decision"] == "warn"
+    assert report["batches_warned"] > 0
+    assert report["batches_executed"] == 2
+
+
+def test_full_roadmap_execution_sequence_is_deterministic(tmp_path: Path, monkeypatch) -> None:
+    def _fake_run_controlled_multi_cycle(**kwargs):
+        pending = [b["batch_id"] for b in kwargs["system_roadmap"]["batches"] if b["status"] != "completed"]
+        batch = pending[0]
+        updated_system = copy.deepcopy(kwargs["system_roadmap"])
+        for item in updated_system["batches"]:
+            if item["batch_id"] == batch:
+                item["status"] = "completed"
+        return {
+            "multi_cycle_execution_report": {
+                "executed_batch_ids": [batch],
+                "refused_batch_ids": [],
+                "stop_reason": "max_cycles_reached",
+            },
+            "updated_system_roadmap": updated_system,
+            "updated_roadmap": kwargs["roadmap_artifact"],
+            "cycle_outputs": [],
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.controlled_multi_cycle_runner.run_controlled_multi_cycle",
+        _fake_run_controlled_multi_cycle,
+    )
+
+    kwargs = dict(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("allow"),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "allow", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles=5,
+        max_continuation_depth=5,
+        pqx_execute_fn=_pqx_success,
+    )
+    first = run_full_roadmap_execution(**kwargs)["roadmap_execution_report"]
+    second = run_full_roadmap_execution(**kwargs)["roadmap_execution_report"]
+    assert first == second
+    assert [step["batch_id"] for step in first["execution_sequence"]] == ["BATCH-I", "BATCH-J"]
+
+
+def test_full_roadmap_execution_report_correctness(tmp_path: Path, monkeypatch) -> None:
+    calls = {"index": 0}
+
+    def _fake_run_controlled_multi_cycle(**kwargs):
+        calls["index"] += 1
+        batch = "BATCH-I" if calls["index"] == 1 else "BATCH-J"
+        updated_system = copy.deepcopy(kwargs["system_roadmap"])
+        for item in updated_system["batches"]:
+            if item["batch_id"] == batch:
+                item["status"] = "completed"
+        return {
+            "multi_cycle_execution_report": {
+                "executed_batch_ids": [batch],
+                "refused_batch_ids": [],
+                "stop_reason": "max_cycles_reached",
+            },
+            "updated_system_roadmap": updated_system,
+            "updated_roadmap": kwargs["roadmap_artifact"],
+            "cycle_outputs": [],
+        }
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.controlled_multi_cycle_runner.run_controlled_multi_cycle",
+        _fake_run_controlled_multi_cycle,
+    )
+
+    report = run_full_roadmap_execution(
+        system_roadmap=_system_roadmap_for_full_execution(),
+        roadmap_artifact=_roadmap_for_full_execution(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals_with_decision("allow"),
+        integration_inputs={
+            "program_artifact": {"program_id": "PRG-1"},
+            "review_control_signal": {"signal_id": "rcs-1", "gate_assessment": "PASS"},
+            "eval_result": {"run_id": "eval-1", "result_status": "pass"},
+            "context_bundle": {"context_id": "ctx-1"},
+            "tpa_gate": {"context_bundle_ref": "context_bundle_v2:ctx-1", "speculative_expansion_detected": False, "gate_replaces_control": False},
+            "roadmap_loop_validation": {"validation_id": "RLV-TEST-001", "determinism_status": "deterministic"},
+            "control_decision": {"decision": "allow", "review_eval_ingested": True},
+            "certification_pack": {"certification_status": "complete"},
+            "validation_scope": {"batch_id": "BATCH-I", "run_id": "run-1", "mode": "governed_integration"},
+            "trace_id": "trace-rdx-006-test",
+            "source_refs": {},
+        },
+        pqx_state_path=tmp_path / "pqx" / "state.json",
+        pqx_runs_root=tmp_path / "pqx",
+        created_at="2026-04-04T00:00:00Z",
+        max_cycles=5,
+        max_continuation_depth=5,
+        pqx_execute_fn=_pqx_success,
+    )["roadmap_execution_report"]
+    assert report["roadmap_id"] == "RDX-MULTI-CYCLE-TEST"
+    assert report["total_batches"] == 2
+    assert report["batches_executed"] == len(report["execution_sequence"])
+    assert report["determinism_status"] == "deterministic"
+    assert report["replay_status"] == "parity_verified"
+    assert report["trace_integrity_status"] == "complete"
+    assert report["trace_id"].startswith("trace-")
 
 
 def test_determinism_same_inputs_identical_run_result(tmp_path: Path) -> None:

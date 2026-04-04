@@ -113,3 +113,10 @@ def test_multi_cycle_execution_report_example_contract_valid() -> None:
     validate_artifact(report, "multi_cycle_execution_report")
     assert report["trace_id"].startswith("trace-")
     assert report["evidence_refs"]
+
+
+def test_roadmap_execution_report_example_contract_valid() -> None:
+    report = load_example("roadmap_execution_report")
+    validate_artifact(report, "roadmap_execution_report")
+    assert report["execution_sequence"]
+    assert report["trace_id"].startswith("trace-")
