@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cycle_runner_result.schema.json",
+  "title": "cycle_runner_result",
+  "description": "Deterministic bounded one-step execution result for next-cycle runner control.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cycle_runner_result_id",
+    "schema_version",
+    "source_cycle_decision_id",
+    "source_cycle_input_bundle_id",
+    "attempted_execution",
+    "execution_status",
+    "refusal_reason_codes",
+    "executed_cycle_id",
+    "emitted_artifact_refs",
+    "next_cycle_decision_ref",
+    "next_cycle_input_bundle_ref",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "cycle_runner_result_id": {
+      "type": "string",
+      "pattern": "^CRR-[A-F0-9]{12}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_cycle_decision_id": {
+      "type": "string",
+      "pattern": "^NCD-[A-F0-9]{12}$"
+    },
+    "source_cycle_input_bundle_id": {
+      "type": "string",
+      "pattern": "^NCB-[A-F0-9]{12}$"
+    },
+    "attempted_execution": {
+      "type": "boolean"
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": [
+        "executed",
+        "refused",
+        "failed"
+      ]
+    },
+    "refusal_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "decision_not_run_next_cycle",
+          "decision_stop",
+          "decision_escalate",
+          "decision_invalid",
+          "input_bundle_missing_required_field",
+          "input_bundle_invalid",
+          "trace_mismatch",
+          "execution_precondition_missing",
+          "execution_error"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "executed_cycle_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 3
+    },
+    "emitted_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "next_cycle_decision_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^next_cycle_decision:NCD-[A-F0-9]{12}$"
+    },
+    "next_cycle_input_bundle_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^next_cycle_input_bundle:NCB-[A-F0-9]{12}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "executed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attempted_execution": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "refused"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "attempted_execution": {
+            "const": false
+          },
+          "executed_cycle_id": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}
