@@ -30,11 +30,11 @@
     },
     "artifact_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
       "type": "string",
@@ -145,12 +145,17 @@
             "schema_example_drift",
             "producer_wiring_gap",
             "consumer_wiring_gap",
+            "fixture_gap",
             "invariant_violation",
             "test_expectation_drift",
             "manifest_or_registry_mismatch",
             "control_surface_input_missing",
+            "certification_surface_gap",
+            "source_authority_anchor_gap",
+            "policy_composition_gap",
             "override_temporal_validation_gap",
-            "corroboration_validation_gap"
+            "corroboration_validation_gap",
+            "unknown_failure_class"
           ]
         }
       }

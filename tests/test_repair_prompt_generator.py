@@ -14,6 +14,7 @@ from spectrum_systems.modules.runtime.repair_prompt_generator import (
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+_ALL_ROOT_CAUSES = load_schema("failure_diagnosis_artifact")["properties"]["primary_root_cause"]["enum"]
 
 
 def _diagnosis_fixture() -> dict:
@@ -151,3 +152,21 @@ def test_standards_manifest_registers_repair_prompt_artifact() -> None:
     entry = entries[0]
     assert entry["artifact_class"] == "coordination"
     assert entry["example_path"] == "contracts/examples/repair_prompt_artifact.json"
+    assert entry["schema_version"] == "1.1.0"
+
+
+@pytest.mark.parametrize("root_cause", _ALL_ROOT_CAUSES)
+def test_all_legal_root_causes_have_deterministic_generation(root_cause: str) -> None:
+    diagnosis = _diagnosis_for(
+        root_cause,
+        fix_class=f"deterministic_fix_for_{root_cause}",
+        repair_area=f"governed repair area for {root_cause}",
+    )
+
+    first = generate_repair_prompt(copy.deepcopy(diagnosis), emitted_at="2026-04-05T00:00:00Z")
+    second = generate_repair_prompt(copy.deepcopy(diagnosis), emitted_at="2026-04-05T00:00:00Z")
+
+    assert first == second
+    assert first["trace"]["template_id"] == root_cause
+    assert first["repair_prompt_text"]
+    assert first["validation_commands"]
