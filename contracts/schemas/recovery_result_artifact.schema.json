@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/recovery_result_artifact.schema.json",
+  "title": "Recovery Result Artifact",
+  "description": "Deterministic bounded governed recovery loop output linking diagnosis, repair execution evidence, and validation outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "recovery_result_id",
+    "diagnosis_ref",
+    "repair_prompt_ref",
+    "recovery_attempt_number",
+    "max_attempts",
+    "recovery_status",
+    "execution_artifact_refs",
+    "validation_artifact_refs",
+    "attempted_validation_commands",
+    "validation_results",
+    "validation_summary",
+    "remaining_failure_classes",
+    "retry_recommended",
+    "stop_condition",
+    "deterministic_decision_trace",
+    "emitted_at",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "recovery_result_artifact"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "recovery_result_id": {
+      "type": "string",
+      "pattern": "^RREC-[a-f0-9]{20}$"
+    },
+    "diagnosis_ref": {
+      "type": "string",
+      "pattern": "^FDIAG-[a-f0-9]{20}$"
+    },
+    "repair_prompt_ref": {
+      "type": "string",
+      "pattern": "^RPR-[a-f0-9]{20}$"
+    },
+    "recovery_attempt_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "recovery_status": {
+      "type": "string",
+      "enum": [
+        "recovered",
+        "partially_recovered",
+        "blocked",
+        "failed"
+      ]
+    },
+    "blocking_reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "repair_execution_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation_artifact_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "attempted_validation_commands": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command",
+          "status",
+          "artifact_ref",
+          "details"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "blocked",
+              "not_run"
+            ]
+          },
+          "artifact_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "validation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "passed",
+        "failed",
+        "blocked",
+        "not_run"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "not_run": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "remaining_failure_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "missing_required_surface",
+          "schema_example_drift",
+          "producer_wiring_gap",
+          "consumer_wiring_gap",
+          "fixture_gap",
+          "invariant_violation",
+          "test_expectation_drift",
+          "manifest_or_registry_mismatch",
+          "control_surface_input_missing",
+          "certification_surface_gap",
+          "source_authority_anchor_gap",
+          "policy_composition_gap",
+          "corroboration_validation_gap",
+          "override_temporal_validation_gap",
+          "unknown_failure_class"
+        ]
+      }
+    },
+    "retry_recommended": {
+      "type": "boolean"
+    },
+    "stop_condition": {
+      "type": "string",
+      "enum": [
+        "attempt_complete",
+        "max_attempts_reached"
+      ]
+    },
+    "deterministic_decision_trace": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "decision",
+          "reason"
+        ],
+        "properties": {
+          "step": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "trace_id",
+        "policy_id",
+        "governing_ref",
+        "diagnosis_hash",
+        "repair_prompt_hash",
+        "reason_code_vocab"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_id": {
+          "type": "string",
+          "const": "FRE-006.recovery_orchestrator.v1"
+        },
+        "governing_ref": {
+          "type": "string",
+          "const": "docs/roadmaps/system_roadmap.md#batch-fre-03"
+        },
+        "diagnosis_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "repair_prompt_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reason_code_vocab": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
