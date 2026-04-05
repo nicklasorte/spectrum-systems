@@ -122,6 +122,43 @@ _ARTIFACT_ID_KEYS: Dict[str, str] = {
 }
 
 
+_MAX_OVERRIDE_VALIDITY_SECONDS = 86_400
+
+
+def _parse_iso8601(value: str, *, field_name: str) -> datetime:
+    normalized = value.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be a valid ISO 8601 date-time") from exc
+    if parsed.tzinfo is None:
+        raise ValueError(f"{field_name} must include timezone information")
+    return parsed.astimezone(timezone.utc)
+
+
+def _validate_override_expiry_window(
+    *,
+    override_decision: Dict[str, Any],
+    enforcement_now: datetime,
+) -> None:
+    issued_at = _parse_iso8601(str(override_decision.get("issued_at", "")), field_name="issued_at")
+    expires_at = _parse_iso8601(str(override_decision.get("expires_at", "")), field_name="expires_at")
+    max_validity_seconds = int(override_decision.get("max_validity_seconds", 0))
+    if max_validity_seconds < 1:
+        raise ValueError("max_validity_seconds must be >= 1")
+    if max_validity_seconds > _MAX_OVERRIDE_VALIDITY_SECONDS:
+        raise ValueError(
+            f"max_validity_seconds exceeds policy bound ({_MAX_OVERRIDE_VALIDITY_SECONDS})"
+        )
+    window_seconds = int((expires_at - issued_at).total_seconds())
+    if window_seconds < 1:
+        raise ValueError("expires_at must be after issued_at")
+    if window_seconds > max_validity_seconds:
+        raise ValueError("override validity window exceeds declared max_validity_seconds")
+    if enforcement_now > expires_at:
+        raise ValueError("override decision expired at enforcement boundary")
+
+
 @dataclass(frozen=True)
 class GoldenPathConfig:
     """Runtime configuration for deterministic AG-01 execution."""
@@ -503,6 +540,10 @@ def _evaluate_override_decision(
         raise ValueError("override review_request_id does not match emitted review_request id")
     if override_decision.get("related_execution_record_id") != review_execution_record.get("artifact_id"):
         raise ValueError("override related_execution_record_id does not match emitted execution record id")
+    _validate_override_expiry_window(
+        override_decision=override_decision,
+        enforcement_now=datetime.now(timezone.utc),
+    )
     trigger_reason = str(review_request.get("trigger_reason"))
     if trigger_reason not in _OVERRIDE_STATUS_COMPATIBILITY[status]:
         raise ValueError(

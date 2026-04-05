@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (  # noq
     ControlSurfaceGapToPQXError,
     convert_gaps_to_pqx_work_items,
 )
+from spectrum_systems.modules.runtime.control_surface_manifest import (  # noqa: E402
+    ControlSurfaceManifestError,
+    build_control_surface_manifest,
+)
 from spectrum_systems.modules.runtime.pqx_execution_policy import (  # noqa: E402
     PQXExecutionPolicyError,
     evaluate_pqx_execution_policy,
@@ -709,6 +713,19 @@ def evaluate_control_surface_enforcement(changed_paths: list[str]) -> dict[str, 
         return None
 
     manifest_path = REPO_ROOT / "outputs" / "control_surface_manifest" / "control_surface_manifest.json"
+    if not manifest_path.is_file():
+        try:
+            manifest = build_control_surface_manifest()
+        except ControlSurfaceManifestError as exc:
+            return {
+                "artifact_type": "control_surface_enforcement_result",
+                "enforcement_status": "BLOCK",
+                "blocking_reasons": ["CONTROL_SURFACE_ENFORCEMENT_INPUT_INVALID"],
+                "error": str(exc),
+                "manifest_ref": str(manifest_path.as_posix()),
+            }
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     try:
         result = run_control_surface_enforcement(
             manifest_path=manifest_path,

@@ -1351,6 +1351,55 @@ def test_control_surface_enforcement_not_invoked_for_enforcement_only_paths() ->
     ) is None
 
 
+def test_control_surface_enforcement_builds_manifest_when_missing(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(preflight, "REPO_ROOT", tmp_path)
+
+    def _fake_build_manifest() -> dict[str, object]:
+        return {
+            "artifact_type": "control_surface_manifest",
+            "schema_version": "1.0.0",
+            "generated_at": "2026-04-05T00:00:00Z",
+            "required_surfaces": [],
+            "required_tests": [],
+        }
+
+    def _fake_run_control_surface_enforcement(*, manifest_path: Path, manifest_ref: str) -> dict[str, object]:
+        assert manifest_path.is_file()
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert payload["artifact_type"] == "control_surface_manifest"
+        assert manifest_ref == "outputs/control_surface_manifest/control_surface_manifest.json"
+        return {
+            "artifact_type": "control_surface_enforcement_result",
+            "enforcement_status": "ALLOW",
+            "blocking_reasons": [],
+            "manifest_ref": manifest_ref,
+        }
+
+    monkeypatch.setattr(preflight, "build_control_surface_manifest", _fake_build_manifest)
+    monkeypatch.setattr(preflight, "run_control_surface_enforcement", _fake_run_control_surface_enforcement)
+
+    result = preflight.evaluate_control_surface_enforcement(["scripts/build_control_surface_manifest.py"])
+
+    assert result is not None
+    assert result["enforcement_status"] == "ALLOW"
+
+
+def test_control_surface_enforcement_fails_closed_when_manifest_build_fails(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(preflight, "REPO_ROOT", tmp_path)
+
+    def _raise_build_error() -> dict[str, object]:
+        raise preflight.ControlSurfaceManifestError("manifest generation failed")
+
+    monkeypatch.setattr(preflight, "build_control_surface_manifest", _raise_build_error)
+
+    result = preflight.evaluate_control_surface_enforcement(["scripts/build_control_surface_manifest.py"])
+
+    assert result is not None
+    assert result["enforcement_status"] == "BLOCK"
+    assert result["blocking_reasons"] == ["CONTROL_SURFACE_ENFORCEMENT_INPUT_INVALID"]
+    assert "manifest generation failed" in result["error"]
+
+
 def test_resolve_required_surface_tests_maps_con035_governance_paths() -> None:
     targets = preflight.resolve_required_surface_tests(
         Path("."),

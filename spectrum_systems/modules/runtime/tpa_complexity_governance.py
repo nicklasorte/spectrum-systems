@@ -7,6 +7,7 @@ from typing import Any
 from spectrum_systems.contracts import validate_artifact
 
 _DECISION_RANK = {"allow": 0, "warn": 1, "freeze": 2, "block": 3}
+_MODE_RANK = {"normal": 0, "degraded": 1, "critical": 2}
 _BUDGET_PRIORITY_WEIGHT = {"healthy": 0, "warning": 30, "exceeded": 60}
 _TREND_PRIORITY_WEIGHT = {"improving": 0, "stable": 10, "degrading": 30}
 _CAMPAIGN_PRIORITY_WEIGHT = {"low": 0, "medium": 10, "high": 20}
@@ -301,9 +302,33 @@ def build_control_priority_signal(
     existing_decision: str,
     budget: dict[str, Any] | None,
     trend: dict[str, Any] | None,
+    previous_priority_signal: dict[str, Any] | None = None,
+    driver_signal_sources: list[str] | None = None,
+    corroborating_signal_refs: list[str] | None = None,
 ) -> dict[str, Any]:
     mode = classify_system_health_mode(budget=budget, trend=trend)
     effective_decision = enforce_budget_trend_control(existing_decision=existing_decision, budget=budget, trend=trend)
+    signal_sources = sorted({str(item).strip() for item in (driver_signal_sources or []) if str(item).strip()})
+    corroboration_refs = sorted({str(item).strip() for item in (corroborating_signal_refs or []) if str(item).strip()})
+    prior_mode = str((previous_priority_signal or {}).get("system_health_mode", "normal"))
+    prior_rank = _MODE_RANK.get(prior_mode, 0)
+    requested_rank = _MODE_RANK.get(mode, 0)
+    repeated_hardening_escalation = prior_rank >= 1 and requested_rank > prior_rank
+    local_only_sources = bool(signal_sources) and all(source.startswith("tpa_local:") for source in signal_sources)
+    non_tpa_corroboration = [
+        ref for ref in corroboration_refs if not str(ref.split(":", 1)[0]).startswith("tpa_")
+    ]
+    reason_codes: list[str] = []
+    corroboration_required = repeated_hardening_escalation and local_only_sources
+    if repeated_hardening_escalation and local_only_sources and not non_tpa_corroboration:
+        reason_codes.extend(
+            [
+                "repeated_tpa_local_escalation_blocked",
+                "corroboration_missing_for_repeated_hardening",
+            ]
+        )
+        mode = prior_mode
+        effective_decision = str((previous_priority_signal or {}).get("effective_control_decision") or effective_decision)
     hardening_prioritized = mode in {"degraded", "critical"}
 
     if mode == "critical":
@@ -326,6 +351,12 @@ def build_control_priority_signal(
         "pqx_schedule_mode": pqx_schedule_mode,
         "promotion_gating_mode": promotion_gate,
         "enforcement_escalation_mode": enforcement_escalation,
+        "driver_signal_sources": signal_sources,
+        "corroborating_signal_refs": corroboration_refs,
+        "non_tpa_corroboration_refs": non_tpa_corroboration,
+        "repeated_hardening_escalation": repeated_hardening_escalation,
+        "corroboration_required_for_repeated_hardening": corroboration_required,
+        "reason_codes": reason_codes,
     }
 
 

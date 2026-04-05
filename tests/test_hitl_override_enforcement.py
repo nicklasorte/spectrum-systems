@@ -27,11 +27,20 @@ def _make_override(
     allowed_next_action: str = "resume_once",
     review_role: str = "control_authority_reviewer",
 ) -> dict:
+    intent_by_status = {
+        "allow_once": "temporary_one_shot",
+        "deny": "temporary_block",
+        "require_rerun": "temporary_rerun",
+        "require_revision": "temporary_revision",
+    }
     return {
         "artifact_type": "hitl_override_decision",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "override_decision_id": "hod-runtime-test-001",
         "created_at": "2026-01-05T14:22:31Z",
+        "issued_at": "2099-01-05T14:22:31Z",
+        "expires_at": "2099-01-05T15:22:31Z",
+        "max_validity_seconds": 3600,
         "trace_id": review_request["trace_id"],
         "review_request_id": review_request["id"],
         "related_execution_record_id": execution_record["artifact_id"],
@@ -39,6 +48,7 @@ def _make_override(
         "decision_reason": "Deterministic AG-04 enforcement test decision.",
         "decided_by": {"actor_id": "reviewer-001", "role": review_role},
         "decision_scope": "ag_runtime_review_boundary",
+        "override_intent": intent_by_status.get(decision_status, "temporary_one_shot"),
         "allowed_next_action": allowed_next_action,
         "trace_refs": {"primary": review_request["trace_id"], "related": [review_request["trace_id"]]},
         "related_artifact_refs": [
@@ -122,7 +132,7 @@ def test_incompatible_override_status_rejected(tmp_path: Path) -> None:
 
     action = artifacts["final_execution_record"]["actions_taken"][0]
     assert action["action_type"] == "hitl_override_enforcement_failed"
-    assert action["reason"] == "override_incompatible"
+    assert action["reason"] == "schema_error"
     assert artifacts["final_execution_record"]["execution_status"] == "blocked"
     assert "control_decision" not in artifacts
 
