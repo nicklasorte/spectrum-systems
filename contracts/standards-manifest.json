@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.71",
-  "schema_version": "1.3.71",
-  "standards_version": "1.3.71",
-  "record_id": "REC-STD-2026-04-05-BATCH-TPA-08A",
-  "run_id": "run-20260405T000000Z-batch-tpa-08a",
+  "artifact_version": "1.3.72",
+  "schema_version": "1.3.72",
+  "standards_version": "1.3.72",
+  "record_id": "REC-STD-2026-04-05-BATCH-TPA-08B",
+  "run_id": "run-20260405T000000Z-batch-tpa-08b",
   "created_at": "2026-04-05T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.71",
+  "source_repo_version": "1.3.72",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -447,6 +447,45 @@
       "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "complexity_budget",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.69",
+      "last_updated_in": "1.3.69",
+      "example_path": "contracts/examples/complexity_budget.json",
+      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
+    },
+    {
+      "artifact_type": "complexity_budget_recalibration_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.72",
+      "last_updated_in": "1.3.72",
+      "example_path": "contracts/examples/complexity_budget_recalibration_record.json",
+      "notes": "Governed complexity-budget recalibration cadence/trigger/review-owner artifact preventing silent drift."
+    },
+    {
+      "artifact_type": "complexity_trend",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.69",
+      "last_updated_in": "1.3.69",
+      "example_path": "contracts/examples/complexity_trend.json",
+      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
+    },
+    {
       "artifact_type": "context_admission_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -773,15 +812,15 @@
     {
       "artifact_type": "done_certification_record",
       "artifact_class": "coordination",
-      "schema_version": "1.5.0",
+      "schema_version": "1.6.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.66",
-      "last_updated_in": "1.4.0",
+      "last_updated_in": "1.3.72",
       "example_path": "contracts/examples/done_certification_record.json",
-      "notes": "DONE-01 fail-closed certification now records governed TPA scope status (PASS/FAIL/NOT_REQUIRED), TPA artifact lineage refs, and enforces tpa_compliance for promotion authority in required scope."
+      "notes": "DONE-01 fail-closed certification consumes canonical tpa_certification_envelope for required TPA scope and blocks when unified envelope evidence/decisioning is missing."
     },
     {
       "artifact_type": "drift_detection_record",
@@ -3533,6 +3572,84 @@
       "notes": "Governed tactic register record grounded to book/transcript evidence."
     },
     {
+      "artifact_type": "tpa_bypass_drift_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.68",
+      "last_updated_in": "1.3.68",
+      "example_path": "contracts/examples/tpa_bypass_drift_signal.json",
+      "notes": "TPA-017 deterministic drift signal artifact emitted when required-scope PQX execution bypasses Plan/Build/Simplify/Gate lineage."
+    },
+    {
+      "artifact_type": "tpa_certification_envelope",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.72",
+      "last_updated_in": "1.3.72",
+      "example_path": "contracts/examples/tpa_certification_envelope.json",
+      "notes": "Unified canonical TPA certification envelope consumed by done and promotion gates, including cleanup-only evidence and fail-closed certification decision."
+    },
+    {
+      "artifact_type": "tpa_observability_consumer_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.72",
+      "last_updated_in": "1.3.72",
+      "example_path": "contracts/examples/tpa_observability_consumer_record.json",
+      "notes": "Contract-backed downstream consumer record proving tpa_observability_summary is read by control-loop learning surfaces."
+    },
+    {
+      "artifact_type": "tpa_observability_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.67",
+      "last_updated_in": "1.3.72",
+      "example_path": "contracts/examples/tpa_observability_summary.json",
+      "notes": "TPA observability artifact consumed by control-loop learning through tpa_observability_consumer_record contract; includes effectiveness and bypass telemetry."
+    },
+    {
+      "artifact_type": "tpa_policy_candidate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.70",
+      "last_updated_in": "1.3.70",
+      "example_path": "contracts/examples/tpa_policy_candidate.json",
+      "notes": "TPA-024 deterministic policy feedback artifact proposing governed policy changes from repeated complexity regressions, bypass attempts, and simplification failures."
+    },
+    {
+      "artifact_type": "tpa_policy_composition",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.71",
+      "last_updated_in": "1.3.72",
+      "example_path": "contracts/examples/tpa_policy_composition.json",
+      "notes": "Contract-backed deterministic precedence/merge rules across tpa_scope_policy, complexity regression, simplicity review, cleanup-only, and schema-backed lightweight evidence omission allowlist constraints."
+    },
+    {
       "artifact_type": "tpa_scope_policy",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3546,43 +3663,17 @@
       "notes": "TPA scope policy anchored to source-authority refresh evidence via required source-index digests; fails closed on stale/missing refresh."
     },
     {
-      "artifact_type": "tpa_policy_composition",
+      "artifact_type": "tpa_simplification_campaign",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.3.71",
-      "last_updated_in": "1.3.71",
-      "example_path": "contracts/examples/tpa_policy_composition.json",
-      "notes": "Contract-backed deterministic precedence/merge rules across tpa_scope_policy, complexity regression, simplicity review, cleanup-only, and lightweight constraints."
-    },
-    {
-      "artifact_type": "tpa_observability_summary",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.67",
-      "last_updated_in": "1.3.68",
-      "example_path": "contracts/examples/tpa_observability_summary.json",
-      "notes": "TPA observability artifact with effectiveness plus bypass_attempt_count, bypass_hotspots, and repeated_offenders telemetry."
-    },
-    {
-      "artifact_type": "tpa_bypass_drift_signal",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.68",
-      "last_updated_in": "1.3.68",
-      "example_path": "contracts/examples/tpa_bypass_drift_signal.json",
-      "notes": "TPA-017 deterministic drift signal artifact emitted when required-scope PQX execution bypasses Plan/Build/Simplify/Gate lineage."
+      "introduced_in": "1.3.69",
+      "last_updated_in": "1.3.69",
+      "example_path": "contracts/examples/tpa_simplification_campaign.json",
+      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
     },
     {
       "artifact_type": "tpa_slice_artifact",
@@ -3688,58 +3779,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "complexity_budget",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.69",
-      "last_updated_in": "1.3.69",
-      "example_path": "contracts/examples/complexity_budget.json",
-      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
-    },
-    {
-      "artifact_type": "complexity_trend",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.69",
-      "last_updated_in": "1.3.69",
-      "example_path": "contracts/examples/complexity_trend.json",
-      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
-    },
-    {
-      "artifact_type": "tpa_simplification_campaign",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.69",
-      "last_updated_in": "1.3.69",
-      "example_path": "contracts/examples/tpa_simplification_campaign.json",
-      "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
-    },
-    {
-      "artifact_type": "tpa_policy_candidate",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.70",
-      "last_updated_in": "1.3.70",
-      "example_path": "contracts/examples/tpa_policy_candidate.json",
-      "notes": "TPA-024 deterministic policy feedback artifact proposing governed policy changes from repeated complexity regressions, bypass attempts, and simplification failures."
     }
   ]
 }

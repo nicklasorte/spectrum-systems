@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/complexity_budget_recalibration_record.schema.json",
+  "title": "Complexity Budget Recalibration Record",
+  "description": "Governed cadence and trigger record for complexity-budget recalibration reviews.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "recalibration_id",
+    "run_id",
+    "trace_id",
+    "step_id",
+    "generated_at",
+    "cadence",
+    "trigger",
+    "review_owner",
+    "governance_hook_ref",
+    "source_refs",
+    "decision",
+    "resulting_update_path"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "complexity_budget_recalibration_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "recalibration_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "cadence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "value"],
+      "properties": {
+        "unit": {"type": "string", "enum": ["control_loop_cycle", "slice_interval"]},
+        "value": {"type": "integer", "minimum": 1}
+      }
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["triggered", "reason_codes", "observed_slice_count", "minimum_slice_count"],
+      "properties": {
+        "triggered": {"type": "boolean"},
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "observed_slice_count": {"type": "integer", "minimum": 0},
+        "minimum_slice_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "review_owner": {"type": "string", "minLength": 1},
+    "governance_hook_ref": {"type": "string", "minLength": 1},
+    "source_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complexity_budget_ref", "complexity_trend_ref", "tpa_observability_summary_ref"],
+      "properties": {
+        "complexity_budget_ref": {"type": "string", "minLength": 1},
+        "complexity_trend_ref": {"type": "string", "minLength": 1},
+        "tpa_observability_summary_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "decision": {"type": "string", "enum": ["maintain", "recalibrate"]},
+    "resulting_update_path": {"type": "string", "minLength": 1}
+  }
+}

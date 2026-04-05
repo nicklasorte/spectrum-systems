@@ -20,7 +20,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "policy_id": {
       "type": "string",
@@ -81,7 +81,8 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "requested_without_eligibility_decision"
+            "requested_without_eligibility_decision",
+            "evidence_omission_allowlist"
           ],
           "properties": {
             "requested_without_eligibility_decision": {
@@ -90,6 +91,18 @@
                 "block",
                 "freeze"
               ]
+            },
+            "evidence_omission_allowlist": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "tpa_gate.selection_metrics.build",
+                  "tpa_gate.selection_metrics.simplify",
+                  "tpa_gate.selection_metrics.simplify_delta"
+                ]
+              }
             }
           }
         },

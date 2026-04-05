@@ -105,6 +105,7 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
         refs["failure_injection_ref"] = optional_value
     for optional_key in (
         "enforcement_result_ref",
+        "tpa_certification_envelope_ref",
         "eval_coverage_summary_ref",
         "repo_review_snapshot_ref",
         "repo_health_eval_summary_ref",
@@ -267,6 +268,12 @@ def _load_tpa_artifact(path_value: str, *, expected_phase: str) -> Dict[str, Any
     return artifact
 
 
+def _load_tpa_certification_envelope(path_value: str) -> Dict[str, Any]:
+    envelope = _load_json(path_value, label="tpa_certification_envelope")
+    _validate_schema(envelope, "tpa_certification_envelope", label="tpa_certification_envelope")
+    return envelope
+
+
 def _evaluate_tpa_compliance(*, refs: Dict[str, str], input_refs: Dict[str, Any]) -> tuple[bool, str, List[str], List[str]]:
     scope_context = {
         "file_path": refs.get("scope_file_path", ""),
@@ -282,53 +289,54 @@ def _evaluate_tpa_compliance(*, refs: Dict[str, str], input_refs: Dict[str, Any]
     except TPAScopePolicyError as exc:
         raise DoneCertificationError(f"TPA scope policy evaluation failed: {exc}") from exc
 
-    required_ref_keys = (
-        "tpa_plan_artifact",
-        "tpa_build_artifact",
-        "tpa_simplify_artifact",
-        "tpa_gate_artifact",
-    )
-    tpa_artifact_refs = [refs[key] for key in required_ref_keys if key in refs]
-
     if not required:
-        return False, "NOT_REQUIRED", [], tpa_artifact_refs
+        optional_refs = [
+            refs[key]
+            for key in ("tpa_certification_envelope_ref", "tpa_plan_artifact", "tpa_build_artifact", "tpa_simplify_artifact", "tpa_gate_artifact")
+            if key in refs
+        ]
+        return False, "NOT_REQUIRED", [], optional_refs
 
     details: List[str] = []
-    missing = [key for key in required_ref_keys if key not in refs]
-    if missing:
-        details.append("missing required TPA artifacts: " + ",".join(missing))
-        return True, "FAIL", details, tpa_artifact_refs
+    envelope_ref = refs.get("tpa_certification_envelope_ref")
+    if not envelope_ref:
+        details.append("missing required TPA certification envelope ref: tpa_certification_envelope_ref")
+        return True, "FAIL", details, []
 
-    plan = _load_tpa_artifact(refs["tpa_plan_artifact"], expected_phase="plan")
-    build = _load_tpa_artifact(refs["tpa_build_artifact"], expected_phase="build")
-    simplify = _load_tpa_artifact(refs["tpa_simplify_artifact"], expected_phase="simplify")
-    gate = _load_tpa_artifact(refs["tpa_gate_artifact"], expected_phase="gate")
-
-    if str((gate.get("artifact") or {}).get("artifact_kind") or "") != "gate":
-        details.append("TPA gate artifact kind must be gate")
-
-    gate_artifact = dict(gate.get("artifact") or {})
-    if not bool(gate_artifact.get("promotion_ready")):
-        details.append("TPA gate promotion_ready must be true")
-
-    regression_decision = str(((gate_artifact.get("complexity_regression_gate") or {}).get("decision") or "")).strip().lower()
-    if regression_decision in {"block", "freeze"}:
-        details.append("TPA complexity regression gate blocked promotion")
-
-    simplicity_decision = str(((gate_artifact.get("simplicity_review") or {}).get("decision") or "")).strip().lower()
-    if simplicity_decision in {"block", "freeze"}:
-        details.append("TPA simplicity review blocked promotion")
-
-    step_ids = {str(item.get("step_id") or "") for item in (plan, build, simplify, gate)}
-    if len(step_ids) != 1:
-        details.append("TPA artifacts must share a single step_id")
-
-    return True, ("PASS" if not details else "FAIL"), details, [
-        refs["tpa_plan_artifact"],
-        refs["tpa_build_artifact"],
-        refs["tpa_simplify_artifact"],
-        refs["tpa_gate_artifact"],
+    envelope = _load_tpa_certification_envelope(envelope_ref)
+    evidence_refs = dict(envelope.get("evidence_refs") or {})
+    tpa_artifact_refs = [
+        str(evidence_refs.get("tpa_plan_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_build_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_simplify_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_gate_artifact_ref") or ""),
     ]
+    if any(not ref for ref in tpa_artifact_refs):
+        details.append("TPA certification envelope missing required artifact refs")
+
+    if str(envelope.get("certification_decision") or "") != "certified":
+        details.append("TPA certification envelope decision must be certified")
+    gate_decision = dict(envelope.get("gate_decision") or {})
+    if not bool(gate_decision.get("promotion_ready")):
+        details.append("TPA certification envelope gate_decision.promotion_ready must be true")
+    if str(gate_decision.get("complexity_regression_decision") or "") in {"freeze", "block"}:
+        details.append("TPA certification envelope complexity decision blocks promotion")
+    if str(gate_decision.get("simplicity_decision") or "") in {"freeze", "block"}:
+        details.append("TPA certification envelope simplicity decision blocks promotion")
+
+    if str(envelope.get("execution_mode") or "") == "cleanup_only":
+        cleanup = envelope.get("cleanup_only_validation")
+        if not isinstance(cleanup, dict):
+            details.append("TPA cleanup-only envelope missing cleanup_only_validation")
+        else:
+            if not bool(cleanup.get("mode_enabled")):
+                details.append("TPA cleanup-only envelope requires mode_enabled=true")
+            if not bool(cleanup.get("equivalence_proven")):
+                details.append("TPA cleanup-only envelope requires equivalence_proven=true")
+            if not str(cleanup.get("replay_ref") or "").strip():
+                details.append("TPA cleanup-only envelope requires replay_ref")
+
+    return True, ("PASS" if not details else "FAIL"), details, [envelope_ref, *[ref for ref in tpa_artifact_refs if ref]]
 
 
 def run_done_certification(input_refs: dict) -> dict:

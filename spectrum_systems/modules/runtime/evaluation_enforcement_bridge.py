@@ -78,6 +78,7 @@ _ENFORCEMENT_ACTION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_enforcement_action.s
 _OVERRIDE_AUTHORIZATION_SCHEMA_PATH = _SCHEMA_DIR / "evaluation_override_authorization.schema.json"
 _DONE_CERTIFICATION_SCHEMA_PATH = _SCHEMA_DIR / "done_certification_record.schema.json"
 _TPA_SLICE_SCHEMA_PATH = _SCHEMA_DIR / "tpa_slice_artifact.schema.json"
+_TPA_CERTIFICATION_ENVELOPE_SCHEMA_PATH = _SCHEMA_DIR / "tpa_certification_envelope.schema.json"
 
 SCHEMA_VERSION = "1.0.0"
 GENERATOR = "spectrum_systems.modules.runtime.evaluation_enforcement_bridge"
@@ -95,6 +96,7 @@ _DEFAULT_SCOPE = "release"
 _OVERRIDE_AUTHORIZATION_KEY = "override_authorization"
 _DONE_CERTIFICATION_PATH_KEY = "done_certification_path"
 _TPA_ARTIFACT_KEYS = ("tpa_plan_artifact", "tpa_build_artifact", "tpa_simplify_artifact", "tpa_gate_artifact")
+_TPA_ENVELOPE_PATH_KEY = "tpa_certification_envelope_path"
 
 # Module-level mapping of system_response → action_type (used in multiple places)
 _RESPONSE_TO_ACTION_TYPE: Dict[str, str] = {
@@ -208,65 +210,75 @@ def _evaluate_tpa_admission_gate(context: Optional[Dict[str, Any]]) -> Dict[str,
         gate["gate_passed"] = False
         return gate
 
-    schema = _load_schema(_TPA_SLICE_SCHEMA_PATH)
-    phase_map = {
-        "tpa_plan_artifact": "plan",
-        "tpa_build_artifact": "build",
-        "tpa_simplify_artifact": "simplify",
-        "tpa_gate_artifact": "gate",
-    }
-
-    artifacts: Dict[str, Dict[str, Any]] = {}
-    for key in _TPA_ARTIFACT_KEYS:
-        raw = context.get(key)
-        if not isinstance(raw, str) or not raw.strip():
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = f"reason_code=missing_tpa_artifact; missing required {key}."
-            gate["gate_passed"] = False
-            return gate
-        path = Path(raw)
-        gate["tpa_artifact_refs"].append(str(path))
-        if not path.is_file():
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = f"reason_code=missing_tpa_artifact; file not found for {key}: {path}"
-            gate["gate_passed"] = False
-            return gate
-        try:
-            artifact = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = f"reason_code=missing_tpa_artifact; invalid JSON for {key}: {exc}"
-            gate["gate_passed"] = False
-            return gate
-        errors = _validate_against_schema(artifact, schema)
-        if errors:
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = f"reason_code=missing_tpa_artifact; invalid {key}: " + "; ".join(errors)
-            gate["gate_passed"] = False
-            return gate
-        expected_phase = phase_map[key]
-        if artifact.get("phase") != expected_phase:
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = f"reason_code=missing_tpa_artifact; {key} phase mismatch"
-            gate["gate_passed"] = False
-            return gate
-        artifacts[key] = artifact
-
-    step_ids = {str(artifact.get("step_id") or "") for artifact in artifacts.values()}
-    if len(step_ids) != 1:
+    envelope_path_value = context.get(_TPA_ENVELOPE_PATH_KEY)
+    if not isinstance(envelope_path_value, str) or not envelope_path_value.strip():
         gate["reason_code"] = "missing_tpa_artifact"
-        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA artifact step_id mismatch"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; missing required tpa_certification_envelope_path."
         gate["gate_passed"] = False
         return gate
 
-    gate_payload = dict((artifacts["tpa_gate_artifact"].get("artifact") or {}))
-    regression_decision = str(((gate_payload.get("complexity_regression_gate") or {}).get("decision") or "")).lower()
-    simplicity_decision = str(((gate_payload.get("simplicity_review") or {}).get("decision") or "")).lower()
+    envelope_path = Path(envelope_path_value)
+    if not envelope_path.is_file():
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = f"reason_code=missing_tpa_artifact; file not found for tpa_certification_envelope_path: {envelope_path}"
+        gate["gate_passed"] = False
+        return gate
+    try:
+        envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = f"reason_code=missing_tpa_artifact; invalid JSON for tpa_certification_envelope_path: {exc}"
+        gate["gate_passed"] = False
+        return gate
+
+    envelope_schema = _load_schema(_TPA_CERTIFICATION_ENVELOPE_SCHEMA_PATH)
+    envelope_errors = _validate_against_schema(envelope, envelope_schema)
+    if envelope_errors:
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; invalid tpa_certification_envelope: " + "; ".join(envelope_errors)
+        gate["gate_passed"] = False
+        return gate
+
+    evidence_refs = dict(envelope.get("evidence_refs") or {})
+    gate["tpa_artifact_refs"] = [
+        str(evidence_refs.get("tpa_plan_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_build_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_simplify_artifact_ref") or ""),
+        str(evidence_refs.get("tpa_gate_artifact_ref") or ""),
+    ]
+    if any(not ref for ref in gate["tpa_artifact_refs"]):
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; tpa_certification_envelope missing required artifact refs"
+        gate["gate_passed"] = False
+        return gate
+
+    if str(envelope.get("certification_decision") or "") != "certified":
+        gate["reason_code"] = "missing_tpa_artifact"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; tpa_certification_envelope not certified"
+        gate["gate_passed"] = False
+        return gate
+
+    gate_payload = dict(envelope.get("gate_decision") or {})
+    regression_decision = str(gate_payload.get("complexity_regression_decision") or "").lower()
+    simplicity_decision = str(gate_payload.get("simplicity_decision") or "").lower()
     if not bool(gate_payload.get("promotion_ready")) or regression_decision in {"block", "freeze"} or simplicity_decision in {"block", "freeze"}:
         gate["reason_code"] = "missing_tpa_artifact"
-        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA gate did not satisfy promotion conditions"
+        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA envelope gate decision did not satisfy promotion conditions"
         gate["gate_passed"] = False
         return gate
+
+    if str(envelope.get("execution_mode") or "") == "cleanup_only":
+        cleanup_validation = envelope.get("cleanup_only_validation")
+        if not isinstance(cleanup_validation, dict):
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = "reason_code=missing_tpa_artifact; cleanup-only envelope missing cleanup_only_validation"
+            gate["gate_passed"] = False
+            return gate
+        if not bool(cleanup_validation.get("equivalence_proven")) or not str(cleanup_validation.get("replay_ref") or "").strip():
+            gate["reason_code"] = "missing_tpa_artifact"
+            gate["block_reason"] = "reason_code=missing_tpa_artifact; cleanup-only envelope missing equivalence/replay evidence"
+            gate["gate_passed"] = False
+            return gate
 
     return gate
 
@@ -279,7 +291,7 @@ def _default_certification_gate(enforcement_scope: str) -> Dict[str, Any]:
             "certification_status": "not_applicable",
             "tpa_required": False,
             "tpa_artifact_refs": [],
-            "reason_code": None,
+                "reason_code": None,
             "block_reason": None,
             "gate_passed": True,
         }

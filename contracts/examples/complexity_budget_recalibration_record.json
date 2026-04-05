@@ -1,0 +1,31 @@
+{
+  "artifact_type": "complexity_budget_recalibration_record",
+  "schema_version": "1.0.0",
+  "recalibration_id": "complexity-recalibration:run-001:AI-01",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "generated_at": "2026-04-05T00:00:00Z",
+  "cadence": {
+    "unit": "slice_interval",
+    "value": 5
+  },
+  "trigger": {
+    "triggered": true,
+    "reason_codes": [
+      "cadence_due",
+      "degrading_trend"
+    ],
+    "observed_slice_count": 5,
+    "minimum_slice_count": 5
+  },
+  "review_owner": "architecture-review-board",
+  "governance_hook_ref": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "source_refs": {
+    "complexity_budget_ref": "complexity_budget:run-001:AI-01",
+    "complexity_trend_ref": "complexity_trend:run-001:AI-01",
+    "tpa_observability_summary_ref": "tpa_observability_summary:run-001:AI-01"
+  },
+  "decision": "maintain",
+  "resulting_update_path": "config/policy/tpa_policy_composition.json"
+}

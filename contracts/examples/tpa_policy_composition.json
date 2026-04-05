@@ -1,6 +1,6 @@
 {
   "artifact_type": "tpa_policy_composition",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "policy_id": "TPA-POLICY-COMPOSITION-2026-04-05",
   "precedence": [
     "tpa_scope_policy",
@@ -20,7 +20,10 @@
       "required_scope_missing_lineage_decision": "block"
     },
     "lightweight_mode_constraints": {
-      "requested_without_eligibility_decision": "block"
+      "requested_without_eligibility_decision": "block",
+      "evidence_omission_allowlist": [
+        "tpa_gate.selection_metrics.simplify_delta"
+      ]
     },
     "cleanup_only_requirements": {
       "missing_equivalence_decision": "block",

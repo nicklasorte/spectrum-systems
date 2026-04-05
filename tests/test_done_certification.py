@@ -355,6 +355,35 @@ def _attach_valid_tpa_refs(refs: Dict[str, str], tmp_path: Path, *, step_id: str
         }
         refs[f"tpa_{phase}_artifact"] = _write_json(tmp_path / f"tpa_{phase}.json", artifact)
 
+    envelope = {
+        "artifact_type": "tpa_certification_envelope",
+        "schema_version": "1.0.0",
+        "envelope_id": f"tpa-cert:run-001:{step_id}",
+        "run_id": "run-001",
+        "trace_id": "trace-001",
+        "step_id": step_id,
+        "generated_at": "2026-04-04T00:00:00Z",
+        "execution_mode": "feature_build",
+        "tpa_mode": "full",
+        "evidence_refs": {
+            "tpa_plan_artifact_ref": refs["tpa_plan_artifact"],
+            "tpa_build_artifact_ref": refs["tpa_build_artifact"],
+            "tpa_simplify_artifact_ref": refs["tpa_simplify_artifact"],
+            "tpa_gate_artifact_ref": refs["tpa_gate_artifact"],
+            "equivalence_evidence_refs": ["gate.behavioral_equivalence:true"],
+            "replay_ref": refs["replay_result_ref"],
+        },
+        "gate_decision": {
+            "selected_pass": "pass_2_simplify",
+            "promotion_ready": True,
+            "simplicity_decision": "allow",
+            "complexity_regression_decision": "allow",
+        },
+        "certification_decision": "certified",
+        "blocking_reasons": [],
+    }
+    refs["tpa_certification_envelope_ref"] = _write_json(tmp_path / "tpa_certification_envelope.json", envelope)
+
     refs["scope_file_path"] = "spectrum_systems/modules/runtime/pqx_sequence_runner.py"
     refs["scope_module"] = "spectrum_systems.modules.runtime.pqx_sequence_runner"
     refs["scope_artifact_type"] = "pqx_generated_slice"
@@ -638,13 +667,13 @@ def test_done_certification_tpa_required_pass(tmp_path: Path) -> None:
     result = run_done_certification(refs)
     assert result["tpa_required"] is True
     assert result["tpa_status"] == "PASS"
-    assert len(result["tpa_artifact_refs"]) == 4
+    assert len(result["tpa_artifact_refs"]) >= 5
     assert result["check_results"]["tpa_compliance"]["passed"] is True
 
 
 def test_done_certification_tpa_required_missing_artifact_fails_closed(tmp_path: Path) -> None:
     refs = _attach_valid_tpa_refs(_write_inputs(tmp_path), tmp_path)
-    refs.pop("tpa_gate_artifact")
+    refs.pop("tpa_certification_envelope_ref")
     result = run_done_certification(refs)
     assert result["final_status"] == "FAILED"
     assert result["tpa_required"] is True

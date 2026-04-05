@@ -102,6 +102,21 @@ def resolve_tpa_policy_decision(inputs: Dict[str, Any], *, composition: Dict[str
             if decision in blocked:
                 _apply(decision, f"simplicity_review_{decision}")
 
+    lightweight_allowlist = sorted({
+        str(path)
+        for path in ((rules.get("lightweight_mode_constraints") or {}).get("evidence_omission_allowlist") or [])
+        if str(path).strip()
+    })
+    lightweight_omissions = sorted({
+        str(path)
+        for path in (inputs.get("lightweight_evidence_omissions") or [])
+        if str(path).strip()
+    })
+    if str(inputs.get("tpa_mode") or "full") == "lightweight":
+        for omitted_path in lightweight_omissions:
+            if omitted_path not in lightweight_allowlist:
+                _apply("block", f"lightweight_evidence_omission_not_allowlisted:{omitted_path}")
+
     promotion_ready_requested = bool(inputs.get("promotion_ready_requested", False))
     promotion_ready = bool(promotion_ready_requested and final_decision in {"allow", "warn"})
 
@@ -111,6 +126,8 @@ def resolve_tpa_policy_decision(inputs: Dict[str, Any], *, composition: Dict[str
         "promotion_ready": promotion_ready,
         "blocking_reasons": sorted(set(reasons)),
         "applied_precedence": precedence,
+        "lightweight_evidence_omission_allowlist": lightweight_allowlist,
+        "lightweight_evidence_omissions": lightweight_omissions,
     }
 
 

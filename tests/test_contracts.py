@@ -387,6 +387,19 @@ class ContractSchemaTests(unittest.TestCase):
         validate_artifact(instance, "tpa_policy_composition")
 
 
+    def test_tpa_certification_envelope_example_validates(self) -> None:
+        instance = load_example("tpa_certification_envelope")
+        validate_artifact(instance, "tpa_certification_envelope")
+
+    def test_tpa_observability_consumer_record_example_validates(self) -> None:
+        instance = load_example("tpa_observability_consumer_record")
+        validate_artifact(instance, "tpa_observability_consumer_record")
+
+    def test_complexity_budget_recalibration_record_example_validates(self) -> None:
+        instance = load_example("complexity_budget_recalibration_record")
+        validate_artifact(instance, "complexity_budget_recalibration_record")
+
+
     def test_pqx_sequence_budget_example_validates(self) -> None:
         instance = load_example("pqx_sequence_budget")
         validate_artifact(instance, "pqx_sequence_budget")

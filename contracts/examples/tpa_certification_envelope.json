@@ -1,0 +1,42 @@
+{
+  "artifact_type": "tpa_certification_envelope",
+  "schema_version": "1.0.0",
+  "envelope_id": "tpa-cert:run-001:AI-01",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "generated_at": "2026-04-05T00:00:00Z",
+  "execution_mode": "cleanup_only",
+  "tpa_mode": "lightweight",
+  "evidence_refs": {
+    "tpa_plan_artifact_ref": "artifacts/run-001/AI-01/tpa_plan.json",
+    "tpa_build_artifact_ref": "artifacts/run-001/AI-01/tpa_build.json",
+    "tpa_simplify_artifact_ref": "artifacts/run-001/AI-01/tpa_simplify.json",
+    "tpa_gate_artifact_ref": "artifacts/run-001/AI-01/tpa_gate.json",
+    "equivalence_evidence_refs": [
+      "gate.behavioral_equivalence:true",
+      "gate.contract_valid:true",
+      "gate.tests_valid:true"
+    ],
+    "replay_ref": "replay_result:run-001:trace-001",
+    "observability_summary_ref": "tpa_observability_summary:run-001:AI-01",
+    "observability_consumer_ref": "tpa_observability_consumer_record:run-001:AI-01",
+    "complexity_budget_ref": "complexity_budget:run-001:AI-01",
+    "complexity_trend_ref": "complexity_trend:run-001:AI-01",
+    "simplification_campaign_ref": "tpa_simplification_campaign:run-001:AI-01",
+    "complexity_recalibration_ref": "complexity_budget_recalibration_record:run-001:AI-01"
+  },
+  "gate_decision": {
+    "selected_pass": "pass_2_simplify",
+    "promotion_ready": true,
+    "simplicity_decision": "allow",
+    "complexity_regression_decision": "allow"
+  },
+  "cleanup_only_validation": {
+    "mode_enabled": true,
+    "equivalence_proven": true,
+    "replay_ref": "replay_result:run-001:trace-001"
+  },
+  "certification_decision": "certified",
+  "blocking_reasons": []
+}

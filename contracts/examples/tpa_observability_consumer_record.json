@@ -1,0 +1,21 @@
+{
+  "artifact_type": "tpa_observability_consumer_record",
+  "schema_version": "1.0.0",
+  "record_id": "tpa-observability-consumer:run-001:AI-01",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "step_id": "AI-01",
+  "generated_at": "2026-04-05T00:00:00Z",
+  "consumer_surface": "control_loop_learning",
+  "source_observability_ref": "tpa_observability_summary:run-001:AI-01",
+  "consumed_metrics": [
+    "pass2_promotion_rate",
+    "simplify_win_rate",
+    "complexity_regression_rate",
+    "bypass_attempt_count"
+  ],
+  "derived_signals": {
+    "priority_score": 18,
+    "recommended_control_decision": "warn"
+  }
+}

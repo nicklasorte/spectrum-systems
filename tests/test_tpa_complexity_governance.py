@@ -8,6 +8,8 @@ from spectrum_systems.modules.runtime.tpa_complexity_governance import (
     calculate_tpa_priority_score,
     classify_system_health_mode,
     build_simplification_campaign,
+    build_tpa_observability_consumer_record,
+    build_complexity_budget_recalibration_record,
     enforce_budget_trend_control,
 )
 
@@ -232,3 +234,56 @@ def test_policy_candidate_generation_is_deterministic_for_replay() -> None:
 
 def test_missing_complexity_signals_fail_closed_to_critical_mode() -> None:
     assert classify_system_health_mode(budget=None, trend=None) == "critical"
+
+
+def test_observability_consumer_record_contract_and_determinism() -> None:
+    summary = {
+        "metrics": {
+            "pass2_promotion_rate": 1.0,
+            "simplify_win_rate": 1.0,
+            "complexity_regression_rate": 0.0,
+            "cleanup_deletion_rate": 1.0,
+            "pass1_retained_rate": 0.0,
+            "simplify_loss_rate": 0.0,
+        },
+        "bypass_attempt_count": 0,
+    }
+    first = build_tpa_observability_consumer_record(
+        run_id="run-1",
+        trace_id="trace-1",
+        step_id="AI-01",
+        generated_at="2026-04-05T00:00:00Z",
+        observability_summary_ref="tpa_observability_summary:run-1:AI-01",
+        observability_summary=summary,
+        priority_score=15,
+        recommended_control_decision="warn",
+    )
+    second = build_tpa_observability_consumer_record(
+        run_id="run-1",
+        trace_id="trace-1",
+        step_id="AI-01",
+        generated_at="2026-04-05T00:00:00Z",
+        observability_summary_ref="tpa_observability_summary:run-1:AI-01",
+        observability_summary=summary,
+        priority_score=15,
+        recommended_control_decision="warn",
+    )
+    assert first == second
+    assert first["consumer_surface"] == "control_loop_learning"
+
+
+def test_complexity_recalibration_record_cadence_trigger_artifact() -> None:
+    record = build_complexity_budget_recalibration_record(
+        run_id="run-1",
+        trace_id="trace-1",
+        step_id="AI-01",
+        generated_at="2026-04-05T00:00:00Z",
+        complexity_budget_ref="complexity_budget:run-1:AI-01",
+        complexity_trend_ref="complexity_trend:run-1:AI-01",
+        observability_summary_ref="tpa_observability_summary:run-1:AI-01",
+        observed_slice_count=5,
+        minimum_slice_count=5,
+    )
+    assert record["trigger"]["triggered"] is True
+    assert record["cadence"]["value"] == 5
+    assert record["review_owner"] == "architecture-review-board"
