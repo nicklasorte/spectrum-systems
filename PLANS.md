@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-FRE-01-2026-04-05.md | BATCH-FRE-01 — Failure Diagnosis Engine (FRE-001/FRE-002/FRE-003) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-09A-INTEGRATION-FIX-2026-04-05.md | BATCH-TPA-09A integration fix — preflight blocker + override test drift alignment | Active |
 | docs/review-actions/PLAN-BATCH-TPA-09A-2026-04-05.md | BATCH-TPA-09A — Trust Boundary Hardening (TPA-ACT-08B-AR-01, TPA-ACT-08B-AR-02) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-04-2026-04-04.md | BATCH-TPA-04 — TPA Default Routing + Bypass Detection (TPA-014, TPA-017, TPA-018) | Active |

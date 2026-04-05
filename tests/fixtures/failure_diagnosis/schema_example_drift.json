@@ -1,0 +1,12 @@
+{
+  "failure_source_type": "contract_enforcement",
+  "source_artifact_refs": [
+    "contracts/examples/failure_diagnosis_artifact.json"
+  ],
+  "failure_payload": {
+    "observed_failure_summary": "Schema/example validation failed for failure diagnosis artifact.",
+    "schema_example_failures": [
+      "failure_diagnosis_artifact example missing deterministic_reasoning_trace"
+    ]
+  }
+}

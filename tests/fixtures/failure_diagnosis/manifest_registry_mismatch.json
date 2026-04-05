@@ -1,0 +1,13 @@
+{
+  "failure_source_type": "contract_enforcement",
+  "source_artifact_refs": [
+    "contracts/standards-manifest.json"
+  ],
+  "failure_payload": {
+    "observed_failure_summary": "Contract enforcement detected artifact_class and intended_consumer mismatch.",
+    "manifest_mismatches": [
+      "artifact_type=failure_diagnosis_artifact artifact_class=unknown",
+      "artifact_type=failure_diagnosis_artifact intended_consumers missing spectrum-systems"
+    ]
+  }
+}

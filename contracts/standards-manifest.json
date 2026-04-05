@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.73",
-  "schema_version": "1.3.73",
-  "standards_version": "1.3.73",
-  "record_id": "REC-STD-2026-04-05-BATCH-TPA-09A",
-  "run_id": "run-20260405T000000Z-batch-tpa-09a",
+  "artifact_version": "1.3.74",
+  "schema_version": "1.3.74",
+  "standards_version": "1.3.74",
+  "record_id": "REC-STD-2026-04-05-BATCH-FRE-01",
+  "run_id": "run-20260405T000000Z-batch-fre-01",
   "created_at": "2026-04-05T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.73",
+  "source_repo_version": "1.3.74",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -1342,6 +1342,19 @@
       "last_updated_in": "1.0.76",
       "example_path": "",
       "notes": "VAL-02 deterministic seam-failure matrix artifact proving fail-closed behavior and explicit silent-success/ambiguous-outcome detection."
+    },
+    {
+      "artifact_type": "failure_diagnosis_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.74",
+      "last_updated_in": "1.3.74",
+      "example_path": "contracts/examples/failure_diagnosis_artifact.json",
+      "notes": "BATCH-FRE-01 deterministic failure intake/classification artifact for governed failure→diagnosis handoff; diagnosis-only with no repair execution authority."
     },
     {
       "artifact_type": "failure_eval_case",

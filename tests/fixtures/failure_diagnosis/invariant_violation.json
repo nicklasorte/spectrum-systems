@@ -1,0 +1,16 @@
+{
+  "failure_source_type": "contract_preflight",
+  "source_artifact_refs": [
+    "contracts/examples/contract_preflight_report.json"
+  ],
+  "failure_payload": {
+    "preflight_status": "BLOCK",
+    "observed_failure_summary": "Preflight detected invariant violation on control surface enforcement linkage.",
+    "invariant_violations": [
+      "control_surface_enforcement_result requires invariant coverage for contract_preflight_gate"
+    ],
+    "schema_example_failures": [
+      "downstream example omitted enforcement trace linkage"
+    ]
+  }
+}
