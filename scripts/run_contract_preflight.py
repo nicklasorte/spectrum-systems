@@ -33,6 +33,10 @@ from spectrum_systems.modules.runtime.control_surface_gap_to_pqx import (  # noq
     ControlSurfaceGapToPQXError,
     convert_gaps_to_pqx_work_items,
 )
+from spectrum_systems.modules.runtime.control_surface_manifest import (  # noqa: E402
+    ControlSurfaceManifestError,
+    build_control_surface_manifest,
+)
 from spectrum_systems.modules.runtime.pqx_execution_policy import (  # noqa: E402
     PQXExecutionPolicyError,
     evaluate_pqx_execution_policy,
@@ -712,21 +716,43 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _should_run_control_surface_enforcement(changed_paths: list[str]) -> bool:
+def _should_run_control_surface_enforcement(
+    changed_paths: list[str],
+    *,
+    changed_path_detection_mode: str | None = None,
+) -> bool:
+    if changed_path_detection_mode == "degraded_full_governed_scan":
+        return False
     return any(path in _CONTROL_SURFACE_ENFORCEMENT_TARGETS for path in changed_paths)
 
 
-def evaluate_control_surface_enforcement(changed_paths: list[str]) -> dict[str, Any] | None:
-    if not _should_run_control_surface_enforcement(changed_paths):
+def _ensure_control_surface_manifest(path: Path) -> None:
+    if path.is_file():
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    manifest = build_control_surface_manifest()
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
+def evaluate_control_surface_enforcement(
+    changed_paths: list[str],
+    *,
+    changed_path_detection_mode: str | None = None,
+) -> dict[str, Any] | None:
+    if not _should_run_control_surface_enforcement(
+        changed_paths,
+        changed_path_detection_mode=changed_path_detection_mode,
+    ):
         return None
 
-    manifest_path = REPO_ROOT / "outputs" / "control_surface_manifest" / "control_surface_manifest.json"
+    manifest_path = _CONTROL_SURFACE_MANIFEST_PATH
     try:
+        _ensure_control_surface_manifest(manifest_path)
         result = run_control_surface_enforcement(
             manifest_path=manifest_path,
             manifest_ref="outputs/control_surface_manifest/control_surface_manifest.json",
         )
-    except ControlSurfaceEnforcementError as exc:
+    except (ControlSurfaceManifestError, ControlSurfaceEnforcementError) as exc:
         return {
             "artifact_type": "control_surface_enforcement_result",
             "enforcement_status": "BLOCK",
@@ -1429,7 +1455,10 @@ def main() -> int:
             "missing_required_surface": missing_required_surface,
             "skip_reason": None,
             "invariant_violations": [],
-            "control_surface_enforcement": evaluate_control_surface_enforcement(surface_classification["required_paths"]),
+            "control_surface_enforcement": evaluate_control_surface_enforcement(
+                surface_classification["required_paths"],
+                changed_path_detection_mode=detection.changed_path_detection_mode,
+            ),
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
             "control_surface_gap_pqx_conversion_error": control_surface_gap_bridge["conversion_error"],

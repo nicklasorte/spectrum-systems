@@ -1369,7 +1369,7 @@ def test_main_contract_preflight_blocks_when_control_surface_enforcement_blocks(
     monkeypatch.setattr(
         preflight,
         "evaluate_control_surface_enforcement",
-        lambda _paths: {
+        lambda _paths, **_kwargs: {
             "artifact_type": "control_surface_enforcement_result",
             "enforcement_status": "BLOCK",
             "blocking_reasons": ["REQUIRED_SURFACES_TEST_COVERAGE_MISSING"],
@@ -1388,6 +1388,44 @@ def test_control_surface_enforcement_not_invoked_for_enforcement_only_paths() ->
     assert preflight.evaluate_control_surface_enforcement(
         ["spectrum_systems/modules/runtime/control_surface_enforcement.py"]
     ) is None
+
+
+def test_control_surface_enforcement_not_invoked_when_detection_degraded_full_scan() -> None:
+    assert preflight.evaluate_control_surface_enforcement(
+        ["scripts/build_control_surface_manifest.py"],
+        changed_path_detection_mode="degraded_full_governed_scan",
+    ) is None
+
+
+def test_control_surface_enforcement_builds_manifest_when_missing(tmp_path: Path, monkeypatch) -> None:
+    manifest_path = tmp_path / "outputs" / "control_surface_manifest" / "control_surface_manifest.json"
+    monkeypatch.setattr(preflight, "_CONTROL_SURFACE_MANIFEST_PATH", manifest_path)
+    monkeypatch.setattr(
+        preflight,
+        "build_control_surface_manifest",
+        lambda: {"artifact_type": "control_surface_manifest", "schema_version": "1.0.0"},
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_run_control_surface_enforcement(*, manifest_path: Path, manifest_ref: str):
+        captured["manifest_path"] = manifest_path
+        captured["manifest_ref"] = manifest_ref
+        return {
+            "artifact_type": "control_surface_enforcement_result",
+            "enforcement_status": "ALLOW",
+            "blocking_reasons": [],
+            "manifest_ref": manifest_ref,
+        }
+
+    monkeypatch.setattr(preflight, "run_control_surface_enforcement", _fake_run_control_surface_enforcement)
+    result = preflight.evaluate_control_surface_enforcement(["scripts/build_control_surface_manifest.py"])
+
+    assert manifest_path.is_file()
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert payload["artifact_type"] == "control_surface_manifest"
+    assert result is not None
+    assert result["enforcement_status"] == "ALLOW"
+    assert captured["manifest_path"] == manifest_path
 
 
 def test_resolve_required_surface_tests_maps_con035_governance_paths() -> None:
@@ -1466,7 +1504,7 @@ def test_main_contract_preflight_allows_con035_changed_paths_when_required_tests
     monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
-    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths: None)
+    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths, **_kwargs: None)
 
     code = preflight.main()
     assert code == 0
@@ -1514,7 +1552,7 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
     monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
     monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
-    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths: None)
+    monkeypatch.setattr(preflight, "evaluate_control_surface_enforcement", lambda _paths, **_kwargs: None)
 
     code = preflight.main()
     assert code == 2
