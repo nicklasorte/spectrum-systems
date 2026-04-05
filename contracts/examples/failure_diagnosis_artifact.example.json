@@ -1,0 +1,135 @@
+{
+  "artifact_type": "failure_diagnosis_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.74",
+  "diagnosis_id": "FDIAG-440e1abcfb3e027fb35b",
+  "failure_source_type": "contract_enforcement",
+  "source_artifact_refs": [
+    "contracts/standards-manifest.json"
+  ],
+  "observed_failure_summary": "Contract enforcement detected artifact_class and intended_consumer mismatch.",
+  "evidence": [
+    {
+      "evidence_id": "E-0ac22ed533059b09",
+      "source_surface": "contract_enforcement",
+      "evidence_type": "manifest_or_registry_mismatch",
+      "message": "Manifest/registry mismatch: artifact_type=failure_diagnosis_artifact artifact_class=unknown",
+      "artifact_ref": "contracts/standards-manifest.json",
+      "details": {
+        "field": "manifest_mismatches",
+        "value": "artifact_type=failure_diagnosis_artifact artifact_class=unknown"
+      }
+    },
+    {
+      "evidence_id": "E-3afb4652aa06890e",
+      "source_surface": "contract_enforcement",
+      "evidence_type": "manifest_or_registry_mismatch",
+      "message": "Manifest/registry mismatch: artifact_type=failure_diagnosis_artifact intended_consumers missing spectrum-systems",
+      "artifact_ref": "contracts/standards-manifest.json",
+      "details": {
+        "field": "manifest_mismatches",
+        "value": "artifact_type=failure_diagnosis_artifact intended_consumers missing spectrum-systems"
+      }
+    }
+  ],
+  "primary_root_cause": "manifest_or_registry_mismatch",
+  "secondary_contributors": [],
+  "smallest_safe_fix_class": "align_manifest_registry_taxonomy",
+  "recommended_repair_area": "contracts/standards-manifest.json and consuming manifests",
+  "blocking_severity": "blocker",
+  "deterministic_reasoning_trace": [
+    {
+      "rule_id": "R001",
+      "matched": false,
+      "classification_candidate": "invariant_violation",
+      "matched_evidence_ids": [],
+      "reason": "Explicit invariant violation evidence is authoritative and has highest precedence."
+    },
+    {
+      "rule_id": "R002",
+      "matched": false,
+      "classification_candidate": "control_surface_input_missing",
+      "matched_evidence_ids": [],
+      "reason": "Control surface input is required for governed execution and missing inputs fail closed."
+    },
+    {
+      "rule_id": "R003",
+      "matched": false,
+      "classification_candidate": "missing_required_surface",
+      "matched_evidence_ids": [],
+      "reason": "Required governed artifact surface is missing from failure intake."
+    },
+    {
+      "rule_id": "R004",
+      "matched": true,
+      "classification_candidate": "manifest_or_registry_mismatch",
+      "matched_evidence_ids": [
+        "E-0ac22ed533059b09",
+        "E-3afb4652aa06890e"
+      ],
+      "reason": "Manifest/registry mismatch evidence indicates authoritative taxonomy or consumer-pin drift."
+    },
+    {
+      "rule_id": "R005",
+      "matched": false,
+      "classification_candidate": "schema_example_drift",
+      "matched_evidence_ids": [],
+      "reason": "Schema/example enforcement failures indicate contract drift."
+    },
+    {
+      "rule_id": "R006",
+      "matched": false,
+      "classification_candidate": "producer_wiring_gap",
+      "matched_evidence_ids": [],
+      "reason": "Producer failures indicate upstream artifact production wiring gap."
+    },
+    {
+      "rule_id": "R007",
+      "matched": false,
+      "classification_candidate": "consumer_wiring_gap",
+      "matched_evidence_ids": [],
+      "reason": "Consumer failures indicate downstream ingestion wiring gap."
+    },
+    {
+      "rule_id": "R008",
+      "matched": false,
+      "classification_candidate": "fixture_gap",
+      "matched_evidence_ids": [],
+      "reason": "Fixture failure evidence indicates missing or stale validation fixtures."
+    },
+    {
+      "rule_id": "R009",
+      "matched": false,
+      "classification_candidate": "test_expectation_drift",
+      "matched_evidence_ids": [],
+      "reason": "Pytest assertion evidence indicates test expectation drift relative to contract behavior."
+    },
+    {
+      "rule_id": "R010",
+      "matched": false,
+      "classification_candidate": "certification_surface_gap",
+      "matched_evidence_ids": [],
+      "reason": "Certification/readiness surfaces are incomplete."
+    }
+  ],
+  "affected_surfaces": [
+    "contract_enforcement"
+  ],
+  "expected_validation_commands": [
+    "pytest tests/test_failure_diagnosis_engine.py",
+    "python scripts/run_contract_enforcement.py"
+  ],
+  "related_contract_refs": [
+    "contracts/schemas/failure_diagnosis_artifact.schema.json",
+    "contracts/standards-manifest.json"
+  ],
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "trace": {
+    "run_id": "run-20260405T000000Z-batch-fre-01",
+    "trace_id": "trace-batch-fre-01",
+    "policy_id": "FRE-001.failure_diagnosis.v1",
+    "governing_ref": "docs/roadmaps/system_roadmap.md#batch-fre-01",
+    "intake_hash": "22bee43eb205401005b183a803ba6a0f67b0e31a37254051a2efc5f08d8504a6"
+  }
+}

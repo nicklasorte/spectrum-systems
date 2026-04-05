@@ -1,0 +1,16 @@
+{
+  "failure_source_type": "contract_preflight",
+  "source_artifact_refs": [
+    "contracts/examples/contract_preflight_result_artifact.json"
+  ],
+  "failure_payload": {
+    "preflight_status": "BLOCK",
+    "observed_failure_summary": "Contract preflight blocked due to missing control surface manifest input.",
+    "missing_control_inputs": [
+      "control_surface_manifest"
+    ],
+    "missing_required_surfaces": [
+      "contract_preflight_result_artifact"
+    ]
+  }
+}

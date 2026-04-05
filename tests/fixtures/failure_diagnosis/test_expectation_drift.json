@@ -1,0 +1,18 @@
+{
+  "failure_source_type": "pytest_summary",
+  "source_artifact_refs": [
+    "pytest://tests/test_override_enforcement.py::test_override_temporal_enforcement"
+  ],
+  "failure_payload": {
+    "observed_failure_summary": "Override enforcement tests failed after contract behavior change.",
+    "failing_tests": [
+      {
+        "test_name": "tests/test_override_enforcement.py::test_override_temporal_enforcement",
+        "failure_message": "Expected BLOCK but observed ALLOW for expired override request",
+        "markers": [
+          "contract_behavior_changed"
+        ]
+      }
+    ]
+  }
+}
