@@ -384,3 +384,95 @@ def build_tpa_policy_candidate(
     }
     validate_artifact(candidate, "tpa_policy_candidate")
     return candidate
+
+
+def build_tpa_observability_consumer_record(
+    *,
+    run_id: str,
+    trace_id: str,
+    step_id: str,
+    generated_at: str,
+    observability_summary_ref: str,
+    observability_summary: dict[str, Any],
+    priority_score: int,
+    recommended_control_decision: str,
+) -> dict[str, Any]:
+    metrics = observability_summary.get("metrics") if isinstance(observability_summary, dict) else {}
+    consumed_metrics = [
+        "pass2_promotion_rate",
+        "simplify_win_rate",
+        "complexity_regression_rate",
+        "bypass_attempt_count",
+    ]
+    if not isinstance(metrics, dict):
+        raise ValueError("observability_summary.metrics must be an object")
+    for key in consumed_metrics[:-1]:
+        if key not in metrics:
+            raise ValueError(f"observability_summary missing consumed metric: {key}")
+    if "bypass_attempt_count" not in observability_summary:
+        raise ValueError("observability_summary missing consumed metric: bypass_attempt_count")
+
+    artifact = {
+        "artifact_type": "tpa_observability_consumer_record",
+        "schema_version": "1.0.0",
+        "record_id": f"tpa-observability-consumer:{run_id}:{step_id}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "step_id": step_id,
+        "generated_at": generated_at,
+        "consumer_surface": "control_loop_learning",
+        "source_observability_ref": observability_summary_ref,
+        "consumed_metrics": consumed_metrics,
+        "derived_signals": {
+            "priority_score": max(0, min(100, int(priority_score))),
+            "recommended_control_decision": str(recommended_control_decision),
+        },
+    }
+    validate_artifact(artifact, "tpa_observability_consumer_record")
+    return artifact
+
+
+def build_complexity_budget_recalibration_record(
+    *,
+    run_id: str,
+    trace_id: str,
+    step_id: str,
+    generated_at: str,
+    complexity_budget_ref: str,
+    complexity_trend_ref: str,
+    observability_summary_ref: str,
+    observed_slice_count: int,
+    minimum_slice_count: int = 5,
+) -> dict[str, Any]:
+    if minimum_slice_count < 1:
+        raise ValueError("minimum_slice_count must be >= 1")
+    trigger_reasons = ["cadence_due"] if observed_slice_count >= minimum_slice_count else ["insufficient_history"]
+    triggered = observed_slice_count >= minimum_slice_count
+
+    artifact = {
+        "artifact_type": "complexity_budget_recalibration_record",
+        "schema_version": "1.0.0",
+        "recalibration_id": f"complexity-recalibration:{run_id}:{step_id}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "step_id": step_id,
+        "generated_at": generated_at,
+        "cadence": {"unit": "slice_interval", "value": minimum_slice_count},
+        "trigger": {
+            "triggered": triggered,
+            "reason_codes": trigger_reasons,
+            "observed_slice_count": int(observed_slice_count),
+            "minimum_slice_count": int(minimum_slice_count),
+        },
+        "review_owner": "architecture-review-board",
+        "governance_hook_ref": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+        "source_refs": {
+            "complexity_budget_ref": complexity_budget_ref,
+            "complexity_trend_ref": complexity_trend_ref,
+            "tpa_observability_summary_ref": observability_summary_ref,
+        },
+        "decision": "maintain",
+        "resulting_update_path": "config/policy/tpa_policy_composition.json",
+    }
+    validate_artifact(artifact, "complexity_budget_recalibration_record")
+    return artifact

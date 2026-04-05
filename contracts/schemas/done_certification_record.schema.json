@@ -123,6 +123,10 @@
         "scope_artifact_type": {
           "type": "string",
           "minLength": 1
+        },
+        "tpa_certification_envelope_ref": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

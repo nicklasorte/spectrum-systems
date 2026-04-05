@@ -11,7 +11,8 @@
     "policy_ref": "outputs/evaluation_control/evaluation_control_decision.json",
     "enforcement_result_ref": "outputs/enforcement/enforcement_result.json",
     "eval_coverage_summary_ref": "outputs/evaluation/eval_coverage_summary.json",
-    "trust_spine_evidence_cohesion_result_ref": "outputs/trust_spine_evidence_cohesion/trust_spine_evidence_cohesion_result.json"
+    "trust_spine_evidence_cohesion_result_ref": "outputs/trust_spine_evidence_cohesion/trust_spine_evidence_cohesion_result.json",
+    "tpa_certification_envelope_ref": "artifacts/run-001/AI-01/tpa_certification_envelope.json"
   },
   "check_results": {
     "replay": {

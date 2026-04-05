@@ -23,7 +23,11 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
 from spectrum_systems.modules.runtime.tpa_complexity_governance import (
     build_complexity_budget,
     build_complexity_trend,
+    build_control_priority_signal,
+    calculate_tpa_priority_score,
     build_simplification_campaign,
+    build_tpa_observability_consumer_record,
+    build_complexity_budget_recalibration_record,
     enforce_budget_trend_control,
 )
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
@@ -517,6 +521,124 @@ def _build_tpa_observability_summary(
     except Exception as exc:
         raise PQXSequenceRunnerError(f"invalid TPA observability summary artifact for {step_id}: {exc}") from exc
     return summary
+
+
+def _build_tpa_certification_envelope(
+    *,
+    run_id: str,
+    trace_id: str,
+    step_id: str,
+    generated_at: str,
+    plan_artifact: dict[str, Any],
+    build_artifact: dict[str, Any],
+    simplify_artifact: dict[str, Any],
+    gate_artifact: dict[str, Any],
+    observability_summary: dict[str, Any],
+    observability_consumer: dict[str, Any],
+    complexity_budget: dict[str, Any],
+    complexity_trend: dict[str, Any],
+    simplification_campaign: dict[str, Any],
+    complexity_recalibration: dict[str, Any],
+) -> dict[str, Any]:
+    plan_payload = dict(plan_artifact.get("artifact") or {})
+    gate_payload = dict(gate_artifact.get("artifact") or {})
+    execution_mode = str(plan_payload.get("execution_mode") or "feature_build")
+    cleanup_validation = gate_payload.get("cleanup_only_validation")
+    simplicity_decision = str((gate_payload.get("simplicity_review") or {}).get("decision") or "allow")
+    complexity_decision = str((gate_payload.get("complexity_regression_gate") or {}).get("decision") or "allow")
+    promotion_ready = bool(gate_payload.get("promotion_ready"))
+
+    blocking_reasons: list[str] = []
+    if not bool(gate_payload.get("behavioral_equivalence")):
+        blocking_reasons.append("missing_behavioral_equivalence")
+    if not bool(gate_payload.get("contract_valid")):
+        blocking_reasons.append("missing_contract_validity")
+    if not bool(gate_payload.get("tests_valid")):
+        blocking_reasons.append("missing_test_validity")
+    if complexity_decision in {"freeze", "block"}:
+        blocking_reasons.append(f"complexity_decision_{complexity_decision}")
+    if simplicity_decision in {"freeze", "block"}:
+        blocking_reasons.append(f"simplicity_decision_{simplicity_decision}")
+    if not promotion_ready:
+        blocking_reasons.append("promotion_not_ready")
+    if execution_mode == "cleanup_only":
+        if not isinstance(cleanup_validation, dict):
+            blocking_reasons.append("cleanup_only_validation_missing")
+        else:
+            if not bool(cleanup_validation.get("mode_enabled")):
+                blocking_reasons.append("cleanup_only_mode_not_enabled")
+            if not bool(cleanup_validation.get("equivalence_proven")):
+                blocking_reasons.append("cleanup_only_equivalence_not_proven")
+            if not str(cleanup_validation.get("replay_ref") or "").strip():
+                blocking_reasons.append("cleanup_only_replay_ref_missing")
+
+    envelope = {
+        "artifact_type": "tpa_certification_envelope",
+        "schema_version": "1.0.0",
+        "envelope_id": f"tpa-cert:{run_id}:{step_id}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "step_id": step_id,
+        "generated_at": generated_at,
+        "execution_mode": execution_mode,
+        "tpa_mode": str(plan_artifact.get("tpa_mode") or "full"),
+        "evidence_refs": {
+            "tpa_plan_artifact_ref": f"tpa_slice_artifact:{plan_artifact['artifact_id']}",
+            "tpa_build_artifact_ref": f"tpa_slice_artifact:{build_artifact['artifact_id']}",
+            "tpa_simplify_artifact_ref": f"tpa_slice_artifact:{simplify_artifact['artifact_id']}",
+            "tpa_gate_artifact_ref": f"tpa_slice_artifact:{gate_artifact['artifact_id']}",
+            "equivalence_evidence_refs": [
+                f"gate.behavioral_equivalence:{bool(gate_payload.get('behavioral_equivalence'))}",
+                f"gate.contract_valid:{bool(gate_payload.get('contract_valid'))}",
+                f"gate.tests_valid:{bool(gate_payload.get('tests_valid'))}",
+            ],
+            "replay_ref": str((cleanup_validation or {}).get("replay_ref") or f"replay_result:{run_id}:{trace_id}"),
+            "observability_summary_ref": f"tpa_observability_summary:{run_id}:{step_id}",
+            "observability_consumer_ref": f"tpa_observability_consumer_record:{run_id}:{step_id}",
+            "complexity_budget_ref": f"complexity_budget:{complexity_budget['run_id']}:{complexity_budget['step_id']}",
+            "complexity_trend_ref": f"complexity_trend:{complexity_trend['run_id']}:{complexity_trend['step_id']}",
+            "simplification_campaign_ref": f"tpa_simplification_campaign:{simplification_campaign['run_id']}:{simplification_campaign['step_id']}",
+            "complexity_recalibration_ref": f"complexity_budget_recalibration_record:{complexity_recalibration['run_id']}:{complexity_recalibration['step_id']}",
+        },
+        "gate_decision": {
+            "selected_pass": str(gate_payload.get("selected_pass") or "pass_1_build"),
+            "promotion_ready": promotion_ready,
+            "simplicity_decision": simplicity_decision,
+            "complexity_regression_decision": complexity_decision,
+        },
+        "certification_decision": "blocked" if blocking_reasons else "certified",
+        "blocking_reasons": sorted(set(blocking_reasons)),
+    }
+    if execution_mode == "cleanup_only":
+        envelope["cleanup_only_validation"] = dict(cleanup_validation or {})
+    try:
+        validate_artifact(envelope, "tpa_certification_envelope")
+    except Exception as exc:
+        raise PQXSequenceRunnerError(f"invalid tpa_certification_envelope for {step_id}: {exc}") from exc
+    return envelope
+
+
+def _apply_lightweight_allowlisted_omissions(
+    *,
+    selection_metrics: dict[str, Any],
+    build_signals: dict[str, int],
+    simplify_signals: dict[str, int],
+    allowlist: list[str],
+) -> tuple[dict[str, Any], list[str]]:
+    metrics = deepcopy(selection_metrics)
+    omissions: list[str] = []
+    mapping = {
+        "tpa_gate.selection_metrics.build": build_signals,
+        "tpa_gate.selection_metrics.simplify": simplify_signals,
+        "tpa_gate.selection_metrics.simplify_delta": _complexity_delta(build_signals, simplify_signals),
+    }
+    for path, value in mapping.items():
+        key = path.split(".")[-1]
+        if key not in metrics:
+            omissions.append(path)
+            if path in allowlist:
+                metrics[key] = value
+    return metrics, sorted(omissions)
 
 
 def _is_lightweight_eligible(request: dict[str, Any], plan_payload: dict[str, Any]) -> bool:
@@ -1428,12 +1550,41 @@ def execute_sequence_run(
                 selection_metrics = gate_payload.get("selection_metrics")
                 if not isinstance(selection_metrics, dict):
                     raise PQXSequenceRunnerError("TPA gate must include selection_metrics")
-                if tpa_mode != "lightweight" and (
-                    selection_metrics.get("build") != build_signals or selection_metrics.get("simplify") != simplify_signals
-                ):
-                    raise PQXSequenceRunnerError("TPA gate selection_metrics build/simplify must match governed complexity signals")
-                if tpa_mode != "lightweight" and selection_metrics.get("simplify_delta") != _complexity_delta(build_signals, simplify_signals):
-                    raise PQXSequenceRunnerError("TPA gate selection_metrics simplify_delta mismatch")
+                expected_metrics = {
+                    "build": build_signals,
+                    "simplify": simplify_signals,
+                    "simplify_delta": _complexity_delta(build_signals, simplify_signals),
+                }
+                if tpa_mode == "lightweight":
+                    allowlist = list(composition_decision.get("lightweight_evidence_omission_allowlist") or [])
+                    normalized_metrics, omissions = _apply_lightweight_allowlisted_omissions(
+                        selection_metrics=selection_metrics,
+                        build_signals=build_signals,
+                        simplify_signals=simplify_signals,
+                        allowlist=allowlist,
+                    )
+                    allowlist_decision = resolve_tpa_policy_decision(
+                        {
+                            "required_scope": bool(required_scope),
+                            "tpa_lineage_present": True,
+                            "tpa_mode": "lightweight",
+                            "lightweight_eligible": True,
+                            "lightweight_evidence_omissions": omissions,
+                        },
+                        composition=tpa_policy_composition,
+                    )
+                    if allowlist_decision["final_decision"] in {"freeze", "block"}:
+                        raise PQXSequenceRunnerError(
+                            "TPA lightweight evidence omission blocked: "
+                            + ",".join(allowlist_decision["blocking_reasons"])
+                        )
+                    gate_payload["selection_metrics"] = normalized_metrics
+                    selection_metrics = normalized_metrics
+                if tpa_mode != "lightweight":
+                    if selection_metrics.get("build") != expected_metrics["build"] or selection_metrics.get("simplify") != expected_metrics["simplify"]:
+                        raise PQXSequenceRunnerError("TPA gate selection_metrics build/simplify must match governed complexity signals")
+                    if selection_metrics.get("simplify_delta") != expected_metrics["simplify_delta"]:
+                        raise PQXSequenceRunnerError("TPA gate selection_metrics simplify_delta mismatch")
                 if gate_payload.get("context_bundle_ref") != artifacts["plan"]["artifact"].get("context_bundle_ref"):
                     raise PQXSequenceRunnerError("TPA gate must use same context_bundle_ref as plan/build/simplify")
                 if gate_payload.get("unaddressed_failure_pattern_refs"):
@@ -1582,6 +1733,51 @@ def execute_sequence_run(
                 artifacts["complexity_budget"] = budget_artifact
                 artifacts["complexity_trend"] = trend_artifact
                 artifacts["simplification_campaign"] = campaign_artifact
+                priority_signal = build_control_priority_signal(
+                    existing_decision=str(regression_gate.get("decision") or "allow"),
+                    budget=budget_artifact,
+                    trend=trend_artifact,
+                )
+                artifacts["observability_consumer"] = build_tpa_observability_consumer_record(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    generated_at=iso_now(clock),
+                    observability_summary_ref=f"tpa_observability_summary:{run_id}:{step_id}",
+                    observability_summary=artifacts["observability_summary"],
+                    priority_score=calculate_tpa_priority_score(
+                        budget=budget_artifact,
+                        trend=trend_artifact,
+                        campaign=campaign_artifact,
+                    ),
+                    recommended_control_decision=priority_signal["effective_control_decision"],
+                )
+                artifacts["complexity_recalibration"] = build_complexity_budget_recalibration_record(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    generated_at=iso_now(clock),
+                    complexity_budget_ref=f"complexity_budget:{budget_artifact['run_id']}:{budget_artifact['step_id']}",
+                    complexity_trend_ref=f"complexity_trend:{trend_artifact['run_id']}:{trend_artifact['step_id']}",
+                    observability_summary_ref=f"tpa_observability_summary:{run_id}:{step_id}",
+                    observed_slice_count=len(trend_points),
+                )
+                artifacts["certification_envelope"] = _build_tpa_certification_envelope(
+                    run_id=run_id,
+                    trace_id=request["trace_id"],
+                    step_id=step_id,
+                    generated_at=iso_now(clock),
+                    plan_artifact=artifacts["plan"],
+                    build_artifact=artifacts["build"],
+                    simplify_artifact=artifacts["simplify"],
+                    gate_artifact=artifacts["gate"],
+                    observability_summary=artifacts["observability_summary"],
+                    observability_consumer=artifacts["observability_consumer"],
+                    complexity_budget=budget_artifact,
+                    complexity_trend=trend_artifact,
+                    simplification_campaign=campaign_artifact,
+                    complexity_recalibration=artifacts["complexity_recalibration"],
+                )
         elif required_scope:
             missing_components = ["plan", "build", "simplify", "gate"]
             occurrence_count = len(bypass_signals) + 1

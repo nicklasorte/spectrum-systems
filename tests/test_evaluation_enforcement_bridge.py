@@ -221,6 +221,37 @@ def _write_tpa_artifacts(tmp_path: Path, *, step_id: str = "AI-01") -> Dict[str,
         out = tmp_path / f"{phase}.json"
         out.write_text(json.dumps(artifact), encoding="utf-8")
         refs[f"tpa_{phase}_artifact"] = str(out)
+
+    envelope = {
+        "artifact_type": "tpa_certification_envelope",
+        "schema_version": "1.0.0",
+        "envelope_id": f"tpa-cert:run-001:{step_id}",
+        "run_id": "run-001",
+        "trace_id": "trace-001",
+        "step_id": step_id,
+        "generated_at": "2026-04-05T00:00:00Z",
+        "execution_mode": "feature_build",
+        "tpa_mode": "full",
+        "evidence_refs": {
+            "tpa_plan_artifact_ref": refs["tpa_plan_artifact"],
+            "tpa_build_artifact_ref": refs["tpa_build_artifact"],
+            "tpa_simplify_artifact_ref": refs["tpa_simplify_artifact"],
+            "tpa_gate_artifact_ref": refs["tpa_gate_artifact"],
+            "equivalence_evidence_refs": ["gate.behavioral_equivalence:true"],
+            "replay_ref": "replay_result:run-001:trace-001"
+        },
+        "gate_decision": {
+            "selected_pass": "pass_2_simplify",
+            "promotion_ready": True,
+            "simplicity_decision": "allow",
+            "complexity_regression_decision": "allow"
+        },
+        "certification_decision": "certified",
+        "blocking_reasons": []
+    }
+    envelope_path = tmp_path / "tpa_certification_envelope.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    refs["tpa_certification_envelope_path"] = str(envelope_path)
     return refs
 
 
@@ -1219,7 +1250,7 @@ def test_promotion_required_scope_with_valid_tpa_artifacts_allows(tmp_path: Path
             "done_certification_path": str(certification_path),
             "scope_artifact_type": "pqx_generated_slice",
             "scope_file_path": "spectrum_systems/modules/runtime/pqx_sequence_runner.py",
-            **tpa_refs,
+            "tpa_certification_envelope_path": tpa_refs["tpa_certification_envelope_path"],
         },
     )
     assert action["action_type"] == "allow"

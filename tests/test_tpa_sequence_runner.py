@@ -248,6 +248,9 @@ def test_tpa_happy_path_emits_artifacts_and_deterministic_selection(tmp_path: Pa
     assert first["tpa_artifacts"]["AI-01"]["gate"]["phase"] == "gate"
     assert first["tpa_artifacts"]["AI-01"]["observability_summary"]["artifact_type"] == "tpa_observability_summary"
     assert first["tpa_artifacts"]["AI-01"]["observability_summary"]["metrics"]["simplify_win_rate"] == 1.0
+    assert first["tpa_artifacts"]["AI-01"]["observability_consumer"]["artifact_type"] == "tpa_observability_consumer_record"
+    assert first["tpa_artifacts"]["AI-01"]["complexity_recalibration"]["artifact_type"] == "complexity_budget_recalibration_record"
+    assert first["tpa_artifacts"]["AI-01"]["certification_envelope"]["artifact_type"] == "tpa_certification_envelope"
     assert (
         first["tpa_artifacts"]["AI-01"]["gate"]["artifact"]["selected_pass"]
         == second["tpa_artifacts"]["AI-01"]["gate"]["artifact"]["selected_pass"]
@@ -514,3 +517,47 @@ def test_non_tpa_slice_without_scope_evidence_does_not_force_tpa(tmp_path: Path)
         clock=FixedClock([f"2026-04-03T01:30:{i:02d}Z" for i in range(1, 20)]),
     )
     assert state["status"] == "completed"
+
+
+def test_lightweight_mode_allowlisted_evidence_omission_passes(tmp_path: Path) -> None:
+    requests = _tpa_slice_requests()
+    requests[0]["tpa_plan"]["tpa_mode"] = "lightweight"
+
+    def _allowlisted_omission_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["selection_metrics"].pop("simplify_delta", None)
+        return response
+
+    state = execute_sequence_run(
+        slice_requests=requests,
+        state_path=tmp_path / "state-lightweight-allowlisted-omit.json",
+        queue_run_id="queue-tpa-010a",
+        run_id="run-tpa-010a",
+        trace_id="trace-tpa-batch-010a",
+        execute_slice=_allowlisted_omission_executor,
+        clock=FixedClock([f"2026-04-03T01:12:{i:02d}Z" for i in range(1, 40)]),
+    )
+    assert state["status"] == "completed"
+
+
+def test_lightweight_mode_non_allowlisted_evidence_omission_blocks(tmp_path: Path) -> None:
+    requests = _tpa_slice_requests()
+    requests[0]["tpa_plan"]["tpa_mode"] = "lightweight"
+
+    def _non_allowlisted_omission_executor(payload: dict) -> dict:
+        response = _executor(payload)
+        if payload["slice_id"].endswith("-G"):
+            response["tpa_gate"]["selection_metrics"].pop("build", None)
+        return response
+
+    with pytest.raises(PQXSequenceRunnerError, match="lightweight evidence omission blocked"):
+        execute_sequence_run(
+            slice_requests=requests,
+            state_path=tmp_path / "state-lightweight-non-allowlisted-omit.json",
+            queue_run_id="queue-tpa-010b",
+            run_id="run-tpa-010b",
+            trace_id="trace-tpa-batch-010b",
+            execute_slice=_non_allowlisted_omission_executor,
+            clock=FixedClock([f"2026-04-03T01:13:{i:02d}Z" for i in range(1, 40)]),
+        )

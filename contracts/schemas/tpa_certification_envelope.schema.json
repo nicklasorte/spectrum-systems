@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_certification_envelope.schema.json",
+  "title": "TPA Certification Envelope",
+  "description": "Canonical fail-closed certification envelope for TPA-governed slices consumed by done and promotion gates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "envelope_id",
+    "run_id",
+    "trace_id",
+    "step_id",
+    "generated_at",
+    "execution_mode",
+    "tpa_mode",
+    "evidence_refs",
+    "gate_decision",
+    "certification_decision",
+    "blocking_reasons"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_certification_envelope"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "envelope_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "execution_mode": {"type": "string", "enum": ["feature_build", "cleanup_only"]},
+    "tpa_mode": {"type": "string", "enum": ["full", "lightweight"]},
+    "evidence_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tpa_plan_artifact_ref",
+        "tpa_build_artifact_ref",
+        "tpa_simplify_artifact_ref",
+        "tpa_gate_artifact_ref",
+        "equivalence_evidence_refs",
+        "replay_ref"
+      ],
+      "properties": {
+        "tpa_plan_artifact_ref": {"type": "string", "minLength": 1},
+        "tpa_build_artifact_ref": {"type": "string", "minLength": 1},
+        "tpa_simplify_artifact_ref": {"type": "string", "minLength": 1},
+        "tpa_gate_artifact_ref": {"type": "string", "minLength": 1},
+        "equivalence_evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "replay_ref": {"type": "string", "minLength": 1},
+        "observability_summary_ref": {"type": "string", "minLength": 1},
+        "observability_consumer_ref": {"type": "string", "minLength": 1},
+        "complexity_budget_ref": {"type": "string", "minLength": 1},
+        "complexity_trend_ref": {"type": "string", "minLength": 1},
+        "simplification_campaign_ref": {"type": "string", "minLength": 1},
+        "complexity_recalibration_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "gate_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selected_pass",
+        "promotion_ready",
+        "simplicity_decision",
+        "complexity_regression_decision"
+      ],
+      "properties": {
+        "selected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
+        "promotion_ready": {"type": "boolean"},
+        "simplicity_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+        "complexity_regression_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]}
+      }
+    },
+    "cleanup_only_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode_enabled", "equivalence_proven", "replay_ref"],
+      "properties": {
+        "mode_enabled": {"type": "boolean"},
+        "equivalence_proven": {"type": "boolean"},
+        "replay_ref": {"type": ["string", "null"]}
+      }
+    },
+    "certification_decision": {"type": "string", "enum": ["certified", "blocked"]},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"execution_mode": {"const": "cleanup_only"}}},
+      "then": {
+        "required": ["cleanup_only_validation"],
+        "properties": {
+          "cleanup_only_validation": {
+            "properties": {
+              "mode_enabled": {"const": true},
+              "equivalence_proven": {"const": true}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"certification_decision": {"const": "certified"}}},
+      "then": {"properties": {"blocking_reasons": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"certification_decision": {"const": "blocked"}}},
+      "then": {"properties": {"blocking_reasons": {"minItems": 1}}}
+    }
+  ]
+}
