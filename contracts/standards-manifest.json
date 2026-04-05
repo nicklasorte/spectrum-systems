@@ -3730,13 +3730,11 @@
     },
     {
       "artifact_type": "tpa_maturity_signal",
-      "artifact_class": "governance",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "governance",
-        "observability"
+        "spectrum-systems"
       ],
       "introduced_in": "1.3.71",
       "last_updated_in": "1.3.71",
@@ -3745,13 +3743,11 @@
     },
     {
       "artifact_type": "autonomy_audit_record",
-      "artifact_class": "governance",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "governance",
-        "observability"
+        "spectrum-systems"
       ],
       "introduced_in": "1.3.71",
       "last_updated_in": "1.3.71",
