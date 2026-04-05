@@ -17,20 +17,71 @@
     "thresholds_not_satisfied",
     "closure_eligible",
     "blocking_reasons",
-    "trace"
+    "trace",
+    "tpa_bypass_drift_signal_refs",
+    "tpa_bypass_drift_detected"
   ],
   "properties": {
-    "artifact_type": {"const": "judgment_remediation_readiness_status"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "remediation_id": {"type": "string", "minLength": 1},
-    "current_lifecycle_state": {"type": "string", "minLength": 1},
-    "required_evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "evidence_present_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "evidence_missing_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "required_thresholds": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "thresholds_satisfied": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "thresholds_not_satisfied": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "closure_eligible": {"type": "boolean"},
+    "artifact_type": {
+      "const": "judgment_remediation_readiness_status"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "remediation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_lifecycle_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence_present_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence_missing_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_thresholds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "thresholds_satisfied": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "thresholds_not_satisfied": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "closure_eligible": {
+      "type": "boolean"
+    },
     "blocking_reasons": {
       "type": "array",
       "items": {
@@ -43,7 +94,8 @@
           "missing_reinstatement_artifact",
           "invalid_artifact_contract",
           "remediation_not_in_closure_state",
-          "remediation_not_closed"
+          "remediation_not_closed",
+          "tpa_bypass_drift_detected"
         ]
       }
     },
@@ -57,11 +109,30 @@
         "reinstatement_record_id"
       ],
       "properties": {
-        "trace_id": {"type": "string"},
-        "remediation_record_id": {"type": "string"},
-        "closure_record_id": {"type": "string"},
-        "reinstatement_record_id": {"type": "string"}
+        "trace_id": {
+          "type": "string"
+        },
+        "remediation_record_id": {
+          "type": "string"
+        },
+        "closure_record_id": {
+          "type": "string"
+        },
+        "reinstatement_record_id": {
+          "type": "string"
+        }
       }
+    },
+    "tpa_bypass_drift_signal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "tpa_bypass_drift_detected": {
+      "type": "boolean"
     }
   }
 }

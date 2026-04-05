@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_composition.schema.json",
+  "title": "TPA Policy Composition",
+  "description": "Deterministic precedence and merge rules for TPA-adjacent policy surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_id",
+    "precedence",
+    "severity_order",
+    "rules"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "tpa_policy_composition"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "precedence": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "tpa_scope_policy",
+          "lightweight_mode_constraints",
+          "cleanup_only_requirements",
+          "complexity_regression_gate",
+          "simplicity_review"
+        ]
+      }
+    },
+    "severity_order": {
+      "type": "array",
+      "const": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tpa_scope_policy",
+        "lightweight_mode_constraints",
+        "cleanup_only_requirements",
+        "complexity_regression_gate",
+        "simplicity_review"
+      ],
+      "properties": {
+        "tpa_scope_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_scope_missing_lineage_decision"
+          ],
+          "properties": {
+            "required_scope_missing_lineage_decision": {
+              "type": "string",
+              "enum": [
+                "block",
+                "freeze"
+              ]
+            }
+          }
+        },
+        "lightweight_mode_constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requested_without_eligibility_decision"
+          ],
+          "properties": {
+            "requested_without_eligibility_decision": {
+              "type": "string",
+              "enum": [
+                "block",
+                "freeze"
+              ]
+            }
+          }
+        },
+        "cleanup_only_requirements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "missing_equivalence_decision",
+            "missing_replay_ref_decision"
+          ],
+          "properties": {
+            "missing_equivalence_decision": {
+              "type": "string",
+              "enum": [
+                "block",
+                "freeze"
+              ]
+            },
+            "missing_replay_ref_decision": {
+              "type": "string",
+              "enum": [
+                "block",
+                "freeze"
+              ]
+            }
+          }
+        },
+        "complexity_regression_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "blocking_decisions"
+          ],
+          "properties": {
+            "blocking_decisions": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "allow",
+                  "warn",
+                  "freeze",
+                  "block"
+                ]
+              }
+            }
+          }
+        },
+        "simplicity_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "blocking_decisions"
+          ],
+          "properties": {
+            "blocking_decisions": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "allow",
+                  "warn",
+                  "freeze",
+                  "block"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

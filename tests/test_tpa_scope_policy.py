@@ -35,3 +35,12 @@ def test_scope_policy_invalid_shape_fails_closed(tmp_path: Path) -> None:
     bad.write_text(json.dumps({"artifact_type": "tpa_scope_policy"}), encoding="utf-8")
     with pytest.raises(TPAScopePolicyError, match="failed schema validation"):
         load_tpa_scope_policy(bad)
+
+
+def test_scope_policy_fails_closed_when_source_authority_refresh_digest_mismatches(tmp_path: Path) -> None:
+    policy = load_tpa_scope_policy(_REPO_ROOT / "config" / "policy" / "tpa_scope_policy.json")
+    policy["source_authority_refresh"]["source_inventory_digest_sha256"] = "0" * 64
+    path = tmp_path / "bad-refresh.json"
+    path.write_text(json.dumps(policy), encoding="utf-8")
+    with pytest.raises(TPAScopePolicyError, match="refresh digest mismatch"):
+        load_tpa_scope_policy(path)

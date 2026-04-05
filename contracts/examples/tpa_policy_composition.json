@@ -1,0 +1,42 @@
+{
+  "artifact_type": "tpa_policy_composition",
+  "schema_version": "1.0.0",
+  "policy_id": "TPA-POLICY-COMPOSITION-2026-04-05",
+  "precedence": [
+    "tpa_scope_policy",
+    "lightweight_mode_constraints",
+    "cleanup_only_requirements",
+    "complexity_regression_gate",
+    "simplicity_review"
+  ],
+  "severity_order": [
+    "allow",
+    "warn",
+    "freeze",
+    "block"
+  ],
+  "rules": {
+    "tpa_scope_policy": {
+      "required_scope_missing_lineage_decision": "block"
+    },
+    "lightweight_mode_constraints": {
+      "requested_without_eligibility_decision": "block"
+    },
+    "cleanup_only_requirements": {
+      "missing_equivalence_decision": "block",
+      "missing_replay_ref_decision": "block"
+    },
+    "complexity_regression_gate": {
+      "blocking_decisions": [
+        "freeze",
+        "block"
+      ]
+    },
+    "simplicity_review": {
+      "blocking_decisions": [
+        "freeze",
+        "block"
+      ]
+    }
+  }
+}

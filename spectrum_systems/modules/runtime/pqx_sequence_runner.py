@@ -35,6 +35,10 @@ from spectrum_systems.modules.runtime.pqx_bundle_state import (
     mark_step_complete,
     save_bundle_state,
 )
+from spectrum_systems.modules.governance.tpa_policy_composition import (
+    load_tpa_policy_composition,
+    resolve_tpa_policy_decision,
+)
 from spectrum_systems.modules.governance.tpa_scope_policy import is_tpa_required, load_tpa_scope_policy
 from spectrum_systems.utils.deterministic_id import canonical_json
 
@@ -983,6 +987,7 @@ def execute_sequence_run(
         review_control_decision=review_control_decision,
     )
     tpa_scope_policy = load_tpa_scope_policy(tpa_scope_policy_path) if tpa_scope_policy_path is not None else load_tpa_scope_policy()
+    tpa_policy_composition = load_tpa_policy_composition()
     bypass_signals: list[dict[str, Any]] = []
     while True:
         _verify_continuity(state, slice_requests)
@@ -1256,10 +1261,19 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA plan must declare context_rationale")
                 requested_mode = str(plan_payload.get("tpa_mode") or "full")
                 lightweight_eligible = _is_lightweight_eligible(request, plan_payload)
-                if requested_mode == "lightweight" and not lightweight_eligible:
-                    raise PQXSequenceRunnerError("tpa_bypass_detected: lightweight mode not eligible for this scope")
                 if requested_mode not in {"full", "lightweight"}:
                     raise PQXSequenceRunnerError("TPA plan tpa_mode must be full|lightweight")
+                composition_decision = resolve_tpa_policy_decision(
+                    {
+                        "required_scope": bool(required_scope),
+                        "tpa_lineage_present": True,
+                        "tpa_mode": requested_mode,
+                        "lightweight_eligible": lightweight_eligible,
+                    },
+                    composition=tpa_policy_composition,
+                )
+                if requested_mode == "lightweight" and composition_decision["final_decision"] in {"freeze", "block"}:
+                    raise PQXSequenceRunnerError("tpa_bypass_detected: lightweight mode not eligible for this scope")
                 tpa_mode = requested_mode
                 artifacts["plan"] = _build_tpa_slice_artifact(
                     run_id=run_id,
@@ -1501,20 +1515,36 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("TPA gate complexity_regression_gate.decision invalid")
                 if regression_gate.get("regression_detected") and regression_gate.get("decision") == "allow":
                     raise PQXSequenceRunnerError("TPA gate must block/freeze/warn regressions per policy")
-                if simplicity_decision in {"block", "freeze"} and bool(gate_payload.get("promotion_ready")):
-                    raise PQXSequenceRunnerError("TPA gate cannot mark promotion_ready for blocked/frozen simplicity review")
-                if regression_gate.get("decision") in {"block", "freeze"} and bool(gate_payload.get("promotion_ready")):
-                    raise PQXSequenceRunnerError("TPA gate cannot mark promotion_ready for blocked/frozen complexity regression gate")
-                if artifacts["plan"]["artifact"].get("execution_mode") == "cleanup_only":
-                    cleanup_validation = gate_payload.get("cleanup_only_validation")
+                cleanup_validation = gate_payload.get("cleanup_only_validation")
+                execution_mode = str(artifacts["plan"]["artifact"].get("execution_mode") or "")
+                if execution_mode == "cleanup_only":
                     if not isinstance(cleanup_validation, dict):
                         raise PQXSequenceRunnerError("TPA cleanup-only gate requires cleanup_only_validation")
                     if not bool(cleanup_validation.get("mode_enabled")):
                         raise PQXSequenceRunnerError("TPA cleanup-only gate requires mode_enabled=true")
-                    if not bool(cleanup_validation.get("equivalence_proven")):
-                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires strict equivalence proof")
-                    if not cleanup_validation.get("replay_ref"):
-                        raise PQXSequenceRunnerError("TPA cleanup-only gate requires replay_ref")
+
+                composition_decision = resolve_tpa_policy_decision(
+                    {
+                        "required_scope": bool(required_scope),
+                        "tpa_lineage_present": True,
+                        "execution_mode": execution_mode,
+                        "cleanup_only_validation": cleanup_validation,
+                        "complexity_decision": str(regression_gate.get("decision") or "allow"),
+                        "simplicity_decision": str(simplicity_decision or "allow"),
+                        "promotion_ready_requested": bool(gate_payload.get("promotion_ready")),
+                        "tpa_mode": tpa_mode,
+                        "lightweight_eligible": True,
+                    },
+                    composition=tpa_policy_composition,
+                )
+                if execution_mode == "cleanup_only" and "cleanup_only_missing_equivalence" in composition_decision["blocking_reasons"]:
+                    raise PQXSequenceRunnerError("TPA cleanup-only gate requires strict equivalence proof")
+                if execution_mode == "cleanup_only" and "cleanup_only_missing_replay_ref" in composition_decision["blocking_reasons"]:
+                    raise PQXSequenceRunnerError("TPA cleanup-only gate requires replay_ref")
+                if bool(gate_payload.get("promotion_ready")) and not composition_decision["promotion_ready"]:
+                    raise PQXSequenceRunnerError(
+                        "TPA gate cannot mark promotion_ready when contract-backed policy composition resolves freeze/block"
+                    )
                 artifacts["gate"] = _build_tpa_slice_artifact(
                     run_id=run_id,
                     trace_id=request["trace_id"],

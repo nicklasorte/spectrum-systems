@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Dict
@@ -16,6 +17,12 @@ class TPAScopePolicyError(ValueError):
 
 
 _DEFAULT_POLICY_PATH = Path(__file__).resolve().parents[3] / "config" / "policy" / "tpa_scope_policy.json"
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_SOURCE_AUTHORITY_DIGEST_PATHS = {
+    "source_inventory_digest_sha256": _REPO_ROOT / "docs" / "source_indexes" / "source_inventory.json",
+    "obligation_index_digest_sha256": _REPO_ROOT / "docs" / "source_indexes" / "obligation_index.json",
+    "component_source_map_digest_sha256": _REPO_ROOT / "docs" / "source_indexes" / "component_source_map.json",
+}
 
 
 def _validate_schema(instance: Dict[str, Any], schema_name: str, *, label: str) -> None:
@@ -25,6 +32,28 @@ def _validate_schema(instance: Dict[str, Any], schema_name: str, *, label: str) 
     if errors:
         details = "; ".join(error.message for error in errors)
         raise TPAScopePolicyError(f"{label} failed schema validation ({schema_name}): {details}")
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _validate_source_authority_refresh(payload: Dict[str, Any]) -> None:
+    refresh = payload.get("source_authority_refresh")
+    if not isinstance(refresh, dict):
+        raise TPAScopePolicyError("tpa_scope_policy.source_authority_refresh must be an object")
+
+    for field, source_path in _SOURCE_AUTHORITY_DIGEST_PATHS.items():
+        expected = str(refresh.get(field) or "").strip().lower()
+        if not expected:
+            raise TPAScopePolicyError(f"tpa_scope_policy.source_authority_refresh missing required digest: {field}")
+        if not source_path.is_file():
+            raise TPAScopePolicyError(f"source-authority refresh input missing: {source_path}")
+        actual = _sha256(source_path)
+        if actual != expected:
+            raise TPAScopePolicyError(
+                f"tpa_scope_policy source-authority refresh digest mismatch for {field}; refresh source-authority indexes"
+            )
 
 
 def load_tpa_scope_policy(path: str | Path | None = None) -> Dict[str, Any]:
@@ -39,6 +68,7 @@ def load_tpa_scope_policy(path: str | Path | None = None) -> Dict[str, Any]:
     if not isinstance(payload, dict):
         raise TPAScopePolicyError(f"tpa_scope_policy must be a JSON object: {policy_path}")
     _validate_schema(payload, "tpa_scope_policy", label="tpa_scope_policy")
+    _validate_source_authority_refresh(payload)
     return payload
 
 

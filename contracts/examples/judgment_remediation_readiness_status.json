@@ -1,6 +1,6 @@
 {
   "artifact_type": "judgment_remediation_readiness_status",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "remediation_id": "JOR-bbb70ebf32f9da31",
   "current_lifecycle_state": "approved_for_closure",
   "required_evidence_refs": [
@@ -34,5 +34,7 @@
     "remediation_record_id": "JOR-bbb70ebf32f9da31",
     "closure_record_id": "JRC-a8c2f2e8dbecf9b0",
     "reinstatement_record_id": ""
-  }
+  },
+  "tpa_bypass_drift_signal_refs": [],
+  "tpa_bypass_drift_detected": false
 }

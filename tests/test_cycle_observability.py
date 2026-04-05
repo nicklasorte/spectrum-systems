@@ -358,3 +358,32 @@ def test_backlog_includes_readiness_queues_and_missing_artifacts_fail_closed(tmp
     assert remediation["remediation_id"] in snapshot["queues"]["remediations_blocked_on_missing_evidence"]
     assert remediation["remediation_id"] in snapshot["queues"]["frozen_or_blocked_with_unresolved_remediation"]
     assert snapshot["metrics"]["reinstatement_ready_count"] == 0
+
+
+def test_remediation_readiness_wires_tpa_bypass_drift_signal_into_blocking_state() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    bypass = _example("tpa_bypass_drift_signal")
+    status = build_remediation_readiness_status(
+        remediation,
+        evidence_artifact_refs=remediation["required_evidence_artifacts"],
+        threshold_checks={"thresholds_satisfied": True},
+        tpa_bypass_drift_signals=[bypass],
+    )
+    assert status["tpa_bypass_drift_detected"] is True
+    assert status["tpa_bypass_drift_signal_refs"] == [bypass["signal_id"]]
+    assert status["closure_eligible"] is False
+    assert "tpa_bypass_drift_detected" in status["blocking_reasons"]
+
+
+def test_remediation_readiness_ignores_unvalidated_bypass_payloads_fail_closed() -> None:
+    remediation = _example("judgment_operator_remediation_record")
+    remediation["status"] = "approved_for_closure"
+    status = build_remediation_readiness_status(
+        remediation,
+        evidence_artifact_refs=remediation["required_evidence_artifacts"],
+        threshold_checks={"thresholds_satisfied": True},
+        tpa_bypass_drift_signals=[{"artifact_type": "not_a_signal"}],
+    )
+    assert status["tpa_bypass_drift_detected"] is False
+    assert status["tpa_bypass_drift_signal_refs"] == []
