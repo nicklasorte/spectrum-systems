@@ -8,9 +8,10 @@
   ],
   "supporting_signals": [
     "control_decision=allow",
+    "drift_status=within_threshold",
     "replay_status=passed",
     "review_gate_status=passed",
-    "drift_status=within_threshold"
+    "system_health_mode=normal"
   ],
   "unresolved_critical_risk_count": 0,
   "consecutive_warn_count": 0,
@@ -18,5 +19,7 @@
   "replay_status": "passed",
   "review_gate_status": "passed",
   "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-autonomy-decision-example"
+  "trace_id": "trace-autonomy-decision-example",
+  "maturity_level": "stable",
+  "system_health_mode": "normal"
 }

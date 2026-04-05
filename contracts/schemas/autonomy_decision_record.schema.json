@@ -18,13 +18,32 @@
     "replay_status",
     "review_gate_status",
     "created_at",
-    "trace_id"
+    "trace_id",
+    "maturity_level",
+    "system_health_mode"
   ],
   "properties": {
-    "autonomy_decision_id": {"type": "string", "pattern": "^ADR-[A-F0-9]{12}$"},
-    "source_cycle_id": {"type": "string", "minLength": 3},
-    "autonomy_policy_id": {"type": "string", "pattern": "^AP-[A-F0-9]{12}$"},
-    "decision": {"type": "string", "enum": ["continue", "stop", "require_human_review", "escalate"]},
+    "autonomy_decision_id": {
+      "type": "string",
+      "pattern": "^ADR-[A-F0-9]{12}$"
+    },
+    "source_cycle_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "autonomy_policy_id": {
+      "type": "string",
+      "pattern": "^AP-[A-F0-9]{12}$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "stop",
+        "require_human_review",
+        "escalate"
+      ]
+    },
     "reason_codes": {
       "type": "array",
       "minItems": 1,
@@ -47,17 +66,83 @@
           "missing_eval_input",
           "budget_exhausted",
           "budget_warning",
-          "malformed_budget_signal"
+          "malformed_budget_signal",
+          "autonomy_scope_blocked",
+          "maturity_below_stable",
+          "system_health_critical",
+          "human_override_active",
+          "missing_required_signal:maturity"
         ]
       }
     },
-    "supporting_signals": {"type": "array", "items": {"type": "string", "minLength": 3}, "uniqueItems": true},
-    "unresolved_critical_risk_count": {"type": "integer", "minimum": 0},
-    "consecutive_warn_count": {"type": "integer", "minimum": 0},
-    "drift_status": {"type": "string", "enum": ["within_threshold", "warning", "threshold_exceeded", "unknown"]},
-    "replay_status": {"type": "string", "enum": ["passed", "failed", "not_required", "unknown"]},
-    "review_gate_status": {"type": "string", "enum": ["passed", "required", "pending", "unknown"]},
-    "created_at": {"type": "string", "format": "date-time"},
-    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+    "supporting_signals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "uniqueItems": true
+    },
+    "unresolved_critical_risk_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "consecutive_warn_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "drift_status": {
+      "type": "string",
+      "enum": [
+        "within_threshold",
+        "warning",
+        "threshold_exceeded",
+        "unknown"
+      ]
+    },
+    "replay_status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "not_required",
+        "unknown"
+      ]
+    },
+    "review_gate_status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "required",
+        "pending",
+        "unknown"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "maturity_level": {
+      "type": "string",
+      "enum": [
+        "experimental",
+        "developing",
+        "stable",
+        "critical"
+      ]
+    },
+    "system_health_mode": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "degraded",
+        "critical",
+        "unknown"
+      ]
+    }
   }
 }

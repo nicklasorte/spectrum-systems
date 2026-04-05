@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/autonomy_audit_record.schema.json",
+  "title": "autonomy_audit_record",
+  "description": "Replayable audit record for every autonomous action attempt and outcome.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audit_id",
+    "action_type",
+    "trigger_signal",
+    "decision_context",
+    "outcome",
+    "timestamp",
+    "trace_id"
+  ],
+  "properties": {
+    "audit_id": {"type": "string", "pattern": "^AUT-[A-F0-9]{12}$"},
+    "action_type": {"type": "string", "enum": ["cleanup", "refactor", "schedule_campaign", "escalate", "proposal"]},
+    "trigger_signal": {"type": "string", "minLength": 1},
+    "decision_context": {"type": "object"},
+    "outcome": {"type": "string", "enum": ["success", "blocked", "failure", "review_required"]},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

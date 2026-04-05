@@ -207,6 +207,9 @@ def test_policy_candidate_generation_requires_repeated_evidence() -> None:
     assert candidate is not None
     assert candidate["review_required"] is True
     assert candidate["auto_apply"] is False
+    assert candidate["test_validation_required"] is True
+    assert candidate["staged_rollout_required"] is True
+    assert candidate["lifecycle_state"] == "proposed"
     assert "complexity_budget:run-1:AI-01" in candidate["evidence_refs"]
 
 

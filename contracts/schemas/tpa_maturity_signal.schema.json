@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_maturity_signal.schema.json",
+  "title": "tpa_maturity_signal",
+  "description": "Deterministic maturity classification signal used to gate autonomous execution eligibility.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "module",
+    "trend_stability",
+    "regression_frequency",
+    "test_coverage",
+    "drift_signal_strength",
+    "maturity_level",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "module": {"type": "string", "minLength": 1},
+    "trend_stability": {"type": "number", "minimum": 0, "maximum": 1},
+    "regression_frequency": {"type": "number", "minimum": 0, "maximum": 1},
+    "test_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "drift_signal_strength": {"type": "number", "minimum": 0, "maximum": 1},
+    "maturity_level": {"type": "string", "enum": ["experimental", "developing", "stable", "critical"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+  }
+}

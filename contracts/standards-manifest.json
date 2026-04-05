@@ -224,28 +224,28 @@
     {
       "artifact_type": "autonomy_decision_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.54",
-      "last_updated_in": "1.3.54",
+      "last_updated_in": "1.3.71",
       "example_path": "contracts/examples/autonomy_decision_record.json",
-      "notes": "BATCH-A1 deterministic replayable autonomy guardrail decision artifact emitted per cycle with explicit reason codes and supporting signals."
+      "notes": "BATCH-A1 deterministic replayable autonomy guardrail decision artifact emitted per cycle with explicit reason codes and supporting signals. Adds maturity and system-health boundary evidence and reason codes."
     },
     {
       "artifact_type": "autonomy_policy",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.54",
-      "last_updated_in": "1.3.54",
+      "last_updated_in": "1.3.71",
       "example_path": "contracts/examples/autonomy_policy.json",
-      "notes": "BATCH-A1 deterministic governed autonomy policy contract defining explicit continue/stop/review/escalate thresholds and fail-closed handling."
+      "notes": "BATCH-A1 deterministic governed autonomy policy contract defining explicit continue/stop/review/escalate thresholds and fail-closed handling. Adds explicit autonomy scope/action/signal gating fields."
     },
     {
       "artifact_type": "baseline_gate_decision",
@@ -2004,15 +2004,15 @@
     {
       "artifact_type": "override_governance_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.62",
-      "last_updated_in": "1.3.62",
+      "last_updated_in": "1.3.71",
       "example_path": "contracts/examples/override_governance_record.json",
-      "notes": "LT-04 override ownership/expiry/outcome/escalation governance record for bounded trust-core operation."
+      "notes": "LT-04 override ownership/expiry/outcome/escalation governance record for bounded trust-core operation. Adds explicit reason/duration/affected_artifacts/override_type fields."
     },
     {
       "artifact_type": "override_hotspot_report",
@@ -3718,15 +3718,45 @@
     {
       "artifact_type": "tpa_policy_candidate",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.70",
-      "last_updated_in": "1.3.70",
+      "last_updated_in": "1.3.71",
       "example_path": "contracts/examples/tpa_policy_candidate.json",
-      "notes": "TPA-024 deterministic policy feedback artifact proposing governed policy changes from repeated complexity regressions, bypass attempts, and simplification failures."
+      "notes": "TPA-024 deterministic policy feedback artifact proposing governed policy changes from repeated complexity regressions, bypass attempts, and simplification failures. Promotion requires human review, test validation, and staged rollout."
+    },
+    {
+      "artifact_type": "tpa_maturity_signal",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "governance",
+        "observability"
+      ],
+      "introduced_in": "1.3.71",
+      "last_updated_in": "1.3.71",
+      "example_path": "contracts/examples/tpa_maturity_signal.json",
+      "notes": "Maturity signal for autonomy eligibility gating."
+    },
+    {
+      "artifact_type": "autonomy_audit_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "governance",
+        "observability"
+      ],
+      "introduced_in": "1.3.71",
+      "last_updated_in": "1.3.71",
+      "example_path": "contracts/examples/autonomy_audit_record.json",
+      "notes": "Replayable per-action autonomy audit trail record."
     }
   ]
 }

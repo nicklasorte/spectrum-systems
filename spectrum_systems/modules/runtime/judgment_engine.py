@@ -232,6 +232,7 @@ def build_override_governance_record(
     outcome_tracking_status: str = "pending",
     escalation_state: str = "none",
     active: bool = True,
+    override_type: str = "bounded_bypass",
 ) -> dict[str, Any]:
     if not owner.strip() or not justification.strip():
         raise JudgmentEngineError("override governance requires owner and justification")
@@ -241,7 +242,11 @@ def build_override_governance_record(
         "override_record_ref": override_record_ref,
         "owner": owner,
         "justification": justification,
+        "reason": justification,
         "scope": scope,
+        "duration": f"{issued_at}->{expires_at}",
+        "affected_artifacts": sorted(set(linked_artifact_refs)),
+        "override_type": override_type,
         "issued_at": issued_at,
         "expires_at": expires_at,
         "review_due_at": review_due_at,

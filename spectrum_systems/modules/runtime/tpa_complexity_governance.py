@@ -338,6 +338,7 @@ def build_tpa_policy_candidate(
     module_scope: str,
     pattern_history: list[dict[str, Any]],
     minimum_recurrence: int = 3,
+    lifecycle_state: str = "proposed",
 ) -> dict[str, Any] | None:
     repeated: list[dict[str, Any]] = []
     for row in sorted(pattern_history, key=lambda item: (str(item.get("issue_pattern", "")), str(item.get("proposed_change", "")))):
@@ -366,7 +367,7 @@ def build_tpa_policy_candidate(
     scope_token = module_scope.replace("/", "_")
     candidate = {
         "artifact_type": "tpa_policy_candidate",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "candidate_id": f"tpa-policy:{run_id}:{scope_token}:{issue_summary}",
         "run_id": run_id,
         "trace_id": trace_id,
@@ -378,7 +379,9 @@ def build_tpa_policy_candidate(
         "expected_impact": " ; ".join(item["expected_impact"] for item in repeated),
         "evidence_refs": sorted({ref for item in repeated for ref in item["evidence_refs"]}),
         "review_required": True,
-        "lifecycle_state": "proposed",
+        "test_validation_required": True,
+        "staged_rollout_required": True,
+        "lifecycle_state": lifecycle_state,
         "auto_apply": False,
         "detected_patterns": repeated,
     }

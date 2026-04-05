@@ -76,6 +76,12 @@ def evaluate_autonomy_guardrails(
     consecutive_warn_count: int,
     created_at: str,
     trace_id: str,
+    target_module: str | None = None,
+    requested_action: str | None = None,
+    tpa_maturity_signal: dict[str, Any] | None = None,
+    system_health_mode: str | None = None,
+    override_active: bool = False,
+    override_ref: str | None = None,
 ) -> dict[str, Any]:
     """Evaluate governed autonomy continuation permissions deterministically and fail closed."""
 
@@ -100,6 +106,7 @@ def evaluate_autonomy_guardrails(
             f"consecutive_warn_count={int(consecutive_warn_count)}",
             f"unresolved_critical_risk_count={len(unresolved_critical_risks)}",
             f"required_validation_count={len(required_validation_carry_forward)}",
+            f"system_health_mode={str(system_health_mode or 'unknown').strip().lower() or 'unknown'}",
         }
     )
 
@@ -128,7 +135,7 @@ def evaluate_autonomy_guardrails(
         missing_eval_policy = str(autonomy_policy["missing_eval_policy"])
         malformed_budget_signal = False
         normalized_budget_status = dict(system_budget_status or {})
-        if normalized_budget_status:
+        if normalized_budget_status and "artifact_type" in normalized_budget_status:
             try:
                 _validate_schema(normalized_budget_status, "system_budget_status")
             except AutonomyGuardrailError:
@@ -140,8 +147,37 @@ def evaluate_autonomy_guardrails(
         continue_required_replay = str(autonomy_policy["continue_conditions"]["required_replay_status"])
         continue_required_review = str(autonomy_policy["continue_conditions"]["required_review_gate_status"])
         continue_required_drift = str(autonomy_policy["continue_conditions"]["required_drift_status"])
+        if target_module and requested_action and not is_autonomy_allowed(
+            {
+                "module": target_module,
+                "action": requested_action,
+                "trend": drift_signals,
+                "budget": normalized_budget_status,
+            },
+            autonomy_policy=autonomy_policy,
+        ):
+            decision = "stop"
+            reason_codes.append("autonomy_scope_blocked")
+        elif override_active:
+            decision = "require_human_review"
+            reason_codes.append("human_override_active")
+            if override_ref:
+                supporting_signals.append(f"override_ref={override_ref}")
+        elif target_module and requested_action and tpa_maturity_signal is None:
+            decision = "stop"
+            reason_codes.extend(["missing_required_signal:maturity", "missing_required_input"])
+        elif (
+            target_module
+            and requested_action
+            and str((tpa_maturity_signal or {}).get("maturity_level", "experimental")) not in {"stable", "critical"}
+        ):
+            decision = "stop"
+            reason_codes.append("maturity_below_stable")
+        elif target_module and requested_action and str(system_health_mode or "").strip().lower() == "critical":
+            decision = "stop"
+            reason_codes.append("system_health_critical")
 
-        if malformed_budget_signal:
+        elif malformed_budget_signal:
             decision = "stop"
             reason_codes.append("malformed_budget_signal")
             reason_codes.append("missing_required_input")
@@ -221,11 +257,115 @@ def evaluate_autonomy_guardrails(
         "drift_status": drift_status,
         "replay_status": normalized_replay_status,
         "review_gate_status": normalized_review_gate_status,
+        "maturity_level": str((tpa_maturity_signal or {}).get("maturity_level") or "experimental"),
+        "system_health_mode": str(system_health_mode or "unknown").strip().lower() or "unknown",
         "created_at": created_at,
         "trace_id": trace_id,
     }
     _validate_schema(record, "autonomy_decision_record")
     return record
+
+
+def is_autonomy_allowed(context: dict[str, Any], *, autonomy_policy: dict[str, Any]) -> bool:
+    """Return True when context falls within explicit autonomy policy scope and required safety signals."""
+    _validate_schema(autonomy_policy, "autonomy_policy")
+    module = str(context.get("module") or "").strip()
+    action = str(context.get("action") or "").strip()
+    if not module or not action:
+        return False
+
+    allowed_modules = {str(item) for item in autonomy_policy.get("allowed_modules", [])}
+    allowed_actions = {str(item) for item in autonomy_policy.get("allowed_actions", [])}
+    prohibited_actions = {str(item) for item in autonomy_policy.get("prohibited_actions", [])}
+    if module not in allowed_modules:
+        return False
+    if action in prohibited_actions or action not in allowed_actions:
+        return False
+
+    trend = context.get("trend") if isinstance(context.get("trend"), dict) else {}
+    budget = context.get("budget") if isinstance(context.get("budget"), dict) else {}
+    required_signals = {str(item) for item in autonomy_policy.get("required_signals", [])}
+    signal_state = {
+        "stable trend": str(trend.get("drift_level") or "").strip().lower() in {"none", "low"},
+        "healthy budget": not bool(budget.get("budget_exhausted")) and str(budget.get("cost_budget_status", "within_budget")) != "warning",
+        "low volatility": str(trend.get("volatility") or "").strip().lower() in {"low", "none", ""},
+    }
+    return all(signal_state.get(signal, False) for signal in required_signals)
+
+
+def build_tpa_maturity_signal(
+    *,
+    module: str,
+    trend_stability: float,
+    regression_frequency: float,
+    test_coverage: float,
+    drift_signal_strength: float,
+    created_at: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    score = (trend_stability * 0.35) + ((1.0 - regression_frequency) * 0.25) + (test_coverage * 0.25) + ((1.0 - drift_signal_strength) * 0.15)
+    if score >= 0.8:
+        maturity_level = "critical"
+    elif score >= 0.65:
+        maturity_level = "stable"
+    elif score >= 0.4:
+        maturity_level = "developing"
+    else:
+        maturity_level = "experimental"
+    payload = {
+        "module": module,
+        "trend_stability": round(float(trend_stability), 6),
+        "regression_frequency": round(float(regression_frequency), 6),
+        "test_coverage": round(float(test_coverage), 6),
+        "drift_signal_strength": round(float(drift_signal_strength), 6),
+        "maturity_level": maturity_level,
+        "created_at": created_at,
+        "trace_id": trace_id,
+    }
+    _validate_schema(payload, "tpa_maturity_signal")
+    return payload
+
+
+def build_autonomy_audit_record(
+    *,
+    action_type: str,
+    trigger_signal: str,
+    decision_context: dict[str, Any],
+    outcome: str,
+    timestamp: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    seed = {
+        "action_type": action_type,
+        "trigger_signal": trigger_signal,
+        "decision_context": decision_context,
+        "outcome": outcome,
+        "trace_id": trace_id,
+    }
+    record = {
+        "audit_id": f"AUT-{_canonical_hash(seed)[:12].upper()}",
+        "action_type": action_type,
+        "trigger_signal": trigger_signal,
+        "decision_context": decision_context,
+        "outcome": outcome,
+        "timestamp": timestamp,
+        "trace_id": trace_id,
+    }
+    _validate_schema(record, "autonomy_audit_record")
+    return record
+
+
+def summarize_autonomy_observability(records: list[dict[str, Any]]) -> dict[str, float]:
+    total = float(len(records))
+    if total == 0:
+        return {"autonomy_action_count": 0.0, "autonomy_success_rate": 0.0, "autonomy_failure_rate": 0.0}
+    successes = sum(1 for row in records if str(row.get("outcome", "")).lower() in {"success", "continue", "allowed"})
+    failures = sum(1 for row in records if str(row.get("outcome", "")).lower() in {"failure", "blocked", "stop"})
+    return {
+        "autonomy_action_count": total,
+        "autonomy_success_rate": round(successes / total, 6),
+        "autonomy_failure_rate": round(failures / total, 6),
+    }
 
 
 def build_unknown_state_signal(

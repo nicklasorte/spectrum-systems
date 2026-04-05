@@ -18,5 +18,12 @@
   "escalation_state": "warning",
   "active": true,
   "created_at": "2026-04-04T00:00:00Z",
-  "trace_id": "trace-batch-ltv-a-example"
+  "trace_id": "trace-batch-ltv-a-example",
+  "reason": "bounded temporary exception for high-priority remediation path",
+  "duration": "2026-04-04T00:00:00Z->2026-04-06T00:00:00Z",
+  "affected_artifacts": [
+    "judgment_record:artifact-release-2026-04-04",
+    "batch_handoff_bundle:BHB-111111111111"
+  ],
+  "override_type": "bounded_bypass"
 }

@@ -20,76 +20,290 @@
     "replay_failure_policy",
     "missing_eval_policy",
     "created_at",
-    "trace_id"
+    "trace_id",
+    "allowed_modules",
+    "allowed_actions",
+    "prohibited_actions",
+    "required_signals"
   ],
   "properties": {
-    "autonomy_policy_id": {"type": "string", "pattern": "^AP-[A-F0-9]{12}$"},
-    "policy_version": {"type": "string", "pattern": "^1\\.0\\.[0-9]+$"},
+    "autonomy_policy_id": {
+      "type": "string",
+      "pattern": "^AP-[A-F0-9]{12}$"
+    },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^1\\.1\\.[0-9]+$"
+    },
     "continue_conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["allowed_control_decisions", "required_replay_status", "required_review_gate_status", "required_drift_status"],
+      "required": [
+        "allowed_control_decisions",
+        "required_replay_status",
+        "required_review_gate_status",
+        "required_drift_status"
+      ],
       "properties": {
-        "allowed_control_decisions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["allow"]}},
-        "required_replay_status": {"type": "string", "enum": ["passed", "not_required"]},
-        "required_review_gate_status": {"type": "string", "enum": ["passed"]},
-        "required_drift_status": {"type": "string", "enum": ["within_threshold"]}
+        "allowed_control_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "allow"
+            ]
+          }
+        },
+        "required_replay_status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "not_required"
+          ]
+        },
+        "required_review_gate_status": {
+          "type": "string",
+          "enum": [
+            "passed"
+          ]
+        },
+        "required_drift_status": {
+          "type": "string",
+          "enum": [
+            "within_threshold"
+          ]
+        }
       }
     },
     "stop_conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["stop_on_missing_inputs", "stop_on_malformed_policy", "stop_on_critical_risk_threshold", "stop_on_warn_threshold"],
+      "required": [
+        "stop_on_missing_inputs",
+        "stop_on_malformed_policy",
+        "stop_on_critical_risk_threshold",
+        "stop_on_warn_threshold"
+      ],
       "properties": {
-        "stop_on_missing_inputs": {"type": "boolean"},
-        "stop_on_malformed_policy": {"type": "boolean"},
-        "stop_on_critical_risk_threshold": {"type": "boolean"},
-        "stop_on_warn_threshold": {"type": "boolean"}
+        "stop_on_missing_inputs": {
+          "type": "boolean"
+        },
+        "stop_on_malformed_policy": {
+          "type": "boolean"
+        },
+        "stop_on_critical_risk_threshold": {
+          "type": "boolean"
+        },
+        "stop_on_warn_threshold": {
+          "type": "boolean"
+        }
       }
     },
     "review_required_conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["review_gate_statuses", "decision_reason_codes"],
+      "required": [
+        "review_gate_statuses",
+        "decision_reason_codes"
+      ],
       "properties": {
-        "review_gate_statuses": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["required", "pending"]}},
-        "decision_reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["manual_review_required", "policy_override_requested", "missing_eval_input"]}}
+        "review_gate_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "required",
+              "pending"
+            ]
+          }
+        },
+        "decision_reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "manual_review_required",
+              "policy_override_requested",
+              "missing_eval_input"
+            ]
+          }
+        }
       }
     },
     "escalate_conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["control_decisions", "drift_statuses", "reason_codes"],
+      "required": [
+        "control_decisions",
+        "drift_statuses",
+        "reason_codes"
+      ],
       "properties": {
-        "control_decisions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["freeze"]}},
-        "drift_statuses": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["threshold_exceeded"]}},
-        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["program_drift_high", "control_freeze", "replay_chain_violation"]}}
+        "control_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "freeze"
+            ]
+          }
+        },
+        "drift_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "threshold_exceeded"
+            ]
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "program_drift_high",
+              "control_freeze",
+              "replay_chain_violation"
+            ]
+          }
+        }
       }
     },
-    "max_consecutive_warns": {"type": "integer", "minimum": 0, "maximum": 100},
-    "max_unresolved_critical_risks": {"type": "integer", "minimum": 0, "maximum": 100},
-    "max_continuation_depth": {"type": "integer", "minimum": 0, "maximum": 100},
+    "max_consecutive_warns": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "max_unresolved_critical_risks": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "max_continuation_depth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
     "drift_thresholds": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["warn_level", "stop_level"],
+      "required": [
+        "warn_level",
+        "stop_level"
+      ],
       "properties": {
-        "warn_level": {"type": "string", "enum": ["medium"]},
-        "stop_level": {"type": "string", "enum": ["high"]}
+        "warn_level": {
+          "type": "string",
+          "enum": [
+            "medium"
+          ]
+        },
+        "stop_level": {
+          "type": "string",
+          "enum": [
+            "high"
+          ]
+        }
       }
     },
     "override_thresholds": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["allow_operator_override", "max_override_depth"],
+      "required": [
+        "allow_operator_override",
+        "max_override_depth"
+      ],
       "properties": {
-        "allow_operator_override": {"type": "boolean"},
-        "max_override_depth": {"type": "integer", "minimum": 0, "maximum": 20}
+        "allow_operator_override": {
+          "type": "boolean"
+        },
+        "max_override_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        }
       }
     },
-    "replay_failure_policy": {"type": "string", "enum": ["stop", "require_human_review", "escalate"]},
-    "missing_eval_policy": {"type": "string", "enum": ["stop", "require_human_review"]},
-    "created_at": {"type": "string", "format": "date-time"},
-    "trace_id": {"type": "string", "pattern": "^trace-[A-Za-z0-9._:-]+$"}
+    "replay_failure_policy": {
+      "type": "string",
+      "enum": [
+        "stop",
+        "require_human_review",
+        "escalate"
+      ]
+    },
+    "missing_eval_policy": {
+      "type": "string",
+      "enum": [
+        "stop",
+        "require_human_review"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trace-[A-Za-z0-9._:-]+$"
+    },
+    "allowed_modules": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_actions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "cleanup",
+          "refactor",
+          "schedule_campaign"
+        ]
+      }
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "policy_change",
+          "contract_change"
+        ]
+      }
+    },
+    "required_signals": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "stable trend",
+          "healthy budget",
+          "low volatility"
+        ]
+      }
+    }
   }
 }
