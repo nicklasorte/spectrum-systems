@@ -57,6 +57,7 @@ def build_remediation_readiness_status(
     evidence_artifact_refs: Sequence[str] | None = None,
     threshold_checks: Mapping[str, bool] | None = None,
     closure_record: dict[str, Any] | None = None,
+    tpa_bypass_drift_signals: Sequence[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Deterministic remediation closure readiness status builder."""
     remediation_valid = isinstance(remediation_record, dict) and _require_artifact(
@@ -81,6 +82,15 @@ def build_remediation_readiness_status(
     missing_evidence = sorted(set(required_evidence) - set(provided_evidence))
     present_evidence = sorted(set(required_evidence) & set(provided_evidence))
 
+
+    validated_tpa_bypass_refs = sorted(
+        {
+            str(signal.get("signal_id") or "").strip()
+            for signal in (tpa_bypass_drift_signals or [])
+            if isinstance(signal, dict) and _require_artifact(signal, "tpa_bypass_drift_signal")
+        }
+    )
+    tpa_bypass_detected = bool(validated_tpa_bypass_refs)
     threshold_map = {
         key: bool(value)
         for key, value in dict(threshold_checks or {}).items()
@@ -101,6 +111,8 @@ def build_remediation_readiness_status(
         blocking_reasons.append("missing_eval_result")
     if thresholds_not_satisfied:
         blocking_reasons.append("threshold_not_met")
+    if tpa_bypass_detected:
+        blocking_reasons.append("tpa_bypass_drift_detected")
 
     closure_eligible = remediation_valid and not blocking_reasons
     closure_valid = isinstance(closure_record, dict) and _require_artifact(
@@ -111,7 +123,7 @@ def build_remediation_readiness_status(
 
     status = {
         "artifact_type": "judgment_remediation_readiness_status",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "remediation_id": remediation_id or "unknown",
         "current_lifecycle_state": lifecycle_state,
         "required_evidence_refs": required_evidence,
@@ -120,6 +132,8 @@ def build_remediation_readiness_status(
         "required_thresholds": required_thresholds,
         "thresholds_satisfied": thresholds_satisfied,
         "thresholds_not_satisfied": thresholds_not_satisfied,
+        "tpa_bypass_drift_signal_refs": validated_tpa_bypass_refs,
+        "tpa_bypass_drift_detected": tpa_bypass_detected,
         "closure_eligible": bool(closure_eligible),
         "blocking_reasons": sorted(set(blocking_reasons)),
         "trace": {

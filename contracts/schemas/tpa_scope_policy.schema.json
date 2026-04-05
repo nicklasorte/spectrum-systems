@@ -13,34 +13,96 @@
     "required_artifact_types",
     "required_pqx_steps",
     "optional_paths",
-    "lightweight_mode_allowed"
+    "lightweight_mode_allowed",
+    "source_authority_refresh"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "tpa_scope_policy"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "policy_id": {"type": "string", "minLength": 1},
+    "artifact_type": {
+      "type": "string",
+      "const": "tpa_scope_policy"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "required_paths": {
       "type": "array",
       "minItems": 1,
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
     "required_artifact_types": {
       "type": "array",
       "minItems": 1,
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
     "required_pqx_steps": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
     "optional_paths": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
-    "lightweight_mode_allowed": {"type": "boolean"}
+    "lightweight_mode_allowed": {
+      "type": "boolean"
+    },
+    "source_authority_refresh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "refresh_id",
+        "refreshed_at",
+        "source_index_path",
+        "source_inventory_digest_sha256",
+        "obligation_index_digest_sha256",
+        "component_source_map_digest_sha256"
+      ],
+      "properties": {
+        "refresh_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "refreshed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_index_path": {
+          "type": "string",
+          "const": "docs/architecture/system_source_index.md"
+        },
+        "source_inventory_digest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "obligation_index_digest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "component_source_map_digest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
   }
 }
