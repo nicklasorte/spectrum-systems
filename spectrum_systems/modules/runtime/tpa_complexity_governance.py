@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from statistics import mean
-from typing import Any
+from typing import Any, Callable
 
 from spectrum_systems.contracts import validate_artifact
 
@@ -305,6 +305,7 @@ def build_control_priority_signal(
     previous_priority_signal: dict[str, Any] | None = None,
     driver_signal_sources: list[str] | None = None,
     corroborating_signal_refs: list[str] | None = None,
+    corroboration_artifact_resolver: Callable[[str], dict[str, Any] | None] | None = None,
 ) -> dict[str, Any]:
     mode = classify_system_health_mode(budget=budget, trend=trend)
     effective_decision = enforce_budget_trend_control(existing_decision=existing_decision, budget=budget, trend=trend)
@@ -315,9 +316,32 @@ def build_control_priority_signal(
     requested_rank = _MODE_RANK.get(mode, 0)
     repeated_hardening_escalation = prior_rank >= 1 and requested_rank > prior_rank
     local_only_sources = bool(signal_sources) and all(source.startswith("tpa_local:") for source in signal_sources)
-    non_tpa_corroboration = [
+    non_tpa_corroboration_candidates = [
         ref for ref in corroboration_refs if not str(ref.split(":", 1)[0]).startswith("tpa_")
     ]
+    non_tpa_corroboration: list[str] = []
+    invalid_corroboration_refs: list[str] = []
+    for ref in non_tpa_corroboration_candidates:
+        ref_parts = str(ref).split(":", 1)
+        if len(ref_parts) != 2 or not ref_parts[0] or not ref_parts[1]:
+            invalid_corroboration_refs.append(ref)
+            continue
+        if corroboration_artifact_resolver is None:
+            invalid_corroboration_refs.append(ref)
+            continue
+        payload = corroboration_artifact_resolver(ref)
+        if not isinstance(payload, dict):
+            invalid_corroboration_refs.append(ref)
+            continue
+        if str(payload.get("artifact_type", "")) != ref_parts[0]:
+            invalid_corroboration_refs.append(ref)
+            continue
+        try:
+            validate_artifact(payload, ref_parts[0])
+        except Exception:  # noqa: BLE001 - strict fail-closed corroboration validation boundary
+            invalid_corroboration_refs.append(ref)
+            continue
+        non_tpa_corroboration.append(ref)
     reason_codes: list[str] = []
     corroboration_required = repeated_hardening_escalation and local_only_sources
     if repeated_hardening_escalation and local_only_sources and not non_tpa_corroboration:
@@ -327,6 +351,8 @@ def build_control_priority_signal(
                 "corroboration_missing_for_repeated_hardening",
             ]
         )
+        if non_tpa_corroboration_candidates:
+            reason_codes.append("corroboration_validation_failed_for_repeated_hardening")
         mode = prior_mode
         effective_decision = str((previous_priority_signal or {}).get("effective_control_decision") or effective_decision)
     hardening_prioritized = mode in {"degraded", "critical"}
@@ -354,6 +380,7 @@ def build_control_priority_signal(
         "driver_signal_sources": signal_sources,
         "corroborating_signal_refs": corroboration_refs,
         "non_tpa_corroboration_refs": non_tpa_corroboration,
+        "invalid_corroboration_refs": sorted(set(invalid_corroboration_refs)),
         "repeated_hardening_escalation": repeated_hardening_escalation,
         "corroboration_required_for_repeated_hardening": corroboration_required,
         "reason_codes": reason_codes,

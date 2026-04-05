@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from spectrum_systems.contracts import load_example
 from spectrum_systems.modules.runtime.tpa_complexity_governance import (
     build_control_priority_signal,
     build_complexity_budget,
@@ -207,17 +208,26 @@ def test_repeated_tpa_local_hardening_escalation_requires_corroboration() -> Non
         trend={"trend_direction": "degrading", "recommended_control_decision": "block"},
         previous_priority_signal={"system_health_mode": "degraded", "effective_control_decision": "freeze"},
         driver_signal_sources=["tpa_local:complexity_budget", "tpa_local:complexity_trend"],
-        corroborating_signal_refs=["tpa_observability_summary:run-1:AI-01"],
+        corroborating_signal_refs=[
+            "control_loop_certification_pack:missing-cert",
+            "tpa_observability_summary:run-1:AI-01",
+        ],
     )
     assert signal["system_health_mode"] == "degraded"
     assert signal["effective_control_decision"] == "freeze"
     assert signal["reason_codes"] == [
         "repeated_tpa_local_escalation_blocked",
         "corroboration_missing_for_repeated_hardening",
+        "corroboration_validation_failed_for_repeated_hardening",
     ]
 
 
 def test_repeated_hardening_with_non_tpa_corroboration_is_allowed() -> None:
+    cert_pack = load_example("control_loop_certification_pack")
+
+    def _resolver(ref: str) -> dict | None:
+        return cert_pack if ref == "control_loop_certification_pack:cert-001" else None
+
     signal = build_control_priority_signal(
         existing_decision="block",
         budget={"budget_status": "exceeded", "recommended_control_decision": "block"},
@@ -228,6 +238,7 @@ def test_repeated_hardening_with_non_tpa_corroboration_is_allowed() -> None:
             "control_loop_certification_pack:cert-001",
             "tpa_observability_summary:run-1:AI-01",
         ],
+        corroboration_artifact_resolver=_resolver,
     )
     assert signal["system_health_mode"] == "critical"
     assert signal["reason_codes"] == []

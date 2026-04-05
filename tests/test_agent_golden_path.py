@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -66,13 +67,16 @@ def _normalized(artifacts: dict) -> dict:
 
 
 def _override_payload(review_request: dict, execution_record: dict, **overrides: object) -> dict:
+    now = datetime.now(timezone.utc)
+    issued_at = (now - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    expires_at = (now + timedelta(minutes=55)).strftime("%Y-%m-%dT%H:%M:%SZ")
     payload = {
         "artifact_type": "hitl_override_decision",
         "schema_version": "1.1.0",
         "override_decision_id": "hod-test-001",
         "created_at": "2026-01-05T14:22:31Z",
-        "issued_at": "2099-01-05T14:22:31Z",
-        "expires_at": "2099-01-05T15:22:31Z",
+        "issued_at": issued_at,
+        "expires_at": expires_at,
         "max_validity_seconds": 3600,
         "trace_id": review_request["trace_id"],
         "review_request_id": review_request["id"],
