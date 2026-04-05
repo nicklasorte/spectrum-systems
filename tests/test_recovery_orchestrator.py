@@ -30,6 +30,12 @@ def _execution_runner_complete(_: dict) -> dict:
         "reason_code": None,
         "repair_execution_mode": "bounded_governed_execution",
         "execution_artifact_refs": ["outputs/recovery/execution-attempt-01.json"],
+        "governance_gate_evidence_refs": {
+            "preflight": "outputs/governance/preflight-gate-01.json",
+            "control": "outputs/governance/control-gate-01.json",
+            "certification": "outputs/governance/certification-gate-01.json",
+            "certification_applicable": True,
+        },
     }
 
 
@@ -88,6 +94,12 @@ def test_blocked_recovery_status() -> None:
             "execution_status": "blocked",
             "reason_code": "governance_block",
             "execution_artifact_refs": ["outputs/recovery/execution-blocked.json"],
+            "governance_gate_evidence_refs": {
+                "preflight": "outputs/governance/preflight-gate-blocked.json",
+                "control": "outputs/governance/control-gate-blocked.json",
+                "certification": "",
+                "certification_applicable": False,
+            },
         }
 
     def validation_runner(_: str) -> dict:
@@ -227,3 +239,72 @@ def test_standards_manifest_registers_recovery_result_artifact() -> None:
     entry = entries[0]
     assert entry["artifact_class"] == "coordination"
     assert entry["example_path"] == "contracts/examples/recovery_result_artifact.json"
+
+
+def test_retry_budget_exhausted_emits_terminal_blocked_artifact() -> None:
+    diagnosis = _diagnosis_fixture()
+    prompt = _repair_prompt_fixture()
+    schema = load_schema("recovery_result_artifact")
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+
+    artifact = orchestrate_recovery(
+        diagnosis_artifact=diagnosis,
+        repair_prompt_artifact=prompt,
+        recovery_attempt_number=3,
+        max_attempts=2,
+        execution_runner=_execution_runner_complete,
+        validation_runner=lambda _: {"status": "passed", "artifact_ref": "unused", "details": {}},
+        emitted_at="2026-04-05T00:00:00Z",
+    )
+
+    validator.validate(artifact)
+    assert artifact["recovery_status"] == "blocked"
+    assert artifact["blocking_reason_code"] == "retry_budget_exhausted"
+    assert artifact["retry_recommended"] is False
+    assert artifact["execution_artifact_refs"]
+    assert artifact["validation_results"]
+    assert all(row["status"] == "not_run" for row in artifact["validation_results"])
+
+
+def test_execution_without_governance_evidence_fails_closed() -> None:
+    diagnosis = _diagnosis_fixture()
+    prompt = _repair_prompt_fixture()
+
+    def execution_runner(_: dict) -> dict:
+        return {
+            "execution_status": "completed",
+            "reason_code": None,
+            "repair_execution_mode": "bounded_governed_execution",
+            "execution_artifact_refs": ["outputs/recovery/execution-attempt-01.json"],
+        }
+
+    with pytest.raises(RecoveryOrchestrationError, match="governance_gate_evidence_refs"):
+        orchestrate_recovery(
+            diagnosis_artifact=diagnosis,
+            repair_prompt_artifact=prompt,
+            recovery_attempt_number=1,
+            max_attempts=2,
+            execution_runner=execution_runner,
+            validation_runner=lambda _: {"status": "passed", "artifact_ref": "outputs/recovery/validation-01.json", "details": {}},
+            emitted_at="2026-04-05T00:00:00Z",
+        )
+
+
+def test_execution_with_governance_evidence_is_allowed_and_preserved() -> None:
+    diagnosis = _diagnosis_fixture()
+    prompt = _repair_prompt_fixture()
+
+    artifact = orchestrate_recovery(
+        diagnosis_artifact=diagnosis,
+        repair_prompt_artifact=prompt,
+        recovery_attempt_number=1,
+        max_attempts=2,
+        execution_runner=_execution_runner_complete,
+        validation_runner=lambda _: {"status": "passed", "artifact_ref": "outputs/recovery/validation-01.json", "details": {}},
+        emitted_at="2026-04-05T00:00:00Z",
+    )
+
+    assert "outputs/governance/preflight-gate-01.json" in artifact["execution_artifact_refs"]
+    assert "outputs/governance/control-gate-01.json" in artifact["execution_artifact_refs"]
+    assert "outputs/governance/certification-gate-01.json" in artifact["execution_artifact_refs"]
+    assert any(step["step"] == "governance_gate_evidence" for step in artifact["deterministic_decision_trace"])

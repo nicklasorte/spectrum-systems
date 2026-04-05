@@ -137,6 +137,76 @@ _TEMPLATE_LIBRARY: dict[str, dict[str, Any]] = {
             "Preflight no longer blocks for missing control input on same scenario.",
         ],
     },
+    "fixture_gap": {
+        "intent": "Restore deterministic fixture coverage for the diagnosed governed behavior.",
+        "description": "Apply a fixture-first correction that closes missing or stale fixture surface without fabricating implementation behavior.",
+        "actions": [
+            "Identify missing or stale fixture surfaces from diagnosis evidence and governed source refs.",
+            "Add or update only the minimum fixture(s) needed to represent the diagnosed happy/failure path.",
+            "Keep fixture data deterministic and contract-valid; do not use generated randomness.",
+            "Run targeted tests that consume the repaired fixture surface.",
+        ],
+        "success": [
+            "Fixture surface required by diagnosis exists and is deterministic.",
+            "Targeted tests no longer fail due to missing/stale fixture input.",
+        ],
+    },
+    "certification_surface_gap": {
+        "intent": "Restore missing certification evidence surface required for governed progression.",
+        "description": "Repair certification artifact production or linkage so governance can verify required certification signals.",
+        "actions": [
+            "Locate the certification surface or link identified as missing in diagnosis evidence.",
+            "Restore minimal producer/linkage path emitting required certification evidence references.",
+            "Keep certification semantics strict; do not bypass certification gates.",
+            "Run certification-related validation checks proving evidence is present and consumable.",
+        ],
+        "success": [
+            "Required certification evidence surface is emitted and discoverable.",
+            "Governance checks can consume certification evidence for the diagnosed scenario.",
+        ],
+    },
+    "source_authority_anchor_gap": {
+        "intent": "Restore source-authority anchor references so downstream decisions remain governed by authoritative inputs.",
+        "description": "Repair missing/invalid authority anchor linkage without introducing alternate authority paths.",
+        "actions": [
+            "Identify missing or broken source-authority anchors named in diagnosis evidence.",
+            "Restore canonical anchor references to authoritative roadmap/contract sources only.",
+            "Keep non-authoritative and deprecated sources excluded from anchor resolution.",
+            "Run targeted governance checks confirming source-authority anchor consumption succeeds.",
+        ],
+        "success": [
+            "Authority anchor references resolve to authoritative governed sources.",
+            "Diagnosed source-authority gap is eliminated without adding alternate authority paths.",
+        ],
+    },
+    "policy_composition_gap": {
+        "intent": "Restore deterministic policy composition so required rules are evaluated in governed order.",
+        "description": "Repair missing/incorrect policy composition wiring while preserving policy precedence and fail-closed behavior.",
+        "actions": [
+            "Locate policy composition seam identified in diagnosis evidence.",
+            "Restore required policy inputs and precedence ordering for the diagnosed path.",
+            "Ensure unresolved policy inputs fail closed rather than defaulting to allow.",
+            "Run policy composition validation checks for the diagnosed path.",
+        ],
+        "success": [
+            "Policy composition includes all required governed inputs in deterministic order.",
+            "Diagnosed policy composition failure no longer reproduces.",
+        ],
+    },
+    "unknown_failure_class": {
+        "intent": "Produce a governed manual-triage artifact path when no safe deterministic auto-repair template is available.",
+        "description": "Generate bounded triage instructions that preserve loop continuity without fabricating a direct fix.",
+        "actions": [
+            "Treat the diagnosis as non-auto-repairable until explicit governed classification is established.",
+            "Capture minimal reproducer evidence and classify candidate root causes using existing governed taxonomy only.",
+            "Prepare a follow-up diagnosis update proposal with authoritative evidence refs; do not implement speculative code changes.",
+            "Run baseline validation commands to confirm current failure state and preserve replay continuity.",
+        ],
+        "success": [
+            "Manual triage packet is prepared with authoritative evidence references.",
+            "No speculative implementation changes were introduced for unknown failure class.",
+        ],
+    },
     "override_temporal_validation_gap": {
         "intent": "Enforce temporal validation for override issuance and effective timestamps.",
         "description": "Add/repair strict temporal check ensuring override issuance is not in the future and validity windows are enforced.",
@@ -215,6 +285,9 @@ def _default_validation_commands(diagnosis_artifact: dict[str, Any], root_cause:
         "manifest_or_registry_mismatch",
         "missing_required_surface",
         "control_surface_input_missing",
+        "source_authority_anchor_gap",
+        "certification_surface_gap",
+        "policy_composition_gap",
         "corroboration_validation_gap",
         "override_temporal_validation_gap",
     } and "python scripts/run_contract_enforcement.py" not in commands:
@@ -293,8 +366,8 @@ def generate_repair_prompt(
 
     repair_prompt_artifact = {
         "artifact_type": "repair_prompt_artifact",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
+        "artifact_version": "1.1.0",
+        "schema_version": "1.1.0",
         "standards_version": diagnosis_artifact["standards_version"],
         "repair_prompt_id": f"RPR-{hash_prefix}",
         "diagnosis_ref": diagnosis_id,

@@ -35,6 +35,7 @@ _DEFAULT_BLOCKING_CODES = {
     "governance_block",
     "execution_error",
     "validation_blocked",
+    "missing_governance_gate_evidence",
 }
 
 
@@ -91,6 +92,41 @@ def _run_validation_commands(commands: list[str], validation_runner: ValidationC
             }
         )
     return rows
+
+
+def _normalize_governance_gate_evidence_refs(execution_result: dict[str, Any]) -> dict[str, str]:
+    raw = execution_result.get("governance_gate_evidence_refs")
+    if not isinstance(raw, dict):
+        raise RecoveryOrchestrationError(
+            "execution_result.governance_gate_evidence_refs must be an object with preflight/control/certification evidence"
+        )
+
+    preflight = str(raw.get("preflight") or "").strip()
+    control = str(raw.get("control") or "").strip()
+    certification = str(raw.get("certification") or "").strip()
+    certification_applicable = raw.get("certification_applicable")
+    if not isinstance(certification_applicable, bool):
+        raise RecoveryOrchestrationError(
+            "execution_result.governance_gate_evidence_refs.certification_applicable must be a boolean"
+        )
+
+    if not preflight:
+        raise RecoveryOrchestrationError(
+            "execution_result.governance_gate_evidence_refs.preflight must be a non-empty evidence reference"
+        )
+    if not control:
+        raise RecoveryOrchestrationError(
+            "execution_result.governance_gate_evidence_refs.control must be a non-empty evidence reference"
+        )
+    if certification_applicable and not certification:
+        raise RecoveryOrchestrationError(
+            "execution_result.governance_gate_evidence_refs.certification must be non-empty when certification_applicable=true"
+        )
+
+    normalized = {"preflight": preflight, "control": control}
+    if certification_applicable:
+        normalized["certification"] = certification
+    return normalized
 
 
 def _summarize_validation(results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -230,9 +266,26 @@ def orchestrate_recovery(
     if recovery_attempt_number > max_attempts:
         recovery_status = "blocked"
         blocking_reason_code = "retry_budget_exhausted"
-        validation_results: list[dict[str, Any]] = []
-        validation_summary = {"total": 0, "passed": 0, "failed": 0, "blocked": 0, "not_run": 0}
-        execution_artifact_refs: list[str] = []
+        skipped_ref = (
+            f"outputs/recovery/retry-budget-exhausted-validation-skipped-attempt-{recovery_attempt_number:02d}.json"
+        )
+        validation_results = [
+            {
+                "command": command,
+                "status": "not_run",
+                "artifact_ref": skipped_ref,
+                "details": {
+                    "reason_code": "retry_budget_exhausted",
+                    "attempt_number": recovery_attempt_number,
+                    "max_attempts": max_attempts,
+                },
+            }
+            for command in commands
+        ]
+        validation_summary = _summarize_validation(validation_results)
+        execution_artifact_refs = [
+            f"outputs/recovery/retry-budget-exhausted-attempt-{recovery_attempt_number:02d}-of-{max_attempts:02d}.json"
+        ]
         execution_mode = "no_execution"
         execution_status = "blocked"
         execution_reason_code = "retry_budget_exhausted"
@@ -264,11 +317,25 @@ def orchestrate_recovery(
 
         execution_reason_code = str(execution_result.get("reason_code") or "").strip() or None
         execution_mode = str(execution_result.get("repair_execution_mode") or "bounded_governed_execution")
+        gate_evidence_refs = _normalize_governance_gate_evidence_refs(execution_result)
+        decision_trace.append(
+            {
+                "step": "governance_gate_evidence",
+                "decision": "accepted",
+                "reason": (
+                    "execution attempt includes governance evidence refs "
+                    f"(preflight={gate_evidence_refs['preflight']}, control={gate_evidence_refs['control']}, "
+                    f"certification={gate_evidence_refs.get('certification', 'not_applicable')})"
+                ),
+            }
+        )
 
         raw_refs = execution_result.get("execution_artifact_refs")
         if not isinstance(raw_refs, list) or any(not isinstance(ref, str) or not ref.strip() for ref in raw_refs):
             raise RecoveryOrchestrationError("execution_result.execution_artifact_refs must be a list of non-empty strings")
-        execution_artifact_refs = sorted(dict.fromkeys(ref.strip() for ref in raw_refs))
+        execution_artifact_refs = sorted(
+            dict.fromkeys([*(ref.strip() for ref in raw_refs), *gate_evidence_refs.values()])
+        )
         if not execution_artifact_refs:
             raise RecoveryOrchestrationError("execution_result.execution_artifact_refs cannot be empty")
 
