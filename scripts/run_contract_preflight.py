@@ -180,6 +180,18 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for value in values:
+        item = str(value)
+        if item in seen:
+            continue
+        seen.add(item)
+        ordered.append(item)
+    return ordered
+
+
 def _all_governed_paths(repo_root: Path) -> list[str]:
     governed = []
     governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "schemas").glob("*.schema.json")))
@@ -1075,6 +1087,9 @@ def build_preflight_result_artifact(
             "status": "allow",
             "blocking_reasons": [],
         }
+    refs_attempted = _dedupe_preserve_order(
+        [str(item) for item in detection.get("refs_attempted", []) if str(item)]
+    )
     return {
         "artifact_type": "contract_preflight_result_artifact",
         "schema_version": "1.2.0",
@@ -1110,7 +1125,7 @@ def build_preflight_result_artifact(
         "trace": {
             "producer": "scripts/run_contract_preflight.py",
             "policy_version": _PREFLIGHT_POLICY_VERSION,
-            "refs_attempted": detection.get("refs_attempted", []),
+            "refs_attempted": refs_attempted,
             "fallback_used": bool(detection.get("fallback_used", False)),
             "evaluation_mode": detection.get("evaluation_mode", "partial"),
             "skip_reason": report.get("skip_reason"),

@@ -1298,6 +1298,45 @@ def test_build_preflight_result_artifact_emits_impacted_seams() -> None:
     assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
 
 
+def test_build_preflight_result_artifact_dedupes_trace_refs_attempted_with_stable_order() -> None:
+    report = {
+        "status": "passed",
+        "changed_contracts": [],
+        "changed_path_detection": {
+            "changed_path_detection_mode": "base_head_diff",
+            "refs_attempted": [
+                "origin/main..HEAD",
+                "4d38ce9d6fe5041dadbde03b608f0a1b67399300..a0024b3b466c31e3fcf881403ee2d136e201e01d",
+                "4d38ce9d6fe5041dadbde03b608f0a1b67399300..a0024b3b466c31e3fcf881403ee2d136e201e01d",
+                "working_tree_vs_HEAD",
+                "origin/main..HEAD",
+            ],
+        },
+        "impact": {
+            "producers": [],
+            "fixtures_or_builders": [],
+            "consumers": [],
+        },
+        "masked_failures": [],
+        "recommended_repair_areas": [],
+    }
+
+    artifact = preflight.build_preflight_result_artifact(
+        report=report,
+        json_report_path=Path("outputs/contract_preflight/contract_preflight_report.json"),
+        markdown_report_path=Path("outputs/contract_preflight/contract_preflight_report.md"),
+        hardening_flow=False,
+    )
+
+    assert artifact["trace"]["refs_attempted"] == [
+        "origin/main..HEAD",
+        "4d38ce9d6fe5041dadbde03b608f0a1b67399300..a0024b3b466c31e3fcf881403ee2d136e201e01d",
+        "working_tree_vs_HEAD",
+    ]
+    preflight_schema = preflight.load_schema("contract_preflight_result_artifact")
+    preflight.Draft202012Validator(preflight_schema, format_checker=preflight.FormatChecker()).validate(artifact)
+
+
 def test_contract_preflight_example_references_existing_impacted_paths() -> None:
     example = json.loads(Path("contracts/examples/contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     for rel_path in (
