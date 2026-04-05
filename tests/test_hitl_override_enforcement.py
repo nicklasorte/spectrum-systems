@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from spectrum_systems.contracts import load_example, validate_artifact
@@ -27,6 +28,9 @@ def _make_override(
     allowed_next_action: str = "resume_once",
     review_role: str = "control_authority_reviewer",
 ) -> dict:
+    now = datetime.now(timezone.utc)
+    issued_at = (now - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    expires_at = (now + timedelta(minutes=55)).strftime("%Y-%m-%dT%H:%M:%SZ")
     intent_by_status = {
         "allow_once": "temporary_one_shot",
         "deny": "temporary_block",
@@ -38,8 +42,8 @@ def _make_override(
         "schema_version": "1.1.0",
         "override_decision_id": "hod-runtime-test-001",
         "created_at": "2026-01-05T14:22:31Z",
-        "issued_at": "2099-01-05T14:22:31Z",
-        "expires_at": "2099-01-05T15:22:31Z",
+        "issued_at": issued_at,
+        "expires_at": expires_at,
         "max_validity_seconds": 3600,
         "trace_id": review_request["trace_id"],
         "review_request_id": review_request["id"],
@@ -216,5 +220,32 @@ def test_multiple_override_artifacts_fail_closed(tmp_path: Path) -> None:
     action = artifacts["final_execution_record"]["actions_taken"][0]
     assert action["action_type"] == "hitl_override_enforcement_failed"
     assert action["reason"] == "override_ambiguous"
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    assert "enforcement" not in artifacts
+
+
+def test_future_issued_override_is_rejected_fail_closed(tmp_path: Path) -> None:
+    preview = run_agent_golden_path(_config(tmp_path / "preview", force_review_required=True))
+    payload = _make_override(
+        review_request=preview["hitl_review_request"],
+        execution_record=preview["final_execution_record"],
+    )
+    payload["issued_at"] = "2099-01-05T14:22:31Z"
+    payload["expires_at"] = "2099-01-05T15:22:31Z"
+    path = tmp_path / "override_future_issued.json"
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    artifacts = run_agent_golden_path(
+        _config(
+            tmp_path / "run",
+            force_review_required=True,
+            require_override_decision=True,
+            override_decision_paths=[path],
+        )
+    )
+
+    action = artifacts["final_execution_record"]["actions_taken"][0]
+    assert action["action_type"] == "hitl_override_enforcement_failed"
+    assert action["reason"] == "override_issued_in_future"
     assert artifacts["final_execution_record"]["execution_status"] == "blocked"
     assert "enforcement" not in artifacts

@@ -92,6 +92,14 @@ class AgentGoldenPathOverrideEnforcementError(AgentGoldenPathError):
         self.override_decision = override_decision
 
 
+class OverrideApplicabilityError(ValueError):
+    """Typed override applicability validation error with explicit reason code."""
+
+    def __init__(self, *, reason_code: str, message: str) -> None:
+        super().__init__(message)
+        self.reason_code = reason_code
+
+
 _ARTIFACT_ID_KEYS: Dict[str, str] = {
     "context_bundle": "context_id",
     "context_validation_result": "validation_id",
@@ -155,6 +163,11 @@ def _validate_override_expiry_window(
         raise ValueError("expires_at must be after issued_at")
     if window_seconds > max_validity_seconds:
         raise ValueError("override validity window exceeds declared max_validity_seconds")
+    if issued_at > enforcement_now:
+        raise OverrideApplicabilityError(
+            reason_code="override_issued_in_future",
+            message="override decision issued_at is after enforcement_now",
+        )
     if enforcement_now > expires_at:
         raise ValueError("override decision expired at enforcement boundary")
 
@@ -587,6 +600,12 @@ def _resolve_review_override(
             review_execution_record=review_execution_record,
             override_decision=override_decision,
         )
+    except OverrideApplicabilityError as exc:
+        raise AgentGoldenPathStageError(
+            stage="override_enforcement",
+            failure_type=exc.reason_code,
+            error_message=str(exc),
+        ) from exc
     except ValueError as exc:
         raise AgentGoldenPathStageError(
             stage="override_enforcement",
