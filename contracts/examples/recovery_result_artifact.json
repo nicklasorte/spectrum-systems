@@ -1,0 +1,91 @@
+{
+  "artifact_type": "recovery_result_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.76",
+  "recovery_result_id": "RREC-a06ecf91e3931f2f3413",
+  "diagnosis_ref": "FDIAG-440e1abcfb3e027fb35b",
+  "repair_prompt_ref": "RPR-d880c8c69911c09f65f9",
+  "recovery_attempt_number": 1,
+  "max_attempts": 2,
+  "recovery_status": "recovered",
+  "blocking_reason_code": null,
+  "repair_execution_mode": "bounded_governed_execution",
+  "execution_artifact_refs": [
+    "outputs/recovery/execution-attempt-01.json"
+  ],
+  "validation_artifact_refs": [
+    "outputs/recovery/validation-attempt-01.json"
+  ],
+  "attempted_validation_commands": [
+    "pytest tests/test_recovery_orchestrator.py -q",
+    "python scripts/run_contract_enforcement.py"
+  ],
+  "validation_results": [
+    {
+      "command": "pytest tests/test_recovery_orchestrator.py -q",
+      "status": "passed",
+      "artifact_ref": "outputs/recovery/validation-attempt-01.json",
+      "details": {
+        "exit_code": 0
+      }
+    },
+    {
+      "command": "python scripts/run_contract_enforcement.py",
+      "status": "passed",
+      "artifact_ref": "outputs/recovery/validation-attempt-01.json",
+      "details": {
+        "exit_code": 0
+      }
+    }
+  ],
+  "validation_summary": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "blocked": 0,
+    "not_run": 0
+  },
+  "remaining_failure_classes": [],
+  "retry_recommended": false,
+  "stop_condition": "attempt_complete",
+  "deterministic_decision_trace": [
+    {
+      "step": "diagnosis_validation",
+      "decision": "accepted",
+      "reason": "diagnosis artifact passed schema validation"
+    },
+    {
+      "step": "repair_prompt_source",
+      "decision": "consumed",
+      "reason": "caller supplied repair prompt artifact"
+    },
+    {
+      "step": "validation_command_surface",
+      "decision": "accepted",
+      "reason": "2 required validation command(s) declared"
+    }
+  ],
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "trace": {
+    "run_id": "run-20260405T000000Z-batch-fre-03",
+    "trace_id": "trace-batch-fre-03",
+    "policy_id": "FRE-006.recovery_orchestrator.v1",
+    "governing_ref": "docs/roadmaps/system_roadmap.md#batch-fre-03",
+    "diagnosis_hash": "743d9cabf8c1933ee1dded03e2f5658f5107d6385fdd565aa1db95b5c82baf11",
+    "repair_prompt_hash": "fd5c689cb59ef5db8f5314c00a02334c4d51910bb643f4513abd7e432f1e0632",
+    "reason_code_vocab": [
+      "execution_error",
+      "governance_block",
+      "invalid_diagnosis_artifact",
+      "invalid_execution_status",
+      "invalid_repair_prompt_artifact",
+      "missing_execution_evidence",
+      "missing_validation_commands",
+      "missing_validation_evidence",
+      "retry_budget_exhausted",
+      "status_not_justified",
+      "validation_blocked"
+    ]
+  }
+}
