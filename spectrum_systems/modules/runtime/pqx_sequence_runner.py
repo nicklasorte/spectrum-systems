@@ -1733,11 +1733,36 @@ def execute_sequence_run(
                 artifacts["complexity_budget"] = budget_artifact
                 artifacts["complexity_trend"] = trend_artifact
                 artifacts["simplification_campaign"] = campaign_artifact
+                priority_history = artifacts.get("control_priority_signal_history", [])
+                if not isinstance(priority_history, list):
+                    raise PQXSequenceRunnerError("TPA control priority signal history must be a list")
+                previous_priority_signal = priority_history[-1] if priority_history else None
+                corroborating_refs = sorted(
+                    {
+                        str(ref).strip()
+                        for ref in (
+                            list(gate_payload.get("risk_mitigation_refs") or [])
+                            + list(gate_payload.get("addressed_failure_pattern_refs") or [])
+                            + list(gate_payload.get("selection_inputs") or [])
+                        )
+                        if str(ref).strip()
+                    }
+                )
                 priority_signal = build_control_priority_signal(
                     existing_decision=str(regression_gate.get("decision") or "allow"),
                     budget=budget_artifact,
                     trend=trend_artifact,
+                    previous_priority_signal=previous_priority_signal if isinstance(previous_priority_signal, dict) else None,
+                    driver_signal_sources=[
+                        "tpa_local:complexity_budget",
+                        "tpa_local:complexity_trend",
+                        "tpa_local:simplification_campaign",
+                    ],
+                    corroborating_signal_refs=corroborating_refs,
                 )
+                priority_history.append(deepcopy(priority_signal))
+                artifacts["control_priority_signal_history"] = priority_history
+                artifacts["control_priority_signal"] = deepcopy(priority_signal)
                 artifacts["observability_consumer"] = build_tpa_observability_consumer_record(
                     run_id=run_id,
                     trace_id=request["trace_id"],

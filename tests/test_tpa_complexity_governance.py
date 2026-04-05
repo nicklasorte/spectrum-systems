@@ -186,6 +186,68 @@ def test_control_weighting_sets_degraded_or_critical_health_mode() -> None:
     assert normal["system_health_mode"] == "normal"
 
 
+def test_first_tpa_local_hardening_escalation_is_allowed() -> None:
+    signal = build_control_priority_signal(
+        existing_decision="freeze",
+        budget={"budget_status": "exceeded", "recommended_control_decision": "freeze"},
+        trend={"trend_direction": "degrading", "recommended_control_decision": "freeze"},
+        previous_priority_signal={"system_health_mode": "normal", "effective_control_decision": "allow"},
+        driver_signal_sources=["tpa_local:complexity_budget", "tpa_local:complexity_trend"],
+        corroborating_signal_refs=[],
+    )
+    assert signal["system_health_mode"] in {"degraded", "critical"}
+    assert signal["reason_codes"] == []
+    assert signal["corroboration_required_for_repeated_hardening"] is False
+
+
+def test_repeated_tpa_local_hardening_escalation_requires_corroboration() -> None:
+    signal = build_control_priority_signal(
+        existing_decision="block",
+        budget={"budget_status": "exceeded", "recommended_control_decision": "block"},
+        trend={"trend_direction": "degrading", "recommended_control_decision": "block"},
+        previous_priority_signal={"system_health_mode": "degraded", "effective_control_decision": "freeze"},
+        driver_signal_sources=["tpa_local:complexity_budget", "tpa_local:complexity_trend"],
+        corroborating_signal_refs=["tpa_observability_summary:run-1:AI-01"],
+    )
+    assert signal["system_health_mode"] == "degraded"
+    assert signal["effective_control_decision"] == "freeze"
+    assert signal["reason_codes"] == [
+        "repeated_tpa_local_escalation_blocked",
+        "corroboration_missing_for_repeated_hardening",
+    ]
+
+
+def test_repeated_hardening_with_non_tpa_corroboration_is_allowed() -> None:
+    signal = build_control_priority_signal(
+        existing_decision="block",
+        budget={"budget_status": "exceeded", "recommended_control_decision": "block"},
+        trend={"trend_direction": "degrading", "recommended_control_decision": "block"},
+        previous_priority_signal={"system_health_mode": "degraded", "effective_control_decision": "freeze"},
+        driver_signal_sources=["tpa_local:complexity_budget", "tpa_local:complexity_trend"],
+        corroborating_signal_refs=[
+            "control_loop_certification_pack:cert-001",
+            "tpa_observability_summary:run-1:AI-01",
+        ],
+    )
+    assert signal["system_health_mode"] == "critical"
+    assert signal["reason_codes"] == []
+    assert signal["non_tpa_corroboration_refs"] == ["control_loop_certification_pack:cert-001"]
+
+
+def test_repeated_hardening_dampening_is_deterministic_for_replay() -> None:
+    kwargs = {
+        "existing_decision": "block",
+        "budget": {"budget_status": "exceeded", "recommended_control_decision": "block"},
+        "trend": {"trend_direction": "degrading", "recommended_control_decision": "block"},
+        "previous_priority_signal": {"system_health_mode": "degraded", "effective_control_decision": "freeze"},
+        "driver_signal_sources": ["tpa_local:complexity_budget", "tpa_local:complexity_trend"],
+        "corroborating_signal_refs": ["tpa_observability_summary:run-1:AI-01"],
+    }
+    first = build_control_priority_signal(**kwargs)
+    second = build_control_priority_signal(**kwargs)
+    assert first == second
+
+
 def test_policy_candidate_generation_requires_repeated_evidence() -> None:
     candidate = build_tpa_policy_candidate(
         run_id="run-1",

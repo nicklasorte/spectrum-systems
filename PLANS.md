@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-TPA-09A-2026-04-05.md | BATCH-TPA-09A — Trust Boundary Hardening (TPA-ACT-08B-AR-01, TPA-ACT-08B-AR-02) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-04-2026-04-04.md | BATCH-TPA-04 — TPA Default Routing + Bypass Detection (TPA-014, TPA-017, TPA-018) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-02-2026-04-04.md | BATCH-TPA-02 — TPA Completion Hardening (TPA-006..TPA-012) | Active |
 | docs/review-actions/PLAN-RUN-01-FIX-2026-04-04.md | RUN-01-FIX — Contract Preflight Block Remediation | Active |

@@ -10,6 +10,9 @@
     "schema_version",
     "override_decision_id",
     "created_at",
+    "issued_at",
+    "expires_at",
+    "max_validity_seconds",
     "trace_id",
     "review_request_id",
     "related_execution_record_id",
@@ -17,6 +20,7 @@
     "decision_reason",
     "decided_by",
     "decision_scope",
+    "override_intent",
     "allowed_next_action",
     "trace_refs",
     "related_artifact_refs"
@@ -28,7 +32,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "override_decision_id": {
       "type": "string",
@@ -129,6 +133,106 @@
       },
       "minItems": 2,
       "uniqueItems": true
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "max_validity_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400
+    },
+    "override_intent": {
+      "type": "string",
+      "enum": [
+        "temporary_one_shot",
+        "temporary_block",
+        "temporary_rerun",
+        "temporary_revision"
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "allow_once"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_next_action": {
+            "const": "resume_once"
+          },
+          "override_intent": {
+            "const": "temporary_one_shot"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "deny"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_next_action": {
+            "const": "remain_blocked"
+          },
+          "override_intent": {
+            "const": "temporary_block"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "require_rerun"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_next_action": {
+            "const": "rerun_from_context"
+          },
+          "override_intent": {
+            "const": "temporary_rerun"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {
+            "const": "require_revision"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "allowed_next_action": {
+            "const": "revise_input_then_rerun"
+          },
+          "override_intent": {
+            "const": "temporary_revision"
+          }
+        }
+      }
+    }
+  ]
 }

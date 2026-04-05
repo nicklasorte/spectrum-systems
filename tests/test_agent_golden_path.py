@@ -68,9 +68,12 @@ def _normalized(artifacts: dict) -> dict:
 def _override_payload(review_request: dict, execution_record: dict, **overrides: object) -> dict:
     payload = {
         "artifact_type": "hitl_override_decision",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "override_decision_id": "hod-test-001",
         "created_at": "2026-01-05T14:22:31Z",
+        "issued_at": "2099-01-05T14:22:31Z",
+        "expires_at": "2099-01-05T15:22:31Z",
+        "max_validity_seconds": 3600,
         "trace_id": review_request["trace_id"],
         "review_request_id": review_request["id"],
         "related_execution_record_id": execution_record["artifact_id"],
@@ -78,6 +81,7 @@ def _override_payload(review_request: dict, execution_record: dict, **overrides:
         "decision_reason": "Approved for deterministic one-time continuation.",
         "decided_by": {"actor_id": "reviewer-test", "role": "control_authority_reviewer"},
         "decision_scope": "ag_runtime_review_boundary",
+        "override_intent": "temporary_one_shot",
         "allowed_next_action": "resume_once",
         "trace_refs": {"primary": review_request["trace_id"], "related": [review_request["trace_id"]]},
         "related_artifact_refs": [
@@ -469,3 +473,93 @@ def test_review_required_with_valid_override_resumes_once(tmp_path: Path) -> Non
     assert artifacts["final_execution_record"]["execution_status"] == "success"
     assert artifacts["hitl_override_decision"]["decision_status"] == "allow_once"
     assert "enforcement" in artifacts
+
+
+def test_review_required_with_expired_override_fails_closed(tmp_path: Path) -> None:
+    preview = run_agent_golden_path(_config(tmp_path / "preview", force_review_required=True))
+    override_path = tmp_path / "override_expired.json"
+    override_path.write_text(
+        json.dumps(
+            _override_payload(
+                preview["hitl_review_request"],
+                preview["final_execution_record"],
+                issued_at="2026-01-05T14:22:31Z",
+                expires_at="2026-01-05T15:22:31Z",
+                max_validity_seconds=3600,
+            ),
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    artifacts = run_agent_golden_path(
+        _config(
+            tmp_path / "expired",
+            force_review_required=True,
+            override_decision_paths=[override_path],
+            require_override_decision=True,
+        )
+    )
+
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    action = artifacts["final_execution_record"]["actions_taken"][0]
+    assert action["action_type"] == "hitl_override_enforcement_failed"
+    assert action["reason"] == "override_incompatible"
+    assert "expired at enforcement boundary" in action["message"]
+
+
+def test_review_required_with_missing_expiry_field_fails_closed(tmp_path: Path) -> None:
+    preview = run_agent_golden_path(_config(tmp_path / "preview", force_review_required=True))
+    override_path = tmp_path / "override_missing_expiry.json"
+    payload = _override_payload(preview["hitl_review_request"], preview["final_execution_record"])
+    payload.pop("expires_at", None)
+    override_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    artifacts = run_agent_golden_path(
+        _config(
+            tmp_path / "missing-expiry",
+            force_review_required=True,
+            override_decision_paths=[override_path],
+            require_override_decision=True,
+        )
+    )
+
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    action = artifacts["final_execution_record"]["actions_taken"][0]
+    assert action["action_type"] == "hitl_override_enforcement_failed"
+    assert action["reason"] == "schema_error"
+
+
+def test_review_required_with_overlong_validity_window_fails_closed(tmp_path: Path) -> None:
+    preview = run_agent_golden_path(_config(tmp_path / "preview", force_review_required=True))
+    override_path = tmp_path / "override_overlong.json"
+    override_path.write_text(
+        json.dumps(
+            _override_payload(
+                preview["hitl_review_request"],
+                preview["final_execution_record"],
+                issued_at="2099-01-05T14:22:31Z",
+                expires_at="2099-01-07T14:22:31Z",
+                max_validity_seconds=172800,
+            ),
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    artifacts = run_agent_golden_path(
+        _config(
+            tmp_path / "overlong",
+            force_review_required=True,
+            override_decision_paths=[override_path],
+            require_override_decision=True,
+        )
+    )
+
+    assert artifacts["final_execution_record"]["execution_status"] == "blocked"
+    action = artifacts["final_execution_record"]["actions_taken"][0]
+    assert action["action_type"] == "hitl_override_enforcement_failed"
+    assert action["reason"] == "schema_error"
+    assert "greater than the maximum of 86400" in action["message"]
