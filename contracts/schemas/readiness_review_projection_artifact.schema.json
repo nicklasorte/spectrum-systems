@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/readiness_review_projection_artifact.schema.json",
+  "title": "Readiness Review Projection Artifact",
+  "description": "Deterministic RIL-004 read-only readiness projection derived from review_integration_packet_artifact readiness_inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "readiness_review_projection_id",
+    "source_review_integration_packet_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "readiness_items",
+    "blocker_present",
+    "escalation_present",
+    "counts_by_severity",
+    "counts_by_type",
+    "item_count",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "readiness_review_projection_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "readiness_review_projection_id": {"type": "string", "pattern": "^rdp-[a-f0-9]{16}$"},
+    "source_review_integration_packet_ref": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "readiness_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/readinessItem"}
+    },
+    "blocker_present": {"type": "boolean"},
+    "escalation_present": {"type": "boolean"},
+    "counts_by_severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical", "high", "medium"],
+      "properties": {
+        "critical": {"type": "integer", "minimum": 0},
+        "high": {"type": "integer", "minimum": 0},
+        "medium": {"type": "integer", "minimum": 0}
+      }
+    },
+    "counts_by_type": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "blocker_intake": {"type": "integer", "minimum": 0},
+        "escalation_intake": {"type": "integer", "minimum": 0},
+        "roadmap_priority_intake": {"type": "integer", "minimum": 0},
+        "drift_watch_intake": {"type": "integer", "minimum": 0},
+        "recovery_followup_intake": {"type": "integer", "minimum": 0},
+        "governance_attention_intake": {"type": "integer", "minimum": 0}
+      }
+    },
+    "item_count": {"type": "integer", "minimum": 0},
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "line_number", "source_excerpt"],
+      "properties": {
+        "source_path": {"type": "string", "minLength": 1},
+        "line_number": {"type": "integer", "minimum": 1},
+        "source_excerpt": {"type": "string", "minLength": 1}
+      }
+    },
+    "readinessItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "readiness_item_id",
+        "source_input_id",
+        "input_type",
+        "priority",
+        "severity",
+        "affected_systems",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "readiness_item_id": {"type": "string", "pattern": "^rdi-[a-f0-9]{16}$"},
+        "source_input_id": {"type": "string", "pattern": "^rii-[a-f0-9]{16}$"},
+        "input_type": {
+          "type": "string",
+          "enum": [
+            "blocker_intake",
+            "escalation_intake",
+            "roadmap_priority_intake",
+            "drift_watch_intake",
+            "recovery_followup_intake",
+            "governance_attention_intake"
+          ]
+        },
+        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "monitor"]},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium"]},
+        "affected_systems": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9_-]+$"}
+        },
+        "rationale": {"type": "string", "minLength": 1},
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/traceRef"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "projection_type",
+        "deterministic_hash_basis",
+        "source_review_control_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash",
+        "source_packet_id"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_projection_adapter"},
+        "projection_type": {"type": "string", "const": "readiness"},
+        "deterministic_hash_basis": {"type": "string", "const": "canonical-json-sha256"},
+        "source_review_control_signal_id": {"type": "string", "pattern": "^rca-[a-f0-9]{16}$"},
+        "source_review_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_action_tracker_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_packet_id": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"}
+      }
+    }
+  }
+}

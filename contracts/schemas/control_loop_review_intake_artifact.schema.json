@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_loop_review_intake_artifact.schema.json",
+  "title": "Control Loop Review Intake Artifact",
+  "description": "Deterministic RIL-004 read-only control-loop intake projection derived from review_integration_packet_artifact control_loop_inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "control_loop_review_intake_id",
+    "source_review_integration_packet_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "control_queue_items",
+    "escalation_present",
+    "blocker_present",
+    "item_count",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "control_loop_review_intake_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "control_loop_review_intake_id": {"type": "string", "pattern": "^cri-[a-f0-9]{16}$"},
+    "source_review_integration_packet_ref": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "control_queue_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/controlQueueItem"}
+    },
+    "escalation_present": {"type": "boolean"},
+    "blocker_present": {"type": "boolean"},
+    "item_count": {"type": "integer", "minimum": 0},
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "line_number", "source_excerpt"],
+      "properties": {
+        "source_path": {"type": "string", "minLength": 1},
+        "line_number": {"type": "integer", "minimum": 1},
+        "source_excerpt": {"type": "string", "minLength": 1}
+      }
+    },
+    "controlQueueItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queue_item_id",
+        "source_input_id",
+        "intake_type",
+        "priority",
+        "severity",
+        "blocker_related",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "queue_item_id": {"type": "string", "pattern": "^rqi-[a-f0-9]{16}$"},
+        "source_input_id": {"type": "string", "pattern": "^rii-[a-f0-9]{16}$"},
+        "intake_type": {
+          "type": "string",
+          "enum": [
+            "blocker_intake",
+            "escalation_intake",
+            "roadmap_priority_intake",
+            "drift_watch_intake",
+            "recovery_followup_intake",
+            "governance_attention_intake"
+          ]
+        },
+        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "monitor"]},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium"]},
+        "blocker_related": {"type": "boolean"},
+        "rationale": {"type": "string", "minLength": 1},
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/traceRef"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "projection_type",
+        "deterministic_hash_basis",
+        "source_review_control_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash",
+        "source_packet_id"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_projection_adapter"},
+        "projection_type": {"type": "string", "const": "control_loop"},
+        "deterministic_hash_basis": {"type": "string", "const": "canonical-json-sha256"},
+        "source_review_control_signal_id": {"type": "string", "pattern": "^rca-[a-f0-9]{16}$"},
+        "source_review_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_action_tracker_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_packet_id": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"}
+      }
+    }
+  }
+}

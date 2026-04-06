@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_review_projection_artifact.schema.json",
+  "title": "Roadmap Review Projection Artifact",
+  "description": "Deterministic RIL-004 read-only roadmap projection derived from review_integration_packet_artifact roadmap_inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "roadmap_review_projection_id",
+    "source_review_integration_packet_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "projected_roadmap_items",
+    "highest_priority",
+    "item_count",
+    "blocker_present",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "roadmap_review_projection_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "roadmap_review_projection_id": {"type": "string", "pattern": "^rrp-[a-f0-9]{16}$"},
+    "source_review_integration_packet_ref": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "projected_roadmap_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/roadmapProjectionItem"}
+    },
+    "highest_priority": {"type": "string", "enum": ["P0", "P1", "P2", "monitor"]},
+    "item_count": {"type": "integer", "minimum": 0},
+    "blocker_present": {"type": "boolean"},
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "line_number", "source_excerpt"],
+      "properties": {
+        "source_path": {"type": "string", "minLength": 1},
+        "line_number": {"type": "integer", "minimum": 1},
+        "source_excerpt": {"type": "string", "minLength": 1}
+      }
+    },
+    "roadmapProjectionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projection_item_id",
+        "source_input_id",
+        "priority",
+        "severity",
+        "affected_systems",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "projection_item_id": {"type": "string", "pattern": "^rpi-[a-f0-9]{16}$"},
+        "source_input_id": {"type": "string", "pattern": "^rii-[a-f0-9]{16}$"},
+        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "monitor"]},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium"]},
+        "affected_systems": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9_-]+$"}
+        },
+        "rationale": {"type": "string", "minLength": 1},
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/traceRef"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "projection_type",
+        "deterministic_hash_basis",
+        "source_review_control_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash",
+        "source_packet_id"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_projection_adapter"},
+        "projection_type": {"type": "string", "const": "roadmap"},
+        "deterministic_hash_basis": {"type": "string", "const": "canonical-json-sha256"},
+        "source_review_control_signal_id": {"type": "string", "pattern": "^rca-[a-f0-9]{16}$"},
+        "source_review_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_action_tracker_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_packet_id": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"}
+      }
+    }
+  }
+}
