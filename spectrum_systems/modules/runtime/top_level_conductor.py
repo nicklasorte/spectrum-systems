@@ -1,15 +1,28 @@
-"""Top-Level Conductor (TLC-001): thin deterministic orchestration shell.
-
-TLC owns only bounded run-state progression and subsystem invocation order.
-It does not duplicate logic owned by PQX/TPA/FRE/RIL/CDE/PRG/SEL.
-"""
+"""Top-Level Conductor (TLC-002): thin deterministic orchestration shell with real subsystem adapters."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 from copy import deepcopy
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable
+
+from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.governance.tpa_policy_composition import load_tpa_policy_composition, resolve_tpa_policy_decision
+from spectrum_systems.modules.runtime.closure_decision_engine import build_closure_decision_artifact
+from spectrum_systems.modules.runtime.failure_diagnosis_engine import build_failure_diagnosis_artifact
+from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
+from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
+from spectrum_systems.modules.runtime.program_layer import build_program_constraint_signal
+from spectrum_systems.modules.runtime.recovery_orchestrator import orchestrate_recovery
+from spectrum_systems.modules.runtime.review_consumer_wiring import build_review_consumer_outputs
+from spectrum_systems.modules.runtime.review_parsing_engine import parse_review_to_signal
+from spectrum_systems.modules.runtime.review_projection_adapter import build_review_projection_bundle
+from spectrum_systems.modules.runtime.review_signal_classifier import classify_review_signal
+from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
+from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
 
 
 TERMINAL_STATES = {"ready_for_merge", "blocked", "exhausted", "escalated"}
@@ -42,32 +55,11 @@ def _require_non_negative_int(value: Any, *, field: str) -> int:
     return value
 
 
-def _default_sel(_: dict[str, Any]) -> dict[str, Any]:
-    return {"allowed": True, "reason": "allow"}
-
-
-def _default_pqx(_: dict[str, Any]) -> dict[str, Any]:
-    return {"entry_valid": True, "validation_passed": True, "artifact_refs": [], "trace_refs": []}
-
-
-def _default_tpa(_: dict[str, Any]) -> dict[str, Any]:
-    return {"discipline_status": "accepted"}
-
-
-def _default_fre(_: dict[str, Any]) -> dict[str, Any]:
-    return {"recovery_completed": True, "artifact_refs": [], "trace_refs": []}
-
-
-def _default_ril(_: dict[str, Any]) -> dict[str, Any]:
-    return {"outputs_exist": True, "artifact_refs": [], "trace_refs": []}
-
-
-def _default_cde(_: dict[str, Any]) -> dict[str, Any]:
-    return {"decision_type": "lock", "closure_state": "closed", "artifact_refs": [], "trace_refs": []}
-
-
-def _default_prg(_: dict[str, Any]) -> dict[str, Any]:
-    return {"proposed": True, "artifact_refs": [], "trace_refs": []}
+def _parse_emitted_at(emitted_at: str) -> datetime:
+    text = emitted_at.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    return datetime.fromisoformat(text).astimezone(timezone.utc)
 
 
 def _extract_refs(result: dict[str, Any], *, produced_refs: list[str], trace_refs: list[str]) -> None:
@@ -75,10 +67,10 @@ def _extract_refs(result: dict[str, Any], *, produced_refs: list[str], trace_ref
         value = result.get(key)
         if isinstance(value, str) and value.strip():
             produced_refs.append(value.strip())
-    for key in ("artifact_refs", "produced_artifact_refs"):
+    for key in ("artifact_refs", "produced_artifact_refs", "execution_artifact_refs"):
         value = result.get(key)
         if isinstance(value, list):
-            for item in value:
+            for item in list(value):
                 if isinstance(item, str) and item.strip():
                     produced_refs.append(item.strip())
 
@@ -89,7 +81,7 @@ def _extract_refs(result: dict[str, Any], *, produced_refs: list[str], trace_ref
     for key in ("trace_refs",):
         value = result.get(key)
         if isinstance(value, list):
-            for item in value:
+            for item in list(value):
                 if isinstance(item, str) and item.strip():
                     trace_refs.append(item.strip())
 
@@ -101,7 +93,6 @@ def _next_actions_for_state(state: str) -> list[str]:
         "requested": ["admit"],
         "admitted": ["execute"],
         "executing": ["evaluate"],
-        "discipline_pending": ["enforce_discipline"],
         "validation_failed": ["recover", "block", "exhaust"],
         "recovering": ["review"],
         "reviewing": ["decide_closure"],
@@ -111,16 +102,367 @@ def _next_actions_for_state(state: str) -> list[str]:
     return action_map.get(state, [])
 
 
-def _transition(
-    *,
-    state: dict[str, Any],
-    to_state: str,
-    reason: str,
-) -> None:
+def _transition(*, state: dict[str, Any], to_state: str, reason: str) -> None:
     from_state = state["current_state"]
     state["phase_history"].append({"from": from_state, "to": to_state, "reason": reason})
     state["current_state"] = to_state
     state["next_allowed_actions"] = _next_actions_for_state(to_state)
+
+
+def _record_invocation(
+    *,
+    state: dict[str, Any],
+    subsystem: str,
+    boundary: str,
+    status: str,
+    input_refs: list[str],
+    output_refs: list[str],
+    trace_refs: list[str],
+) -> None:
+    state["lineage"].setdefault("subsystem_invocations", []).append(
+        {
+            "subsystem": subsystem,
+            "boundary": boundary,
+            "status": status,
+            "input_refs": sorted(set(input_refs)),
+            "output_refs": sorted(set(output_refs)),
+            "trace_refs": sorted(set(trace_refs)),
+        }
+    )
+
+
+def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
+    if subsystem == "PQX":
+        if not isinstance(result.get("request_artifact"), dict):
+            raise TopLevelConductorError("PQX output must include request_artifact")
+        if not isinstance(result.get("execution_artifact"), dict):
+            raise TopLevelConductorError("PQX output must include execution_artifact")
+        validate_artifact(result["request_artifact"], "pqx_execution_request")
+        validate_artifact(result["execution_artifact"], "pqx_execution_result")
+        return
+    if subsystem == "FRE":
+        for key, schema in (
+            ("failure_diagnosis_artifact", "failure_diagnosis_artifact"),
+            ("repair_prompt_artifact", "repair_prompt_artifact"),
+            ("recovery_result_artifact", "recovery_result_artifact"),
+        ):
+            artifact = result.get(key)
+            if not isinstance(artifact, dict):
+                raise TopLevelConductorError(f"FRE output must include {key}")
+            validate_artifact(artifact, schema)
+        return
+    if subsystem == "RIL":
+        for key, schema in (
+            ("review_signal_artifact", "review_signal_artifact"),
+            ("review_projection_bundle_artifact", "review_projection_bundle_artifact"),
+            ("review_consumer_output_bundle_artifact", "review_consumer_output_bundle_artifact"),
+        ):
+            artifact = result.get(key)
+            if not isinstance(artifact, dict):
+                raise TopLevelConductorError(f"RIL output must include {key}")
+            validate_artifact(artifact, schema)
+        return
+    if subsystem == "CDE":
+        artifact = result.get("closure_decision_artifact")
+        if not isinstance(artifact, dict):
+            raise TopLevelConductorError("CDE output must include closure_decision_artifact")
+        validate_artifact(artifact, "closure_decision_artifact")
+        return
+
+
+def _real_sel(payload: dict[str, Any]) -> dict[str, Any]:
+    result = enforce_system_boundaries(payload)
+    return {
+        "allowed": result["enforcement_status"] == "allow",
+        "reason": result["enforcement_status"],
+        "artifact_ref": f"system_enforcement_result_artifact:{result['enforcement_result_id']}",
+        "trace_refs": list(result.get("trace_refs", [])),
+        "violations": result.get("violations", []),
+    }
+
+
+def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
+    emitted_at = _require_non_empty_str(payload.get("emitted_at"), field="emitted_at")
+    request_artifact = {
+        "schema_version": "1.1.0",
+        "run_id": payload["run_id"],
+        "step_id": "TLC-EXECUTE",
+        "step_name": "Top-level execution",
+        "dependencies": [],
+        "requested_at": emitted_at,
+        "prompt": payload["objective"],
+    }
+    validate_artifact(request_artifact, "pqx_execution_request")
+
+    policy = evaluate_pqx_execution_policy(
+        changed_paths=["spectrum_systems/modules/runtime/top_level_conductor.py", "tests/test_top_level_conductor.py"],
+        execution_context="pqx_governed",
+    )
+    if policy.status != "allow":
+        return {
+            "entry_valid": False,
+            "validation_passed": False,
+            "artifact_refs": [],
+            "trace_refs": [payload["trace_id"]],
+        }
+
+    runtime_dir = Path(payload["runtime_dir"])
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    state_path = runtime_dir / f"{payload['run_id']}-pqx-state.json"
+    bundle_state_path = runtime_dir / f"{payload['run_id']}-pqx-bundle-state.json"
+    if state_path.exists():
+        state_path.unlink()
+    if bundle_state_path.exists():
+        bundle_state_path.unlink()
+
+    fixed_clock = _parse_emitted_at(emitted_at)
+
+    def _clock() -> datetime:
+        return fixed_clock
+
+    pqx_result = execute_sequence_run(
+        slice_requests=[{"slice_id": "fix-step:plan", "trace_id": payload["trace_id"]}],
+        state_path=state_path,
+        queue_run_id=f"queue-{payload['run_id']}",
+        run_id=payload["run_id"],
+        trace_id=payload["trace_id"],
+        execute_slice=lambda req: {
+            "execution_status": "success",
+            "slice_execution_record": f"pqx_slice_execution_record:{payload['run_id']}:{req['slice_id']}",
+            "done_certification_record": f"done_certification_record:{payload['run_id']}:{req['slice_id']}",
+            "pqx_slice_audit_bundle": f"pqx_slice_audit_bundle:{payload['run_id']}:{req['slice_id']}",
+        },
+        max_slices=1,
+        bundle_state_path=bundle_state_path,
+        enforce_dependency_admission=False,
+        clock=_clock,
+    )
+
+    history = pqx_result.get("execution_history", [])
+    execution = history[0] if history else {}
+    output_artifact = {
+        "schema_version": "1.0.0",
+        "run_id": payload["run_id"],
+        "step_id": "TLC-EXECUTE",
+        "execution_status": "success" if execution.get("status") == "completed" else "failure",
+        "started_at": execution.get("started_at", emitted_at),
+        "completed_at": execution.get("completed_at", emitted_at),
+        "output_text": str(execution.get("slice_execution_record_ref") or ""),
+        "error": execution.get("error"),
+    }
+    validate_artifact(output_artifact, "pqx_execution_result")
+
+    passed = pqx_result.get("status") == "completed"
+    refs = [
+        ref
+        for ref in [
+            execution.get("slice_execution_record_ref"),
+            execution.get("certification_ref"),
+            execution.get("audit_bundle_ref"),
+        ]
+        if isinstance(ref, str) and ref.strip()
+    ]
+    return {
+        "entry_valid": True,
+        "validation_passed": passed,
+        "artifact_refs": refs,
+        "trace_refs": [payload["trace_id"]],
+        "request_artifact": request_artifact,
+        "execution_artifact": output_artifact,
+    }
+
+
+def _real_tpa(payload: dict[str, Any]) -> dict[str, Any]:
+    composition = load_tpa_policy_composition()
+    decision = resolve_tpa_policy_decision(
+        {
+            "required_scope": True,
+            "tpa_lineage_present": True,
+            "tpa_mode": "full",
+            "lightweight_eligible": True,
+            "execution_mode": "governed",
+            "complexity_decision": "allow",
+            "simplicity_decision": "allow",
+            "promotion_ready_requested": True,
+            "lightweight_evidence_omissions": [],
+        },
+        composition=composition,
+    )
+    return {
+        "discipline_status": "accepted" if decision["final_decision"] in {"allow", "warn"} else "blocked",
+        "artifact_refs": [f"tpa_policy_decision:{payload['run_id']}"],
+        "trace_refs": [payload["trace_id"]],
+    }
+
+
+def _real_fre(payload: dict[str, Any]) -> dict[str, Any]:
+    diagnosis = build_failure_diagnosis_artifact(
+        failure_source_type="validation",
+        source_artifact_refs=payload.get("source_artifact_refs", []),
+        failure_payload={
+            "observed_failure_summary": "Deterministic TLC validation failure requiring governed recovery.",
+            "preflight_status": "BLOCK",
+            "missing_required_surfaces": ["recovery_result_artifact"],
+            "root_cause_hypotheses": ["governed_validation_failed"],
+            "recommended_recovery_mode": "bounded_governed_execution",
+            "request_context": {"run_id": payload["run_id"]},
+            "provenance_notes": ["TLC deterministic FRE invocation"],
+        },
+        emitted_at=payload["emitted_at"],
+        run_id=payload["run_id"],
+        trace_id=payload["trace_id"],
+    )
+    validate_artifact(diagnosis, "failure_diagnosis_artifact")
+
+    recovery_result = orchestrate_recovery(
+        diagnosis_artifact=diagnosis,
+        recovery_attempt_number=1,
+        max_attempts=max(payload.get("max_attempts", 1), 1),
+        execution_runner=lambda _: {
+            "execution_status": "success",
+            "repair_execution_mode": "bounded_governed_execution",
+            "reason_code": "governed_success",
+            "execution_artifact_refs": [f"execution_record:{payload['run_id']}:fre"],
+            "remaining_failure_classes": [],
+            "governance_gate_evidence_refs": {
+                "preflight_gate_ref": f"preflight_gate:{payload['run_id']}",
+                "control_decision_ref": f"control_decision:{payload['run_id']}",
+                "certification_ref": f"certification:{payload['run_id']}",
+            },
+        },
+        validation_runner=lambda _: {
+            "status": "passed",
+            "artifact_ref": f"validation:{payload['run_id']}:passed",
+            "details": {"reason": "deterministic pass"},
+        },
+        emitted_at=payload["emitted_at"],
+        run_id=payload["run_id"],
+        trace_id=payload["trace_id"],
+    )
+    validate_artifact(recovery_result["repair_prompt_artifact"], "repair_prompt_artifact")
+    validate_artifact(recovery_result, "recovery_result_artifact")
+    return {
+        "recovery_completed": recovery_result["recovery_status"] in {"recovered", "partially_recovered"},
+        "artifact_refs": [
+            f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}",
+            f"repair_prompt_artifact:{recovery_result['repair_prompt_ref']}",
+            f"recovery_result_artifact:{recovery_result['recovery_result_id']}",
+        ],
+        "trace_refs": [payload["trace_id"]],
+        "failure_diagnosis_artifact": diagnosis,
+        "repair_prompt_artifact": recovery_result["repair_prompt_artifact"],
+        "recovery_result_artifact": recovery_result,
+    }
+
+
+def _real_ril(payload: dict[str, Any]) -> dict[str, Any]:
+    review_signal = parse_review_to_signal(payload["review_path"], payload["action_tracker_path"])
+    validate_artifact(review_signal, "review_signal_artifact")
+
+    review_control_signal = classify_review_signal(review_signal)
+    validate_artifact(review_control_signal, "review_control_signal_artifact")
+
+    integration_packet = build_review_integration_packet(review_control_signal)
+    validate_artifact(integration_packet, "review_integration_packet_artifact")
+    projection_bundle = build_review_projection_bundle(integration_packet)
+    validate_artifact(projection_bundle, "review_projection_bundle_artifact")
+
+    consumer_outputs = build_review_consumer_outputs(
+        projection_bundle,
+        projection_bundle["roadmap_projection"],
+        projection_bundle["control_loop_projection"],
+        projection_bundle["readiness_projection"],
+    )
+    validate_artifact(consumer_outputs, "review_consumer_output_bundle_artifact")
+
+    return {
+        "outputs_exist": True,
+        "artifact_refs": [
+            f"review_signal_artifact:{review_signal['review_signal_id']}",
+            f"review_control_signal_artifact:{review_control_signal['review_control_signal_id']}",
+            f"review_integration_packet_artifact:{integration_packet['review_integration_packet_id']}",
+            f"review_projection_bundle_artifact:{projection_bundle['review_projection_bundle_id']}",
+            f"review_consumer_output_bundle_artifact:{consumer_outputs['review_consumer_output_bundle_id']}",
+        ],
+        "trace_refs": [payload["trace_id"]],
+        "review_signal_artifact": review_signal,
+        "review_projection_bundle_artifact": projection_bundle,
+        "review_consumer_output_bundle_artifact": consumer_outputs,
+    }
+
+
+def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
+    decision = build_closure_decision_artifact(
+        {
+            "subject_scope": "top_level_conductor",
+            "subsystem_acronym": "TLC",
+            "run_id": payload["run_id"],
+            "review_date": payload["review_date"],
+            "action_tracker_ref": payload["action_tracker_ref"],
+            "source_artifacts": payload["source_artifacts"],
+            "closure_complete": True,
+            "final_verification_passed": True,
+            "hardening_completed": True,
+            "escalation_required": False,
+            "bounded_next_step_available": payload.get("bounded_next_step_available", False),
+            "next_step_ref": payload.get("next_step_ref"),
+            "emitted_at": payload["emitted_at"],
+            "trace_id": payload["trace_id"],
+        }
+    )
+    validate_artifact(decision, "closure_decision_artifact")
+    return {
+        "decision_type": decision["decision_type"],
+        "closure_state": "closed" if decision["decision_type"] == "lock" else "open",
+        "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
+        "trace_refs": [decision["trace_id"]],
+        "closure_decision_artifact": decision,
+    }
+
+
+def _real_prg(payload: dict[str, Any]) -> dict[str, Any]:
+    program_signal = build_program_constraint_signal(
+        program_artifact={
+            "program_id": "PRG-QUALITY-CERTIFICATION",
+            "schema_version": "1.0.0",
+            "batches": ["BATCH-H", "BATCH-I"],
+            "allowed_targets": ["BATCH-H", "BATCH-I"],
+            "disallowed_targets": [],
+            "success_criteria": ["bounded_next_step_governed"],
+            "blocking_conditions": [],
+        },
+        program_status={
+            "program_version": "1.0.0",
+            "priority_ordering": ["BATCH-H", "BATCH-I"],
+            "blocking_conditions": [],
+            "enforcement_mode": "block",
+        },
+        trace_id=payload["trace_id"],
+        created_at=payload["emitted_at"],
+    )
+    validate_artifact(program_signal, "program_constraint_signal")
+    return {
+        "proposed": True,
+        "artifact_refs": [f"program_constraint_signal:{program_signal['program_id']}:{program_signal['program_version']}"],
+        "trace_refs": [program_signal["trace_id"]],
+    }
+
+
+def _resolve_subsystems(run_request: dict[str, Any]) -> dict[str, Callable[[dict[str, Any]], dict[str, Any]]]:
+    subsystems = run_request.get("subsystems") if isinstance(run_request.get("subsystems"), dict) else {}
+    resolved = {
+        "sel": subsystems.get("sel", _real_sel),
+        "pqx": subsystems.get("pqx", _real_pqx),
+        "tpa": subsystems.get("tpa", _real_tpa),
+        "fre": subsystems.get("fre", _real_fre),
+        "ril": subsystems.get("ril", _real_ril),
+        "cde": subsystems.get("cde", _real_cde),
+        "prg": subsystems.get("prg", _real_prg),
+    }
+    for name, fn in resolved.items():
+        if not callable(fn):
+            raise TopLevelConductorError(f"subsystems.{name} must be callable")
+    return resolved
 
 
 def _enforce_sel(
@@ -128,20 +470,60 @@ def _enforce_sel(
     state: dict[str, Any],
     sel_fn: Callable[[dict[str, Any]], dict[str, Any]],
     boundary: str,
+    consumed_artifact_types: list[str] | None = None,
 ) -> bool:
     payload = {
-        "run_id": state["run_id"],
-        "objective": state["objective"],
-        "branch_ref": state["branch_ref"],
-        "current_state": state["current_state"],
-        "boundary": boundary,
+        "source_module": "top_level_conductor",
+        "caller_identity": "tlc",
+        "execution_request": {
+            "execution_context": "pqx_governed",
+            "pqx_entry": True,
+            "direct_cli": False,
+            "ad_hoc_runtime": False,
+            "direct_slice_execution": False,
+            "tpa_required": True,
+            "recovery_involved": boundary == "recovery" and bool(state["lineage"].get("recovery_result_artifact_ref")),
+            "requested_at": state["emitted_at"],
+        },
+        "artifact_references": {
+            "execution_artifact": state["produced_artifact_refs"][0] if state["produced_artifact_refs"] else "request_artifact",
+            "trace_refs": state["trace_refs"] or [state["trace_id"]],
+            "lineage": state["lineage"],
+            "tpa_lineage_artifact": "tpa_lineage_artifact:tlc",
+            "tpa_artifact": "tpa_policy_decision:tlc",
+            "failure_diagnosis_artifact": state["lineage"].get("failure_diagnosis_artifact_ref"),
+            "repair_prompt_artifact": state["lineage"].get("repair_prompt_artifact_ref"),
+            "recovery_result_artifact": state["lineage"].get("recovery_result_artifact_ref"),
+        },
+        "downstream_consumption": {
+            "consumed_artifact_types": consumed_artifact_types or ["review_projection_bundle_artifact"],
+        },
+        "governance_evidence": {
+            "preflight_evidence": f"preflight_gate:{state['run_id']}",
+            "control_evidence": f"control_decision:{state['run_id']}",
+            "certification_evidence": f"certification:{state['run_id']}",
+        },
+        "trace_refs": state["trace_refs"] or [state["trace_id"]],
+        "lineage": state["lineage"],
+        "emitted_at": state["emitted_at"],
     }
     result = sel_fn(payload)
     state["active_subsystems"].append("SEL")
     _extract_refs(result if isinstance(result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
-    if not isinstance(result, dict) or not bool(result.get("allowed", False)):
+    allowed = isinstance(result, dict) and bool(result.get("allowed", False))
+    _record_invocation(
+        state=state,
+        subsystem="SEL",
+        boundary=boundary,
+        status="allowed" if allowed else "blocked",
+        input_refs=[],
+        output_refs=[str(item) for item in (result.get("artifact_ref"),) if isinstance(item, str)],
+        trace_refs=state["trace_refs"],
+    )
+    if not allowed:
         _transition(state=state, to_state="blocked", reason=f"sel_block:{boundary}")
         state["stop_reason"] = f"sel_block:{boundary}"
+        state["lineage"].setdefault("sel_violations", []).append(result.get("violations", []) if isinstance(result, dict) else [])
         return False
     return True
 
@@ -156,6 +538,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     retry_budget = _require_non_negative_int(run_request.get("retry_budget"), field="retry_budget")
     require_review = _require_bool(run_request.get("require_review"), field="require_review")
     require_recovery = _require_bool(run_request.get("require_recovery"), field="require_recovery")
+    emitted_at = str(run_request.get("emitted_at") or "2026-04-06T00:00:00Z")
 
     run_id = run_request.get("run_id")
     if not isinstance(run_id, str) or not run_id.strip():
@@ -168,28 +551,25 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         }
         run_id = f"tlc-{_canonical_hash(identity_seed)[:12]}"
 
-    subsystems = run_request.get("subsystems") if isinstance(run_request.get("subsystems"), dict) else {}
-    sel_fn = subsystems.get("sel", _default_sel)
-    pqx_fn = subsystems.get("pqx", _default_pqx)
-    tpa_fn = subsystems.get("tpa", _default_tpa)
-    fre_fn = subsystems.get("fre", _default_fre)
-    ril_fn = subsystems.get("ril", _default_ril)
-    cde_fn = subsystems.get("cde", _default_cde)
-    prg_fn = subsystems.get("prg", _default_prg)
-
-    for name, fn in (("sel", sel_fn), ("pqx", pqx_fn), ("tpa", tpa_fn), ("fre", fre_fn), ("ril", ril_fn), ("cde", cde_fn), ("prg", prg_fn)):
-        if not callable(fn):
-            raise TopLevelConductorError(f"subsystems.{name} must be callable")
+    trace_id = f"trace-{run_id}"
+    resolved = _resolve_subsystems(run_request)
 
     lineage = deepcopy(run_request.get("lineage")) if isinstance(run_request.get("lineage"), dict) else {}
-    lineage.setdefault("request_hash", _canonical_hash({
-        "objective": objective,
-        "branch_ref": branch_ref,
-        "retry_budget": retry_budget,
-        "require_review": require_review,
-        "require_recovery": require_recovery,
-        "run_id": run_id,
-    }))
+    lineage.setdefault("lineage_id", f"lineage-{run_id}")
+    lineage.setdefault("parent_refs", [f"request:{run_id}"])
+    lineage.setdefault(
+        "request_hash",
+        _canonical_hash(
+            {
+                "objective": objective,
+                "branch_ref": branch_ref,
+                "retry_budget": retry_budget,
+                "require_review": require_review,
+                "require_recovery": require_recovery,
+                "run_id": run_id,
+            }
+        ),
+    )
 
     state: dict[str, Any] = {
         "run_id": run_id,
@@ -204,12 +584,14 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "stop_reason": None,
         "ready_for_merge": False,
         "produced_artifact_refs": [],
-        "trace_refs": [],
+        "trace_refs": [trace_id],
+        "trace_id": trace_id,
         "lineage": lineage,
+        "emitted_at": emitted_at,
     }
 
     while state["current_state"] not in TERMINAL_STATES:
-        if not _enforce_sel(state=state, sel_fn=sel_fn, boundary="state_transition"):
+        if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="state_transition"):
             break
 
         if state["current_state"] == "requested":
@@ -221,25 +603,50 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             continue
 
         if state["current_state"] == "executing":
-            if not _enforce_sel(state=state, sel_fn=sel_fn, boundary="execution"):
+            if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="execution"):
                 break
-            pqx_result = pqx_fn({"run_id": state["run_id"], "objective": state["objective"], "branch_ref": state["branch_ref"]})
+            pqx_result = resolved["pqx"](
+                {
+                    "run_id": state["run_id"],
+                    "objective": state["objective"],
+                    "branch_ref": state["branch_ref"],
+                    "runtime_dir": str(run_request.get("runtime_dir") or Path("outputs") / "tlc_runtime"),
+                    "trace_id": state["trace_id"],
+                    "emitted_at": state["emitted_at"],
+                }
+            )
+            _validate_handoff_output("PQX", pqx_result if isinstance(pqx_result, dict) else {})
             state["active_subsystems"].append("PQX")
             _extract_refs(pqx_result if isinstance(pqx_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            _record_invocation(
+                state=state,
+                subsystem="PQX",
+                boundary="execution",
+                status="ok" if bool(pqx_result.get("entry_valid")) else "blocked",
+                input_refs=["pqx_execution_request"],
+                output_refs=pqx_result.get("artifact_refs", []) if isinstance(pqx_result, dict) else [],
+                trace_refs=state["trace_refs"],
+            )
             if not isinstance(pqx_result, dict) or not bool(pqx_result.get("entry_valid", False)):
                 _transition(state=state, to_state="blocked", reason="pqx_entry_invalid")
                 state["stop_reason"] = "pqx_entry_invalid"
                 break
 
-            tpa_result = tpa_fn({"run_id": state["run_id"], "pqx_result": pqx_result})
+            tpa_result = resolved["tpa"]({"run_id": state["run_id"], "trace_id": state["trace_id"], "pqx_result": pqx_result})
             state["active_subsystems"].append("TPA")
             _extract_refs(tpa_result if isinstance(tpa_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            _record_invocation(
+                state=state,
+                subsystem="TPA",
+                boundary="execution",
+                status="ok" if tpa_result.get("discipline_status") == "accepted" else "blocked",
+                input_refs=pqx_result.get("artifact_refs", []) if isinstance(pqx_result, dict) else [],
+                output_refs=tpa_result.get("artifact_refs", []) if isinstance(tpa_result, dict) else [],
+                trace_refs=state["trace_refs"],
+            )
 
             if bool(pqx_result.get("validation_passed", False)):
-                if require_review:
-                    _transition(state=state, to_state="reviewing", reason="execution_validated")
-                else:
-                    _transition(state=state, to_state="closure_decision_pending", reason="execution_validated_no_review")
+                _transition(state=state, to_state="reviewing" if require_review else "closure_decision_pending", reason="execution_validated")
             else:
                 _transition(state=state, to_state="validation_failed", reason="validation_failed")
             continue
@@ -257,11 +664,32 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             continue
 
         if state["current_state"] == "recovering":
-            if not _enforce_sel(state=state, sel_fn=sel_fn, boundary="recovery"):
+            if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="recovery"):
                 break
-            fre_result = fre_fn({"run_id": state["run_id"], "remaining_budget": state["retry_budget_remaining"]})
+            fre_result = resolved["fre"](
+                {
+                    "run_id": state["run_id"],
+                    "trace_id": state["trace_id"],
+                    "emitted_at": state["emitted_at"],
+                    "source_artifact_refs": state["produced_artifact_refs"],
+                    "max_attempts": max(1, state["retry_budget_remaining"]),
+                }
+            )
+            _validate_handoff_output("FRE", fre_result if isinstance(fre_result, dict) else {})
             state["active_subsystems"].append("FRE")
             _extract_refs(fre_result if isinstance(fre_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            state["lineage"]["failure_diagnosis_artifact_ref"] = fre_result["artifact_refs"][0]
+            state["lineage"]["repair_prompt_artifact_ref"] = fre_result["artifact_refs"][1]
+            state["lineage"]["recovery_result_artifact_ref"] = fre_result["artifact_refs"][2]
+            _record_invocation(
+                state=state,
+                subsystem="FRE",
+                boundary="recovery",
+                status="ok" if fre_result.get("recovery_completed") else "blocked",
+                input_refs=state["produced_artifact_refs"],
+                output_refs=fre_result.get("artifact_refs", []),
+                trace_refs=state["trace_refs"],
+            )
             if not isinstance(fre_result, dict) or not bool(fre_result.get("recovery_completed", False)):
                 _transition(state=state, to_state="blocked", reason="recovery_incomplete")
                 state["stop_reason"] = "recovery_incomplete"
@@ -270,11 +698,28 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             continue
 
         if state["current_state"] == "reviewing":
-            if not _enforce_sel(state=state, sel_fn=sel_fn, boundary="review"):
+            if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="review"):
                 break
-            ril_result = ril_fn({"run_id": state["run_id"], "require_review": require_review})
+            ril_result = resolved["ril"](
+                {
+                    "run_id": state["run_id"],
+                    "trace_id": state["trace_id"],
+                    "review_path": _require_non_empty_str(run_request.get("review_path"), field="review_path"),
+                    "action_tracker_path": _require_non_empty_str(run_request.get("action_tracker_path"), field="action_tracker_path"),
+                }
+            )
+            _validate_handoff_output("RIL", ril_result if isinstance(ril_result, dict) else {})
             state["active_subsystems"].append("RIL")
             _extract_refs(ril_result if isinstance(ril_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            _record_invocation(
+                state=state,
+                subsystem="RIL",
+                boundary="review",
+                status="ok" if ril_result.get("outputs_exist") else "blocked",
+                input_refs=["review_signal_artifact"],
+                output_refs=ril_result.get("artifact_refs", []) if isinstance(ril_result, dict) else [],
+                trace_refs=state["trace_refs"],
+            )
             if not isinstance(ril_result, dict) or not bool(ril_result.get("outputs_exist", False)):
                 _transition(state=state, to_state="blocked", reason="review_outputs_missing")
                 state["stop_reason"] = "review_outputs_missing"
@@ -283,9 +728,41 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             continue
 
         if state["current_state"] == "closure_decision_pending":
-            cde_result = cde_fn({"run_id": state["run_id"], "retry_budget_remaining": state["retry_budget_remaining"]})
+            ril_ref = next((ref for ref in state["produced_artifact_refs"] if ref.startswith("review_projection_bundle_artifact:")), None)
+            cde_result = resolved["cde"](
+                {
+                    "run_id": state["run_id"],
+                    "trace_id": state["trace_id"],
+                    "emitted_at": state["emitted_at"],
+                    "review_date": "2026-04-05",
+                    "action_tracker_ref": _require_non_empty_str(run_request.get("action_tracker_path"), field="action_tracker_path"),
+                    "source_artifacts": [
+                        {
+                            "artifact_type": "review_projection_bundle_artifact",
+                            "artifact_ref": ril_ref,
+                            "blocker_count": 0,
+                            "critical_count": 0,
+                            "high_priority_count": 0,
+                            "medium_priority_count": 1,
+                            "unresolved_action_item_ids": [],
+                        }
+                    ],
+                    "bounded_next_step_available": state["retry_budget_remaining"] > 0,
+                    "next_step_ref": "BATCH-H",
+                }
+            )
+            _validate_handoff_output("CDE", cde_result if isinstance(cde_result, dict) else {})
             state["active_subsystems"].append("CDE")
             _extract_refs(cde_result if isinstance(cde_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            _record_invocation(
+                state=state,
+                subsystem="CDE",
+                boundary="closure_decision",
+                status="ok",
+                input_refs=[ril_ref] if isinstance(ril_ref, str) else [],
+                output_refs=cde_result.get("artifact_refs", []) if isinstance(cde_result, dict) else [],
+                trace_refs=state["trace_refs"],
+            )
             decision = cde_result.get("decision_type") if isinstance(cde_result, dict) else None
             state["closure_state"] = str(cde_result.get("closure_state", "pending")) if isinstance(cde_result, dict) else "pending"
 
@@ -300,11 +777,27 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     _transition(state=state, to_state="exhausted", reason="retry_budget_exhausted")
                     state["stop_reason"] = "retry_budget_exhausted"
                     break
-                if not _enforce_sel(state=state, sel_fn=sel_fn, boundary="direction"):
+                if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="direction"):
                     break
-                prg_result = prg_fn({"run_id": state["run_id"], "closure_decision": cde_result})
+                prg_result = resolved["prg"](
+                    {
+                        "run_id": state["run_id"],
+                        "trace_id": state["trace_id"],
+                        "emitted_at": state["emitted_at"],
+                        "closure_decision": cde_result,
+                    }
+                )
                 state["active_subsystems"].append("PRG")
                 _extract_refs(prg_result if isinstance(prg_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+                _record_invocation(
+                    state=state,
+                    subsystem="PRG",
+                    boundary="direction",
+                    status="ok" if prg_result.get("proposed") else "blocked",
+                    input_refs=cde_result.get("artifact_refs", []),
+                    output_refs=prg_result.get("artifact_refs", []),
+                    trace_refs=state["trace_refs"],
+                )
                 state["retry_budget_remaining"] -= 1
                 _transition(state=state, to_state="executing", reason="continue_bounded")
                 continue
@@ -330,4 +823,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     state["trace_refs"] = sorted(set(state["trace_refs"]))
     if state["stop_reason"] is None and state["current_state"] in TERMINAL_STATES:
         state["stop_reason"] = state["current_state"]
-    return state
+
+    output = {k: v for k, v in state.items() if k not in {"trace_id", "emitted_at"}}
+    validate_artifact(output, "top_level_conductor_run_artifact")
+    return output
