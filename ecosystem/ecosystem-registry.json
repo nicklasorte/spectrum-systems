@@ -207,6 +207,19 @@
       "description": "Scaffolding repo that generates governed system repositories with pinned contracts."
     },
     {
+      "repo_name": "tlc",
+      "repo_url": "https://github.com/nicklasorte/tlc",
+      "repo_type": "governance",
+      "status": "planned",
+      "layer": "Layer 2",
+      "manifest_required": false,
+      "contracts": [
+        "closure_decision_artifact",
+        "next_step_prompt_artifact"
+      ],
+      "description": "Top-Level Conductor (TLC): thin top-level orchestration shell that coordinates governed next-step intake and routing; does not execute directly, does not replace PQX/FRE/RIL/PRG, and does not decide policy."
+    },
+    {
       "repo_name": "working-paper-review-engine",
       "repo_url": "https://github.com/nicklasorte/working-paper-review-engine",
       "repo_type": "operational_engine",
