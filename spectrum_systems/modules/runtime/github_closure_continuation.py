@@ -39,6 +39,7 @@ _REQUIRED_RIL_KEYS = (
 _OPTIONAL_RIL_KEYS = (
     "review_control_signal_artifact",
     "review_integration_packet_artifact",
+    "roadmap_two_step_artifact",
 )
 _CONTINUATION_ELIGIBLE_DECISIONS = {"hardening_required", "final_verification_required", "continue_bounded"}
 
@@ -57,6 +58,7 @@ class ContinuationInputBundle:
     consumer_bundle: dict[str, Any]
     review_signal: dict[str, Any]
     optional_artifacts: dict[str, dict[str, Any]]
+    roadmap_two_step_artifact: dict[str, Any] | None
 
 
 @dataclass(frozen=True)
@@ -161,6 +163,8 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
                 validate_artifact(payload, schema_name)
                 optional_artifacts[key] = payload
 
+    roadmap_two_step_artifact = optional_artifacts.get("roadmap_two_step_artifact")
+
     return ContinuationInputBundle(
         ingestion_summary=summary,
         pr_number=pr_number,
@@ -170,6 +174,7 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
         consumer_bundle=consumer_bundle,
         review_signal=review_signal,
         optional_artifacts=optional_artifacts,
+        roadmap_two_step_artifact=roadmap_two_step_artifact,
     )
 
 
@@ -222,6 +227,18 @@ def _deterministic_next_step_ref(decision_hint: str, continuation_id: str) -> st
     return f"bounded_continue:{continuation_id}"
 
 
+def _roadmap_next_step_ref(bundle: ContinuationInputBundle) -> str | None:
+    roadmap = bundle.roadmap_two_step_artifact
+    if not isinstance(roadmap, dict):
+        return None
+    roadmap_id = roadmap.get("roadmap_id")
+    step_count = roadmap.get("step_count")
+    bounded = roadmap.get("bounded")
+    if isinstance(roadmap_id, str) and roadmap_id and bounded is True and step_count == 2:
+        return f"roadmap_two_step_artifact:{roadmap_id}"
+    return None
+
+
 def _run_tlc_with_precomputed_decision(
     *,
     bundle: ContinuationInputBundle,
@@ -247,6 +264,7 @@ def _run_tlc_with_precomputed_decision(
             "review_signal_artifact": review_signal,
             "review_projection_bundle_artifact": bundle.projection_bundle,
             "review_consumer_output_bundle_artifact": bundle.consumer_bundle,
+            "roadmap_two_step_artifact": bundle.roadmap_two_step_artifact,
         }
 
     def _cde_passthrough(_: dict[str, Any]) -> dict[str, Any]:
@@ -319,7 +337,7 @@ def run_github_closure_continuation(
 
     next_step_ref = None
     if bounded_next_step_available:
-        next_step_ref = _deterministic_next_step_ref(decision_hint, continuation_id)
+        next_step_ref = _roadmap_next_step_ref(bundle) or _deterministic_next_step_ref(decision_hint, continuation_id)
 
     cde_request = {
         "subject_scope": "github_closure_continuation",
@@ -425,6 +443,15 @@ def run_github_closure_continuation(
             if tlc_result is not None
             else None,
         },
+        "roadmap_two_step": (
+            {
+                "roadmap_id": bundle.roadmap_two_step_artifact.get("roadmap_id"),
+                "artifact_path": bundle.artifact_paths.get("roadmap_two_step_artifact"),
+                "steps": [step.get("description", "") for step in bundle.roadmap_two_step_artifact.get("steps", [])][:2],
+            }
+            if bundle.roadmap_two_step_artifact is not None
+            else None
+        ),
         "guardrails": {
             "github_triggers_only": True,
             "adapter_normalization_only": True,

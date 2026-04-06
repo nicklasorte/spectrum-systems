@@ -85,7 +85,7 @@ if not isinstance(issue, dict) or "pull_request" not in issue:
     raise SystemExit("issue_comment trigger allowed only for pull request threads")
 comment = event.get("comment")
 body = comment.get("body") if isinstance(comment, dict) else None
-markers = ("/governed-next-step", "/run-ril")
+markers = ("/governed-next-step", "/run-ril", "/roadmap-2step")
 if not isinstance(body, str) or not any(marker in body for marker in markers):
     raise SystemExit("issue_comment trigger requires approved command marker")
 PY

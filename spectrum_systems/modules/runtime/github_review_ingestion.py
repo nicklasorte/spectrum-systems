@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.github_roadmap_builder import build_two_step_roadmap_from_sources
 from spectrum_systems.modules.runtime.review_consumer_wiring import build_review_consumer_outputs
 from spectrum_systems.modules.runtime.review_parsing_engine import parse_review_to_signal
 from spectrum_systems.modules.runtime.review_projection_adapter import build_review_projection_bundle
@@ -24,7 +25,7 @@ from spectrum_systems.modules.runtime.review_signal_classifier import classify_r
 from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
-_COMMAND_MARKERS = ("/governed-next-step", "/run-ril")
+_COMMAND_MARKERS = ("/governed-next-step", "/run-ril", "/roadmap-2step")
 
 
 class GithubReviewIngestionError(ValueError):
@@ -97,7 +98,9 @@ def _extract_review_body(event_name: str, payload: dict[str, Any], review_source
 
         marker = next((candidate for candidate in _COMMAND_MARKERS if candidate in body), None)
         if marker is None:
-            raise GithubReviewIngestionError("issue_comment requires a command marker (/governed-next-step or /run-ril)")
+            raise GithubReviewIngestionError(
+                "issue_comment requires a command marker (/governed-next-step or /run-ril or /roadmap-2step)"
+            )
 
         comment_id = comment.get("id")
         source_ref = f"issue_comment:{comment_id}" if comment_id is not None else "issue_comment:command"
@@ -396,6 +399,19 @@ def ingest_github_review_event(
         "review_projection_bundle_artifact": str(artifact_dir / "review_projection_bundle_artifact.json"),
         "review_consumer_output_bundle_artifact": str(artifact_dir / "review_consumer_output_bundle_artifact.json"),
     }
+    if normalized.command_marker == "/roadmap-2step":
+        roadmap_artifact = build_two_step_roadmap_from_sources(
+            {
+                "command_body": normalized.review_body,
+                "emitted_at": emitted_at,
+                "repo_root": ".",
+                "pr_number": normalized.pr_number,
+                "source_event_ref": normalized.source_event_ref,
+            }
+        )
+        roadmap_path = artifact_dir / "roadmap_two_step_artifact.json"
+        _write_json(roadmap_path, roadmap_artifact)
+        artifact_paths["roadmap_two_step_artifact"] = str(roadmap_path)
 
     summary = {
         "ingestion_id": normalized.ingestion_id,
@@ -413,6 +429,7 @@ def ingest_github_review_event(
             "adapter_normalization_only": True,
             "ril_structuring_only": True,
             "closure_or_repair_logic_invoked": False,
+            "roadmap_generation_deterministic": True,
         },
     }
     _write_json(artifact_dir / "ingestion_summary.json", summary)

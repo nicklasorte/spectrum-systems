@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_two_step_artifact.schema.json",
+  "title": "Roadmap Two Step Artifact",
+  "description": "Deterministic bounded two-step roadmap generated from repository-local source documents for governed continuation routing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roadmap_id",
+    "schema_version",
+    "generated_at",
+    "source_refs",
+    "steps",
+    "bounded",
+    "step_count"
+  ],
+  "properties": {
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^R2S-[A-F0-9]{16}$"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "description",
+          "required_inputs",
+          "expected_outputs"
+        ],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "enum": [
+              "step_1",
+              "step_2"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_inputs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "expected_outputs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "bounded": {
+      "type": "boolean",
+      "const": true
+    },
+    "step_count": {
+      "type": "integer",
+      "const": 2
+    }
+  }
+}

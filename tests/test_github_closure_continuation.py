@@ -39,6 +39,26 @@ def _build_ingestion_summary(tmp_path: Path) -> tuple[Path, Path]:
     return summary_path, handoff_path
 
 
+def _build_ingestion_summary_with_roadmap(tmp_path: Path) -> tuple[Path, Path]:
+    payload = _load_fixture("issue_comment_pr_command.json")
+    payload["comment"]["body"] = "/roadmap-2step scope:runtime keywords:governance,roadmap"
+    result = ingest_github_review_event(
+        event_name="issue_comment",
+        payload=payload,
+        output_root=tmp_path / "artifacts" / "github_review_ingestion",
+        review_source="ril",
+        run_mode="strict",
+        emitted_at="2026-04-06T12:00:00Z",
+        repo="example/repo",
+        sha="abc123",
+        run_id="555",
+    )
+    summary_path = tmp_path / "ingestion_result.json"
+    summary_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    handoff_path = Path(result["artifact_paths"]["github_review_handoff_artifact"])
+    return summary_path, handoff_path
+
+
 def _neutralize_escalation(summary_path: Path) -> None:
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     for key in ("review_projection_bundle_artifact", "review_consumer_output_bundle_artifact"):
@@ -296,6 +316,39 @@ def test_missing_handoff_artifact_fails_closed(tmp_path: Path) -> None:
             bounded_next_step_available=True,
             retry_budget=0,
         )
+
+
+def test_roadmap_artifact_is_fed_into_continuation_pipeline(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    summary_path, handoff_path = _build_ingestion_summary_with_roadmap(tmp_path)
+    _neutralize_escalation(summary_path)
+    captured_request: dict[str, object] = {}
+
+    import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
+
+    original_builder = module_under_test.build_closure_decision_artifact
+
+    def _spy(request: dict[str, object]) -> dict[str, object]:
+        captured_request.update(request)
+        return original_builder(request)
+
+    monkeypatch.setattr(module_under_test, "build_closure_decision_artifact", _spy)
+
+    result = run_github_closure_continuation(
+        github_review_handoff_path=handoff_path,
+        output_root=tmp_path / "artifacts" / "github_closure_continuation",
+        emitted_at="2026-04-06T12:53:00Z",
+        closure_complete=False,
+        final_verification_passed=False,
+        hardening_completed=False,
+        escalation_required=False,
+        bounded_next_step_available=True,
+        retry_budget=0,
+    )
+
+    assert result["cde_decision"] == "continue_bounded"
+    assert isinstance(captured_request.get("next_step_ref"), str)
+    assert str(captured_request["next_step_ref"]).startswith("roadmap_two_step_artifact:R2S-")
+    assert result["roadmap_two_step"] is not None
 
 
 def test_branch_update_policy_only_allows_continue_bounded_path(tmp_path: Path) -> None:
