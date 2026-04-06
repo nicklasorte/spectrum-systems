@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/system_end_to_end_validation_result_artifact.schema.json",
+  "title": "System End-to-End Validation Result Artifact",
+  "description": "Deterministic canonical governed validation result proving one bounded PQX+TPA+FRE+RIL+SEL execution loop.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "validation_result_id",
+    "validation_status",
+    "scenario_name",
+    "scenario_version",
+    "source_subsystems",
+    "pqx_phase_status",
+    "tpa_phase_status",
+    "fre_phase_status",
+    "ril_phase_status",
+    "sel_phase_status",
+    "produced_artifact_refs",
+    "required_artifact_types_verified",
+    "trace_continuity_verified",
+    "lineage_continuity_verified",
+    "sel_valid_path_allowed",
+    "sel_invalid_path_blocked",
+    "failure_injected_type",
+    "recovery_outcome",
+    "final_summary",
+    "trace_id",
+    "lineage",
+    "provenance",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "system_end_to_end_validation_result_artifact" },
+    "artifact_class": { "const": "coordination" },
+    "schema_version": { "const": "1.0.0" },
+    "validation_result_id": {
+      "type": "string",
+      "pattern": "^s2e-[a-f0-9]{16}$"
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "scenario_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source_subsystems": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 5,
+      "items": {
+        "type": "string",
+        "enum": ["pqx", "tpa", "fre", "ril", "sel"]
+      }
+    },
+    "pqx_phase_status": { "type": "string", "enum": ["pass", "fail"] },
+    "tpa_phase_status": { "type": "string", "enum": ["pass", "fail"] },
+    "fre_phase_status": { "type": "string", "enum": ["pass", "fail"] },
+    "ril_phase_status": { "type": "string", "enum": ["pass", "fail"] },
+    "sel_phase_status": { "type": "string", "enum": ["pass", "fail"] },
+    "produced_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "required_artifact_types_verified": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "trace_continuity_verified": { "type": "boolean" },
+    "lineage_continuity_verified": { "type": "boolean" },
+    "sel_valid_path_allowed": { "type": "boolean" },
+    "sel_invalid_path_blocked": { "type": "boolean" },
+    "failure_injected_type": { "type": "string", "minLength": 1 },
+    "recovery_outcome": {
+      "type": "string",
+      "enum": ["recovered", "partially_recovered", "blocked", "failed"]
+    },
+    "final_summary": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lineage_id", "parent_refs"],
+      "properties": {
+        "lineage_id": { "type": "string", "minLength": 1 },
+        "parent_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer",
+        "governed_entry",
+        "scenario_hash",
+        "phase_artifact_refs"
+      ],
+      "properties": {
+        "producer": { "type": "string", "minLength": 1 },
+        "governed_entry": { "type": "string", "minLength": 1 },
+        "scenario_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "phase_artifact_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pqx", "tpa", "fre", "ril", "sel"],
+          "properties": {
+            "pqx": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "tpa": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "fre": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "ril": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "sel": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        }
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
