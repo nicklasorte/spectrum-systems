@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_consumption_validation_artifact.schema.json",
+  "title": "Review Consumption Validation Artifact",
+  "description": "RIL-005 deterministic validation artifact proving projection-only and read-only downstream consumption. This is non-authoritative validation telemetry and does not perform enforcement decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "review_consumption_validation_id",
+    "source_review_projection_bundle_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "intake_boundary_valid",
+    "read_only_consumption_valid",
+    "raw_review_access_detected",
+    "earlier_ril_artifact_access_detected",
+    "validation_findings",
+    "emitted_at",
+    "non_authoritative_notice",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_consumption_validation_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "review_consumption_validation_id": {"type": "string", "pattern": "^rcv-[a-f0-9]{16}$"},
+    "source_review_projection_bundle_ref": {"type": "string", "pattern": "^rpb-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "intake_boundary_valid": {"type": "boolean", "const": true},
+    "read_only_consumption_valid": {"type": "boolean", "const": true},
+    "raw_review_access_detected": {"type": "boolean", "const": false},
+    "earlier_ril_artifact_access_detected": {"type": "boolean", "const": false},
+    "validation_findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "non_authoritative_notice": {
+      "type": "string",
+      "const": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions."
+    },
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_code", "status", "detail"],
+      "properties": {
+        "finding_code": {"type": "string", "pattern": "^[A-Z0-9-]+$"},
+        "status": {"type": "string", "enum": ["pass"]},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "consumer_surface",
+        "consumption_mode",
+        "source_review_projection_bundle_ref"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_consumer_wiring"},
+        "consumer_surface": {"type": "string", "const": "projection_boundary_validation"},
+        "consumption_mode": {"type": "string", "const": "projection_only_read_only"},
+        "source_review_projection_bundle_ref": {"type": "string", "pattern": "^rpb-[a-f0-9]{16}$"}
+      }
+    }
+  }
+}

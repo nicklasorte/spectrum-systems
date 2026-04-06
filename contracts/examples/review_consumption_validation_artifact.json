@@ -1,0 +1,39 @@
+{
+  "artifact_type": "review_consumption_validation_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "review_consumption_validation_id": "rcv-380f2f662f305ed2",
+  "source_review_projection_bundle_ref": "rpb-3ba28aabc2f7f7f9",
+  "source_review_path": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "review_date": "2026-04-05",
+  "system_scope": "tpa",
+  "intake_boundary_valid": true,
+  "read_only_consumption_valid": true,
+  "raw_review_access_detected": false,
+  "earlier_ril_artifact_access_detected": false,
+  "validation_findings": [
+    {
+      "finding_code": "RIL005-PROJECTION-ONLY-BOUNDARY",
+      "status": "pass",
+      "detail": "Consumer wiring accepted only RIL-04 projection bundle and projection artifact contracts."
+    },
+    {
+      "finding_code": "RIL005-READ-ONLY-CONSUMPTION",
+      "status": "pass",
+      "detail": "Consumer outputs were derived via field passthrough without mutation or enforcement semantics."
+    },
+    {
+      "finding_code": "RIL005-NON-AUTHORITATIVE",
+      "status": "pass",
+      "detail": "Signals including enforcement_block/control_escalation are treated as non-authoritative downstream intake signals."
+    }
+  ],
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+  "provenance": {
+    "adapter": "review_consumer_wiring",
+    "consumer_surface": "projection_boundary_validation",
+    "consumption_mode": "projection_only_read_only",
+    "source_review_projection_bundle_ref": "rpb-3ba28aabc2f7f7f9"
+  }
+}

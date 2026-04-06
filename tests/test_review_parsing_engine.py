@@ -138,3 +138,21 @@ def test_each_action_item_contains_traceability_fields(tmp_path: Path) -> None:
         assert trace["source_path"].endswith("actions.md")
         assert trace["line_number"] >= 1
         assert item["id"] in trace["source_excerpt"]
+
+
+def test_runtime_schema_validation_rejects_parser_output(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    review_path, action_path = _write_inputs(tmp_path)
+
+    original = load_schema("review_signal_artifact")
+    hardened = copy.deepcopy(original)
+    hardened["required"] = [*hardened["required"], "runtime_validation_probe"]
+
+    def _patched_load_schema(name: str) -> dict:
+        if name == "review_signal_artifact":
+            return hardened
+        return load_schema(name)
+
+    monkeypatch.setattr("spectrum_systems.modules.runtime.review_parsing_engine.load_schema", _patched_load_schema)
+
+    with pytest.raises(ReviewParsingEngineError, match="runtime schema validation failed"):
+        parse_review_to_signal(review_path, action_path)

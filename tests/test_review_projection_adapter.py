@@ -137,3 +137,12 @@ def test_provenance_continuity_to_source_inputs(base_review_integration_packet_a
 
     assert bundle["source_review_path"] == base_review_integration_packet_artifact["source_review_path"]
     assert bundle["source_review_integration_packet_ref"] == base_review_integration_packet_artifact["review_integration_packet_id"]
+
+
+def test_projection_bundle_rejects_malformed_nested_projection_type(base_review_integration_packet_artifact: dict) -> None:
+    bundle = build_review_projection_bundle(base_review_integration_packet_artifact)
+    malformed = copy.deepcopy(bundle)
+    malformed["roadmap_projection"]["artifact_type"] = "wrong_projection_artifact"
+
+    with pytest.raises(Exception):
+        validate_artifact(malformed, "review_projection_bundle_artifact")

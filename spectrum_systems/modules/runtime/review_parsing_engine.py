@@ -9,6 +9,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Sequence, Tuple
 
+from jsonschema import Draft202012Validator
+
+from spectrum_systems.contracts import load_schema
+
 
 class ReviewParsingEngineError(ValueError):
     """Raised when review/action-tracker inputs are missing or malformed."""
@@ -52,6 +56,14 @@ _SEVERITY_NORMALIZATION = {
 def _canonical_hash(payload: Dict[str, Any]) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _validate_review_signal_artifact(body: Dict[str, Any]) -> None:
+    validator = Draft202012Validator(load_schema("review_signal_artifact"))
+    errors = sorted(validator.iter_errors(body), key=lambda err: str(list(err.absolute_path)))
+    if errors:
+        details = "; ".join(error.message for error in errors)
+        raise ReviewParsingEngineError(f"review_signal_artifact runtime schema validation failed: {details}")
 
 
 def _split_frontmatter(text: str) -> Tuple[List[str], List[str]]:
@@ -380,6 +392,7 @@ def parse_review_to_signal(review_path: str | Path, action_tracker_path: str | P
     }
 
     body["review_signal_id"] = f"rsv-{_canonical_hash(body)[:16]}"
+    _validate_review_signal_artifact(body)
     return body
 
 
