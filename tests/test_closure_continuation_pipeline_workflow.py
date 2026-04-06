@@ -31,9 +31,11 @@ def test_workflow_invokes_continuation_adapter_and_publishes_summary() -> None:
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
 
     assert "spectrum_systems.modules.runtime.github_closure_continuation" in text
+    assert "--github-review-handoff-path" in text
     assert "artifacts/github_closure_continuation" in text
     assert "CDE decision" in text
     assert "Final terminal state" in text
+    assert "Branch update allowed" in text
 
 
 def test_workflow_includes_guardrail_failure_points() -> None:
@@ -41,3 +43,5 @@ def test_workflow_includes_guardrail_failure_points() -> None:
 
     assert "missing ingestion_result.json" in text
     assert "if_no_artifact_found: fail" in text
+    assert "missing deterministic handoff artifact: downloaded_review_trigger/github_review_handoff_artifact.json" in text
+    assert "unsupported terminal state" in text

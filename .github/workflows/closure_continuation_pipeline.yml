@@ -114,6 +114,11 @@ jobs:
             echo "missing ingestion_result.json from review-trigger artifacts" >&2
             exit 1
           fi
+          HANDOFF_ARTIFACT="downloaded_review_trigger/github_review_handoff_artifact.json"
+          if [[ ! -f "$HANDOFF_ARTIFACT" ]]; then
+            echo "missing deterministic handoff artifact: downloaded_review_trigger/github_review_handoff_artifact.json" >&2
+            exit 1
+          fi
 
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             CLOSURE_COMPLETE="$CLOSURE_COMPLETE_DISPATCH"
@@ -130,7 +135,7 @@ jobs:
           fi
 
           CMD=(python -m spectrum_systems.modules.runtime.github_closure_continuation
-            --ingestion-summary-path "$INGESTION_SUMMARY"
+            --github-review-handoff-path "$HANDOFF_ARTIFACT"
             --output-root "$OUTPUT_ROOT"
             --retry-budget 0
           )
@@ -151,6 +156,24 @@ print(payload['continuation_dir'])
 PY
 )
           echo "continuation_dir=$CONTINUATION_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce terminal state and branch-update policy guardrails
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json
+from pathlib import Path
+result = json.loads(Path("continuation_result.json").read_text(encoding="utf-8"))
+terminal = result.get("final_terminal_state")
+allowed = {"ready_for_merge", "blocked", "exhausted", "escalated"}
+if terminal not in allowed:
+    raise SystemExit(f"unsupported terminal state: {terminal}")
+policy = result.get("branch_update_policy")
+if not isinstance(policy, dict):
+    raise SystemExit("branch_update_policy missing from continuation_result")
+if policy.get("branch_update_allowed") and result.get("cde_decision") != "continue_bounded":
+    raise SystemExit("branch updates are allowed only for continue_bounded governed path")
+PY
 
       - name: Upload closure-continuation artifacts
         uses: actions/upload-artifact@v4
@@ -221,6 +244,7 @@ Path("pr_feedback_comment.md").write_text(comment, encoding="utf-8")
 PY
 
       - name: Post PR feedback comment
+        # Read-only status feedback only: one marker-scoped machine comment is created/updated per PR.
         uses: actions/github-script@v7
         env:
           COMMENT_FILE: pr_feedback_comment.md
@@ -294,6 +318,7 @@ lines = [
     f"- CDE decision: **{payload['cde_decision']}**",
     f"- TLC ran: **{payload['tlc_ran']}**",
     f"- Final terminal state: **{payload['final_terminal_state']}**",
+    f"- Branch update allowed: **{payload.get('branch_update_policy', {}).get('branch_update_allowed', False)}**",
     f"- Continuation directory: `{payload['continuation_dir']}`",
     '- Artifact refs/paths:',
 ]

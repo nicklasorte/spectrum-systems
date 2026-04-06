@@ -18,7 +18,8 @@ on:
       run_mode:
         description: "Pipeline mode (strict|standard)"
         required: true
-        type: string
+        type: choice
+        options: [strict, standard]
 
 permissions:
   contents: read
@@ -60,16 +61,52 @@ jobs:
             REVIEW_SOURCE="ril"
             RUN_MODE="strict"
             PR_NUMBER=""
+            python - <<'PY'
+import json
+import os
+from pathlib import Path
+event = json.loads(Path(os.environ["EVENT_PATH"]).read_text(encoding="utf-8"))
+review = event.get("review")
+body = review.get("body") if isinstance(review, dict) else None
+if not isinstance(body, str) or not body.strip():
+    raise SystemExit("pull_request_review submitted trigger requires non-empty review.body")
+PY
           elif [[ "$EVENT_NAME" == "issue_comment" ]]; then
             REVIEW_SOURCE="ril"
             RUN_MODE="strict"
             PR_NUMBER=""
+            python - <<'PY'
+import json
+import os
+from pathlib import Path
+event = json.loads(Path(os.environ["EVENT_PATH"]).read_text(encoding="utf-8"))
+issue = event.get("issue")
+if not isinstance(issue, dict) or "pull_request" not in issue:
+    raise SystemExit("issue_comment trigger allowed only for pull request threads")
+comment = event.get("comment")
+body = comment.get("body") if isinstance(comment, dict) else None
+markers = ("/governed-next-step", "/run-ril")
+if not isinstance(body, str) or not any(marker in body for marker in markers):
+    raise SystemExit("issue_comment trigger requires approved command marker")
+PY
           elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             REVIEW_SOURCE="${DISPATCH_REVIEW_SOURCE}"
             RUN_MODE="${DISPATCH_RUN_MODE}"
             PR_NUMBER="${DISPATCH_PR_NUMBER}"
             if [[ -z "$REVIEW_SOURCE" || -z "$RUN_MODE" || -z "$PR_NUMBER" ]]; then
               echo "workflow_dispatch requires pr_number, review_source, run_mode" >&2
+              exit 1
+            fi
+            if [[ ! "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+              echo "workflow_dispatch pr_number must be a positive integer" >&2
+              exit 1
+            fi
+            if [[ "$RUN_MODE" != "strict" && "$RUN_MODE" != "standard" ]]; then
+              echo "workflow_dispatch run_mode must be strict|standard" >&2
+              exit 1
+            fi
+            if [[ "$REVIEW_SOURCE" != "ril" ]]; then
+              echo "workflow_dispatch review_source must be ril for governed routing" >&2
               exit 1
             fi
           else
@@ -105,6 +142,17 @@ payload = json.loads(Path('ingestion_result.json').read_text(encoding='utf-8'))
 print(payload['artifact_dir'])
 PY
 )
+          HANDOFF_PATH=$(python - <<'PY'
+import json
+from pathlib import Path
+payload = json.loads(Path('ingestion_result.json').read_text(encoding='utf-8'))
+handoff = payload.get('artifact_paths', {}).get('github_review_handoff_artifact')
+if not isinstance(handoff, str) or not handoff.strip():
+    raise SystemExit("missing github_review_handoff_artifact in ingestion_result")
+print(handoff)
+PY
+)
+          cp "$HANDOFF_PATH" github_review_handoff_artifact.json
 
           echo "artifact_dir=$ARTIFACT_DIR" >> "$GITHUB_OUTPUT"
 
@@ -114,6 +162,7 @@ PY
           name: review-trigger-pipeline-artifacts
           path: |
             ingestion_result.json
+            github_review_handoff_artifact.json
             ${{ steps.review_trigger.outputs.artifact_dir }}
           if-no-files-found: error
 
@@ -143,6 +192,8 @@ lines = [
 ]
 for key in payload['artifacts_produced']:
     lines.append(f"  - `{key}`")
+handoff_path = payload.get("artifact_paths", {}).get("github_review_handoff_artifact")
+lines.append(f"- Deterministic handoff: `{handoff_path}`")
 
 Path('summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
 PY

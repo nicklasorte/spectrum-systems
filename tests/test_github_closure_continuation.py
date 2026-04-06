@@ -20,7 +20,7 @@ def _load_fixture(name: str) -> dict:
     return json.loads((_FIXTURES / name).read_text(encoding="utf-8"))
 
 
-def _build_ingestion_summary(tmp_path: Path) -> Path:
+def _build_ingestion_summary(tmp_path: Path) -> tuple[Path, Path]:
     payload = _load_fixture("pull_request_review_submitted.json")
     result = ingest_github_review_event(
         event_name="pull_request_review",
@@ -35,7 +35,8 @@ def _build_ingestion_summary(tmp_path: Path) -> Path:
     )
     summary_path = tmp_path / "ingestion_result.json"
     summary_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return summary_path
+    handoff_path = Path(result["artifact_paths"]["github_review_handoff_artifact"])
+    return summary_path, handoff_path
 
 
 def _neutralize_escalation(summary_path: Path) -> None:
@@ -49,11 +50,11 @@ def _neutralize_escalation(summary_path: Path) -> None:
 
 
 def test_valid_outputs_cde_lock_no_tlc(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:10:00Z",
         closure_complete=True,
@@ -74,11 +75,11 @@ def test_valid_outputs_cde_lock_no_tlc(tmp_path: Path) -> None:
 
 
 def test_valid_outputs_continue_bounded_runs_tlc(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:20:00Z",
         closure_complete=False,
@@ -105,11 +106,11 @@ def test_valid_outputs_continue_bounded_runs_tlc(tmp_path: Path) -> None:
 
 
 def test_blocked_decision_does_not_invoke_tlc(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:25:00Z",
         closure_complete=False,
@@ -126,10 +127,10 @@ def test_blocked_decision_does_not_invoke_tlc(tmp_path: Path) -> None:
 
 
 def test_escalate_decision_does_not_invoke_tlc(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:30:00Z",
         closure_complete=False,
@@ -146,14 +147,14 @@ def test_escalate_decision_does_not_invoke_tlc(tmp_path: Path) -> None:
 
 
 def test_missing_required_ril_artifact_fails_closed(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
-    summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    summary["artifact_paths"].pop("review_projection_bundle_artifact")
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _, handoff_path = _build_ingestion_summary(tmp_path)
+    handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+    handoff["artifact_refs"].pop("review_projection_bundle_artifact")
+    handoff_path.write_text(json.dumps(handoff, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    with pytest.raises(GithubClosureContinuationError, match="missing required RIL artifact path"):
+    with pytest.raises(Exception, match="required property|missing required handoff artifact ref"):
         run_github_closure_continuation(
-            ingestion_summary_path=summary_path,
+            github_review_handoff_path=handoff_path,
             output_root=tmp_path / "artifacts" / "github_closure_continuation",
             emitted_at="2026-04-06T12:30:00Z",
             closure_complete=False,
@@ -166,10 +167,10 @@ def test_missing_required_ril_artifact_fails_closed(tmp_path: Path) -> None:
 
 
 def test_deterministic_path_generation(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
 
     kwargs = {
-        "ingestion_summary_path": summary_path,
+        "github_review_handoff_path": handoff_path,
         "output_root": tmp_path / "artifacts" / "github_closure_continuation",
         "emitted_at": "2026-04-06T12:35:00Z",
         "closure_complete": False,
@@ -184,13 +185,14 @@ def test_deterministic_path_generation(tmp_path: Path) -> None:
 
     assert one["continuation_id"] == two["continuation_id"]
     assert one["continuation_dir"] == two["continuation_dir"]
+    assert one["branch_update_policy"] == two["branch_update_policy"]
 
 
 def test_schema_validation_of_produced_artifacts(tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:40:00Z",
         closure_complete=False,
@@ -214,7 +216,7 @@ def test_schema_validation_of_produced_artifacts(tmp_path: Path) -> None:
 
 
 def test_no_raw_review_consumption_downstream_of_ril(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     captured_request: dict[str, object] = {}
 
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
@@ -228,7 +230,7 @@ def test_no_raw_review_consumption_downstream_of_ril(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(module_under_test, "build_closure_decision_artifact", _spy)
 
     run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:45:00Z",
         closure_complete=False,
@@ -246,7 +248,7 @@ def test_no_raw_review_consumption_downstream_of_ril(monkeypatch: pytest.MonkeyP
 
 
 def test_no_closure_decisioning_outside_cde(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    summary_path = _build_ingestion_summary(tmp_path)
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
 
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
@@ -261,7 +263,7 @@ def test_no_closure_decisioning_outside_cde(monkeypatch: pytest.MonkeyPatch, tmp
     monkeypatch.setattr(module_under_test, "build_closure_decision_artifact", _spy)
 
     result = run_github_closure_continuation(
-        ingestion_summary_path=summary_path,
+        github_review_handoff_path=handoff_path,
         output_root=tmp_path / "artifacts" / "github_closure_continuation",
         emitted_at="2026-04-06T12:50:00Z",
         closure_complete=True,
@@ -274,3 +276,55 @@ def test_no_closure_decisioning_outside_cde(monkeypatch: pytest.MonkeyPatch, tmp
 
     assert calls["count"] == 1
     assert result["cde_decision"] == "lock"
+
+
+def test_missing_handoff_artifact_fails_closed(tmp_path: Path) -> None:
+    _, handoff_path = _build_ingestion_summary(tmp_path)
+    handoff_payload = json.loads(handoff_path.read_text(encoding="utf-8"))
+    handoff_payload["artifact_refs"].pop("review_consumer_output_bundle_artifact")
+    handoff_path.write_text(json.dumps(handoff_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    with pytest.raises(Exception, match="required property|missing required handoff artifact ref"):
+        run_github_closure_continuation(
+            github_review_handoff_path=handoff_path,
+            output_root=tmp_path / "artifacts" / "github_closure_continuation",
+            emitted_at="2026-04-06T12:52:00Z",
+            closure_complete=False,
+            final_verification_passed=False,
+            hardening_completed=False,
+            escalation_required=False,
+            bounded_next_step_available=True,
+            retry_budget=0,
+        )
+
+
+def test_branch_update_policy_only_allows_continue_bounded_path(tmp_path: Path) -> None:
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
+    _neutralize_escalation(summary_path)
+
+    lock_result = run_github_closure_continuation(
+        github_review_handoff_path=handoff_path,
+        output_root=tmp_path / "artifacts" / "github_closure_continuation",
+        emitted_at="2026-04-06T12:53:00Z",
+        closure_complete=True,
+        final_verification_passed=True,
+        hardening_completed=True,
+        escalation_required=False,
+        bounded_next_step_available=False,
+        retry_budget=0,
+    )
+    assert lock_result["branch_update_policy"]["branch_update_allowed"] is False
+
+    continue_result = run_github_closure_continuation(
+        github_review_handoff_path=handoff_path,
+        output_root=tmp_path / "artifacts" / "github_closure_continuation",
+        emitted_at="2026-04-06T12:54:00Z",
+        closure_complete=False,
+        final_verification_passed=False,
+        hardening_completed=False,
+        escalation_required=False,
+        bounded_next_step_available=True,
+        retry_budget=0,
+    )
+    assert continue_result["cde_decision"] == "continue_bounded"
+    assert continue_result["branch_update_policy"]["branch_update_allowed"] is True

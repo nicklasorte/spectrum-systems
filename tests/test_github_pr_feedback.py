@@ -74,6 +74,14 @@ def test_deterministic_output_for_same_input() -> None:
     assert first == second
 
 
+def test_trace_refs_are_deduplicated_for_idempotent_updates() -> None:
+    artifacts = _valid_artifacts()
+    artifacts["top_level_conductor_run_artifact"]["trace_refs"] = ["trace-cde-2026-04-06-001", "trace-tlc-0001"]
+
+    comment = build_pr_feedback_comment(artifacts)
+    assert comment.count("- trace-cde-2026-04-06-001") == 1
+
+
 def test_missing_required_artifact_fails_closed() -> None:
     artifacts = _valid_artifacts()
     artifacts.pop("closure_decision_artifact")

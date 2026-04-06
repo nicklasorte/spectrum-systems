@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/github_review_handoff_artifact.schema.json",
+  "title": "GitHub Review Handoff Artifact",
+  "description": "Deterministic GHA-01 to GHA-02 handoff index. Routing only; no policy decision content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "run_id",
+    "created_at",
+    "pr_number",
+    "ingestion_id",
+    "event_name",
+    "review_source",
+    "run_mode",
+    "artifact_dir",
+    "artifact_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "github_review_handoff_artifact"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^GHA-HANDOFF-[A-Z0-9-]+$"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ingestion_id": {
+      "type": "string",
+      "pattern": "^gri-[a-f0-9]{16}$"
+    },
+    "event_name": {
+      "type": "string",
+      "enum": ["pull_request_review", "issue_comment", "workflow_dispatch"]
+    },
+    "review_source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_mode": {
+      "type": "string",
+      "enum": ["strict", "standard"]
+    },
+    "artifact_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ingestion_summary_artifact",
+        "review_projection_bundle_artifact",
+        "review_consumer_output_bundle_artifact",
+        "review_signal_artifact",
+        "review_control_signal_artifact",
+        "review_integration_packet_artifact"
+      ],
+      "properties": {
+        "ingestion_summary_artifact": {"type": "string", "minLength": 1},
+        "review_projection_bundle_artifact": {"type": "string", "minLength": 1},
+        "review_consumer_output_bundle_artifact": {"type": "string", "minLength": 1},
+        "review_signal_artifact": {"type": "string", "minLength": 1},
+        "review_control_signal_artifact": {"type": "string", "minLength": 1},
+        "review_integration_packet_artifact": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
