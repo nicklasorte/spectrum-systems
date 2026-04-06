@@ -161,6 +161,118 @@ PY
             ${{ steps.continuation.outputs.continuation_dir }}
           if-no-files-found: error
 
+      - name: Build PR feedback comment payload
+        id: pr_feedback
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json
+from pathlib import Path
+
+from spectrum_systems.modules.runtime.github_pr_feedback import build_pr_feedback_comment
+
+result_path = Path("continuation_result.json")
+if not result_path.exists():
+    raise SystemExit("continuation_result.json missing; cannot build PR feedback payload")
+
+result = json.loads(result_path.read_text(encoding="utf-8"))
+artifact_paths = result.get("artifact_paths")
+if not isinstance(artifact_paths, dict):
+    raise SystemExit("continuation_result.artifact_paths missing or invalid")
+
+closure_path_raw = artifact_paths.get("closure_decision_artifact")
+if not isinstance(closure_path_raw, str) or not closure_path_raw.strip():
+    raise SystemExit("required artifact missing: closure_decision_artifact")
+
+closure_path = Path(closure_path_raw)
+if not closure_path.exists():
+    raise SystemExit(f"required artifact path not found: {closure_path}")
+
+closure_artifact = json.loads(closure_path.read_text(encoding="utf-8"))
+
+tlc_artifact = None
+tlc_path_raw = artifact_paths.get("top_level_conductor_run_artifact")
+if result.get("tlc_ran", False):
+    if not isinstance(tlc_path_raw, str) or not tlc_path_raw.strip():
+        raise SystemExit("required artifact missing for tlc_ran=true: top_level_conductor_run_artifact")
+    tlc_path = Path(tlc_path_raw)
+    if not tlc_path.exists():
+        raise SystemExit(f"required artifact path not found: {tlc_path}")
+    tlc_artifact = json.loads(tlc_path.read_text(encoding="utf-8"))
+elif tlc_path_raw is not None:
+    tlc_path = Path(str(tlc_path_raw))
+    if tlc_path.exists():
+        tlc_artifact = json.loads(tlc_path.read_text(encoding="utf-8"))
+
+terminal_state = result.get("final_terminal_state")
+if not isinstance(terminal_state, str) or not terminal_state.strip():
+    raise SystemExit("terminal state undefined in continuation_result.final_terminal_state")
+
+comment = build_pr_feedback_comment(
+    {
+        "closure_decision_artifact": closure_artifact,
+        "top_level_conductor_run_artifact": tlc_artifact,
+        "continuation_result": result,
+        "artifact_paths": artifact_paths,
+    }
+)
+
+Path("pr_feedback_comment.md").write_text(comment, encoding="utf-8")
+PY
+
+      - name: Post PR feedback comment
+        uses: actions/github-script@v7
+        env:
+          COMMENT_FILE: pr_feedback_comment.md
+          COMMENT_MARKER: "<!-- spectrum-systems-governed-run-result -->"
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = process.env.COMMENT_MARKER;
+            const commentPath = process.env.COMMENT_FILE;
+            if (!fs.existsSync(commentPath)) {
+              core.setFailed(`Missing comment payload file: ${commentPath}`);
+              return;
+            }
+            if (!fs.existsSync('continuation_result.json')) {
+              core.setFailed('Missing continuation_result.json');
+              return;
+            }
+
+            const result = JSON.parse(fs.readFileSync('continuation_result.json', 'utf8'));
+            const prNumber = result.pr_number;
+            if (!Number.isInteger(prNumber) || prNumber <= 0) {
+              core.setFailed('continuation_result.pr_number must be a positive integer');
+              return;
+            }
+
+            const body = `${marker}\n` + fs.readFileSync(commentPath, 'utf8');
+            const { owner, repo } = context.repo;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => typeof comment.body === 'string' && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              core.info(`Updated existing governed run comment on PR #${prNumber}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body,
+              });
+              core.info(`Created governed run comment on PR #${prNumber}`);
+            }
+
       - name: Write workflow summary
         if: always()
         run: |
