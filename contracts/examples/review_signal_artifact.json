@@ -1,0 +1,216 @@
+{
+  "artifact_type": "review_signal_artifact",
+  "schema_version": "1.0.0",
+  "source_review_path": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "source_action_tracker_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+  "review_date": "2026-04-05",
+  "system_scope": "tpa",
+  "overall_verdict": null,
+  "critical_risks": [
+    {
+      "id": "CR-1",
+      "description": "Bypass-drift signal dead-end \u2014 control bypass risk unmitigated",
+      "severity": "critical",
+      "recommended_action": "Wire TPA bypass drift into control-loop readiness observability (R3)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 10,
+        "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+      }
+    },
+    {
+      "id": "CR-2",
+      "description": "TPA scope policy not anchored to source-authority layer \u2014 strategy drift",
+      "severity": "critical",
+      "recommended_action": "Anchor `tpa_scope_policy` to source-authority layer with refresh trigger (R5)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 11,
+        "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+      }
+    }
+  ],
+  "high_priority_items": [
+    {
+      "id": "HI-1",
+      "description": "Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies",
+      "severity": "high",
+      "recommended_action": "Create `tpa_policy_composition` contract with schema + precedence rules (R1)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 16,
+        "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+      }
+    },
+    {
+      "id": "HI-2",
+      "description": "Certification bypass risk for cleanup-only slices",
+      "severity": "high",
+      "recommended_action": "Define unified TPA certification envelope consumed by promotion/done gates (R4)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 17,
+        "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+      }
+    }
+  ],
+  "medium_priority_items": [
+    {
+      "id": "MI-1",
+      "description": "Observability orphan \u2014 summary artifact with no declared consumer",
+      "severity": "medium",
+      "recommended_action": "Declare `tpa_observability_summary` consumer contract (R2)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 22,
+        "source_excerpt": "MI-1: Observability orphan \u2014 summary artifact with no declared consumer"
+      }
+    },
+    {
+      "id": "MI-2",
+      "description": "Complexity budget calibration drift",
+      "severity": "medium",
+      "recommended_action": "Document complexity-budget recalibration cadence + review trigger (R6)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 23,
+        "source_excerpt": "MI-2: Complexity budget calibration drift"
+      }
+    },
+    {
+      "id": "MI-3",
+      "description": "Schema bypass risk via lightweight mode",
+      "severity": "medium",
+      "recommended_action": "Add schema-backed allowlist for lightweight-mode evidence drop (R7)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 24,
+        "source_excerpt": "MI-3: Schema bypass risk via lightweight mode"
+      }
+    }
+  ],
+  "blocker_flags": true,
+  "blocker_ids": [
+    "CR-1",
+    "CR-2"
+  ],
+  "action_items": [
+    {
+      "id": "CR-1",
+      "description": "Bypass-drift signal dead-end \u2014 control bypass risk unmitigated",
+      "severity": "critical",
+      "recommended_action": "Wire TPA bypass drift into control-loop readiness observability (R3)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 10,
+        "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+      }
+    },
+    {
+      "id": "CR-2",
+      "description": "TPA scope policy not anchored to source-authority layer \u2014 strategy drift",
+      "severity": "critical",
+      "recommended_action": "Anchor `tpa_scope_policy` to source-authority layer with refresh trigger (R5)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 11,
+        "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+      }
+    },
+    {
+      "id": "HI-1",
+      "description": "Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies",
+      "severity": "high",
+      "recommended_action": "Create `tpa_policy_composition` contract with schema + precedence rules (R1)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 16,
+        "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+      }
+    },
+    {
+      "id": "HI-2",
+      "description": "Certification bypass risk for cleanup-only slices",
+      "severity": "high",
+      "recommended_action": "Define unified TPA certification envelope consumed by promotion/done gates (R4)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 17,
+        "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+      }
+    },
+    {
+      "id": "MI-1",
+      "description": "Observability orphan \u2014 summary artifact with no declared consumer",
+      "severity": "medium",
+      "recommended_action": "Declare `tpa_observability_summary` consumer contract (R2)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 22,
+        "source_excerpt": "MI-1: Observability orphan \u2014 summary artifact with no declared consumer"
+      }
+    },
+    {
+      "id": "MI-2",
+      "description": "Complexity budget calibration drift",
+      "severity": "medium",
+      "recommended_action": "Document complexity-budget recalibration cadence + review trigger (R6)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 23,
+        "source_excerpt": "MI-2: Complexity budget calibration drift"
+      }
+    },
+    {
+      "id": "MI-3",
+      "description": "Schema bypass risk via lightweight mode",
+      "severity": "medium",
+      "recommended_action": "Add schema-backed allowlist for lightweight-mode evidence drop (R7)",
+      "status": "open",
+      "trace": {
+        "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+        "line_number": 24,
+        "source_excerpt": "MI-3: Schema bypass risk via lightweight mode"
+      }
+    }
+  ],
+  "severity_counts": {
+    "critical": 2,
+    "high": 2,
+    "medium": 3
+  },
+  "affected_systems": [
+    "pqx",
+    "tpa"
+  ],
+  "extracted_reason_codes": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7"
+  ],
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "provenance": {
+    "parser": "review_parsing_engine",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_review_hash": "6e1dda8b716cb56b174c2d31b3317eaa30192713a6ad668eca5d29267c0cd9a5",
+    "source_action_tracker_hash": "cd3a3f1cba2dc6896d1da61224757dfdd576ea87b899188279729b2090ed9a4d"
+  },
+  "review_signal_id": "rsv-3c37f3725b895a79"
+}
