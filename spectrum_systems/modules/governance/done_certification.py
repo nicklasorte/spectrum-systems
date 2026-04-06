@@ -142,16 +142,30 @@ def _identity_policy(input_refs: Dict[str, Any]) -> Dict[str, bool]:
     return {"allow_cross_run_reference": allow_cross_run}
 
 
-def _certification_policy(input_refs: Dict[str, Any]) -> Dict[str, bool]:
+def _is_governed_strict_certification_mode(*, input_refs: Dict[str, Any], authority_path_mode: str) -> bool:
+    explicit_profile = str(input_refs.get("execution_profile") or "").strip().lower()
+    if explicit_profile in {"governed_spine", "authoritative_spine"}:
+        return True
+    return authority_path_mode in {"active_runtime", "governed_spine"}
+
+
+def _certification_policy(input_refs: Dict[str, Any], *, authority_path_mode: str) -> Dict[str, bool]:
+    strict_mode = _is_governed_strict_certification_mode(input_refs=input_refs, authority_path_mode=authority_path_mode)
+    default_allow_warn_as_pass = not strict_mode
+    default_require_system_readiness = strict_mode
     policy = input_refs.get("certification_policy")
     if policy is None:
-        return {"allow_warn_as_pass": True, "allow_warn_promotion": False, "require_system_readiness": False}
+        return {
+            "allow_warn_as_pass": default_allow_warn_as_pass,
+            "allow_warn_promotion": False,
+            "require_system_readiness": default_require_system_readiness,
+        }
     if not isinstance(policy, dict):
         raise DoneCertificationError("certification_policy must be an object when provided")
     return {
-        "allow_warn_as_pass": bool(policy.get("allow_warn_as_pass", True)),
+        "allow_warn_as_pass": bool(policy.get("allow_warn_as_pass", default_allow_warn_as_pass)),
         "allow_warn_promotion": bool(policy.get("allow_warn_promotion", False)),
-        "require_system_readiness": bool(policy.get("require_system_readiness", False)),
+        "require_system_readiness": bool(policy.get("require_system_readiness", default_require_system_readiness)),
     }
 
 
@@ -350,7 +364,7 @@ def run_done_certification(input_refs: dict) -> dict:
             else "reduced_depth_non_authority"
         )
     identity_policy = _identity_policy(input_refs)
-    certification_policy = _certification_policy(input_refs)
+    certification_policy = _certification_policy(input_refs, authority_path_mode=authority_path_mode)
 
     replay = _load_json(refs["replay_result_ref"], label="replay_result")
     regression = _load_json(refs["regression_result_ref"], label="regression_result")

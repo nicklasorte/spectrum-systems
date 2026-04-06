@@ -112,7 +112,12 @@ def build_execution_closure_record(
     trace_id: str,
     sequence_state: dict[str, Any],
     created_at: str,
+    proof_mode: str = "compatibility",
 ) -> dict[str, Any]:
+    normalized_proof_mode = str(proof_mode).strip().lower()
+    if normalized_proof_mode not in {"compatibility", "authoritative_strict"}:
+        raise PQXProofClosureError("proof_mode must be one of compatibility|authoritative_strict")
+
     slice_sequence_identifiers = list(sequence_state.get("requested_slice_ids") or [])
     history = list(sequence_state.get("execution_history") or [])
     if not slice_sequence_identifiers:
@@ -133,12 +138,29 @@ def build_execution_closure_record(
         record_ref = row.get("slice_execution_record_ref")
         cert_ref = row.get("certification_ref")
         audit_ref = row.get("audit_bundle_ref")
-        eval_ref = row.get("eval_summary_ref") or f"{row.get('slice_id')}:eval-summary"
-        decision_ref = row.get("control_decision_ref") or f"{row.get('slice_id')}:control-decision"
-        enforcement_ref = row.get("enforcement_action_ref") or f"{row.get('slice_id')}:enforcement-action"
-        replay_ref = row.get("replay_ref") or f"{row.get('slice_id')}:replay"
+        eval_ref = row.get("eval_summary_ref")
+        decision_ref = row.get("control_decision_ref")
+        enforcement_ref = row.get("enforcement_action_ref")
+        replay_ref = row.get("replay_ref")
+        if normalized_proof_mode == "compatibility":
+            eval_ref = eval_ref or f"{row.get('slice_id')}:eval-summary"
+            decision_ref = decision_ref or f"{row.get('slice_id')}:control-decision"
+            enforcement_ref = enforcement_ref or f"{row.get('slice_id')}:enforcement-action"
+            replay_ref = replay_ref or f"{row.get('slice_id')}:replay"
         if not all(isinstance(v, str) and v for v in (record_ref, cert_ref, audit_ref, eval_ref, decision_ref, enforcement_ref, replay_ref)):
             raise PQXProofClosureError("execution history row missing required evidence linkage")
+        if normalized_proof_mode == "authoritative_strict":
+            fallback_refs = (
+                (eval_ref, ":eval-summary", "eval_summary_ref"),
+                (decision_ref, ":control-decision", "control_decision_ref"),
+                (enforcement_ref, ":enforcement-action", "enforcement_action_ref"),
+                (replay_ref, ":replay", "replay_ref"),
+            )
+            for value, suffix, label in fallback_refs:
+                if isinstance(value, str) and value.endswith(suffix):
+                    raise PQXProofClosureError(
+                        f"authoritative_strict proof_mode requires explicit {label}; synthetic fallback refs are not allowed"
+                    )
         pqx_execution_records.append(record_ref)
         output_artifacts.extend([cert_ref, audit_ref])
         eval_summaries.append(eval_ref)

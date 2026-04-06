@@ -133,9 +133,9 @@ def _build_wrapped_slices(
             raise PQXSequenceCLIError(f"wrapper build failed for slice {step_id}: governance.classification missing")
 
         authority_state = governance.get("authority_state") if isinstance(governance, Mapping) else None
-        if authority_state == "non_authoritative_direct_run":
+        if authority_state in {"non_authoritative_direct_run", "unknown_pending_execution"}:
             raise PQXSequenceCLIError(
-                f"wrapper build failed for slice {step_id}: non_authoritative_direct_run is not allowed for CLI execution"
+                f"wrapper build failed for slice {step_id}: authority state {authority_state} is not allowed for CLI execution"
             )
 
         effective_authority = governance.get("authority_evidence_ref") if isinstance(governance, Mapping) else None
