@@ -1,0 +1,10 @@
+{
+  "inputs": {
+    "pr_number": "44",
+    "review_source": "ril",
+    "run_mode": "strict"
+  },
+  "sender": {
+    "login": "workflow-user"
+  }
+}
