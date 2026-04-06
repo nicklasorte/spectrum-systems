@@ -1,0 +1,556 @@
+{
+  "artifact_type": "review_integration_packet_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "review_integration_packet_id": "rip-da9b8527a073fbef",
+  "source_review_control_signal_ref": "rca-b0824c5893e8c0d9",
+  "source_review_path": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "source_action_tracker_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+  "review_date": "2026-04-05",
+  "system_scope": "tpa",
+  "overall_verdict": null,
+  "control_loop_inputs": [
+    {
+      "input_id": "rii-c8643a08b900afac",
+      "source_signal_id": "rsi-14c586505f11c2d3",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-4f121f4a9d67fed3",
+      "source_signal_id": "rsi-55ec60db98c965a5",
+      "input_channel": "control_loop",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker item in action tracker",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-df9e20115cbb99b3",
+      "source_signal_id": "rsi-5f36b9ec5b2a0e55",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 22,
+          "source_excerpt": "MI-1: Observability orphan \u2014 summary artifact with no declared consumer"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-683fac5ac79b0393",
+      "source_signal_id": "rsi-82dc248fc0c1e3d7",
+      "input_channel": "control_loop",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker item in action tracker",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 10,
+          "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-4229da8e9a095db0",
+      "source_signal_id": "rsi-a371010b89786b48",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker requires control escalation",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-705aa2903723984a",
+      "source_signal_id": "rsi-a85a6947cefca1d6",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 23,
+          "source_excerpt": "MI-2: Complexity budget calibration drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-a87d64778aec80aa",
+      "source_signal_id": "rsi-af12f7b57138cb1d",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker requires control escalation",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 10,
+          "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-8c93dd68008c2a1d",
+      "source_signal_id": "rsi-c9b5d10db3de5138",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-ec5e2aee371ccdb5",
+      "source_signal_id": "rsi-df8fdc80c2c47f01",
+      "input_channel": "control_loop",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 24,
+          "source_excerpt": "MI-3: Schema bypass risk via lightweight mode"
+        }
+      ]
+    }
+  ],
+  "roadmap_inputs": [
+    {
+      "input_id": "rii-5ef4828db7e4b571",
+      "source_signal_id": "rsi-9549afc438ac1eb4",
+      "input_channel": "roadmap",
+      "input_type": "recovery_followup_intake",
+      "priority": "P2",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Recovery-related finding requires follow-up",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-348406612f46ac67",
+      "source_signal_id": "rsi-b452e1fa61cff43a",
+      "input_channel": "roadmap",
+      "input_type": "roadmap_priority_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-bae636330d730566",
+      "source_signal_id": "rsi-ef5f2e4e44323acf",
+      "input_channel": "roadmap",
+      "input_type": "roadmap_priority_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    }
+  ],
+  "readiness_inputs": [
+    {
+      "input_id": "rii-c28dd94544c8b3fd",
+      "source_signal_id": "rsi-14c586505f11c2d3",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-342f1bcbace9a0ea",
+      "source_signal_id": "rsi-2b664c90bf398fbf",
+      "input_channel": "readiness",
+      "input_type": "governance_attention_intake",
+      "priority": "P2",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority governance risk from review signal",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-67896de320933346",
+      "source_signal_id": "rsi-4b5327a650de39c4",
+      "input_channel": "readiness",
+      "input_type": "drift_watch_intake",
+      "priority": "monitor",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Medium unresolved item mapped to drift watch",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 23,
+          "source_excerpt": "MI-2: Complexity budget calibration drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-0e2634c8e4a536df",
+      "source_signal_id": "rsi-55ec60db98c965a5",
+      "input_channel": "readiness",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker item in action tracker",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-288d9518fc939916",
+      "source_signal_id": "rsi-580ec2cde3a01e66",
+      "input_channel": "readiness",
+      "input_type": "governance_attention_intake",
+      "priority": "P2",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority governance risk from review signal",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-78966f24a8168c34",
+      "source_signal_id": "rsi-5f36b9ec5b2a0e55",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 22,
+          "source_excerpt": "MI-1: Observability orphan \u2014 summary artifact with no declared consumer"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-ccccd334a0447137",
+      "source_signal_id": "rsi-82dc248fc0c1e3d7",
+      "input_channel": "readiness",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker item in action tracker",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 10,
+          "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-897dddfe48d16ac8",
+      "source_signal_id": "rsi-9549afc438ac1eb4",
+      "input_channel": "readiness",
+      "input_type": "recovery_followup_intake",
+      "priority": "P2",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Recovery-related finding requires follow-up",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-c9405c3016457e57",
+      "source_signal_id": "rsi-a371010b89786b48",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker requires control escalation",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-00dea1c63b26ff02",
+      "source_signal_id": "rsi-a85a6947cefca1d6",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 23,
+          "source_excerpt": "MI-2: Complexity budget calibration drift"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-a3697a6f77cc2edd",
+      "source_signal_id": "rsi-af12f7b57138cb1d",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Critical blocker requires control escalation",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 10,
+          "source_excerpt": "CR-1: Bypass-drift signal dead-end \u2014 control bypass risk unmitigated"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-6546254dd59a04af",
+      "source_signal_id": "rsi-c9b5d10db3de5138",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-c1f395abb2fdce6d",
+      "source_signal_id": "rsi-cb602000f191869a",
+      "input_channel": "readiness",
+      "input_type": "drift_watch_intake",
+      "priority": "monitor",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Medium unresolved item mapped to drift watch",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 24,
+          "source_excerpt": "MI-3: Schema bypass risk via lightweight mode"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-5782b09a41bfc03f",
+      "source_signal_id": "rsi-df8fdc80c2c47f01",
+      "input_channel": "readiness",
+      "input_type": "escalation_intake",
+      "priority": "P1",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "TPA/PQX control-boundary finding",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 24,
+          "source_excerpt": "MI-3: Schema bypass risk via lightweight mode"
+        }
+      ]
+    },
+    {
+      "input_id": "rii-e358c5039d17a996",
+      "source_signal_id": "rsi-dfe69c8a3d8dfb49",
+      "input_channel": "readiness",
+      "input_type": "drift_watch_intake",
+      "priority": "monitor",
+      "severity": "medium",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Medium unresolved item mapped to drift watch",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 22,
+          "source_excerpt": "MI-1: Observability orphan \u2014 summary artifact with no declared consumer"
+        }
+      ]
+    }
+  ],
+  "blocker_present": true,
+  "escalation_present": true,
+  "highest_priority": "P0",
+  "counts_by_channel": {
+    "control_loop": 9,
+    "roadmap": 3,
+    "readiness": 15
+  },
+  "counts_by_type": {
+    "blocker_intake": 4,
+    "escalation_intake": 14,
+    "roadmap_priority_intake": 2,
+    "drift_watch_intake": 3,
+    "recovery_followup_intake": 2,
+    "governance_attention_intake": 2
+  },
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "provenance": {
+    "consumer": "review_signal_consumer",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_review_control_signal_id": "rca-b0824c5893e8c0d9",
+    "source_review_hash": "6e1dda8b716cb56b174c2d31b3317eaa30192713a6ad668eca5d29267c0cd9a5",
+    "source_action_tracker_hash": "cd3a3f1cba2dc6896d1da61224757dfdd576ea87b899188279729b2090ed9a4d",
+    "routing_rules_version": "ril-003-v1"
+  }
+}
