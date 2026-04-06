@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/system_registry_artifact.schema.json",
+  "title": "System Registry Artifact",
+  "description": "Canonical machine-readable registry for subsystem ownership boundaries, anti-duplication constraints, and allowed interactions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "registry_version",
+    "systems",
+    "invariants",
+    "interaction_edges"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "system_registry_artifact"
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "registry_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "systems": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "$ref": "#/$defs/system_entry"
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "interaction_edges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/interaction_edge"
+      }
+    }
+  },
+  "$defs": {
+    "system_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "acronym",
+        "full_name",
+        "role",
+        "owns",
+        "consumes",
+        "produces",
+        "prohibited_behaviors",
+        "upstream_dependencies",
+        "downstream_consumers"
+      ],
+      "properties": {
+        "acronym": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owns": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "consumes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "produces": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "prohibited_behaviors": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "upstream_dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{2,8}$"
+          }
+        },
+        "downstream_consumers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{2,8}$"
+          }
+        }
+      }
+    },
+    "interaction_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{2,8}$"
+        }
+      }
+    }
+  }
+}

@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.84",
-  "schema_version": "1.3.84",
-  "standards_version": "1.3.84",
-  "record_id": "REC-STD-2026-04-06-BATCH-SYS-VAL-01",
-  "run_id": "run-20260406T000000Z-batch-sys-val-01",
+  "artifact_version": "1.3.85",
+  "schema_version": "1.3.85",
+  "standards_version": "1.3.85",
+  "record_id": "REC-STD-2026-04-06-BATCH-REG-01",
+  "run_id": "run-20260406T000000Z-batch-reg-01",
   "created_at": "2026-04-06T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.81",
+  "source_repo_version": "1.3.85",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3792,6 +3792,19 @@
       "last_updated_in": "1.3.42",
       "example_path": "contracts/examples/system_mvp_validation_report.json",
       "notes": "BATCH-MVP deterministic end-to-end governed multi-cycle validation report covering correctness, safety, explainability, and efficiency judgments."
+    },
+    {
+      "artifact_type": "system_registry_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.85",
+      "last_updated_in": "1.3.85",
+      "example_path": "contracts/examples/system_registry_artifact.json",
+      "notes": "BATCH-REG-01 canonical system boundary registry artifact defining single-owner responsibilities, anti-duplication constraints, and allowed interaction graph."
     },
     {
       "artifact_type": "system_roadmap",
