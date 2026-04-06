@@ -103,6 +103,24 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
     continuation_result: dict[str, Any] | None = None
     if root.get("continuation_result") is not None:
         continuation_result = _require_dict(root.get("continuation_result"), field="continuation_result")
+    roadmap_two_step: dict[str, Any] | None = None
+    raw_roadmap = root.get("roadmap_two_step_artifact")
+    if raw_roadmap is not None:
+        roadmap_two_step = _require_dict(raw_roadmap, field="roadmap_two_step_artifact")
+        validate_artifact(roadmap_two_step, "roadmap_two_step_artifact")
+    elif continuation_result is not None and isinstance(continuation_result.get("roadmap_two_step"), dict):
+        inline = _require_dict(continuation_result.get("roadmap_two_step"), field="continuation_result.roadmap_two_step")
+        roadmap_id = inline.get("roadmap_id")
+        steps = inline.get("steps")
+        if isinstance(roadmap_id, str) and roadmap_id and isinstance(steps, list):
+            roadmap_two_step = {
+                "roadmap_id": roadmap_id,
+                "steps": [
+                    {"step_id": f"step_{index}", "description": str(item)}
+                    for index, item in enumerate(steps[:2], start=1)
+                    if isinstance(item, str) and item.strip()
+                ],
+            }
 
     artifact_paths = _require_dict(root.get("artifact_paths"), field="artifact_paths")
     closure_path = _require_non_empty_str(artifact_paths.get("closure_decision_artifact"), field="artifact_paths.closure_decision_artifact")
@@ -147,6 +165,23 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
 
     if next_step_path is not None:
         lines.append(f"- Next Step Prompt: {next_step_path}")
+    if roadmap_two_step is not None:
+        lines.extend(
+            [
+                "",
+                "**Roadmap Input:**",
+                f"- Roadmap ID: {roadmap_two_step['roadmap_id']}",
+            ]
+        )
+        step_descriptions: list[str] = []
+        for step in roadmap_two_step.get("steps", []):
+            if isinstance(step, dict):
+                description = step.get("description")
+                if isinstance(description, str) and description.strip():
+                    step_descriptions.append(description.strip())
+        if step_descriptions:
+            for idx, description in enumerate(step_descriptions[:2], start=1):
+                lines.append(f"- Step {idx}: {description}")
 
     lines.extend(
         [

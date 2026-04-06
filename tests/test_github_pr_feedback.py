@@ -22,6 +22,13 @@ def _valid_artifacts() -> dict:
     continuation_result = {
         "continuation_id": "gcc-1234567890abcdef",
         "final_terminal_state": "ready_for_merge",
+        "roadmap_two_step": {
+            "roadmap_id": "R2S-2D11D09E9BA6FD4E",
+            "steps": [
+                "Extract bounded implementation constraints from docs/vision.md.",
+                "Map extracted constraints into governed continuation inputs using docs/roadmaps/system_roadmap.md.",
+            ],
+        },
     }
     artifact_paths = {
         "closure_decision_artifact": "artifacts/github_closure_continuation/pr-1/gcc-123/closure_decision_artifact.json",
@@ -53,6 +60,11 @@ def test_valid_artifact_input_builds_expected_markdown() -> None:
             "- Closure Decision: artifacts/github_closure_continuation/pr-1/gcc-123/closure_decision_artifact.json",
             "- TLC Run: artifacts/github_closure_continuation/pr-1/gcc-123/top_level_conductor_run_artifact.json",
             "- Next Step Prompt: artifacts/github_closure_continuation/pr-1/gcc-123/next_step_prompt_artifact.json",
+            "",
+            "**Roadmap Input:**",
+            "- Roadmap ID: R2S-2D11D09E9BA6FD4E",
+            "- Step 1: Extract bounded implementation constraints from docs/vision.md.",
+            "- Step 2: Map extracted constraints into governed continuation inputs using docs/roadmaps/system_roadmap.md.",
             "",
             "**Trace:**",
             "- trace-cde-2026-04-06-001",
@@ -107,3 +119,14 @@ def test_correct_formatting_without_optional_next_step_prompt() -> None:
     assert "**Artifacts:**" in comment
     assert "- Next Step Prompt:" not in comment
     assert comment.endswith("\n")
+
+
+def test_explicit_roadmap_artifact_input_is_rendered() -> None:
+    artifacts = _valid_artifacts()
+    artifacts["roadmap_two_step_artifact"] = _load_fixture("roadmap_two_step_artifact.json")
+
+    comment = build_pr_feedback_comment(artifacts)
+
+    assert "- Roadmap ID: R2S-2D11D09E9BA6FD4E" in comment
+    assert comment.count("- Step 1:") == 1
+    assert comment.count("- Step 2:") == 1
