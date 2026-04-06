@@ -25,6 +25,12 @@ from spectrum_systems.modules.runtime.closure_decision_engine import (
 from spectrum_systems.modules.runtime.top_level_conductor import run_top_level_conductor
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
+_REQUIRED_HANDOFF_KEYS = (
+    "ingestion_summary_artifact",
+    "review_projection_bundle_artifact",
+    "review_consumer_output_bundle_artifact",
+    "review_signal_artifact",
+)
 _REQUIRED_RIL_KEYS = (
     "review_signal_artifact",
     "review_projection_bundle_artifact",
@@ -93,7 +99,27 @@ def _default_emitted_at() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def _load_ingestion_bundle(ingestion_summary_path: Path) -> ContinuationInputBundle:
+def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInputBundle:
+    handoff = _load_json(github_review_handoff_path, field="github_review_handoff_artifact")
+    validate_artifact(handoff, "github_review_handoff_artifact")
+
+    artifact_refs = handoff.get("artifact_refs")
+    if not isinstance(artifact_refs, dict):
+        raise GithubClosureContinuationError("github_review_handoff_artifact.artifact_refs must be an object")
+    for key in _REQUIRED_HANDOFF_KEYS:
+        raw_path = artifact_refs.get(key)
+        if not isinstance(raw_path, str) or not raw_path.strip():
+            raise GithubClosureContinuationError(f"missing required handoff artifact ref: {key}")
+
+    handoff_dir = github_review_handoff_path.resolve().parent
+
+    def _resolve_ref_path(ref: str) -> Path:
+        candidate = Path(ref)
+        if candidate.is_absolute():
+            return candidate
+        return handoff_dir / candidate
+
+    ingestion_summary_path = _resolve_ref_path(str(artifact_refs["ingestion_summary_artifact"]))
     summary = _load_json(ingestion_summary_path, field="ingestion_summary")
     pr_number = _require_positive_int(summary.get("pr_number"), field="ingestion_summary.pr_number")
     ingestion_id = _require_non_empty_str(summary.get("ingestion_id"), field="ingestion_summary.ingestion_id")
@@ -112,9 +138,9 @@ def _load_ingestion_bundle(ingestion_summary_path: Path) -> ContinuationInputBun
         if not isinstance(raw_path, str) or not raw_path.strip():
             raise GithubClosureContinuationError(f"missing required RIL artifact path: {key}")
 
-    review_signal_path = Path(str(artifact_paths["review_signal_artifact"]))
-    projection_path = Path(str(artifact_paths["review_projection_bundle_artifact"]))
-    consumer_path = Path(str(artifact_paths["review_consumer_output_bundle_artifact"]))
+    review_signal_path = _resolve_ref_path(str(artifact_refs["review_signal_artifact"]))
+    projection_path = _resolve_ref_path(str(artifact_refs["review_projection_bundle_artifact"]))
+    consumer_path = _resolve_ref_path(str(artifact_refs["review_consumer_output_bundle_artifact"]))
 
     review_signal = _load_json(review_signal_path, field="review_signal_artifact")
     validate_artifact(review_signal, "review_signal_artifact")
@@ -128,10 +154,12 @@ def _load_ingestion_bundle(ingestion_summary_path: Path) -> ContinuationInputBun
     for key in _OPTIONAL_RIL_KEYS:
         raw_path = artifact_paths.get(key)
         if isinstance(raw_path, str) and raw_path.strip():
-            payload = _load_json(Path(raw_path), field=key)
-            schema_name = key
-            validate_artifact(payload, schema_name)
-            optional_artifacts[key] = payload
+            candidate = _resolve_ref_path(raw_path)
+            if candidate.exists():
+                payload = _load_json(candidate, field=key)
+                schema_name = key
+                validate_artifact(payload, schema_name)
+                optional_artifacts[key] = payload
 
     return ContinuationInputBundle(
         ingestion_summary=summary,
@@ -255,7 +283,7 @@ def _run_tlc_with_precomputed_decision(
 
 def run_github_closure_continuation(
     *,
-    ingestion_summary_path: Path,
+    github_review_handoff_path: Path,
     output_root: Path,
     emitted_at: str,
     closure_complete: bool,
@@ -265,7 +293,7 @@ def run_github_closure_continuation(
     bounded_next_step_available: bool,
     retry_budget: int,
 ) -> dict[str, Any]:
-    bundle = _load_ingestion_bundle(ingestion_summary_path)
+    bundle = _load_ingestion_bundle(github_review_handoff_path)
 
     continuation_seed = {
         "pr_number": bundle.pr_number,
@@ -374,6 +402,10 @@ def run_github_closure_continuation(
         final_terminal_state = "escalated"
     else:
         final_terminal_state = "blocked"
+    if final_terminal_state not in {"ready_for_merge", "blocked", "exhausted", "escalated"}:
+        raise GithubClosureContinuationError(f"unsupported terminal state returned by continuation path: {final_terminal_state}")
+
+    branch_update_allowed = bool(decision_type == "continue_bounded" and tlc_ran)
 
     summary = {
         "status": "success",
@@ -402,6 +434,16 @@ def run_github_closure_continuation(
             "no_raw_review_downstream_of_ril": True,
             "no_execution_outside_pqx": True,
             "fail_closed_on_missing_or_malformed_artifacts": True,
+            "terminal_states_are_explicit_and_final": True,
+        },
+        "branch_update_policy": {
+            "branch_update_allowed": branch_update_allowed,
+            "allowed_only_via_governed_tlc_path": True,
+            "blocked_states": ["blocked", "escalated", "lock_without_continuation", "malformed_inputs"],
+            "policy_note": (
+                "GitHub workflows do not mutate branches directly. "
+                "Branch updates are permitted only on CDE continue_bounded paths executed through TLC with SEL enforcement."
+            ),
         },
     }
     _write_json(artifact_paths.continuation_summary_path, summary)
@@ -410,7 +452,7 @@ def run_github_closure_continuation(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run governed GitHub closure + continuation pipeline")
-    parser.add_argument("--ingestion-summary-path", required=True)
+    parser.add_argument("--github-review-handoff-path", required=True)
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--emitted-at", default=_default_emitted_at())
     parser.add_argument("--closure-complete", action="store_true")
@@ -422,7 +464,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     summary = run_github_closure_continuation(
-        ingestion_summary_path=Path(args.ingestion_summary_path),
+        github_review_handoff_path=Path(args.github_review_handoff_path),
         output_root=Path(args.output_root),
         emitted_at=args.emitted_at,
         closure_complete=bool(args.closure_complete),

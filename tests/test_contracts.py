@@ -33,6 +33,7 @@ CONTRACTS = [
     "risk_register",
     "assumption_register",
     "milestone_plan",
+    "github_review_handoff_artifact",
 ]
 
 BASE_DIR = Path(__file__).resolve().parents[1]

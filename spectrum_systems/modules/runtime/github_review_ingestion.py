@@ -282,6 +282,38 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _build_github_review_handoff_artifact(
+    *,
+    normalized: NormalizedReviewInput,
+    emitted_at: str,
+    artifact_dir: Path,
+    artifact_paths: dict[str, str],
+) -> dict[str, Any]:
+    return {
+        "artifact_type": "github_review_handoff_artifact",
+        "artifact_id": f"GHA-HANDOFF-{normalized.ingestion_id.upper()}",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.3.86",
+        "run_id": f"gha01-{normalized.ingestion_id}",
+        "created_at": emitted_at,
+        "pr_number": normalized.pr_number,
+        "ingestion_id": normalized.ingestion_id,
+        "event_name": normalized.event_name,
+        "review_source": normalized.review_source,
+        "run_mode": normalized.run_mode,
+        "artifact_dir": str(artifact_dir),
+        "artifact_refs": {
+            "ingestion_summary_artifact": "ingestion_summary.json",
+            "review_projection_bundle_artifact": "review_projection_bundle_artifact.json",
+            "review_consumer_output_bundle_artifact": "review_consumer_output_bundle_artifact.json",
+            "review_signal_artifact": "review_signal_artifact.json",
+            "review_control_signal_artifact": "review_control_signal_artifact.json",
+            "review_integration_packet_artifact": "review_integration_packet_artifact.json",
+        },
+    }
+
+
 def ingest_github_review_event(
     *,
     event_name: str,
@@ -383,6 +415,20 @@ def ingest_github_review_event(
             "closure_or_repair_logic_invoked": False,
         },
     }
+    _write_json(artifact_dir / "ingestion_summary.json", summary)
+
+    handoff_artifact = _build_github_review_handoff_artifact(
+        normalized=normalized,
+        emitted_at=emitted_at,
+        artifact_dir=artifact_dir,
+        artifact_paths=artifact_paths,
+    )
+    validate_artifact(handoff_artifact, "github_review_handoff_artifact")
+    handoff_path = artifact_dir / "github_review_handoff_artifact.json"
+    _write_json(handoff_path, handoff_artifact)
+
+    summary["artifact_paths"]["github_review_handoff_artifact"] = str(handoff_path)
+    summary["artifacts_produced"] = sorted(summary["artifact_paths"].keys())
     _write_json(artifact_dir / "ingestion_summary.json", summary)
     return summary
 

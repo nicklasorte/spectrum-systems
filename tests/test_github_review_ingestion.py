@@ -134,6 +134,7 @@ def test_end_to_end_ril_pipeline_invocation_and_schema_valid_outputs(tmp_path: P
     produced = summary["artifact_paths"]
     required = {
         "normalized_review_source_artifact",
+        "github_review_handoff_artifact",
         "review_signal_artifact",
         "review_control_signal_artifact",
         "review_integration_packet_artifact",
@@ -161,6 +162,10 @@ def test_end_to_end_ril_pipeline_invocation_and_schema_valid_outputs(tmp_path: P
     validate_artifact(
         json.loads(Path(produced["review_consumer_output_bundle_artifact"]).read_text(encoding="utf-8")),
         "review_consumer_output_bundle_artifact",
+    )
+    validate_artifact(
+        json.loads(Path(produced["github_review_handoff_artifact"]).read_text(encoding="utf-8")),
+        "github_review_handoff_artifact",
     )
 
     assert summary["guardrails"]["closure_or_repair_logic_invoked"] is False
