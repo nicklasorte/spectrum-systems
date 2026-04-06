@@ -1,0 +1,15 @@
+{
+  "action": "submitted",
+  "review": {
+    "id": 101,
+    "body": "RIL trigger review submitted from PR review event.",
+    "state": "approved",
+    "submitted_at": "2026-04-06T10:00:00Z"
+  },
+  "pull_request": {
+    "number": 42
+  },
+  "sender": {
+    "login": "reviewer-a"
+  }
+}
