@@ -1,0 +1,98 @@
+{
+  "artifact_type": "system_end_to_end_validation_result_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "validation_result_id": "s2e-6f55d52ca3f772b8",
+  "validation_status": "pass",
+  "scenario_name": "BATCH-SYS-VAL-01-canonical-governed-loop",
+  "scenario_version": "1.0.0",
+  "source_subsystems": [
+    "pqx",
+    "tpa",
+    "fre",
+    "ril",
+    "sel"
+  ],
+  "pqx_phase_status": "pass",
+  "tpa_phase_status": "pass",
+  "fre_phase_status": "pass",
+  "ril_phase_status": "pass",
+  "sel_phase_status": "pass",
+  "produced_artifact_refs": [
+    "complexity_budget:run-s2e-8a7aa24439bf:AI-01",
+    "complexity_trend:run-s2e-8a7aa24439bf:AI-01",
+    "failure_diagnosis_artifact:FDIAG-f995ca1a259930c02d41",
+    "pqx_sequence_run:queue-run-s2e-8a7aa24439bf",
+    "recovery_result_artifact:RREC-81690d64d7ab31d34a4c",
+    "repair_prompt_artifact:RPR-1bc5cab4222734c73fd1",
+    "review_consumer_output_bundle_artifact:rco-e7b50e3117f531d6",
+    "review_control_signal_artifact:rca-1e8839b9c9a71325",
+    "review_integration_packet_artifact:rip-1da3b786197b0105",
+    "review_projection_bundle_artifact:rpb-99bef5d4704356fc",
+    "review_signal_artifact:rsv-2298ef0fbe1a5030",
+    "system_enforcement_result_artifact:sel-39603afcf923a174",
+    "system_enforcement_result_artifact:sel-c1570eb160aab011",
+    "tpa_simplification_campaign:run-s2e-8a7aa24439bf:AI-01"
+  ],
+  "required_artifact_types_verified": [
+    "complexity_budget",
+    "complexity_trend",
+    "failure_diagnosis_artifact",
+    "pqx_sequence_run",
+    "recovery_result_artifact",
+    "repair_prompt_artifact",
+    "review_consumer_output_bundle_artifact",
+    "review_control_signal_artifact",
+    "review_integration_packet_artifact",
+    "review_projection_bundle_artifact",
+    "review_signal_artifact",
+    "system_enforcement_result_artifact",
+    "tpa_simplification_campaign"
+  ],
+  "trace_continuity_verified": true,
+  "lineage_continuity_verified": true,
+  "sel_valid_path_allowed": true,
+  "sel_invalid_path_blocked": true,
+  "failure_injected_type": "missing_required_evidence_ref",
+  "recovery_outcome": "partially_recovered",
+  "final_summary": "Canonical governed loop completed with PQX bounded sequence, TPA Plan→Build→Simplify→Gate artifacts, deterministic FRE partial recovery, full RIL projection/consumer outputs, and SEL allow+block assertions.",
+  "trace_id": "trace-s2e-6f55d52ca3f7",
+  "lineage": {
+    "lineage_id": "lineage-s2e-72b81d60ad3f",
+    "parent_refs": [
+      "pqx_admission_preflight_artifact:run-s2e-8a7aa24439bf"
+    ]
+  },
+  "provenance": {
+    "producer": "spectrum_systems.modules.runtime.system_end_to_end_validator",
+    "governed_entry": "explicit_pqx_context",
+    "scenario_hash": "6f55d52ca3f772b81d60ad3f8a7aa24439bf89a5a124e28bbb3cbd1c99a42d53",
+    "phase_artifact_refs": {
+      "pqx": [
+        "pqx_sequence_run:queue-run-s2e-8a7aa24439bf"
+      ],
+      "tpa": [
+        "complexity_budget:run-s2e-8a7aa24439bf:AI-01",
+        "complexity_trend:run-s2e-8a7aa24439bf:AI-01",
+        "tpa_simplification_campaign:run-s2e-8a7aa24439bf:AI-01"
+      ],
+      "fre": [
+        "failure_diagnosis_artifact:FDIAG-f995ca1a259930c02d41",
+        "repair_prompt_artifact:RPR-1bc5cab4222734c73fd1",
+        "recovery_result_artifact:RREC-81690d64d7ab31d34a4c"
+      ],
+      "ril": [
+        "review_signal_artifact:rsv-2298ef0fbe1a5030",
+        "review_control_signal_artifact:rca-1e8839b9c9a71325",
+        "review_integration_packet_artifact:rip-1da3b786197b0105",
+        "review_projection_bundle_artifact:rpb-99bef5d4704356fc",
+        "review_consumer_output_bundle_artifact:rco-e7b50e3117f531d6"
+      ],
+      "sel": [
+        "system_enforcement_result_artifact:sel-c1570eb160aab011",
+        "system_enforcement_result_artifact:sel-39603afcf923a174"
+      ]
+    }
+  },
+  "emitted_at": "2026-04-06T00:00:00Z"
+}
