@@ -468,6 +468,31 @@ def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path
     assert result["contract_preflight_decision"] == "warn"
 
 
+def test_run_pqx_slice_blocks_when_preflight_authority_is_unknown_pending_execution(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    payload = _preflight_artifact(status="passed", decision="ALLOW")
+    payload["pqx_required_context_enforcement"]["authority_state"] = "unknown_pending_execution"
+    payload["pqx_required_context_enforcement"]["status"] = "allow"
+    payload["pqx_required_context_enforcement"]["enforcement_decision"] = "allow"
+    preflight_path = tmp_path / "preflight-unknown-pending.json"
+    preflight_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="x",
+        contract_preflight_result_artifact_path=preflight_path,
+        clock=FixedClock(),
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
+    assert "inspection allowance cannot authorize execution" in result["reason"]
+
+
 def test_run_pqx_slice_blocks_when_contract_changes_lack_preflight_artifact(tmp_path: Path) -> None:
     state_path = tmp_path / "pqx_state.json"
     state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")

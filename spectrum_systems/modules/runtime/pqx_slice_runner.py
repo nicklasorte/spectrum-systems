@@ -351,6 +351,15 @@ def _enforce_contract_preflight_gate(
         return None, None
     artifact = json.loads(contract_preflight_result_artifact_path.read_text(encoding="utf-8"))
     validate_artifact(artifact, "contract_preflight_result_artifact")
+    required_context = artifact.get("pqx_required_context_enforcement")
+    if isinstance(required_context, dict):
+        authority_state = str(required_context.get("authority_state") or "")
+        enforcement_status = str(required_context.get("status") or required_context.get("enforcement_decision") or "").lower()
+        requires_pqx = bool(required_context.get("requires_pqx_execution"))
+        if authority_state == "unknown_pending_execution" and enforcement_status == "allow" and requires_pqx:
+            raise PQXSliceRunnerError(
+                "contract preflight inspection allowance cannot authorize execution: authority_state=unknown_pending_execution"
+            )
     control_signal = artifact.get("control_signal")
     if not isinstance(control_signal, dict):
         raise PQXSliceRunnerError("contract preflight artifact missing control_signal")

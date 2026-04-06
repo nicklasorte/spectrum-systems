@@ -436,6 +436,53 @@ def test_certification_warn_when_minor_degradation_and_policy_permits(tmp_path: 
     assert result["system_response"] == "warn"
 
 
+def test_governed_default_blocks_warn_grade_without_explicit_override(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    review = json.loads(Path(refs["repo_review_snapshot_ref"]).read_text(encoding="utf-8"))
+    review["findings_summary"]["redundancy_findings"] = 1
+    Path(refs["repo_review_snapshot_ref"]).write_text(json.dumps(review), encoding="utf-8")
+    control = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control["system_response"] = "warn"
+    control["decision"] = "require_review"
+    Path(refs["policy_ref"]).write_text(json.dumps(control), encoding="utf-8")
+
+    result = run_done_certification(refs)
+
+    assert result["final_status"] == "FAILED"
+    assert result["system_response"] == "block"
+    assert "control decision warn requires certification_policy.allow_warn_as_pass=true" in result["blocking_reasons"]
+    assert result["certification_policy"]["allow_warn_as_pass"] is False
+    assert result["certification_policy"]["require_system_readiness"] is True
+
+
+def test_governed_default_requires_readiness_refs(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("repo_review_snapshot_ref")
+
+    result = run_done_certification(refs)
+
+    assert result["final_status"] == "FAILED"
+    assert "repo_review_snapshot_ref is required for system readiness certification" in result["blocking_reasons"]
+    assert result["certification_policy"]["require_system_readiness"] is True
+
+
+def test_legacy_mode_keeps_compatibility_defaults_for_warn_and_readiness(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    refs.pop("repo_review_snapshot_ref")
+    refs.pop("repo_health_eval_summary_ref")
+    control = json.loads(Path(refs["policy_ref"]).read_text(encoding="utf-8"))
+    control["system_response"] = "warn"
+    control["decision"] = "require_review"
+    Path(refs["policy_ref"]).write_text(json.dumps(control), encoding="utf-8")
+
+    result = run_done_certification({**refs, "authority_path_mode": "legacy_compatibility"})
+
+    assert result["final_status"] == "WARNED"
+    assert result["system_response"] == "warn"
+    assert result["certification_policy"]["allow_warn_as_pass"] is True
+    assert result["certification_policy"]["require_system_readiness"] is False
+
+
 def test_certification_freeze_when_drift_high(tmp_path: Path) -> None:
     refs = _write_inputs(tmp_path)
     review = json.loads(Path(refs["repo_review_snapshot_ref"]).read_text(encoding="utf-8"))

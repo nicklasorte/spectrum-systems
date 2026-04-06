@@ -314,5 +314,36 @@ def test_cli_rejects_non_authoritative_direct_run_state(tmp_path: Path, monkeypa
     )
 
     assert module.main() == 2
-    assert "non_authoritative_direct_run is not allowed for CLI execution" in capsys.readouterr().err
+    assert "authority state non_authoritative_direct_run is not allowed for CLI execution" in capsys.readouterr().err
 
+
+def test_cli_rejects_unknown_pending_execution_authority_state(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    module = _load_cli_module()
+    roadmap_path = tmp_path / "roadmap.json"
+    output_path = tmp_path / "trace.json"
+    roadmap_path.write_text(json.dumps({"slices": [_roadmap_slice()]}), encoding="utf-8")
+
+    wrapper = _wrapper()
+    wrapper["governance"]["authority_state"] = "unknown_pending_execution"
+    monkeypatch.setattr(module, "build_codex_pqx_task_wrapper", lambda _: type("R", (), {"wrapper": wrapper})())
+    monkeypatch.setattr(
+        module,
+        "parse_args",
+        lambda: module.argparse.Namespace(
+            roadmap=roadmap_path,
+            output=output_path,
+            run_id="run-1",
+            execution_context=None,
+            authority_evidence_ref="data/pqx_runs/auth.pqx_slice_execution_record.json",
+            contract_preflight_result_artifact_path=None,
+            initial_context=None,
+            stage="sequence_execution",
+            runtime_environment="cli",
+            roadmap_path="docs/roadmaps/system_roadmap.md",
+            state_path="data/pqx_state.json",
+            runs_root="data/pqx_runs",
+        ),
+    )
+
+    assert module.main() == 2
+    assert "authority state unknown_pending_execution is not allowed for CLI execution" in capsys.readouterr().err

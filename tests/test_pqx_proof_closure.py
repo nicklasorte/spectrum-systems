@@ -70,6 +70,42 @@ def test_rf18_execution_closure_contains_required_chain() -> None:
     assert record["failure_eval_policy_linkage"]["linked"] is True
 
 
+def test_rf18_authoritative_strict_rejects_synthetic_or_missing_refs() -> None:
+    state = _sequence_state()
+    state["execution_history"][0]["eval_summary_ref"] = "PQX-QUEUE-01:eval-summary"
+    state["execution_history"][0].pop("control_decision_ref", None)
+    state["execution_history"][0]["enforcement_action_ref"] = "PQX-QUEUE-01:enforcement-action"
+    state["execution_history"][0].pop("replay_ref", None)
+    with pytest.raises(
+        PQXProofClosureError,
+        match="execution history row missing required evidence linkage|authoritative_strict proof_mode requires explicit",
+    ):
+        build_execution_closure_record(
+            run_id="run-g3-001-strict-fail",
+            trace_id="trace-g3-001-strict-fail",
+            sequence_state=state,
+            created_at="2026-04-01T10:00:00Z",
+            proof_mode="authoritative_strict",
+        )
+
+
+def test_rf18_authoritative_strict_passes_with_real_refs() -> None:
+    state = _sequence_state()
+    for row in state["execution_history"]:
+        row["eval_summary_ref"] = f"{row['slice_id']}.eval.json"
+        row["control_decision_ref"] = f"{row['slice_id']}.control.json"
+        row["enforcement_action_ref"] = f"{row['slice_id']}.enforcement.json"
+        row["replay_ref"] = f"{row['slice_id']}.replay.json"
+    record = build_execution_closure_record(
+        run_id="run-g3-001-strict-pass",
+        trace_id="trace-g3-001-strict-pass",
+        sequence_state=state,
+        created_at="2026-04-01T10:00:00Z",
+        proof_mode="authoritative_strict",
+    )
+    assert record["eval_summaries"] == sorted([f"{row['slice_id']}.eval.json" for row in state["execution_history"]])
+
+
 def test_rf18_missing_linkage_fails_closed() -> None:
     state = _sequence_state()
     state["policy_consumption_in_transition"] = {"linked": False, "evidence_refs": []}
@@ -213,4 +249,20 @@ def test_rf19_certification_fails_when_hard_gate_falsification_fails(tmp_path: P
                 "judgment_enforcement": True,
             },
             supporting_artifacts=[str(closure_path), str(failed_falsification_path)],
+        )
+
+
+def test_rf19_authoritative_strict_prevents_certification_from_synthetic_closure(tmp_path: Path) -> None:
+    state = _sequence_state()
+    state["execution_history"][0]["eval_summary_ref"] = "PQX-QUEUE-01:eval-summary"
+    with pytest.raises(
+        PQXProofClosureError,
+        match="execution history row missing required evidence linkage|authoritative_strict proof_mode requires explicit",
+    ):
+        build_execution_closure_record(
+            run_id="run-g4-005",
+            trace_id="trace-g4-005",
+            sequence_state=state,
+            created_at="2026-04-01T10:00:00Z",
+            proof_mode="authoritative_strict",
         )
