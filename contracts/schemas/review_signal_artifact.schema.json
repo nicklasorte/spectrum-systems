@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_signal_artifact.schema.json",
+  "title": "Review Signal Artifact",
+  "description": "Deterministic structured signal artifact extracted from governed review markdown and action tracker markdown.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "review_signal_id",
+    "source_review_path",
+    "source_action_tracker_path",
+    "review_date",
+    "system_scope",
+    "critical_risks",
+    "high_priority_items",
+    "medium_priority_items",
+    "blocker_flags",
+    "blocker_ids",
+    "action_items",
+    "severity_counts",
+    "affected_systems",
+    "extracted_reason_codes",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "review_signal_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "review_signal_id": {
+      "type": "string",
+      "pattern": "^rsv-[a-f0-9]{16}$"
+    },
+    "source_review_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_action_tracker_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_date": {
+      "type": "string",
+      "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"
+    },
+    "system_scope": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "overall_verdict": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "critical_risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reviewItem"
+      }
+    },
+    "high_priority_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reviewItem"
+      }
+    },
+    "medium_priority_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reviewItem"
+      }
+    },
+    "blocker_flags": {
+      "type": "boolean"
+    },
+    "blocker_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "action_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/reviewItem"
+      }
+    },
+    "severity_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "affected_systems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_-]+$"
+      },
+      "uniqueItems": true
+    },
+    "extracted_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^R\\d+$"
+      },
+      "uniqueItems": true
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parser",
+        "deterministic_hash_basis",
+        "source_review_hash",
+        "source_action_tracker_hash"
+      ],
+      "properties": {
+        "parser": {
+          "type": "string",
+          "const": "review_parsing_engine"
+        },
+        "deterministic_hash_basis": {
+          "type": "string",
+          "const": "canonical-json-sha256"
+        },
+        "source_review_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_action_tracker_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "reviewItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "severity",
+        "recommended_action",
+        "status",
+        "trace"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium"
+          ]
+        },
+        "recommended_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_path",
+            "line_number",
+            "source_excerpt"
+          ],
+          "properties": {
+            "source_path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "line_number": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "source_excerpt": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
