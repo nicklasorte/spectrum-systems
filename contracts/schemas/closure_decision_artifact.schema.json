@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/closure_decision_artifact.schema.json",
+  "title": "Closure Decision Artifact",
+  "description": "Deterministic evidence-backed closure state decision for governed review/action/RIL outputs. Non-executing and non-authoritative beyond closure decisioning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "closure_decision_id",
+    "subject_scope",
+    "decision_type",
+    "decision_reason_codes",
+    "blocker_count",
+    "critical_count",
+    "high_priority_count",
+    "medium_priority_count",
+    "unresolved_action_item_ids",
+    "lock_status",
+    "next_step_class",
+    "next_step_ref",
+    "bounded_next_step_available",
+    "evidence_refs",
+    "source_artifact_refs",
+    "final_summary",
+    "emitted_at",
+    "trace_id",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "closure_decision_artifact"
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "closure_decision_id": {
+      "type": "string",
+      "pattern": "^cda-[a-f0-9]{16}$"
+    },
+    "subject_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subsystem_acronym": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Z0-9_-]{2,16}$"
+    },
+    "run_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "review_date": {
+      "type": ["string", "null"],
+      "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"
+    },
+    "action_tracker_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "decision_type": {
+      "type": "string",
+      "enum": [
+        "lock",
+        "hardening_required",
+        "final_verification_required",
+        "continue_bounded",
+        "blocked",
+        "escalate"
+      ]
+    },
+    "decision_reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "blocker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "critical_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "high_priority_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "medium_priority_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unresolved_action_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "lock_status": {
+      "type": "string",
+      "enum": ["locked", "not_locked", "blocked"]
+    },
+    "next_step_class": {
+      "type": "string",
+      "enum": ["none", "hardening_batch", "final_verification", "bounded_continue", "escalation"]
+    },
+    "next_step_ref": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "bounded_next_step_available": {
+      "type": "boolean"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "source_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "final_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "decision_rules_version",
+        "deterministic_hash_basis",
+        "source_artifact_types",
+        "source_artifact_refs"
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "const": "closure_decision_engine"
+        },
+        "decision_rules_version": {
+          "type": "string",
+          "const": "cde-001-v1"
+        },
+        "deterministic_hash_basis": {
+          "type": "string",
+          "const": "canonical-json-sha256"
+        },
+        "source_artifact_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "review_artifact",
+              "review_action_tracker_artifact",
+              "review_signal_artifact",
+              "review_control_signal_artifact",
+              "review_integration_packet_artifact",
+              "review_projection_bundle_artifact",
+              "review_consumer_output_bundle_artifact"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "source_artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

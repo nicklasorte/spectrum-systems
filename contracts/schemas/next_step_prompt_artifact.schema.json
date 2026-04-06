@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/next_step_prompt_artifact.schema.json",
+  "title": "Next Step Prompt Artifact",
+  "description": "Deterministic structured next-step prompt metadata emitted by CDE only when a bounded governed next step is available.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "prompt_artifact_id",
+    "prompt_class",
+    "subject_scope",
+    "required_inputs",
+    "reason_codes",
+    "source_closure_decision_ref",
+    "source_next_step_ref",
+    "stop_conditions",
+    "boundedness_notes",
+    "emitted_at",
+    "trace_id",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "next_step_prompt_artifact"
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "prompt_artifact_id": {
+      "type": "string",
+      "pattern": "^nsp-[a-f0-9]{16}$"
+    },
+    "prompt_class": {
+      "type": "string",
+      "enum": ["hardening_batch", "final_verification", "bounded_continue", "escalation"]
+    },
+    "subject_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "source_closure_decision_ref": {
+      "type": "string",
+      "pattern": "^cda-[a-f0-9]{16}$"
+    },
+    "source_next_step_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "boundedness_notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "source_closure_decision_ref", "deterministic_hash_basis"],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "const": "closure_decision_engine"
+        },
+        "source_closure_decision_ref": {
+          "type": "string",
+          "pattern": "^cda-[a-f0-9]{16}$"
+        },
+        "deterministic_hash_basis": {
+          "type": "string",
+          "const": "canonical-json-sha256"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "artifact_type": "next_step_prompt_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "prompt_artifact_id": "nsp-c58f90ea30de38b8",
+  "prompt_class": "hardening_batch",
+  "subject_scope": "runtime_control_loop",
+  "required_inputs": [
+    "review_projection_bundle_artifact:rpb-9ab1f0c4d129900e",
+    "review_signal_artifact:rsa-4de113bb02a7f3a5"
+  ],
+  "reason_codes": [
+    "open_critical_or_high_items",
+    "review_signal_present"
+  ],
+  "source_closure_decision_ref": "cda-8f64afee1c778f18",
+  "source_next_step_ref": "hardening_batch:hb-2026-04-06-runtime-control-loop",
+  "stop_conditions": [
+    "all_critical_and_high_items_resolved",
+    "no_open_blockers"
+  ],
+  "boundedness_notes": [
+    "deterministic_next_step_only",
+    "non_authoritative_prompt_metadata"
+  ],
+  "emitted_at": "2026-04-06T00:00:00Z",
+  "trace_id": "trace-cde-2026-04-06-001",
+  "provenance": {
+    "engine": "closure_decision_engine",
+    "source_closure_decision_ref": "cda-8f64afee1c778f18",
+    "deterministic_hash_basis": "canonical-json-sha256"
+  }
+}
