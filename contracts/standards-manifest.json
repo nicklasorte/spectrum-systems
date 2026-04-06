@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.82",
-  "schema_version": "1.3.82",
-  "standards_version": "1.3.82",
+  "artifact_version": "1.3.83",
+  "schema_version": "1.3.83",
+  "standards_version": "1.3.83",
   "record_id": "REC-STD-2026-04-06-BATCH-SYS-VAL-01",
   "run_id": "run-20260406T000000Z-batch-sys-val-01",
   "created_at": "2026-04-06T00:00:00Z",
@@ -402,6 +402,20 @@
       "last_updated_in": "1.0.79",
       "example_path": "contracts/examples/certification_integrity_result.json",
       "notes": "VAL-11 governed DONE-01 integrity validation artifact proving fail-closed certification behavior under inconsistent, partial, and conflicting signal combinations."
+    },
+    {
+      "artifact_type": "closure_decision_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "tlc"
+      ],
+      "introduced_in": "1.3.83",
+      "last_updated_in": "1.3.83",
+      "example_path": "contracts/examples/closure_decision_artifact.json",
+      "notes": "CDE-001 deterministic closure-state decision artifact from governed review/action/RIL evidence with bounded lock/continue/stop outcomes."
     },
     {
       "artifact_type": "codex_pqx_task_wrapper",
@@ -2000,6 +2014,20 @@
       "last_updated_in": "1.3.1",
       "example_path": null,
       "notes": "Versioned policy contract governing allowed lifecycle states, required evidence, drift blocking behavior, and deterministic state-to-action mappings for next-step decisions."
+    },
+    {
+      "artifact_type": "next_step_prompt_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems",
+        "tlc"
+      ],
+      "introduced_in": "1.3.83",
+      "last_updated_in": "1.3.83",
+      "example_path": "contracts/examples/next_step_prompt_artifact.json",
+      "notes": "CDE-001 optional deterministic structured next-step metadata emitted only when bounded governed continuation is safely derivable."
     },
     {
       "artifact_type": "next_step_recommendation",
@@ -3727,6 +3755,32 @@
       "notes": "BATCH-12 ST-14 deterministic budget status for cost/latency/error fail-closed enforcement."
     },
     {
+      "artifact_type": "system_end_to_end_validation_result_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.82",
+      "last_updated_in": "1.3.82",
+      "example_path": "contracts/examples/system_end_to_end_validation_result_artifact.json",
+      "notes": "BATCH-SYS-VAL-01 canonical deterministic bounded governed end-to-end PQX+TPA+FRE+RIL+SEL loop validation result artifact."
+    },
+    {
+      "artifact_type": "system_enforcement_result_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.18",
+      "last_updated_in": "1.3.18",
+      "example_path": "contracts/examples/system_enforcement_result_artifact.json",
+      "notes": "SEL-001 fail-closed boundary gate for PQX/TPA/FRE/RIL and governance evidence enforcement."
+    },
+    {
       "artifact_type": "system_mvp_validation_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3974,32 +4028,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "system_enforcement_result_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.18",
-      "last_updated_in": "1.3.18",
-      "example_path": "contracts/examples/system_enforcement_result_artifact.json",
-      "notes": "SEL-001 fail-closed boundary gate for PQX/TPA/FRE/RIL and governance evidence enforcement."
-    },
-    {
-      "artifact_type": "system_end_to_end_validation_result_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.82",
-      "last_updated_in": "1.3.82",
-      "example_path": "contracts/examples/system_end_to_end_validation_result_artifact.json",
-      "notes": "BATCH-SYS-VAL-01 canonical deterministic bounded governed end-to-end PQX+TPA+FRE+RIL+SEL loop validation result artifact."
     }
   ]
 }
