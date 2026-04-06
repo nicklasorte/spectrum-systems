@@ -90,6 +90,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 ## Active plans
 
 | docs/review-actions/PLAN-BATCH-GHA-02-2026-04-06.md | BATCH-GHA-02 — GitHub Closure + Continuation Pipeline (GHA-002) | Active |
+| docs/review-actions/PLAN-BATCH-GHA-03-2026-04-06.md | BATCH-GHA-03 — Read-Only PR Feedback Publisher (GHA-003) | Active |
 | docs/review-actions/PLAN-BATCH-RIL-05-2026-04-05.md | BATCH-RIL-05 — Consumer Wiring / Validation Layer (RIL-005 + RIL-ARCH-01 + RIL-ARCH-02) | Active |
 | docs/review-actions/PLAN-BATCH-FRE-01-2026-04-05.md | BATCH-FRE-01 — Failure Diagnosis Engine (FRE-001/FRE-002/FRE-003) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-09A-INTEGRATION-FIX-2026-04-05.md | BATCH-TPA-09A integration fix — preflight blocker + override test drift alignment | Active |
