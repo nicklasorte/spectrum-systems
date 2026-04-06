@@ -3977,7 +3977,7 @@
     },
     {
       "artifact_type": "system_enforcement_result_artifact",
-      "artifact_class": "control",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
