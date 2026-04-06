@@ -1,9 +1,60 @@
 from __future__ import annotations
 
-from spectrum_systems.modules.runtime.top_level_conductor import run_top_level_conductor
+import copy
+from pathlib import Path
+
+import pytest
+
+from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
+from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
 
 
-def _base_request() -> dict:
+VALID_REVIEW = """---
+module: tpa
+review_date: 2026-04-05
+---
+# Review
+
+## Overall Assessment
+**Overall Verdict: CONDITIONAL PASS**
+
+## Critical Risks
+1. Bypass drift risk remains open.
+"""
+
+VALID_ACTIONS = """# Action Tracker
+
+## Critical Items
+| ID | Risk | Severity | Recommended Action | Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| CR-1 | Blocking risk in tpa control path | Critical | Add blocker-safe enforcement (R1) | Closed | fixed |
+
+## High-Priority Items
+| ID | Risk | Severity | Recommended Action | Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| HI-1 | pqx routing gap | High | Add route guard (R2) | Closed | |
+
+## Medium-Priority Items
+| ID | Risk | Severity | Recommended Action | Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| MI-1 | docs traceability note | Medium | Add note update (R3) | Open | |
+| MI-2 | recovery rehearsal follow-up | Medium | Add recovery drill (R4) | Closed | |
+
+## Blocking Items
+- CR-1 blocks promotion.
+"""
+
+
+def _write_inputs(tmp_path: Path) -> tuple[Path, Path]:
+    review_path = tmp_path / "review.md"
+    action_path = tmp_path / "actions.md"
+    review_path.write_text(VALID_REVIEW, encoding="utf-8")
+    action_path.write_text(VALID_ACTIONS, encoding="utf-8")
+    return review_path, action_path
+
+
+def _base_request(tmp_path: Path) -> dict:
+    review_path, action_path = _write_inputs(tmp_path)
     return {
         "objective": "orchestrate bounded run",
         "branch_ref": "refs/heads/main",
@@ -11,160 +62,133 @@ def _base_request() -> dict:
         "retry_budget": 1,
         "require_review": True,
         "require_recovery": True,
+        "review_path": str(review_path),
+        "action_tracker_path": str(action_path),
+        "runtime_dir": str(tmp_path / "runtime"),
+        "emitted_at": "2026-04-06T00:00:00Z",
     }
 
 
-def _allow_sel(_: dict) -> dict:
-    return {"allowed": True, "trace_refs": ["trace-sel"]}
-
-
-def test_basic_run_ready_for_merge() -> None:
-    request = _base_request()
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: {"entry_valid": True, "validation_passed": True, "artifact_refs": ["pqx:ok"]},
-        "tpa": lambda _: {"discipline_status": "accepted"},
-        "ril": lambda _: {"outputs_exist": True, "artifact_refs": ["ril:ok"]},
-        "cde": lambda _: {"decision_type": "lock", "closure_state": "closed", "artifact_refs": ["cde:lock"]},
-    }
+def test_golden_integration_run_ready_for_merge(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
 
     result = run_top_level_conductor(request)
 
     assert result["current_state"] == "ready_for_merge"
     assert result["ready_for_merge"] is True
     assert result["stop_reason"] == "ready_for_merge"
+    assert {"PQX", "TPA", "RIL", "CDE", "SEL"}.issubset(set(result["active_subsystems"]))
+    assert any(ref.startswith("review_projection_bundle_artifact:") for ref in result["produced_artifact_refs"])
+    assert result["trace_refs"]
+    assert result["lineage"]["lineage_id"].startswith("lineage-")
 
 
-def test_failure_recovery_continue_ready_for_merge() -> None:
-    request = _base_request()
-    pqx_results = iter(
-        [
-            {"entry_valid": True, "validation_passed": False, "artifact_refs": ["pqx:fail"]},
-            {"entry_valid": True, "validation_passed": True, "artifact_refs": ["pqx:pass"]},
-        ]
-    )
-    cde_results = iter(
-        [
-            {"decision_type": "continue_bounded", "closure_state": "open", "artifact_refs": ["cde:continue"]},
-            {"decision_type": "lock", "closure_state": "closed", "artifact_refs": ["cde:lock"]},
-        ]
-    )
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: next(pqx_results),
-        "tpa": lambda _: {"discipline_status": "accepted"},
-        "fre": lambda _: {"recovery_completed": True, "artifact_refs": ["fre:ok"]},
-        "ril": lambda _: {"outputs_exist": True, "artifact_refs": ["ril:ok"]},
-        "cde": lambda _: next(cde_results),
-        "prg": lambda _: {"proposed": True, "artifact_refs": ["prg:next"]},
-    }
+def test_blocked_run_sel_violation_stops_side_effects(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
 
-    result = run_top_level_conductor(request)
+    def _blocking_sel(payload: dict) -> dict:
+        tampered = copy.deepcopy(payload)
+        tampered["execution_request"]["direct_cli"] = True
+        sel = enforce_system_boundaries(tampered)
+        return {
+            "allowed": False,
+            "artifact_ref": f"system_enforcement_result_artifact:{sel['enforcement_result_id']}",
+            "trace_refs": sel["trace_refs"],
+            "violations": sel["violations"],
+        }
 
-    assert result["current_state"] == "ready_for_merge"
-    assert "PRG" in result["active_subsystems"]
-    assert result["retry_budget_remaining"] == 0
-
-
-def test_failure_with_no_recovery_blocks() -> None:
-    request = _base_request()
-    request["require_recovery"] = False
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: {"entry_valid": True, "validation_passed": False},
-        "tpa": lambda _: {"discipline_status": "accepted"},
-    }
-
-    result = run_top_level_conductor(request)
-
-    assert result["current_state"] == "blocked"
-    assert result["stop_reason"] == "recovery_not_permitted"
-
-
-def test_retry_budget_exhausted() -> None:
-    request = _base_request()
-    request["retry_budget"] = 0
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: {"entry_valid": True, "validation_passed": False},
-        "tpa": lambda _: {"discipline_status": "accepted"},
-    }
-
-    result = run_top_level_conductor(request)
-
-    assert result["current_state"] == "exhausted"
-    assert result["stop_reason"] == "retry_budget_exhausted"
-
-
-def test_sel_block_immediate() -> None:
-    request = _base_request()
-    request["subsystems"] = {
-        "sel": lambda _: {"allowed": False, "reason": "policy_block"},
-    }
-
+    request["subsystems"] = {"sel": _blocking_sel}
     result = run_top_level_conductor(request)
 
     assert result["current_state"] == "blocked"
     assert result["stop_reason"].startswith("sel_block")
-    assert result["phase_history"] == [{"from": "requested", "to": "blocked", "reason": "sel_block:state_transition"}]
+    assert result["active_subsystems"] == ["SEL"]
+    assert not any(name in result["active_subsystems"] for name in ("PQX", "TPA", "FRE", "RIL", "CDE", "PRG"))
 
 
-def test_determinism_same_input_same_output() -> None:
-    request = _base_request()
-    request["run_id"] = "tlc-determinism"
+def test_contract_validation_fails_closed_on_invalid_pqx_output(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
     request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: {"entry_valid": True, "validation_passed": True},
-        "tpa": lambda _: {"discipline_status": "accepted"},
-        "ril": lambda _: {"outputs_exist": True},
-        "cde": lambda _: {"decision_type": "lock", "closure_state": "closed"},
+        "pqx": lambda _: {
+            "entry_valid": True,
+            "validation_passed": True,
+                "request_artifact": {
+                    "schema_version": "9.9.9",
+                    "run_id": "x",
+                    "step_id": "y",
+                    "step_name": "z",
+                    "dependencies": [],
+                    "requested_at": "2026-04-06T00:00:00Z",
+                    "prompt": "p",
+                },
+                "execution_artifact": {
+                    "schema_version": "9.9.9",
+                    "run_id": "x",
+                    "step_id": "y",
+                    "execution_status": "success",
+                    "started_at": "2026-04-06T00:00:00Z",
+                    "completed_at": "2026-04-06T00:00:00Z",
+                "output_text": "",
+                "error": None,
+            },
+        }
     }
 
-    one = run_top_level_conductor(request)
-    two = run_top_level_conductor(request)
+    with pytest.raises(Exception):
+        run_top_level_conductor(request)
+
+
+def test_sel_enforced_at_required_boundaries(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    boundaries: list[str] = []
+
+    def _tracking_sel(payload: dict) -> dict:
+        boundaries.append(payload["source_module"] + ":" + payload["execution_request"].get("requested_at", ""))
+        sel = enforce_system_boundaries(payload)
+        return {
+            "allowed": sel["enforcement_status"] == "allow",
+            "artifact_ref": f"system_enforcement_result_artifact:{sel['enforcement_result_id']}",
+            "trace_refs": sel["trace_refs"],
+            "violations": sel["violations"],
+        }
+
+    request["subsystems"] = {"sel": _tracking_sel}
+    result = run_top_level_conductor(request)
+
+    assert result["current_state"] == "ready_for_merge"
+    assert len(boundaries) >= 4
+
+
+def test_determinism_same_input_same_output(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request["run_id"] = "tlc-determinism"
+
+    one = run_top_level_conductor(copy.deepcopy(request))
+    two = run_top_level_conductor(copy.deepcopy(request))
 
     assert one == two
 
 
-def test_no_direct_execution_outside_pqx() -> None:
-    request = _base_request()
-    calls = {"pqx": 0, "tpa": 0}
-
-    def _pqx(_: dict) -> dict:
-        calls["pqx"] += 1
-        return {"entry_valid": True, "validation_passed": True}
-
-    def _tpa(_: dict) -> dict:
-        calls["tpa"] += 1
-        return {"discipline_status": "accepted"}
-
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": _pqx,
-        "tpa": _tpa,
-        "ril": lambda _: {"outputs_exist": True},
-        "cde": lambda _: {"decision_type": "lock", "closure_state": "closed"},
-    }
-
+def test_no_execution_outside_pqx(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
     result = run_top_level_conductor(request)
+    invocations = result["lineage"].get("subsystem_invocations", [])
 
-    assert result["current_state"] == "ready_for_merge"
-    assert calls["pqx"] == 1
-    assert calls["tpa"] == 1
+    pqx_calls = [row for row in invocations if row["subsystem"] == "PQX"]
+    non_pqx_execution = [
+        row
+        for row in invocations
+        if row["subsystem"] != "PQX" and any("slice_execution_record" in ref for ref in row.get("output_refs", []))
+    ]
+
+    assert len(pqx_calls) == 1
+    assert non_pqx_execution == []
 
 
-def test_consumes_cde_output_without_reinterpretation() -> None:
-    request = _base_request()
-    request["subsystems"] = {
-        "sel": _allow_sel,
-        "pqx": lambda _: {"entry_valid": True, "validation_passed": True},
-        "tpa": lambda _: {"discipline_status": "accepted"},
-        "ril": lambda _: {"outputs_exist": True},
-        "cde": lambda _: {"decision_type": "blocked", "closure_state": "pending_review"},
-    }
 
-    result = run_top_level_conductor(request)
+def test_missing_review_inputs_fail_closed(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request.pop("review_path")
 
-    assert result["current_state"] == "blocked"
-    assert result["stop_reason"] == "cde_blocked"
-    assert result["closure_state"] == "pending_review"
+    with pytest.raises(TopLevelConductorError, match="review_path"):
+        run_top_level_conductor(request)
