@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/system_enforcement_result_artifact.schema.json",
+  "title": "System Enforcement Result Artifact",
+  "description": "Fail-closed boundary enforcement result for SEL-001 governed architecture gates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "enforcement_result_id",
+    "enforcement_status",
+    "violations",
+    "violated_boundaries",
+    "source_context",
+    "required_artifacts_present",
+    "trace_refs",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "system_enforcement_result_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "enforcement_result_id": {
+      "type": "string",
+      "pattern": "^sel-[a-f0-9]{16}$"
+    },
+    "enforcement_status": {
+      "type": "string",
+      "enum": ["allow", "block"]
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["violation_code", "boundary", "field", "message"],
+        "properties": {
+          "violation_code": {
+            "type": "string",
+            "enum": [
+              "pqx_entry_violation",
+              "missing_artifact_violation",
+              "tpa_boundary_violation",
+              "fre_boundary_violation",
+              "ril_boundary_violation",
+              "governance_evidence_violation",
+              "lineage_violation"
+            ]
+          },
+          "boundary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "violated_boundaries": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "source_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_module", "caller_identity", "execution_request"],
+      "properties": {
+        "source_module": {
+          "type": "string",
+          "minLength": 1
+        },
+        "caller_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_request": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "required_artifacts_present": {
+      "type": "boolean"
+    },
+    "trace_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
