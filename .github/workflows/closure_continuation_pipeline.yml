@@ -1,0 +1,193 @@
+name: closure-continuation-pipeline
+
+on:
+  workflow_run:
+    workflows: ["review-trigger-pipeline"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      review_run_id:
+        description: "review-trigger-pipeline run id to consume"
+        required: true
+        type: string
+      closure_complete:
+        description: "Pass closure_complete into CDE"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      final_verification_passed:
+        description: "Pass final_verification_passed into CDE"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      hardening_completed:
+        description: "Pass hardening_completed into CDE"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      escalation_required:
+        description: "Pass escalation_required into CDE"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      bounded_next_step_available:
+        description: "Pass bounded_next_step_available into CDE"
+        required: false
+        default: "true"
+        type: choice
+        options: ["false", "true"]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  closure-continuation:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.name == 'review-trigger-pipeline' &&
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Resolve source run id
+        id: source_run
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          DISPATCH_RUN_ID: ${{ github.event.inputs.review_run_id }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            RUN_ID="$DISPATCH_RUN_ID"
+          else
+            RUN_ID="$WORKFLOW_RUN_ID"
+          fi
+
+          if [[ -z "$RUN_ID" ]]; then
+            echo "Unable to resolve source review-trigger run id" >&2
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download review-trigger artifacts
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ steps.source_run.outputs.run_id }}
+          name: review-trigger-pipeline-artifacts
+          path: downloaded_review_trigger
+          if_no_artifact_found: fail
+
+      - name: Run governed closure + continuation
+        id: continuation
+        env:
+          OUTPUT_ROOT: artifacts/github_closure_continuation
+          EVENT_NAME: ${{ github.event_name }}
+          CLOSURE_COMPLETE_DISPATCH: ${{ github.event.inputs.closure_complete }}
+          FINAL_VERIFICATION_DISPATCH: ${{ github.event.inputs.final_verification_passed }}
+          HARDENING_COMPLETED_DISPATCH: ${{ github.event.inputs.hardening_completed }}
+          ESCALATION_REQUIRED_DISPATCH: ${{ github.event.inputs.escalation_required }}
+          BOUNDED_NEXT_STEP_DISPATCH: ${{ github.event.inputs.bounded_next_step_available }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_ROOT"
+
+          INGESTION_SUMMARY="downloaded_review_trigger/ingestion_result.json"
+          if [[ ! -f "$INGESTION_SUMMARY" ]]; then
+            echo "missing ingestion_result.json from review-trigger artifacts" >&2
+            exit 1
+          fi
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            CLOSURE_COMPLETE="$CLOSURE_COMPLETE_DISPATCH"
+            FINAL_VERIFICATION="$FINAL_VERIFICATION_DISPATCH"
+            HARDENING_COMPLETED="$HARDENING_COMPLETED_DISPATCH"
+            ESCALATION_REQUIRED="$ESCALATION_REQUIRED_DISPATCH"
+            BOUNDED_NEXT_STEP="$BOUNDED_NEXT_STEP_DISPATCH"
+          else
+            CLOSURE_COMPLETE="false"
+            FINAL_VERIFICATION="false"
+            HARDENING_COMPLETED="false"
+            ESCALATION_REQUIRED="false"
+            BOUNDED_NEXT_STEP="true"
+          fi
+
+          CMD=(python -m spectrum_systems.modules.runtime.github_closure_continuation
+            --ingestion-summary-path "$INGESTION_SUMMARY"
+            --output-root "$OUTPUT_ROOT"
+            --retry-budget 0
+          )
+
+          [[ "$CLOSURE_COMPLETE" == "true" ]] && CMD+=(--closure-complete)
+          [[ "$FINAL_VERIFICATION" == "true" ]] && CMD+=(--final-verification-passed)
+          [[ "$HARDENING_COMPLETED" == "true" ]] && CMD+=(--hardening-completed)
+          [[ "$ESCALATION_REQUIRED" == "true" ]] && CMD+=(--escalation-required)
+          [[ "$BOUNDED_NEXT_STEP" == "true" ]] && CMD+=(--bounded-next-step-available)
+
+          "${CMD[@]}" > continuation_result.json
+
+          CONTINUATION_DIR=$(python - <<'PY'
+import json
+from pathlib import Path
+payload = json.loads(Path('continuation_result.json').read_text(encoding='utf-8'))
+print(payload['continuation_dir'])
+PY
+)
+          echo "continuation_dir=$CONTINUATION_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Upload closure-continuation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: closure-continuation-pipeline-artifacts
+          path: |
+            continuation_result.json
+            ${{ steps.continuation.outputs.continuation_dir }}
+          if-no-files-found: error
+
+      - name: Write workflow summary
+        if: always()
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json
+from pathlib import Path
+
+result_path = Path('continuation_result.json')
+if not result_path.exists():
+    raise SystemExit('continuation_result.json missing; workflow failed closed before output emission')
+
+payload = json.loads(result_path.read_text(encoding='utf-8'))
+artifact_paths = payload.get('artifact_paths', {})
+
+lines = [
+    '## Closure Continuation Pipeline Summary',
+    '',
+    f"- CDE decision: **{payload['cde_decision']}**",
+    f"- TLC ran: **{payload['tlc_ran']}**",
+    f"- Final terminal state: **{payload['final_terminal_state']}**",
+    f"- Continuation directory: `{payload['continuation_dir']}`",
+    '- Artifact refs/paths:',
+]
+for key in ('closure_decision_artifact', 'next_step_prompt_artifact', 'top_level_conductor_run_artifact'):
+    lines.append(f"  - `{key}`: `{artifact_paths.get(key)}`")
+
+Path('summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+PY
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
