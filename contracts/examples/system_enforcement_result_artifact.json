@@ -1,0 +1,25 @@
+{
+  "artifact_type": "system_enforcement_result_artifact",
+  "schema_version": "1.0.0",
+  "enforcement_result_id": "sel-aaaaaaaaaaaaaaaa",
+  "enforcement_status": "allow",
+  "violations": [],
+  "violated_boundaries": [],
+  "source_context": {
+    "source_module": "spectrum_systems.modules.runtime.pqx_slice_runner",
+    "caller_identity": "scripts/pqx_runner.py",
+    "execution_request": {
+      "execution_context": "pqx_governed",
+      "pqx_entry": true,
+      "tpa_required": true,
+      "recovery_involved": false,
+      "certification_required": true
+    }
+  },
+  "required_artifacts_present": true,
+  "trace_refs": [
+    "trace://pqx/run-001",
+    "trace://preflight/pf-001"
+  ],
+  "emitted_at": "2026-04-05T00:00:00Z"
+}

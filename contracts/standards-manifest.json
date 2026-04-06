@@ -3974,6 +3974,19 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "system_enforcement_result_artifact",
+      "artifact_class": "control",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.18",
+      "last_updated_in": "1.3.18",
+      "example_path": "contracts/examples/system_enforcement_result_artifact.json",
+      "notes": "SEL-001 fail-closed boundary gate for PQX/TPA/FRE/RIL and governance evidence enforcement."
     }
   ]
 }
