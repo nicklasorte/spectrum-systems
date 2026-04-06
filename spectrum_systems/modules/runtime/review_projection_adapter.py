@@ -343,7 +343,7 @@ def build_review_projection_bundle(review_integration_packet_artifact: dict[str,
     bundle = {
         "artifact_type": "review_projection_bundle_artifact",
         "artifact_class": "coordination",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "review_projection_bundle_id": deterministic_id(
             prefix="rpb",
             namespace="review_projection_bundle_artifact",

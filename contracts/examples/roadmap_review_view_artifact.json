@@ -1,0 +1,76 @@
+{
+  "artifact_type": "roadmap_review_view_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "roadmap_review_view_id": "rrv-fc3fbfabefb90ec8",
+  "source_roadmap_projection_ref": "rrp-f350a15cc16feb2e",
+  "source_review_projection_bundle_ref": "rpb-3ba28aabc2f7f7f9",
+  "source_review_path": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "review_date": "2026-04-05",
+  "system_scope": "tpa",
+  "roadmap_view_items": [
+    {
+      "view_item_id": "rvi-ca0e90fbbdd20c3c",
+      "source_projection_item_id": "rpi-06f33aa2550de83c",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    },
+    {
+      "view_item_id": "rvi-5896e5de55ed810f",
+      "source_projection_item_id": "rpi-3954c28a5a80d8e8",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "view_item_id": "rvi-579e94407d194290",
+      "source_projection_item_id": "rpi-f4cecdcba5d79477",
+      "priority": "P2",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Recovery-related finding requires follow-up",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    }
+  ],
+  "highest_priority": "P0",
+  "item_count": 3,
+  "blocker_present": true,
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+  "provenance": {
+    "adapter": "review_consumer_wiring",
+    "consumer_surface": "roadmap_prioritization_view",
+    "consumption_mode": "projection_only_read_only",
+    "source_review_projection_bundle_ref": "rpb-3ba28aabc2f7f7f9",
+    "source_roadmap_projection_ref": "rrp-f350a15cc16feb2e"
+  }
+}

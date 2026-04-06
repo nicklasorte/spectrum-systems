@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/control_loop_review_queue_record_artifact.schema.json",
+  "title": "Control Loop Review Queue Record Artifact",
+  "description": "RIL-005 deterministic read-only control-loop queue/intake record derived only from control_loop_review_intake_artifact. Non-authoritative intake surface only; not an enforcement or policy-mutation decision artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "control_loop_review_queue_record_id",
+    "source_control_loop_projection_ref",
+    "source_review_projection_bundle_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "queue_records",
+    "escalation_present",
+    "blocker_present",
+    "item_count",
+    "emitted_at",
+    "non_authoritative_notice",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "control_loop_review_queue_record_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "control_loop_review_queue_record_id": {"type": "string", "pattern": "^clr-[a-f0-9]{16}$"},
+    "source_control_loop_projection_ref": {"type": "string", "pattern": "^cri-[a-f0-9]{16}$"},
+    "source_review_projection_bundle_ref": {"type": "string", "pattern": "^rpb-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "queue_records": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/queueRecord"}
+    },
+    "escalation_present": {"type": "boolean"},
+    "blocker_present": {"type": "boolean"},
+    "item_count": {"type": "integer", "minimum": 0},
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "non_authoritative_notice": {
+      "type": "string",
+      "const": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions."
+    },
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "line_number", "source_excerpt"],
+      "properties": {
+        "source_path": {"type": "string", "minLength": 1},
+        "line_number": {"type": "integer", "minimum": 1},
+        "source_excerpt": {"type": "string", "minLength": 1}
+      }
+    },
+    "queueRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queue_record_id",
+        "source_queue_item_id",
+        "intake_type",
+        "priority",
+        "severity",
+        "blocker_related",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "queue_record_id": {"type": "string", "pattern": "^qrr-[a-f0-9]{16}$"},
+        "source_queue_item_id": {"type": "string", "pattern": "^rqi-[a-f0-9]{16}$"},
+        "intake_type": {
+          "type": "string",
+          "enum": [
+            "blocker_intake",
+            "escalation_intake",
+            "roadmap_priority_intake",
+            "drift_watch_intake",
+            "recovery_followup_intake",
+            "governance_attention_intake"
+          ]
+        },
+        "priority": {"type": "string", "enum": ["P0", "P1", "P2", "monitor"]},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium"]},
+        "blocker_related": {"type": "boolean"},
+        "rationale": {"type": "string", "minLength": 1},
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/traceRef"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "consumer_surface",
+        "consumption_mode",
+        "source_review_projection_bundle_ref",
+        "source_control_loop_projection_ref"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_consumer_wiring"},
+        "consumer_surface": {"type": "string", "const": "control_loop_intake_queue"},
+        "consumption_mode": {"type": "string", "const": "projection_only_read_only"},
+        "source_review_projection_bundle_ref": {"type": "string", "pattern": "^rpb-[a-f0-9]{16}$"},
+        "source_control_loop_projection_ref": {"type": "string", "pattern": "^cri-[a-f0-9]{16}$"}
+      }
+    }
+  }
+}
