@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_control_signal_artifact.schema.json",
+  "title": "Review Control Signal Artifact",
+  "description": "Deterministic RIL-002 classification artifact mapping review signal items into operational control classes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "review_control_signal_id",
+    "source_review_signal_ref",
+    "source_review_path",
+    "source_action_tracker_path",
+    "review_date",
+    "system_scope",
+    "overall_verdict",
+    "classified_signals",
+    "blocker_present",
+    "blocker_signal_ids",
+    "escalation_present",
+    "severity_summary",
+    "signal_counts_by_class",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "review_control_signal_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "review_control_signal_id": {
+      "type": "string",
+      "pattern": "^rca-[a-f0-9]{16}$"
+    },
+    "source_review_signal_ref": {
+      "type": "string",
+      "pattern": "^rsv-[a-f0-9]{16}$"
+    },
+    "source_review_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_action_tracker_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_date": {
+      "type": "string",
+      "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"
+    },
+    "system_scope": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "overall_verdict": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "classified_signals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/classifiedSignal"
+      }
+    },
+    "blocker_present": {
+      "type": "boolean"
+    },
+    "blocker_signal_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^rsi-[a-f0-9]{16}$"
+      },
+      "uniqueItems": true
+    },
+    "escalation_present": {
+      "type": "boolean"
+    },
+    "severity_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "critical",
+        "high",
+        "medium"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "signal_counts_by_class": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "control_escalation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enforcement_block": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "roadmap_priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "drift_watch": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recovery_followup": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "governance_attention": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classifier",
+        "deterministic_hash_basis",
+        "source_review_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash"
+      ],
+      "properties": {
+        "classifier": {
+          "type": "string",
+          "const": "review_signal_classifier"
+        },
+        "deterministic_hash_basis": {
+          "type": "string",
+          "const": "canonical-json-sha256"
+        },
+        "source_review_signal_id": {
+          "type": "string",
+          "pattern": "^rsv-[a-f0-9]{16}$"
+        },
+        "source_review_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_action_tracker_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_path",
+        "line_number",
+        "source_excerpt"
+      ],
+      "properties": {
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_excerpt": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "classifiedSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_id",
+        "source_item_id",
+        "signal_class",
+        "signal_priority",
+        "severity",
+        "affected_systems",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "signal_id": {
+          "type": "string",
+          "pattern": "^rsi-[a-f0-9]{16}$"
+        },
+        "source_item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signal_class": {
+          "type": "string",
+          "enum": [
+            "control_escalation",
+            "enforcement_block",
+            "roadmap_priority",
+            "drift_watch",
+            "recovery_followup",
+            "governance_attention"
+          ]
+        },
+        "signal_priority": {
+          "type": "string",
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "monitor"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium"
+          ]
+        },
+        "affected_systems": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+          },
+          "uniqueItems": true
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/traceRef"
+          }
+        }
+      }
+    }
+  }
+}
