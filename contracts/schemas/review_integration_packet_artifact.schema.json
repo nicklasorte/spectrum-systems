@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_integration_packet_artifact.schema.json",
+  "title": "Review Integration Packet Artifact",
+  "description": "Deterministic RIL-003 bounded routing packet that packages review_control_signal_artifact outputs for control-loop, roadmap, and readiness intake surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "review_integration_packet_id",
+    "source_review_control_signal_ref",
+    "source_review_path",
+    "source_action_tracker_path",
+    "review_date",
+    "system_scope",
+    "overall_verdict",
+    "control_loop_inputs",
+    "roadmap_inputs",
+    "readiness_inputs",
+    "blocker_present",
+    "escalation_present",
+    "highest_priority",
+    "counts_by_channel",
+    "counts_by_type",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "review_integration_packet_artifact"
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "review_integration_packet_id": {
+      "type": "string",
+      "pattern": "^rip-[a-f0-9]{16}$"
+    },
+    "source_review_control_signal_ref": {
+      "type": "string",
+      "pattern": "^rca-[a-f0-9]{16}$"
+    },
+    "source_review_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_action_tracker_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_date": {
+      "type": "string",
+      "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"
+    },
+    "system_scope": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "overall_verdict": {
+      "type": ["string", "null"]
+    },
+    "control_loop_inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/integrationInput"
+      }
+    },
+    "roadmap_inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/integrationInput"
+      }
+    },
+    "readiness_inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/integrationInput"
+      }
+    },
+    "blocker_present": {
+      "type": "boolean"
+    },
+    "escalation_present": {
+      "type": "boolean"
+    },
+    "highest_priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "monitor"]
+    },
+    "counts_by_channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["control_loop", "roadmap", "readiness"],
+      "properties": {
+        "control_loop": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "roadmap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "readiness": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "counts_by_type": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocker_intake",
+        "escalation_intake",
+        "roadmap_priority_intake",
+        "drift_watch_intake",
+        "recovery_followup_intake",
+        "governance_attention_intake"
+      ],
+      "properties": {
+        "blocker_intake": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "escalation_intake": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "roadmap_priority_intake": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "drift_watch_intake": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recovery_followup_intake": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "governance_attention_intake": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer",
+        "deterministic_hash_basis",
+        "source_review_control_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash",
+        "routing_rules_version"
+      ],
+      "properties": {
+        "consumer": {
+          "type": "string",
+          "const": "review_signal_consumer"
+        },
+        "deterministic_hash_basis": {
+          "type": "string",
+          "const": "canonical-json-sha256"
+        },
+        "source_review_control_signal_id": {
+          "type": "string",
+          "pattern": "^rca-[a-f0-9]{16}$"
+        },
+        "source_review_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_action_tracker_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "routing_rules_version": {
+          "type": "string",
+          "const": "ril-003-v1"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "traceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "line_number", "source_excerpt"],
+      "properties": {
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_excerpt": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "integrationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "source_signal_id",
+        "input_channel",
+        "input_type",
+        "priority",
+        "severity",
+        "affected_systems",
+        "rationale",
+        "trace_refs"
+      ],
+      "properties": {
+        "input_id": {
+          "type": "string",
+          "pattern": "^rii-[a-f0-9]{16}$"
+        },
+        "source_signal_id": {
+          "type": "string",
+          "pattern": "^rsi-[a-f0-9]{16}$"
+        },
+        "input_channel": {
+          "type": "string",
+          "enum": ["control_loop", "roadmap", "readiness"]
+        },
+        "input_type": {
+          "type": "string",
+          "enum": [
+            "blocker_intake",
+            "escalation_intake",
+            "roadmap_priority_intake",
+            "drift_watch_intake",
+            "recovery_followup_intake",
+            "governance_attention_intake"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2", "monitor"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium"]
+        },
+        "affected_systems": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$"
+          },
+          "uniqueItems": true
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/traceRef"
+          }
+        }
+      }
+    }
+  }
+}
