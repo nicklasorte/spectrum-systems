@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_projection_bundle_artifact.schema.json",
+  "title": "Review Projection Bundle Artifact",
+  "description": "Deterministic RIL-004 top-level read-only bundle linking roadmap/control-loop/readiness review projections from review_integration_packet_artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "review_projection_bundle_id",
+    "source_review_integration_packet_ref",
+    "source_review_path",
+    "review_date",
+    "system_scope",
+    "roadmap_projection_ref",
+    "control_loop_projection_ref",
+    "readiness_projection_ref",
+    "roadmap_projection",
+    "control_loop_projection",
+    "readiness_projection",
+    "blocker_present",
+    "escalation_present",
+    "emitted_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_projection_bundle_artifact"},
+    "artifact_class": {"type": "string", "const": "coordination"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "review_projection_bundle_id": {"type": "string", "pattern": "^rpb-[a-f0-9]{16}$"},
+    "source_review_integration_packet_ref": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"},
+    "source_review_path": {"type": "string", "minLength": 1},
+    "review_date": {"type": "string", "pattern": "^20\\d{2}-\\d{2}-\\d{2}$"},
+    "system_scope": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "roadmap_projection_ref": {"type": "string", "pattern": "^rrp-[a-f0-9]{16}$"},
+    "control_loop_projection_ref": {"type": "string", "pattern": "^cri-[a-f0-9]{16}$"},
+    "readiness_projection_ref": {"type": "string", "pattern": "^rdp-[a-f0-9]{16}$"},
+    "roadmap_projection": {"type": "object"},
+    "control_loop_projection": {"type": "object"},
+    "readiness_projection": {"type": "object"},
+    "blocker_present": {"type": "boolean"},
+    "escalation_present": {"type": "boolean"},
+    "emitted_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "projection_type",
+        "deterministic_hash_basis",
+        "source_review_control_signal_id",
+        "source_review_hash",
+        "source_action_tracker_hash",
+        "source_packet_id",
+        "source_projection_ids"
+      ],
+      "properties": {
+        "adapter": {"type": "string", "const": "review_projection_adapter"},
+        "projection_type": {"type": "string", "const": "bundle"},
+        "deterministic_hash_basis": {"type": "string", "const": "canonical-json-sha256"},
+        "source_review_control_signal_id": {"type": "string", "pattern": "^rca-[a-f0-9]{16}$"},
+        "source_review_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_action_tracker_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_packet_id": {"type": "string", "pattern": "^rip-[a-f0-9]{16}$"},
+        "source_projection_ids": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "roadmap_review_projection_id",
+            "control_loop_review_intake_id",
+            "readiness_review_projection_id"
+          ],
+          "properties": {
+            "roadmap_review_projection_id": {"type": "string", "pattern": "^rrp-[a-f0-9]{16}$"},
+            "control_loop_review_intake_id": {"type": "string", "pattern": "^cri-[a-f0-9]{16}$"},
+            "readiness_review_projection_id": {"type": "string", "pattern": "^rdp-[a-f0-9]{16}$"}
+          }
+        }
+      }
+    }
+  }
+}

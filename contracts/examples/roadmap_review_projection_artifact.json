@@ -1,0 +1,76 @@
+{
+  "artifact_type": "roadmap_review_projection_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "roadmap_review_projection_id": "rrp-f350a15cc16feb2e",
+  "source_review_integration_packet_ref": "rip-da9b8527a073fbef",
+  "source_review_path": "docs/reviews/2026-04-05-tpa-architecture-review.md",
+  "review_date": "2026-04-05",
+  "system_scope": "tpa",
+  "projected_roadmap_items": [
+    {
+      "projection_item_id": "rpi-f4cecdcba5d79477",
+      "source_input_id": "rii-5ef4828db7e4b571",
+      "priority": "P2",
+      "severity": "critical",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "Recovery-related finding requires follow-up",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 11,
+          "source_excerpt": "CR-2: TPA scope policy not anchored to source-authority layer \u2014 strategy drift"
+        }
+      ]
+    },
+    {
+      "projection_item_id": "rpi-3954c28a5a80d8e8",
+      "source_input_id": "rii-348406612f46ac67",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 16,
+          "source_excerpt": "HI-1: Policy surface sprawl \u2014 ambiguous precedence across scope/complexity/review/cleanup-only policies"
+        }
+      ]
+    },
+    {
+      "projection_item_id": "rpi-06f33aa2550de83c",
+      "source_input_id": "rii-bae636330d730566",
+      "priority": "P1",
+      "severity": "high",
+      "affected_systems": [
+        "tpa"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "trace_refs": [
+        {
+          "source_path": "docs/review-actions/2026-04-05-tpa-architecture-review-actions.md",
+          "line_number": 17,
+          "source_excerpt": "HI-2: Certification bypass risk for cleanup-only slices"
+        }
+      ]
+    }
+  ],
+  "highest_priority": "P0",
+  "item_count": 3,
+  "blocker_present": true,
+  "emitted_at": "2026-04-05T00:00:00Z",
+  "provenance": {
+    "adapter": "review_projection_adapter",
+    "projection_type": "roadmap",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_review_control_signal_id": "rca-b0824c5893e8c0d9",
+    "source_review_hash": "6e1dda8b716cb56b174c2d31b3317eaa30192713a6ad668eca5d29267c0cd9a5",
+    "source_action_tracker_hash": "cd3a3f1cba2dc6896d1da61224757dfdd576ea87b899188279729b2090ed9a4d",
+    "source_packet_id": "rip-da9b8527a073fbef"
+  }
+}
