@@ -22,6 +22,7 @@ from spectrum_systems.modules.runtime.review_parsing_engine import parse_review_
 from spectrum_systems.modules.runtime.review_projection_adapter import build_review_projection_bundle
 from spectrum_systems.modules.runtime.review_signal_classifier import classify_review_signal
 from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
+from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action, validate_system_handoff
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
 
 
@@ -131,12 +132,51 @@ def _record_invocation(
     )
 
 
+def _enforce_registry_action(*, actor: str, action_type: str, target_system: str, boundary: str) -> None:
+    result = validate_system_action(actor, action_type, target_system)
+    if not result["allow"]:
+        violations = ",".join(result["violation_codes"])
+        raise TopLevelConductorError(f"registry_action_blocked:{boundary}:{actor}->{target_system}:{violations}")
+
+
+def _enforce_handoff(
+    *,
+    from_system: str,
+    to_system: str,
+    schema_name: str,
+    action_type: str,
+    payload: dict[str, Any],
+    required_fields: list[str],
+    expected_trace_refs: list[str],
+    boundary: str,
+) -> None:
+    result = validate_system_handoff(
+        from_system,
+        to_system,
+        {
+            "schema_name": schema_name,
+            "action_type": action_type,
+            "payload": payload,
+            "required_fields": required_fields,
+            "expected_trace_refs": expected_trace_refs,
+            "trace_refs": expected_trace_refs,
+        },
+    )
+    if not result["allow"]:
+        violations = ",".join(result["violation_codes"])
+        raise TopLevelConductorError(f"handoff_blocked:{boundary}:{from_system}->{to_system}:{violations}")
+
+
 def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
     if subsystem == "PQX":
         if not isinstance(result.get("request_artifact"), dict):
             raise TopLevelConductorError("PQX output must include request_artifact")
         if not isinstance(result.get("execution_artifact"), dict):
             raise TopLevelConductorError("PQX output must include execution_artifact")
+        if not isinstance(result.get("trace_refs"), list) or not result.get("trace_refs"):
+            raise TopLevelConductorError("PQX output must include trace refs")
+        if not isinstance(result.get("lineage"), dict):
+            raise TopLevelConductorError("PQX output must include lineage")
         validate_artifact(result["request_artifact"], "pqx_execution_request")
         validate_artifact(result["execution_artifact"], "pqx_execution_result")
         return
@@ -161,11 +201,17 @@ def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
             if not isinstance(artifact, dict):
                 raise TopLevelConductorError(f"RIL output must include {key}")
             validate_artifact(artifact, schema)
+        if isinstance(result.get("raw_review"), str):
+            raise TopLevelConductorError("RIL output must not include raw review")
         return
     if subsystem == "CDE":
         artifact = result.get("closure_decision_artifact")
         if not isinstance(artifact, dict):
             raise TopLevelConductorError("CDE output must include closure_decision_artifact")
+        if not isinstance(result.get("decision_type"), str) or not result.get("decision_type"):
+            raise TopLevelConductorError("CDE output must include decision_type")
+        if not isinstance(result.get("next_step_class"), str) or not result.get("next_step_class"):
+            raise TopLevelConductorError("CDE output must include next_step_class")
         validate_artifact(artifact, "closure_decision_artifact")
         return
 
@@ -267,6 +313,10 @@ def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
         "validation_passed": passed,
         "artifact_refs": refs,
         "trace_refs": [payload["trace_id"]],
+        "lineage": {
+            "lineage_id": f"lineage:{payload['run_id']}:pqx",
+            "parent_refs": [f"request:{payload['run_id']}"],
+        },
         "request_artifact": request_artifact,
         "execution_artifact": output_artifact,
     }
@@ -413,6 +463,7 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
     validate_artifact(decision, "closure_decision_artifact")
     return {
         "decision_type": decision["decision_type"],
+        "next_step_class": "continue_bounded" if decision["decision_type"] == "continue_bounded" else "terminal",
         "closure_state": "closed" if decision["decision_type"] == "lock" else "open",
         "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
         "trace_refs": [decision["trace_id"]],
@@ -421,6 +472,10 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _real_prg(payload: dict[str, Any]) -> dict[str, Any]:
+    closure_decision = payload.get("closure_decision") if isinstance(payload.get("closure_decision"), dict) else {}
+    if "artifact_refs" not in closure_decision:
+        raise TopLevelConductorError("PRG input must originate from TLC + CDE closure decision handoff")
+
     program_signal = build_program_constraint_signal(
         program_artifact={
             "program_id": "PRG-QUALITY-CERTIFICATION",
@@ -441,10 +496,28 @@ def _real_prg(payload: dict[str, Any]) -> dict[str, Any]:
         created_at=payload["emitted_at"],
     )
     validate_artifact(program_signal, "program_constraint_signal")
+    next_step_artifact = {
+        "next_step_action_artifact_id": f"next-step-{payload['run_id']}",
+        "work_item_id": f"tlc:{payload['run_id']}",
+        "parent_work_item_id": f"cde:{payload['run_id']}",
+        "post_execution_decision_artifact_path": f"artifacts/tlc/{payload['run_id']}/closure_decision_artifact.json",
+        "execution_result_artifact_path": f"artifacts/tlc/{payload['run_id']}/top_level_conductor_run_artifact.json",
+        "action_status": "spawn_reentry_child",
+        "action_reason_code": "spawn_reentry_child_from_post_execution_reentry_eligible",
+        "decision_status": "reentry_eligible",
+        "generated_at": payload["emitted_at"],
+        "generator_version": "top_level_conductor.prg_boundary.v1",
+    }
+    validate_artifact(next_step_artifact, "prompt_queue_next_step_action")
     return {
         "proposed": True,
         "artifact_refs": [f"program_constraint_signal:{program_signal['program_id']}:{program_signal['program_version']}"],
         "trace_refs": [program_signal["trace_id"]],
+        "next_step_artifact": next_step_artifact,
+        "next_step_artifact_ref": f"prompt_queue_next_step_action:{next_step_artifact['next_step_action_artifact_id']}",
+        "execution_performed": False,
+        "closure_decided": False,
+        "policy_mutated": False,
     }
 
 
@@ -528,6 +601,34 @@ def _enforce_sel(
     return True
 
 
+def _validate_prg_output(prg_result: dict[str, Any], *, trace_refs: list[str]) -> None:
+    if not isinstance(prg_result.get("next_step_artifact"), dict):
+        raise TopLevelConductorError("PRG output must include next_step_artifact")
+    validate_artifact(prg_result["next_step_artifact"], "prompt_queue_next_step_action")
+    if bool(prg_result.get("execution_performed", True)):
+        raise TopLevelConductorError("PRG must not execute work")
+    if bool(prg_result.get("closure_decided", True)):
+        raise TopLevelConductorError("PRG must not decide closure")
+    if bool(prg_result.get("policy_mutated", True)):
+        raise TopLevelConductorError("PRG must not mutate policy")
+    # Use explicit trace refs supplied out-of-band for schemas that disallow trace fields.
+    result = validate_system_handoff(
+        "PRG",
+        "TLC",
+        {
+            "schema_name": "prompt_queue_next_step_action",
+            "action_type": "program_governance",
+            "payload": prg_result["next_step_artifact"],
+            "required_fields": ["next_step_action_artifact_id", "action_status", "decision_status"],
+            "expected_trace_refs": trace_refs,
+            "trace_refs": trace_refs,
+        },
+    )
+    if not result["allow"]:
+        violations = ",".join(result["violation_codes"])
+        raise TopLevelConductorError(f"handoff_blocked:prg_to_tlc_next_step:{violations}")
+
+
 def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     """Run one deterministic bounded TLC state machine invocation."""
     if not isinstance(run_request, dict):
@@ -605,6 +706,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         if state["current_state"] == "executing":
             if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="execution"):
                 break
+            _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="PQX", boundary="tlc_to_pqx")
             pqx_result = resolved["pqx"](
                 {
                     "run_id": state["run_id"],
@@ -616,6 +718,16 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 }
             )
             _validate_handoff_output("PQX", pqx_result if isinstance(pqx_result, dict) else {})
+            _enforce_handoff(
+                from_system="PQX",
+                to_system="TPA",
+                schema_name="pqx_execution_result",
+                action_type="execution",
+                payload=pqx_result["execution_artifact"],
+                required_fields=["run_id", "execution_status", "output_text"],
+                expected_trace_refs=state["trace_refs"],
+                boundary="pqx_to_tpa",
+            )
             state["active_subsystems"].append("PQX")
             _extract_refs(pqx_result if isinstance(pqx_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
             _record_invocation(
@@ -632,6 +744,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 state["stop_reason"] = "pqx_entry_invalid"
                 break
 
+            _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="TPA", boundary="tlc_to_tpa")
             tpa_result = resolved["tpa"]({"run_id": state["run_id"], "trace_id": state["trace_id"], "pqx_result": pqx_result})
             state["active_subsystems"].append("TPA")
             _extract_refs(tpa_result if isinstance(tpa_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
@@ -666,6 +779,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         if state["current_state"] == "recovering":
             if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="recovery"):
                 break
+            _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="FRE", boundary="tlc_to_fre")
             fre_result = resolved["fre"](
                 {
                     "run_id": state["run_id"],
@@ -676,6 +790,16 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 }
             )
             _validate_handoff_output("FRE", fre_result if isinstance(fre_result, dict) else {})
+            _enforce_handoff(
+                from_system="FRE",
+                to_system="RIL",
+                schema_name="recovery_result_artifact",
+                action_type="failure_diagnosis",
+                payload=fre_result["recovery_result_artifact"],
+                required_fields=["recovery_status", "trace_id", "repair_prompt_ref"],
+                expected_trace_refs=state["trace_refs"],
+                boundary="fre_to_ril",
+            )
             state["active_subsystems"].append("FRE")
             _extract_refs(fre_result if isinstance(fre_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
             state["lineage"]["failure_diagnosis_artifact_ref"] = fre_result["artifact_refs"][0]
@@ -700,6 +824,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         if state["current_state"] == "reviewing":
             if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="review"):
                 break
+            _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="RIL", boundary="tlc_to_ril")
             ril_result = resolved["ril"](
                 {
                     "run_id": state["run_id"],
@@ -709,6 +834,16 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 }
             )
             _validate_handoff_output("RIL", ril_result if isinstance(ril_result, dict) else {})
+            _enforce_handoff(
+                from_system="RIL",
+                to_system="CDE",
+                schema_name="review_projection_bundle_artifact",
+                action_type="review_projection",
+                payload=ril_result["review_projection_bundle_artifact"],
+                required_fields=["review_projection_bundle_id", "emitted_at"],
+                expected_trace_refs=state["trace_refs"],
+                boundary="ril_to_cde",
+            )
             state["active_subsystems"].append("RIL")
             _extract_refs(ril_result if isinstance(ril_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
             _record_invocation(
@@ -728,6 +863,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             continue
 
         if state["current_state"] == "closure_decision_pending":
+            _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="CDE", boundary="tlc_to_cde")
             ril_ref = next((ref for ref in state["produced_artifact_refs"] if ref.startswith("review_projection_bundle_artifact:")), None)
             cde_result = resolved["cde"](
                 {
@@ -752,6 +888,16 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 }
             )
             _validate_handoff_output("CDE", cde_result if isinstance(cde_result, dict) else {})
+            _enforce_handoff(
+                from_system="CDE",
+                to_system="TLC",
+                schema_name="closure_decision_artifact",
+                action_type="closure_decisions",
+                payload=cde_result["closure_decision_artifact"],
+                required_fields=["decision_type", "trace_id"],
+                expected_trace_refs=state["trace_refs"],
+                boundary="cde_to_tlc",
+            )
             state["active_subsystems"].append("CDE")
             _extract_refs(cde_result if isinstance(cde_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
             _record_invocation(
@@ -779,6 +925,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     break
                 if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="direction"):
                     break
+                _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="PRG", boundary="tlc_to_prg")
                 prg_result = resolved["prg"](
                     {
                         "run_id": state["run_id"],
@@ -787,6 +934,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                         "closure_decision": cde_result,
                     }
                 )
+                _validate_prg_output(prg_result if isinstance(prg_result, dict) else {}, trace_refs=state["trace_refs"])
                 state["active_subsystems"].append("PRG")
                 _extract_refs(prg_result if isinstance(prg_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
                 _record_invocation(
