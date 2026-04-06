@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/top_level_conductor_run_artifact.schema.json",
+  "title": "top_level_conductor_run_artifact",
+  "description": "Deterministic bounded top-level conductor run-state artifact for one orchestrated run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "objective",
+    "branch_ref",
+    "current_state",
+    "phase_history",
+    "active_subsystems",
+    "retry_budget_remaining",
+    "closure_state",
+    "next_allowed_actions",
+    "stop_reason",
+    "ready_for_merge",
+    "produced_artifact_refs",
+    "trace_refs",
+    "lineage"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_state": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "admitted",
+        "executing",
+        "discipline_pending",
+        "validation_failed",
+        "recovering",
+        "reviewing",
+        "closure_decision_pending",
+        "direction_pending",
+        "ready_for_merge",
+        "blocked",
+        "exhausted",
+        "escalated"
+      ]
+    },
+    "phase_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to",
+          "reason"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "active_subsystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "PQX",
+          "TPA",
+          "FRE",
+          "RIL",
+          "CDE",
+          "PRG",
+          "SEL"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "retry_budget_remaining": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "closure_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "next_allowed_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "stop_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ready_for_merge": {
+      "type": "boolean"
+    },
+    "produced_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

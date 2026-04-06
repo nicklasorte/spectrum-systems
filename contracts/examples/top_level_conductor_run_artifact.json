@@ -1,0 +1,57 @@
+{
+  "run_id": "tlc-1a2b3c4d5e6f",
+  "objective": "deliver bounded top-level orchestration artifact",
+  "branch_ref": "refs/heads/feature/tlc-001",
+  "current_state": "ready_for_merge",
+  "phase_history": [
+    {
+      "from": "requested",
+      "to": "admitted",
+      "reason": "request_admitted"
+    },
+    {
+      "from": "admitted",
+      "to": "executing",
+      "reason": "execution_admitted"
+    },
+    {
+      "from": "executing",
+      "to": "reviewing",
+      "reason": "execution_validated"
+    },
+    {
+      "from": "reviewing",
+      "to": "closure_decision_pending",
+      "reason": "review_outputs_available"
+    },
+    {
+      "from": "closure_decision_pending",
+      "to": "ready_for_merge",
+      "reason": "cde_lock"
+    }
+  ],
+  "active_subsystems": [
+    "CDE",
+    "PQX",
+    "RIL",
+    "SEL",
+    "TPA"
+  ],
+  "retry_budget_remaining": 1,
+  "closure_state": "closed",
+  "next_allowed_actions": [],
+  "stop_reason": "ready_for_merge",
+  "ready_for_merge": true,
+  "produced_artifact_refs": [
+    "pqx_execution_record:PXR-0001",
+    "review_projection_bundle_artifact:RPB-0001",
+    "closure_decision_artifact:CDE-0001"
+  ],
+  "trace_refs": [
+    "trace-tlc-0001"
+  ],
+  "lineage": {
+    "parent_run_id": "run-20260406T000000Z-batch-tlc-01",
+    "request_hash": "b8f8db2181ac76ffd9fa8ec07d9e1e95f576f7f6d4ab9f5703ec4ffab5e6ab7d"
+  }
+}
