@@ -1,0 +1,12 @@
+{
+  "artifact_type": "roadmap_signal_artifact",
+  "schema_version": "1.0.0",
+  "signal_id": "RMS-9ef5fe31ac5e5ed62534",
+  "failure_class": "test_expectation_drift",
+  "recurrence_count": 3,
+  "recommended_hardening_action": "Prioritize targeted regression hardening for repeatedly drifting test expectations.",
+  "source_refs": [
+    "failure_learning_record_artifact:learning-tlc-example-001-test_expectation_drift",
+    "failure_diagnosis_artifact:FDIAG-440e1abcfb3e027fb35b"
+  ]
+}

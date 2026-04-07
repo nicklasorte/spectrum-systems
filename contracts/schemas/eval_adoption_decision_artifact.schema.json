@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/eval_adoption_decision_artifact.schema.json",
+  "title": "Eval Adoption Decision Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "candidate_ref",
+    "state",
+    "decided_by",
+    "trace_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "eval_adoption_decision_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^EAD-[a-f0-9]{20}$"
+    },
+    "candidate_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "rejected",
+        "deferred"
+      ]
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "rejected",
+              "deferred"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "rationale"
+        ]
+      }
+    }
+  ]
+}

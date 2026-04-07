@@ -23,6 +23,9 @@ VIOLATION_CODES: tuple[ViolationCode, ...] = (
     "repair_scope_violation",
     "repair_budget_violation",
     "repair_decision_violation",
+    "failure_class_registry_violation",
+    "eval_adoption_violation",
+    "roadmap_signal_linkage_violation",
 )
 
 _ALLOWED_RIL_INTAKE_TYPES = {
@@ -339,6 +342,38 @@ def _check_repair_boundaries(normalized: dict[str, Any], violations: list[dict[s
         )
 
 
+def _check_failure_learning_governance(normalized: dict[str, Any], violations: list[dict[str, Any]]) -> None:
+    request = normalized["execution_request"]
+    refs = normalized["artifact_references"]
+    if not bool(request.get("failure_learning_required", False)):
+        return
+
+    if not _is_present(refs.get("failure_class_registry")):
+        _add_violation(
+            violations,
+            code="failure_class_registry_violation",
+            boundary="FRE",
+            field="artifact_references.failure_class_registry",
+            message="failure class must exist in canonical registry",
+        )
+    if _is_present(refs.get("eval_candidate_artifact")) and not _is_present(refs.get("eval_adoption_decision_artifact")):
+        _add_violation(
+            violations,
+            code="eval_adoption_violation",
+            boundary="CDE",
+            field="artifact_references.eval_adoption_decision_artifact",
+            message="eval adoption decision must exist before eval is used",
+        )
+    if _is_present(refs.get("roadmap_signal_artifact")) and not _is_present(refs.get("failure_learning_record_artifact")):
+        _add_violation(
+            violations,
+            code="roadmap_signal_linkage_violation",
+            boundary="PRG",
+            field="artifact_references.failure_learning_record_artifact",
+            message="roadmap signal must reference failure learning artifacts",
+        )
+
+
 def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     """Enforce SEL governed boundaries; fail closed when any boundary violation exists."""
 
@@ -356,6 +391,7 @@ def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     _check_governance_evidence(normalized, violations)
     _check_lineage(normalized, violations)
     _check_repair_boundaries(normalized, violations)
+    _check_failure_learning_governance(normalized, violations)
 
     violated_boundaries = sorted({str(item["boundary"]) for item in violations})
     payload_for_id = {

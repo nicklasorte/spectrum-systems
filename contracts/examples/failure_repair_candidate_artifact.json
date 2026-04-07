@@ -6,7 +6,7 @@
   "source_test_refs": [
     "pytest_failure:tests/test_contracts.py::test_manifest_registry_alignment"
   ],
-  "failure_class": "manifest_or_registry_mismatch",
+  "failure_class": "contract_registration_missing",
   "safe_to_repair": true,
   "bounded_scope": [
     "contracts/standards-manifest.json"

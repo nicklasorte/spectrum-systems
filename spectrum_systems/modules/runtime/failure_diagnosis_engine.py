@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -27,143 +28,78 @@ _FAILURE_SOURCE_TYPES = {
 }
 
 _FAILURE_CLASSES = {
-    "missing_required_surface",
-    "schema_example_drift",
-    "producer_wiring_gap",
-    "consumer_wiring_gap",
-    "fixture_gap",
-    "invariant_violation",
+    "schema_mismatch",
+    "contract_registration_missing",
+    "branch_policy_violation",
+    "dependency_graph_violation",
     "test_expectation_drift",
-    "manifest_or_registry_mismatch",
-    "control_surface_input_missing",
-    "certification_surface_gap",
-    "source_authority_anchor_gap",
-    "policy_composition_gap",
-    "corroboration_validation_gap",
-    "override_temporal_validation_gap",
-    "unknown_failure_class",
+    "unknown_failure",
 }
 
 _RULES: list[dict[str, Any]] = [
     {
         "rule_id": "R001",
-        "matches": {"invariant_violation"},
-        "classification": "invariant_violation",
+        "matches": {"branch_policy_violation"},
+        "classification": "branch_policy_violation",
         "explanation": "Explicit invariant violation evidence is authoritative and has highest precedence.",
     },
     {
         "rule_id": "R002",
-        "matches": {"control_surface_input_missing"},
-        "classification": "control_surface_input_missing",
+        "matches": {"contract_registration_missing"},
+        "classification": "contract_registration_missing",
         "explanation": "Control surface input is required for governed execution and missing inputs fail closed.",
     },
     {
         "rule_id": "R003",
-        "matches": {"missing_required_surface"},
-        "classification": "missing_required_surface",
+        "matches": {"schema_mismatch"},
+        "classification": "schema_mismatch",
         "explanation": "Required governed artifact surface is missing from failure intake.",
     },
     {
         "rule_id": "R004",
-        "matches": {"manifest_or_registry_mismatch"},
-        "classification": "manifest_or_registry_mismatch",
+        "matches": {"dependency_graph_violation"},
+        "classification": "dependency_graph_violation",
         "explanation": "Manifest/registry mismatch evidence indicates authoritative taxonomy or consumer-pin drift.",
     },
     {
         "rule_id": "R005",
-        "matches": {"schema_example_drift"},
-        "classification": "schema_example_drift",
-        "explanation": "Schema/example enforcement failures indicate contract drift.",
-    },
-    {
-        "rule_id": "R006",
-        "matches": {"producer_wiring_gap"},
-        "classification": "producer_wiring_gap",
-        "explanation": "Producer failures indicate upstream artifact production wiring gap.",
-    },
-    {
-        "rule_id": "R007",
-        "matches": {"consumer_wiring_gap"},
-        "classification": "consumer_wiring_gap",
-        "explanation": "Consumer failures indicate downstream ingestion wiring gap.",
-    },
-    {
-        "rule_id": "R008",
-        "matches": {"fixture_gap"},
-        "classification": "fixture_gap",
-        "explanation": "Fixture failure evidence indicates missing or stale validation fixtures.",
-    },
-    {
-        "rule_id": "R009",
         "matches": {"test_expectation_drift"},
         "classification": "test_expectation_drift",
-        "explanation": "Pytest assertion evidence indicates test expectation drift relative to contract behavior.",
+        "explanation": "Schema/example enforcement failures indicate contract drift.",
     },
-    {
-        "rule_id": "R010",
-        "matches": {"certification_surface_gap"},
-        "classification": "certification_surface_gap",
-        "explanation": "Certification/readiness surfaces are incomplete.",
-    },
+    {"rule_id": "R006", "matches": {"unknown_failure"}, "classification": "unknown_failure", "explanation": "Fallback class."},
 ]
 
 _SMALLEST_SAFE_FIX = {
-    "missing_required_surface": "restore_required_surface_artifact",
-    "schema_example_drift": "align_schema_example_pair",
-    "producer_wiring_gap": "restore_producer_wiring",
-    "consumer_wiring_gap": "restore_consumer_wiring",
-    "fixture_gap": "restore_or_update_fixture",
-    "invariant_violation": "restore_invariant_enforcement",
+    "schema_mismatch": "align_schema_example_pair",
+    "contract_registration_missing": "align_contract_registration",
+    "branch_policy_violation": "enforce_branch_policy",
+    "dependency_graph_violation": "repair_dependency_graph",
     "test_expectation_drift": "align_test_expectations",
-    "manifest_or_registry_mismatch": "align_manifest_registry_taxonomy",
-    "control_surface_input_missing": "restore_control_surface_input",
-    "certification_surface_gap": "restore_certification_surface",
-    "source_authority_anchor_gap": "restore_source_authority_anchor",
-    "policy_composition_gap": "repair_policy_composition",
-    "corroboration_validation_gap": "restore_corroboration_validation",
-    "override_temporal_validation_gap": "repair_override_temporal_validation",
-    "unknown_failure_class": "manual_triage_required",
+    "unknown_failure": "manual_triage_required",
 }
 
 _RECOMMENDED_REPAIR_AREA = {
-    "missing_required_surface": "contracts/examples and producer generation boundary",
-    "schema_example_drift": "contracts/schemas and contracts/examples",
-    "producer_wiring_gap": "upstream producer/runtime wiring",
-    "consumer_wiring_gap": "downstream consumer/runtime wiring",
-    "fixture_gap": "tests/fixtures and fixture-producing modules",
-    "invariant_violation": "control surface invariant definitions and enforcement",
+    "schema_mismatch": "contracts/schemas and contracts/examples",
+    "contract_registration_missing": "contracts/standards-manifest.json",
+    "branch_policy_violation": ".github/workflows and governance policy surfaces",
+    "dependency_graph_violation": "runtime module dependency boundaries",
     "test_expectation_drift": "test assertions and contract behavior alignment",
-    "manifest_or_registry_mismatch": "contracts/standards-manifest.json and consuming manifests",
-    "control_surface_input_missing": "control-surface generation and preflight input assembly",
-    "certification_surface_gap": "certification/readiness artifact generation",
-    "source_authority_anchor_gap": "source authority anchoring and governance linkage",
-    "policy_composition_gap": "policy composition and evaluation wiring",
-    "corroboration_validation_gap": "corroboration and validation boundary",
-    "override_temporal_validation_gap": "override temporal validation surface",
-    "unknown_failure_class": "manual diagnosis queue",
+    "unknown_failure": "manual diagnosis queue",
 }
 
 _BLOCKING_SEVERITY = {
-    "missing_required_surface": "blocker",
-    "schema_example_drift": "high",
-    "producer_wiring_gap": "high",
-    "consumer_wiring_gap": "high",
-    "fixture_gap": "medium",
-    "invariant_violation": "blocker",
+    "schema_mismatch": "high",
+    "contract_registration_missing": "blocker",
+    "branch_policy_violation": "blocker",
+    "dependency_graph_violation": "high",
     "test_expectation_drift": "medium",
-    "manifest_or_registry_mismatch": "blocker",
-    "control_surface_input_missing": "blocker",
-    "certification_surface_gap": "high",
-    "source_authority_anchor_gap": "high",
-    "policy_composition_gap": "high",
-    "corroboration_validation_gap": "high",
-    "override_temporal_validation_gap": "high",
-    "unknown_failure_class": "high",
+    "unknown_failure": "high",
 }
 
 _SAFE_REPAIRABLE_CLASSES = {
-    "manifest_or_registry_mismatch",
-    "schema_example_drift",
+    "contract_registration_missing",
+    "schema_mismatch",
     "test_expectation_drift",
 }
 
@@ -249,7 +185,7 @@ def normalize_failure_intake(
             _append_evidence(
                 evidence,
                 source_surface="contract_preflight",
-                evidence_type="missing_required_surface",
+                evidence_type="contract_registration_missing",
                 message=f"Required surface missing: {surface}",
                 artifact_ref=refs[0],
                 details={"surface": surface},
@@ -259,7 +195,7 @@ def normalize_failure_intake(
             _append_evidence(
                 evidence,
                 source_surface="contract_preflight",
-                evidence_type="control_surface_input_missing",
+                evidence_type="contract_registration_missing",
                 message=f"Control-surface input missing: {item}",
                 artifact_ref=refs[0],
                 details={"surface": item},
@@ -269,7 +205,7 @@ def normalize_failure_intake(
             _append_evidence(
                 evidence,
                 source_surface="contract_preflight",
-                evidence_type="invariant_violation",
+                evidence_type="branch_policy_violation",
                 message=f"Invariant violation: {violation}",
                 artifact_ref=refs[0],
                 details={"invariant": violation},
@@ -279,7 +215,7 @@ def normalize_failure_intake(
             _append_evidence(
                 evidence,
                 source_surface="contract_preflight",
-                evidence_type="schema_example_drift",
+                evidence_type="schema_mismatch",
                 message=f"Schema/example failure: {drift}",
                 artifact_ref=refs[0],
                 details={"failure": drift},
@@ -297,7 +233,7 @@ def normalize_failure_intake(
             if not test_name or not failure_message:
                 raise FailureDiagnosisError("pytest_summary failing_tests entries require test_name and failure_message")
             markers = [str(item).strip() for item in (row.get("markers") or []) if str(item).strip()]
-            evidence_type = "test_expectation_drift" if "contract_behavior_changed" in markers else "unknown_failure_class"
+            evidence_type = "test_expectation_drift" if "contract_behavior_changed" in markers else "unknown_failure"
             _append_evidence(
                 evidence,
                 source_surface="pytest",
@@ -309,19 +245,19 @@ def normalize_failure_intake(
 
     elif failure_source_type in {"contract_enforcement", "control_surface_enforcement", "readiness_failure", "certification_failure"}:
         map_fields = [
-            ("schema_example_failures", "schema_example_drift", "Schema/example failure"),
-            ("producer_failures", "producer_wiring_gap", "Producer failure"),
-            ("consumer_failures", "consumer_wiring_gap", "Consumer failure"),
-            ("fixture_failures", "fixture_gap", "Fixture failure"),
-            ("invariant_violations", "invariant_violation", "Invariant violation"),
-            ("manifest_mismatches", "manifest_or_registry_mismatch", "Manifest/registry mismatch"),
-            ("authority_anchor_gaps", "source_authority_anchor_gap", "Source authority anchor gap"),
-            ("policy_composition_gaps", "policy_composition_gap", "Policy composition gap"),
-            ("corroboration_validation_gaps", "corroboration_validation_gap", "Corroboration validation gap"),
-            ("override_temporal_validation_gaps", "override_temporal_validation_gap", "Override temporal validation gap"),
-            ("certification_surface_gaps", "certification_surface_gap", "Certification surface gap"),
-            ("missing_control_inputs", "control_surface_input_missing", "Control surface input missing"),
-            ("missing_required_surfaces", "missing_required_surface", "Required surface missing"),
+            ("schema_example_failures", "schema_mismatch", "Schema/example failure"),
+            ("producer_failures", "dependency_graph_violation", "Producer failure"),
+            ("consumer_failures", "dependency_graph_violation", "Consumer failure"),
+            ("fixture_failures", "dependency_graph_violation", "Fixture failure"),
+            ("invariant_violations", "branch_policy_violation", "Invariant violation"),
+            ("manifest_mismatches", "contract_registration_missing", "Manifest/registry mismatch"),
+            ("authority_anchor_gaps", "contract_registration_missing", "Source authority anchor gap"),
+            ("policy_composition_gaps", "dependency_graph_violation", "Policy composition gap"),
+            ("corroboration_validation_gaps", "dependency_graph_violation", "Corroboration validation gap"),
+            ("override_temporal_validation_gaps", "branch_policy_violation", "Override temporal validation gap"),
+            ("certification_surface_gaps", "contract_registration_missing", "Certification surface gap"),
+            ("missing_control_inputs", "contract_registration_missing", "Control surface input missing"),
+            ("missing_required_surfaces", "contract_registration_missing", "Required surface missing"),
         ]
         for field_name, evidence_type, prefix in map_fields:
             for item in sorted(set(failure_payload.get(field_name) or [])):
@@ -367,7 +303,7 @@ def _classify(evidence: list[dict[str, Any]]) -> tuple[str, list[str], list[dict
         if matched:
             matched_classes.append(rule["classification"])
 
-    primary = matched_classes[0] if matched_classes else "unknown_failure_class"
+    primary = matched_classes[0] if matched_classes else "unknown_failure"
     if primary not in _FAILURE_CLASSES:
         raise FailureDiagnosisError(f"classifier produced unsupported class '{primary}'")
 
@@ -560,3 +496,49 @@ def build_failure_repair_candidate_artifact(
     }
     _validate(artifact, "failure_repair_candidate_artifact", label="failure_repair_candidate_artifact")
     return artifact
+
+
+def load_failure_class_registry() -> dict[str, Any]:
+    """Load and validate the canonical finite failure class registry."""
+    registry = json.loads(
+        (Path(__file__).resolve().parents[3] / "contracts" / "examples" / "failure_class_registry.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    _validate(registry, "failure_class_registry", label="failure_class_registry")
+    return registry
+
+
+def build_eval_candidate_artifact(
+    *,
+    failure_diagnosis_artifact: dict[str, Any],
+    trace_refs: list[str],
+) -> dict[str, Any]:
+    """Deterministically derive eval candidate from failure evidence without executing evals."""
+    _validate(failure_diagnosis_artifact, "failure_diagnosis_artifact", label="failure_diagnosis_artifact")
+    if not isinstance(trace_refs, list) or not trace_refs:
+        raise FailureDiagnosisError("trace_refs must be a non-empty list")
+
+    failure_class = str(failure_diagnosis_artifact["primary_root_cause"])
+    proposed_eval_type = "schema" if failure_class == "schema_mismatch" else (
+        "contract" if failure_class in {"contract_registration_missing", "test_expectation_drift"} else "integration"
+    )
+    seed = {
+        "failure_class": failure_class,
+        "source_failure_ref": f"failure_diagnosis_artifact:{failure_diagnosis_artifact['diagnosis_id']}",
+        "evidence": failure_diagnosis_artifact["evidence"],
+    }
+    candidate_id = f"EVC-{_canonical_hash(seed)[:20]}"
+    candidate = {
+        "artifact_type": "eval_candidate_artifact",
+        "schema_version": "1.0.0",
+        "candidate_id": candidate_id,
+        "failure_class": failure_class,
+        "source_failure_ref": f"failure_diagnosis_artifact:{failure_diagnosis_artifact['diagnosis_id']}",
+        "minimal_repro_case": failure_diagnosis_artifact["observed_failure_summary"],
+        "expected_behavior": f"Failure class '{failure_class}' should be blocked by governed validation before merge.",
+        "proposed_eval_type": proposed_eval_type,
+        "trace_refs": sorted(set(trace_refs)),
+    }
+    _validate(candidate, "eval_candidate_artifact", label="eval_candidate_artifact")
+    return candidate

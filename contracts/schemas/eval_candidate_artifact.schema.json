@@ -1,46 +1,32 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/failure_repair_candidate_artifact.schema.json",
-  "title": "Failure Repair Candidate Artifact",
+  "$id": "https://spectrum-systems.org/contracts/eval_candidate_artifact.schema.json",
+  "title": "Eval Candidate Artifact",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
-    "failure_id",
-    "source_run_ref",
-    "source_test_refs",
+    "candidate_id",
     "failure_class",
-    "safe_to_repair",
-    "bounded_scope",
-    "proposed_repair_ref",
+    "source_failure_ref",
+    "minimal_repro_case",
+    "expected_behavior",
+    "proposed_eval_type",
     "trace_refs"
   ],
   "properties": {
     "artifact_type": {
       "type": "string",
-      "const": "failure_repair_candidate_artifact"
+      "const": "eval_candidate_artifact"
     },
     "schema_version": {
       "type": "string",
       "const": "1.0.0"
     },
-    "failure_id": {
+    "candidate_id": {
       "type": "string",
-      "minLength": 1
-    },
-    "source_run_ref": {
-      "type": "string",
-      "minLength": 1
-    },
-    "source_test_refs": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "pattern": "^EVC-[a-f0-9]{20}$"
     },
     "failure_class": {
       "type": "string",
@@ -53,20 +39,27 @@
         "unknown_failure"
       ]
     },
-    "safe_to_repair": {
-      "type": "boolean"
-    },
-    "bounded_scope": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "uniqueItems": true
-    },
-    "proposed_repair_ref": {
+    "source_failure_ref": {
       "type": "string",
       "minLength": 1
+    },
+    "minimal_repro_case": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_behavior": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposed_eval_type": {
+      "type": "string",
+      "enum": [
+        "schema",
+        "contract",
+        "integration",
+        "policy",
+        "regression"
+      ]
     },
     "trace_refs": {
       "type": "array",
