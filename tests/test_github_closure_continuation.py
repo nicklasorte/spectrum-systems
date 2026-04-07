@@ -90,9 +90,14 @@ def test_valid_outputs_cde_lock_no_tlc(tmp_path: Path) -> None:
     assert result["final_terminal_state"] == "blocked"
     assert result["branch_update_policy"]["branch_update_allowed"] is False
     assert result["artifact_paths"]["top_level_conductor_run_artifact"] is None
+    assert result["artifact_paths"]["promotion_gate_decision_artifact"] is not None
 
     closure = json.loads(Path(result["artifact_paths"]["closure_decision_artifact"]).read_text(encoding="utf-8"))
     validate_artifact(closure, "closure_decision_artifact")
+    promotion_gate = json.loads(Path(result["artifact_paths"]["promotion_gate_decision_artifact"]).read_text(encoding="utf-8"))
+    validate_artifact(promotion_gate, "promotion_gate_decision_artifact")
+    assert promotion_gate["promotion_allowed"] is False
+    assert "top_level_conductor_run_artifact" in promotion_gate["missing_requirements"]
 
 
 def test_valid_outputs_continue_bounded_runs_tlc(tmp_path: Path) -> None:
@@ -114,6 +119,7 @@ def test_valid_outputs_continue_bounded_runs_tlc(tmp_path: Path) -> None:
     assert result["cde_decision"] == "continue_bounded"
     assert result["tlc_ran"] is True
     assert result["final_terminal_state"] in {"ready_for_merge", "blocked", "exhausted", "escalated"}
+    assert result["artifact_paths"]["promotion_gate_decision_artifact"] is not None
 
     tlc_path = result["artifact_paths"]["top_level_conductor_run_artifact"]
     assert tlc_path is not None
@@ -124,6 +130,10 @@ def test_valid_outputs_continue_bounded_runs_tlc(tmp_path: Path) -> None:
     assert prompt_path is not None
     prompt = json.loads(Path(prompt_path).read_text(encoding="utf-8"))
     validate_artifact(prompt, "next_step_prompt_artifact")
+    promotion_gate = json.loads(Path(result["artifact_paths"]["promotion_gate_decision_artifact"]).read_text(encoding="utf-8"))
+    validate_artifact(promotion_gate, "promotion_gate_decision_artifact")
+    assert promotion_gate["terminal_state"] == result["final_terminal_state"]
+    assert result["branch_update_policy"]["branch_update_allowed"] == promotion_gate["promotion_allowed"]
 
 
 def test_blocked_decision_does_not_invoke_tlc(tmp_path: Path) -> None:
@@ -383,3 +393,35 @@ def test_branch_update_policy_only_allows_ready_for_merge_terminal_state(tmp_pat
     assert continue_result["cde_decision"] == "continue_bounded"
     assert continue_result["final_terminal_state"] == "exhausted"
     assert continue_result["branch_update_policy"]["branch_update_allowed"] is False
+
+
+def test_ready_for_merge_without_trace_continuity_cannot_promote(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    summary_path, handoff_path = _build_ingestion_summary(tmp_path)
+    _neutralize_escalation(summary_path)
+
+    import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
+
+    def _patched(_: dict[str, object]) -> dict[str, object]:
+        result = json.loads(Path("contracts/examples/top_level_conductor_run_artifact.json").read_text(encoding="utf-8"))
+        result["current_state"] = "ready_for_merge"
+        result["ready_for_merge"] = True
+        result["trace_refs"] = ["trace-mismatch"]
+        return result
+
+    monkeypatch.setattr(module_under_test, "run_top_level_conductor", _patched)
+    result = run_github_closure_continuation(
+        github_review_handoff_path=handoff_path,
+        output_root=tmp_path / "artifacts" / "github_closure_continuation",
+        emitted_at="2026-04-06T12:59:00Z",
+        closure_complete=False,
+        final_verification_passed=False,
+        hardening_completed=False,
+        escalation_required=False,
+        bounded_next_step_available=True,
+        retry_budget=1,
+    )
+    promotion_gate = json.loads(Path(result["artifact_paths"]["promotion_gate_decision_artifact"]).read_text(encoding="utf-8"))
+    assert promotion_gate["terminal_state"] == "ready_for_merge"
+    assert promotion_gate["promotion_allowed"] is False
+    assert "trace_lineage_continuity" in promotion_gate["missing_requirements"]
+    assert result["branch_update_policy"]["branch_update_allowed"] is False

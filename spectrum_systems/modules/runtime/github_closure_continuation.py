@@ -45,6 +45,16 @@ _OPTIONAL_RIL_KEYS = (
 _CONTINUATION_ELIGIBLE_DECISIONS = {"hardening_required", "final_verification_required", "continue_bounded"}
 _ROADMAP_DRAFT_DIR = Path("artifacts/roadmap_drafts")
 _DRAFT_REF_PATTERN = re.compile(r"\bdraft_id\s*[:=]\s*([A-Za-z0-9_-]+)\b", re.IGNORECASE)
+_READ_ONLY_TERMINAL_STATES = {
+    "blocked",
+    "escalated",
+    "exhausted",
+    "repairing",
+    "continue_repair_bounded",
+    "draft-only",
+    "approval-pending",
+    "malformed-input",
+}
 
 
 class GithubClosureContinuationError(ValueError):
@@ -105,6 +115,122 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _default_emitted_at() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _build_promotion_gate_decision_artifact(
+    *,
+    continuation_id: str,
+    final_terminal_state: str,
+    closure_decision_artifact: dict[str, Any],
+    top_level_conductor_run_artifact: dict[str, Any] | None,
+    emitted_at: str,
+) -> dict[str, Any]:
+    run_id = str(closure_decision_artifact.get("run_id") or f"gha-{continuation_id}")
+    closure_ref = f"closure_decision_artifact:{closure_decision_artifact['closure_decision_id']}"
+    tlc_ref = (
+        f"top_level_conductor_run_artifact:{top_level_conductor_run_artifact.get('run_id')}"
+        if isinstance(top_level_conductor_run_artifact, dict)
+        else None
+    )
+
+    missing_requirements: list[str] = []
+    supporting_refs: list[str] = [closure_ref]
+    if tlc_ref:
+        supporting_refs.append(tlc_ref)
+    else:
+        missing_requirements.append("top_level_conductor_run_artifact")
+
+    repair_ref: str | None = None
+    certification_ref: str | None = None
+    repair_occurred = False
+    tlc_trace_refs: list[str] = []
+
+    if isinstance(top_level_conductor_run_artifact, dict):
+        lineage = top_level_conductor_run_artifact.get("lineage")
+        if isinstance(lineage, dict):
+            raw_repair_ref = lineage.get("repair_attempt_record_artifact_ref")
+            if isinstance(raw_repair_ref, str) and raw_repair_ref.strip():
+                repair_ref = raw_repair_ref.strip()
+                repair_occurred = True
+                supporting_refs.append(repair_ref)
+            repair_count = lineage.get("repair_attempt_count")
+            if isinstance(repair_count, int) and repair_count > 0:
+                repair_occurred = True
+
+        produced_refs = top_level_conductor_run_artifact.get("produced_artifact_refs")
+        if isinstance(produced_refs, list):
+            for item in produced_refs:
+                if isinstance(item, str) and item.strip().startswith("certification:"):
+                    certification_ref = item.strip()
+                    break
+        if certification_ref is None and tlc_ref:
+            certification_ref = f"certification:{top_level_conductor_run_artifact.get('run_id')}"
+        if certification_ref is not None:
+            supporting_refs.append(certification_ref)
+
+        trace_refs_raw = top_level_conductor_run_artifact.get("trace_refs")
+        if isinstance(trace_refs_raw, list):
+            tlc_trace_refs = [str(item).strip() for item in trace_refs_raw if isinstance(item, str) and item.strip()]
+
+    if repair_occurred and not repair_ref:
+        missing_requirements.append("repair_attempt_record_artifact")
+    if not certification_ref:
+        missing_requirements.append("certification_ready_artifact")
+
+    closure_trace = str(closure_decision_artifact.get("trace_id") or "").strip()
+    if not closure_trace:
+        missing_requirements.append("closure_trace_ref")
+    elif tlc_trace_refs and closure_trace not in tlc_trace_refs:
+        missing_requirements.append("trace_lineage_continuity")
+
+    ready_state = final_terminal_state == "ready_for_merge"
+    if not ready_state:
+        missing_requirements.append("terminal_state_not_ready_for_merge")
+    if final_terminal_state in _READ_ONLY_TERMINAL_STATES:
+        missing_requirements.append("read_only_terminal_state")
+
+    certification_status = "certified" if not missing_requirements else "missing_or_incomplete"
+    promotion_allowed = ready_state and not missing_requirements
+    if promotion_allowed:
+        missing_requirements = []
+
+    combined_trace_refs = sorted(
+        {
+            ref
+            for ref in ([closure_trace] + tlc_trace_refs)
+            if isinstance(ref, str) and ref.strip()
+        }
+    )
+
+    decision_seed = {
+        "continuation_id": continuation_id,
+        "run_id": run_id,
+        "terminal_state": final_terminal_state,
+        "certification_status": certification_status,
+        "promotion_allowed": promotion_allowed,
+        "supporting_refs": sorted(set(supporting_refs)),
+        "trace_refs": combined_trace_refs,
+    }
+    artifact = {
+        "artifact_type": "promotion_gate_decision_artifact",
+        "artifact_class": "coordination",
+        "schema_version": "1.0.0",
+        "decision_id": deterministic_id(
+            prefix="pgd",
+            namespace="promotion_gate_decision_artifact",
+            payload=decision_seed,
+        ),
+        "run_id": run_id,
+        "terminal_state": final_terminal_state,
+        "certification_status": certification_status,
+        "promotion_allowed": promotion_allowed,
+        "missing_requirements": sorted(set(missing_requirements)),
+        "supporting_artifact_refs": sorted(set(supporting_refs)),
+        "trace_refs": combined_trace_refs,
+        "emitted_at": emitted_at,
+    }
+    validate_artifact(artifact, "promotion_gate_decision_artifact")
+    return artifact
 
 
 def _extract_draft_reference(review_body: str) -> str | None:
@@ -501,6 +627,16 @@ def run_github_closure_continuation(
         raise GithubClosureContinuationError(f"unsupported terminal state returned by continuation path: {final_terminal_state}")
 
     branch_update_allowed = bool(final_terminal_state == "ready_for_merge")
+    promotion_gate = _build_promotion_gate_decision_artifact(
+        continuation_id=continuation_id,
+        final_terminal_state=final_terminal_state,
+        closure_decision_artifact=decision_artifact,
+        top_level_conductor_run_artifact=tlc_result,
+        emitted_at=emitted_at,
+    )
+    promotion_gate_path = artifact_paths.continuation_dir / "promotion_gate_decision_artifact.json"
+    _write_json(promotion_gate_path, promotion_gate)
+    branch_update_allowed = bool(promotion_gate["promotion_allowed"])
 
     summary = {
         "status": "success",
@@ -520,6 +656,7 @@ def run_github_closure_continuation(
             "top_level_conductor_run_artifact": str(artifact_paths.top_level_conductor_run_artifact_path)
             if tlc_result is not None
             else None,
+            "promotion_gate_decision_artifact": str(promotion_gate_path),
         },
         "roadmap_two_step": (
             {
@@ -545,10 +682,12 @@ def run_github_closure_continuation(
         "branch_update_policy": {
             "branch_update_allowed": branch_update_allowed,
             "allowed_only_via_governed_tlc_path": True,
-            "blocked_states": ["blocked", "exhausted", "escalated", "malformed_inputs"],
+            "blocked_states": sorted(_READ_ONLY_TERMINAL_STATES),
+            "promotion_allowed": promotion_gate["promotion_allowed"],
+            "promotion_decision_ref": f"promotion_gate_decision_artifact:{promotion_gate['decision_id']}",
             "policy_note": (
                 "GitHub workflows do not mutate branches directly. "
-                "Branch updates are permitted only when continuation reaches terminal_state=ready_for_merge."
+                "Branch updates are permitted only for terminal_state=ready_for_merge with certified governed evidence."
             ),
         },
     }
