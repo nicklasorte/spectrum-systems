@@ -1,160 +1,130 @@
-# spectrum-systems
+# Spectrum Systems
 
-Constitutional governance/control-plane for the czar repo org. This repo defines the rules, contracts, schemas, prompts, workflows, and evaluation standards that downstream engines must follow; operational code lives in separate implementation repos.
+Spectrum Systems is a governed execution runtime for engineering and governance workflows.
+It is the durable control layer for how work is interpreted, routed, executed, evaluated, repaired, and promoted.
 
-## North Star Workflow
-- Operating model with two interacting loops: **Coordination Loop** (roster → meetings → transcript → minutes → action items/FAQ → agenda/slides → next meeting) and **Document Production Loop** (**Engineering Tasks** → **Engineering Outputs** → working paper → review → adjudication → updated paper).
-- The bridge is **Engineering Tasks** and **Engineering Outputs**, flowing between coordination and document production.
-- See `docs/spectrum-study-operating-model.md` for the canonical operating model and ASCII loop diagram.
-
-## Control Loop
-
-The ecosystem enforces a tightly governed **evaluation → work item** control loop:
-
-1. **Every evaluation produces an outcome contract** — evaluations must set `action_required` (true/false). When true, a linked work item ID is mandatory; when false, a written rationale is required.
-2. **Evaluations drive work items** — `scripts/generate_work_items.py` converts evaluation results and review findings into structured, prioritized work items tracked in `governance/work-items/`.
-3. **Reviews use a canonical artifact** — all review outputs (Claude, system, human) conform to `schemas/review-artifact.schema.json` and can be mapped to work items.
-4. **Lifecycle is explicit** — the full input → transformation → evaluation → work item → resolution → re-evaluation lifecycle is documented in `docs/artifact-lifecycle.md`.
-
-Validation scripts enforce the control loop at CI time:
-- `scripts/validate_evaluation_manifest.py` — JSON Schema + evidence-ref checks
-- `scripts/validate_evaluation_contract.py` — enforces action_required linkage rules
-- `scripts/validate_review_artifacts.py` — validates review artifact conformance
+It is **not** a chat wrapper and it is **not** a generic agent playground. Models can change; the governance runtime and artifact contracts remain the stable interface.
 
 ## Overview
-- Publishes authoritative governance for system-factory scaffolds and downstream engines.
-- Maintains contracts, schemas, prompts, evaluation guidance, design reviews, ADRs, and compliance automation.
-- No production engines or proprietary data reside here.
 
-## Purpose
-- Governs artifact contracts and standards manifests, schema registry, prompt governance, evaluation standards, design reviews, ADRs, and ecosystem/state registries.
-- Does not implement operational engines, runtime configs, or data pipelines; those live in downstream system repos.
+This repository defines the runtime rules, contracts, schemas, orchestration surfaces, and governance artifacts that keep execution bounded and auditable.
 
-## System Registry
-The ecosystem maintains a canonical System Registry that records every governed repository, its role, loop alignment, maturity placement, and contract dependencies. See `docs/system-registry.md` for the control-plane catalog and machine-readable registry.
+In plain terms:
+- inputs are structured into governed artifacts,
+- decisions are made by named control systems with fixed responsibilities,
+- execution is allowed only within declared scope,
+- promotion is blocked unless certification evidence is complete.
 
-## Ecosystem Runtime Standard
-This repository defines the canonical development environment for the ecosystem in `devcontainer-spec/`. Downstream engines, pipelines, and data lake tooling should inherit that devcontainer to ensure consistent Python 3.11 runtime and shared tooling across repos.
+## Core Principle
 
-## Ecosystem Architecture
-- Layers are detailed in `docs/ecosystem-architecture.md` and `docs/ecosystem-map.md`.
-- system-factory scaffolds governed repos from templates.
-- spectrum-systems (this repo) defines contracts, schemas, prompts, workflows, and governance rules.
-- Operational engines (cataloged in `SYSTEMS.md`, `systems/`, and `ecosystem/ecosystem-registry.json`) implement governed interfaces.
-- spectrum-pipeline-engine orchestrates workflows, and spectrum-program-advisor consumes readiness bundles for program guidance.
+The runtime follows a strict control chain:
 
-## Governance Components
-- **Design reviews and actions**: `design-reviews/` holds review markdown and paired `.actions.json` files validated by `design-reviews/claude-review.schema.json`; actions register in `docs/review-registry.md` with the tracker template in `docs/review-actions/action-tracker-template.md`.
-- **Architecture decisions**: ADRs live in `docs/adr/` using `docs/adr/ADR-TEMPLATE.md` (legacy ADRs remain in `architecture-decisions/`).
-- **Artifact contracts and schema registry**: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`, `contracts/schemas/`, and `schemas/README.md` define canonical inputs/outputs and compatibility.
-- **Prompt governance**: `prompts/` with standards in `docs/prompt-standard.md` and `prompts/prompt-governance.md`.
-- **Evaluation framework**: per-system assets in `eval/` (coverage in `eval/test-matrix.md`); shared rubrics and fixtures in `evals/` (deprecated — extend `eval/` instead); evaluation output contract enforced by `scripts/validate_evaluation_contract.py`.
-- **Review artifacts**: canonical review schema at `schemas/review-artifact.schema.json`; validation via `scripts/validate_review_artifacts.py`; reviews may live in `docs/reviews/`, `design-reviews/`, or `docs/review-actions/`.
-- **Artifact lifecycle**: the full input → evaluation → work item → resolution cycle is defined in `docs/artifact-lifecycle.md`.
-- **Ecosystem registry**: machine-readable registry in `ecosystem/ecosystem-registry.json` and schema; status and maps in `SYSTEMS.md`, `docs/system-map.md`, and `docs/system-status-registry.md`.
-- **Rule packs and guidance**: governed rule sets under `rules/` with supporting governance docs in `docs/`.
-- **Compliance automation**: conformance guidance in `VALIDATION.md` and `docs/governance-conformance-checklist.md`; cross-repo scanning in `docs/cross-repo-compliance.md` and `governance/compliance-scans/`; CI workflows in `.github/workflows/` with supporting scripts in `scripts/`.
+**input → structure → decision → orchestration → execution → repair → enforcement → certification → promotion**
 
-## Architecture and Study-State Model
+Each stage emits artifacts that can be validated, traced, and reviewed.
 
-The meeting-minutes pipeline and study state model form the primary data backbone for all spectrum engineering studies.
+## System Components
 
-- **Study State Model** (`docs/architecture/study_state_model.md`) — defines the canonical `study_state.json` schema, all object types (action items, risks, decisions, questions, assumptions, issues, evidence, data needs, stakeholder positions), their relationships, and the document lifecycle.
-- **Signal Extraction Model** (`docs/architecture/signal_extraction_model.md`) — defines the five signal types extracted from meeting transcripts (decisions, action items, risks, executive summary points, next-meeting details), the extraction philosophy, and confidence handling.
-- **Action Item Continuity** (`docs/architecture/action_item_continuity.md`) — defines the four action item classification types (engineering, coordination, decision-enabling, carry-forward), propagation rules into the working paper, and validation expectations.
-- **System Philosophy** (`docs/architecture/system_philosophy.md`) — governs all module and pipeline design: module-first rule, golden path, study-state-first architecture, reliability-first rule, no-dropped-signal rule, and always-emit-all-files rule.
+The governed runtime uses fixed system ownership boundaries.
 
-### Artifact Package Structure
+| System | Role in the runtime | Must not do |
+| --- | --- | --- |
+| **RIL** (Review Integration Layer) | Interprets review outputs into deterministic integration/projection artifacts. | Enforce policy or execute work. |
+| **CDE** (Closure Decision Engine) | Issues authoritative closure-state decisions from governed evidence. | Execute work, enforce actions, or author repairs. |
+| **TLC** (Top Level Conductor) | Orchestrates invocation order and cross-system routing. | Execute work internals or replace closure authority. |
+| **PQX** (Prompt Queue Execution) | Executes bounded authorized work slices and emits execution records. | Make trust-policy, repair-planning, or closure decisions. |
+| **FRE** (Failure Recovery Engine) | Diagnoses failures and emits bounded repair plans. | Execute repairs directly or issue final closure decisions. |
+| **SEL** (System Enforcement Layer) | Applies fail-closed gates and enforcement actions at system boundaries. | Reinterpret review semantics or orchestrate runtime flow. |
+| **PRG** (Program Governance) | Governs program-level objective alignment and roadmap drift control. | Execute bounded runtime work or enforcement gates. |
 
-Every meeting-minutes pipeline run produces a canonical artifact package:
+## Execution Model
 
-```
-artifacts/<run_id>/meeting_minutes/
-    meeting_minutes.docx          (stub marker if not produced)
-    structured_extraction.json
-    signals.json
-    study_state.json
-    recommendations.json          (stub if not produced)
-    validation_report.json
-    execution_metadata.json       (stub if not produced)
-```
+### Artifact-first
+Work is accepted, routed, and evaluated through explicit artifacts and schemas. Hidden side-channel execution is out of bounds.
 
-All seven files are always emitted.  See `spectrum_systems/modules/artifact_packager.py` and `spectrum_systems/modules/meeting_minutes_pipeline.py`.
+### Deterministic
+The same governed inputs should produce the same control decisions and traceable execution outcomes.
 
-## Architecture Governance
-- The ecosystem uses the Three Horizons planning model (`docs/architecture-horizons.md`) to balance near-term execution, medium-term architecture, and long-term direction.
-- Platform Inflection Points (`docs/platform-inflection-points.md`) mark structural shifts the ecosystem must cross.
-- The Level 0-20 Maturity Model (`docs/system-maturity-model.md` and `docs/level-0-to-20-playbook.md`) guides evidence-backed progression.
+### Fail-closed
+If required evidence, scope, or decision state is missing, execution and promotion are blocked by default.
 
-## Architectural Decision Records
-Major ecosystem architecture decisions are recorded as ADRs to preserve context, alternatives, and consequences. The canonical index and template live in `docs/adr/README.md`; new proposals should start from `docs/adr/ADR-TEMPLATE.md` and be referenced during Claude design reviews.
+### Traceable
+Runs emit linked evidence so decisions, actions, and outcomes can be audited end-to-end.
 
-## Governance Artifact Rule
-Governance artifacts (schemas, contracts, registry files, standards manifests) are platform dependencies and must be loaded from the local `spectrum-systems` checkout, not fetched over the network. See `docs/governance-artifact-loading-rule.md` for the full rule and rationale.
+## Promotion Rules
 
-## Run Evidence Correlation Rule
-All governed runs must emit a correlated evidence bundle (`run_manifest.json`, `evaluation_results.json`, `contract_validation_report.json`, and `provenance.json`) that shares a single `run_id`. Pipelines should reject or regenerate bundles when any artifact is missing or the `run_id` values diverge. See `docs/run-evidence-correlation-rule.md` for the full rule and rationale.
+Promotion is gated by certification evidence, not by intent.
 
-## System Maturity Model
-The spectrum ecosystem advances along a Level 0-20 maturity ladder that charts the progression from concept to durable institutional infrastructure. The ladder and current ecosystem mapping live in `docs/system-maturity-model.md`.
+At minimum, promotion requires:
+- a `ready_for_merge` decision state,
+- complete linked evidence artifacts,
+- no unresolved blocking enforcement outcomes.
 
-## Maturity Framework and Playbook
-- The ecosystem uses a Level 0-20 maturity model with evidence-based advancement.
-- Claude reviews evaluate maturity explicitly using the rubric and refuse promotion without proof.
-- See the canonical playbook in `docs/level-0-to-20-playbook.md` and the review rubric in `docs/review-maturity-rubric.md`.
+No certification evidence means no promotion.
 
-## Long-Term Roadmap
-The ecosystem maintains a maturity model, a playbook, and a canonical 100-step roadmap to guide long-range execution toward Level 20 maturity. See `docs/100-step-roadmap.md` for the roadmap and guardrails.
+## Failure Handling
 
-## Key Directories
-| Directory | Purpose |
-| --- | --- |
-| docs/ | Governance standards, ecosystem maps, lifecycle guides, triage rules, registries. |
-| docs/adr/ | ADR template and accepted ecosystem decision records integrated with Claude reviews. |
-| design-reviews/ | Claude-led review artifacts plus machine-readable action files. |
-| architecture-decisions/ | Legacy ADRs derived from design reviews (template included). |
-| contracts/ | Artifact contracts, schema examples, and the standards manifest. |
-| schemas/ | Canonical schema registry for governed artifacts. |
-| prompts/ | Prompt catalog and governance notes. |
-| eval/ | **Canonical** evaluation harnesses per system and the coverage matrix. |
-| evals/ | Shared evaluation dataset guidance, fixtures, and rubrics (**deprecated** — see `eval/`). |
-| ecosystem/ | Machine-readable ecosystem registry and schema. |
-| governance/ | Compliance scan configs and schemas (`governance/compliance-scans/`). |
-| systems/ | Per-system overviews and interfaces; index in `SYSTEMS.md`. |
-| workflows/ | Conceptual workflow descriptions across systems. |
-| rules/ | Governed rule packs (e.g., comment-resolution rules). |
-| examples/ | Illustrative artifacts and payload examples. |
-| scripts/ | Validation and automation helpers for CI workflows. |
-| .github/workflows/ | Governance automation (artifact boundary, review ingest, project sync, validation). |
+Failure handling is bounded and explicit:
+1. capture run evidence,
+2. diagnose failure class,
+3. generate a bounded repair plan,
+4. rerun governed tests,
+5. re-evaluate closure and enforcement state.
 
-## Review and Compliance Workflow
-- Start architecture changes with `design-reviews/claude-review-template.md` aligned to `docs/design-review-standard.md`; pair markdown with `.actions.json` validated against `design-reviews/claude-review.schema.json` and register in `docs/review-registry.md`.
-- Translate accepted decisions into ADRs under `architecture-decisions/` and keep contracts, schemas, prompts, and evaluation assets aligned with `contracts/standards-manifest.json` and `CONTRACT_VERSIONING.md`.
-- Run conformance checks from `VALIDATION.md` and `docs/governance-conformance-checklist.md`; CI enforces review artifact validity (`.github/workflows/review-artifact-validation.yml`), artifact boundaries (`.github/workflows/artifact-boundary.yml`), review ingest, and project automation.
-- Use `docs/cross-repo-compliance.md` and `governance/compliance-scans/scan-config.example.json` to guide cross-repo validation when coordinating downstream engines.
+Repair authority is separate from promotion authority. A successful repair attempt does not auto-promote.
 
-## Documentation
-- Orientation and status: `REPO_MAP.md`, `SYSTEMS.md`, `docs/system-map.md`, `docs/system-status-registry.md`.
-- Design reviews: `docs/design-review-standard.md`, `docs/review-to-action-standard.md`, `docs/design-review-culture.md`, `design-reviews/claude-review-template.md`, `docs/governance-triage-rule.md`, `docs/label-system.md`.
-- Contracts and schemas: `CONTRACTS.md`, `CONTRACT_VERSIONING.md`, `contracts/standards-manifest.json`, `schemas/README.md`.
-- Prompts and evaluations: `docs/prompt-standard.md`, `prompts/README.md`, `eval/README.md`, `eval/test-matrix.md`, `evals/evals-framework.md`.
-- Compliance: `VALIDATION.md`, `docs/governance-conformance-checklist.md`, `docs/cross-repo-compliance.md`, `docs/implementation-boundary.md`.
-- Vision and philosophy: `docs/vision.md`, `docs/system-philosophy.md`.
-- Operating model and reliability: `docs/ai_operational_model.md`, `docs/sre_principles.md`, `docs/error_budget_policy.md`, `docs/incident_response.md`.
-- Automation and AI engineering: `docs/automation_maturity_model.md`, `docs/toil_elimination_framework.md`, `docs/ai_assisted_engineering.md`.
-- Architecture guidance: `docs/system_architecture_philosophy.md`.
+## Learning Loop
 
-## Testing
-- Required local runtimes: Python 3.11+ and Node.js (used by JavaScript-based governance scanners, including cross-repo compliance checks).
-- Codespaces/devcontainers install Python dependencies automatically from the repo-managed devcontainer config.
-- Run this preflight to verify environment prerequisites with clear fail signals:
-  ```bash
-  python scripts/verify_environment.py
-  ```
-- Then run tests:
-  ```bash
-  pytest
-  ```
+Failures become structured inputs to system improvement:
+1. failure evidence is captured,
+2. repair/evaluation candidates are tested,
+3. governed evidence determines adoption,
+4. accepted lessons become roadmap/program signals.
 
-## Contributing
-Architecture, contract, or governance changes require a design review and action tracking before adoption. Keep ADRs, manifests, schemas, prompts, and evaluation assets in sync, maintain the ecosystem registry, and avoid adding operational engine code or data to this repository.
+Learning is evidence-backed and controlled, not ad hoc.
+
+## Roadmap and Input Origins
+
+Runtime decisions and program direction are fed by governed inputs such as:
+- structured review artifacts,
+- source authority documents and contracts,
+- operator and governance commands,
+- execution/evaluation evidence bundles,
+- roadmap and program feedback artifacts.
+
+## Design Constraints
+
+The runtime enforces hard boundaries:
+- no hidden execution paths,
+- no promotion without certification evidence,
+- no duplicate ownership of core responsibilities,
+- no bypass of fail-closed enforcement.
+
+## What This Enables
+
+- predictable execution under governance constraints,
+- auditable promotion decisions,
+- bounded and repeatable repair loops,
+- durable control independent of model/vendor changes,
+- program-level steering from structured operational evidence.
+
+## Current State
+
+This repository is the control-plane/runtime definition layer:
+- contracts, schemas, governance rules, and orchestration standards live here,
+- downstream implementations consume these artifacts,
+- this repo does not serve as a general-purpose runtime sandbox.
+
+## How to Use
+
+1. Start from canonical contracts and schemas.
+2. Produce/consume only declared governed artifacts.
+3. Route decisions through the named system owners above.
+4. Treat enforcement and closure decisions as hard gates.
+5. Promote only when certification evidence is complete.
+
+## Philosophy
+
+The system, not the model, controls execution.
+
+Models can assist interpretation and generation, but they do not define authority boundaries, certification gates, or promotion rights. Governance artifacts and system ownership do.
