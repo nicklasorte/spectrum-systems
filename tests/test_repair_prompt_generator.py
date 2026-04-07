@@ -40,79 +40,79 @@ def _diagnosis_for(root_cause: str, *, fix_class: str, repair_area: str) -> dict
     return diagnosis
 
 
-def test_missing_required_surface_generates_required_template() -> None:
+def test_contract_registration_missing_generates_registry_alignment_template() -> None:
     diagnosis = _diagnosis_for(
-        "missing_required_surface",
-        fix_class="restore_required_surface_artifact",
-        repair_area="contracts/examples and producer generation boundary",
+        "contract_registration_missing",
+        fix_class="align_contract_registration",
+        repair_area="contracts/standards-manifest.json",
     )
 
     artifact = generate_repair_prompt(diagnosis, emitted_at="2026-04-05T00:00:00Z")
 
-    assert artifact["trace"]["template_id"] == "missing_required_surface"
-    assert "Create or restore the required artifact surface" in artifact["smallest_safe_fix_description"]
+    assert artifact["trace"]["template_id"] == "contract_registration_missing"
+    assert "registration taxonomy" in artifact["smallest_safe_fix_description"]
     assert any("Locate diagnosed repair surfaces" in step for step in artifact["step_by_step_actions"])
 
 
-def test_schema_example_drift_generates_contract_alignment_prompt() -> None:
+def test_schema_mismatch_generates_contract_alignment_prompt() -> None:
     diagnosis = _diagnosis_for(
-        "schema_example_drift",
+        "schema_mismatch",
         fix_class="align_schema_example_pair",
         repair_area="contracts/schemas and contracts/examples",
     )
 
     artifact = generate_repair_prompt(diagnosis, emitted_at="2026-04-05T00:00:00Z")
 
-    assert artifact["trace"]["template_id"] == "schema_example_drift"
+    assert artifact["trace"]["template_id"] == "schema_mismatch"
     assert any("Update only the incorrect side" in step for step in artifact["step_by_step_actions"])
     assert "python scripts/run_contract_enforcement.py" in artifact["validation_commands"]
 
 
-def test_manifest_mismatch_generates_registry_alignment_prompt() -> None:
+def test_branch_policy_violation_generates_policy_prompt() -> None:
     diagnosis = _diagnosis_for(
-        "manifest_or_registry_mismatch",
-        fix_class="align_manifest_registry_taxonomy",
-        repair_area="contracts/standards-manifest.json and consuming manifests",
+        "branch_policy_violation",
+        fix_class="enforce_branch_policy",
+        repair_area=".github/workflows and governance policy surfaces",
     )
 
     artifact = generate_repair_prompt(diagnosis, emitted_at="2026-04-05T00:00:00Z")
 
-    assert artifact["trace"]["template_id"] == "manifest_or_registry_mismatch"
-    assert any("artifact_class/intended_consumers" in step for step in artifact["step_by_step_actions"])
+    assert artifact["trace"]["template_id"] == "branch_policy_violation"
+    assert any("policy" in step.lower() for step in artifact["step_by_step_actions"])
     assert any("Do NOT weaken schema" in c for c in artifact["constraints"])
 
 
-def test_override_temporal_gap_generates_temporal_enforcement_prompt() -> None:
+def test_dependency_graph_violation_generates_dependency_prompt() -> None:
     diagnosis = _diagnosis_for(
-        "override_temporal_validation_gap",
-        fix_class="repair_override_temporal_validation",
-        repair_area="override temporal validation surface",
+        "dependency_graph_violation",
+        fix_class="repair_dependency_graph",
+        repair_area="runtime module dependency boundaries",
     )
 
     artifact = generate_repair_prompt(diagnosis, emitted_at="2026-04-05T00:00:00Z")
 
-    assert artifact["trace"]["template_id"] == "override_temporal_validation_gap"
-    assert any("issued_at <= now" in step for step in artifact["step_by_step_actions"])
+    assert artifact["trace"]["template_id"] == "dependency_graph_violation"
+    assert any("dependency" in step.lower() for step in artifact["step_by_step_actions"])
 
 
-def test_corroboration_gap_generates_resolver_backed_prompt() -> None:
+def test_unknown_failure_generates_triage_prompt() -> None:
     diagnosis = _diagnosis_for(
-        "corroboration_validation_gap",
-        fix_class="restore_corroboration_validation",
-        repair_area="corroboration and validation boundary",
+        "unknown_failure",
+        fix_class="manual_triage_required",
+        repair_area="manual diagnosis queue",
     )
 
     artifact = generate_repair_prompt(diagnosis, emitted_at="2026-04-05T00:00:00Z")
 
-    assert artifact["trace"]["template_id"] == "corroboration_validation_gap"
-    assert any("resolver-backed" in step for step in artifact["step_by_step_actions"])
+    assert artifact["trace"]["template_id"] == "unknown_failure"
+    assert "triage" in artifact["repair_intent"].lower()
 
 
 def test_deterministic_for_same_input() -> None:
     diagnosis = _diagnosis_for(
-        "manifest_or_registry_mismatch",
-        fix_class="align_manifest_registry_taxonomy",
-        repair_area="contracts/standards-manifest.json and consuming manifests",
+        "contract_registration_missing",
+        fix_class="align_contract_registration",
+        repair_area="contracts/standards-manifest.json",
     )
 
     first = generate_repair_prompt(copy.deepcopy(diagnosis), emitted_at="2026-04-05T00:00:00Z")
@@ -137,7 +137,7 @@ def test_contract_example_and_generated_artifact_validate() -> None:
     validator.validate(example)
 
     diagnosis = _diagnosis_for(
-        "schema_example_drift",
+        "schema_mismatch",
         fix_class="align_schema_example_pair",
         repair_area="contracts/schemas and contracts/examples",
     )
