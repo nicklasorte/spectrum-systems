@@ -1,0 +1,13 @@
+{
+  "artifact_type": "eval_candidate_artifact",
+  "schema_version": "1.0.0",
+  "candidate_id": "EVC-1f69b30192752d1d9c30",
+  "failure_class": "test_expectation_drift",
+  "source_failure_ref": "failure_diagnosis_artifact:FDIAG-440e1abcfb3e027fb35b",
+  "minimal_repro_case": "Run pytest tests/test_contracts.py::test_manifest_registry_alignment with unchanged fixture payload.",
+  "expected_behavior": "Validation should pass with registered contract metadata and deterministic fixture parity.",
+  "proposed_eval_type": "contract",
+  "trace_refs": [
+    "trace-batch-mb-01"
+  ]
+}

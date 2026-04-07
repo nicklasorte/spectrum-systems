@@ -1,0 +1,59 @@
+{
+  "artifact_type": "failure_class_registry",
+  "schema_version": "1.0.0",
+  "registry_version": "1.0.0",
+  "requires_single_class_mapping": true,
+  "classes": {
+    "schema_mismatch": {
+      "description": "Schema validation or schema/example alignment mismatch.",
+      "safe_to_repair": true,
+      "bounded_scope_rules": [
+        "contracts/schemas/*",
+        "contracts/examples/*"
+      ],
+      "escalation_required": false
+    },
+    "contract_registration_missing": {
+      "description": "Contract registration/manifest pin missing or invalid.",
+      "safe_to_repair": true,
+      "bounded_scope_rules": [
+        "contracts/standards-manifest.json"
+      ],
+      "escalation_required": false
+    },
+    "branch_policy_violation": {
+      "description": "Branch policy or governance gate requirements violated.",
+      "safe_to_repair": false,
+      "bounded_scope_rules": [
+        ".github/workflows/*",
+        "docs/roadmaps/*"
+      ],
+      "escalation_required": true
+    },
+    "dependency_graph_violation": {
+      "description": "Declared dependency graph or module boundary violation.",
+      "safe_to_repair": false,
+      "bounded_scope_rules": [
+        "spectrum_systems/modules/**"
+      ],
+      "escalation_required": true
+    },
+    "test_expectation_drift": {
+      "description": "Test expectations drifted from governed expected behavior.",
+      "safe_to_repair": true,
+      "bounded_scope_rules": [
+        "tests/**",
+        "contracts/examples/*"
+      ],
+      "escalation_required": false
+    },
+    "unknown_failure": {
+      "description": "Fallback class when no deterministic registry mapping rule matches.",
+      "safe_to_repair": false,
+      "bounded_scope_rules": [
+        "manual_triage_only"
+      ],
+      "escalation_required": true
+    }
+  }
+}

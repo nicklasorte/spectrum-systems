@@ -12,38 +12,121 @@
     "recurrence_count",
     "first_seen_ref",
     "latest_seen_ref",
+    "linked_eval_candidates",
+    "linked_eval_adoptions",
+    "last_seen_trace",
     "recommended_eval_candidate",
     "recommended_hardening_signal",
     "trace_refs"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "failure_learning_record_artifact"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "learning_id": {"type": "string", "minLength": 1},
-    "failure_class": {"type": "string", "minLength": 1},
-    "recurrence_count": {"type": "integer", "minimum": 1},
-    "first_seen_ref": {"type": "string", "minLength": 1},
-    "latest_seen_ref": {"type": "string", "minLength": 1},
+    "artifact_type": {
+      "type": "string",
+      "const": "failure_learning_record_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "learning_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "first_seen_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "latest_seen_ref": {
+      "type": "string",
+      "minLength": 1
+    },
     "recommended_eval_candidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["candidate_type", "target_failure_class", "minimum_recurrence"],
+      "required": [
+        "candidate_type",
+        "target_failure_class",
+        "minimum_recurrence"
+      ],
       "properties": {
-        "candidate_type": {"type": "string", "minLength": 1},
-        "target_failure_class": {"type": "string", "minLength": 1},
-        "minimum_recurrence": {"type": "integer", "minimum": 1}
+        "candidate_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_failure_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minimum_recurrence": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "recommended_hardening_signal": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["signal_type", "severity", "target_surface"],
+      "required": [
+        "signal_type",
+        "severity",
+        "target_surface"
+      ],
       "properties": {
-        "signal_type": {"type": "string", "minLength": 1},
-        "severity": {"type": "string", "enum": ["low", "medium", "high", "blocker"]},
-        "target_surface": {"type": "string", "minLength": 1}
+        "signal_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "blocker"
+          ]
+        },
+        "target_surface": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
-    "trace_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+    "trace_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "linked_eval_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "linked_eval_adoptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "last_seen_trace": {
+      "type": "string",
+      "minLength": 1
+    }
   }
 }

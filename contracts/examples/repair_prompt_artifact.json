@@ -2,21 +2,21 @@
   "artifact_type": "repair_prompt_artifact",
   "artifact_version": "1.1.0",
   "schema_version": "1.1.0",
-  "standards_version": "1.3.77",
-  "repair_prompt_id": "RPR-d880c8c69911c09f65f9",
+  "standards_version": "1.3.74",
+  "repair_prompt_id": "RPR-13bf29a88062cd5657f1",
   "diagnosis_ref": "FDIAG-440e1abcfb3e027fb35b",
   "target_files_or_surfaces": [
     "contracts/standards-manifest.json"
   ],
-  "repair_intent": "Restore manifest/registry alignment for artifact class and intended consumers.",
-  "smallest_safe_fix_description": "Correct taxonomy or consumer-pin mismatches in standards/registry surfaces only.",
+  "repair_intent": "Restore contract registration/manifest alignment for governed artifacts and consumers.",
+  "smallest_safe_fix_description": "Correct registration taxonomy or consumer-pin mismatches in standards/registry surfaces only.",
   "step_by_step_actions": [
     "Locate diagnosed repair surfaces: contracts/standards-manifest.json.",
-    "Constrain edits to repair area: contracts/standards-manifest.json and consuming manifests.",
+    "Constrain edits to repair area: contracts/standards-manifest.json.",
     "Locate mismatched manifest or registry entries identified in diagnosis evidence.",
     "Update artifact_class/intended_consumers (or equivalent registry fields) to authoritative values.",
     "Keep unrelated contract entries unchanged.",
-    "Run contract enforcement checks to verify registry alignment.",
+    "Run contract enforcement checks to verify registration alignment.",
     "Run the listed validation commands and confirm all success criteria are met."
   ],
   "validation_commands": [
@@ -32,18 +32,17 @@
   ],
   "success_criteria": [
     "Targeted validation commands complete successfully.",
-    "Manifest/registry mismatch findings are resolved.",
-    "Contract enforcement passes for the corrected registry surface.",
+    "Contract registration mismatch findings are resolved.",
     "No unrelated files or behaviors outside diagnosed scope were changed."
   ],
-  "repair_prompt_text": "You are Codex executing a bounded repair from a diagnosed failure.\nDiagnosis reference: FDIAG-440e1abcfb3e027fb35b\nPrimary root cause: manifest_or_registry_mismatch\nRepair intent: Restore manifest/registry alignment for artifact class and intended consumers.\n\nStep-by-step actions:\n1. Locate diagnosed repair surfaces: contracts/standards-manifest.json.\n2. Constrain edits to repair area: contracts/standards-manifest.json and consuming manifests.\n3. Locate mismatched manifest or registry entries identified in diagnosis evidence.\n4. Update artifact_class/intended_consumers (or equivalent registry fields) to authoritative values.\n5. Keep unrelated contract entries unchanged.\n6. Run contract enforcement checks to verify registry alignment.\n7. Run the listed validation commands and confirm all success criteria are met.\n\nValidation commands:\n- pytest tests/test_failure_diagnosis_engine.py\n- python scripts/run_contract_enforcement.py\n\nConstraints:\n- Do NOT weaken schema constraints or required fields.\n- Do NOT bypass contract preflight, enforcement, or control gates.\n- Do NOT redesign system architecture beyond the diagnosed root cause.\n- Only implement the smallest safe fix scope described below.\n- Preserve deterministic and replayable behavior.\n\nSuccess criteria:\n- Targeted validation commands complete successfully.\n- Manifest/registry mismatch findings are resolved.\n- Contract enforcement passes for the corrected registry surface.\n- No unrelated files or behaviors outside diagnosed scope were changed.",
+  "repair_prompt_text": "You are Codex executing a bounded repair from a diagnosed failure.\nDiagnosis reference: FDIAG-440e1abcfb3e027fb35b\nPrimary root cause: contract_registration_missing\nRepair intent: Restore contract registration/manifest alignment for governed artifacts and consumers.\n\nStep-by-step actions:\n1. Locate diagnosed repair surfaces: contracts/standards-manifest.json.\n2. Constrain edits to repair area: contracts/standards-manifest.json.\n3. Locate mismatched manifest or registry entries identified in diagnosis evidence.\n4. Update artifact_class/intended_consumers (or equivalent registry fields) to authoritative values.\n5. Keep unrelated contract entries unchanged.\n6. Run contract enforcement checks to verify registration alignment.\n7. Run the listed validation commands and confirm all success criteria are met.\n\nValidation commands:\n- pytest tests/test_failure_diagnosis_engine.py\n- python scripts/run_contract_enforcement.py\n\nConstraints:\n- Do NOT weaken schema constraints or required fields.\n- Do NOT bypass contract preflight, enforcement, or control gates.\n- Do NOT redesign system architecture beyond the diagnosed root cause.\n- Only implement the smallest safe fix scope described below.\n- Preserve deterministic and replayable behavior.\n\nSuccess criteria:\n- Targeted validation commands complete successfully.\n- Contract registration mismatch findings are resolved.\n- No unrelated files or behaviors outside diagnosed scope were changed.",
   "emitted_at": "2026-04-05T00:00:00Z",
   "trace": {
     "run_id": "run-20260405T000000Z-batch-fre-02",
     "trace_id": "trace-batch-fre-02",
     "policy_id": "FRE-004.repair_prompt_generator.v1",
     "governing_ref": "docs/roadmaps/system_roadmap.md#batch-fre-02",
-    "diagnosis_hash": "743d9cabf8c1933ee1dded03e2f5658f5107d6385fdd565aa1db95b5c82baf11",
-    "template_id": "manifest_or_registry_mismatch"
+    "diagnosis_hash": "d23825272e15eb51b284aac0c782e4840e21677cc1c7dab91d17a42e37cde1d3",
+    "template_id": "contract_registration_missing"
   }
 }

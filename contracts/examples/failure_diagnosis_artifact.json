@@ -13,7 +13,7 @@
     {
       "evidence_id": "E-0ac22ed533059b09",
       "source_surface": "contract_enforcement",
-      "evidence_type": "manifest_or_registry_mismatch",
+      "evidence_type": "contract_registration_missing",
       "message": "Manifest/registry mismatch: artifact_type=failure_diagnosis_artifact artifact_class=unknown",
       "artifact_ref": "contracts/standards-manifest.json",
       "details": {
@@ -24,7 +24,7 @@
     {
       "evidence_id": "E-3afb4652aa06890e",
       "source_surface": "contract_enforcement",
-      "evidence_type": "manifest_or_registry_mismatch",
+      "evidence_type": "contract_registration_missing",
       "message": "Manifest/registry mismatch: artifact_type=failure_diagnosis_artifact intended_consumers missing spectrum-systems",
       "artifact_ref": "contracts/standards-manifest.json",
       "details": {
@@ -33,37 +33,37 @@
       }
     }
   ],
-  "primary_root_cause": "manifest_or_registry_mismatch",
+  "primary_root_cause": "contract_registration_missing",
   "secondary_contributors": [],
-  "smallest_safe_fix_class": "align_manifest_registry_taxonomy",
-  "recommended_repair_area": "contracts/standards-manifest.json and consuming manifests",
+  "smallest_safe_fix_class": "align_contract_registration",
+  "recommended_repair_area": "contracts/standards-manifest.json",
   "blocking_severity": "blocker",
   "deterministic_reasoning_trace": [
     {
       "rule_id": "R001",
       "matched": false,
-      "classification_candidate": "invariant_violation",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Explicit invariant violation evidence is authoritative and has highest precedence."
     },
     {
       "rule_id": "R002",
       "matched": false,
-      "classification_candidate": "control_surface_input_missing",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Control surface input is required for governed execution and missing inputs fail closed."
     },
     {
       "rule_id": "R003",
       "matched": false,
-      "classification_candidate": "missing_required_surface",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Required governed artifact surface is missing from failure intake."
     },
     {
       "rule_id": "R004",
       "matched": true,
-      "classification_candidate": "manifest_or_registry_mismatch",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [
         "E-0ac22ed533059b09",
         "E-3afb4652aa06890e"
@@ -73,28 +73,28 @@
     {
       "rule_id": "R005",
       "matched": false,
-      "classification_candidate": "schema_example_drift",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Schema/example enforcement failures indicate contract drift."
     },
     {
       "rule_id": "R006",
       "matched": false,
-      "classification_candidate": "producer_wiring_gap",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Producer failures indicate upstream artifact production wiring gap."
     },
     {
       "rule_id": "R007",
       "matched": false,
-      "classification_candidate": "consumer_wiring_gap",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Consumer failures indicate downstream ingestion wiring gap."
     },
     {
       "rule_id": "R008",
       "matched": false,
-      "classification_candidate": "fixture_gap",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Fixture failure evidence indicates missing or stale validation fixtures."
     },
@@ -108,7 +108,7 @@
     {
       "rule_id": "R010",
       "matched": false,
-      "classification_candidate": "certification_surface_gap",
+      "classification_candidate": "unknown_failure",
       "matched_evidence_ids": [],
       "reason": "Certification/readiness surfaces are incomplete."
     }

@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_class_registry.schema.json",
+  "title": "Failure Class Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "registry_version",
+    "classes",
+    "requires_single_class_mapping"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "failure_class_registry"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "registry_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "requires_single_class_mapping": {
+      "type": "boolean",
+      "const": true
+    },
+    "classes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_mismatch",
+        "contract_registration_missing",
+        "branch_policy_violation",
+        "dependency_graph_violation",
+        "test_expectation_drift",
+        "unknown_failure"
+      ],
+      "properties": {
+        "schema_mismatch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "contract_registration_missing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "branch_policy_violation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "dependency_graph_violation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "test_expectation_drift": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "unknown_failure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "safe_to_repair",
+            "bounded_scope_rules",
+            "escalation_required"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            },
+            "safe_to_repair": {
+              "type": "boolean"
+            },
+            "bounded_scope_rules": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "escalation_required": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

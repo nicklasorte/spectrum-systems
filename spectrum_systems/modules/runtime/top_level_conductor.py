@@ -11,8 +11,12 @@ from typing import Any, Callable
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.governance.tpa_policy_composition import load_tpa_policy_composition, resolve_tpa_policy_decision
-from spectrum_systems.modules.runtime.closure_decision_engine import build_closure_decision_artifact
+from spectrum_systems.modules.runtime.closure_decision_engine import (
+    build_closure_decision_artifact,
+    build_eval_adoption_decision_artifact,
+)
 from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
+    build_eval_candidate_artifact,
     build_failure_diagnosis_artifact,
     build_failure_repair_candidate_artifact,
     normalize_pytest_failure_packet,
@@ -144,6 +148,9 @@ def _build_failure_learning_record_artifact(
     recurrence_count: int,
     first_seen_ref: str,
     latest_seen_ref: str,
+    linked_eval_candidates: list[str],
+    linked_eval_adoptions: list[str],
+    last_seen_trace: str,
     trace_refs: list[str],
 ) -> dict[str, Any]:
     artifact = {
@@ -154,6 +161,9 @@ def _build_failure_learning_record_artifact(
         "recurrence_count": recurrence_count,
         "first_seen_ref": first_seen_ref,
         "latest_seen_ref": latest_seen_ref,
+        "linked_eval_candidates": sorted(set(linked_eval_candidates)),
+        "linked_eval_adoptions": sorted(set(linked_eval_adoptions)),
+        "last_seen_trace": last_seen_trace,
         "recommended_eval_candidate": {
             "candidate_type": "targeted_regression_eval",
             "target_failure_class": failure_class,
@@ -167,6 +177,29 @@ def _build_failure_learning_record_artifact(
         "trace_refs": sorted(set(trace_refs)),
     }
     validate_artifact(artifact, "failure_learning_record_artifact")
+    return artifact
+
+
+def _build_roadmap_signal_artifact(*, learning: dict[str, Any], diagnosis_ref: str) -> dict[str, Any]:
+    signal_id = f"RMS-{_canonical_hash([learning['learning_id'], learning['recurrence_count'], diagnosis_ref])[:20]}"
+    artifact = {
+        "artifact_type": "roadmap_signal_artifact",
+        "schema_version": "1.0.0",
+        "signal_id": signal_id,
+        "failure_class": learning["failure_class"],
+        "recurrence_count": learning["recurrence_count"],
+        "recommended_hardening_action": (
+            f"Increase hardening for {learning['failure_class']} recurrence={learning['recurrence_count']} with governed eval adoption review."
+        ),
+        "source_refs": sorted(
+            set(
+                [f"failure_learning_record_artifact:{learning['learning_id']}", diagnosis_ref]
+                + list(learning.get("linked_eval_candidates", []))
+                + list(learning.get("linked_eval_adoptions", []))
+            )
+        ),
+    }
+    validate_artifact(artifact, "roadmap_signal_artifact")
     return artifact
 
 
@@ -673,6 +706,7 @@ def _enforce_sel(
             "repair_budget_remaining": state["retry_budget_remaining"],
             "approved_repair_scope": state["lineage"].get("approved_repair_scope", []),
             "repair_files_touched": state["lineage"].get("pending_files_touched", []),
+            "failure_learning_required": bool(state["lineage"].get("pending_failure_packet")),
             "requested_at": state["emitted_at"],
         },
         "artifact_references": {
@@ -686,6 +720,11 @@ def _enforce_sel(
             "recovery_result_artifact": state["lineage"].get("recovery_result_artifact_ref"),
             "failure_repair_candidate_artifact": state["lineage"].get("failure_repair_candidate_artifact_ref"),
             "repair_attempt_record_artifact": state["lineage"].get("repair_attempt_record_artifact_ref"),
+            "failure_class_registry": "failure_class_registry:1.0.0",
+            "eval_candidate_artifact": state["lineage"].get("latest_eval_candidate_artifact"),
+            "eval_adoption_decision_artifact": state["lineage"].get("latest_eval_adoption_decision_artifact"),
+            "failure_learning_record_artifact": state["lineage"].get("latest_failure_learning_record_artifact"),
+            "roadmap_signal_artifact": state["lineage"].get("latest_roadmap_signal_artifact"),
         },
         "downstream_consumption": {
             "consumed_artifact_types": consumed_artifact_types or ["review_projection_bundle_artifact"],
@@ -1014,6 +1053,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 state["active_subsystems"].append("FRE")
                 _extract_refs(fre_diag_result if isinstance(fre_diag_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
                 state["lineage"]["failure_repair_candidate_artifact"] = fre_diag_result["failure_repair_candidate_artifact"]
+                state["lineage"]["failure_diagnosis_artifact"] = fre_diag_result["failure_diagnosis_artifact"]
                 state["lineage"]["failure_repair_candidate_artifact_ref"] = (
                     f"failure_repair_candidate_artifact:{fre_diag_result['failure_repair_candidate_artifact']['failure_id']}"
                 )
@@ -1161,7 +1201,30 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 state["lineage"]["repair_attempt_record_artifact_ref"] = f"repair_attempt_record_artifact:{attempt_id}"
                 state["produced_artifact_refs"].append(state["lineage"]["repair_attempt_record_artifact_ref"])
 
-                failure_class = str(repair_candidate.get("failure_class") or "unknown_failure_class")
+                failure_class = str(repair_candidate.get("failure_class") or "unknown_failure")
+                diagnosis = state["lineage"].get("failure_diagnosis_artifact")
+                if not isinstance(diagnosis, dict):
+                    _transition(state=state, to_state="blocked", reason="missing_failure_diagnosis_artifact")
+                    state["stop_reason"] = "missing_failure_diagnosis_artifact"
+                    break
+                eval_candidate = build_eval_candidate_artifact(
+                    failure_diagnosis_artifact=diagnosis,
+                    trace_refs=state["trace_refs"],
+                )
+                eval_candidate_ref = f"eval_candidate_artifact:{eval_candidate['candidate_id']}"
+                state["lineage"]["latest_eval_candidate_artifact"] = eval_candidate
+                state["produced_artifact_refs"].append(eval_candidate_ref)
+                adoption_state = "deferred" if failure_class == "unknown_failure" else "approved"
+                adoption = build_eval_adoption_decision_artifact(
+                    candidate_ref=eval_candidate_ref,
+                    state=adoption_state,
+                    decided_by="closure_decision_engine",
+                    rationale=("Unknown failures require escalation and manual triage." if adoption_state == "deferred" else None),
+                    trace_refs=state["trace_refs"],
+                )
+                adoption_ref = f"eval_adoption_decision_artifact:{adoption['decision_id']}"
+                state["lineage"]["latest_eval_adoption_decision_artifact"] = adoption
+                state["produced_artifact_refs"].append(adoption_ref)
                 recurrences = state["lineage"].setdefault("failure_recurrence", {})
                 recurrences[failure_class] = int(recurrences.get(failure_class, 0)) + 1
                 learning = _build_failure_learning_record_artifact(
@@ -1170,10 +1233,17 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     recurrence_count=recurrences[failure_class],
                     first_seen_ref=f"failure_repair_candidate_artifact:{repair_candidate['failure_id']}",
                     latest_seen_ref=f"repair_attempt_record_artifact:{attempt_id}",
+                    linked_eval_candidates=[eval_candidate_ref],
+                    linked_eval_adoptions=[adoption_ref],
+                    last_seen_trace=state["trace_id"],
                     trace_refs=state["trace_refs"],
                 )
                 state["lineage"]["latest_failure_learning_record_artifact"] = learning
                 state["produced_artifact_refs"].append(f"failure_learning_record_artifact:{learning['learning_id']}")
+                diagnosis_ref = f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}"
+                roadmap_signal = _build_roadmap_signal_artifact(learning=learning, diagnosis_ref=diagnosis_ref)
+                state["lineage"]["latest_roadmap_signal_artifact"] = roadmap_signal
+                state["produced_artifact_refs"].append(f"roadmap_signal_artifact:{roadmap_signal['signal_id']}")
 
                 if passed:
                     _transition(state=state, to_state="ready_for_merge", reason="repair_tests_green")

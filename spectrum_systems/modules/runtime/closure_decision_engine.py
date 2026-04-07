@@ -382,8 +382,53 @@ def maybe_build_next_step_prompt_artifact(
     return prompt_artifact
 
 
+def build_eval_adoption_decision_artifact(
+    *,
+    candidate_ref: str,
+    state: str,
+    decided_by: str,
+    trace_refs: list[str],
+    rationale: str | None = None,
+) -> dict[str, Any]:
+    """Build CDE-governed eval adoption decision artifact."""
+    if state not in {"approved", "rejected", "deferred"}:
+        raise ClosureDecisionEngineError("state must be approved, rejected, or deferred")
+    if not isinstance(trace_refs, list) or not trace_refs:
+        raise ClosureDecisionEngineError("trace_refs must be non-empty")
+    if state in {"rejected", "deferred"} and not str(rationale or "").strip():
+        raise ClosureDecisionEngineError("rejected/deferred decisions require rationale")
+
+    seed = {
+        "candidate_ref": candidate_ref,
+        "state": state,
+        "decided_by": decided_by,
+        "rationale": (rationale or "").strip(),
+        "trace_refs": sorted(set(trace_refs)),
+    }
+    decision_id = deterministic_id(
+        prefix="ead",
+        namespace="eval_adoption_decision_artifact",
+        payload=seed,
+        digest_length=20,
+    )
+    artifact = {
+        "artifact_type": "eval_adoption_decision_artifact",
+        "schema_version": "1.0.0",
+        "decision_id": decision_id.replace("ead-", "EAD-", 1),
+        "candidate_ref": candidate_ref,
+        "state": state,
+        "decided_by": decided_by,
+        "trace_refs": sorted(set(trace_refs)),
+    }
+    if str(rationale or "").strip():
+        artifact["rationale"] = str(rationale).strip()
+    _validate_schema(artifact, "eval_adoption_decision_artifact", label="eval_adoption_decision_artifact")
+    return artifact
+
+
 __all__ = [
     "ClosureDecisionEngineError",
     "build_closure_decision_artifact",
+    "build_eval_adoption_decision_artifact",
     "maybe_build_next_step_prompt_artifact",
 ]

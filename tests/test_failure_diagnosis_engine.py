@@ -36,18 +36,18 @@ def _build_from_fixture(name: str) -> dict:
 
 def test_preflight_missing_surface_diagnosis() -> None:
     artifact = _build_from_fixture("preflight_missing_control_input")
-    assert artifact["primary_root_cause"] == "control_surface_input_missing"
-    assert artifact["smallest_safe_fix_class"] == "restore_control_surface_input"
+    assert artifact["primary_root_cause"] == "contract_registration_missing"
+    assert artifact["smallest_safe_fix_class"] == "align_contract_registration"
 
 
 def test_manifest_registry_mismatch_diagnosis() -> None:
     artifact = _build_from_fixture("manifest_registry_mismatch")
-    assert artifact["primary_root_cause"] == "manifest_or_registry_mismatch"
+    assert artifact["primary_root_cause"] == "contract_registration_missing"
 
 
 def test_schema_example_drift_diagnosis() -> None:
     artifact = _build_from_fixture("schema_example_drift")
-    assert artifact["primary_root_cause"] == "schema_example_drift"
+    assert artifact["primary_root_cause"] == "schema_mismatch"
 
 
 def test_test_expectation_drift_diagnosis() -> None:
@@ -57,8 +57,8 @@ def test_test_expectation_drift_diagnosis() -> None:
 
 def test_invariant_violation_precedence_over_downstream_symptom() -> None:
     artifact = _build_from_fixture("invariant_violation")
-    assert artifact["primary_root_cause"] == "invariant_violation"
-    assert "schema_example_drift" in artifact["secondary_contributors"]
+    assert artifact["primary_root_cause"] == "branch_policy_violation"
+    assert "schema_mismatch" in artifact["secondary_contributors"]
 
 
 def test_deterministic_output_for_same_input() -> None:

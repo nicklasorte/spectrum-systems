@@ -98,21 +98,12 @@
           "evidence_type": {
             "type": "string",
             "enum": [
-              "missing_required_surface",
-              "schema_example_drift",
-              "producer_wiring_gap",
-              "consumer_wiring_gap",
-              "fixture_gap",
-              "invariant_violation",
+              "schema_mismatch",
+              "contract_registration_missing",
+              "branch_policy_violation",
+              "dependency_graph_violation",
               "test_expectation_drift",
-              "manifest_or_registry_mismatch",
-              "control_surface_input_missing",
-              "certification_surface_gap",
-              "source_authority_anchor_gap",
-              "policy_composition_gap",
-              "corroboration_validation_gap",
-              "override_temporal_validation_gap",
-              "unknown_failure_class"
+              "unknown_failure"
             ]
           },
           "message": {
@@ -133,21 +124,12 @@
     "primary_root_cause": {
       "type": "string",
       "enum": [
-        "missing_required_surface",
-        "schema_example_drift",
-        "producer_wiring_gap",
-        "consumer_wiring_gap",
-        "fixture_gap",
-        "invariant_violation",
+        "schema_mismatch",
+        "contract_registration_missing",
+        "branch_policy_violation",
+        "dependency_graph_violation",
         "test_expectation_drift",
-        "manifest_or_registry_mismatch",
-        "control_surface_input_missing",
-        "certification_surface_gap",
-        "source_authority_anchor_gap",
-        "policy_composition_gap",
-        "corroboration_validation_gap",
-        "override_temporal_validation_gap",
-        "unknown_failure_class"
+        "unknown_failure"
       ]
     },
     "secondary_contributors": {
@@ -155,21 +137,12 @@
       "items": {
         "type": "string",
         "enum": [
-          "missing_required_surface",
-          "schema_example_drift",
-          "producer_wiring_gap",
-          "consumer_wiring_gap",
-          "fixture_gap",
-          "invariant_violation",
+          "schema_mismatch",
+          "contract_registration_missing",
+          "branch_policy_violation",
+          "dependency_graph_violation",
           "test_expectation_drift",
-          "manifest_or_registry_mismatch",
-          "control_surface_input_missing",
-          "certification_surface_gap",
-          "source_authority_anchor_gap",
-          "policy_composition_gap",
-          "corroboration_validation_gap",
-          "override_temporal_validation_gap",
-          "unknown_failure_class"
+          "unknown_failure"
         ]
       },
       "uniqueItems": true
@@ -215,21 +188,12 @@
           "classification_candidate": {
             "type": "string",
             "enum": [
-              "missing_required_surface",
-              "schema_example_drift",
-              "producer_wiring_gap",
-              "consumer_wiring_gap",
-              "fixture_gap",
-              "invariant_violation",
+              "schema_mismatch",
+              "contract_registration_missing",
+              "branch_policy_violation",
+              "dependency_graph_violation",
               "test_expectation_drift",
-              "manifest_or_registry_mismatch",
-              "control_surface_input_missing",
-              "certification_surface_gap",
-              "source_authority_anchor_gap",
-              "policy_composition_gap",
-              "corroboration_validation_gap",
-              "override_temporal_validation_gap",
-              "unknown_failure_class"
+              "unknown_failure"
             ]
           },
           "matched_evidence_ids": {

@@ -1,0 +1,11 @@
+{
+  "artifact_type": "eval_adoption_decision_artifact",
+  "schema_version": "1.0.0",
+  "decision_id": "EAD-a292a36e9f62dcde781f",
+  "candidate_ref": "eval_candidate_artifact:EVC-1f69b30192752d1d9c30",
+  "state": "approved",
+  "decided_by": "closure_decision_engine",
+  "trace_refs": [
+    "trace-batch-mb-01"
+  ]
+}
