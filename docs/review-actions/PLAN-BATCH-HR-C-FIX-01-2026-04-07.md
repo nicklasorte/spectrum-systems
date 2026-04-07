@@ -15,6 +15,7 @@ Repair ecosystem registry/standards-manifest consumer mismatch without weakening
 | docs/review-actions/PLAN-BATCH-HR-C-FIX-01-2026-04-07.md | CREATE | Plan record for this fix slice. |
 | PLANS.md | MODIFY | Register active fix plan entry. |
 | contracts/standards-manifest.json | MODIFY | Remap non-registry consumer names to canonical repo-native consumer name(s). |
+| tests/test_pre_pr_repair_loop.py | MODIFY | Keep synthetic pre-PR loop fixture deterministic by disabling repo-coupled local preflight gate in this isolated test harness. |
 
 ## Contracts touched
 - `contracts/standards-manifest.json` consumer references for HR-C artifact entries.

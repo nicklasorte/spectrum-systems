@@ -60,6 +60,7 @@ def _request(tmp_path: Path, *, retry_budget: int = 2, pass_after_attempt: bool 
         "simulated_repair_files_touched": safe_scope or ["contracts/standards-manifest.json"],
         "repair_commands_run": ["pytest tests/test_contracts.py"],
         "repair_validation_passed_after_attempt": pass_after_attempt,
+        "enforce_local_pre_pr_governance": False,
     }
 
 
