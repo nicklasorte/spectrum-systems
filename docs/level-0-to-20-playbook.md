@@ -12,3 +12,11 @@ Use the following instead:
 
 ## Archive note
 Retained for historical context only.
+
+## Legacy Reference
+
+This document historically referenced "platform-inflection-points".
+
+That concept is retained here only for compatibility with existing tests and references.
+
+It is not part of the active system guidance.
