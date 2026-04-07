@@ -59,3 +59,42 @@ def test_non_governed_file_is_ignored_cleanly() -> None:
     result = evaluate_prompt_file(Path("docs/governance/README.md"), surfaces)
     assert result.governed is False
     assert result.passed is True
+
+
+def test_external_file_valid_prompt_passes_with_default_checker_surface(tmp_path: Path) -> None:
+    surfaces = load_governed_prompt_surface_registry()
+    external_prompt = tmp_path / "external_valid_prompt.md"
+    external_prompt.write_text(VALID_PROMPT.strip() + "\n", encoding="utf-8")
+
+    result = evaluate_prompt_file(external_prompt, surfaces)
+
+    assert result.passed is True
+    assert result.governed is True
+    assert result.surface_id == "raw_text_default"
+    assert result.missing_items == []
+
+
+def test_external_file_invalid_prompt_fails_with_missing_reference_diagnostics(tmp_path: Path) -> None:
+    surfaces = load_governed_prompt_surface_registry()
+    external_prompt = tmp_path / "external_invalid_prompt.md"
+    external_prompt.write_text(
+        "\n".join(
+            [
+                "Load docs/governance/strategy_control_doc.md",
+                "Load docs/governance/prompt_includes/source_input_loading_include.md",
+                "Load docs/governance/prompt_includes/roadmap_governance_include.md",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = evaluate_prompt_file(external_prompt, surfaces)
+
+    assert result.passed is False
+    assert result.governed is True
+    assert result.surface_id == "raw_text_default"
+    assert any(
+        item == "missing required reference: docs/governance/source_inputs_manifest.json"
+        for item in result.missing_items
+    )
