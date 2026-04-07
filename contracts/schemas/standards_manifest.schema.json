@@ -172,7 +172,8 @@
           "enum": [
             "coordination",
             "work",
-            "review"
+            "review",
+            "governance"
           ],
           "description": "Canonical artifact class for this contract."
         },

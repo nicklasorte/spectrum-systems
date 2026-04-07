@@ -1,11 +1,12 @@
 # Artifact Classification Standard
 
-This standard introduces a canonical artifact-class model for the spectrum-systems ecosystem. Every governed artifact belongs to one of three classes: coordination, work, or review. Contracts, manifests, and engines should use these classes to simplify integration and traceability.
+This standard introduces a canonical artifact-class model for the spectrum-systems ecosystem. Every governed artifact belongs to one of four classes: coordination, work, review, or governance. Contracts, manifests, and engines should use these classes to simplify integration and traceability.
 
 ## Canonical classes
 - **coordination** — Align people, decisions, schedules, and next steps. Typical outputs capture who, when, and what happens next. Examples: roster, agenda, transcript, meeting minutes, action items, FAQ, schedule.
 - **work** — Technical analysis or study outputs produced during execution. These carry substantive calculations or narrative content. Examples: study plan, engineering outputs, working paper, updated working paper, report sections, figures, tables.
 - **review** — Comments, critique, adjudication, and approval/revision states. Examples: agency review, reviewer comment set, comment resolution matrix, adjudicated matrix, decision log, review findings.
+- **governance** — Control-plane policy, stage, and authority artifacts defining executable governance constraints. Examples: stage contract, policy registry entries, governance evidence bundles.
 
 ## Allowed transitions
 Only the following class transitions are allowed without additional justification:
@@ -15,6 +16,9 @@ Only the following class transitions are allowed without additional justificatio
 - work -> review
 - review -> work
 - review -> coordination
+- coordination -> governance
+- governance -> governance
+- governance -> coordination
 
 Introducing a new transition later must include an explicit, documented justification in the standards manifest and design reviews.
 
