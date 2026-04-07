@@ -163,8 +163,7 @@
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "orchestration"
+        "spectrum-systems"
       ],
       "introduced_in": "BATCH-HR-C",
       "last_updated_in": "BATCH-HR-C",
@@ -1689,8 +1688,7 @@
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "orchestration"
+        "spectrum-systems"
       ],
       "introduced_in": "BATCH-HR-C",
       "last_updated_in": "BATCH-HR-C",
@@ -1703,8 +1701,7 @@
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "orchestration"
+        "spectrum-systems"
       ],
       "introduced_in": "BATCH-HR-C",
       "last_updated_in": "BATCH-HR-C",
@@ -2314,8 +2311,7 @@
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "orchestration"
+        "spectrum-systems"
       ],
       "introduced_in": "BATCH-HR-C",
       "last_updated_in": "BATCH-HR-C",
@@ -2328,8 +2324,7 @@
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
-        "runtime",
-        "orchestration"
+        "spectrum-systems"
       ],
       "introduced_in": "BATCH-HR-C",
       "last_updated_in": "BATCH-HR-C",
