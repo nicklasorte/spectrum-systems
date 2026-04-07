@@ -1,12 +1,9 @@
 # Next Recommended Slice
 
-## BATCH-GOV-FIX-04 — Checker-Level External Path Regression Lock
+## BATCH-GOV-FIX-05 — Structured Checker Diagnostics Stability
 
-Add direct checker tests that call `scripts.check_governance_compliance.evaluate_prompt_file()` with external temp-path files to guarantee:
-- external valid prompt content passes,
-- external invalid prompt content fails fail-closed,
-- external-path handling remains crash-free.
+Introduce a narrow, backward-compatible structured diagnostic contract for governance checker failures (for example: stable diagnostic codes with required reference identifiers), while preserving existing fail-closed behavior and current human-readable CLI lines.
 
 ### Outcome target
-- Prevents future regressions in external path handling independent of wrapper behavior.
-- Keeps governance preflight fail-closed and deterministic for both in-repo and out-of-repo prompt files.
+- Reduces brittleness from raw string matching in governance tests.
+- Keeps checker-layer and wrapper-layer assertions aligned on deterministic, machine-checkable diagnostics.
