@@ -102,6 +102,21 @@ def test_schema_name_from_example_supports_example_suffix() -> None:
     )
 
 
+def test_schema_name_from_stage_contract_subdir_maps_to_stage_contract_schema() -> None:
+    assert preflight._schema_name_from_example("contracts/examples/stage_contracts/pqx_stage_contract.json") == "stage_contract"
+    assert preflight._schema_name_from_example("contracts/examples/stage_contracts/prompt_queue_stage_contract.json") == "stage_contract"
+
+
+def test_validate_examples_accepts_stage_contract_subdir_examples() -> None:
+    failures = preflight.validate_examples(
+        [
+            "contracts/examples/stage_contracts/pqx_stage_contract.json",
+            "contracts/examples/stage_contracts/prompt_queue_stage_contract.json",
+        ]
+    )
+    assert failures == []
+
+
 def test_detect_changed_paths_uses_explicit_paths_first() -> None:
     detected = preflight.detect_changed_paths(
         repo_root=Path("."),
