@@ -1,0 +1,22 @@
+{
+  "artifact_type": "handoff_artifact",
+  "schema_version": "1.0.0",
+  "handoff_id": "handoff-001",
+  "from_stage": "post_execution_review",
+  "to_stage": "review_parse",
+  "stage_contract_id": "stage-contract-prompt-queue-post-execution-v1",
+  "required_state": [
+    "work_item_id",
+    "execution_result_ref"
+  ],
+  "state_snapshot_ref": "artifacts/prompt_queue/state_snapshot.json",
+  "validation_rules": [
+    "lineage_consistency",
+    "required_artifact_present"
+  ],
+  "created_at": "2026-04-07T00:20:00Z",
+  "trace": {
+    "trace_id": "trace-hrb-002",
+    "agent_run_id": "run-hrb-002"
+  }
+}

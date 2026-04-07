@@ -240,6 +240,12 @@ class ContractSchemaTests(unittest.TestCase):
             validate_artifact(instance, name)
 
 
+    def test_hnx_continuity_contract_examples_validate(self) -> None:
+        for name in ("checkpoint_record", "resume_record", "async_wait_record", "handoff_artifact"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
+
     def test_stage_contract_examples_validate(self) -> None:
         schema = load_schema("stage_contract")
         validator = Draft202012Validator(schema)

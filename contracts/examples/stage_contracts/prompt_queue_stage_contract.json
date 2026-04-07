@@ -73,10 +73,22 @@
     "max_retries": 2
   },
   "stop_conditions": [
-    {"condition": "required_artifact_missing", "behavior": "block"},
-    {"condition": "eval_failed", "behavior": "block"},
-    {"condition": "budget_exhausted", "behavior": "freeze"},
-    {"condition": "trace_incomplete", "behavior": "block"}
+    {
+      "condition": "required_artifact_missing",
+      "behavior": "block"
+    },
+    {
+      "condition": "eval_failed",
+      "behavior": "block"
+    },
+    {
+      "condition": "budget_exhausted",
+      "behavior": "freeze"
+    },
+    {
+      "condition": "trace_incomplete",
+      "behavior": "block"
+    }
   ],
   "transition_rules": {
     "advance_requires_all_required_inputs": true,
@@ -98,5 +110,22 @@
     "source": "BATCH-HR-A",
     "version": "1.0.0",
     "notes": "Canonical example fixture for stage-contract spine adoption in prompt queue surfaces."
+  },
+  "execution_mode": "reset_with_handoff",
+  "resume_policy": {
+    "allowed": true,
+    "validation_required": true,
+    "max_resume_age_minutes": 240,
+    "resume_requires_human_review": false
+  },
+  "async_policy": {
+    "allowed": true,
+    "max_wait_minutes": 120,
+    "timeout_behavior": "freeze"
+  },
+  "compaction_policy": {
+    "allowed": true,
+    "trigger": "context_size",
+    "strategy": "summarize"
   }
 }

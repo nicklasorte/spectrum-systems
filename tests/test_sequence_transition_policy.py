@@ -352,3 +352,39 @@ def test_promotion_stage_contract_gate_allows_when_contract_signals_present() ->
 
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is True
+
+
+def test_stage_contract_continuity_gate_blocks_invalid_resume() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["stage_contract_path"] = str(_REPO_ROOT / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json")
+    manifest["request_resume"] = True
+    manifest["checkpoint_age_minutes"] = 999
+    manifest["has_resume_validation_evidence"] = False
+    manifest["checkpoint_record"] = {
+        "artifact_type": "checkpoint_record",
+        "checkpoint_id": "cp-1",
+        "state_snapshot": {
+            "required_inputs": ["a"],
+            "observed_outputs": ["b"],
+            "eval_refs": ["eval-1"],
+            "control_refs": ["ctrl-1"],
+            "pending_actions": ["pending"],
+        },
+    }
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "continuity gate blocked" in str(decision.reason)
+
+
+def test_stage_contract_continuity_gate_blocks_missing_handoff_in_reset_mode(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    contract = json.loads((_REPO_ROOT / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json").read_text(encoding="utf-8"))
+    contract["execution_mode"] = "reset_with_handoff"
+    path = tmp_path / "reset_contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    manifest["stage_contract_path"] = str(path)
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "HANDOFF_REQUIRED" in str(decision.reason)

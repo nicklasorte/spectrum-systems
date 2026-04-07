@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/async_wait_record.schema.json",
+  "title": "Async Wait Record",
+  "description": "Canonical HNX record for intentional suspended execution under explicit wait policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "wait_id",
+    "checkpoint_id",
+    "wait_condition",
+    "trigger_type",
+    "timeout_policy",
+    "created_at",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "async_wait_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "wait_id": {"type": "string", "minLength": 1},
+    "checkpoint_id": {"type": "string", "minLength": 1},
+    "wait_condition": {"type": "string", "minLength": 1},
+    "trigger_type": {"type": "string", "enum": ["external_event", "time", "dependency"]},
+    "timeout_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_wait_minutes", "timeout_behavior"],
+      "properties": {
+        "max_wait_minutes": {"type": "integer", "minimum": 1},
+        "timeout_behavior": {"type": "string", "enum": ["freeze", "block"]}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "agent_run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "agent_run_id": {"type": "string", "minLength": 1},
+        "span_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "async_wait_record",
+  "schema_version": "1.0.0",
+  "wait_id": "wait-001",
+  "checkpoint_id": "checkpoint-001",
+  "wait_condition": "dependency_result_available",
+  "trigger_type": "dependency",
+  "timeout_policy": {
+    "max_wait_minutes": 30,
+    "timeout_behavior": "freeze"
+  },
+  "created_at": "2026-04-07T00:15:00Z",
+  "trace": {
+    "trace_id": "trace-hrb-001",
+    "agent_run_id": "run-hrb-001"
+  }
+}
