@@ -492,7 +492,7 @@ def run_github_closure_continuation(
     if tlc_result is not None:
         final_terminal_state = str(tlc_result.get("current_state"))
     elif decision_type == "lock":
-        final_terminal_state = "ready_for_merge"
+        final_terminal_state = "blocked"
     elif decision_type == "escalate":
         final_terminal_state = "escalated"
     else:
