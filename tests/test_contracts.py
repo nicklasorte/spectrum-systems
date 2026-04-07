@@ -1,8 +1,10 @@
 import csv
+import json
 import sys
 from pathlib import Path
 import unittest
 
+from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -236,6 +238,15 @@ class ContractSchemaTests(unittest.TestCase):
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
+
+
+    def test_stage_contract_examples_validate(self) -> None:
+        schema = load_schema("stage_contract")
+        validator = Draft202012Validator(schema)
+        base = REPO_ROOT / "contracts" / "examples" / "stage_contracts"
+        for name in ("prompt_queue_stage_contract.json", "pqx_stage_contract.json"):
+            payload = json.loads((base / name).read_text(encoding="utf-8"))
+            validator.validate(payload)
 
     def test_enforcement_result_example_validates(self) -> None:
         instance = load_example("enforcement_result")

@@ -6,7 +6,7 @@ from jsonschema import Draft202012Validator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ALLOWED_CLASSES = {"coordination", "work", "review"}
+ALLOWED_CLASSES = {"coordination", "work", "review", "governance"}
 KEY_CONTRACT_CLASSES = {
     "meeting_minutes_record": "coordination",
     "reviewer_comment_set": "review",
@@ -16,6 +16,7 @@ KEY_CONTRACT_CLASSES = {
     "program_brief": "coordination",
     "study_readiness_assessment": "coordination",
     "next_best_action_memo": "coordination",
+    "stage_contract": "governance",
 }
 
 

@@ -5,7 +5,7 @@ Define a canonical metadata envelope that every governed artifact carries so orc
 
 ## Required envelope fields
 - `artifact_id` — stable identifier for the specific artifact instance (case-insensitive; safe for file systems and manifests).
-- `artifact_class` — one of `coordination | work | review` to signal the governance class.
+- `artifact_class` — one of `coordination | work | review | governance` to signal the governance class.
 - `artifact_type` — contract-scoped type name (e.g., `meeting_minutes_record`, `comment_resolution_matrix`, `transcript`).
 - `contract_name` — the authoritative contract name that defines the payload schema; use `null` for raw inputs that are not yet bound to a payload contract.
 - `contract_version` — semantic version of the payload contract; use `null` when no payload contract is attached yet.
@@ -20,7 +20,7 @@ Define a canonical metadata envelope that every governed artifact carries so orc
 - `tags` (optional) — free-form tags to aid discovery and filtering.
 
 ## Artifact class vs. artifact type
-- `artifact_class` conveys the ecosystem-wide classification (`coordination`, `work`, or `review`) used for routing, lifecycle gates, and compatibility rules.
+- `artifact_class` conveys the ecosystem-wide classification (`coordination`, `work`, `review`, or `governance`) used for routing, lifecycle gates, and compatibility rules.
 - `artifact_type` is the specific payload contract name or typed input (e.g., `program_brief`, `working_paper_input`, `transcript`) that binds to a single schema.
 - Engines reason over `artifact_class` first to understand where an artifact belongs in pipelines, then use `artifact_type` and `contract_version` to load the correct schema or intake flow.
 

@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.90",
   "schema_version": "1.3.90",
-  "standards_version": "1.3.90",
+  "standards_version": "1.3.91",
   "record_id": "REC-STD-2026-04-07-BATCH-MB-02",
   "run_id": "run-20260407T000000Z-batch-mb-02",
   "created_at": "2026-04-07T00:00:00Z",
@@ -3805,6 +3805,19 @@
       "last_updated_in": "1.0.0",
       "example_path": null,
       "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
+    },
+    {
+      "artifact_type": "stage_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.91",
+      "last_updated_in": "1.3.91",
+      "example_path": "contracts/examples/stage_contracts/pqx_stage_contract.json",
+      "notes": "HR-01/HR-02 canonical stage-local contract spine for deterministic transition readiness enforcement."
     },
     {
       "artifact_type": "standards_manifest",

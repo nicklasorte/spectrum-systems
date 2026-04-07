@@ -14,16 +14,13 @@
       ]
     },
     {
-      "name": "work",
-      "description": "Artifacts that capture technical analysis or study outputs in progress or final form.",
+      "name": "governance",
+      "description": "Control-plane artifacts that define or enforce governance policy, stage constraints, and authority boundaries.",
       "examples": [
-        "study plan",
-        "engineering outputs",
-        "working paper",
-        "updated working paper",
-        "report sections",
-        "figures",
-        "tables"
+        "stage contract",
+        "governance policy",
+        "control authority evidence",
+        "contract preflight result"
       ]
     },
     {
@@ -37,6 +34,19 @@
         "decision log",
         "review findings"
       ]
+    },
+    {
+      "name": "work",
+      "description": "Artifacts that capture technical analysis or study outputs in progress or final form.",
+      "examples": [
+        "study plan",
+        "engineering outputs",
+        "working paper",
+        "updated working paper",
+        "report sections",
+        "figures",
+        "tables"
+      ]
     }
   ],
   "allowed_transitions": [
@@ -46,10 +56,26 @@
     },
     {
       "from": "coordination",
+      "to": "governance"
+    },
+    {
+      "from": "coordination",
       "to": "work"
     },
     {
-      "from": "work",
+      "from": "governance",
+      "to": "coordination"
+    },
+    {
+      "from": "governance",
+      "to": "governance"
+    },
+    {
+      "from": "review",
+      "to": "coordination"
+    },
+    {
+      "from": "review",
       "to": "work"
     },
     {
@@ -57,12 +83,8 @@
       "to": "review"
     },
     {
-      "from": "review",
+      "from": "work",
       "to": "work"
-    },
-    {
-      "from": "review",
-      "to": "coordination"
     }
   ]
 }

@@ -331,3 +331,24 @@ def test_promotion_allows_when_obedience_result_allows(tmp_path: Path) -> None:
 
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is True
+
+
+def test_promotion_stage_contract_gate_blocks_when_required_eval_missing(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    contract = json.loads((_REPO_ROOT / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json").read_text(encoding="utf-8"))
+    contract["verification"]["required_eval_types"] = ["certification_status", "promotion_control_allow", "external_gate_eval"]
+    contract_path = tmp_path / "promotion.stage_contract.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    manifest["stage_contract_path"] = str(contract_path)
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "STAGE_CONTRACT_MISSING_REQUIRED_EVAL" in str(decision.reason)
+
+
+def test_promotion_stage_contract_gate_allows_when_contract_signals_present() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["stage_contract_path"] = str(_REPO_ROOT / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json")
+
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is True

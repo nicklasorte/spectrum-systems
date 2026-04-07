@@ -571,6 +571,10 @@ def validate_control_surface_gap_packet_test_expectations(
 
 
 def _schema_name_from_example(path: str) -> str:
+    normalized = Path(path).as_posix()
+    if normalized.startswith("contracts/examples/stage_contracts/"):
+        return "stage_contract"
+
     name = Path(path).name
     if name.endswith(".example.json"):
         return name.removesuffix(".example.json")

@@ -40,7 +40,8 @@
           "enum": [
             "coordination",
             "work",
-            "review"
+            "review",
+            "governance"
           ]
         },
         "description": {
@@ -70,7 +71,8 @@
           "enum": [
             "coordination",
             "work",
-            "review"
+            "review",
+            "governance"
           ]
         },
         "to": {
@@ -78,7 +80,8 @@
           "enum": [
             "coordination",
             "work",
-            "review"
+            "review",
+            "governance"
           ]
         }
       }

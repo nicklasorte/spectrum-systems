@@ -14,6 +14,10 @@ from spectrum_systems.modules.runtime.trust_spine_invariants import (
     validate_trust_spine_evidence_completeness,
     validate_trust_spine_invariants,
 )
+from spectrum_systems.modules.runtime.stage_contract_runtime import (
+    evaluate_stage_transition_readiness,
+    load_stage_contract,
+)
 
 SEQUENCE_STATES = {
     "admitted",
@@ -397,6 +401,63 @@ def _cohesion_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     return True, None
 
 
+def _stage_contract_input_counts(manifest: dict[str, Any]) -> dict[str, int]:
+    refs = manifest.get("done_certification_input_refs")
+    refs_dict = refs if isinstance(refs, dict) else {}
+
+    def _ref_present(key: str) -> int:
+        value = refs_dict.get(key)
+        return 1 if _path_exists(value) else 0
+
+    return {
+        "replay_result": _ref_present("replay_result_ref"),
+        "evaluation_control_decision": _ref_present("policy_ref"),
+        "evaluation_enforcement_action": _ref_present("enforcement_result_ref"),
+        "eval_coverage_summary": _ref_present("eval_coverage_summary_ref"),
+        "review_control_signal": _ref_present("review_control_signal_ref"),
+        "trust_spine_evidence_cohesion_result": _ref_present("trust_spine_evidence_cohesion_result_ref"),
+        "done_certification_record": 1 if _path_exists(manifest.get("certification_record_path")) else 0,
+        "hard_gate_falsification_record": 1 if _path_exists(manifest.get("hard_gate_falsification_record_path")) else 0,
+    }
+
+
+def _stage_contract_eval_statuses(manifest: dict[str, Any]) -> dict[str, str]:
+    return {
+        "certification_status": "pass" if manifest.get("certification_status") == "passed" else "fail",
+        "promotion_control_allow": "pass" if manifest.get("control_allow_promotion") is True else "fail",
+    }
+
+
+def _stage_contract_gate(manifest: dict[str, Any], target_state: str) -> tuple[bool, str | None]:
+    contract_path = manifest.get("stage_contract_path")
+    if target_state != "promoted" or not isinstance(contract_path, str) or not contract_path.strip():
+        return True, None
+
+    if not _path_exists(contract_path):
+        return False, "stage-contract gate blocked: unreadable stage_contract_path"
+
+    try:
+        contract = load_stage_contract(contract_path)
+    except Exception as exc:  # noqa: BLE001
+        return False, f"stage-contract gate blocked: invalid stage contract ({exc})"
+
+    readiness = evaluate_stage_transition_readiness(
+        contract_payload=contract,
+        present_input_artifacts=_stage_contract_input_counts(manifest),
+        present_output_artifacts={},
+        eval_status_map=_stage_contract_eval_statuses(manifest),
+        trace_complete=_has_traceability(manifest),
+        policy_violation=manifest.get("decision_blocked") is True,
+        budget_status=manifest.get("stage_contract_budget_status") if isinstance(manifest.get("stage_contract_budget_status"), dict) else {},
+    )
+
+    if readiness.ready_to_advance:
+        return True, None
+
+    reason = ",".join(readiness.reason_codes) if readiness.reason_codes else "STAGE_CONTRACT_READINESS_BLOCKED"
+    return False, f"stage-contract gate blocked: {reason} ({readiness.recommended_state})"
+
+
 def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     policy = manifest.get("review_signal_policy")
     policy_dict = policy if isinstance(policy, dict) else {}
@@ -500,6 +561,10 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
         if manifest.get("control_allow_promotion") is not True:
             return SequenceTransitionDecision(False, "promotion requires explicit control_allow_promotion=true")
+
+    contract_gate_passed, contract_gate_error = _stage_contract_gate(manifest, target_state)
+    if not contract_gate_passed:
+        return SequenceTransitionDecision(False, contract_gate_error)
 
     if target_state in {"blocked", "frozen"}:
         issues = manifest.get("blocking_issues")

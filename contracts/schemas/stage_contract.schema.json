@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/stage_contract.schema.json",
+  "title": "Stage Contract",
+  "description": "Canonical stage-local governance contract for deterministic transition readiness enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "contract_id",
+    "workflow_family",
+    "stage",
+    "sequence",
+    "status",
+    "inputs",
+    "outputs_required",
+    "acceptance_criteria",
+    "verification",
+    "permissions",
+    "budgets",
+    "stop_conditions",
+    "transition_rules",
+    "handoff",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "stage_contract"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "contract_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workflow_family": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "enum": [
+        "pqx",
+        "prompt_queue",
+        "orchestration",
+        "workflow_runtime"
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind", "description"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "deprecated"]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact_descriptor"}
+    },
+    "outputs_required": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/output_descriptor"}
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/acceptance_criterion"}
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_eval_types", "required_validation_checks"],
+      "properties": {
+        "required_eval_types": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "required_validation_checks": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "commands": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sandbox_profile",
+        "tool_allowlist",
+        "network_access",
+        "write_scope",
+        "human_approval_required_for"
+      ],
+      "properties": {
+        "sandbox_profile": {"type": "string", "minLength": 1},
+        "tool_allowlist": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "network_access": {"type": "boolean"},
+        "write_scope": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "human_approval_required_for": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_iterations", "max_wall_clock_minutes", "max_cost_usd"],
+      "properties": {
+        "max_iterations": {"type": "integer", "minimum": 1},
+        "max_wall_clock_minutes": {"type": "integer", "minimum": 1},
+        "max_cost_usd": {"type": "number", "minimum": 0},
+        "max_retries": {"type": "integer", "minimum": 0}
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/stop_condition"}
+    },
+    "transition_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "advance_requires_all_required_inputs",
+        "advance_requires_all_required_outputs",
+        "advance_requires_all_required_evals",
+        "advance_requires_trace_completeness"
+      ],
+      "properties": {
+        "advance_requires_all_required_inputs": {"type": "boolean"},
+        "advance_requires_all_required_outputs": {"type": "boolean"},
+        "advance_requires_all_required_evals": {"type": "boolean"},
+        "advance_requires_trace_completeness": {"type": "boolean"},
+        "indeterminate_eval_behavior": {
+          "type": "string",
+          "enum": ["freeze", "block"]
+        },
+        "missing_required_artifact_behavior": {
+          "type": "string",
+          "enum": ["block"]
+        },
+        "missing_required_eval_behavior": {
+          "type": "string",
+          "enum": ["block"]
+        },
+        "budget_exhausted_behavior": {
+          "type": "string",
+          "enum": ["freeze", "block"]
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "handoff_artifact_type": {"type": "string", "minLength": 1},
+        "resume_supported": {"type": "boolean"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_by", "source", "version"],
+      "properties": {
+        "created_by": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "artifact_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "required"],
+      "properties": {
+        "artifact_type": {"type": "string", "minLength": 1},
+        "required": {"type": "boolean"},
+        "min_count": {"type": "integer", "minimum": 1},
+        "schema_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "output_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "min_count"],
+      "properties": {
+        "artifact_type": {"type": "string", "minLength": 1},
+        "min_count": {"type": "integer", "minimum": 1},
+        "schema_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "acceptance_criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "statement"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      }
+    },
+    "stop_condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "behavior"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "enum": [
+            "eval_failed",
+            "budget_exhausted",
+            "policy_violation",
+            "required_artifact_missing",
+            "trace_incomplete"
+          ]
+        },
+        "behavior": {
+          "type": "string",
+          "enum": ["freeze", "block"]
+        },
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}
