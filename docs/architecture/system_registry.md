@@ -8,7 +8,10 @@ These rules are hard boundaries for architecture, contracts, and validation.
 
 ## System Map
 - **PQX** — bounded execution engine
+- **HNX** — stage harness (structure + time/continuity semantics)
 - **TPA** — trust/policy application gate on execution inputs and paths
+- **MAP** — review artifact mediation and projection bridge
+- **RDX** — roadmap selection and execution-loop governance adapter
 - **FRE** — failure diagnosis and repair planning
 - **RIL** — review interpretation and integration
 - **SEL** — enforcement and fail-closed control actions
@@ -39,6 +42,29 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - perform trust-policy adjudication (TPA-owned)
   - perform failure diagnosis/repair generation (FRE-owned)
   - issue closure-state decisions (CDE-owned)
+
+### HNX
+- **acronym:** `HNX`
+- **full_name:** Harness eXecution Semantics
+- **role:** Owns canonical stage structure and time/continuity semantics for governed workflows.
+- **owns:**
+  - stage structure semantics
+  - checkpoint/resume/async continuity constraints
+  - harness-level execution preconditions
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make promotion decisions (CDE/SEL-owned)
+  - replace policy allow/deny authority (policy modules + SEL-owned)
+
+### MAP
+- **acronym:** `MAP`
+- **full_name:** Mediation and Projection
+- **role:** Translates governed review artifacts into deterministic projections consumed by downstream control surfaces.
+
+### RDX
+- **acronym:** `RDX`
+- **full_name:** Roadmap Decision eXchange
+- **role:** Governs roadmap-selected batch sequencing and execution-loop readiness handoff.
 
 ### TPA
 - **acronym:** `TPA`

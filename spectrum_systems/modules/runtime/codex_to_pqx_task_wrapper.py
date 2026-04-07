@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.permission_governance import (
+    PermissionGovernanceError,
+    evaluate_permission_decision,
+    require_checkpoint_decision,
+)
 from spectrum_systems.modules.runtime.pqx_execution_policy import (
     PQXExecutionPolicyError,
     classify_changed_paths,
@@ -122,6 +127,32 @@ def build_codex_pqx_task_wrapper(normalized_input: Mapping[str, Any]) -> CodexTa
         raise CodexToPQXWrapperError(
             "governed wrapper input requires authority_context.authority_evidence_ref"
         )
+
+    stage_contract = normalized_input.get("stage_contract")
+    if stage_contract is None:
+        default_stage_contract_path = Path(__file__).resolve().parents[3] / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json"
+        stage_contract = json.loads(default_stage_contract_path.read_text(encoding="utf-8"))
+    if not isinstance(stage_contract, Mapping):
+        raise CodexToPQXWrapperError("stage_contract must be an object when provided")
+    try:
+        permission = evaluate_permission_decision(
+            workflow_id=task_id,
+            stage_contract=stage_contract,
+            action_name="execute_tool",
+            tool_name="python",
+            resource_scope="write:artifacts/pqx/",
+            request_id=f"prr-{task_id}-{step_id}",
+            trace_id=f"trace-{task_id}",
+            trace_refs=[f"task:{task_id}", f"step:{step_id}"],
+        )
+        require_checkpoint_decision(
+            permission_decision_record=permission.permission_decision_record,
+            human_checkpoint_decision=normalized_input.get("human_checkpoint_decision"),
+        )
+    except PermissionGovernanceError as exc:
+        raise CodexToPQXWrapperError(f"permission policy blocked wrapper creation: {exc}") from exc
+    if permission.permission_decision_record["decision"] == "deny":
+        raise CodexToPQXWrapperError("permission policy denied governed execution request")
 
     wrapper_id = _build_wrapper_id(task_id=task_id, requested_at=requested_at, step_id=step_id, prompt=prompt)
     row_snapshot = {

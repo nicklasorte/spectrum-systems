@@ -158,6 +158,20 @@
       "notes": "BATCH-10 explicit allow-path justification artifact; allow is valid only when all governed checks are proven."
     },
     {
+      "artifact_type": "approval_boundary_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "orchestration"
+      ],
+      "introduced_in": "BATCH-HR-C",
+      "last_updated_in": "BATCH-HR-C",
+      "example_path": "contracts/examples/approval_boundary_record.json",
+      "notes": "HR-C canonical control-surface artifact family"
+    },
+    {
       "artifact_type": "artifact_envelope",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -1670,6 +1684,34 @@
       "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
     },
     {
+      "artifact_type": "human_checkpoint_decision",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "orchestration"
+      ],
+      "introduced_in": "BATCH-HR-C",
+      "last_updated_in": "BATCH-HR-C",
+      "example_path": "contracts/examples/human_checkpoint_decision.json",
+      "notes": "HR-C canonical control-surface artifact family"
+    },
+    {
+      "artifact_type": "human_checkpoint_request",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "orchestration"
+      ],
+      "introduced_in": "BATCH-HR-C",
+      "last_updated_in": "BATCH-HR-C",
+      "example_path": "contracts/examples/human_checkpoint_request.json",
+      "notes": "HR-C canonical control-surface artifact family"
+    },
+    {
       "artifact_type": "implementation_review_artifact",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -2265,6 +2307,34 @@
       "last_updated_in": "1.0.1",
       "example_path": "contracts/examples/pdf_anchored_docx_comment_injection_contract.json",
       "notes": "Deterministic PDF-anchored DOCX comment insertion contract with fixed column order, unique keys, audit requirements, and status normalization."
+    },
+    {
+      "artifact_type": "permission_decision_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "orchestration"
+      ],
+      "introduced_in": "BATCH-HR-C",
+      "last_updated_in": "BATCH-HR-C",
+      "example_path": "contracts/examples/permission_decision_record.json",
+      "notes": "HR-C canonical control-surface artifact family"
+    },
+    {
+      "artifact_type": "permission_request_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "runtime",
+        "orchestration"
+      ],
+      "introduced_in": "BATCH-HR-C",
+      "last_updated_in": "BATCH-HR-C",
+      "example_path": "contracts/examples/permission_request_record.json",
+      "notes": "HR-C canonical control-surface artifact family"
     },
     {
       "artifact_type": "policy_activation_record",

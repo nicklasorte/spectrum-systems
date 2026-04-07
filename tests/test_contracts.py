@@ -245,6 +245,17 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_human_checkpoint_and_permission_contract_examples_validate(self) -> None:
+        for name in (
+            "human_checkpoint_request",
+            "human_checkpoint_decision",
+            "approval_boundary_record",
+            "permission_request_record",
+            "permission_decision_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_stage_contract_examples_validate(self) -> None:
         schema = load_schema("stage_contract")

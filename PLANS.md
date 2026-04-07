@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-HR-C-2026-04-07.md | BATCH-HR-C — Pre-PR governance closure + human checkpoint + permission policy consolidation | Active |
 | docs/review-actions/PLAN-BATCH-GHA-02-2026-04-06.md | BATCH-GHA-02 — GitHub Closure + Continuation Pipeline (GHA-002) | Active |
 | docs/review-actions/PLAN-BATCH-GHA-03-2026-04-06.md | BATCH-GHA-03 — Read-Only PR Feedback Publisher (GHA-003) | Active |
 | docs/review-actions/PLAN-BATCH-GHA-07-2026-04-06.md | BATCH-GHA-07 — Roadmap Execution Bridge (Artifact → Execution) | Active |

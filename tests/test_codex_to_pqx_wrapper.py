@@ -64,6 +64,16 @@ def test_missing_required_governed_authority_input_fails_closed() -> None:
         wrapper_module.build_codex_pqx_task_wrapper(payload)
 
 
+def test_permission_human_checkpoint_required_blocks_without_decision() -> None:
+    payload = _governed_input()
+    payload["stage_contract"] = json.loads(
+        (REPO_ROOT / "contracts" / "examples" / "stage_contracts" / "pqx_stage_contract.json").read_text(encoding="utf-8")
+    )
+    payload["stage_contract"]["permissions"]["human_approval_required_for"] = ["execute_tool"]
+    with pytest.raises(wrapper_module.CodexToPQXWrapperError, match="human checkpoint decision is required"):
+        wrapper_module.build_codex_pqx_task_wrapper(payload)
+
+
 def test_malformed_task_input_fails_closed() -> None:
     payload = _governed_input()
     payload["changed_paths"] = ["../outside.txt"]
