@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "authority_documents": [
+    {
+      "path": "docs/governance/strategy_control_doc.md",
+      "role": "primary_strategy_authority",
+      "immutable": true,
+      "transformation_policy": "non_transformable"
+    },
+    {
+      "path": "docs/governance/prompt_contract.md",
+      "role": "prompt_loading_contract",
+      "immutable": false,
+      "transformation_policy": "governance_controlled"
+    },
+    {
+      "path": "docs/governance/drift_signals.md",
+      "role": "drift_severity_and_response_reference",
+      "immutable": false,
+      "transformation_policy": "governance_controlled"
+    }
+  ],
+  "document_roles": {
+    "docs/governance/README.md": "governance_layer_entrypoint",
+    "docs/governance/architecture_review_checklist.md": "architecture_review_gate_checklist",
+    "docs/governance/prompt_includes/roadmap_governance_include.md": "roadmap_prompt_policy_include",
+    "docs/governance/prompt_includes/implementation_governance_include.md": "implementation_prompt_policy_include",
+    "docs/governance/GOVERNANCE_INTEGRATION_BACKLOG.md": "forward_integration_backlog"
+  },
+  "workflow_required_inputs": {
+    "roadmap_generation": [
+      "docs/governance/strategy_control_doc.md",
+      "docs/governance/prompt_includes/roadmap_governance_include.md"
+    ],
+    "architecture_review": [
+      "docs/governance/strategy_control_doc.md",
+      "docs/governance/architecture_review_checklist.md",
+      "docs/governance/drift_signals.md"
+    ],
+    "implementation_prompting": [
+      "docs/governance/strategy_control_doc.md",
+      "docs/governance/prompt_includes/implementation_governance_include.md",
+      "docs/governance/prompt_contract.md"
+    ]
+  },
+  "enforcement_expectations": [
+    "fail_closed_on_invariant_violation",
+    "foundation_before_expansion",
+    "no_eval_trace_policy_certification_bypass",
+    "record_explicit_failure_modes",
+    "require_delivery_report_fields"
+  ],
+  "immutable_non_transformable_documents": [
+    "docs/governance/strategy_control_doc.md"
+  ],
+  "supersession_rules": {
+    "requires_explicit_supersession_or_adr": [
+      "invariant_reinterpretation",
+      "authority_order_change",
+      "control_loop_gate_weakening",
+      "new_competing_governance_authority_path"
+    ],
+    "required_co_changes": [
+      "docs/governance/governance_manifest.json",
+      "docs/governance/prompt_contract.md"
+    ],
+    "note": "Superseding changes must keep historical traceability and cannot silently replace authority semantics."
+  }
+}
