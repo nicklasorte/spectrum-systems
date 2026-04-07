@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from scripts.check_governance_compliance import evaluate_prompt_text
+from pathlib import Path
+
+from scripts.check_governance_compliance import (
+    evaluate_prompt_file,
+    evaluate_prompt_text,
+    load_governed_prompt_surface_registry,
+)
 
 VALID_PROMPT = """
 # Prompt
@@ -37,4 +43,19 @@ def test_missing_governance_include_fails() -> None:
     )
     result = evaluate_prompt_text(prompt)
     assert not result.passed
-    assert any("missing governance include reference" in item for item in result.missing_items)
+    assert any("missing governance include/template reference" in item for item in result.missing_items)
+
+
+def test_governed_file_is_classified_and_checked() -> None:
+    surfaces = load_governed_prompt_surface_registry()
+    result = evaluate_prompt_file(Path("docs/governance/prompt_templates/roadmap_prompt_template.md"), surfaces)
+    assert result.governed is True
+    assert result.surface_id == "roadmap_prompt_template"
+    assert result.passed is True
+
+
+def test_non_governed_file_is_ignored_cleanly() -> None:
+    surfaces = load_governed_prompt_surface_registry()
+    result = evaluate_prompt_file(Path("docs/governance/README.md"), surfaces)
+    assert result.governed is False
+    assert result.passed is True

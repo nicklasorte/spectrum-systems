@@ -102,6 +102,8 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
     "tests/test_control_surface_gap_to_pqx.py",
     "tests/test_pqx_slice_runner.py",
 ]
+_GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
+
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
     "scripts/run_ops03_adversarial_stress_testing.py": ["tests/test_run_ops03_adversarial_stress_testing.py"],
@@ -352,6 +354,22 @@ def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]
     }
 
 
+
+
+def _is_registry_governed_prompt_surface(path: str) -> bool:
+    if not _GOVERNED_PROMPT_SURFACE_REGISTRY.exists():
+        return False
+    try:
+        from scripts.check_governance_compliance import (
+            classify_governed_surface_for_path,
+            load_governed_prompt_surface_registry,
+        )
+
+        surfaces = load_governed_prompt_surface_registry(_GOVERNED_PROMPT_SURFACE_REGISTRY)
+        return classify_governed_surface_for_path(path, surfaces) is not None
+    except Exception:
+        return False
+
 def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
     if path in _CONTROL_SURFACE_GAP_PACKET_GOVERNANCE_PATHS:
         return (
@@ -363,6 +381,8 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         return True, "runtime_module", "runtime module changed"
     if path.startswith("spectrum_systems/orchestration/"):
         return True, "orchestration", "orchestration path changed"
+    if _is_registry_governed_prompt_surface(path):
+        return True, "governed_prompt_surface", "registry-governed prompt surface changed"
     if path.startswith("spectrum_systems/governance/") or path.startswith("scripts/"):
         return True, "governance", "governance/control script changed"
     if path.startswith("tests/") and path.endswith(".py"):
