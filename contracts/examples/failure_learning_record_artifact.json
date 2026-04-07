@@ -1,0 +1,22 @@
+{
+  "artifact_type": "failure_learning_record_artifact",
+  "schema_version": "1.0.0",
+  "learning_id": "learning-tlc-example-001-manifest_or_registry_mismatch",
+  "failure_class": "manifest_or_registry_mismatch",
+  "recurrence_count": 2,
+  "first_seen_ref": "failure_repair_candidate_artifact:flr-1cc9b1ce0d9f2f59",
+  "latest_seen_ref": "repair_attempt_record_artifact:attempt-tlc-example-001-2",
+  "recommended_eval_candidate": {
+    "candidate_type": "targeted_regression_eval",
+    "target_failure_class": "manifest_or_registry_mismatch",
+    "minimum_recurrence": 2
+  },
+  "recommended_hardening_signal": {
+    "signal_type": "repair_recurrence",
+    "severity": "medium",
+    "target_surface": "manifest_or_registry_mismatch"
+  },
+  "trace_refs": [
+    "trace-tlc-example-001"
+  ]
+}

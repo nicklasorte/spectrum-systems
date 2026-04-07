@@ -20,6 +20,9 @@ VIOLATION_CODES: tuple[ViolationCode, ...] = (
     "ril_boundary_violation",
     "governance_evidence_violation",
     "lineage_violation",
+    "repair_scope_violation",
+    "repair_budget_violation",
+    "repair_decision_violation",
 )
 
 _ALLOWED_RIL_INTAKE_TYPES = {
@@ -258,6 +261,84 @@ def _check_lineage(normalized: dict[str, Any], violations: list[dict[str, Any]])
         )
 
 
+def _check_repair_boundaries(normalized: dict[str, Any], violations: list[dict[str, Any]]) -> None:
+    request = normalized["execution_request"]
+    refs = normalized["artifact_references"]
+    if not bool(request.get("repair_attempt", False)):
+        return
+
+    required = "failure_repair_candidate_artifact"
+    if not _is_present(refs.get(required)):
+        _add_violation(
+            violations,
+            code="missing_artifact_violation",
+            boundary="REPAIR",
+            field=f"artifact_references.{required}",
+            message=f"repair attempt missing required governed artifact: {required}",
+        )
+
+    decision_state = str(request.get("repair_decision_state") or "").strip()
+    if decision_state != "continue_repair_bounded":
+        _add_violation(
+            violations,
+            code="repair_decision_violation",
+            boundary="REPAIR",
+            field="execution_request.repair_decision_state",
+            message="repair execution requires continue_repair_bounded decision state",
+        )
+
+    budget_remaining = request.get("repair_budget_remaining")
+    if not isinstance(budget_remaining, int) or budget_remaining < 0:
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="REPAIR",
+            field="execution_request.repair_budget_remaining",
+            message="repair budget must be present and non-negative",
+        )
+    elif budget_remaining == 0:
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="REPAIR",
+            field="execution_request.repair_budget_remaining",
+            message="repair budget exhausted; no further repair attempts allowed",
+        )
+
+    approved_scope = request.get("approved_repair_scope")
+    touched_files = request.get("repair_files_touched")
+    if not isinstance(approved_scope, list) or not approved_scope:
+        _add_violation(
+            violations,
+            code="repair_scope_violation",
+            boundary="REPAIR",
+            field="execution_request.approved_repair_scope",
+            message="repair attempts require non-empty approved scope",
+        )
+        return
+    if not isinstance(touched_files, list) or not touched_files:
+        _add_violation(
+            violations,
+            code="repair_scope_violation",
+            boundary="REPAIR",
+            field="execution_request.repair_files_touched",
+            message="repair attempts must declare touched files",
+        )
+        return
+
+    approved = {str(item).strip() for item in approved_scope if isinstance(item, str) and item.strip()}
+    touched = {str(item).strip() for item in touched_files if isinstance(item, str) and item.strip()}
+    outside = sorted(path for path in touched if path not in approved)
+    if outside:
+        _add_violation(
+            violations,
+            code="repair_scope_violation",
+            boundary="REPAIR",
+            field="execution_request.repair_files_touched",
+            message=f"repair touched files outside approved scope: {', '.join(outside)}",
+        )
+
+
 def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     """Enforce SEL governed boundaries; fail closed when any boundary violation exists."""
 
@@ -274,6 +355,7 @@ def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     _check_ril_intake_boundary(normalized, violations)
     _check_governance_evidence(normalized, violations)
     _check_lineage(normalized, violations)
+    _check_repair_boundaries(normalized, violations)
 
     violated_boundaries = sorted({str(item["boundary"]) for item in violations})
     payload_for_id = {

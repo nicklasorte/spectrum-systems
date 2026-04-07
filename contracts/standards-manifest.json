@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.87",
-  "schema_version": "1.3.87",
-  "standards_version": "1.3.87",
+  "artifact_version": "1.3.88",
+  "schema_version": "1.3.88",
+  "standards_version": "1.3.88",
   "record_id": "REC-STD-2026-04-06-BATCH-GHA-CORE-01",
   "run_id": "run-20260406T000000Z-batch-gha-core-01",
   "created_at": "2026-04-06T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.87",
+  "source_repo_version": "1.3.88",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -413,7 +413,7 @@
         "tlc"
       ],
       "introduced_in": "1.3.83",
-      "last_updated_in": "1.3.83",
+      "last_updated_in": "1.3.88",
       "example_path": "contracts/examples/closure_decision_artifact.json",
       "notes": "CDE-001 deterministic closure-state decision artifact from governed review/action/RIL evidence with bounded lock/continue/stop outcomes."
     },
@@ -1410,6 +1410,19 @@
       "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
+      "artifact_type": "failure_learning_record_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.88",
+      "last_updated_in": "1.3.88",
+      "example_path": "contracts/examples/failure_learning_record_artifact.json",
+      "notes": "BATCH-GHA-08 recurring failure class learning artifact with eval and hardening recommendations."
+    },
+    {
       "artifact_type": "failure_pattern_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1421,6 +1434,19 @@
       "last_updated_in": "1.3.43",
       "example_path": "contracts/examples/failure_pattern_record.json",
       "notes": "BATCH-L deterministic repeated-failure signature record linking stop reasons, root causes, and trace lineage for eval generation and recurrence prevention."
+    },
+    {
+      "artifact_type": "failure_repair_candidate_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.88",
+      "last_updated_in": "1.3.88",
+      "example_path": "contracts/examples/failure_repair_candidate_artifact.json",
+      "notes": "BATCH-GHA-08 FRE bounded pre-PR repair candidate artifact with explicit safe/local classification and bounded scope."
     },
     {
       "artifact_class": "coordination",
@@ -3168,6 +3194,19 @@
       "last_updated_in": "1.3.76",
       "example_path": "contracts/examples/recovery_result_artifact.json",
       "notes": "BATCH-FRE-03 deterministic bounded recovery-loop outcome artifact linking diagnosis, repair prompt, execution evidence, validation outcomes, and retry guidance."
+    },
+    {
+      "artifact_type": "repair_attempt_record_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.88",
+      "last_updated_in": "1.3.88",
+      "example_path": "contracts/examples/repair_attempt_record_artifact.json",
+      "notes": "BATCH-GHA-08 TLC/PQX bounded repair attempt record for each governed retry iteration."
     },
     {
       "artifact_type": "repair_prompt_artifact",

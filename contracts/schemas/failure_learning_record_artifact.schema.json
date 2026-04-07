@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_learning_record_artifact.schema.json",
+  "title": "Failure Learning Record Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "learning_id",
+    "failure_class",
+    "recurrence_count",
+    "first_seen_ref",
+    "latest_seen_ref",
+    "recommended_eval_candidate",
+    "recommended_hardening_signal",
+    "trace_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "failure_learning_record_artifact"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "learning_id": {"type": "string", "minLength": 1},
+    "failure_class": {"type": "string", "minLength": 1},
+    "recurrence_count": {"type": "integer", "minimum": 1},
+    "first_seen_ref": {"type": "string", "minLength": 1},
+    "latest_seen_ref": {"type": "string", "minLength": 1},
+    "recommended_eval_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_type", "target_failure_class", "minimum_recurrence"],
+      "properties": {
+        "candidate_type": {"type": "string", "minLength": 1},
+        "target_failure_class": {"type": "string", "minLength": 1},
+        "minimum_recurrence": {"type": "integer", "minimum": 1}
+      }
+    },
+    "recommended_hardening_signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal_type", "severity", "target_surface"],
+      "properties": {
+        "signal_type": {"type": "string", "minLength": 1},
+        "severity": {"type": "string", "enum": ["low", "medium", "high", "blocker"]},
+        "target_surface": {"type": "string", "minLength": 1}
+      }
+    },
+    "trace_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

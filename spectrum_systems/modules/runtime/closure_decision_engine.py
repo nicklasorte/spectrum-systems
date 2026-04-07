@@ -29,6 +29,7 @@ _DECISION_TYPES = (
     "hardening_required",
     "final_verification_required",
     "continue_bounded",
+    "continue_repair_bounded",
     "blocked",
     "escalate",
 )
@@ -38,6 +39,7 @@ _NEXT_STEP_CLASS_BY_DECISION = {
     "hardening_required": "hardening_batch",
     "final_verification_required": "final_verification",
     "continue_bounded": "bounded_continue",
+    "continue_repair_bounded": "bounded_repair",
     "blocked": "none",
     "escalate": "escalation",
 }
@@ -177,6 +179,7 @@ def _determine_decision(
     hardening_completed: bool,
     escalation_required: bool,
     bounded_next_step_available: bool,
+    repair_loop_eligible: bool,
 ) -> tuple[str, list[str]]:
     reason_codes = set(counts["reason_codes"])
 
@@ -205,6 +208,9 @@ def _determine_decision(
     if counts["blocker_count"] > 0:
         return "blocked", sorted(reason_codes | {"blocking_items_present"})
 
+    if repair_loop_eligible:
+        return "continue_repair_bounded", sorted(reason_codes | {"repair_loop_eligible"})
+
     if bounded_next_step_available:
         return "continue_bounded", sorted(reason_codes | {"bounded_next_step_available"})
 
@@ -225,6 +231,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
     hardening_completed = bool(request.get("hardening_completed", False))
     escalation_required = bool(request.get("escalation_required", False))
     bounded_next_step_available = bool(request.get("bounded_next_step_available", False))
+    repair_loop_eligible = bool(request.get("repair_loop_eligible", False))
 
     if not counts["evidence_refs"]:
         raise ClosureDecisionEngineError("insufficient evidence references for closure decision")
@@ -236,6 +243,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
         hardening_completed=hardening_completed,
         escalation_required=escalation_required,
         bounded_next_step_available=bounded_next_step_available,
+        repair_loop_eligible=repair_loop_eligible,
     )
 
     if decision_type not in _DECISION_TYPES:
@@ -249,7 +257,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
     if next_step_class == "none":
         next_step_ref = None
 
-    if decision_type in {"continue_bounded", "hardening_required", "final_verification_required"} and not next_step_ref:
+    if decision_type in {"continue_bounded", "continue_repair_bounded", "hardening_required", "final_verification_required"} and not next_step_ref:
         decision_type = "blocked"
         next_step_class = "none"
         decision_reason_codes = sorted(set(decision_reason_codes) | {"missing_next_step_ref"})

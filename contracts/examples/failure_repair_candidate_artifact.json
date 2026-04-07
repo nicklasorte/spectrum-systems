@@ -1,0 +1,18 @@
+{
+  "artifact_type": "failure_repair_candidate_artifact",
+  "schema_version": "1.0.0",
+  "failure_id": "flr-1cc9b1ce0d9f2f59",
+  "source_run_ref": "run:tlc-example-001",
+  "source_test_refs": [
+    "pytest_failure:tests/test_contracts.py::test_manifest_registry_alignment"
+  ],
+  "failure_class": "manifest_or_registry_mismatch",
+  "safe_to_repair": true,
+  "bounded_scope": [
+    "contracts/standards-manifest.json"
+  ],
+  "proposed_repair_ref": "repair_prompt_artifact:tlc-example-001:bounded",
+  "trace_refs": [
+    "trace-tlc-example-001"
+  ]
+}

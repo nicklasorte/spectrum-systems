@@ -12,7 +12,11 @@ from typing import Any, Callable
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.governance.tpa_policy_composition import load_tpa_policy_composition, resolve_tpa_policy_decision
 from spectrum_systems.modules.runtime.closure_decision_engine import build_closure_decision_artifact
-from spectrum_systems.modules.runtime.failure_diagnosis_engine import build_failure_diagnosis_artifact
+from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
+    build_failure_diagnosis_artifact,
+    build_failure_repair_candidate_artifact,
+    normalize_pytest_failure_packet,
+)
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.runtime.roadmap_execution_adapter import run_roadmap_execution
@@ -104,6 +108,68 @@ def _next_actions_for_state(state: str) -> list[str]:
     return action_map.get(state, [])
 
 
+def _build_repair_attempt_record_artifact(
+    *,
+    attempt_id: str,
+    failure_id: str,
+    roadmap_id: str | None,
+    run_id: str,
+    attempt_number: int,
+    files_touched: list[str],
+    commands_run: list[str],
+    result_status: str,
+    trace_refs: list[str],
+) -> dict[str, Any]:
+    artifact = {
+        "artifact_type": "repair_attempt_record_artifact",
+        "schema_version": "1.0.0",
+        "attempt_id": attempt_id,
+        "failure_id": failure_id,
+        "roadmap_id": roadmap_id,
+        "run_id": run_id,
+        "attempt_number": attempt_number,
+        "files_touched": sorted(set(files_touched)),
+        "commands_run": list(commands_run),
+        "result_status": result_status,
+        "trace_refs": sorted(set(trace_refs)),
+    }
+    validate_artifact(artifact, "repair_attempt_record_artifact")
+    return artifact
+
+
+def _build_failure_learning_record_artifact(
+    *,
+    learning_id: str,
+    failure_class: str,
+    recurrence_count: int,
+    first_seen_ref: str,
+    latest_seen_ref: str,
+    trace_refs: list[str],
+) -> dict[str, Any]:
+    artifact = {
+        "artifact_type": "failure_learning_record_artifact",
+        "schema_version": "1.0.0",
+        "learning_id": learning_id,
+        "failure_class": failure_class,
+        "recurrence_count": recurrence_count,
+        "first_seen_ref": first_seen_ref,
+        "latest_seen_ref": latest_seen_ref,
+        "recommended_eval_candidate": {
+            "candidate_type": "targeted_regression_eval",
+            "target_failure_class": failure_class,
+            "minimum_recurrence": recurrence_count,
+        },
+        "recommended_hardening_signal": {
+            "signal_type": "repair_recurrence",
+            "severity": "high" if recurrence_count >= 3 else "medium",
+            "target_surface": failure_class,
+        },
+        "trace_refs": sorted(set(trace_refs)),
+    }
+    validate_artifact(artifact, "failure_learning_record_artifact")
+    return artifact
+
+
 def _transition(*, state: dict[str, Any], to_state: str, reason: str) -> None:
     from_state = state["current_state"]
     state["phase_history"].append({"from": from_state, "to": to_state, "reason": reason})
@@ -182,11 +248,14 @@ def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
         validate_artifact(result["execution_artifact"], "pqx_execution_result")
         return
     if subsystem == "FRE":
-        for key, schema in (
-            ("failure_diagnosis_artifact", "failure_diagnosis_artifact"),
-            ("repair_prompt_artifact", "repair_prompt_artifact"),
-            ("recovery_result_artifact", "recovery_result_artifact"),
-        ):
+        diagnosis = result.get("failure_diagnosis_artifact")
+        if not isinstance(diagnosis, dict):
+            raise TopLevelConductorError("FRE output must include failure_diagnosis_artifact")
+        validate_artifact(diagnosis, "failure_diagnosis_artifact")
+        if isinstance(result.get("failure_repair_candidate_artifact"), dict):
+            validate_artifact(result["failure_repair_candidate_artifact"], "failure_repair_candidate_artifact")
+            return
+        for key, schema in (("repair_prompt_artifact", "repair_prompt_artifact"), ("recovery_result_artifact", "recovery_result_artifact")):
             artifact = result.get(key)
             if not isinstance(artifact, dict):
                 raise TopLevelConductorError(f"FRE output must include {key}")
@@ -347,6 +416,43 @@ def _real_tpa(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _real_fre(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("mode") == "pre_pr_diagnosis":
+        failure_packet = payload.get("failure_packet")
+        if not isinstance(failure_packet, dict):
+            raise TopLevelConductorError("pre_pr_diagnosis requires failure_packet")
+        diagnosis = build_failure_diagnosis_artifact(
+            failure_source_type="pytest_summary",
+            source_artifact_refs=failure_packet["source_test_refs"],
+            failure_payload={
+                "observed_failure_summary": f"Pre-PR failed test surface for run {payload['run_id']}.",
+                "failing_tests": failure_packet.get("failing_tests", []),
+            },
+            emitted_at=payload["emitted_at"],
+            run_id=payload["run_id"],
+            trace_id=payload["trace_id"],
+        )
+        bounded_scope = list(payload.get("default_bounded_scope", []))
+        candidate = build_failure_repair_candidate_artifact(
+            failure_packet=failure_packet,
+            failure_diagnosis_artifact=diagnosis,
+            proposed_repair_ref=f"repair_prompt_artifact:{payload['run_id']}:bounded",
+            trace_refs=[payload["trace_id"]],
+        )
+        if bounded_scope:
+            candidate["bounded_scope"] = sorted(set(str(item) for item in bounded_scope if str(item).strip()))
+            candidate["safe_to_repair"] = bool(candidate["safe_to_repair"] and candidate["bounded_scope"])
+            validate_artifact(candidate, "failure_repair_candidate_artifact")
+        return {
+            "recovery_completed": candidate["safe_to_repair"],
+            "artifact_refs": [
+                f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}",
+                f"failure_repair_candidate_artifact:{candidate['failure_id']}",
+            ],
+            "trace_refs": [payload["trace_id"]],
+            "failure_diagnosis_artifact": diagnosis,
+            "failure_repair_candidate_artifact": candidate,
+        }
+
     diagnosis = build_failure_diagnosis_artifact(
         failure_source_type="validation",
         source_artifact_refs=payload.get("source_artifact_refs", []),
@@ -451,11 +557,12 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
             "review_date": payload["review_date"],
             "action_tracker_ref": payload["action_tracker_ref"],
             "source_artifacts": payload["source_artifacts"],
-            "closure_complete": True,
-            "final_verification_passed": True,
-            "hardening_completed": True,
-            "escalation_required": False,
+            "closure_complete": payload.get("closure_complete", True),
+            "final_verification_passed": payload.get("final_verification_passed", True),
+            "hardening_completed": payload.get("hardening_completed", True),
+            "escalation_required": payload.get("escalation_required", False),
             "bounded_next_step_available": payload.get("bounded_next_step_available", False),
+            "repair_loop_eligible": payload.get("repair_loop_eligible", False),
             "next_step_ref": payload.get("next_step_ref"),
             "emitted_at": payload["emitted_at"],
             "trace_id": payload["trace_id"],
@@ -464,7 +571,11 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
     validate_artifact(decision, "closure_decision_artifact")
     return {
         "decision_type": decision["decision_type"],
-        "next_step_class": "continue_bounded" if decision["decision_type"] == "continue_bounded" else "terminal",
+        "next_step_class": (
+            "continue_repair_bounded"
+            if decision["decision_type"] == "continue_repair_bounded"
+            else ("continue_bounded" if decision["decision_type"] == "continue_bounded" else "terminal")
+        ),
         "closure_state": "closed" if decision["decision_type"] == "lock" else "open",
         "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
         "trace_refs": [decision["trace_id"]],
@@ -557,6 +668,11 @@ def _enforce_sel(
             "direct_slice_execution": False,
             "tpa_required": True,
             "recovery_involved": boundary == "recovery" and bool(state["lineage"].get("recovery_result_artifact_ref")),
+            "repair_attempt": boundary == "repair_attempt",
+            "repair_decision_state": state["lineage"].get("repair_decision_state"),
+            "repair_budget_remaining": state["retry_budget_remaining"],
+            "approved_repair_scope": state["lineage"].get("approved_repair_scope", []),
+            "repair_files_touched": state["lineage"].get("pending_files_touched", []),
             "requested_at": state["emitted_at"],
         },
         "artifact_references": {
@@ -568,6 +684,8 @@ def _enforce_sel(
             "failure_diagnosis_artifact": state["lineage"].get("failure_diagnosis_artifact_ref"),
             "repair_prompt_artifact": state["lineage"].get("repair_prompt_artifact_ref"),
             "recovery_result_artifact": state["lineage"].get("recovery_result_artifact_ref"),
+            "failure_repair_candidate_artifact": state["lineage"].get("failure_repair_candidate_artifact_ref"),
+            "repair_attempt_record_artifact": state["lineage"].get("repair_attempt_record_artifact_ref"),
         },
         "downstream_consumption": {
             "consumed_artifact_types": consumed_artifact_types or ["review_projection_bundle_artifact"],
@@ -691,6 +809,16 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "lineage": lineage,
         "emitted_at": emitted_at,
     }
+    pre_pr_failures = run_request.get("pre_pr_failures")
+    if isinstance(pre_pr_failures, list) and pre_pr_failures:
+        packet = normalize_pytest_failure_packet(
+            source_run_ref=f"run:{run_id}",
+            command_ref=str(run_request.get("pre_pr_command_ref") or "pytest"),
+            failing_tests=pre_pr_failures,
+        )
+        state["lineage"]["pending_failure_packet"] = packet
+        state["lineage"]["repair_attempt_count"] = 0
+        state["lineage"]["failure_recurrence"] = {}
 
     while state["current_state"] not in TERMINAL_STATES:
         if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="state_transition"):
@@ -866,6 +994,37 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         if state["current_state"] == "closure_decision_pending":
             _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="CDE", boundary="tlc_to_cde")
             ril_ref = next((ref for ref in state["produced_artifact_refs"] if ref.startswith("review_projection_bundle_artifact:")), None)
+            if not isinstance(ril_ref, str) or not ril_ref:
+                ril_ref = f"review_projection_bundle_artifact:{state['run_id']}:synthetic"
+            repair_packet = state["lineage"].get("pending_failure_packet") if isinstance(state["lineage"].get("pending_failure_packet"), dict) else None
+            repair_candidate = state["lineage"].get("failure_repair_candidate_artifact")
+            if repair_packet is not None and not isinstance(repair_candidate, dict):
+                _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="FRE", boundary="tlc_to_fre_pre_pr")
+                fre_diag_result = resolved["fre"](
+                    {
+                        "mode": "pre_pr_diagnosis",
+                        "run_id": state["run_id"],
+                        "trace_id": state["trace_id"],
+                        "emitted_at": state["emitted_at"],
+                        "failure_packet": repair_packet,
+                        "default_bounded_scope": list(run_request.get("repair_default_scope", [])),
+                    }
+                )
+                _validate_handoff_output("FRE", fre_diag_result if isinstance(fre_diag_result, dict) else {})
+                state["active_subsystems"].append("FRE")
+                _extract_refs(fre_diag_result if isinstance(fre_diag_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+                state["lineage"]["failure_repair_candidate_artifact"] = fre_diag_result["failure_repair_candidate_artifact"]
+                state["lineage"]["failure_repair_candidate_artifact_ref"] = (
+                    f"failure_repair_candidate_artifact:{fre_diag_result['failure_repair_candidate_artifact']['failure_id']}"
+                )
+                repair_candidate = fre_diag_result["failure_repair_candidate_artifact"]
+
+            repair_loop_eligible = bool(
+                isinstance(repair_candidate, dict)
+                and repair_candidate.get("safe_to_repair")
+                and repair_candidate.get("bounded_scope")
+                and state["retry_budget_remaining"] > 0
+            )
             cde_result = resolved["cde"](
                 {
                     "run_id": state["run_id"],
@@ -884,8 +1043,17 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                             "unresolved_action_item_ids": [],
                         }
                     ],
+                    "closure_complete": repair_packet is None,
+                    "final_verification_passed": repair_packet is None,
+                    "hardening_completed": repair_packet is None,
+                    "escalation_required": False,
                     "bounded_next_step_available": state["retry_budget_remaining"] > 0,
-                    "next_step_ref": "BATCH-H",
+                    "repair_loop_eligible": repair_loop_eligible,
+                    "next_step_ref": (
+                        f"repair_loop:{state['run_id']}:{state['lineage'].get('repair_attempt_count', 0) + 1}"
+                        if repair_loop_eligible
+                        else "BATCH-H"
+                    ),
                 }
             )
             _validate_handoff_output("CDE", cde_result if isinstance(cde_result, dict) else {})
@@ -949,6 +1117,75 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 )
                 state["retry_budget_remaining"] -= 1
                 _transition(state=state, to_state="executing", reason="continue_bounded")
+                continue
+
+            if decision == "continue_repair_bounded":
+                if not isinstance(repair_candidate, dict):
+                    _transition(state=state, to_state="blocked", reason="missing_repair_candidate")
+                    state["stop_reason"] = "missing_repair_candidate"
+                    break
+                state["lineage"]["repair_decision_state"] = "continue_repair_bounded"
+                state["lineage"]["approved_repair_scope"] = list(repair_candidate.get("bounded_scope", []))
+                state["lineage"]["pending_files_touched"] = list(run_request.get("simulated_repair_files_touched", []))
+                if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="repair_attempt"):
+                    break
+                _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="PQX", boundary="tlc_to_pqx_repair")
+                pqx_repair = resolved["pqx"](
+                    {
+                        "run_id": state["run_id"],
+                        "objective": "bounded_pre_pr_repair",
+                        "branch_ref": state["branch_ref"],
+                        "runtime_dir": str(run_request.get("runtime_dir") or Path("outputs") / "tlc_runtime"),
+                        "trace_id": state["trace_id"],
+                        "emitted_at": state["emitted_at"],
+                    }
+                )
+                _validate_handoff_output("PQX", pqx_repair if isinstance(pqx_repair, dict) else {})
+                state["active_subsystems"].append("PQX")
+                _extract_refs(pqx_repair if isinstance(pqx_repair, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+                state["lineage"]["repair_attempt_count"] = int(state["lineage"].get("repair_attempt_count", 0)) + 1
+                passed = bool(run_request.get("repair_validation_passed_after_attempt", False))
+                result_status = "tests_green" if passed else "tests_failed"
+                attempt_id = f"attempt-{state['run_id']}-{state['lineage']['repair_attempt_count']}"
+                attempt_record = _build_repair_attempt_record_artifact(
+                    attempt_id=attempt_id,
+                    failure_id=repair_candidate["failure_id"],
+                    roadmap_id=run_request.get("roadmap_id"),
+                    run_id=state["run_id"],
+                    attempt_number=state["lineage"]["repair_attempt_count"],
+                    files_touched=list(state["lineage"].get("pending_files_touched", [])),
+                    commands_run=list(run_request.get("repair_commands_run", ["pytest -q"])),
+                    result_status=result_status,
+                    trace_refs=state["trace_refs"],
+                )
+                state["lineage"]["repair_attempt_record_artifact_ref"] = f"repair_attempt_record_artifact:{attempt_id}"
+                state["produced_artifact_refs"].append(state["lineage"]["repair_attempt_record_artifact_ref"])
+
+                failure_class = str(repair_candidate.get("failure_class") or "unknown_failure_class")
+                recurrences = state["lineage"].setdefault("failure_recurrence", {})
+                recurrences[failure_class] = int(recurrences.get(failure_class, 0)) + 1
+                learning = _build_failure_learning_record_artifact(
+                    learning_id=f"learning-{state['run_id']}-{failure_class}",
+                    failure_class=failure_class,
+                    recurrence_count=recurrences[failure_class],
+                    first_seen_ref=f"failure_repair_candidate_artifact:{repair_candidate['failure_id']}",
+                    latest_seen_ref=f"repair_attempt_record_artifact:{attempt_id}",
+                    trace_refs=state["trace_refs"],
+                )
+                state["lineage"]["latest_failure_learning_record_artifact"] = learning
+                state["produced_artifact_refs"].append(f"failure_learning_record_artifact:{learning['learning_id']}")
+
+                if passed:
+                    _transition(state=state, to_state="ready_for_merge", reason="repair_tests_green")
+                    state["ready_for_merge"] = True
+                    state["stop_reason"] = "ready_for_merge"
+                    break
+                state["retry_budget_remaining"] -= 1
+                if state["retry_budget_remaining"] <= 0:
+                    _transition(state=state, to_state="exhausted", reason="repair_attempts_exhausted")
+                    state["stop_reason"] = "repair_attempts_exhausted"
+                    break
+                _transition(state=state, to_state="closure_decision_pending", reason="repair_retry")
                 continue
 
             if decision == "blocked":

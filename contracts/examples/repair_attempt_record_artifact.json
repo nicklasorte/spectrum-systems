@@ -1,0 +1,19 @@
+{
+  "artifact_type": "repair_attempt_record_artifact",
+  "schema_version": "1.0.0",
+  "attempt_id": "attempt-tlc-example-001-1",
+  "failure_id": "flr-1cc9b1ce0d9f2f59",
+  "roadmap_id": "R2S-2D11D09E9BA6FD4E",
+  "run_id": "tlc-example-001",
+  "attempt_number": 1,
+  "files_touched": [
+    "contracts/standards-manifest.json"
+  ],
+  "commands_run": [
+    "pytest tests/test_contracts.py"
+  ],
+  "result_status": "tests_green",
+  "trace_refs": [
+    "trace-tlc-example-001"
+  ]
+}

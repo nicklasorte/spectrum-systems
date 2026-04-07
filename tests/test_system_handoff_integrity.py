@@ -138,6 +138,10 @@ def test_valid_handoffs_across_expected_chain() -> None:
 
     cde_payload = copy.deepcopy(load_example("closure_decision_artifact"))
     cde_payload["trace_id"] = "trace-hnd-001"
+    cde_payload["decision_type"] = "continue_repair_bounded"
+    cde_payload["next_step_class"] = "bounded_repair"
+    cde_payload["next_step_ref"] = "repair_loop:run-01:1"
+    cde_payload["bounded_next_step_available"] = True
     assert validate_system_handoff(
         "CDE",
         "TLC",
