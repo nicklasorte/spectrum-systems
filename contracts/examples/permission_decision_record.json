@@ -1,0 +1,23 @@
+{
+  "artifact_type": "permission_decision_record",
+  "schema_version": "1.0.0",
+  "decision_id": "pdr-001",
+  "request_id": "prr-001",
+  "workflow_id": "wf-001",
+  "stage_contract_id": "stage-pqx-execution",
+  "action_name": "execute_tool",
+  "tool_name": "shell",
+  "resource_scope": "workspace:/workspace/spectrum-systems",
+  "decision": "allow",
+  "policy_ref": "permission_policy:1.0.0",
+  "reason_codes": ["TOOL_ALLOWLIST_MATCH"],
+  "decided_at": "2026-04-07T00:00:01Z",
+  "trace": {
+    "trace_id": "trace-wf-001",
+    "trace_refs": ["trace:trace-wf-001", "permission_request_record:prr-001"]
+  },
+  "provenance": {
+    "producer": "permission_governance",
+    "produced_at": "2026-04-07T00:00:01Z"
+  }
+}

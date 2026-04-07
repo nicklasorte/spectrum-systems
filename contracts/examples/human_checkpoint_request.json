@@ -1,0 +1,20 @@
+{
+  "artifact_type": "human_checkpoint_request",
+  "schema_version": "1.0.0",
+  "request_id": "hcr-001",
+  "workflow_id": "wf-001",
+  "stage_contract_id": "stage-pqx-execution",
+  "stage_name": "pqx_execution",
+  "checkpoint_reason": "sandbox_elevation_requested",
+  "required_reviewer_class": "governance_operator",
+  "trigger_signals": ["permission_requires_human_approval"],
+  "requested_at": "2026-04-07T00:00:00Z",
+  "trace": {
+    "trace_id": "trace-wf-001",
+    "trace_refs": ["trace:trace-wf-001"]
+  },
+  "provenance": {
+    "producer": "permission_governance",
+    "produced_at": "2026-04-07T00:00:00Z"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/permission_decision_record.schema.json",
+  "title": "Permission Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "request_id",
+    "workflow_id",
+    "stage_contract_id",
+    "action_name",
+    "tool_name",
+    "resource_scope",
+    "decision",
+    "policy_ref",
+    "reason_codes",
+    "decided_at",
+    "trace",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"const": "permission_decision_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "request_id": {"type": "string", "minLength": 1},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "stage_contract_id": {"type": "string", "minLength": 1},
+    "action_name": {"type": "string", "minLength": 1},
+    "tool_name": {"type": "string", "minLength": 1},
+    "resource_scope": {"type": "string", "minLength": 1},
+    "decision": {"type": "string", "enum": ["allow", "deny", "require_human_approval"]},
+    "policy_ref": {"type": "string", "minLength": 1},
+    "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "trace_refs"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "trace_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "produced_at"],
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "produced_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

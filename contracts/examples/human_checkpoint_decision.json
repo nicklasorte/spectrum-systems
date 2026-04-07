@@ -1,0 +1,14 @@
+{
+  "artifact_type": "human_checkpoint_decision",
+  "schema_version": "1.0.0",
+  "decision_id": "hcd-001",
+  "request_id": "hcr-001",
+  "reviewer_id": "reviewer-01",
+  "decision": "approve",
+  "rationale": "Approved for governed sandbox escalation under active incident runbook.",
+  "decided_at": "2026-04-07T00:05:00Z",
+  "trace": {
+    "trace_id": "trace-wf-001",
+    "trace_refs": ["trace:trace-wf-001", "human_checkpoint_request:hcr-001"]
+  }
+}

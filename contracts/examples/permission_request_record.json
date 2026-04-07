@@ -1,0 +1,19 @@
+{
+  "artifact_type": "permission_request_record",
+  "schema_version": "1.0.0",
+  "request_id": "prr-001",
+  "workflow_id": "wf-001",
+  "stage_contract_id": "stage-pqx-execution",
+  "action_name": "execute_tool",
+  "tool_name": "shell",
+  "resource_scope": "workspace:/workspace/spectrum-systems",
+  "requested_at": "2026-04-07T00:00:00Z",
+  "trace": {
+    "trace_id": "trace-wf-001",
+    "trace_refs": ["trace:trace-wf-001"]
+  },
+  "provenance": {
+    "producer": "permission_governance",
+    "produced_at": "2026-04-07T00:00:00Z"
+  }
+}

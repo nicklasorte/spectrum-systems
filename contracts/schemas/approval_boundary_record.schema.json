@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/approval_boundary_record.schema.json",
+  "title": "Approval Boundary Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "boundary_id",
+    "boundary_type",
+    "scope",
+    "trigger_conditions",
+    "policy_ref",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "approval_boundary_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "boundary_id": {"type": "string", "minLength": 1},
+    "boundary_type": {"type": "string", "enum": ["human_required", "human_optional", "human_prohibited"]},
+    "scope": {"type": "string", "minLength": 1},
+    "trigger_conditions": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "policy_ref": {"type": "string", "minLength": 1},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "trace_refs"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "trace_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

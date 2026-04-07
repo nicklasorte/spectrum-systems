@@ -1,0 +1,13 @@
+{
+  "artifact_type": "approval_boundary_record",
+  "schema_version": "1.0.0",
+  "boundary_id": "abr-001",
+  "boundary_type": "human_required",
+  "scope": "sandbox_elevation",
+  "trigger_conditions": ["requires_write_outside_scope", "requires_network_access"],
+  "policy_ref": "permission_policy:1.0.0",
+  "trace": {
+    "trace_id": "trace-wf-001",
+    "trace_refs": ["trace:trace-wf-001"]
+  }
+}

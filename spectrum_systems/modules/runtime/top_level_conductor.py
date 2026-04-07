@@ -22,6 +22,10 @@ from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
     normalize_pytest_failure_packet,
 )
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
+from spectrum_systems.modules.runtime.pre_pr_governance_closure import (
+    PrePRGovernanceClosureError,
+    run_local_pre_pr_governance_closure,
+)
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.runtime.roadmap_execution_adapter import run_roadmap_execution
 from spectrum_systems.modules.runtime.program_layer import build_program_constraint_signal
@@ -1246,6 +1250,21 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 state["produced_artifact_refs"].append(f"roadmap_signal_artifact:{roadmap_signal['signal_id']}")
 
                 if passed:
+                    pending_paths = list(state["lineage"].get("pending_files_touched", []))
+                    if pending_paths and bool(run_request.get("enforce_local_pre_pr_governance", True)):
+                        try:
+                            gate_result = run_local_pre_pr_governance_closure(
+                                repo_root=Path(run_request.get("repo_root") or Path(__file__).resolve().parents[3]),
+                                changed_paths=pending_paths,
+                                targeted_tests=list(run_request.get("repair_targeted_tests", [])),
+                            )
+                            state["lineage"]["contract_preflight_result_artifact_path"] = gate_result.preflight_artifact_path
+                            state["lineage"]["local_pre_pr_strategy_gate_decision"] = gate_result.gate_decision
+                            state["lineage"]["bounded_auto_repairs"] = list(gate_result.attempted_auto_repairs)
+                        except PrePRGovernanceClosureError as exc:
+                            _transition(state=state, to_state="blocked", reason="local_pre_pr_governance_block")
+                            state["stop_reason"] = f"local_pre_pr_governance_block:{exc}"
+                            break
                     _transition(state=state, to_state="ready_for_merge", reason="repair_tests_green")
                     state["ready_for_merge"] = True
                     state["stop_reason"] = "ready_for_merge"
