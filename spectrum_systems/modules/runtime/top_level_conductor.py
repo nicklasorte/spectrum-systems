@@ -15,6 +15,7 @@ from spectrum_systems.modules.runtime.closure_decision_engine import build_closu
 from spectrum_systems.modules.runtime.failure_diagnosis_engine import build_failure_diagnosis_artifact
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
+from spectrum_systems.modules.runtime.roadmap_execution_adapter import run_roadmap_execution
 from spectrum_systems.modules.runtime.program_layer import build_program_constraint_signal
 from spectrum_systems.modules.runtime.recovery_orchestrator import orchestrate_recovery
 from spectrum_systems.modules.runtime.review_consumer_wiring import build_review_consumer_outputs
@@ -975,3 +976,83 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     output = {k: v for k, v in state.items() if k not in {"trace_id", "emitted_at"}}
     validate_artifact(output, "top_level_conductor_run_artifact")
     return output
+
+
+def run_from_roadmap(roadmap_artifact: dict[str, Any], *, run_request_overrides: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Execute a validated two-step roadmap through TLC->PQX with deterministic bounded governance."""
+    execution_plan = run_roadmap_execution(roadmap_artifact)
+    roadmap_id = execution_plan["roadmap_id"]
+    execution_id = execution_plan["execution_id"]
+
+    base_overrides = deepcopy(run_request_overrides) if isinstance(run_request_overrides, dict) else {}
+    common_emitted_at = str(base_overrides.pop("emitted_at", roadmap_artifact.get("generated_at") or "2026-04-06T00:00:00Z"))
+
+    step_artifacts: list[dict[str, Any]] = []
+    tlc_runs: list[dict[str, Any]] = []
+
+    for index, ordered in enumerate(execution_plan["ordered_steps"], start=1):
+        required_inputs = list(ordered["required_inputs"])
+        if not required_inputs:
+            raise TopLevelConductorError(f"missing_artifact:required_inputs:{ordered['step_id']}")
+
+        request = {
+            "objective": ordered["execution_request"]["objective"],
+            "branch_ref": "refs/heads/main",
+            "run_id": f"{execution_id}-{ordered['step_id']}",
+            "retry_budget": 1,
+            "require_review": True,
+            "require_recovery": True,
+            "review_path": str(base_overrides.get("review_path", "contracts/examples/roadmap_review_artifact.json")),
+            "action_tracker_path": str(base_overrides.get("action_tracker_path", "contracts/examples/roadmap_review_artifact.json")),
+            "runtime_dir": str(base_overrides.get("runtime_dir", Path("outputs") / "roadmap_execution" / execution_id)),
+            "emitted_at": common_emitted_at,
+        }
+        request.update(base_overrides)
+        request["objective"] = ordered["execution_request"]["objective"]
+        request["run_id"] = f"{execution_id}-{ordered['step_id']}"
+        request["emitted_at"] = common_emitted_at
+
+        tlc_result = run_top_level_conductor(request)
+        tlc_runs.append(tlc_result)
+
+        status = "succeeded" if tlc_result.get("ready_for_merge") is True else "failed"
+        if status == "failed" and "FRE" in tlc_result.get("active_subsystems", []):
+            status = "fre_recovered" if tlc_result.get("current_state") == "ready_for_merge" else "failed"
+
+        step_artifact = {
+            "schema_version": "1.0.0",
+            "roadmap_step_execution_id": f"{execution_id}:{ordered['step_id']}",
+            "execution_id": execution_id,
+            "roadmap_id": roadmap_id,
+            "step_id": ordered["step_id"],
+            "execution_status": status,
+            "input_refs": required_inputs,
+            "output_refs": sorted(set(str(item) for item in tlc_result.get("produced_artifact_refs", []) if isinstance(item, str))),
+            "trace_refs": sorted(set(str(item) for item in tlc_result.get("trace_refs", []) if isinstance(item, str))),
+        }
+        validate_artifact(step_artifact, "roadmap_step_execution_artifact")
+        step_artifacts.append(step_artifact)
+
+        if not step_artifact["trace_refs"]:
+            raise TopLevelConductorError(f"missing_artifact:trace_refs:{ordered['step_id']}")
+
+        if tlc_result.get("current_state") != "ready_for_merge":
+            return {
+                "execution_id": execution_id,
+                "roadmap_id": roadmap_id,
+                "execution_status": "blocked",
+                "failure_mode": "cde_block" if "CDE" in tlc_result.get("active_subsystems", []) else "step_failed",
+                "blocked_step_id": ordered["step_id"],
+                "ordered_steps": execution_plan["ordered_steps"],
+                "step_execution_artifacts": step_artifacts,
+                "tlc_runs": tlc_runs,
+            }
+
+    return {
+        "execution_id": execution_id,
+        "roadmap_id": roadmap_id,
+        "execution_status": "completed",
+        "ordered_steps": execution_plan["ordered_steps"],
+        "step_execution_artifacts": step_artifacts,
+        "tlc_runs": tlc_runs,
+    }

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "roadmap_step_execution_id": "R2E-A4C9C3E7D2F4B1AA:step_1",
+  "execution_id": "R2E-A4C9C3E7D2F4B1AA",
+  "roadmap_id": "R2S-2D11D09E9BA6FD4E",
+  "step_id": "step_1",
+  "execution_status": "succeeded",
+  "input_refs": [
+    "docs/vision.md#sha256:7f8f8e6aa7b3"
+  ],
+  "output_refs": [
+    "pqx_execution_result:run-r2e-a4c9c3e7d2f4b1aa-step-1"
+  ],
+  "trace_refs": [
+    "trace-R2E-A4C9C3E7D2F4B1AA-step_1"
+  ]
+}
