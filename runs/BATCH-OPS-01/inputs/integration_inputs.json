@@ -1,0 +1,49 @@
+{
+  "program_artifact": {
+    "program_id": "PRG-1"
+  },
+  "review_control_signal": {
+    "signal_id": "rcs-1",
+    "gate_assessment": "PASS"
+  },
+  "eval_result": {
+    "run_id": "eval-1",
+    "result_status": "pass"
+  },
+  "context_bundle": {
+    "context_id": "ctx-1"
+  },
+  "tpa_gate": {
+    "context_bundle_ref": "context_bundle_v2:ctx-1",
+    "speculative_expansion_detected": false,
+    "gate_replaces_control": false
+  },
+  "roadmap_loop_validation": {
+    "validation_id": "RLV-TEST-001",
+    "determinism_status": "deterministic"
+  },
+  "control_decision": {
+    "decision": "allow",
+    "review_eval_ingested": true
+  },
+  "certification_pack": {
+    "certification_status": "complete"
+  },
+  "validation_scope": {
+    "batch_id": "BATCH-I",
+    "run_id": "run-1",
+    "mode": "governed_integration"
+  },
+  "trace_id": "trace-batch-ops-01",
+  "source_refs": {
+    "program_artifact": "program_artifact:PRG-1",
+    "review_control_signal": "review_control_signal:rcs-1",
+    "eval_result": "eval_result:eval-1",
+    "context_bundle_v2": "context_bundle_v2:ctx-1",
+    "tpa_gate": "tpa_gate:gate-1",
+    "roadmap_execution_loop_validation": "roadmap_execution_loop_validation:RLV-TEST-001",
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-TEST-001",
+    "control_decision": "control_execution_result:ctrl-1",
+    "certification_pack": "control_loop_certification_pack:cert-1"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "action": "created",
+  "issue": {"number": 101, "pull_request": {"url": "https://api.github.com/repos/example/spectrum-systems/pulls/101"}},
+  "comment": {"id": 5001, "body": "/roadmap-draft\nTask: fix one minor test expectation mismatch in governed cycle operator output formatting."},
+  "pull_request": {"number": 101},
+  "sender": {"login": "ops-tester"}
+}

@@ -1,0 +1,147 @@
+{
+  "artifact_type": "review_control_signal_artifact",
+  "blocker_present": true,
+  "blocker_signal_ids": [
+    "rsi-bfeb698d322cef5a"
+  ],
+  "classified_signals": [
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "Critical blocker requires control escalation",
+      "severity": "critical",
+      "signal_class": "control_escalation",
+      "signal_id": "rsi-367e69d39c20669e",
+      "signal_priority": "P0",
+      "source_item_id": "CR-1",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "Critical blocker item in action tracker",
+      "severity": "critical",
+      "signal_class": "enforcement_block",
+      "signal_id": "rsi-bfeb698d322cef5a",
+      "signal_priority": "P0",
+      "source_item_id": "CR-1",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "High-priority governance risk from review signal",
+      "severity": "high",
+      "signal_class": "governance_attention",
+      "signal_id": "rsi-31e9d1055681ed2b",
+      "signal_priority": "P2",
+      "source_item_id": "HI-1",
+      "trace_refs": [
+        {
+          "line_number": 11,
+          "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "High-priority item mapped to roadmap priority",
+      "severity": "high",
+      "signal_class": "roadmap_priority",
+      "signal_id": "rsi-b98ed5a925f5a39e",
+      "signal_priority": "P1",
+      "source_item_id": "HI-1",
+      "trace_refs": [
+        {
+          "line_number": 11,
+          "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "Medium unresolved item mapped to drift watch",
+      "severity": "medium",
+      "signal_class": "drift_watch",
+      "signal_id": "rsi-41b63de32ca4db4a",
+      "signal_priority": "monitor",
+      "source_item_id": "MI-1",
+      "trace_refs": [
+        {
+          "line_number": 16,
+          "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "rationale": "Recovery-related finding requires follow-up",
+      "severity": "medium",
+      "signal_class": "recovery_followup",
+      "signal_id": "rsi-1b954542b7eb4925",
+      "signal_priority": "P2",
+      "source_item_id": "MI-1",
+      "trace_refs": [
+        {
+          "line_number": 16,
+          "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+        }
+      ]
+    }
+  ],
+  "emitted_at": "2026-04-07T00:00:00Z",
+  "escalation_present": true,
+  "overall_verdict": "conditional_pass",
+  "provenance": {
+    "classifier": "review_signal_classifier",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+    "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9",
+    "source_review_signal_id": "rsv-7af2594069bc31b6"
+  },
+  "review_control_signal_id": "rca-9140564f5a0b68ba",
+  "review_date": "2026-04-07",
+  "schema_version": "1.0.0",
+  "severity_summary": {
+    "critical": 1,
+    "high": 1,
+    "medium": 1
+  },
+  "signal_counts_by_class": {
+    "control_escalation": 1,
+    "drift_watch": 1,
+    "enforcement_block": 1,
+    "governance_attention": 1,
+    "recovery_followup": 1,
+    "roadmap_priority": 1
+  },
+  "source_action_tracker_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md",
+  "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+  "source_review_signal_ref": "rsv-7af2594069bc31b6",
+  "system_scope": "operator"
+}

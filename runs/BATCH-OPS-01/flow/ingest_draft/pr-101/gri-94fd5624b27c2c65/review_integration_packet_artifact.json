@@ -1,0 +1,214 @@
+{
+  "artifact_class": "coordination",
+  "artifact_type": "review_integration_packet_artifact",
+  "blocker_present": true,
+  "control_loop_inputs": [
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "control_loop",
+      "input_id": "rii-25082266c3f654b8",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "rationale": "Critical blocker item in action tracker",
+      "severity": "critical",
+      "source_signal_id": "rsi-477fe9e0f4687aba",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "control_loop",
+      "input_id": "rii-51718c5a2dca1107",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "rationale": "Critical blocker requires control escalation",
+      "severity": "critical",
+      "source_signal_id": "rsi-e92b583b546feea0",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    }
+  ],
+  "counts_by_channel": {
+    "control_loop": 2,
+    "readiness": 5,
+    "roadmap": 2
+  },
+  "counts_by_type": {
+    "blocker_intake": 2,
+    "drift_watch_intake": 1,
+    "escalation_intake": 2,
+    "governance_attention_intake": 1,
+    "recovery_followup_intake": 2,
+    "roadmap_priority_intake": 1
+  },
+  "emitted_at": "2026-04-07T00:00:00Z",
+  "escalation_present": true,
+  "highest_priority": "P0",
+  "overall_verdict": "conditional_pass",
+  "provenance": {
+    "consumer": "review_signal_consumer",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "routing_rules_version": "ril-003-v1",
+    "source_action_tracker_hash": "8c9cb78125e15a47c60fb6ff4db52db32c9487fdd4b25605776fc4e79dce8b88",
+    "source_review_control_signal_id": "rca-45663a359d3434f6",
+    "source_review_hash": "cf6498aaddb11078ef59d69020b43e0255e66a2593f54908253fc2b7a02574b5"
+  },
+  "readiness_inputs": [
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "readiness",
+      "input_id": "rii-a4c9a5672585db52",
+      "input_type": "drift_watch_intake",
+      "priority": "monitor",
+      "rationale": "Medium unresolved item mapped to drift watch",
+      "severity": "medium",
+      "source_signal_id": "rsi-436dee5be6d76c95",
+      "trace_refs": [
+        {
+          "line_number": 16,
+          "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "readiness",
+      "input_id": "rii-5832377a9ea62be5",
+      "input_type": "blocker_intake",
+      "priority": "P0",
+      "rationale": "Critical blocker item in action tracker",
+      "severity": "critical",
+      "source_signal_id": "rsi-477fe9e0f4687aba",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "readiness",
+      "input_id": "rii-fc6eb75c5af28688",
+      "input_type": "governance_attention_intake",
+      "priority": "P2",
+      "rationale": "High-priority governance risk from review signal",
+      "severity": "high",
+      "source_signal_id": "rsi-5a69693f8d08ba52",
+      "trace_refs": [
+        {
+          "line_number": 11,
+          "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-draft Task: fix one minor test expectation mismatch in governed cycle operator output formatting.",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "readiness",
+      "input_id": "rii-a7f208cc1bd17064",
+      "input_type": "recovery_followup_intake",
+      "priority": "P2",
+      "rationale": "Recovery-related finding requires follow-up",
+      "severity": "medium",
+      "source_signal_id": "rsi-acb219fcc775b0c0",
+      "trace_refs": [
+        {
+          "line_number": 16,
+          "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "readiness",
+      "input_id": "rii-b2daebf4a1470c2f",
+      "input_type": "escalation_intake",
+      "priority": "P0",
+      "rationale": "Critical blocker requires control escalation",
+      "severity": "critical",
+      "source_signal_id": "rsi-e92b583b546feea0",
+      "trace_refs": [
+        {
+          "line_number": 6,
+          "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    }
+  ],
+  "review_date": "2026-04-07",
+  "review_integration_packet_id": "rip-68d8f8dc1f86a484",
+  "roadmap_inputs": [
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "roadmap",
+      "input_id": "rii-091ea93ea8e63448",
+      "input_type": "recovery_followup_intake",
+      "priority": "P2",
+      "rationale": "Recovery-related finding requires follow-up",
+      "severity": "medium",
+      "source_signal_id": "rsi-acb219fcc775b0c0",
+      "trace_refs": [
+        {
+          "line_number": 16,
+          "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    },
+    {
+      "affected_systems": [
+        "operator"
+      ],
+      "input_channel": "roadmap",
+      "input_id": "rii-13fb323d253b7fa7",
+      "input_type": "roadmap_priority_intake",
+      "priority": "P1",
+      "rationale": "High-priority item mapped to roadmap priority",
+      "severity": "high",
+      "source_signal_id": "rsi-df024aa16fed732c",
+      "trace_refs": [
+        {
+          "line_number": 11,
+          "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-draft Task: fix one minor test expectation mismatch in governed cycle operator output formatting.",
+          "source_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_action_tracker_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/action_tracker.md",
+  "source_review_control_signal_ref": "rca-45663a359d3434f6",
+  "source_review_path": "runs/BATCH-OPS-01/flow/ingest_draft/pr-101/gri-94fd5624b27c2c65/review.md",
+  "system_scope": "operator"
+}

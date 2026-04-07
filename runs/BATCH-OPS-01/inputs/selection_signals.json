@@ -1,0 +1,14 @@
+{
+  "signals": [
+    "executor_ingestion_valid",
+    "state_binding_complete"
+  ],
+  "hard_gates": {
+    "BATCH-G": "pass"
+  },
+  "control_loop": {
+    "eval_present": true,
+    "trace_present": true,
+    "schema_valid": true
+  }
+}

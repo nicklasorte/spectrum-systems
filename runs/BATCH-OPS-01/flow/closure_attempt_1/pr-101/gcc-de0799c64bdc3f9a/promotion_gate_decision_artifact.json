@@ -1,0 +1,23 @@
+{
+  "artifact_class": "coordination",
+  "artifact_type": "promotion_gate_decision_artifact",
+  "certification_status": "missing_or_incomplete",
+  "decision_id": "pgd-4d622669b0cd1dad",
+  "emitted_at": "2026-04-07T00:15:00Z",
+  "missing_requirements": [
+    "certification_ready_artifact",
+    "read_only_terminal_state",
+    "terminal_state_not_ready_for_merge",
+    "top_level_conductor_run_artifact"
+  ],
+  "promotion_allowed": false,
+  "run_id": "gha-gcc-de0799c64bdc3f9a",
+  "schema_version": "1.0.0",
+  "supporting_artifact_refs": [
+    "closure_decision_artifact:cda-50c7df5836f0c96c"
+  ],
+  "terminal_state": "escalated",
+  "trace_refs": [
+    "trace-gcc-de0799c64bdc3f9a"
+  ]
+}

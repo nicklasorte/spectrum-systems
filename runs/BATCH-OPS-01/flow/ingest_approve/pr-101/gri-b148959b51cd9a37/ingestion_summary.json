@@ -1,0 +1,46 @@
+{
+  "artifact_dir": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37",
+  "artifact_paths": {
+    "action_tracker_markdown": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md",
+    "github_review_handoff_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/github_review_handoff_artifact.json",
+    "normalized_review_source_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/normalized_review_source_artifact.json",
+    "review_consumer_output_bundle_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_consumer_output_bundle_artifact.json",
+    "review_control_signal_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_control_signal_artifact.json",
+    "review_integration_packet_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_integration_packet_artifact.json",
+    "review_markdown": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "review_projection_bundle_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_projection_bundle_artifact.json",
+    "review_signal_artifact": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_signal_artifact.json",
+    "roadmap_draft_metadata": "artifacts/roadmap_drafts/pr-101/RMD-410E97243FCF55B9/metadata.json",
+    "roadmap_two_step_artifact": "artifacts/roadmap_drafts/pr-101/RMD-410E97243FCF55B9/roadmap_two_step_artifact.json"
+  },
+  "artifacts_produced": [
+    "action_tracker_markdown",
+    "github_review_handoff_artifact",
+    "normalized_review_source_artifact",
+    "review_consumer_output_bundle_artifact",
+    "review_control_signal_artifact",
+    "review_integration_packet_artifact",
+    "review_markdown",
+    "review_projection_bundle_artifact",
+    "review_signal_artifact",
+    "roadmap_draft_metadata",
+    "roadmap_two_step_artifact"
+  ],
+  "command_marker": "/roadmap-approve",
+  "event_name": "issue_comment",
+  "guardrails": {
+    "adapter_normalization_only": true,
+    "closure_or_repair_logic_invoked": false,
+    "github_triggers_only": true,
+    "ril_structuring_only": true,
+    "roadmap_generation_deterministic": true
+  },
+  "ingestion_id": "gri-b148959b51cd9a37",
+  "pr_number": 101,
+  "review_body": "/roadmap-approve draft_id:RMD-410E97243FCF55B9",
+  "review_source": "operator",
+  "roadmap_draft_id": "RMD-410E97243FCF55B9",
+  "run_mode": "strict",
+  "source_event_ref": "issue_comment:5002",
+  "status": "success"
+}

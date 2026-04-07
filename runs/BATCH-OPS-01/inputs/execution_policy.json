@@ -1,0 +1,4 @@
+{
+  "max_batches_per_run": 1,
+  "max_continuation_depth": 3
+}

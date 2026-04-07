@@ -1,0 +1,38 @@
+{
+  "artifact_class": "coordination",
+  "artifact_type": "next_step_prompt_artifact",
+  "boundedness_notes": [
+    "cde_decides_only",
+    "github_trigger_only",
+    "no_execution_outside_pqx",
+    "no_raw_review_downstream_of_ril",
+    "tlc_orchestrates_only"
+  ],
+  "emitted_at": "2026-04-07T00:15:00Z",
+  "prompt_artifact_id": "nsp-1e31e760f00efa6f",
+  "prompt_class": "escalation",
+  "provenance": {
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "engine": "closure_decision_engine",
+    "source_closure_decision_ref": "cda-50c7df5836f0c96c"
+  },
+  "reason_codes": [
+    "blocker_present",
+    "escalation_required"
+  ],
+  "required_inputs": [
+    "review_consumer_output_bundle_artifact:rco-d9b92acc5eb8aa99",
+    "review_projection_bundle_artifact:rpb-dc222dda67c46b6b"
+  ],
+  "schema_version": "1.0.0",
+  "source_closure_decision_ref": "cda-50c7df5836f0c96c",
+  "source_next_step_ref": "roadmap_two_step_artifact:R2S-FC1D8FDA864DB3D2",
+  "stop_conditions": [
+    "blocked",
+    "escalated",
+    "exhausted",
+    "ready_for_merge"
+  ],
+  "subject_scope": "github_closure_continuation",
+  "trace_id": "trace-gcc-de0799c64bdc3f9a"
+}

@@ -1,0 +1,9 @@
+{
+  "roadmap_id": "SYSTEM-MVP-ROADMAP",
+  "batch_id": "JUD-013",
+  "new_status": "blocked",
+  "reason_codes": [
+    "loop_validation_failed"
+  ],
+  "trace_id": "trace-batch-ops-01"
+}

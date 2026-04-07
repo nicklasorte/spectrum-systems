@@ -1,0 +1,273 @@
+{
+  "artifact_class": "coordination",
+  "artifact_type": "review_projection_bundle_artifact",
+  "blocker_present": true,
+  "control_loop_projection": {
+    "artifact_class": "coordination",
+    "artifact_type": "control_loop_review_intake_artifact",
+    "blocker_present": true,
+    "control_loop_review_intake_id": "cri-64806baa9971ea0e",
+    "control_queue_items": [
+      {
+        "blocker_related": true,
+        "intake_type": "escalation_intake",
+        "priority": "P0",
+        "queue_item_id": "rqi-d73935f79eb1d9ac",
+        "rationale": "Critical blocker requires control escalation",
+        "severity": "critical",
+        "source_input_id": "rii-d798615e2ece6969",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "blocker_related": true,
+        "intake_type": "blocker_intake",
+        "priority": "P0",
+        "queue_item_id": "rqi-5230f025b5825052",
+        "rationale": "Critical blocker item in action tracker",
+        "severity": "critical",
+        "source_input_id": "rii-4f0446b40b7c3fe4",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      }
+    ],
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "escalation_present": true,
+    "item_count": 2,
+    "provenance": {
+      "adapter": "review_projection_adapter",
+      "deterministic_hash_basis": "canonical-json-sha256",
+      "projection_type": "control_loop",
+      "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+      "source_packet_id": "rip-901ed3cfaf04d1ba",
+      "source_review_control_signal_id": "rca-9140564f5a0b68ba",
+      "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9"
+    },
+    "review_date": "2026-04-07",
+    "schema_version": "1.0.0",
+    "source_review_integration_packet_ref": "rip-901ed3cfaf04d1ba",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "system_scope": "operator"
+  },
+  "control_loop_projection_ref": "cri-64806baa9971ea0e",
+  "emitted_at": "2026-04-07T00:00:00Z",
+  "escalation_present": true,
+  "provenance": {
+    "adapter": "review_projection_adapter",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "projection_type": "bundle",
+    "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+    "source_packet_id": "rip-901ed3cfaf04d1ba",
+    "source_projection_ids": {
+      "control_loop_review_intake_id": "cri-64806baa9971ea0e",
+      "readiness_review_projection_id": "rdp-f7e15216ce6646f1",
+      "roadmap_review_projection_id": "rrp-fbd2665cf8e58694"
+    },
+    "source_review_control_signal_id": "rca-9140564f5a0b68ba",
+    "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9"
+  },
+  "readiness_projection": {
+    "artifact_class": "coordination",
+    "artifact_type": "readiness_review_projection_artifact",
+    "blocker_present": true,
+    "counts_by_severity": {
+      "critical": 2,
+      "high": 1,
+      "medium": 2
+    },
+    "counts_by_type": {
+      "blocker_intake": 1,
+      "drift_watch_intake": 1,
+      "escalation_intake": 1,
+      "governance_attention_intake": 1,
+      "recovery_followup_intake": 1
+    },
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "escalation_present": true,
+    "item_count": 5,
+    "provenance": {
+      "adapter": "review_projection_adapter",
+      "deterministic_hash_basis": "canonical-json-sha256",
+      "projection_type": "readiness",
+      "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+      "source_packet_id": "rip-901ed3cfaf04d1ba",
+      "source_review_control_signal_id": "rca-9140564f5a0b68ba",
+      "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9"
+    },
+    "readiness_items": [
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "input_type": "recovery_followup_intake",
+        "priority": "P2",
+        "rationale": "Recovery-related finding requires follow-up",
+        "readiness_item_id": "rdi-7b935ebd25c24e2a",
+        "severity": "medium",
+        "source_input_id": "rii-23a14e90f8d76765",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "input_type": "governance_attention_intake",
+        "priority": "P2",
+        "rationale": "High-priority governance risk from review signal",
+        "readiness_item_id": "rdi-7310d6302e05a3c0",
+        "severity": "high",
+        "source_input_id": "rii-7446b18e12b3c447",
+        "trace_refs": [
+          {
+            "line_number": 11,
+            "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "input_type": "escalation_intake",
+        "priority": "P0",
+        "rationale": "Critical blocker requires control escalation",
+        "readiness_item_id": "rdi-7190ee9426b47bd8",
+        "severity": "critical",
+        "source_input_id": "rii-6da027dfa2e55c72",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "input_type": "drift_watch_intake",
+        "priority": "monitor",
+        "rationale": "Medium unresolved item mapped to drift watch",
+        "readiness_item_id": "rdi-9e57be8c5541e2b1",
+        "severity": "medium",
+        "source_input_id": "rii-a0c582cded262519",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "input_type": "blocker_intake",
+        "priority": "P0",
+        "rationale": "Critical blocker item in action tracker",
+        "readiness_item_id": "rdi-3fb144ff891daa10",
+        "severity": "critical",
+        "source_input_id": "rii-06f951e259c35c32",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      }
+    ],
+    "readiness_review_projection_id": "rdp-f7e15216ce6646f1",
+    "review_date": "2026-04-07",
+    "schema_version": "1.0.0",
+    "source_review_integration_packet_ref": "rip-901ed3cfaf04d1ba",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "system_scope": "operator"
+  },
+  "readiness_projection_ref": "rdp-f7e15216ce6646f1",
+  "review_date": "2026-04-07",
+  "review_projection_bundle_id": "rpb-dc222dda67c46b6b",
+  "roadmap_projection": {
+    "artifact_class": "coordination",
+    "artifact_type": "roadmap_review_projection_artifact",
+    "blocker_present": true,
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "highest_priority": "P0",
+    "item_count": 2,
+    "projected_roadmap_items": [
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "priority": "P2",
+        "projection_item_id": "rpi-083e47f2f76b9c25",
+        "rationale": "Recovery-related finding requires follow-up",
+        "severity": "medium",
+        "source_input_id": "rii-c960388fa1d9ad80",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "priority": "P1",
+        "projection_item_id": "rpi-85c23038ff7e284b",
+        "rationale": "High-priority item mapped to roadmap priority",
+        "severity": "high",
+        "source_input_id": "rii-7b1ccfc74a752323",
+        "trace_refs": [
+          {
+            "line_number": 11,
+            "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      }
+    ],
+    "provenance": {
+      "adapter": "review_projection_adapter",
+      "deterministic_hash_basis": "canonical-json-sha256",
+      "projection_type": "roadmap",
+      "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+      "source_packet_id": "rip-901ed3cfaf04d1ba",
+      "source_review_control_signal_id": "rca-9140564f5a0b68ba",
+      "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9"
+    },
+    "review_date": "2026-04-07",
+    "roadmap_review_projection_id": "rrp-fbd2665cf8e58694",
+    "schema_version": "1.0.0",
+    "source_review_integration_packet_ref": "rip-901ed3cfaf04d1ba",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "system_scope": "operator"
+  },
+  "roadmap_projection_ref": "rrp-fbd2665cf8e58694",
+  "schema_version": "1.1.0",
+  "source_review_integration_packet_ref": "rip-901ed3cfaf04d1ba",
+  "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+  "system_scope": "operator"
+}

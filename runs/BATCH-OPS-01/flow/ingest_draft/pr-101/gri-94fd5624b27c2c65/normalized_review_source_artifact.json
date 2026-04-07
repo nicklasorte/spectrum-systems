@@ -1,0 +1,36 @@
+{
+  "artifact_class": "review",
+  "artifact_id": "GRI-94FD5624B27C2C65",
+  "artifact_type": "reviewer_comment_set",
+  "artifact_version": "1.0.0",
+  "comment_set_id": "CSET-GRI-94FD5624B27C2C65",
+  "comments": [
+    {
+      "comment_id": "CMT-001",
+      "location": {
+        "reference": "issue_comment:5001",
+        "section_id": "SEC-GITHUB-TRIGGER"
+      },
+      "priority": "high",
+      "proposed_disposition": "Route through governed RIL structuring pipeline.",
+      "provenance_id": "PRV-CMT-001",
+      "severity": "major",
+      "status": "new",
+      "text": "/roadmap-draft\nTask: fix one minor test expectation mismatch in governed cycle operator output formatting."
+    }
+  ],
+  "created_at": "2026-04-07T00:10:00Z",
+  "created_by": {
+    "agent_type": "workflow",
+    "name": "GitHub Review Trigger Pipeline",
+    "role": "review-ingestion"
+  },
+  "record_id": "REC-GRI-94FD5624B27C2C65",
+  "run_id": "run-local",
+  "schema_version": "1.0.0",
+  "source_repo": "local/spectrum-systems",
+  "source_repo_version": "batchops01a",
+  "standards_version": "2026.03.0",
+  "working_paper_id": "WKP-PR-101",
+  "working_paper_revision": "rev1"
+}

@@ -1,0 +1,312 @@
+{
+  "artifact_class": "coordination",
+  "artifact_type": "review_consumer_output_bundle_artifact",
+  "blocker_present": true,
+  "control_loop_review_queue_record_artifact": {
+    "artifact_class": "coordination",
+    "artifact_type": "control_loop_review_queue_record_artifact",
+    "blocker_present": true,
+    "control_loop_review_queue_record_id": "clr-d9a9c23fb3bc9e37",
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "escalation_present": true,
+    "item_count": 2,
+    "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+    "provenance": {
+      "adapter": "review_consumer_wiring",
+      "consumer_surface": "control_loop_intake_queue",
+      "consumption_mode": "projection_only_read_only",
+      "source_control_loop_projection_ref": "cri-64806baa9971ea0e",
+      "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b"
+    },
+    "queue_records": [
+      {
+        "blocker_related": true,
+        "intake_type": "blocker_intake",
+        "priority": "P0",
+        "queue_record_id": "qrr-dd80d18264cdcb68",
+        "rationale": "Critical blocker item in action tracker",
+        "severity": "critical",
+        "source_queue_item_id": "rqi-5230f025b5825052",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "blocker_related": true,
+        "intake_type": "escalation_intake",
+        "priority": "P0",
+        "queue_record_id": "qrr-54fc04c8d70c7cee",
+        "rationale": "Critical blocker requires control escalation",
+        "severity": "critical",
+        "source_queue_item_id": "rqi-d73935f79eb1d9ac",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      }
+    ],
+    "review_date": "2026-04-07",
+    "schema_version": "1.0.0",
+    "source_control_loop_projection_ref": "cri-64806baa9971ea0e",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+    "system_scope": "operator"
+  },
+  "control_loop_review_queue_record_ref": "clr-d9a9c23fb3bc9e37",
+  "emitted_at": "2026-04-07T00:00:00Z",
+  "escalation_present": true,
+  "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+  "provenance": {
+    "adapter": "review_consumer_wiring",
+    "consumer_surface": "consumer_output_bundle",
+    "consumption_mode": "projection_only_read_only",
+    "source_consumer_output_ids": {
+      "control_loop_review_queue_record_id": "clr-d9a9c23fb3bc9e37",
+      "readiness_review_dashboard_id": "rda-151a72c848fdcb02",
+      "review_consumption_validation_id": "rcv-f01e43cec323d73b",
+      "roadmap_review_view_id": "rrv-bd757001864748d5"
+    },
+    "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b"
+  },
+  "readiness_review_dashboard_artifact": {
+    "artifact_class": "coordination",
+    "artifact_type": "readiness_review_dashboard_artifact",
+    "blocker_present": true,
+    "counts_by_severity": {
+      "critical": 2,
+      "high": 1,
+      "medium": 2
+    },
+    "counts_by_type": {
+      "blocker_intake": 1,
+      "drift_watch_intake": 1,
+      "escalation_intake": 1,
+      "governance_attention_intake": 1,
+      "recovery_followup_intake": 1
+    },
+    "dashboard_items": [
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "dashboard_item_id": "rdb-5d4f9bb2437f0570",
+        "input_type": "blocker_intake",
+        "priority": "P0",
+        "rationale": "Critical blocker item in action tracker",
+        "severity": "critical",
+        "source_readiness_item_id": "rdi-3fb144ff891daa10",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "dashboard_item_id": "rdb-71cd75a905241015",
+        "input_type": "escalation_intake",
+        "priority": "P0",
+        "rationale": "Critical blocker requires control escalation",
+        "severity": "critical",
+        "source_readiness_item_id": "rdi-7190ee9426b47bd8",
+        "trace_refs": [
+          {
+            "line_number": 6,
+            "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "dashboard_item_id": "rdb-2a82b5105e3aa1e1",
+        "input_type": "governance_attention_intake",
+        "priority": "P2",
+        "rationale": "High-priority governance risk from review signal",
+        "severity": "high",
+        "source_readiness_item_id": "rdi-7310d6302e05a3c0",
+        "trace_refs": [
+          {
+            "line_number": 11,
+            "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "dashboard_item_id": "rdb-3aaddb0c5a54bd62",
+        "input_type": "recovery_followup_intake",
+        "priority": "P2",
+        "rationale": "Recovery-related finding requires follow-up",
+        "severity": "medium",
+        "source_readiness_item_id": "rdi-7b935ebd25c24e2a",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "dashboard_item_id": "rdb-65cc0f93855523d3",
+        "input_type": "drift_watch_intake",
+        "priority": "monitor",
+        "rationale": "Medium unresolved item mapped to drift watch",
+        "severity": "medium",
+        "source_readiness_item_id": "rdi-9e57be8c5541e2b1",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ]
+      }
+    ],
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "escalation_present": true,
+    "item_count": 5,
+    "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+    "provenance": {
+      "adapter": "review_consumer_wiring",
+      "consumer_surface": "readiness_dashboard",
+      "consumption_mode": "projection_only_read_only",
+      "source_readiness_projection_ref": "rdp-f7e15216ce6646f1",
+      "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b"
+    },
+    "readiness_review_dashboard_id": "rda-151a72c848fdcb02",
+    "review_date": "2026-04-07",
+    "schema_version": "1.0.0",
+    "source_readiness_projection_ref": "rdp-f7e15216ce6646f1",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+    "system_scope": "operator"
+  },
+  "readiness_review_dashboard_ref": "rda-151a72c848fdcb02",
+  "review_consumer_output_bundle_id": "rco-d9b92acc5eb8aa99",
+  "review_consumption_validation_artifact": {
+    "artifact_class": "coordination",
+    "artifact_type": "review_consumption_validation_artifact",
+    "earlier_ril_artifact_access_detected": false,
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "intake_boundary_valid": true,
+    "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+    "provenance": {
+      "adapter": "review_consumer_wiring",
+      "consumer_surface": "projection_boundary_validation",
+      "consumption_mode": "projection_only_read_only",
+      "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b"
+    },
+    "raw_review_access_detected": false,
+    "read_only_consumption_valid": true,
+    "review_consumption_validation_id": "rcv-f01e43cec323d73b",
+    "review_date": "2026-04-07",
+    "schema_version": "1.0.0",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+    "system_scope": "operator",
+    "validation_findings": [
+      {
+        "detail": "Consumer wiring accepted only RIL-04 projection bundle and projection artifact contracts.",
+        "finding_code": "RIL005-PROJECTION-ONLY-BOUNDARY",
+        "status": "pass"
+      },
+      {
+        "detail": "Consumer outputs were derived via field passthrough without mutation or enforcement semantics.",
+        "finding_code": "RIL005-READ-ONLY-CONSUMPTION",
+        "status": "pass"
+      },
+      {
+        "detail": "Signals including enforcement_block/control_escalation are treated as non-authoritative downstream intake signals.",
+        "finding_code": "RIL005-NON-AUTHORITATIVE",
+        "status": "pass"
+      }
+    ]
+  },
+  "review_consumption_validation_ref": "rcv-f01e43cec323d73b",
+  "review_date": "2026-04-07",
+  "roadmap_review_view_artifact": {
+    "artifact_class": "coordination",
+    "artifact_type": "roadmap_review_view_artifact",
+    "blocker_present": true,
+    "emitted_at": "2026-04-07T00:00:00Z",
+    "highest_priority": "P0",
+    "item_count": 2,
+    "non_authoritative_notice": "Read-only consumer intake/view artifact only; signals such as enforcement_block or control_escalation are non-authoritative and require independent governed decisions.",
+    "provenance": {
+      "adapter": "review_consumer_wiring",
+      "consumer_surface": "roadmap_prioritization_view",
+      "consumption_mode": "projection_only_read_only",
+      "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+      "source_roadmap_projection_ref": "rrp-fbd2665cf8e58694"
+    },
+    "review_date": "2026-04-07",
+    "roadmap_review_view_id": "rrv-bd757001864748d5",
+    "roadmap_view_items": [
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "priority": "P2",
+        "rationale": "Recovery-related finding requires follow-up",
+        "severity": "medium",
+        "source_projection_item_id": "rpi-083e47f2f76b9c25",
+        "trace_refs": [
+          {
+            "line_number": 16,
+            "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ],
+        "view_item_id": "rvi-64213f3f14478bbd"
+      },
+      {
+        "affected_systems": [
+          "operator"
+        ],
+        "priority": "P1",
+        "rationale": "High-priority item mapped to roadmap priority",
+        "severity": "high",
+        "source_projection_item_id": "rpi-85c23038ff7e284b",
+        "trace_refs": [
+          {
+            "line_number": 11,
+            "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+            "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+          }
+        ],
+        "view_item_id": "rvi-42f212be832bd074"
+      }
+    ],
+    "schema_version": "1.0.0",
+    "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+    "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+    "source_roadmap_projection_ref": "rrp-fbd2665cf8e58694",
+    "system_scope": "operator"
+  },
+  "roadmap_review_view_ref": "rrv-bd757001864748d5",
+  "schema_version": "1.0.0",
+  "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+  "source_review_projection_bundle_ref": "rpb-dc222dda67c46b6b",
+  "system_scope": "operator"
+}

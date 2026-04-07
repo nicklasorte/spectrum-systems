@@ -1,0 +1,7 @@
+{
+  "action": "created",
+  "issue": {"number": 101, "pull_request": {"url": "https://api.github.com/repos/example/spectrum-systems/pulls/101"}},
+  "comment": {"id": 5002, "body": "/roadmap-approve draft_id:RMD-410E97243FCF55B9"},
+  "pull_request": {"number": 101},
+  "sender": {"login": "ops-tester"}
+}
