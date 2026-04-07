@@ -1,5 +1,17 @@
 # Prompt Template
 
+## Governance Preflight (Required)
+Before using this template, include and satisfy:
+- `docs/governance/prompt_includes/ENFORCED_PREAMBLE.md`
+- `docs/governance/prompt_includes/source_input_loading_include.md`
+- `docs/governance/strategy_control_doc.md`
+- `docs/governance/source_inputs_manifest.json`
+- one governance policy include:
+  - `docs/governance/prompt_includes/roadmap_governance_include.md`, or
+  - `docs/governance/prompt_includes/implementation_governance_include.md`
+
+If any required governance input is missing, stop and return a blocking defect.
+
 Use this structure for any new or revised prompt. Replace bracketed guidance with system-specific details and align with the schemas/contracts referenced.
 
 ## Prompt Name

@@ -5,6 +5,19 @@ You are performing an **infrastructure-aware, scoped architecture review** of th
 
 ---
 
+## Governance Preflight (Fail-Closed)
+
+Before review analysis, load and verify:
+- `docs/governance/prompt_includes/ENFORCED_PREAMBLE.md`
+- `docs/governance/prompt_includes/source_input_loading_include.md`
+- `docs/governance/strategy_control_doc.md`
+- `docs/governance/source_inputs_manifest.json`
+- `docs/governance/prompt_includes/implementation_governance_include.md`
+
+If any required governance input is missing, stop and emit a blocking governance defect instead of a review verdict.
+
+---
+
 ## Review Scope
 
 **Scope ID:** `{{ scope_id }}`

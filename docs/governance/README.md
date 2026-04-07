@@ -56,3 +56,40 @@ Recommended path:
 1. Propose change with explicit rationale and affected invariant(s).
 2. Record supersession/ADR artifact under `docs/adr/` or `docs/review-actions/`.
 3. Update `docs/governance/governance_manifest.json` and dependent prompt includes in the same change set.
+
+## Fail-Closed Prompt Enforcement Model
+
+Prompt governance is now enforced through preflight validation instead of advisory-only guidance.
+
+### Enforcement mechanics
+- Enforced preamble: `docs/governance/prompt_includes/ENFORCED_PREAMBLE.md`
+- Source-loading include: `docs/governance/prompt_includes/source_input_loading_include.md`
+- Prompt checker: `scripts/check_governance_compliance.py`
+- Prompt wrapper: `scripts/run_prompt_with_governance.py`
+- Execution rules: `docs/governance/prompt_execution_rules.md`
+
+### What fail-closed means
+If a prompt omits any required governance reference, the checker returns failure (non-zero exit), and wrapper execution is blocked.
+No silent bypass is allowed.
+
+### Prompt template usage
+Use repository-native templates in `docs/governance/prompt_templates/`:
+- `roadmap_prompt_template.md`
+- `implementation_prompt_template.md`
+- `architecture_review_prompt_template.md`
+
+Each template already wires:
+- enforced preamble include,
+- source-input loading include,
+- relevant governance include,
+- explicit sections for inputs, constraints, task, and output requirements.
+
+### Running governance preflight
+- Validate file:
+  - `python scripts/check_governance_compliance.py --file <prompt_file>`
+- Validate text:
+  - `python scripts/check_governance_compliance.py --text "<prompt_text>"`
+- Wrapper flow:
+  - `python scripts/run_prompt_with_governance.py <prompt_file>`
+
+A missing governance reference is a blocking defect and must be remediated before prompt execution.
