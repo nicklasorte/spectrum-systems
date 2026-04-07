@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/promotion_gate_decision_artifact.schema.json",
+  "title": "promotion_gate_decision_artifact",
+  "description": "Deterministic fail-closed promotion decision artifact consumed by PR visibility surfaces.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_class",
+    "schema_version",
+    "decision_id",
+    "run_id",
+    "terminal_state",
+    "certification_status",
+    "promotion_allowed",
+    "missing_requirements",
+    "supporting_artifact_refs",
+    "trace_refs",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "promotion_gate_decision_artifact"
+    },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^pgd-[a-f0-9]{16}$"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "terminal_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "certification_status": {
+      "type": "string",
+      "enum": ["certified", "missing_or_incomplete"]
+    },
+    "promotion_allowed": {
+      "type": "boolean"
+    },
+    "missing_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "supporting_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "trace_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "promotion_allowed": {
+            "const": true
+          }
+        },
+        "required": ["promotion_allowed"]
+      },
+      "then": {
+        "properties": {
+          "terminal_state": {
+            "const": "ready_for_merge"
+          },
+          "certification_status": {
+            "const": "certified"
+          },
+          "missing_requirements": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

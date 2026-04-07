@@ -38,10 +38,14 @@ def _valid_artifacts() -> dict:
         "closure_decision_artifact": "artifacts/github_closure_continuation/pr-1/gcc-123/closure_decision_artifact.json",
         "top_level_conductor_run_artifact": "artifacts/github_closure_continuation/pr-1/gcc-123/top_level_conductor_run_artifact.json",
         "next_step_prompt_artifact": "artifacts/github_closure_continuation/pr-1/gcc-123/next_step_prompt_artifact.json",
+        "promotion_gate_decision_artifact": "artifacts/github_closure_continuation/pr-1/gcc-123/promotion_gate_decision_artifact.json",
     }
+    promotion_gate = _load_fixture("promotion_gate_decision_artifact.json")
+    promotion_gate["terminal_state"] = "ready_for_merge"
     return {
         "closure_decision_artifact": closure,
         "top_level_conductor_run_artifact": tlc,
+        "promotion_gate_decision_artifact": promotion_gate,
         "continuation_result": continuation_result,
         "artifact_paths": artifact_paths,
     }
@@ -60,9 +64,14 @@ def test_valid_artifact_input_builds_expected_markdown() -> None:
             "",
             "**Run ID:** tlc-1a2b3c4d5e6f",
             "",
+            "**Promotion Gate:** merge_ready",
+            "",
+            "**Certification Status:** certified",
+            "",
             "**Artifacts:**",
             "- Closure Decision: artifacts/github_closure_continuation/pr-1/gcc-123/closure_decision_artifact.json",
             "- TLC Run: artifacts/github_closure_continuation/pr-1/gcc-123/top_level_conductor_run_artifact.json",
+            "- Promotion Gate Decision: artifacts/github_closure_continuation/pr-1/gcc-123/promotion_gate_decision_artifact.json",
             "- Next Step Prompt: artifacts/github_closure_continuation/pr-1/gcc-123/next_step_prompt_artifact.json",
             "",
             "**Roadmap Input:**",
@@ -76,6 +85,7 @@ def test_valid_artifact_input_builds_expected_markdown() -> None:
             "",
             "**Notes:**",
             "- This output is machine-generated and non-authoritative.",
+            "- Merge-ready visibility is emitted only from certified promotion_gate_decision_artifact outputs.",
             "- No action is taken by this system.",
             "",
         ]
@@ -111,6 +121,22 @@ def test_no_interpretation_logic_present_in_output() -> None:
     forbidden_tokens = ("recommend", "should ", "consider", "suggest")
     for token in forbidden_tokens:
         assert token not in comment
+
+
+def test_non_promotable_state_is_status_only_with_missing_requirements() -> None:
+    artifacts = _valid_artifacts()
+    artifacts["continuation_result"]["final_terminal_state"] = "blocked"
+    artifacts["top_level_conductor_run_artifact"]["current_state"] = "blocked"
+    artifacts["promotion_gate_decision_artifact"]["terminal_state"] = "blocked"
+    artifacts["promotion_gate_decision_artifact"]["promotion_allowed"] = False
+    artifacts["promotion_gate_decision_artifact"]["certification_status"] = "missing_or_incomplete"
+    artifacts["promotion_gate_decision_artifact"]["missing_requirements"] = ["terminal_state_not_ready_for_merge"]
+
+    comment = build_pr_feedback_comment(artifacts)
+
+    assert "**Promotion Gate:** status_only" in comment
+    assert "**Promotion Requirements Missing:**" in comment
+    assert "- terminal_state_not_ready_for_merge" in comment
 
 
 def test_correct_formatting_without_optional_next_step_prompt() -> None:

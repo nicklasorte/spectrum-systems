@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.89",
-  "schema_version": "1.3.89",
-  "standards_version": "1.3.89",
-  "record_id": "REC-STD-2026-04-06-BATCH-GHA-CORE-01",
-  "run_id": "run-20260406T000000Z-batch-gha-core-01",
-  "created_at": "2026-04-06T00:00:00Z",
+  "artifact_version": "1.3.90",
+  "schema_version": "1.3.90",
+  "standards_version": "1.3.90",
+  "record_id": "REC-STD-2026-04-07-BATCH-MB-02",
+  "run_id": "run-20260407T000000Z-batch-mb-02",
+  "created_at": "2026-04-07T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.89",
+  "source_repo_version": "1.3.90",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2786,6 +2786,19 @@
       "last_updated_in": "1.0.69",
       "example_path": "contracts/examples/promotion_gate_attack_result.json",
       "notes": "VAL-01 governed attack-result artifact proving promotion boundary fail-closed behavior across malformed/missing/corrupt certification inputs."
+    },
+    {
+      "artifact_type": "promotion_gate_decision_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.90",
+      "last_updated_in": "1.3.90",
+      "example_path": "contracts/examples/promotion_gate_decision_artifact.json",
+      "notes": "BATCH-MB-02 deterministic fail-closed promotion gate decision artifact requiring ready_for_merge plus certified governed evidence before merge-ready visibility."
     },
     {
       "artifact_type": "prompt_alias_map",

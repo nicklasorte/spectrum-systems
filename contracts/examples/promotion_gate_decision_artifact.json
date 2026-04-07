@@ -1,0 +1,21 @@
+{
+  "artifact_type": "promotion_gate_decision_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "decision_id": "pgd-11aa22bb33cc44dd",
+  "run_id": "gha-gcc-25cd3219378db311",
+  "terminal_state": "ready_for_merge",
+  "certification_status": "certified",
+  "promotion_allowed": true,
+  "missing_requirements": [],
+  "supporting_artifact_refs": [
+    "closure_decision_artifact:cda-a28f7d9744a81f3a",
+    "top_level_conductor_run_artifact:tlc-gcc-25cd3219378db311",
+    "certification:tlc-gcc-25cd3219378db311"
+  ],
+  "trace_refs": [
+    "trace-gcc-25cd3219378db311",
+    "trace-tlc-gcc-25cd3219378db311"
+  ],
+  "emitted_at": "2026-04-07T00:00:00Z"
+}

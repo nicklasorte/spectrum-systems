@@ -100,6 +100,12 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
         )
         validate_artifact(top_level_conductor_run_artifact, "top_level_conductor_run_artifact")
 
+    promotion_gate_decision_artifact = _require_dict(
+        root.get("promotion_gate_decision_artifact"),
+        field="promotion_gate_decision_artifact",
+    )
+    validate_artifact(promotion_gate_decision_artifact, "promotion_gate_decision_artifact")
+
     continuation_result: dict[str, Any] | None = None
     if root.get("continuation_result") is not None:
         continuation_result = _require_dict(root.get("continuation_result"), field="continuation_result")
@@ -125,6 +131,10 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
     artifact_paths = _require_dict(root.get("artifact_paths"), field="artifact_paths")
     closure_path = _require_non_empty_str(artifact_paths.get("closure_decision_artifact"), field="artifact_paths.closure_decision_artifact")
     tlc_path_value = artifact_paths.get("top_level_conductor_run_artifact")
+    promotion_gate_path = _require_non_empty_str(
+        artifact_paths.get("promotion_gate_decision_artifact"),
+        field="artifact_paths.promotion_gate_decision_artifact",
+    )
     if top_level_conductor_run_artifact is not None:
         tlc_path = _require_non_empty_str(tlc_path_value, field="artifact_paths.top_level_conductor_run_artifact")
     else:
@@ -138,7 +148,21 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
         continuation_result=continuation_result,
         top_level_conductor_run_artifact=top_level_conductor_run_artifact,
     )
+    promotion_terminal_state = _require_non_empty_str(
+        promotion_gate_decision_artifact.get("terminal_state"),
+        field="promotion_gate_decision_artifact.terminal_state",
+    )
+    if promotion_terminal_state != terminal_state:
+        raise GithubPrFeedbackError("promotion gate terminal state must match continuation terminal state")
     decision_type = _require_non_empty_str(closure_decision_artifact.get("decision_type"), field="closure_decision_artifact.decision_type")
+    certification_status = _require_non_empty_str(
+        promotion_gate_decision_artifact.get("certification_status"),
+        field="promotion_gate_decision_artifact.certification_status",
+    )
+    promotion_allowed = bool(promotion_gate_decision_artifact.get("promotion_allowed"))
+    missing_requirements = promotion_gate_decision_artifact.get("missing_requirements")
+    if not isinstance(missing_requirements, list):
+        raise GithubPrFeedbackError("promotion_gate_decision_artifact.missing_requirements must be an array")
     run_id = _resolve_run_id(
         continuation_result=continuation_result,
         closure_decision_artifact=closure_decision_artifact,
@@ -158,9 +182,14 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
         "",
         f"**Run ID:** {run_id}",
         "",
+        f"**Promotion Gate:** {'merge_ready' if promotion_allowed else 'status_only'}",
+        "",
+        f"**Certification Status:** {certification_status}",
+        "",
         "**Artifacts:**",
         f"- Closure Decision: {closure_path}",
         f"- TLC Run: {tlc_path}",
+        f"- Promotion Gate Decision: {promotion_gate_path}",
     ]
 
     if next_step_path is not None:
@@ -192,11 +221,17 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
     for ref in trace_refs:
         lines.append(f"- {ref}")
 
+    if not promotion_allowed:
+        lines.extend(["", "**Promotion Requirements Missing:**"])
+        for requirement in missing_requirements:
+            lines.append(f"- {requirement}")
+
     lines.extend(
         [
             "",
             "**Notes:**",
             "- This output is machine-generated and non-authoritative.",
+            "- Merge-ready visibility is emitted only from certified promotion_gate_decision_artifact outputs.",
             "- No action is taken by this system.",
         ]
     )
