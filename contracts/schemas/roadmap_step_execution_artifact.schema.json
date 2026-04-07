@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_step_execution_artifact.schema.json",
+  "title": "Roadmap Step Execution Artifact",
+  "description": "Deterministic governed execution record for one roadmap two-step slice routed through TLC/PQX.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "roadmap_step_execution_id",
+    "execution_id",
+    "roadmap_id",
+    "step_id",
+    "execution_status",
+    "input_refs",
+    "output_refs",
+    "trace_refs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "roadmap_step_execution_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{6,128}$"
+    },
+    "execution_id": {
+      "type": "string",
+      "pattern": "^R2E-[A-F0-9]{16}$"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^R2S-[A-F0-9]{16}$"
+    },
+    "step_id": {
+      "type": "string",
+      "enum": [
+        "step_1",
+        "step_2"
+      ]
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": [
+        "succeeded",
+        "failed",
+        "fre_recovered"
+      ]
+    },
+    "input_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "output_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

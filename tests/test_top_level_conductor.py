@@ -6,7 +6,11 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
-from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
+from spectrum_systems.modules.runtime.top_level_conductor import (
+    TopLevelConductorError,
+    run_from_roadmap,
+    run_top_level_conductor,
+)
 
 
 VALID_REVIEW = """---
@@ -192,3 +196,42 @@ def test_missing_review_inputs_fail_closed(tmp_path: Path) -> None:
 
     with pytest.raises(TopLevelConductorError, match="review_path"):
         run_top_level_conductor(request)
+
+
+def test_run_from_roadmap_executes_bounded_steps(tmp_path: Path) -> None:
+    roadmap = {
+        "roadmap_id": "R2S-2D11D09E9BA6FD4E",
+        "schema_version": "1.0.0",
+        "generated_at": "2026-04-06T00:00:00Z",
+        "source_refs": ["docs/vision.md#sha256:1", "docs/roadmaps/system_roadmap.md#sha256:2"],
+        "steps": [
+            {
+                "step_id": "step_1",
+                "description": "Step one.",
+                "required_inputs": ["docs/vision.md#sha256:1"],
+                "expected_outputs": ["output:step_1"],
+            },
+            {
+                "step_id": "step_2",
+                "description": "Step two.",
+                "required_inputs": ["output:step_1"],
+                "expected_outputs": ["output:step_2"],
+            },
+        ],
+        "bounded": True,
+        "step_count": 2,
+    }
+    review_path, action_path = _write_inputs(tmp_path)
+
+    result = run_from_roadmap(
+        roadmap,
+        run_request_overrides={
+            "review_path": str(review_path),
+            "action_tracker_path": str(action_path),
+            "runtime_dir": str(tmp_path / "runtime"),
+            "emitted_at": "2026-04-06T00:00:00Z",
+        },
+    )
+
+    assert result["execution_status"] == "completed"
+    assert len(result["step_execution_artifacts"]) == 2

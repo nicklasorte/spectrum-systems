@@ -3603,6 +3603,19 @@
       "notes": "BATCH-LTV-C deterministic feeder bundle that steers roadmap priorities from drift/hotspot/coverage/replay/judgment/budget/trust signals."
     },
     {
+      "artifact_type": "roadmap_step_execution_artifact",
+      "artifact_class": "runtime",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "v1.0.0",
+      "last_updated_in": "v1.0.0",
+      "example_path": "contracts/examples/roadmap_step_execution_artifact.json",
+      "notes": "Per-step governed execution record emitted by TLC roadmap bridge."
+    },
+    {
       "artifact_type": "roadmap_two_step_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
